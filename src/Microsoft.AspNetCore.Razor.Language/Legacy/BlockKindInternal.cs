@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // Special
         Comment = 8,
         Tag = 9,
-
         HtmlComment = 10
     }
 }

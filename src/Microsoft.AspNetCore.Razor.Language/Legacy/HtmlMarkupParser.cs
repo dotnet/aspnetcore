@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private const string ScriptTagName = "script";
 
-        private static readonly HtmlSymbol[] nonAllowedHtmlCommentEnding = new[] { new HtmlSymbol("-", HtmlSymbolType.Text), new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("<", HtmlSymbolType.OpenAngle) };
+        private static readonly HtmlSymbol[] nonAllowedHtmlCommentEnding = new[] { HtmlSymbol.Hyphen, new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("<", HtmlSymbolType.OpenAngle) };
+        private static readonly HtmlSymbol[] singleHyphenArray = new[] { HtmlSymbol.Hyphen };
 
         private static readonly char[] ValidAfterTypeAttributeNameCharacters = { ' ', '\t', '\r', '\n', '\f', '=' };
         private SourceLocation _lastTagStart = SourceLocation.Zero;
@@ -506,7 +507,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         while (!EndOfFile)
                         {
                             SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
-                            var lastDoubleHyphen = AcceptAllButLastDoubleHypens();
+                            var lastDoubleHyphen = AcceptAllButLastDoubleHyphens();
 
                             if (At(HtmlSymbolType.CloseAngle))
                             {
@@ -543,7 +544,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        protected HtmlSymbol AcceptAllButLastDoubleHypens()
+        protected HtmlSymbol AcceptAllButLastDoubleHyphens()
         {
             var lastDoubleHyphen = CurrentSymbol;
             AcceptWhile(s =>
@@ -558,9 +559,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             });
 
             NextToken();
-            EnsureCurrent();
 
-            if (At(HtmlSymbolType.Text) && IsDashSymbol(CurrentSymbol))
+            if (At(HtmlSymbolType.Text) && IsHyphen(CurrentSymbol))
             {
                 // Doing this here to maintain the order of symbols
                 if (!NextIs(HtmlSymbolType.CloseAngle))
@@ -575,9 +575,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return lastDoubleHyphen;
         }
 
-        internal static bool IsDashSymbol(HtmlSymbol symbol)
+        internal static bool IsHyphen(HtmlSymbol symbol)
         {
-            return string.Equals(symbol.Content, "-", StringComparison.Ordinal);
+            return symbol.Equals(HtmlSymbol.Hyphen);
         }
 
         protected bool IsHtmlCommentAhead()
@@ -589,7 +589,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
              * 1. The string "<!--"
              * 2. Optionally, text, with the additional restriction that the text
              *      2.1 must not start with the string ">" nor start with the string "->"
-             *      2.2 nor contain the strings "<!--", "-->", or "--!>"
+             *      2.2 nor contain the strings
+             *          2.2.1 "<!--"
+             *          2.2.2 "-->" // As we will be treating this as a comment ending, there is no need to handle this case at all.
+             *          2.2.3 "--!>"
              *      2.3 nor end with the string "<!-".
              * 3. The string "-->"
              * 
@@ -601,37 +604,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Check condition 2.1
-            if (NextIs(HtmlSymbolType.CloseAngle) || NextIs(next => IsDashSymbol(next) && NextIs(HtmlSymbolType.CloseAngle)))
+            if (NextIs(HtmlSymbolType.CloseAngle) || NextIs(next => IsHyphen(next) && NextIs(HtmlSymbolType.CloseAngle)))
             {
                 return false;
             }
 
             // Check condition 2.2
             var isValidComment = false;
-            LookaheadUntil((s, p) =>
+            LookaheadUntil((symbol, prevSymbols) =>
             {
-                if (s.Type == HtmlSymbolType.DoubleHyphen)
+                if (symbol.Type == HtmlSymbolType.DoubleHyphen)
                 {
                     if (NextIs(HtmlSymbolType.CloseAngle))
                     {
                         // Check condition 2.3: We're at the end of a comment. Check to make sure the text ending is allowed.
-                        isValidComment = !IsCommentContentDisallowed(p);
+                        isValidComment = !IsCommentContentEndingInvalid(prevSymbols);
                         return true;
                     }
-                    else if (NextIs(ns => IsDashSymbol(ns) && NextIs(HtmlSymbolType.CloseAngle)))
+                    else if (NextIs(ns => IsHyphen(ns) && NextIs(HtmlSymbolType.CloseAngle)))
                     {
-                        // This is also a valid closing comment case, as the dashes lookup is treated with DoubleHyphen symbols first.
+                        // Check condition 2.3: we're at the end of a comment, which has an extra dash.
+                        // Need to treat the dash as part of the content and check the ending.
+                        // However, that case would have already been checked as part of check from 2.2.1 which
+                        // would already fail this iteration and we wouldn't get here
                         isValidComment = true;
                         return true;
                     }
                     else if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.CloseAngle)))
                     {
+                        // This is condition 2.2.3
                         isValidComment = false;
                         return true;
                     }
                 }
-                else if (s.Type == HtmlSymbolType.OpenAngle)
+                else if (symbol.Type == HtmlSymbolType.OpenAngle)
                 {
+                    // Checking condition 2.2.1
                     if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.DoubleHyphen)))
                     {
                         isValidComment = false;
@@ -648,7 +656,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// <summary>
         /// Verifies, that the sequence doesn't end with the "&lt;!-" HtmlSymbols. Note, the first symbol is an opening bracket symbol
         /// </summary>
-        internal static bool IsCommentContentDisallowed(IEnumerable<HtmlSymbol> sequence)
+        internal static bool IsCommentContentEndingInvalid(IEnumerable<HtmlSymbol> sequence)
         {
             var reversedSequence = sequence.Reverse();
             var index = 0;
