@@ -13,20 +13,19 @@
         <div class='navbar-collapse collapse'>
             <ul class='nav navbar-nav'>
                 <li>
-                    <!-- The 'c:' prefix and parens are workarounds for a Razor compilation issue and will be removed soon. -->
-                    <c:NavLink href=@("/")>
+                    <NavLink href="/">
                         <span class='glyphicon glyphicon-home'></span> Home
-                    </c:NavLink>
+                    </NavLink>
                 </li>
                 <li>
-                    <c:NavLink href=@("/counter")>
+                    <NavLink href="/counter">
                         <span class='glyphicon glyphicon-education'></span> Counter
-                    </c:NavLink>
+                    </NavLink>
                 </li>
                 <li>
-                    <c:NavLink href=@("/fetchdata")>
+                    <NavLink href="/fetchdata">
                         <span class='glyphicon glyphicon-th-list'></span> Fetch data
-                    </c:NavLink>
+                    </NavLink>
                 </li>
             </ul>
         </div>

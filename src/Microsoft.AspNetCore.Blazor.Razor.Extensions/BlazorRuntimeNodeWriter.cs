@@ -219,38 +219,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         {
                             var nextTag = nextToken.AsTag();
                             var tagNameOriginalCase = GetTagNameWithOriginalCase(originalHtmlContent, nextTag);
-                            var isComponent = TryGetComponentTypeNameFromTagName(tagNameOriginalCase, out var componentTypeName);
 
                             if (nextToken.Type == HtmlTokenType.StartTag)
                             {
                                 _scopeStack.IncrementCurrentScopeChildCount(context);
-                                if (isComponent)
-                                {
-                                    codeWriter
-                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenComponent)}<{componentTypeName}>")
-                                        .Write((_sourceSequence++).ToString())
-                                        .WriteEndMethodInvocation();
-                                }
-                                else
-                                {
-                                    codeWriter
-                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
-                                        .Write((_sourceSequence++).ToString())
-                                        .WriteParameterSeparator()
-                                        .WriteStringLiteral(nextTag.Data)
-                                        .WriteEndMethodInvocation();
-                                }
 
-                                if (isComponent && nextTag.Attributes.Count > 0)
-                                {
-                                    var diagnostic = BlazorDiagnosticFactory.Create_InvalidComponentAttributeSynx(
-                                        nextTag.Position,
-                                        node.Source,
-                                        nextTag.Attributes[0].Key,
-                                        tagNameOriginalCase);
-                                    throw new RazorCompilerException(diagnostic);
-                                }
-
+                                codeWriter
+                                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
+                                    .Write((_sourceSequence++).ToString())
+                                    .WriteParameterSeparator()
+                                    .WriteStringLiteral(nextTag.Data)
+                                    .WriteEndMethodInvocation();
+ 
                                 foreach (var attribute in nextTag.Attributes)
                                 {
                                     WriteAttribute(codeWriter, attribute.Key, attribute.Value);
@@ -274,25 +254,20 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                     _currentElementAttributeTokens.Clear();
                                 }
 
-                                _scopeStack.OpenScope(
-                                    tagName: isComponent ? tagNameOriginalCase : nextTag.Data,
-                                    isComponent: isComponent);
+                                _scopeStack.OpenScope( tagName: nextTag.Data, isComponent: false);
                             }
 
                             if (nextToken.Type == HtmlTokenType.EndTag
                                 || nextTag.IsSelfClosing
-                                || (!isComponent && htmlVoidElementsLookup.Contains(nextTag.Data)))
+                                || htmlVoidElementsLookup.Contains(nextTag.Data))
                             {
                                 _scopeStack.CloseScope(
                                     context: context,
-                                    tagName: isComponent ? tagNameOriginalCase : nextTag.Data,
-                                    isComponent: isComponent,
+                                    tagName: nextTag.Data,
+                                    isComponent: false,
                                     source: CalculateSourcePosition(node.Source, nextToken.Position));
-                                var closeMethodName = isComponent
-                                    ? nameof(BlazorApi.RenderTreeBuilder.CloseComponent)
-                                    : nameof(BlazorApi.RenderTreeBuilder.CloseElement);
                                 codeWriter
-                                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{closeMethodName}")
+                                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{BlazorApi.RenderTreeBuilder.CloseElement}")
                                     .WriteEndMethodInvocation();
                             }
                             break;
@@ -557,32 +532,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         {
             var offset = tagToken.Type == HtmlTokenType.EndTag ? 1 : 0; // For end tags, skip the '/'
             return document.Substring(tagToken.Position.Position + offset, tagToken.Name.Length);
-        }
-
-        private bool TryGetComponentTypeNameFromTagName(string tagName, out string componentTypeName)
-        {
-            // Determine whether 'tagName' represents a Blazor component, and if so, return the
-            // name of the component's .NET type. The type name doesn't have to be fully-qualified,
-            // because it's up to the developer to put in whatever @using statements are required.
-
-            // TODO: Remove this temporary syntax and make the compiler smart enough to infer it
-            // directly. This could either work by having a configurable list of non-component tag names
-            // (which would default to all standard HTML elements, plus anything that contains a '-'
-            // character, since those are mandatory for custom HTML elements and prohibited for .NET
-            // type names), or better, could somehow know what .NET types are in scope at this point
-            // in the compilation and treat everything else as a non-component element.
-
-            const string temporaryPrefix = "c:";
-            if (tagName.StartsWith(temporaryPrefix, StringComparison.Ordinal))
-            {
-                componentTypeName = tagName.Substring(temporaryPrefix.Length);
-                return true;
-            }
-            else
-            {
-                componentTypeName = null;
-                return false;
-            }
         }
 
         private void WriteAttribute(CodeWriter codeWriter, string key, object value)

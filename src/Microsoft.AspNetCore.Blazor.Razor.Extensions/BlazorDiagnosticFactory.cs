@@ -11,19 +11,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal static class BlazorDiagnosticFactory
     {
-        public static readonly RazorDiagnosticDescriptor InvalidComponentAttributeSyntax = new RazorDiagnosticDescriptor(
-            "BL9980",
-            () => "Wrong syntax for '{0}' on '{1}': As a temporary " +
-                $"limitation, component attributes must be expressed with C# syntax. For example, " +
-                $"SomeParam=@(\"Some value\") is allowed, but SomeParam=\"Some value\" is not.",
-            RazorDiagnosticSeverity.Error);
-
-        public static RazorDiagnostic Create_InvalidComponentAttributeSynx(TextPosition position, SourceSpan? span, string attributeName, string componentName)
-        {
-            span = CalculateSourcePosition(span, position);
-            return RazorDiagnostic.Create(InvalidComponentAttributeSyntax, span ?? SourceSpan.Undefined, attributeName, componentName);
-        }
-
         public static readonly RazorDiagnosticDescriptor UnexpectedClosingTag = new RazorDiagnosticDescriptor(
             "BL9981",
             () => "Unexpected closing tag '{0}' with no matching start tag.",

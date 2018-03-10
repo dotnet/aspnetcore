@@ -8,44 +8,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
     public class DiagnosticRazorIntegrationTest : RazorIntegrationTestBase
     {
         [Fact]
-        public void TemporaryComponentSyntaxRejectsParametersExpressedAsPlainHtmlAttributes()
-        {
-            // This is a temporary syntax restriction. Currently you can write:
-            //    <c:MyComponent MyParam=@("My value") />
-            // ... but are *not* allowed to write:
-            //    <c:MyComponent MyParam="My value" />
-            // This is because until we get the improved taghelper-based tooling,
-            // we're using AngleSharp to parse the plain HTML attributes, and it
-            // suffers from limitations:
-            //  * Loses the casing of attribute names (MyParam becomes myparam)
-            //  * Doesn't recognize MyBool=true as an bool (becomes mybool="true"),
-            //    plus equivalent for other primitives like enum values
-            // So to avoid people getting runtime errors, we're currently imposing
-            // the compile-time restriction that component params have to be given
-            // as C# expressions, e.g., MyBool=@true and MyString=@("Hello")
-
-            // Arrange/Act
-            var result = CompileToCSharp(
-                $"Line 1\n" +
-                $"Some text <c:MyComponent MyParam=\"My value\" />");
-
-            // Assert
-            Assert.Collection(
-                result.Diagnostics,
-                item =>
-                {
-                    Assert.Equal("BL9980", item.Id);
-                    Assert.Equal(
-                        $"Wrong syntax for 'myparam' on 'c:MyComponent': As a temporary " +
-                        $"limitation, component attributes must be expressed with C# syntax. For " +
-                        $"example, SomeParam=@(\"Some value\") is allowed, but SomeParam=\"Some value\" " +
-                        $"is not.", item.GetMessage());
-                    Assert.Equal(1, item.Span.LineIndex);
-                    Assert.Equal(10, item.Span.CharacterIndex);
-                });
-        }
-
-        [Fact]
         public void RejectsEndTagWithNoStartTag()
         {
             // Arrange/Act
