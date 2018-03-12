@@ -722,7 +722,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var serviceContext = new TestServiceContext
             {
                 Log = new TestKestrelTrace(logger),
-                ThreadPool = new InlineLoggingThreadPool(new TestKestrelTrace(logger))
+                Scheduler = PipeScheduler.Inline
             };
             var transportContext = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
 

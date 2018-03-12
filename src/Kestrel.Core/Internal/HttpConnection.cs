@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
         (
             pool: MemoryPool,
-            readerScheduler: _context.ServiceContext.ThreadPool,
+            readerScheduler: _context.ServiceContext.Scheduler,
             writerScheduler: PipeScheduler.Inline,
             pauseWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             resumeWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,

@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Output.Abort(error);
 
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ServiceContext.ThreadPool.UnsafeRun(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
+                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
             }
         }
 
@@ -1333,7 +1333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => new Pipe(new PipeOptions
             (
                 pool: _context.MemoryPool,
-                readerScheduler: ServiceContext.ThreadPool,
+                readerScheduler: ServiceContext.Scheduler,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1,

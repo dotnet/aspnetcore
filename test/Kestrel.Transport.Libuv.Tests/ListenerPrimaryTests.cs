@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
                 ServerOptions = serviceContextPrimary.ServerOptions,
-                ThreadPool = serviceContextPrimary.ThreadPool,
+                Scheduler = serviceContextPrimary.Scheduler,
                 HttpParser = serviceContextPrimary.HttpParser,
             };
             var builderSecondary = new ConnectionBuilder();
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
                 ServerOptions = serviceContextPrimary.ServerOptions,
-                ThreadPool = serviceContextPrimary.ThreadPool,
+                Scheduler = serviceContextPrimary.Scheduler,
                 HttpParser = serviceContextPrimary.HttpParser,
             };
             var builderSecondary = new ConnectionBuilder();

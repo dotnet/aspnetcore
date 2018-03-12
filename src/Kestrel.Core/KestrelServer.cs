@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -79,15 +80,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             // TODO: This logic will eventually move into the IConnectionHandler<T> and off
             // the service context once we get to https://github.com/aspnet/KestrelHttpServer/issues/1662
-            KestrelThreadPool threadPool = null;
+            PipeScheduler scheduler = null;
             switch (serverOptions.ApplicationSchedulingMode)
             {
                 case SchedulingMode.Default:
                 case SchedulingMode.ThreadPool:
-                    threadPool = new LoggingThreadPool(trace);
+                    scheduler = PipeScheduler.ThreadPool;
                     break;
                 case SchedulingMode.Inline:
-                    threadPool = new InlineLoggingThreadPool(trace);
+                    scheduler = PipeScheduler.Inline;
                     break;
                 default:
                     throw new NotSupportedException(CoreStrings.FormatUnknownTransportMode(serverOptions.ApplicationSchedulingMode));
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 Log = trace,
                 HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
-                ThreadPool = threadPool,
+                Scheduler = scheduler,
                 SystemClock = systemClock,
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,

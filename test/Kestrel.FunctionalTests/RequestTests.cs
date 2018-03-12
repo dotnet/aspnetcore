@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -997,7 +998,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var testContext = new TestServiceContext();
             // FIN callbacks are scheduled so run inline to make this test more reliable
-            testContext.ThreadPool = new InlineLoggingThreadPool(testContext.Log);
+            testContext.Scheduler = PipeScheduler.Inline;
 
             using (var server = new TestServer(TestApp.EchoAppChunked, testContext, listenOptions))
             {

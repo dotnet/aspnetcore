@@ -1,16 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -128,6 +131,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
 
             await transport.UnbindAsync();
+
+            if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default).ConfigureAwait(false))
+            {
+                await serviceContext.ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false);
+            }
+
             await transport.StopAsync();
         }
     }
