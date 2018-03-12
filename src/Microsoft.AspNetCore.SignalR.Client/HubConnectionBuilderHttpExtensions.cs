@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Client.Http;
@@ -19,6 +21,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static readonly string HeadersKey = "Headers";
         public static readonly string AccessTokenFactoryKey = "AccessTokenFactory";
         public static readonly string WebSocketOptionsKey = "WebSocketOptions";
+        public static readonly string CookiesKey = "Cookies";
+        public static readonly string ProxyKey = "Proxy";
+        public static readonly string ClientCertificatesKey = "ClientCertificates";
+        public static readonly string CredentialsKey = "Credentials";
+        public static readonly string UseDefaultCredentialsKey = "UseDefaultCredentials";
 
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url)
         {
@@ -46,6 +53,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     Headers = headers != null ? new ReadOnlyDictionary<string, string>(headers) : null,
                     AccessTokenFactory = hubConnectionBuilder.GetAccessTokenFactory(),
                     WebSocketOptions = hubConnectionBuilder.GetWebSocketOptions(),
+                    Cookies = hubConnectionBuilder.GetCookies(),
+                    Proxy = hubConnectionBuilder.GetProxy(),
+                    UseDefaultCredentials = hubConnectionBuilder.GetUseDefaultCredentials(),
+                    ClientCertificates = hubConnectionBuilder.GetClientCertificates(),
+                    Credentials = hubConnectionBuilder.GetCredentials(),
                 };
 
                 return new HttpConnection(url,
@@ -62,9 +74,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        public static IHubConnectionBuilder WithMessageHandler(this IHubConnectionBuilder hubConnectionBuilder, HttpMessageHandler httpMessageHandler)
+        /// <summary>
+        /// Sets a delegate for wrapping or replacing the <see cref="HttpMessageHandler"/> that will make HTTP requests the server.
+        /// </summary>
+        /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder"/>.</param>
+        /// <param name="configurehttpMessageHandler">A delegate for wrapping or replacing the <see cref="HttpMessageHandler"/> that will make HTTP requests the server.</param>
+        /// <returns>The <see cref="IHubConnectionBuilder"/>.</returns>
+        public static IHubConnectionBuilder WithMessageHandler(this IHubConnectionBuilder hubConnectionBuilder, Func<HttpMessageHandler, HttpMessageHandler> configurehttpMessageHandler)
         {
-            hubConnectionBuilder.AddSetting(HttpMessageHandlerKey, httpMessageHandler);
+            hubConnectionBuilder.AddSetting(HttpMessageHandlerKey, configurehttpMessageHandler);
             return hubConnectionBuilder;
         }
 
@@ -83,6 +101,62 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             headers.Add(name, value);
+
+            return hubConnectionBuilder;
+        }
+
+        public static IHubConnectionBuilder WithUseDefaultCredentials(this IHubConnectionBuilder hubConnectionBuilder, bool useDefaultCredentials)
+        {
+            hubConnectionBuilder.AddSetting<bool?>(UseDefaultCredentialsKey, useDefaultCredentials);
+            return hubConnectionBuilder;
+        }
+
+        public static IHubConnectionBuilder WithCredentials(this IHubConnectionBuilder hubConnectionBuilder, ICredentials credentials)
+        {
+            hubConnectionBuilder.AddSetting(CredentialsKey, credentials);
+            return hubConnectionBuilder;
+        }
+
+        public static IHubConnectionBuilder WithProxy(this IHubConnectionBuilder hubConnectionBuilder, IWebProxy proxy)
+        {
+            hubConnectionBuilder.AddSetting(ProxyKey, proxy);
+            return hubConnectionBuilder;
+        }
+
+        public static IHubConnectionBuilder WithCookie(this IHubConnectionBuilder hubConnectionBuilder, Cookie cookie)
+        {
+            if (cookie == null)
+            {
+                throw new ArgumentNullException(nameof(cookie));
+            }
+
+            var cookies = hubConnectionBuilder.GetCookies();
+            if (cookies == null)
+            {
+                cookies = new CookieContainer();
+                hubConnectionBuilder.AddSetting(CookiesKey, cookies);
+            }
+
+            cookies.Add(cookie);
+
+            return hubConnectionBuilder;
+        }
+
+        public static IHubConnectionBuilder WithClientCertificate(this IHubConnectionBuilder hubConnectionBuilder, X509Certificate clientCertificate)
+        {
+            if (clientCertificate == null)
+            {
+                throw new ArgumentNullException(nameof(clientCertificate));
+            }
+
+            var clientCertificates = hubConnectionBuilder.GetClientCertificates();
+            if (clientCertificates == null)
+            {
+                clientCertificates = new X509CertificateCollection();
+                hubConnectionBuilder.AddSetting(ClientCertificatesKey, clientCertificates);
+            }
+
+            clientCertificates.Add(clientCertificate);
 
             return hubConnectionBuilder;
         }
@@ -121,9 +195,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return TransportType.All;
         }
 
-        public static HttpMessageHandler GetMessageHandler(this IHubConnectionBuilder hubConnectionBuilder)
+        /// <summary>
+        /// Gets a delegate for wrapping or replacing the <see cref="HttpMessageHandler"/> that will make HTTP requests the server.
+        /// </summary>
+        /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder"/>.</param>
+        /// <returns>A delegate for wrapping or replacing the <see cref="HttpMessageHandler"/> that will make HTTP requests the server.</returns>
+        public static Func<HttpMessageHandler, HttpMessageHandler> GetMessageHandler(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            hubConnectionBuilder.TryGetSetting<HttpMessageHandler>(HttpMessageHandlerKey, out var messageHandler);
+            hubConnectionBuilder.TryGetSetting<Func<HttpMessageHandler, HttpMessageHandler>>(HttpMessageHandlerKey, out var messageHandler);
             return messageHandler;
         }
 
@@ -132,6 +211,56 @@ namespace Microsoft.AspNetCore.SignalR.Client
             if (hubConnectionBuilder.TryGetSetting<IDictionary<string, string>>(HeadersKey, out var headers))
             {
                 return headers;
+            }
+
+            return null;
+        }
+
+        public static IWebProxy GetProxy(this IHubConnectionBuilder hubConnectionBuilder)
+        {
+            if (hubConnectionBuilder.TryGetSetting<IWebProxy>(ProxyKey, out var proxy))
+            {
+                return proxy;
+            }
+
+            return null;
+        }
+
+        public static bool? GetUseDefaultCredentials(this IHubConnectionBuilder hubConnectionBuilder)
+        {
+            if (hubConnectionBuilder.TryGetSetting<bool?>(UseDefaultCredentialsKey, out var useDefaultCredentials))
+            {
+                return useDefaultCredentials;
+            }
+
+            return null;
+        }
+
+        public static CookieContainer GetCookies(this IHubConnectionBuilder hubConnectionBuilder)
+        {
+            if (hubConnectionBuilder.TryGetSetting<CookieContainer>(CookiesKey, out var cookies))
+            {
+                return cookies;
+            }
+
+            return null;
+        }
+
+        public static ICredentials GetCredentials(this IHubConnectionBuilder hubConnectionBuilder)
+        {
+            if (hubConnectionBuilder.TryGetSetting<ICredentials>(CredentialsKey, out var credentials))
+            {
+                return credentials;
+            }
+
+            return null;
+        }
+
+        public static X509CertificateCollection GetClientCertificates(this IHubConnectionBuilder hubConnectionBuilder)
+        {
+            if (hubConnectionBuilder.TryGetSetting<X509CertificateCollection>(ClientCertificatesKey, out var clientCertificates))
+            {
+                return clientCertificates;
             }
 
             return null;

@@ -3,9 +3,14 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.WebSockets;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
@@ -33,6 +38,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
 
             _serverFixture = serverFixture;
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        public void HttpOptionsSetOntoWebSocketOptions()
+        {
+            ClientWebSocketOptions webSocketsOptions = null;
+
+            HttpOptions httpOptions = new HttpOptions();
+            httpOptions.Cookies.Add(new Cookie("Name", "Value", string.Empty, "fakeuri.org"));
+            var clientCertificate = new X509Certificate();
+            httpOptions.ClientCertificates.Add(clientCertificate);
+            httpOptions.UseDefaultCredentials = false;
+            httpOptions.Credentials = Mock.Of<ICredentials>();
+            httpOptions.Proxy = Mock.Of<IWebProxy>();
+            httpOptions.WebSocketOptions = options => webSocketsOptions = options;
+
+            var webSocketsTransport = new WebSocketsTransport(httpOptions: httpOptions, loggerFactory: null);
+            Assert.NotNull(webSocketsTransport);
+
+            Assert.NotNull(webSocketsOptions);
+            Assert.Equal(1, webSocketsOptions.Cookies.Count);
+            Assert.Single(webSocketsOptions.ClientCertificates);
+            Assert.Same(clientCertificate, webSocketsOptions.ClientCertificates[0]);
+            Assert.False(webSocketsOptions.UseDefaultCredentials);
+            Assert.Same(httpOptions.Proxy, webSocketsOptions.Proxy);
+            Assert.Same(httpOptions.Credentials, webSocketsOptions.Credentials);
         }
 
         [ConditionalFact]

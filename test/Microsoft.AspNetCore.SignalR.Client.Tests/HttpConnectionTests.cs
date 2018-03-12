@@ -2,14 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -139,6 +146,50 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.NotNull(transferModeFeature);
                     Assert.Equal(TransferMode.Binary, transferModeFeature.TransferMode);
                 });
+        }
+
+        [Fact]
+        public async Task HttpOptionsSetOntoHttpClientHandler()
+        {
+            var testHttpHandler = new TestHttpMessageHandler();
+
+            var negotiateUrlTcs = new TaskCompletionSource<string>();
+            testHttpHandler.OnNegotiate((request, cancellationToken) =>
+            {
+                negotiateUrlTcs.TrySetResult(request.RequestUri.ToString());
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                    ResponseUtils.CreateNegotiationContent());
+            });
+
+            HttpClientHandler httpClientHandler = null;
+
+            HttpOptions httpOptions = new HttpOptions();
+            httpOptions.HttpMessageHandler = inner =>
+            {
+                httpClientHandler = (HttpClientHandler)inner;
+                return testHttpHandler;
+            };
+            httpOptions.Cookies.Add(new Cookie("Name", "Value", string.Empty, "fakeuri.org"));
+            var clientCertificate = new X509Certificate();
+            httpOptions.ClientCertificates.Add(clientCertificate);
+            httpOptions.UseDefaultCredentials = false;
+            httpOptions.Credentials = Mock.Of<ICredentials>();
+            httpOptions.Proxy = Mock.Of<IWebProxy>();
+
+            await WithConnectionAsync(
+                CreateConnection(httpOptions, url: "http://fakeuri.org/"),
+                async (connection, closed) =>
+                {
+                    await connection.StartAsync().OrTimeout();
+                });
+
+            Assert.NotNull(httpClientHandler);
+            Assert.Equal(1, httpClientHandler.CookieContainer.Count);
+            Assert.Single(httpClientHandler.ClientCertificates);
+            Assert.Same(clientCertificate, httpClientHandler.ClientCertificates[0]);
+            Assert.False(httpClientHandler.UseDefaultCredentials);
+            Assert.Same(httpOptions.Proxy, httpClientHandler.Proxy);
+            Assert.Same(httpOptions.Credentials, httpClientHandler.Credentials);
         }
     }
 }

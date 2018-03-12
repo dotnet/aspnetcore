@@ -89,13 +89,56 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _requestedTransportType = transportType;
             if (_requestedTransportType != TransportType.WebSockets)
             {
-                _httpClient = httpOptions?.HttpMessageHandler == null ? new HttpClient() : new HttpClient(httpOptions.HttpMessageHandler);
-                _httpClient.Timeout = HttpClientTimeout;
+                _httpClient = CreateHttpClient();
             }
 
             _transportFactory = new DefaultTransportFactory(transportType, _loggerFactory, _httpClient, httpOptions);
             _logScope = new ConnectionLogScope();
             _scopeDisposable = _logger.BeginScope(_logScope);
+        }
+
+        private HttpClient CreateHttpClient()
+        {
+            HttpMessageHandler httpMessageHandler = null;
+            if (_httpOptions != null)
+            {
+                var httpClientHandler = new HttpClientHandler();
+                if (_httpOptions.Proxy != null)
+                {
+                    httpClientHandler.Proxy = _httpOptions.Proxy;
+                }
+                if (_httpOptions.Cookies != null)
+                {
+                    httpClientHandler.CookieContainer = _httpOptions.Cookies;
+                }
+                if (_httpOptions.ClientCertificates != null)
+                {
+                    httpClientHandler.ClientCertificates.AddRange(_httpOptions.ClientCertificates);
+                }
+                if (_httpOptions.UseDefaultCredentials != null)
+                {
+                    httpClientHandler.UseDefaultCredentials = _httpOptions.UseDefaultCredentials.Value;
+                }
+                if (_httpOptions.Credentials != null)
+                {
+                    httpClientHandler.Credentials = _httpOptions.Credentials;
+                }
+
+                httpMessageHandler = httpClientHandler;
+                if (_httpOptions.HttpMessageHandler != null)
+                {
+                    httpMessageHandler = _httpOptions.HttpMessageHandler(httpClientHandler);
+                    if (httpMessageHandler == null)
+                    {
+                        throw new InvalidOperationException("Configured HttpMessageHandler did not return a value.");
+                    }
+                }
+            }
+
+            var httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+            httpClient.Timeout = HttpClientTimeout;
+
+            return httpClient;
         }
 
         public HttpConnection(Uri url, ITransportFactory transportFactory, ILoggerFactory loggerFactory, HttpOptions httpOptions)
@@ -104,8 +147,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpOptions = httpOptions;
-            _httpClient = _httpOptions?.HttpMessageHandler == null ? new HttpClient() : new HttpClient(_httpOptions?.HttpMessageHandler);
-            _httpClient.Timeout = HttpClientTimeout;
+            _httpClient = CreateHttpClient();
             _transportFactory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
             _logScope = new ConnectionLogScope();
             _scopeDisposable = _logger.BeginScope(_logScope);

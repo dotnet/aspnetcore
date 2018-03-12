@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -38,22 +39,51 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627
             //_webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
 
-            if (httpOptions?.Headers != null)
+            if (httpOptions != null)
             {
-                foreach (var header in httpOptions.Headers)
+                if (httpOptions.Headers != null)
                 {
-                    _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                    foreach (var header in httpOptions.Headers)
+                    {
+                        _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                    }
                 }
+
+                if (httpOptions.Cookies != null)
+                {
+                    _webSocket.Options.Cookies = httpOptions.Cookies;
+                }
+
+                if (httpOptions.ClientCertificates != null)
+                {
+                    _webSocket.Options.ClientCertificates.AddRange(httpOptions.ClientCertificates);
+                }
+
+                if (httpOptions.Credentials != null)
+                {
+                    _webSocket.Options.Credentials = httpOptions.Credentials;
+                }
+
+                if (httpOptions.Proxy != null)
+                {
+                    _webSocket.Options.Proxy = httpOptions.Proxy;
+                }
+
+                if (httpOptions.UseDefaultCredentials != null)
+                {
+                    _webSocket.Options.UseDefaultCredentials = httpOptions.UseDefaultCredentials.Value;
+                }
+
+                if (httpOptions.AccessTokenFactory != null)
+                {
+                    _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {httpOptions.AccessTokenFactory()}");
+                }
+
+                httpOptions.WebSocketOptions?.Invoke(_webSocket.Options);
+
+                _closeTimeout = httpOptions.CloseTimeout;
             }
 
-            if (httpOptions?.AccessTokenFactory != null)
-            {
-                _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {httpOptions.AccessTokenFactory()}");
-            }
-
-            httpOptions?.WebSocketOptions?.Invoke(_webSocket.Options);
-
-            _closeTimeout = httpOptions?.CloseTimeout ?? TimeSpan.FromSeconds(5);
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         }
 

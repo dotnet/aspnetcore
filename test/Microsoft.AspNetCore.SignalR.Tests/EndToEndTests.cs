@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Returns<HttpRequestMessage, CancellationToken>(
                         (request, cancellationToken) => Task.FromException<HttpResponseMessage>(new InvalidOperationException("HTTP requests should not be sent.")));
 
-                var connection = new HttpConnection(new Uri(url), TransportType.WebSockets, loggerFactory, new HttpOptions { HttpMessageHandler = mockHttpHandler.Object });
+                var connection = new HttpConnection(new Uri(url), TransportType.WebSockets, loggerFactory, new HttpOptions { HttpMessageHandler = (httpMessageHandler) => mockHttpHandler.Object });
 
                 try
                 {
