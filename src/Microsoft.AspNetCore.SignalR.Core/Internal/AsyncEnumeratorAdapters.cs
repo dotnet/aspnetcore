@@ -13,26 +13,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     // True-internal because this is a weird and tricky class to use :)
     internal static class AsyncEnumeratorAdapters
     {
-        private static readonly MethodInfo _boxEnumeratorMethod = typeof(AsyncEnumeratorAdapters)
-            .GetRuntimeMethods()
-            .Single(m => m.Name.Equals(nameof(BoxEnumerator)) && m.IsGenericMethod);
-
-        private static readonly MethodInfo _fromObservableMethod = typeof(AsyncEnumeratorAdapters)
-            .GetRuntimeMethods()
-            .Single(m => m.Name.Equals(nameof(FromObservable)) && m.IsGenericMethod);
-
-        private static readonly MethodInfo _getAsyncEnumeratorMethod = typeof(AsyncEnumeratorAdapters)
-            .GetRuntimeMethods()
-            .Single(m => m.Name.Equals(nameof(GetAsyncEnumerator)) && m.IsGenericMethod);
-
-        public static IAsyncEnumerator<object> FromObservable(object observable, Type observableInterface, CancellationToken cancellationToken)
-        {
-            // TODO: Cache expressions by observable.GetType()?
-            return (IAsyncEnumerator<object>)_fromObservableMethod
-                .MakeGenericMethod(observableInterface.GetGenericArguments())
-                .Invoke(null, new[] { observable, cancellationToken });
-        }
-
         public static IAsyncEnumerator<object> FromObservable<T>(IObservable<T> observable, CancellationToken cancellationToken)
         {
             // TODO: Allow bounding and optimizations?
@@ -46,33 +26,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return GetAsyncEnumerator(channel.Reader, cancellationToken);
         }
 
-        public static IAsyncEnumerator<object> FromChannel(object readableChannelOfT, Type payloadType, CancellationToken cancellationToken)
-        {
-            var enumerator = _getAsyncEnumeratorMethod
-                .MakeGenericMethod(payloadType)
-                .Invoke(null, new object[] { readableChannelOfT, cancellationToken });
-
-            if (payloadType.IsValueType)
-            {
-                return (IAsyncEnumerator<object>)_boxEnumeratorMethod
-                    .MakeGenericMethod(payloadType)
-                    .Invoke(null, new[] { enumerator });
-            }
-            else
-            {
-                return (IAsyncEnumerator<object>)enumerator;
-            }
-        }
-
-        private static IAsyncEnumerator<object> BoxEnumerator<T>(IAsyncEnumerator<T> input) where T : struct
-        {
-            return new BoxingEnumerator<T>(input);
-        }
-
         private class ChannelObserver<T> : IObserver<T>
         {
-            private ChannelWriter<object> _output;
-            private CancellationToken _cancellationToken;
+            private readonly ChannelWriter<object> _output;
+            private readonly CancellationToken _cancellationToken;
 
             public ChannelObserver(ChannelWriter<object> output, CancellationToken cancellationToken)
             {
@@ -116,33 +73,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private class BoxingEnumerator<T> : IAsyncEnumerator<object> where T : struct
-        {
-            private IAsyncEnumerator<T> _input;
-
-            public BoxingEnumerator(IAsyncEnumerator<T> input)
-            {
-                _input = input;
-            }
-
-            public object Current => _input.Current;
-            public Task<bool> MoveNextAsync() => _input.MoveNextAsync();
-        }
-
-        public static IAsyncEnumerator<T> GetAsyncEnumerator<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default(CancellationToken))
+        public static IAsyncEnumerator<object> GetAsyncEnumerator<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default(CancellationToken))
         {
             return new AsyncEnumerator<T>(channel, cancellationToken);
         }
 
         /// <summary>Provides an async enumerator for the data in a channel.</summary>
-        internal class AsyncEnumerator<T> : IAsyncEnumerator<T>
+        internal class AsyncEnumerator<T> : IAsyncEnumerator<object>
         {
             /// <summary>The channel being enumerated.</summary>
             private readonly ChannelReader<T> _channel;
             /// <summary>Cancellation token used to cancel the enumeration.</summary>
             private readonly CancellationToken _cancellationToken;
             /// <summary>The current element of the enumeration.</summary>
-            private T _current;
+            private object _current;
 
             internal AsyncEnumerator(ChannelReader<T> channel, CancellationToken cancellationToken)
             {
@@ -150,7 +94,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 _cancellationToken = cancellationToken;
             }
 
-            public T Current => _current;
+            public object Current => _current;
 
             public Task<bool> MoveNextAsync()
             {

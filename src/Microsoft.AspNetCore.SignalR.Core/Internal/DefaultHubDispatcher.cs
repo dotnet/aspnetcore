@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     return;
                 }
 
-                if (!await ValidateInvocationMode(methodExecutor, isStreamedInvocation, hubMethodInvocationMessage, connection))
+                if (!await ValidateInvocationMode(descriptor, isStreamedInvocation, hubMethodInvocationMessage, connection))
                 {
                     return;
                 }
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamedInvocation)
                     {
-                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, methodExecutor, result, out var enumerator))
+                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator))
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
 
@@ -267,8 +267,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments)
         {
-            // ReadableChannel is awaitable but we don't want to await it.
-            if (methodExecutor.IsMethodAsync && !IsChannel(methodExecutor.MethodReturnType, out _))
+            if (methodExecutor.IsMethodAsync)
             {
                 if (methodExecutor.MethodReturnType == typeof(Task))
                 {
@@ -305,21 +304,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             hub.Groups = _hubContext.Groups;
         }
 
-        private static bool IsChannel(Type type, out Type payloadType)
-        {
-            var channelType = type.AllBaseTypes().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ChannelReader<>));
-            if (channelType == null)
-            {
-                payloadType = null;
-                return false;
-            }
-            else
-            {
-                payloadType = channelType.GetGenericArguments()[0];
-                return true;
-            }
-        }
-
         private async Task<bool> IsHubMethodAuthorized(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
         {
             // If there are no policies we don't need to run auth
@@ -340,11 +324,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return authorizationResult.Succeeded;
         }
 
-        private async Task<bool> ValidateInvocationMode(ObjectMethodExecutor methodExecutor, bool isStreamedInvocation,
+        private async Task<bool> ValidateInvocationMode(HubMethodDescriptor hubMethodDescriptor, bool isStreamedInvocation,
             HubMethodInvocationMessage hubMethodInvocationMessage, HubConnectionContext connection)
         {
-            var isStreamedResult = IsStreamed(methodExecutor);
-            if (isStreamedResult && !isStreamedInvocation)
+            if (hubMethodDescriptor.IsStreamable && !isStreamedInvocation)
             {
                 // Non-null/empty InvocationId? Blocking
                 if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -357,7 +340,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return false;
             }
 
-            if (!isStreamedResult && isStreamedInvocation)
+            if (!hubMethodDescriptor.IsStreamable && isStreamedInvocation)
             {
                 Log.NonStreamingMethodCalledWithStream(_logger, hubMethodInvocationMessage);
                 await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,
@@ -369,51 +352,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return true;
         }
 
-        private static bool IsStreamed(ObjectMethodExecutor methodExecutor)
-        {
-            var resultType = (methodExecutor.IsMethodAsync)
-                ? methodExecutor.AsyncResultType
-                : methodExecutor.MethodReturnType;
-
-            // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
-            var observableInterface = IsIObservable(resultType) ?
-                resultType :
-                resultType.GetInterfaces().FirstOrDefault(IsIObservable);
-
-            if (observableInterface != null)
-            {
-                return true;
-            }
-
-            if (IsChannel(resultType, out _))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, ObjectMethodExecutor methodExecutor, object result, out IAsyncEnumerator<object> enumerator)
+        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator)
         {
             if (result != null)
             {
-                var resultType = (methodExecutor.IsMethodAsync)
-                    ? methodExecutor.AsyncResultType
-                    : methodExecutor.MethodReturnType;
-
-                // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
-                var observableInterface = IsIObservable(resultType) ?
-                    resultType :
-                    resultType.GetInterfaces().FirstOrDefault(IsIObservable);
-                if (observableInterface != null)
+                if (hubMethodDescriptor.IsObservable)
                 {
-                    enumerator = AsyncEnumeratorAdapters.FromObservable(result, observableInterface, CreateCancellation());
+                    enumerator = hubMethodDescriptor.FromObservable(result, CreateCancellation());
                     return true;
                 }
 
-                if (IsChannel(resultType, out var payloadType))
+                if (hubMethodDescriptor.IsChannel)
                 {
-                    enumerator = AsyncEnumeratorAdapters.FromChannel(result, payloadType, CreateCancellation());
+                    enumerator = hubMethodDescriptor.FromChannel(result, CreateCancellation());
                     return true;
                 }
             }
@@ -427,11 +378,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
                 return CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAbortedToken, streamCts.Token).Token;
             }
-        }
-
-        private static bool IsIObservable(Type iface)
-        {
-            return iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IObservable<>);
         }
 
         private void DiscoverHubMethods()
@@ -457,23 +403,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 Log.HubMethodBound(_logger, hubName, methodName);
             }
-        }
-
-        // REVIEW: We can decide to move this out of here if we want pluggable hub discovery
-        private class HubMethodDescriptor
-        {
-            public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
-            {
-                MethodExecutor = methodExecutor;
-                ParameterTypes = methodExecutor.MethodParameters.Select(p => p.ParameterType).ToArray();
-                Policies = policies.ToArray();
-            }
-
-            public ObjectMethodExecutor MethodExecutor { get; }
-
-            public IReadOnlyList<Type> ParameterTypes { get; }
-
-            public IList<IAuthorizeData> Policies { get; }
         }
     }
 }
