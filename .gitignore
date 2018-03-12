@@ -11,7 +11,7 @@ PublishProfiles/
 *.cache
 *.docstates
 _ReSharper.*
-nuget.exe
+*.exe
 *.psess
 *.vsp
 *.pidb
