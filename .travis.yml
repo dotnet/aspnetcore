@@ -13,7 +13,7 @@ mono: none
 os:
 - linux
 - osx
-osx_image: xcode8.2
+osx_image: xcode9.3beta
 branches:
   only:
   - dev
