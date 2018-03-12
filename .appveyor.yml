@@ -5,6 +5,7 @@ install:
 branches:
   only:
   - dev
+  - feature/0.1.0
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 environment:
