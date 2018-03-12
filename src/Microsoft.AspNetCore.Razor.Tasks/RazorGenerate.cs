@@ -45,6 +45,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         protected override bool ValidateParameters()
         {
+            if (!Directory.Exists(ProjectRoot))
+            {
+                Log.LogError("The specified project root directory {0} doesn't exist.", ProjectRoot);
+                return false;
+            }
+
             if (Configuration.Length == 0)
             {
                 Log.LogError("The project {0} must provide a value for {1}.", ProjectRoot, nameof(Configuration));
