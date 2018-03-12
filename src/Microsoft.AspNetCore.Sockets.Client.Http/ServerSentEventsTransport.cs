@@ -82,7 +82,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             using (var stream = await response.Content.ReadAsStreamAsync())
             {
-                var pipelineReader = StreamPipeConnection.CreateReader(PipeOptions.Default, stream);
+                var pipeOptions = new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0);
+                var pipelineReader = StreamPipeConnection.CreateReader(pipeOptions, stream);
                 var readCancellationRegistration = cancellationToken.Register(
                     reader => ((PipeReader)reader).CancelPendingRead(), pipelineReader);
                 try
@@ -99,7 +100,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                         var consumed = input.Start;
                         var examined = input.End;
-
                         try
                         {
                             Log.ParsingSSE(_logger, input.Length);

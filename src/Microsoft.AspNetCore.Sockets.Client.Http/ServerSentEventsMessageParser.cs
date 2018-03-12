@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             {
                 if (!(buffer.PositionOf(ByteLF) is SequencePosition lineEnd))
                 {
-                    // For the case of  data: Foo\r\n\r\<Anytine except \n>
+                    // For the case of data: Foo\r\n\r\<Anything except \n>
                     if (_internalParserState == InternalParseState.ReadEndOfMessage)
                     {
                         if (ConvertBufferToSpan(buffer.Slice(start, buffer.End)).Length > 1)

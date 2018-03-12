@@ -3,24 +3,8 @@
 
 namespace System.IO.Pipelines
 {
-    internal class StreamPipeConnection : IDuplexPipe
+    internal class StreamPipeConnection
     {
-        public StreamPipeConnection(PipeOptions options, Stream stream)
-        {
-            Input = CreateReader(options, stream);
-            Output = CreateWriter(options, stream);
-        }
-
-        public PipeReader Input { get; }
-
-        public PipeWriter Output { get; }
-
-        public void Dispose()
-        {
-            Input.Complete();
-            Output.Complete();
-        }
-
         public static PipeReader CreateReader(PipeOptions options, Stream stream)
         {
             if (!stream.CanRead)
@@ -29,22 +13,9 @@ namespace System.IO.Pipelines
             }
 
             var pipe = new Pipe(options);
-            var ignore = stream.CopyToEndAsync(pipe.Writer);
+            _ = stream.CopyToEndAsync(pipe.Writer);
 
             return pipe.Reader;
-        }
-
-        public static PipeWriter CreateWriter(PipeOptions options, Stream stream)
-        {
-            if (!stream.CanWrite)
-            {
-                throw new NotSupportedException();
-            }
-
-            var pipe = new Pipe(options);
-            var ignore = pipe.Reader.CopyToEndAsync(stream);
-
-            return pipe.Writer;
         }
     }
 }
