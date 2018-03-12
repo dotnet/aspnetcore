@@ -100,7 +100,8 @@ cp "$DIR/global.json" "$(dirname "$dockerfile")"
 docker build "$(dirname "$dockerfile")" -f "$dockerfile" --tag $tagname
 
 docker run \
-    --rm -it \
+    --rm \
+    -t \
     -e CI \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
