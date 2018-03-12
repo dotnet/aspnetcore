@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
 using Newtonsoft.Json;
 using Xunit;
@@ -18,6 +18,51 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         {
             // Arrange
             var expectedDescriptor = CreateTagHelperDescriptor(
+                kind: TagHelperConventions.DefaultKind,
+                tagName: "tag-name",
+                typeName: "type name",
+                assemblyName: "assembly name",
+                attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                {
+                    builder => builder
+                        .Name("test-attribute")
+                        .PropertyName("TestAttribute")
+                        .TypeName("string"),
+                },
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
+                {
+                    builder => builder
+                        .RequireAttributeDescriptor(attribute => attribute
+                            .Name("required-attribute-one")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
+                        .RequireAttributeDescriptor(attribute => attribute
+                            .Name("required-attribute-two")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("something")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch))
+                        .RequireParentTag("parent-name")
+                        .RequireTagStructure(TagStructure.WithoutEndTag),
+                },
+                configureAction: builder =>
+                {
+                    builder.AllowChildTag("allowed-child-one");
+                    builder.AddMetadata("foo", "bar");
+                });
+
+            // Act
+            var serializedDescriptor = JsonConvert.SerializeObject(expectedDescriptor, TagHelperDescriptorJsonConverter.Instance, RazorDiagnosticJsonConverter.Instance);
+            var descriptor = JsonConvert.DeserializeObject<TagHelperDescriptor>(serializedDescriptor, TagHelperDescriptorJsonConverter.Instance, RazorDiagnosticJsonConverter.Instance);
+
+            // Assert
+            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void ViewComponentTagHelperDescriptor_RoundTripsProperly()
+        {
+            // Arrange
+            var expectedDescriptor = CreateTagHelperDescriptor(
+                kind: ViewComponentTagHelperConventions.Kind,
                 tagName: "tag-name",
                 typeName: "type name",
                 assemblyName: "assembly name",
@@ -61,6 +106,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         {
             // Arrange
             var expectedDescriptor = CreateTagHelperDescriptor(
+                kind: TagHelperConventions.DefaultKind,
                 tagName: "tag-name",
                 typeName: "type name",
                 assemblyName: "assembly name",
@@ -105,6 +151,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         {
             // Arrange
             var expectedDescriptor = CreateTagHelperDescriptor(
+                kind: TagHelperConventions.DefaultKind,
                 tagName: "tag-name",
                 typeName: "type name",
                 assemblyName: "assembly name",
@@ -146,6 +193,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         private static TagHelperDescriptor CreateTagHelperDescriptor(
+            string kind,
             string tagName,
             string typeName,
             string assemblyName,
@@ -153,7 +201,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             IEnumerable<Action<TagMatchingRuleDescriptorBuilder>> ruleBuilders = null,
             Action<TagHelperDescriptorBuilder> configureAction = null)
         {
-            var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(kind, typeName, assemblyName);
             builder.SetTypeName(typeName);
 
             if (attributes != null)
