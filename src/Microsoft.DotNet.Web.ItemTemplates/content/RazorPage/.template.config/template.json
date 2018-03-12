@@ -5,6 +5,10 @@
   "name": "Razor Page",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A Razor page with or without a page model",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.RazorPage",
   "precedence": "100",
   "identity": "Microsoft.AspNetCore.Mvc.RazorPage",

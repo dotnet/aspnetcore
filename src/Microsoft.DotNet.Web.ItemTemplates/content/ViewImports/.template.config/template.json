@@ -4,7 +4,11 @@
   "classifications": [ "Web", "ASP.NET" ],
   "name": "MVC ViewImports",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A MVC View Import Page",
+  "description": "An MVC View Import Page",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewImports",
   "precedence": "100",
   "identity": "Microsoft.AspNetCore.Mvc.ViewImports",
