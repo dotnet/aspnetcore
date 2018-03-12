@@ -14,9 +14,5 @@
     <serviceable Condition="'$(Configuration)' == 'Release'">true</serviceable>
     <tags>aspnetcore</tags>
   </metadata>
-  <files>
-    <file src="**\*.dll" target="" />
-    <file src="**\*.map" target="" />
-    <file src="**\*.pdb" target="" />
-  </files>
+  <files />
 </package>
