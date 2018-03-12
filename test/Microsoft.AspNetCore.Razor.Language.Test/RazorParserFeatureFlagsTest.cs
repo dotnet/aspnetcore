@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.True(context.AllowMinimizedBooleanTagHelperAttributes);
+            Assert.True(context.AllowHtmlCommentsInTagHelpers);
         }
 
         [Fact]
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.False(context.AllowMinimizedBooleanTagHelperAttributes);
+            Assert.False(context.AllowHtmlCommentsInTagHelpers);
         }
     }
 }

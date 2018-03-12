@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Code(Environment.NewLine).AsStatement().AutoCompleteWith(null),
                         new MarkupBlock(
                             Factory.Markup("    "),
-                            Factory.Markup("<!-- Hello, I'm a comment that shouldn't break razor --->").Accepts(AcceptedCharactersInternal.None),
+                            BlockFactory.HtmlCommentBlock(" Hello, I'm a comment that shouldn't break razor -"),
                             Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
                         Factory.EmptyCSharp().AsStatement(),
                         Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
@@ -333,7 +333,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockSupportsCommentAsBlock()
         {
-            SingleSpanBlockTest("<!-- foo -->", BlockKindInternal.Markup, SpanKindInternal.Markup, acceptedCharacters: AcceptedCharactersInternal.None);
+            ParseBlockTest("<!-- foo -->", new MarkupBlock(BlockFactory.HtmlCommentBlock(" foo ")));
+        }
+
+        [Fact]
+        public void ParseBlockSupportsCommentWithExtraDashAsBlock()
+        {
+            ParseBlockTest("<!-- foo --->", new MarkupBlock(BlockFactory.HtmlCommentBlock(" foo -")));
         }
 
         [Fact]
@@ -344,8 +350,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("bar"),
-                    Factory.Markup("<!-- zoop -->").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Markup("baz"),
+                    BlockFactory.HtmlCommentBlock(" zoop "),
+                    Factory.Markup("baz").Accepts(AcceptedCharactersInternal.None),
                     new MarkupTagBlock(
                         Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
         }
@@ -355,7 +361,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-
+                var blockFactory = new BlockFactory(factory);
                 return new TheoryData<string, MarkupBlock>
                 {
                     {
@@ -363,7 +369,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                            factory.Markup("<!--- Hello World --->").Accepts(AcceptedCharactersInternal.None),
+                            blockFactory.HtmlCommentBlock("- Hello World -"),
                             new MarkupTagBlock(
                                 factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
                     },
@@ -372,7 +378,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                            factory.Markup("<!---- Hello World ---->").Accepts(AcceptedCharactersInternal.None),
+                            blockFactory.HtmlCommentBlock("-- Hello World --"),
                             new MarkupTagBlock(
                                 factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
                     },
@@ -381,7 +387,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                            factory.Markup("<!----- Hello World ----->").Accepts(AcceptedCharactersInternal.None),
+                            blockFactory.HtmlCommentBlock("--- Hello World ---"),
                             new MarkupTagBlock(
                                 factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
                     },
@@ -390,7 +396,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                            factory.Markup("<!----- Hello < --- > World </div> ----->").Accepts(AcceptedCharactersInternal.None),
+                           blockFactory.HtmlCommentBlock("--- Hello < --- > World </div> ---"),
                             new MarkupTagBlock(
                                 factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
                     },
@@ -410,19 +416,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockProperlyBalancesCommentStartAndEndTags()
         {
-            SingleSpanBlockTest("<!--<foo></bar>-->", BlockKindInternal.Markup, SpanKindInternal.Markup, acceptedCharacters: AcceptedCharactersInternal.None);
+            ParseBlockTest("<!--<foo></bar>-->", new MarkupBlock(BlockFactory.HtmlCommentBlock("<foo></bar>")));
         }
 
         [Fact]
         public void ParseBlockTerminatesAtEOFWhenParsingComment()
         {
-            SingleSpanBlockTest("<!--<foo>", "<!--<foo>", BlockKindInternal.Markup, SpanKindInternal.Markup);
+            ParseBlockTest(
+                "<!--<foo>",
+                new MarkupBlock(
+                    Factory.Markup("<!--<foo>").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
         public void ParseBlockOnlyTerminatesCommentOnFullEndSequence()
         {
-            SingleSpanBlockTest("<!--<foo>--</bar>-->", BlockKindInternal.Markup, SpanKindInternal.Markup, acceptedCharacters: AcceptedCharactersInternal.None);
+            ParseBlockTest("<!--<foo>--</bar>-->", new MarkupBlock(BlockFactory.HtmlCommentBlock("<foo>--</bar>")));
         }
 
         [Fact]
@@ -432,8 +441,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<!--<foo></bar-->").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Markup("-->"),
+                    BlockFactory.HtmlCommentBlock("<foo></bar"),
+                    Factory.Markup("-->").Accepts(AcceptedCharactersInternal.None),
                     new MarkupTagBlock(
                         Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
         }

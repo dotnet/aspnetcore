@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
                     .Build(),
             };
-            
+
             // Act & Assert
             EvaluateData(
                 descriptors,
@@ -793,7 +793,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("strong")
                         .RequireAttributeDescriptor(attribute => attribute.Name("required")))
@@ -830,7 +830,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("br")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -1109,6 +1109,243 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void Rewrite_AllowsSimpleHtmlCommentsAsChildren()
+        {
+            // Arrange
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string literal = "asdf";
+            string commentOutput = "Hello World";
+            string expectedOutput = $"<p><b>{literal}</b><!--{commentOutput}--></p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    blockFactory.MarkupTagBlock("<b>"),
+                    factory.Markup(literal),
+                    blockFactory.MarkupTagBlock("</b>"),
+                    blockFactory.HtmlCommentBlock(commentOutput)));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                Array.Empty<RazorDiagnostic>());
+        }
+
+        [Fact]
+        public void Rewrite_DoesntAllowSimpleHtmlCommentsAsChildrenWhenFeatureFlagIsOff()
+        {
+            // Arrange
+            Func<string, string, string, int, int, RazorDiagnostic> nestedTagError =
+                    (childName, parentName, allowed, location, length) =>
+                    RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                        new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), childName, parentName, allowed);
+            Func<string, string, int, int, RazorDiagnostic> nestedContentError =
+                (parentName, allowed, location, length) =>
+                RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                    new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), parentName, allowed);
+
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string comment1 = "Hello";
+            string expectedOutput = $"<p><!--{comment1}--></p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    blockFactory.HtmlCommentBlock(comment1)));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                new[]
+                {
+                    nestedContentError("p", "b", 3, 4),
+                    nestedContentError("p", "b", 7, 5),
+                    nestedContentError("p", "b", 12, 3),
+                },
+                featureFlags: RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_0));
+        }
+
+        [Fact]
+        public void Rewrite_FailsForContentWithCommentsAsChildren()
+        {
+            // Arrange
+            Func<string, string, string, int, int, RazorDiagnostic> nestedTagError =
+                    (childName, parentName, allowed, location, length) =>
+                    RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                        new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), childName, parentName, allowed);
+            Func<string, string, int, int, RazorDiagnostic> nestedContentError =
+                (parentName, allowed, location, length) =>
+                RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                    new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), parentName, allowed);
+
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string comment1 = "Hello";
+            string literal = "asdf";
+            string comment2 = "World";
+            string expectedOutput = $"<p><!--{comment1}-->{literal}<!--{comment2}--></p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    blockFactory.HtmlCommentBlock(comment1),
+                    factory.Markup(literal),
+                    blockFactory.HtmlCommentBlock(comment2)));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                new[]
+                {
+                    nestedContentError("p", "b", 15, 4),
+                });
+        }
+
+        [Fact]
+        public void Rewrite_AllowsRazorCommentsAsChildren()
+        {
+            // Arrange
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string literal = "asdf";
+            string commentOutput = $"@*{literal}*@";
+            string expectedOutput = $"<p><b>{literal}</b>{commentOutput}</p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    blockFactory.MarkupTagBlock("<b>"),
+                    factory.Markup(literal),
+                    blockFactory.MarkupTagBlock("</b>"),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(literal, HtmlSymbolType.RazorComment)).Accepts(AcceptedCharactersInternal.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None))));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                Array.Empty<RazorDiagnostic>());
+        }
+
+        [Fact]
+        public void Rewrite_AllowsRazorMarkupInHtmlComment()
+        {
+            // Arrange
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string literal = "asdf";
+            string part1 = "Hello ";
+            string part2 = "World";
+            string commentStart = "<!--";
+            string commentEnd = "-->";
+            string expectedOutput = $"<p><b>{literal}</b>{commentStart}{part1}@{part2}{commentEnd}</p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    blockFactory.MarkupTagBlock("<b>"),
+                    factory.Markup(literal),
+                    blockFactory.MarkupTagBlock("</b>"),
+                    BlockFactory.HtmlCommentBlock(factory, f => new SyntaxTreeNode[] {
+                        f.Markup(part1).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                         new ExpressionBlock(
+                            f.CodeTransition(),
+                            f.Code(part2)
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)) })));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                Array.Empty<RazorDiagnostic>());
+        }
+
+        [Fact]
         public void Rewrite_UnderstandsNullTagNameWithAllowedChildrenForCatchAll()
         {
             // Arrange
@@ -1173,7 +1410,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -1646,7 +1883,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("p")
                         .RequireAttributeDescriptor(attribute => attribute.Name("class")))
@@ -3901,14 +4138,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-
+                var blockFactory = new BlockFactory(factory);
                 yield return new object[]
                 {
                     "<foo><!-- Hello World --></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
                             factory.Markup("<foo>")),
-                        factory.Markup("<!-- Hello World -->"),
+                        blockFactory.HtmlCommentBlock (" Hello World "),
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
@@ -3918,13 +4155,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupBlock(
                         new MarkupTagBlock(
                             factory.Markup("<foo>")),
-                        factory.Markup("<!-- "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                        factory.Markup(" -->"),
+                        BlockFactory.HtmlCommentBlock(factory, f=> new SyntaxTreeNode[]{
+                            f.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace),
+                            new ExpressionBlock(
+                                f.CodeTransition(),
+                                f.Code("foo")
+                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            factory.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace) }),
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
@@ -4000,8 +4238,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("foo")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                         factory.Markup(" ]]>"),
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
