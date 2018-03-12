@@ -435,6 +435,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.NotSame(text1, text2);
         }
 
+        [Fact]
+        public void GetExpressionText_WithinALoop_ReturnsExpectedText()
+        {
+            // Arrange 0
+            var collection = new List<TestModel>();
+
+            for (var i = 0; i < 2; i++)
+            {
+                // Arrange i
+                var expectedText = $"collection[{i}].SelectedCategory.CategoryId";
+
+                // Act i
+                var result = ExpressionHelper.GetExpressionText(
+                    (Expression<Func<List<TestModel>, int>>)(m => collection[i].SelectedCategory.CategoryId),
+                    _expressionTextCache);
+
+                // Assert i
+                Assert.Equal(expectedText, result);
+            }
+        }
+
         private class TestModel
         {
             public string Name { get; set; }
