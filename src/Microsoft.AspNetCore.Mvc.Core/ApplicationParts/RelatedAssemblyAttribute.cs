@@ -13,7 +13,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));
+                // Temporary workaround until we have a new build of RazorSdk.
+                // TODO: Uncomment the below line.
+                // throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));
             }
         }
 
