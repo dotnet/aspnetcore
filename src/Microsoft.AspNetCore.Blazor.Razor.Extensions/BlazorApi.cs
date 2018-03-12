@@ -59,6 +59,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public static readonly string ChildContent = nameof(ChildContent);
         }
 
+        public static class RouteAttribute
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Components.RouteAttribute";
+        }
+
         public static class BindMethods
         {
             public static readonly string GetValue = "Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue";

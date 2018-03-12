@@ -113,5 +113,41 @@ namespace Microsoft.AspNetCore.Blazor.Razor {
                 return ResourceManager.GetString("LayoutDirective_TypeToken_Name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mark the page as a routable component..
+        /// </summary>
+        internal static string PageDirective_Description {
+            get {
+                return ResourceManager.GetString("PageDirective_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An optional route template for the component..
+        /// </summary>
+        internal static string PageDirective_RouteToken_Description {
+            get {
+                return ResourceManager.GetString("PageDirective_RouteToken_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to route template.
+        /// </summary>
+        internal static string PageDirective_RouteToken_Name {
+            get {
+                return ResourceManager.GetString("PageDirective_RouteToken_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;@{0}&apos; directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.
+        /// </summary>
+        internal static string PageDirectiveCannotBeImported {
+            get {
+                return ResourceManager.GetString("PageDirectiveCannotBeImported", resourceCulture);
+            }
+        }
     }
 }
