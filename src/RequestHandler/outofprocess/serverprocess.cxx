@@ -510,7 +510,7 @@ SERVER_PROCESS::PostStartCheck(
     dwTickCount = GetTickCount();
     do
     {
-        DWORD processStatus;
+        DWORD processStatus = 0;
         if (GetExitCodeProcess(m_hProcessHandle, &processStatus))
         {
             // make sure the process is still running
@@ -747,6 +747,7 @@ SERVER_PROCESS::StartProcess(
 
     while (dwRetryCount > 0)
     {
+        m_dwPort = 0;
         dwRetryCount--;
         //
         // generate process command line.
@@ -893,6 +894,7 @@ SERVER_PROCESS::StartProcess(
                 m_struCommandLine.QueryStr(),
                 pStrStage,
                 hr,
+                m_dwPort,
                 dwRetryCount)))
         {
             UTILITY::LogEvent(g_hEventLog,

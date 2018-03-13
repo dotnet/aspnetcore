@@ -12,7 +12,7 @@
 #define ASPNETCORE_EVENT_MSG_BUFFER_SIZE 256
 #define ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG           L"Application '%s' started process '%d' successfully and is listening on port '%d'."
 #define ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG       L"Maximum rapid fail count per minute of '%d' exceeded."
-#define ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG             L"Application '%s' with physical root '%s' failed to start process with commandline '%s' at stage '%s', ErrorCode = '0x%x', retryCounter '%d'."
+#define ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG             L"Application '%s' with physical root '%s' failed to start process with commandline '%s' at stage '%s', ErrorCode = '0x%x', assigned port %d, retryCounter '%d'."
 #define ASPNETCORE_EVENT_PROCESS_START_FAILURE_MSG           L"Application '%s' with physical root '%s' failed to start process with commandline '%s' with multiple retries. The last try of listening port is '%d'. See pervious warnings for details."
 #define ASPNETCORE_EVENT_PROCESS_START_STATUS_ERROR_MSG      L"Application '%s' with physical root '%s' failed to start process with commandline '%s' , ErrorCode = '0x%x', processStatus '%d'."
 #define ASPNETCORE_EVENT_PROCESS_START_PORTSETUP_ERROR_MSG   L"Application '%s' with physical root '%s' failed to choose listen port '%d' given port rang '%d - %d', EorrorCode = '0x%x'. If environment variable 'ASPNETCORE_PORT' was set, try removing it such that a random port is selected instead."
