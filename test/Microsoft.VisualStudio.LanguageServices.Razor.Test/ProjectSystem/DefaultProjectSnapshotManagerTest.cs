@@ -73,6 +73,28 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private Workspace Workspace { get; }
 
         [ForegroundFact]
+        public void HostProjectBuildComplete_FindsChangedWorkspaceProject_AndStartsBackgroundWorker()
+        {
+            // Arrange
+            Assert.True(Workspace.TryApplyChanges(WorkspaceProject.Solution));
+            ProjectManager.HostProjectAdded(HostProject);
+            var project = WorkspaceProject.WithAssemblyName("Test1"); // Simulate a project change
+            ProjectManager.WorkspaceProjectAdded(project);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.HostProjectBuildComplete(HostProject);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.True(snapshot.IsDirty);
+            Assert.True(snapshot.IsInitialized);
+
+            Assert.False(ProjectManager.ListenersNotified);
+            Assert.True(ProjectManager.WorkerStarted);
+        }
+
+        [ForegroundFact]
         public void HostProjectAdded_WithoutWorkspaceProject_NotifiesListeners()
         {
             // Arrange
@@ -106,7 +128,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.True(ProjectManager.ListenersNotified);
             Assert.True(ProjectManager.WorkerStarted);
         }
-        
+
         [ForegroundFact]
         public void HostProjectChanged_WithoutWorkspaceProject_NotifiesListeners_AndDoesNotStartBackgroundWorker()
         {
@@ -396,7 +418,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Generate the update
             var snapshot = ProjectManager.GetSnapshot(HostProject);
             var updateContext = snapshot.CreateUpdateContext();
-            
+
             ProjectManager.HostProjectRemoved(HostProject);
             ProjectManager.Reset();
 
@@ -634,7 +656,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
             ProjectManager.Reset();
-            
+
             // Generate the update
             var snapshot = ProjectManager.GetSnapshot(HostProject);
             var updateContext = snapshot.CreateUpdateContext();
@@ -773,7 +795,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
-            public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace) 
+            public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
                 : base(dispatcher, Mock.Of<ErrorReporter>(), Mock.Of<ProjectSnapshotWorker>(), triggers, workspace)
             {
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -218,9 +219,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             if (_projects.TryGetValue(hostProject.FilePath, out var original))
             {
+                var workspaceProject = GetWorkspaceProject(hostProject.FilePath);
+                if (workspaceProject == null)
+                {
+                    // Host project was built prior to a workspace project being associated. We have nothing to do without
+                    // a workspace project so we short circuit.
+                    return;
+                }
+
                 // Doing an update to the project should keep computed values, but mark the project as dirty if the
                 // underlying project is newer.
-                var snapshot = original.WithHostProject(hostProject);
+                var snapshot = original.WithWorkspaceProject(workspaceProject);
+
                 _projects[hostProject.FilePath] = snapshot;
 
                 // Notify the background worker so it can trigger tag helper discovery.
