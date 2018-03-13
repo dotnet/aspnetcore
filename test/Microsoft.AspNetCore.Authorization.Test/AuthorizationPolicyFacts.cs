@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authroization.Test
+namespace Microsoft.AspNetCore.Authorization.Test
 {
     public class AuthorizationPolicyFacts
     {
