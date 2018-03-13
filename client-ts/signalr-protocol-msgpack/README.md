@@ -16,7 +16,7 @@ To use the client in a browser, copy `*.js` files from the `dist/browser` folder
 
 ```JavaScript
 let connection = new signalR.HubConnection('/chat', {
-    protocol: new signalR.protocol.msgpack.MessagePackHubProtocol()
+    protocol: new signalR.protocols.msgpack.MessagePackHubProtocol()
 });
 
 connection.on('send', data => {
