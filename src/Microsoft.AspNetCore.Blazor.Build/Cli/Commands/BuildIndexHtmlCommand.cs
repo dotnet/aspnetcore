@@ -18,6 +18,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                 "The path from the _bin folder to a given referenced dll file (Typically just the dll name)",
                 CommandOptionType.MultipleValue);
 
+            var jsReferences = command.Option("--js",
+                "Adds a <script> tag with the specified 'src' value",
+                CommandOptionType.MultipleValue);
+
+            var cssReferences = command.Option("--css",
+                "Adds a <link rel=stylesheet> tag with the specified 'href' value",
+                CommandOptionType.MultipleValue);
+
             var outputPath = command.Option("--output",
                 "Path to the output file",
                 CommandOptionType.SingleValue);
@@ -36,7 +44,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
 
                 try
                 {
-                    IndexHtmlWriter.UpdateIndex(clientPage.Value(), mainAssemblyPath.Value, references.Values.ToArray(), outputPath.Value());
+                    IndexHtmlWriter.UpdateIndex(
+                        clientPage.Value(),
+                        mainAssemblyPath.Value,
+                        references.Values.ToArray(),
+                        jsReferences.Values.ToArray(),
+                        cssReferences.Values.ToArray(),
+                        outputPath.Value());
                     return 0;
                 }
                 catch (Exception ex)

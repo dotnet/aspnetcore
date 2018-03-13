@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using AngleSharp.Parser.Html;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
@@ -25,15 +26,16 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 $@"{htmlTemplatePrefix}
                     <script type='blazor-boot' custom1 custom2=""value"">some text that should be removed</script>
                 {htmlTemplateSuffix}";
-            var dependencies = new string[]
-            {
-                "System.Abc.dll",
-                "MyApp.ClassLib.dll",
-            };
+            var assemblyReferences = new string[] { "System.Abc.dll", "MyApp.ClassLib.dll", };
+            var jsReferences = new string[] { "some/file.js", "another.js" };
+            var cssReferences = new string[] { "my/styles.css" };
             var instance = IndexHtmlWriter.GetIndexHtmlContents(
                 htmlTemplate,
                 "MyApp.Entrypoint",
-                "MyNamespace.MyType::MyMethod", dependencies);
+                "MyNamespace.MyType::MyMethod",
+                assemblyReferences,
+                jsReferences,
+                cssReferences);
 
             // Act & Assert: Start and end is not modified (including formatting)
             Assert.StartsWith(htmlTemplatePrefix, instance);
@@ -42,7 +44,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert: Boot tag is correct
             var scriptTagText = instance.Substring(htmlTemplatePrefix.Length, instance.Length - htmlTemplatePrefix.Length - htmlTemplateSuffix.Length);
             var parsedHtml = new HtmlParser().Parse("<html><body>" + scriptTagText + "</body></html>");
-            var scriptElem = parsedHtml.Body.QuerySelector("script");
+            var scriptElems = parsedHtml.Body.QuerySelectorAll("script");
+            var linkElems = parsedHtml.Body.QuerySelectorAll("link");
+            var scriptElem = scriptElems[0];
             Assert.False(scriptElem.HasChildNodes);
             Assert.Equal("_framework/blazor.js", scriptElem.GetAttribute("src"));
             Assert.Equal("MyApp.Entrypoint.dll", scriptElem.GetAttribute("main"));
@@ -51,6 +55,16 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             Assert.False(scriptElem.HasAttribute("type"));
             Assert.Equal(string.Empty, scriptElem.Attributes["custom1"].Value);
             Assert.Equal("value", scriptElem.Attributes["custom2"].Value);
+
+            // Assert: Also contains script tags referencing JS files
+            Assert.Equal(
+                scriptElems.Skip(1).Select(tag => tag.GetAttribute("src")),
+                jsReferences);
+
+            // Assert: Also contains link tags referencing CSS files
+            Assert.Equal(
+                linkElems.Select(tag => tag.GetAttribute("href")),
+                cssReferences);
         }
 
         [Fact]
@@ -58,14 +72,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var htmlTemplate = "<!DOCTYPE html><html><body><h1 style='color:red'>Hello</h1>Some text<script type='irrelevant'>blah</script></body></html>";
-            var dependencies = new string[]
-            {
-                "System.Abc.dll",
-                "MyApp.ClassLib.dll",
-            };
+            var assemblyReferences = new string[] { "System.Abc.dll", "MyApp.ClassLib.dll" };
+            var jsReferences = new string[] { "some/file.js", "another.js" };
+            var cssReferences = new string[] { "my/styles.css" };
 
             var content = IndexHtmlWriter.GetIndexHtmlContents(
-                htmlTemplate, "MyApp.Entrypoint", "MyNamespace.MyType::MyMethod", dependencies);
+                htmlTemplate, "MyApp.Entrypoint", "MyNamespace.MyType::MyMethod", assemblyReferences, jsReferences, cssReferences);
 
             // Assert
             Assert.Equal(htmlTemplate, content);

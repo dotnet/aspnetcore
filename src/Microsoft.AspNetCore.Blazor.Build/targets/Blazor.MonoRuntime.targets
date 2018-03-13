@@ -168,6 +168,14 @@
       </BlazorItemOutput>
     </ItemGroup>
 
+    <ItemGroup Label="Static content supplied by NuGet packages">
+      <_BlazorPackageContentOutput Include="@(BlazorPackageContentFile)" Condition="%(SourcePackage) != ''">
+        <TargetOutputPath>$(ProjectDir)$(OutputPath)$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </_BlazorPackageContentOutput>
+      <BlazorItemOutput Include="@(_BlazorPackageContentOutput)" />
+    </ItemGroup>
+
     <PropertyGroup Label="Intermediate output paths">
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor -->
@@ -522,6 +530,8 @@
     <ItemGroup>
       <BlazorIndexHtmlInput Include="$(BlazorIndexHtml)" />
       <BlazorIndexHtmlInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FullPath)')" />
+      <BlazorIndexHtmlInput Include="@(BlazorPackageJsRef->'%(FullPath)')" />
+      <BlazorIndexHtmlInput Include="@(BlazorPackageCssRef->'%(FullPath)')" />
     </ItemGroup>
 
     <WriteLinesToFile
@@ -543,9 +553,11 @@
     Outputs="$(BlazorIndexHtmlOutputPath)">
     <ItemGroup>
       <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->WithMetadataValue('PrimaryOutput','')->'%(FileName)%(Extension)')" />
+      <_JsReferences Include="@(BlazorPackageJsRef->'_content/%(SourcePackage)/%(RecursiveDir)%(FileName)%(Extension)')" />
+      <_CssReferences Include="@(BlazorPackageCssRef->'_content/%(SourcePackage)/%(RecursiveDir)%(FileName)%(Extension)')" />
     </ItemGroup>
 
-    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference %(Identity)', ' ') --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
+    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference %(Identity)', ' ') @(_JsReferences->'--js %(Identity)', ' ') @(_CssReferences->'--css %(Identity)', ' ') --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
 
     <ItemGroup Condition="Exists('$(BlazorIndexHtmlOutputPath)')">
       <_BlazorIndex Include="$(BlazorIndexHtmlOutputPath)" />

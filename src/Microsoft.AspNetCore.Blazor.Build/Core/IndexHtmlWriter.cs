@@ -15,7 +15,13 @@ namespace Microsoft.AspNetCore.Blazor.Build
 {
     internal class IndexHtmlWriter
     {
-        public static void UpdateIndex(string path, string assemblyPath, IEnumerable<string> references, string outputPath)
+        public static void UpdateIndex(
+            string path,
+            string assemblyPath,
+            IEnumerable<string> assemblyReferences,
+            IEnumerable<string> jsReferences,
+            IEnumerable<string> cssReferences,
+            string outputPath)
         {
             var template = GetTemplate(path);
             if (template == null)
@@ -24,7 +30,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             }
             var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
             var entryPoint = GetAssemblyEntryPoint(assemblyPath);
-            var updatedContent = GetIndexHtmlContents(template, assemblyName, entryPoint, references);
+            var updatedContent = GetIndexHtmlContents(template, assemblyName, entryPoint, assemblyReferences, jsReferences, cssReferences);
             var normalizedOutputPath = Normalize(outputPath);
             Console.WriteLine("Writing index to: " + normalizedOutputPath);
             File.WriteAllText(normalizedOutputPath, updatedContent);
@@ -93,7 +99,9 @@ namespace Microsoft.AspNetCore.Blazor.Build
             string htmlTemplate,
             string assemblyName,
             string assemblyEntryPoint,
-            IEnumerable<string> binFiles)
+            IEnumerable<string> assemblyReferences,
+            IEnumerable<string> jsReferences,
+            IEnumerable<string> cssReferences)
         {
             var resultBuilder = new StringBuilder();
 
@@ -132,8 +140,18 @@ namespace Microsoft.AspNetCore.Blazor.Build
                                     resultBuilder,
                                     assemblyName,
                                     assemblyEntryPoint,
-                                    binFiles,
+                                    assemblyReferences,
                                     tag.Attributes);
+
+                                // Emit tags to reference any specified JS/CSS files
+                                AppendReferenceTags(
+                                    resultBuilder,
+                                    cssReferences,
+                                    "<link rel=\"stylesheet\" href=\"{0}\" />");
+                                AppendReferenceTags(
+                                    resultBuilder,
+                                    jsReferences,
+                                    "<script src=\"{0}\" defer></script>");
 
                                 // Set a flag so we know not to emit anything else until the special
                                 // tag is closed
@@ -157,6 +175,15 @@ namespace Microsoft.AspNetCore.Blazor.Build
                         resultBuilder.Append(htmlTemplate, currentRangeStartPos, htmlTemplate.Length - currentRangeStartPos);
                         return resultBuilder.ToString();
                 }
+            }
+        }
+
+        private static void AppendReferenceTags(StringBuilder resultBuilder, IEnumerable<string> urls, string format)
+        {
+            foreach (var url in urls)
+            {
+                resultBuilder.AppendLine();
+                resultBuilder.AppendFormat(format, url);
             }
         }
 

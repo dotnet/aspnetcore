@@ -11,6 +11,7 @@
 
   <PropertyGroup Label="Blazor build outputs">
     <AdditionalMonoLinkerOptions>-c link -u link -t --verbose </AdditionalMonoLinkerOptions>
+    <BaseBlazorPackageContentOutputPath>dist/_content/</BaseBlazorPackageContentOutputPath>
     <BaseBlazorRuntimeOutputPath>dist/_framework/</BaseBlazorRuntimeOutputPath>
     <BaseBlazorRuntimeBinOutputPath>$(BaseBlazorRuntimeOutputPath)_bin/</BaseBlazorRuntimeBinOutputPath>
     <BaseBlazorRuntimeAsmjsOutputPath>$(BaseBlazorRuntimeOutputPath)asmjs/</BaseBlazorRuntimeAsmjsOutputPath>
