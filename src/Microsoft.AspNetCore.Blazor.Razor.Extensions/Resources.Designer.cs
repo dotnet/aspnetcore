@@ -61,6 +61,51 @@ namespace Microsoft.AspNetCore.Blazor.Razor {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Binds the provided expression to the &apos;{0}&apos; property and a change event delegate to the &apos;{1}&apos; property of the component..
+        /// </summary>
+        internal static string BindTagHelper_Component_Documentation {
+            get {
+                return ResourceManager.GetString("BindTagHelper_Component_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Binds the provided expression to the &apos;{0}&apos; attribute and a change event delegate to the &apos;{1}&apos; attribute..
+        /// </summary>
+        internal static string BindTagHelper_Element_Documentation {
+            get {
+                return ResourceManager.GetString("BindTagHelper_Element_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies a format to convert the value specified by the &apos;{0}&apos; attribute. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;..
+        /// </summary>
+        internal static string BindTagHelper_Element_Format_Documentation {
+            get {
+                return ResourceManager.GetString("BindTagHelper_Element_Format_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Binds the provided expression to an attribute and a change event, based on the naming of the bind attribute. For example: &lt;code&gt;bind-value-onchange=&quot;...&quot;&lt;/code&gt; will assign the current value of the expression to the &apos;value&apos; attribute, and assign a delegate that attempts to set the value to the &apos;onchange&apos; attribute..
+        /// </summary>
+        internal static string BindTagHelper_Fallback_Documentation {
+            get {
+                return ResourceManager.GetString("BindTagHelper_Fallback_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies a format to convert the value specified by the corresponding bind attribute. For example: &lt;code&gt;format-value=&quot;...&quot;&lt;/code&gt; will apply a format string to the value specified in &lt;code&gt;bind-value-...&lt;/code&gt;. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;..
+        /// </summary>
+        internal static string BindTagHelper_Fallback_Format_Documentation {
+            get {
+                return ResourceManager.GetString("BindTagHelper_Fallback_Format_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Declares an interface implementation for the current document..
         /// </summary>
         internal static string ImplementsDirective_Description {

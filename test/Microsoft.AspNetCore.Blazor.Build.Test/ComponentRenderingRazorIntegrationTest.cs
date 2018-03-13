@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Helpers;
@@ -293,13 +294,11 @@ namespace Test
             AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
 using Microsoft.AspNetCore.Blazor;
 using Microsoft.AspNetCore.Blazor.Components;
-
 namespace Test
 {
     public class MyComponent : BlazorComponent
     {
         public string MyAttr { get; set; }
-
         public RenderFragment ChildContent { get; set; }
     }
 }

@@ -1,37 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.Extensions.DependencyModel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Razor.Extensions
 {
-    public class ComponentTagHelperDescriptorProviderTest
+    public class ComponentTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
-        static ComponentTagHelperDescriptorProviderTest()
-        {
-            var dependencyContext = DependencyContext.Load(typeof(ComponentTagHelperDescriptorProviderTest).Assembly);
-
-            var metadataReferences = dependencyContext.CompileLibraries
-                .SelectMany(l => l.ResolveReferencePaths())
-                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
-                .ToArray();
-
-            BaseCompilation = CSharpCompilation.Create(
-                "TestAssembly",
-                Array.Empty<SyntaxTree>(),
-                metadataReferences,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        }
-
-        private static Compilation BaseCompilation { get; }
-
         [Fact]
         public void Excecute_FindsIComponentType_CreatesDescriptor()
         {
@@ -77,8 +56,7 @@ namespace Test
             // here and then ignoring them.
             Assert.Empty(component.Diagnostics);
             Assert.False(component.HasErrors);
-            Assert.Equal(ComponentTagHelperDescriptorProvider.ComponentTagHelperKind, component.Kind);
-            Assert.Equal("Blazor.Component-0.1", component.Kind);
+            Assert.Equal(BlazorMetadata.Component.TagHelperKind, component.Kind);
             Assert.False(component.IsDefaultKind());
             Assert.False(component.KindUsesDefaultTagHelperRuntime());
 
@@ -327,16 +305,6 @@ namespace Test
             Assert.False(attribute.IsEnum);
             Assert.False(attribute.IsStringProperty);
             Assert.True(attribute.IsDelegateProperty());
-        }
-
-        // For simplicity in testing, exclude the built-in components. We'll add more and we
-        // don't want to update the tests when that happens.
-        private TagHelperDescriptor[] ExcludeBuiltInComponents(TagHelperDescriptorProviderContext context)
-        {
-            return context.Results
-                .Where(c => c.AssemblyName == "TestAssembly")
-                .OrderBy(c => c.Name)
-                .ToArray();
         }
     }
 }

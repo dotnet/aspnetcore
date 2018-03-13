@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -86,6 +87,22 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public static RazorDiagnostic CreatePageDirective_MustSpecifyRoute(SourceSpan? source)
         {
             var diagnostic = RazorDiagnostic.Create(PageDirective_MustSpecifyRoute, source ?? SourceSpan.Undefined);
+            return diagnostic;
+        }
+
+        public static readonly RazorDiagnosticDescriptor BindAttribute_Duplicates =
+            new RazorDiagnosticDescriptor(
+            "BL9989",
+            () => "The attribute '{0}' was matched by multiple bind attributes. Duplicates:{1}",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreateBindAttribute_Duplicates(SourceSpan? source, string attribute, ComponentAttributeExtensionNode[] attributes)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                BindAttribute_Duplicates,
+                source ?? SourceSpan.Undefined,
+                attribute,
+                Environment.NewLine + string.Join(Environment.NewLine, attributes.Select(p => p.TagHelper.DisplayName)));
             return diagnostic;
         }
     }

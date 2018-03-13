@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            var key = ComponentTagHelperDescriptorProvider.DelegateSignatureMetadata;
+            var key = BlazorMetadata.Component.DelegateSignatureKey;
             return 
                 attribute.Metadata.TryGetValue(key, out var value) &&
                 string.Equals(value, bool.TrueString);

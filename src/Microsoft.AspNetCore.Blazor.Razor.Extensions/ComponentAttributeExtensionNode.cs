@@ -61,6 +61,31 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
+        public ComponentAttributeExtensionNode(ComponentAttributeExtensionNode attributeNode)
+        {
+            if (attributeNode == null)
+            {
+                throw new ArgumentNullException(nameof(attributeNode));
+            }
+
+            AttributeName = attributeNode.AttributeName;
+            AttributeStructure = attributeNode.AttributeStructure;
+            BoundAttribute = attributeNode.BoundAttribute;
+            PropertyName = attributeNode.BoundAttribute.GetPropertyName();
+            Source = attributeNode.Source;
+            TagHelper = attributeNode.TagHelper;
+
+            for (var i = 0; i < attributeNode.Children.Count; i++)
+            {
+                Children.Add(attributeNode.Children[i]);
+            }
+
+            for (var i = 0; i < attributeNode.Diagnostics.Count; i++)
+            {
+                Diagnostics.Add(attributeNode.Diagnostics[i]);
+            }
+        }
+
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public string AttributeName { get; set; }

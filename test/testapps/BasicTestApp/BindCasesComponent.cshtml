@@ -1,30 +1,30 @@
 ﻿<h2>Textbox</h2>
 <p>
     Initially blank:
-    <input id="textbox-initially-blank" @bind(textboxInitiallyBlankValue) />
+    <input id="textbox-initially-blank" bind="textboxInitiallyBlankValue" />
     <span id="textbox-initially-blank-value">@textboxInitiallyBlankValue</span>
 </p>
 <p>
     Initially populated:
-    <input id="textbox-initially-populated" @bind(textboxInitiallyPopulatedValue) />
+    <input id="textbox-initially-populated" bind="textboxInitiallyPopulatedValue" />
     <span id="textbox-initially-populated-value">@textboxInitiallyPopulatedValue</span>
 </p>
 
 <h2>Checkbox</h2>
 <p>
     Initially unchecked:
-    <input id="checkbox-initially-unchecked" @bind(checkboxInitiallyUncheckedValue) type="checkbox" />
+    <input id="checkbox-initially-unchecked" bind="checkboxInitiallyUncheckedValue" type="checkbox" />
     <span id="checkbox-initially-unchecked-value">@checkboxInitiallyUncheckedValue</span>
 </p>
 <p>
     Initially checked:
-    <input id="checkbox-initially-checked" @bind(checkboxInitiallyCheckedValue) type="checkbox" />
+    <input id="checkbox-initially-checked" bind="checkboxInitiallyCheckedValue" type="checkbox" />
     <span id="checkbox-initially-checked-value">@checkboxInitiallyCheckedValue</span>
 </p>
 
 <h2>Select</h2>
 <p>
-    <select id="select-box" @bind(selectValue)>
+    <select id="select-box" bind="@selectValue">
         <option value=@SelectableValue.First>First choice</option>
         <option value=@SelectableValue.Second>Second choice</option>
         <option value=@SelectableValue.Third>Third choice</option>

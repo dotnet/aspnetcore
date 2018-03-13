@@ -117,6 +117,21 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BindTagHelper_Component_Documentation" xml:space="preserve">
+    <value>Binds the provided expression to the '{0}' property and a change event delegate to the '{1}' property of the component.</value>
+  </data>
+  <data name="BindTagHelper_Element_Documentation" xml:space="preserve">
+    <value>Binds the provided expression to the '{0}' attribute and a change event delegate to the '{1}' attribute.</value>
+  </data>
+  <data name="BindTagHelper_Element_Format_Documentation" xml:space="preserve">
+    <value>Specifies a format to convert the value specified by the '{0}' attribute. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;.</value>
+  </data>
+  <data name="BindTagHelper_Fallback_Documentation" xml:space="preserve">
+    <value>Binds the provided expression to an attribute and a change event, based on the naming of the bind attribute. For example: &lt;code&gt;bind-value-onchange="..."&lt;/code&gt; will assign the current value of the expression to the 'value' attribute, and assign a delegate that attempts to set the value to the 'onchange' attribute.</value>
+  </data>
+  <data name="BindTagHelper_Fallback_Format_Documentation" xml:space="preserve">
+    <value>Specifies a format to convert the value specified by the corresponding bind attribute. For example: &lt;code&gt;format-value="..."&lt;/code&gt; will apply a format string to the value specified in &lt;code&gt;bind-value-...&lt;/code&gt;. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;.</value>
+  </data>
   <data name="ImplementsDirective_Description" xml:space="preserve">
     <value>Declares an interface implementation for the current document.</value>
   </data>

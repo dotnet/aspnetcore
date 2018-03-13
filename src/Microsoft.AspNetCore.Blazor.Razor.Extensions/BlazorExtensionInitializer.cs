@@ -65,11 +65,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             builder.Features.Add(new ConfigureBlazorCodeGenerationOptions());
 
+            // Implementation of components
             builder.Features.Add(new ComponentDocumentClassifierPass());
             builder.Features.Add(new ComplexAttributeContentPass());
             builder.Features.Add(new ComponentLoweringPass());
-
             builder.Features.Add(new ComponentTagHelperDescriptorProvider());
+
+            // Implementation of bind
+            builder.Features.Add(new BindLoweringPass());
+            builder.Features.Add(new BindTagHelperDescriptorProvider());
+            builder.Features.Add(new OrphanTagHelperLoweringPass());
 
             if (builder.Configuration.ConfigurationName == DeclarationConfiguration.ConfigurationName)
             {

@@ -12,10 +12,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class ComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
     {
-        public static readonly string DelegateSignatureMetadata = "Blazor.DelegateSignature";
-
-        public readonly static string ComponentTagHelperKind = ComponentDocumentClassifierPass.ComponentDocumentKind;
-        
         private static readonly SymbolDisplayFormat FullNameTypeDisplayFormat =
             SymbolDisplayFormat.FullyQualifiedFormat
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
@@ -78,12 +74,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var typeName = type.ToDisplayString(FullNameTypeDisplayFormat);
             var assemblyName = type.ContainingAssembly.Identity.Name;
 
-            var builder = TagHelperDescriptorBuilder.Create(ComponentTagHelperKind, typeName, assemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Component.TagHelperKind, typeName, assemblyName);
             builder.SetTypeName(typeName);
 
             // This opts out this 'component' tag helper for any processing that's specific to the default
             // Razor ITagHelper runtime.
-            builder.Metadata[TagHelperMetadata.Runtime.Name] = "Blazor.IComponent";
+            builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Component.RuntimeName;
 
             var xml = type.GetDocumentationCommentXml();
             if (!string.IsNullOrEmpty(xml))
@@ -114,7 +110,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                     if (property.kind == PropertyKind.Delegate)
                     {
-                        pb.Metadata.Add(DelegateSignatureMetadata, bool.TrueString);
+                        pb.Metadata.Add(BlazorMetadata.Component.DelegateSignatureKey, bool.TrueString);
                     }
 
                     xml = property.property.GetDocumentationCommentXml();

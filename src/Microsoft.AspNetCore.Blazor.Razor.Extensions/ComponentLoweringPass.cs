@@ -1,16 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class ComponentLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
+        // Run after our *special* tag helpers get lowered.
+        public override int Order => 1000;
+
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var @namespace = documentNode.FindPrimaryNamespace();
@@ -26,20 +27,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var nodes = documentNode.FindDescendantNodes<TagHelperIntermediateNode>();
             for (var i = 0; i < nodes.Count; i++)
             {
+                var count = 0;
                 var node = nodes[i];
-                if (node.TagHelpers.Count > 1)
+                for (var j = 0; j < node.TagHelpers.Count; j++)
                 {
-                    node.Diagnostics.Add(BlazorDiagnosticFactory.Create_MultipleComponents(node.Source, node.TagName, node.TagHelpers));
-                }
+                    if (node.TagHelpers[j].IsComponentTagHelper())
+                    {
+                        // Only allow a single component tag helper per element. We also have some *special* tag helpers
+                        // and they should have already been processed by now.
+                        if (count++ > 1)
+                        {
+                            node.Diagnostics.Add(BlazorDiagnosticFactory.Create_MultipleComponents(node.Source, node.TagName, node.TagHelpers));
+                            break;
+                        }
 
-                RewriteUsage(node, node.TagHelpers[0]);
+                        RewriteUsage(node, node.TagHelpers[j]);
+                    }
+                }
             }
         }
 
         private void RewriteUsage(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
         {
-            // Ignore Kind here. Some versions of Razor have a bug in the serializer that ignores it.
-
             // We need to surround the contents of the node with open and close nodes to ensure the component
             // is scoped correctly.
             node.Children.Insert(0, new ComponentOpenExtensionNode()

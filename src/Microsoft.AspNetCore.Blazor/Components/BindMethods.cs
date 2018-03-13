@@ -26,6 +26,64 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
+        public static UIEventHandler SetValueHandler(Action<string> setter, string existingValue)
+        {
+            return _ => setter((string)((UIChangeEventArgs)_).Value);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static UIEventHandler SetValueHandler(Action<bool> setter, bool existingValue)
+        {
+            return _ => setter((bool)((UIChangeEventArgs)_).Value);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static UIEventHandler SetValueHandler(Action<int> setter, int existingValue)
+        {
+            return _ => setter(int.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static UIEventHandler SetValueHandler(Action<DateTime> setter, DateTime existingValue)
+        {
+            return _ => SetDateTimeValue(setter, (object)((UIChangeEventArgs)_).Value, null);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static UIEventHandler SetValueHandler(Action<DateTime> setter, DateTime existingValue, string format)
+        {
+            return _ => SetDateTimeValue(setter, (object)((UIChangeEventArgs)_).Value, format);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static UIEventHandler SetValueHandler<T>(Action<T> setter, T existingValue)
+        {
+            if (!typeof(T).IsEnum)
+            {
+                throw new ArgumentException($"'bind' does not accept values of type {typeof(T).FullName}. To read and write this value type, wrap it in a property of type string with suitable getters and setters.");
+            }
+
+            return _ =>
+            {
+                var value = (string)((UIChangeEventArgs)_).Value;
+                var parsed = (T)Enum.Parse(typeof(T), value);
+                setter(parsed);
+            };
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
         public static Action<object> SetValue(Action<string> setter, string existingValue)
             => objValue => setter((string)objValue);
 
@@ -34,6 +92,12 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// </summary>
         public static Action<object> SetValue(Action<bool> setter, bool existingValue)
             => objValue => setter((bool)objValue);
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static Action<object> SetValue(Action<int> setter, int existingValue)
+            => objValue => setter(int.Parse((string)objValue));
 
         /// <summary>
         /// Not intended to be used directly.
