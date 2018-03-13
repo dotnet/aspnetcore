@@ -385,11 +385,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.StartsWith("Hello, You posted!", content.Trim());
         }
 
-        [Fact]
-        public async Task HelloWorldWithPageModelHandler_CanGetContent()
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("HEAD")]
+        public async Task HelloWorldWithPageModelHandler_CanGetContent(string httpMethod)
         {
             // Arrange
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/HelloWorldWithPageModelHandler?message=pagemodel");
+            var url = "http://localhost/HelloWorldWithPageModelHandler?message=pagemodel";
+            var request = new HttpRequestMessage(new HttpMethod(httpMethod), url);
 
             // Act
             var response = await Client.SendAsync(request);

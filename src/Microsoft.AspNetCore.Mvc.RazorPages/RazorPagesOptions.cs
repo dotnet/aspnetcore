@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public class RazorPagesOptions : IEnumerable<ICompatibilitySwitch>
     {
         private readonly CompatibilitySwitch<bool> _allowAreas;
+        private readonly CompatibilitySwitch<bool> _allowMappingHeadRequestsToGetHandler;
         private readonly ICompatibilitySwitch[] _switches;
 
         private string _root = "/Pages";
@@ -23,10 +24,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public RazorPagesOptions()
         {
             _allowAreas = new CompatibilitySwitch<bool>(nameof(AllowAreas));
+            _allowMappingHeadRequestsToGetHandler = new CompatibilitySwitch<bool>(nameof(AllowMappingHeadRequestsToGetHandler));
 
             _switches = new ICompatibilitySwitch[]
             {
                 _allowAreas,
+                _allowMappingHeadRequestsToGetHandler,
             };
         }
 
@@ -92,6 +95,46 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             get => _allowAreas.Value;
             set => _allowAreas.Value = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines if HTTP method matching for Razor Pages handler methods will use
+        /// fuzzy matching.
+        /// Defaults to <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// When enabled, Razor Pages handler methods will be more flexible in which HTTP methods will be accepted
+        /// by GET and POST handler methods. This allows a GET handler methods to accept the HEAD HTTP methods in 
+        /// addition to GET. A more specific handler method can still be defined to accept HEAD, and the most 
+        /// specific handler will be invoked.
+        /// </para>
+        /// <para>
+        /// This setting reduces the number of handler methods that must be written to correctly respond to typical
+        /// web traffic including requests from internet infrastructure such as web crawlers.
+        /// </para>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired of the value compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
+        /// this setting will have value <c>false</c> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// higher then this setting will have value <c>true</c> unless explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowMappingHeadRequestsToGetHandler
+        {
+            get => _allowMappingHeadRequestsToGetHandler.Value;
+            set => _allowMappingHeadRequestsToGetHandler.Value = value;
         }
 
         /// <summary>

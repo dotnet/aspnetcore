@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    [DebuggerDisplay(nameof(DebuggerDisplayString))]
+    [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public class PageActionDescriptor : ActionDescriptor
     {
         /// <summary>

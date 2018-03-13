@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -11,6 +12,25 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
     {
         private const string Handler = "handler";
+
+        private readonly IOptions<RazorPagesOptions> _options;
+
+        [Obsolete("This constructor will be removed in a future release. Use the other constructor.")]
+        public DefaultPageHandlerMethodSelector()
+        {
+        }
+
+        public DefaultPageHandlerMethodSelector(IOptions<RazorPagesOptions> options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            _options = options;
+        }
+
+        private bool AllowFuzzyHttpMethodMatching => _options?.Value.AllowMappingHeadRequestsToGetHandler ?? false;
 
         public HandlerMethodDescriptor Select(PageContext context)
         {
@@ -60,42 +80,71 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return null;
         }
 
-        private static List<HandlerMethodDescriptor> SelectHandlers(PageContext context)
+        private List<HandlerMethodDescriptor> SelectHandlers(PageContext context)
         {
             var handlers = context.ActionDescriptor.HandlerMethods;
-            List<HandlerMethodDescriptor> handlersToConsider = null;
+            var candidates = new List<HandlerMethodDescriptor>();
 
-            var handlerName = Convert.ToString(context.RouteData.Values[Handler]);
+            // Name is optional, may not be provided.
+            var handlerName = GetHandlerName(context);
 
-            if (string.IsNullOrEmpty(handlerName) &&
-                context.HttpContext.Request.Query.TryGetValue(Handler, out StringValues queryValues))
-            {
-                handlerName = queryValues[0];
-            }
+            // The handler selection process considers handlers according to a few criteria. Handlers
+            // have a defined HTTP method that they handle, and also optionally a 'name'.
+            //
+            // We don't really have a scenario for handler methods without a verb (we don't provide a way
+            // to create one). If we see one, it will just never match.
+            //
+            // The verb must match (with some fuzzy matching) and the handler name must match if
+            // there is one.
+            //
+            // The process is like this:
+            //
+            //  1. Match the possible candidates on HTTP method
+            //  1a. **Added in 2.1** if no candidates matched in 1, then do *fuzzy matching*
+            //  2. Match the candidates from 1 or 1a on handler name.
 
+            // Step 1: match on HTTP method.
+            var httpMethod = context.HttpContext.Request.Method;
             for (var i = 0; i < handlers.Count; i++)
             {
                 var handler = handlers[i];
                 if (handler.HttpMethod != null &&
-                    !string.Equals(handler.HttpMethod, context.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(handler.HttpMethod, httpMethod, StringComparison.OrdinalIgnoreCase))
                 {
-                    continue;
+                    candidates.Add(handler);
                 }
-                else if (handler.Name != null &&
-                    !handler.Name.Equals(handlerName, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (handlersToConsider == null)
-                {
-                    handlersToConsider = new List<HandlerMethodDescriptor>();
-                }
-
-                handlersToConsider.Add(handler);
             }
 
-            return handlersToConsider;
+            // Step 1a: do fuzzy HTTP method matching if needed.
+            if (candidates.Count == 0 && AllowFuzzyHttpMethodMatching)
+            {
+                var fuzzyHttpMethod = GetFuzzyMatchHttpMethod(context);
+                if (fuzzyHttpMethod != null)
+                {
+                    for (var i = 0; i < handlers.Count; i++)
+                    {
+                        var handler = handlers[i];
+                        if (handler.HttpMethod != null &&
+                            string.Equals(handler.HttpMethod, fuzzyHttpMethod, StringComparison.OrdinalIgnoreCase))
+                        {
+                            candidates.Add(handler);
+                        }
+                    }
+                }
+            }
+
+            // Step 2: remove candiates with non-matching handlers.
+            for (var i = candidates.Count - 1; i >= 0; i--)
+            {
+                var handler = candidates[i];
+                if (handler.Name != null &&
+                    !handler.Name.Equals(handlerName, StringComparison.OrdinalIgnoreCase))
+                {
+                    candidates.RemoveAt(i);
+                }
+            }
+
+            return candidates;
         }
 
         private static int GetScore(HandlerMethodDescriptor descriptor)
@@ -112,6 +161,35 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 return 0;
             }
+        }
+
+        private static string GetHandlerName(PageContext context)
+        {
+            var handlerName = Convert.ToString(context.RouteData.Values[Handler]);
+            if (!string.IsNullOrEmpty(handlerName))
+            {
+                return handlerName;
+            }
+
+            if (context.HttpContext.Request.Query.TryGetValue(Handler, out StringValues queryValues))
+            {
+                return queryValues[0];
+            }
+
+            return null;
+        }
+
+        private static string GetFuzzyMatchHttpMethod(PageContext context)
+        {
+            var httpMethod = context.HttpContext.Request.Method;
+
+            // Map HEAD to get.
+            if (string.Equals("HEAD", httpMethod, StringComparison.OrdinalIgnoreCase))
+            {
+                return "GET";
+            }
+
+            return null;
         }
     }
 }

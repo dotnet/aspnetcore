@@ -4,7 +4,7 @@
 {
     public IActionResult OnGet()
     {
-        TempData["TempDataProperty-Message"] = "Secret Message";
+        TempData["Message"] = "Secret Message";
         return Redirect("~/TempData/TempDataPageModelProperty");
     }
 }

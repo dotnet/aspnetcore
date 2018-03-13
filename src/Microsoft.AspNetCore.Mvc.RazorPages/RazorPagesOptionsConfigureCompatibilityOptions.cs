@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 if (Version >= CompatibilityVersion.Version_2_1)
                 {
                     values[nameof(RazorPagesOptions.AllowAreas)] = true;
+                    values[nameof(RazorPagesOptions.AllowMappingHeadRequestsToGetHandler)] = true;
                 }
 
                 return values;

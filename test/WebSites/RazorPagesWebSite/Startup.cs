@@ -25,7 +25,8 @@ namespace RazorPagesWebSite
                     options.Conventions.AddPageRoute("/Pages/NotTheRoot", string.Empty);
                     options.Conventions.Add(new CustomModelTypeConvention());
                 })
-                .WithRazorPagesAtContentRoot();
+                .WithRazorPagesAtContentRoot()
+                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1);
         }
 
         public void Configure(IApplicationBuilder app)
