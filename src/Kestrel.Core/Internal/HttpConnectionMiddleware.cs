@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             // We need the transport feature so that we can cancel the output reader that the transport is using
             // This is a bit of a hack but it preserves the existing semantics
-            var transportFeature = connectionContext.Features.Get<IConnectionTransportFeature>();
+            var applicationFeature = connectionContext.Features.Get<IApplicationTransportFeature>();
+            var memoryPoolFeature = connectionContext.Features.Get<IMemoryPoolFeature>();
 
             var httpConnectionId = Interlocked.Increment(ref _lastHttpConnectionId);
 
@@ -44,10 +45,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Protocols = _protocols,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
-                MemoryPool = transportFeature.MemoryPool,
+                MemoryPool = memoryPoolFeature.MemoryPool,
                 ConnectionAdapters = _connectionAdapters,
                 Transport = connectionContext.Transport,
-                Application = transportFeature.Application
+                Application = applicationFeature.Application
             };
 
             var connectionFeature = connectionContext.Features.Get<IHttpConnectionFeature>();

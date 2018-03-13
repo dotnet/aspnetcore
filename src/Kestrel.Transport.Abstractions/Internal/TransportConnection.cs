@@ -12,6 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             _currentIConnectionIdFeature = this;
             _currentIConnectionTransportFeature = this;
             _currentIHttpConnectionFeature = this;
+            _currentIApplicationTransportFeature = this;
+            _currentIMemoryPoolFeature = this;
+            _currentITransportSchedulerFeature = this;
         }
 
         public IPAddress RemoteAddress { get; set; }
