@@ -18,14 +18,14 @@ namespace Company.WebApplication1.Controllers
     {
         // GET api/values
         [HttpGet]
-        public IEnumerable<string> Get()
+        public ActionResult<IEnumerable<string>> Get()
         {
             return new string[] { "value1", "value2" };
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public ActionResult<string> Get(int id)
         {
             return "value";
         }

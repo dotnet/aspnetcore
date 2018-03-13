@@ -13,11 +13,13 @@ type ValuesController () =
 
     [<HttpGet>]
     member this.Get() =
-        [|"value1"; "value2"|]
+        let values = [|"value1"; "value2"|]
+        ActionResult<string[]>(values)
 
     [<HttpGet("{id}")>]
     member this.Get(id:int) =
-        "value"
+        let value = "value"
+        ActionResult<string>(value)
 
     [<HttpPost>]
     member this.Post([<FromBody>] value:string) =
