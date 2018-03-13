@@ -16,6 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             ApplicationPartFactoryType = factoryType ?? throw new ArgumentNullException(nameof(factoryType));
         }
 
+        public ProvideApplicationPartFactoryAttribute(string factoryTypeName)
+        {
+        }
+
         public Type ApplicationPartFactoryType { get; }
     }
 }
