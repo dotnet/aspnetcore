@@ -24,13 +24,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/AngularSpa.csproj">
+    <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="React-CSharp.csproj.in" OutputPath="content/React-CSharp/ReactSpa.csproj">
+    <GeneratedContent Include="React-CSharp.csproj.in" OutputPath="content/React-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="ReactRedux-CSharp.csproj.in" OutputPath="content/ReactRedux-CSharp/ReactReduxSpa.csproj">
+    <GeneratedContent Include="ReactRedux-CSharp.csproj.in" OutputPath="content/ReactRedux-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
   </ItemGroup>

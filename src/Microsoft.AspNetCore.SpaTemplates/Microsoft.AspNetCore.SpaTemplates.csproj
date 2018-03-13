@@ -22,13 +22,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <GeneratedContent Include="Aurelia-CSharp.csproj.in" OutputPath="content/Aurelia-CSharp/AureliaSpa.csproj">
+    <GeneratedContent Include="Aurelia-CSharp.csproj.in" OutputPath="content/Aurelia-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="Knockout-CSharp.csproj.in" OutputPath="content/Knockout-CSharp/KnockoutSpa.csproj">
+    <GeneratedContent Include="Knockout-CSharp.csproj.in" OutputPath="content/Knockout-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="Vue-CSharp.csproj.in" OutputPath="content/Vue-CSharp/VueSpa.csproj">
+    <GeneratedContent Include="Vue-CSharp.csproj.in" OutputPath="content/Vue-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
   </ItemGroup>

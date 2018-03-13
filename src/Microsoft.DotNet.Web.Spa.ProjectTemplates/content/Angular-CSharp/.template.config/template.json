@@ -11,11 +11,11 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "AngularSpa.csproj"
+      "path": "Company.WebApplication1.csproj"
     }
   ],
   "shortName": "angular",
-  "sourceName": "AngularSpa",
+  "sourceName": "Company.WebApplication1",
   "sources": [
     {
       "source": "./",

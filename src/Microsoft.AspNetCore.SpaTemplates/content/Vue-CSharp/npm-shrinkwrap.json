@@ -1,5 +1,5 @@
 {
-  "name": "VueSpa",
+  "name": "Company.WebApplication1",
   "version": "0.0.0",
   "dependencies": {
     "@types/webpack-env": {

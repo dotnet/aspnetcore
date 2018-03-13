@@ -11,11 +11,11 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "ReactReduxSpa.csproj"
+      "path": "Company.WebApplication1.csproj"
     }
   ],
   "shortName": "reactredux",
-  "sourceName": "ReactReduxSpa",
+  "sourceName": "Company.WebApplication1",
   "sources": [
     {
       "source": "./",

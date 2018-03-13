@@ -5,7 +5,7 @@ export class App {
     router: Router;
 
     configureRouter(config: RouterConfiguration, router: Router) {
-        config.title = 'AureliaSpa';
+        config.title = 'Company.WebApplication1';
         config.map([{
             route: [ '', 'home' ],
             name: 'home',
