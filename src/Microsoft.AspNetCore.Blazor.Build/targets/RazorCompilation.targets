@@ -19,8 +19,10 @@
   <!-- Something quick for input/output tracking - the assumptions here should match what the CLI does -->
   <ItemGroup>
     <BlazorGenerate Include="**\*.cshtml" />
-    <Content Update="@(Content->WithMetadataValue('Extension', '.cshtml'))">
+    <_BlazorGenerateDeclarationContent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+    <Content Update="@(_BlazorGenerateDeclarationContent)">
       <Generator>MSBuild:BlazorGenerateDeclaration</Generator>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </Content>
 
     <ProjectCapability Include="DotNetCoreRazorConfiguration" />

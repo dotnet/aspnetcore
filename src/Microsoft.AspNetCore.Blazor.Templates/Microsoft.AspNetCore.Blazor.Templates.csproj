@@ -7,9 +7,4 @@
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoWarn>2008</NoWarn>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  </PropertyGroup>
-
 </Project>

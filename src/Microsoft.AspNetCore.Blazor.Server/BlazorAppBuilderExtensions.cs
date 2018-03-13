@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Net.Mime;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -36,9 +37,15 @@ namespace Microsoft.AspNetCore.Builder
             this IApplicationBuilder applicationBuilder,
             BlazorOptions options)
         {
+            // TODO: Make the .blazor.config file contents sane
+            // Currently the items in it are bizarre and don't relate to their purpose,
+            // hence all the path manipulation here. We shouldn't be hardcoding 'dist' here either.
+            var env = (IHostingEnvironment)applicationBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var config = BlazorConfig.Read(options.ClientAssemblyPath);
             var clientAppBinDir = Path.GetDirectoryName(config.SourceOutputAssemblyPath);
-            var clientAppDistDir = Path.Combine(clientAppBinDir, "dist");
+            var clientAppDistDir = Path.Combine(
+                env.ContentRootPath,
+                Path.Combine(clientAppBinDir, "dist"));
             var distDirStaticFiles = new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(clientAppDistDir),
