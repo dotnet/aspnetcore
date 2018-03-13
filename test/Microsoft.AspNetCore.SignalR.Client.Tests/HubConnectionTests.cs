@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await hubConnection.StartAsync();
             await hubConnection.DisposeAsync();
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => hubConnection.StreamAsync<int>("test"));
+                () => hubConnection.StreamAsChannelAsync<int>("test"));
 
             Assert.Equal("Connection has been terminated.", exception.Message);
         }
@@ -154,9 +154,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => hubConnection.StreamAsync<int>("test"));
+                () => hubConnection.StreamAsChannelAsync<int>("test"));
 
-            Assert.Equal("The 'StreamAsync' method cannot be called before the connection has been started.", exception.Message);
+            Assert.Equal("The 'StreamAsChannelAsync' method cannot be called before the connection has been started.", exception.Message);
         }
 
         [Fact]

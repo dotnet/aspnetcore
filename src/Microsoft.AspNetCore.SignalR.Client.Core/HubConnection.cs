@@ -157,16 +157,16 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return new Subscription(invocationHandler, invocationList);
         }
 
-        public async Task<ChannelReader<object>> StreamAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
+        public async Task<ChannelReader<object>> StreamAsChannelAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
         {
-            return await StreamAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+            return await StreamAsChannelAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
         }
 
-        private async Task<ChannelReader<object>> StreamAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
+        private async Task<ChannelReader<object>> StreamAsChannelAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
             if (!_startCalled)
             {
-                throw new InvalidOperationException($"The '{nameof(StreamAsync)}' method cannot be called before the connection has been started.");
+                throw new InvalidOperationException($"The '{nameof(StreamAsChannelAsync)}' method cannot be called before the connection has been started.");
             }
 
             var invokeCts = new CancellationTokenSource();

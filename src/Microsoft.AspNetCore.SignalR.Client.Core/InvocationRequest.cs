@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public override ValueTask<bool> StreamItem(object item)
             {
                 Log.StreamItemOnNonStreamInvocation(Logger, InvocationId);
-                _completionSource.TrySetException(new InvalidOperationException($"Streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnection.StreamAsync)}' method."));
+                _completionSource.TrySetException(new InvalidOperationException($"Streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnection.StreamAsChannelAsync)}' method."));
 
                 // We "delivered" the stream item successfully as far as the caller cares
                 return new ValueTask<bool>(true);

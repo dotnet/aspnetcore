@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = await hubConnection.StreamAsync<object>("Foo");
+                var channel = await hubConnection.StreamAsChannelAsync<object>("Foo");
 
                 // skip negotiation
                 await connection.ReadSentTextMessageAsync().OrTimeout();
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = await hubConnection.StreamAsync<int>("Foo");
+                var channel = await hubConnection.StreamAsChannelAsync<int>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = await hubConnection.StreamAsync<string>("Foo");
+                var channel = await hubConnection.StreamAsChannelAsync<string>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, result = "Oops" }).OrTimeout();
 
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = await hubConnection.StreamAsync<int>("Foo");
+                var channel = await hubConnection.StreamAsChannelAsync<int>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, error = "An error occurred" }).OrTimeout();
 
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = 42 }).OrTimeout();
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => invokeTask).OrTimeout();
-                Assert.Equal("Streaming hub methods must be invoked with the 'HubConnection.StreamAsync' method.", ex.Message);
+                Assert.Equal("Streaming hub methods must be invoked with the 'HubConnection.StreamAsChannelAsync' method.", ex.Message);
             }
             finally
             {
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = await hubConnection.StreamAsync<string>("Foo");
+                var channel = await hubConnection.StreamAsChannelAsync<string>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "1" }).OrTimeout();
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "2" }).OrTimeout();

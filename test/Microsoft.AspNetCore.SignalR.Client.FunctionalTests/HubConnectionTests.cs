@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var channel = await connection.StreamAsync<int>("Stream", 5).OrTimeout();
+                    var channel = await connection.StreamAsChannelAsync<int>("Stream", 5).OrTimeout();
                     var results = await channel.ReadAllAsync().OrTimeout();
 
                     Assert.Equal(new[] { 0, 1, 2, 3, 4 }, results.ToArray());
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var cts = new CancellationTokenSource();
 
-                    var channel = await connection.StreamAsync<int>("Stream", 1000, cts.Token).OrTimeout();
+                    var channel = await connection.StreamAsChannelAsync<int>("Stream", 1000, cts.Token).OrTimeout();
 
                     await channel.WaitToReadAsync().AsTask().OrTimeout();
                     cts.Cancel();
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var cts = new CancellationTokenSource();
                     cts.Cancel();
 
-                    var channel = await connection.StreamAsync<int>("Stream", 5, cts.Token).OrTimeout();
+                    var channel = await connection.StreamAsChannelAsync<int>("Stream", 5, cts.Token).OrTimeout();
 
                     await Assert.ThrowsAnyAsync<OperationCanceledException>(() => channel.WaitToReadAsync().AsTask().OrTimeout());
                 }
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var channel = await connection.StreamAsync<int>("StreamException").OrTimeout();
+                    var channel = await connection.StreamAsChannelAsync<int>("StreamException").OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
                     Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server. InvalidOperationException: Error occurred while streaming.", ex.Message);
@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var channel = await connection.StreamAsync<int>("!@#$%");
+                    var channel = await connection.StreamAsChannelAsync<int>("!@#$%");
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
                     Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
                 }
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var channel = await connection.StreamAsync<int>("Stream", 42, 42);
+                    var channel = await connection.StreamAsChannelAsync<int>("Stream", 42, 42);
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
                     Assert.Equal("Failed to invoke 'Stream'. Invocation provides 2 argument(s) but target expects 1.", ex.Message);
                 }
@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var channel = await connection.StreamAsync<int>("Stream", "xyz");
+                    var channel = await connection.StreamAsChannelAsync<int>("Stream", "xyz");
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
                     Assert.StartsWith("Failed to invoke 'Stream'. Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
                 }
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var channel = await connection.StreamAsync<int>("HelloWorld").OrTimeout();
+                    var channel = await connection.StreamAsChannelAsync<int>("HelloWorld").OrTimeout();
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync()).OrTimeout();
                     Assert.Equal("The client attempted to invoke the non-streaming 'HelloWorld' method in a streaming fashion.", ex.Message);
                 }
@@ -642,7 +642,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var channel = await connection.StreamAsync<int>("StreamBroken").OrTimeout();
+                    var channel = await connection.StreamAsChannelAsync<int>("StreamBroken").OrTimeout();
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync()).OrTimeout();
                     Assert.Equal("The value returned by the streaming method 'StreamBroken' is null, does not implement the IObservable<> interface or is not a ReadableChannel<>.", ex.Message);
                 }
