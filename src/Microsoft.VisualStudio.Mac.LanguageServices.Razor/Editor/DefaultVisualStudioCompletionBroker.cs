@@ -19,7 +19,9 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
 
             if (textView.HasAggregateFocus)
             {
-                return CompletionWindowManager.IsVisible;
+                return CompletionWindowManager.IsVisible ||
+                                              (textView.Properties.TryGetProperty<bool>("RoslynCompletionPresenterSession.IsCompletionActive", out var visible)
+                                               && visible);
             }
 
             // Text view does not have focus, if the completion window is visible it's for a different text view.
