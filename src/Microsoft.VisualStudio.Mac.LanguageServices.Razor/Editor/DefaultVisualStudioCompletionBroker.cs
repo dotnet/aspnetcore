@@ -10,6 +10,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
 {
     internal class DefaultVisualStudioCompletionBroker : VisualStudioCompletionBroker
     {
+        private const string IsCompletionActiveKey = "RoslynCompletionPresenterSession.IsCompletionActive";
+
         public override bool IsCompletionActive(ITextView textView)
         {
             if (textView == null)
@@ -17,14 +19,22 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(textView));
             }
 
-            if (textView.HasAggregateFocus)
+            if (!textView.HasAggregateFocus)
             {
-                return CompletionWindowManager.IsVisible ||
-                                              (textView.Properties.TryGetProperty<bool>("RoslynCompletionPresenterSession.IsCompletionActive", out var visible)
-                                               && visible);
+                // Text view does not have focus, if the completion window is visible it's for a different text view.
+                return false;
             }
 
-            // Text view does not have focus, if the completion window is visible it's for a different text view.
+            if (CompletionWindowManager.IsVisible)
+            {
+                return true;
+            }
+
+            if (textView.Properties.TryGetProperty<bool>(IsCompletionActiveKey, out var visible))
+            {
+                return visible;
+            }
+
             return false;
         }
     }
