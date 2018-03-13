@@ -28,7 +28,11 @@
     <PropertyGroup>
       <MetapackageSource>$(_MetapackageSrcRoot)$(MetapackageName)\</MetapackageSource>
       <MetapackageWorkDirectory>$(_WorkRoot)$(MetapackageName)\</MetapackageWorkDirectory>
-      <CommonProps>Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true</CommonProps>
+      <CommonProps />
+      <CommonProps>$(CommonProps);Configuration=$(Configuration)</CommonProps>
+      <CommonProps>$(CommonProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonProps>
+      <CommonProps>$(CommonProps);DotNetBuildOffline=true</CommonProps>
+      <CommonProps>$(CommonProps);AspNetUniverseBuildOffline=true</CommonProps>
       <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</CommonProps>
       <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
     </PropertyGroup>
@@ -121,6 +125,7 @@
 
       <CommonSharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRestoreRid)</CommonSharedFxProps>
       <CommonSharedFxProps>$(CommonSharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonSharedFxProps>
+      <CommonSharedFxProps>$(CommonSharedFxProps);DotNetBuildOffline=true</CommonSharedFxProps>
       <CommonSharedFxProps>$(CommonSharedFxProps);AspNetUniverseBuildOffline=true</CommonSharedFxProps>
     </PropertyGroup>
   </Target>

@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <RestoreSources>$(RestoreSources);$(DotNetRestoreSources);</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>

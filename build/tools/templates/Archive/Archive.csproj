@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
     <DotnetCliToolTargetFramework>netcoreapp2.1</DotnetCliToolTargetFramework>
+    <RestoreSources>$(RestoreSources);$(DotNetRestoreSources);</RestoreSources>
   </PropertyGroup>
 
 </Project>
