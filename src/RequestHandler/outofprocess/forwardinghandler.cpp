@@ -398,6 +398,7 @@ REQUEST_NOTIFICATION_STATUS
     BOOL                        fLocked = FALSE;
     BOOL                        fClientError = FALSE;
     BOOL                        fClosed = FALSE;
+    BOOL                        fWebSocketUpgrade = FALSE;
 
     DBG_ASSERT(m_pW3Context != NULL);
     __analysis_assume(m_pW3Context != NULL);
@@ -467,7 +468,7 @@ REQUEST_NOTIFICATION_STATUS
             goto Finished;
         }
 
-        hr = m_pWebSocket->ProcessRequest(this, m_pW3Context, m_hRequest);
+        hr = m_pWebSocket->ProcessRequest(this, m_pW3Context, m_hRequest, &fWebSocketUpgrade);
         if (FAILED(hr))
         {
             goto Failure;

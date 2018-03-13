@@ -40,7 +40,8 @@ public:
     ProcessRequest(
         FORWARDING_HANDLER *pHandler,
         IHttpContext * pHttpContext,
-        HINTERNET      hRequest
+        HINTERNET      hRequest,
+        BOOL*          pfHandleCreated
         );
 
     REQUEST_NOTIFICATION_STATUS
@@ -206,6 +207,9 @@ private:
 
     volatile
     BOOL                _fIndicateCompletionToIis;
+
+    volatile
+    BOOL                _fHandleClosed;
 
     volatile
     BOOL                _fReceivedCloseMsg;

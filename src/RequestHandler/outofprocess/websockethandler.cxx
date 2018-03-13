@@ -43,6 +43,7 @@ WEBSOCKET_HANDLER::WEBSOCKET_HANDLER() :
     _dwOutstandingIo(0),
     _fCleanupInProgress(FALSE),
     _fIndicateCompletionToIis(FALSE),
+    _fHandleClosed(FALSE),
     _fReceivedCloseMsg(FALSE)
 {
     DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::WEBSOCKET_HANDLER");
@@ -57,7 +58,8 @@ WEBSOCKET_HANDLER::Terminate(
     )
 {
     DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::Terminate");
-
+    if (!_fHandleClosed)
+    {
     RemoveRequest();
     _fCleanupInProgress = TRUE;
 
@@ -76,6 +78,7 @@ WEBSOCKET_HANDLER::Terminate(
     DeleteCriticalSection(&_RequestLock);
 
     delete this;
+    }
 }
 
 //static
@@ -161,10 +164,10 @@ WEBSOCKET_HANDLER::IncrementOutstandingIo(
     VOID
     )
 {
-    InterlockedIncrement(&_dwOutstandingIo);
+    LONG dwOutstandingIo = InterlockedIncrement(&_dwOutstandingIo);
     if (sm_pTraceLog)
     {
-        WriteRefTraceLog(sm_pTraceLog, _dwOutstandingIo, this);
+        WriteRefTraceLog(sm_pTraceLog, dwOutstandingIo, this);
     }
 }
 
@@ -208,25 +211,33 @@ WEBSOCKET_HANDLER::IndicateCompletionToIIS(
 
 --*/
 {
-    /*DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO,
-            "WEBSOCKET_HANDLER::IndicateCompletionToIIS");*/
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
+        "WEBSOCKET_HANDLER::IndicateCompletionToIIS called %d", _dwOutstandingIo);
 
-    _pHandler->SetStatus(FORWARDER_DONE);
-
-    // do not call IndicateCompletion here
-    // wait for handle close callback and then call IndicateCompletion
-    // otherwise we may release W3Context too early and cause AV
-    //_pHttpContext->IndicateCompletion(RQ_NOTIFICATION_PENDING);
+    //
     // close Websocket handle. This will triger a WinHttp callback
     // on handle close, then let IIS pipeline continue.
-    WinHttpCloseHandle(_hWebSocketRequest);
+    // Make sure no pending IO as there is no IIS websocket cancelation,
+    // any unexpected callback will lead to AV. Revisit it once CanelOutGoingIO works
+    //
+    if (_hWebSocketRequest != NULL && _dwOutstandingIo == 0)
+    {
+        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
+            "WEBSOCKET_HANDLER::IndicateCompletionToIIS");
+
+        _pHandler->SetStatus(FORWARDER_DONE);
+        _fHandleClosed = TRUE;
+        WinHttpCloseHandle(_hWebSocketRequest);
+        _hWebSocketRequest = NULL;
+    }
 }
 
 HRESULT
 WEBSOCKET_HANDLER::ProcessRequest(
     FORWARDING_HANDLER *pHandler,
     IHttpContext *pHttpContext,
-    HINTERNET     hRequest
+    HINTERNET     hRequest,
+    BOOL*         pfHandleCreated
 )
 /*++
 
@@ -246,6 +257,7 @@ Routine Description:
     HRESULT hr = S_OK;
     //DWORD dwBuffSize = RECEIVE_BUFFER_SIZE;
 
+    *pfHandleCreated = FALSE;
     _pHandler = pHandler;
 
     EnterCriticalSection(&_RequestLock);
@@ -287,6 +299,8 @@ Routine Description:
         hr = HRESULT_FROM_WIN32(GetLastError());
         goto Finished;
     }
+
+    *pfHandleCreated = TRUE;
 
     //
     // Resize the send & receive buffers to be more conservative (and avoid DoS attacks).
@@ -453,7 +467,7 @@ Routine Description:
     BOOL    fClose = FALSE;
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::DoIisWebSocketSend");
+        "WEBSOCKET_HANDLER::DoIisWebSocketSend %d", eBufferType);
 
     if (eBufferType == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE)
     {
@@ -492,7 +506,7 @@ Routine Description:
         IncrementOutstandingIo();
         //
         // Backend end may start close hand shake first
-        // Need to inidcate no more receive should be called on WinHttp conneciton
+        // Need to indicate no more receive should be called on WinHttp connection
         //
         _fReceivedCloseMsg = TRUE;
         _fIndicateCompletionToIis = TRUE;
@@ -796,7 +810,7 @@ WEBSOCKET_HANDLER::OnWinHttpShutdownComplete(
     )
 {
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::OnWinHttpShutdownComplete");
+        "WEBSOCKET_HANDLER::OnWinHttpShutdownComplete --%p", _pHandler);
 
     DecrementOutstandingIo();
 
@@ -844,7 +858,7 @@ Routine Description:
     CleanupReason cleanupReason = CleanupReasonUnknown;
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "WEBSOCKET_HANDLER::OnWinHttpReceiveComplete");
+        "WEBSOCKET_HANDLER::OnWinHttpReceiveComplete --%p", _pHandler);
 
     if (_fCleanupInProgress)
     {
@@ -1051,7 +1065,7 @@ Finished:
         Cleanup (cleanupReason);
 
         DebugPrintf (ASPNETCORE_DEBUG_FLAG_ERROR,
-            "WEBSOCKET_HANDLER::OnIisSendComplete failed with HR=%08x", hr);
+            "WEBSOCKET_HANDLER::OnIisReceiveComplete failed with HR=%08x", hr);
     }
 
     //
@@ -1105,11 +1119,29 @@ Arguments:
     //
     // TODO:: Raise FREB event with cleanup reason.
     //
+    if (reason == ClientDisconnect || reason == ServerStateUnavailable)
+    {
+        //
+        // Calling shutdown to notify the backend about disonnect
+        //
+        WINHTTP_HELPER::sm_pfnWinHttpWebSocketShutdown(
+            _hWebSocketRequest,
+            1011, // indicate that a server is terminating the connection because it encountered
+                  // an unexpected condition that prevent it from fulfilling the request
+            NULL, // Reason
+            0);   // length og Reason
 
-    WinHttpCloseHandle(_hWebSocketRequest);
-    _hWebSocketRequest = NULL;
+    }
 
-    _pHttpContext->CancelIo();
+    if (reason == ServerDisconnect || reason == ServerStateUnavailable)
+    {
+        _pHttpContext->CancelIo();
+        //
+        // CancelIo sometime may not be able to cannel pending websocket IO
+        // ResetConnection to force IISWebsocket module to release the pipeline
+        //
+        _pHttpContext->GetResponse()->ResetConnection();
+    }
 
 Finished:
     if (fLocked)
