@@ -274,7 +274,7 @@
     <PropertyGroup>
       <WorkingDir>$(SharedFxFile)</WorkingDir>
       <SharedFxName>$([System.IO.Path]::GetFileName($(SharedFxFile)))</SharedFxName>
-      <CreateTarGzip Condition="$(SharedFxName.Contains('osx')) or $(SharedFxName.Contains('linux'))">true</CreateTarGzip>
+      <CreateTarGzip Condition="$(SharedFxName.Contains('osx')) OR $(SharedFxName.Contains('linux')) OR $(SharedFxName.Contains('alpine'))">true</CreateTarGzip>
       <OutputFile>$(OutDir)$(SharedFxName)</OutputFile>
 
       <OutputFile Condition="'$(CreateTarGzip)'=='true'">$(OutputFile).tar.gz</OutputFile>
