@@ -117,6 +117,20 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Same(serviceInstance, instance.MyService);
         }
 
+        [Fact]
+        public void SetsPrivateInheritedInjectableProperties()
+        {
+            // Arrange
+            var serviceInstance = new MyServiceImplementation();
+            _serviceProvider.AddService<IMyService>(serviceInstance);
+
+            // Act
+            var instance = InstantiateComponent<HasInheritedPrivateInjectableProperty>();
+
+            // Assert
+            Assert.Same(serviceInstance, instance.PrivateMyService);
+        }
+
         private T InstantiateComponent<T>() where T: IComponent
             => _renderer.InstantiateComponent<T>();
 
@@ -142,6 +156,15 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             [Inject] public IMyService MyService { get; set; }
         }
+
+        class HasPrivateInjectableProperty : TestComponent
+        {
+            [Inject] private IMyService MyService { get; set; }
+
+            public IMyService PrivateMyService => MyService;
+        }
+
+        class HasInheritedPrivateInjectableProperty : HasPrivateInjectableProperty { }
 
         class HasManyInjectableProperties : TestComponent
         {

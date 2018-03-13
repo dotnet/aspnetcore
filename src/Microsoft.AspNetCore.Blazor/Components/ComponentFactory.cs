@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
         {
             // Do all the reflection up front
             var injectableProperties = type.GetTypeInfo()
-                .GetProperties(_injectablePropertyBindingFlags)
+                .GetPropertiesIncludingInherited(_injectablePropertyBindingFlags)
                 .Where(p => p.GetCustomAttribute<InjectAttribute>() != null);
             var injectables = injectableProperties.Select(property =>
             {
