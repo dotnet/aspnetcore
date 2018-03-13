@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             if (continuation != null)
             {
-                _ioScheduler.Schedule(state => ((Action)state)(), continuation);
+                _ioScheduler.Schedule(c => c(), continuation);
             }
         }
     }

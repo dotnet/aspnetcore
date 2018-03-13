@@ -16,10 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
         private bool _doingWork;
 
-        public override void Schedule(Action<object> action, object state)
+        public override void Schedule<T>(Action<T> action, T state)
         {
             var work = new Work
             {
+                CallbackAdapter = (c, s) => ((Action<T>)c)((T)s),
                 Callback = action,
                 State = state
             };
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 while (_workItems.TryDequeue(out Work item))
                 {
-                    item.Callback(item.State);
+                    item.CallbackAdapter(item.Callback, item.State);
                 }
 
                 lock (_workSync)
@@ -58,7 +59,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private struct Work
         {
-            public Action<object> Callback;
+            public Action<object, object> CallbackAdapter;
+            public object Callback;
             public object State;
         }
     }
