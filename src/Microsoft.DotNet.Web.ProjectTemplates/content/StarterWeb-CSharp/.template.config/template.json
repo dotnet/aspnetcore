@@ -79,6 +79,24 @@
             "Extensions/AzureAdB2CAuthenticationBuilderExtensions.cs",
             "Extensions/AzureAdB2COptions.cs"
           ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseLocalDB)",
+          "rename": {
+            "Data/SqlServer/": "Data/Migrations/",
+          },
+          "exclude": [
+            "Data/SqlLite/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB)",
+          "rename": {
+            "Data/SqlLite/": "Data/Migrations/"
+          },
+          "exclude": [
+            "Data/SqlServer/**"
+          ]
         }
       ]
     }

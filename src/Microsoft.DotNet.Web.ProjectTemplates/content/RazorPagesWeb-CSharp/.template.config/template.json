@@ -78,6 +78,24 @@
           "exclude": [
             "Extensions/AzureAdB2C*.cs"
           ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseLocalDB)",
+          "rename": {
+            "Data/SqlServer/": "Data/Migrations/",
+          },
+          "exclude": [
+            "Data/SqlLite/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB)",
+          "rename": {
+            "Data/SqlLite/": "Data/Migrations/"
+          },
+          "exclude": [
+            "Data/SqlServer/**"
+          ]
         }
       ]
     }

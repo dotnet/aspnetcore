@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#if (UseLocalDB)
 using Microsoft.EntityFrameworkCore.Metadata;
-#endif
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Company.WebApplication1.Data.Migrations
@@ -57,11 +55,7 @@ namespace Company.WebApplication1.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-#if (UseLocalDB)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-#else
-                        .Annotation("Sqlite:Autoincrement", true),
-#endif
                     RoleId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -82,11 +76,7 @@ namespace Company.WebApplication1.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-#if (UseLocalDB)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-#else
-                        .Annotation("Sqlite:Autoincrement", true),
-#endif
                     UserId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -175,12 +165,8 @@ namespace Company.WebApplication1.Data.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-#if (UseLocalDB)
                 unique: true,
                 filter: "[NormalizedName] IS NOT NULL");
-#else
-                unique: true);
-#endif
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -206,12 +192,8 @@ namespace Company.WebApplication1.Data.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-#if (UseLocalDB)
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-#else
-                unique: true);
-#endif
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

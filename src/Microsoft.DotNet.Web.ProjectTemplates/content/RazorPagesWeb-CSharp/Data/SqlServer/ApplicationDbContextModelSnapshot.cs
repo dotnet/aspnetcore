@@ -1,9 +1,7 @@
 ﻿using System;
-#if (UseLocalDB)
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#endif
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -18,12 +16,8 @@ namespace Company.WebApplication1.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-#if (UseLocalDB)
                 .HasAnnotation("ProductVersion", "2.1.0-preview1-28193")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-#else
-                .HasAnnotation("ProductVersion", "2.1.0-preview1-28193");
-#endif
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -43,12 +37,8 @@ namespace Company.WebApplication1.Data.Migrations
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-#if (UseLocalDB)
                         .HasName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
-#else
-                        .HasName("RoleNameIndex");
-#endif
 
                     b.ToTable("AspNetRoles");
                 });
@@ -117,12 +107,8 @@ namespace Company.WebApplication1.Data.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-#if (UseLocalDB)
                         .HasName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-#else
-                        .HasName("UserNameIndex");
-#endif
 
                     b.ToTable("AspNetUsers");
                 });
