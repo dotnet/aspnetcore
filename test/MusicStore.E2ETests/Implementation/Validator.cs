@@ -55,7 +55,12 @@ namespace E2ETests
         private async Task<HttpResponseMessage> DoPostAsync(Uri uri, HttpContent content)
         {
             _logger.LogInformation("POST {0}", uri.ToString());
-            var resp = await _httpClient.PostAsync(uri, content);
+            var request = new HttpRequestMessage(HttpMethod.Post, uri)
+            {
+                Content = content,
+                Version = new Version(1, 1),
+            };
+            var resp = await _httpClient.SendAsync(request);
             LogHeaders(resp, LogLevel.Information);
             return resp;
         }
