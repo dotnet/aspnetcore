@@ -15,7 +15,8 @@
         </select>
 
         <select id="transport">
-            <option value="WebSockets" selected>WebSockets</option>
+            <option value="Automatic" selected>Automatic</option>
+            <option value="WebSockets">WebSockets</option>
             <option value="ServerSentEvents">ServerSentEvents</option>
             <option value="LongPolling">LongPolling</option>
         </select>
@@ -135,14 +136,19 @@
     var connection;
 
     click('connect', function (event) {
-        let transportType = signalR.TransportType[transportDropdown.value] || signalR.TransportType.WebSockets;
         let hubRoute = hubTypeDropdown.value || "default";
         let protocol = protocolDropdown.value === "msgpack" ?
             new signalR.protocols.msgpack.MessagePackHubProtocol() :
             new signalR.JsonHubProtocol();
 
+        let options = { logger: logger, protocol: protocol };
+
+        if (transportDropdown.value !== "Automatic") {
+            options.transport = signalR.TransportType[transportDropdown.value];
+        }
+
         console.log('http://' + document.location.host + '/' + hubRoute);
-        connection = new signalR.HubConnection(hubRoute, { transport: transportType, logger: logger, protocol: protocol });
+        connection = new signalR.HubConnection(hubRoute, options);
         connection.on('Send', function (msg) {
             addLine('message-list', msg);
         });

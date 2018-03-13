@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var onReceived = new SyncPoint();
                     connection.OnReceived(_ => onReceived.WaitToContinue().OrTimeout());
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                     // This will trigger the received callback
                     await testTransport.Application.Output.WriteAsync(new byte[] { 1 });
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         connection.OnReceived(_ => onReceived.WaitToContinue().OrTimeout());
 
                         logger.LogInformation("Starting connection");
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         logger.LogInformation("Started connection");
 
                         await testTransport.Application.Output.WriteAsync(new byte[] { 1 });
@@ -129,23 +129,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         onReceived.Continue();
                     });
             }
-        }
-
-        [Fact]
-        public async Task StartAsyncSetsTransferModeFeature()
-        {
-            var testTransport = new TestTransport(transferMode: TransferMode.Binary);
-            await WithConnectionAsync(
-                CreateConnection(transport: testTransport),
-                async (connection, closed) =>
-                {
-                    Assert.Null(connection.Features.Get<ITransferModeFeature>());
-                    await connection.StartAsync().OrTimeout();
-
-                    var transferModeFeature = connection.Features.Get<ITransferModeFeature>();
-                    Assert.NotNull(transferModeFeature);
-                    Assert.Equal(TransferMode.Binary, transferModeFeature.TransferMode);
-                });
         }
 
         [Fact]
@@ -180,7 +163,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 CreateConnection(httpOptions, url: "http://fakeuri.org/"),
                 async (connection, closed) =>
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
                 });
 
             Assert.NotNull(httpClientHandler);

@@ -3,7 +3,7 @@
 
 import { HttpClient, HttpRequest, HttpResponse } from "../src/HttpClient";
 
-type TestHttpHandlerResult = HttpResponse | string;
+type TestHttpHandlerResult = any;
 export type TestHttpHandler = (request: HttpRequest, next?: (request: HttpRequest) => Promise<HttpResponse>) => Promise<TestHttpHandlerResult> | TestHttpHandlerResult;
 
 export class TestHttpClient extends HttpClient {
@@ -57,9 +57,14 @@ export class TestHttpClient extends HttpClient {
                 }
 
                 if (typeof val === "string") {
+                    // string payload
                     return new HttpResponse(200, "OK", val);
+                } else if(typeof val === "object" && val.statusCode) {
+                    // HttpResponse payload
+                    return val as HttpResponse;
                 } else {
-                    return val;
+                    // JSON payload
+                    return new HttpResponse(200, "OK", JSON.stringify(val));
                 }
             } else {
                 return await oldHandler(request);

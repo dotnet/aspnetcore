@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Security.Claims;
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets
                                             IConnectionTransportFeature,
                                             IConnectionUserFeature,
                                             IConnectionHeartbeatFeature,
-                                            ITransferModeFeature
+                                            ITransferFormatFeature
     {
         private List<(Action<object> handler, object state)> _heartbeatHandlers = new List<(Action<object> handler, object state)>();
 
@@ -37,14 +36,18 @@ namespace Microsoft.AspNetCore.Sockets
             ConnectionId = id;
             LastSeenUtc = DateTime.UtcNow;
 
+            // The default behavior is that both formats are supported.
+            SupportedFormats = TransferFormat.Binary | TransferFormat.Text;
+            ActiveFormat = TransferFormat.Text;
+
             // PERF: This type could just implement IFeatureCollection
             Features = new FeatureCollection();
             Features.Set<IConnectionUserFeature>(this);
             Features.Set<IConnectionMetadataFeature>(this);
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
-            Features.Set<ITransferModeFeature>(this);
             Features.Set<IConnectionHeartbeatFeature>(this);
+            Features.Set<ITransferFormatFeature>(this);
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -71,9 +74,9 @@ namespace Microsoft.AspNetCore.Sockets
 
         public override IDuplexPipe Transport { get; set; }
 
-        public TransferMode TransportCapabilities { get; set; }
+        public TransferFormat SupportedFormats { get; set; }
 
-        public TransferMode TransferMode { get; set; }
+        public TransferFormat ActiveFormat { get; set; }
 
         public void OnHeartbeat(Action<object> action, object state)
         {

@@ -9,6 +9,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
@@ -56,6 +57,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             };
 
             return result;
+        }
+
+        public string GetActiveTransportName()
+        {
+            return Context.Connection.Metadata[ConnectionMetadataNames.Transport].ToString();
         }
     }
 

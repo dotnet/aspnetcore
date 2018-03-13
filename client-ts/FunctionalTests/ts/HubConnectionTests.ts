@@ -521,6 +521,42 @@ describe("hubConnection", () => {
         });
     });
 
+    if (typeof EventSource !== "undefined") {
+        it("allows Server-Sent Events when negotiating for JSON protocol", async (done) => {
+            const hubConnection = new HubConnection(TESTHUB_NOWEBSOCKETS_ENDPOINT_URL, {
+                logger: LogLevel.Trace,
+                protocol: new JsonHubProtocol(),
+            });
+
+            try {
+                await hubConnection.start();
+
+                // Check what transport was used by asking the server to tell us.
+                expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("ServerSentEvents");
+                done();
+            } catch (e) {
+                fail(e);
+            }
+        });
+    }
+
+    it("skips Server-Sent Events when negotiating for MsgPack protocol", async (done) => {
+        const hubConnection = new HubConnection(TESTHUB_NOWEBSOCKETS_ENDPOINT_URL, {
+            logger: LogLevel.Trace,
+            protocol: new MessagePackHubProtocol(),
+        });
+
+        try {
+            await hubConnection.start();
+
+            // Check what transport was used by asking the server to tell us.
+            expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
+            done();
+        } catch (e) {
+            fail(e);
+        }
+    });
+
     function getJwtToken(url): Promise<string> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();

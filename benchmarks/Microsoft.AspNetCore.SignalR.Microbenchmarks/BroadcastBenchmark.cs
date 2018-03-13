@@ -5,7 +5,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -40,14 +39,12 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 protocol = new MessagePackHubProtocol();
             }
 
-            var encoder = new PassThroughEncoder();
-
             for (var i = 0; i < Connections; ++i)
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Application, pair.Transport);
                 var hubConnection = new HubConnectionContext(connection, Timeout.InfiniteTimeSpan, NullLoggerFactory.Instance);
-                hubConnection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, encoder);
+                hubConnection.Protocol = protocol;
                 _hubLifetimeManager.OnConnectedAsync(hubConnection).Wait();
             }
 

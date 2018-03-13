@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.All)]
         [InlineData((TransportType)0)]
         [InlineData(TransportType.LongPolling | TransportType.WebSockets)]
-        public async Task NegotiateReturnsAvailableTransports(TransportType transports)
+        public async Task NegotiateReturnsAvailableTransportsAfterFilteringByOptions(TransportType transports)
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
@@ -167,7 +167,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var availableTransports = (TransportType)0;
                 foreach (var transport in negotiateResponse["availableTransports"])
                 {
-                    availableTransports |= (TransportType)Enum.Parse(typeof(TransportType), transport.Value<string>());
+                    var transportType = (TransportType)Enum.Parse(typeof(TransportType), transport.Value<string>("transport"));
+                    availableTransports |= transportType;
                 }
 
                 Assert.Equal(transports, availableTransports);
@@ -820,10 +821,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(TransportType.LongPolling, TransferMode.Binary | TransferMode.Text)]
-        [InlineData(TransportType.ServerSentEvents, TransferMode.Text)]
-        [InlineData(TransportType.WebSockets, TransferMode.Binary | TransferMode.Text)]
-        public async Task TransportCapabilitiesSet(TransportType transportType, TransferMode expectedTransportCapabilities)
+        [InlineData(TransportType.LongPolling, null)]
+        [InlineData(TransportType.ServerSentEvents, TransferFormat.Text)]
+        [InlineData(TransportType.WebSockets, TransferFormat.Binary | TransferFormat.Text)]
+        public async Task TransferModeSet(TransportType transportType, TransferFormat? expectedTransferFormats)
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
@@ -845,7 +846,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
                 await dispatcher.ExecuteAsync(context, options, app);
 
-                Assert.Equal(expectedTransportCapabilities, connection.TransportCapabilities);
+                if (expectedTransferFormats != null)
+                {
+                    var transferFormatFeature = connection.Features.Get<ITransferFormatFeature>();
+                    Assert.Equal(expectedTransferFormats.Value, transferFormatFeature.SupportedFormats);
+                }
             }
         }
 

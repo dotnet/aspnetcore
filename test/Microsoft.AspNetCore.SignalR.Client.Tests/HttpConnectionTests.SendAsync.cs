@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
+using Microsoft.AspNetCore.Sockets;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                         await connection.SendAsync(data).OrTimeout();
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(),
                     async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await connection.StopAsync().OrTimeout();
 
                         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(),
                     async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await connection.DisposeAsync().OrTimeout();
 
                         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                         await connection.SendAsync(new byte[] { 0 }).OrTimeout();
 

@@ -8,7 +8,7 @@ import { MessageType } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { Observer } from "../src/Observable";
 import { TextMessageFormat } from "../src/TextMessageFormat";
-import { ITransport, TransferMode, TransportType } from "../src/Transports";
+import { ITransport, TransferFormat, TransportType } from "../src/Transports";
 
 import { IHubConnectionOptions } from "../src/HubConnection";
 import { asyncit as it, captureException, delay, PromiseSource } from "./Utils";

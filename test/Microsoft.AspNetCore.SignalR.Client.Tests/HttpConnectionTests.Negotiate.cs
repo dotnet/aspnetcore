@@ -5,6 +5,10 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
+using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Client;
+using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 using TransportType = Microsoft.AspNetCore.Sockets.TransportType;
@@ -32,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public Task StartThrowsFormatExceptionIfNegotiationResponseHasNoTransports()
             {
-                return RunInvalidNegotiateResponseTest<FormatException>(ResponseUtils.CreateNegotiationContent(transportTypes: null), "No transports returned in negotiation response.");
+                return RunInvalidNegotiateResponseTest<InvalidOperationException>(ResponseUtils.CreateNegotiationContent(transportTypes: 0), "Unable to connect to the server with any of the available transports.");
             }
 
             [Theory]
@@ -67,10 +71,102 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, url: requestedUrl),
                     async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                     });
 
                 Assert.Equal(expectedNegotiate, await negotiateUrlTcs.Task.OrTimeout());
+            }
+
+            [Fact]
+            public async Task StartSkipsOverTransportsThatTheClientDoesNotUnderstand()
+            {
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+
+                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnNegotiate((request, cancellationToken) =>
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                        JsonConvert.SerializeObject(new
+                        {
+                            connectionId = "00000000-0000-0000-0000-000000000000",
+                            availableTransports = new object[]
+                            {
+                                new
+                                {
+                                    transport = "QuantumEntanglement",
+                                    transferFormats = new string[] { "Qbits" },
+                                },
+                                new
+                                {
+                                    transport = "CarrierPigeon",
+                                    transferFormats = new string[] { "Text" },
+                                },
+                                new
+                                {
+                                    transport = "LongPolling",
+                                    transferFormats = new string[] { "Text", "Binary" }
+                                },
+                            }
+                        }));
+                });
+
+                var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
+
+                transportFactory.Setup(t => t.CreateTransport(TransportType.LongPolling))
+                    .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
+
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, transportFactory: transportFactory.Object),
+                    async (connection, closed) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                    });
+            }
+
+            [Fact]
+            public async Task StartSkipsOverTransportsThatDoNotSupportTheRequredTransferFormat()
+            {
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+
+                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnNegotiate((request, cancellationToken) =>
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                        JsonConvert.SerializeObject(new
+                        {
+                            connectionId = "00000000-0000-0000-0000-000000000000",
+                            availableTransports = new object[]
+                            {
+                                new
+                                {
+                                    transport = "WebSockets",
+                                    transferFormats = new string[] { "Qbits" },
+                                },
+                                new
+                                {
+                                    transport = "ServerSentEvents",
+                                    transferFormats = new string[] { "Text" },
+                                },
+                                new
+                                {
+                                    transport = "LongPolling",
+                                    transferFormats = new string[] { "Text", "Binary" }
+                                },
+                            }
+                        }));
+                });
+
+                var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
+
+                transportFactory.Setup(t => t.CreateTransport(TransportType.LongPolling))
+                    .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
+
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, transportFactory: transportFactory.Object),
+                    async (connection, closed) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                    });
             }
 
             private async Task RunInvalidNegotiateResponseTest<TException>(string negotiatePayload, string expectedExceptionMessage) where TException : Exception
@@ -84,7 +180,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     async (connection, closed) =>
                     {
                         var exception = await Assert.ThrowsAsync<TException>(
-                            () => connection.StartAsync().OrTimeout());
+                            () => connection.StartAsync(TransferFormat.Text).OrTimeout());
 
                         Assert.Equal(expectedExceptionMessage, exception.Message);
                     });

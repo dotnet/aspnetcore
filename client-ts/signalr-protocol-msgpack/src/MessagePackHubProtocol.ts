@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageHeaders, MessageType, ProtocolType, StreamInvocationMessage, StreamItemMessage } from "@aspnet/signalr";
+import { CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageHeaders, MessageType, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
 import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
@@ -10,7 +10,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     public readonly name: string = "messagepack";
 
-    public readonly type: ProtocolType = ProtocolType.Binary;
+    public readonly transferFormat: TransferFormat = TransferFormat.Binary;
 
     public parseMessages(input: ArrayBuffer): HubMessage[] {
         return BinaryMessageFormat.parse(input).map((m) => this.parseMessage(m));

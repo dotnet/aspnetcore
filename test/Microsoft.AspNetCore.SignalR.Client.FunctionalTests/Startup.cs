@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 routes.MapHub<DynamicTestHub>("/dynamic");
                 routes.MapHub<TestHubT>("/hubT");
                 routes.MapHub<HubWithAuthorization>("/authorizedhub");
+                routes.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = TransportType.LongPolling | TransportType.ServerSentEvents);
             });
 
             app.Run(async (context) =>

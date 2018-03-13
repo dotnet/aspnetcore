@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var sseTransport = new ServerSentEventsTransport(httpClient);
                     var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                     await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: Mock.Of<IConnection>()).OrTimeout();
+                        new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
 
                     await eventStreamTcs.Task.OrTimeout();
                     await sseTransport.StopAsync().OrTimeout();
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
                     await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: Mock.Of<IConnection>()).OrTimeout();
+                        new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
 
                     transportActiveTask = sseTransport.Running;
                     Assert.False(transportActiveTask.IsCompleted);
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: Mock.Of<IConnection>()).OrTimeout();
+                    new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
 
                 var exception = await Assert.ThrowsAsync<FormatException>(() => sseTransport.Running.OrTimeout());
                 Assert.Equal("Incomplete message.", exception.Message);
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: Mock.Of<IConnection>()).OrTimeout();
+                    new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
                 await eventStreamTcs.Task;
 
                 await pair.Transport.Output.WriteAsync(new byte[] { 0x42 });
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: Mock.Of<IConnection>()).OrTimeout();
+                    new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
                 await eventStreamTcs.Task.OrTimeout();
 
                 pair.Transport.Output.Complete();
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: Mock.Of<IConnection>()).OrTimeout();
+                    new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
 
                 var message = await pair.Transport.Input.ReadSingleAsync().OrTimeout();
                 Assert.Equal("3:abc", Encoding.ASCII.GetString(message));
@@ -276,10 +276,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        [Theory]
-        [InlineData(TransferMode.Text)]
-        [InlineData(TransferMode.Binary)]
-        public async Task SSETransportSetsTransferMode(TransferMode transferMode)
+        [Fact]
+        public async Task SSETransportDoesNotSupportBinary()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -293,12 +291,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
                 var sseTransport = new ServerSentEventsTransport(httpClient);
-                Assert.Null(sseTransport.Mode);
 
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                await sseTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, transferMode, connection: Mock.Of<IConnection>()).OrTimeout();
-                Assert.Equal(TransferMode.Text, sseTransport.Mode);
-                await sseTransport.StopAsync().OrTimeout();
+                var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: Mock.Of<IConnection>()).OrTimeout());
+                Assert.Equal($"The 'Binary' transfer format is not supported by this transport.{Environment.NewLine}Parameter name: transferFormat", ex.Message);
             }
         }
 
@@ -322,7 +318,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient);
 
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                await sseTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: Mock.Of<IConnection>()).OrTimeout();
+                await sseTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
                 await sseTransport.StopAsync().OrTimeout();
             }
 
@@ -338,8 +334,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Assert.Equal(assemblyVersion.InformationalVersion, userAgentHeader.Product.Version);
         }
 
-        [Fact]
-        public async Task SSETransportThrowsForInvalidTransferMode()
+        [Theory]
+        [InlineData(TransferFormat.Binary)] // Binary not supported
+        [InlineData(TransferFormat.Text | TransferFormat.Binary)] // Multiple values not allowed
+        [InlineData((TransferFormat)42)] // Unexpected value
+        public async Task SSETransportThrowsForInvalidTransferFormat(TransferFormat transferFormat)
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -354,10 +353,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var sseTransport = new ServerSentEventsTransport(httpClient);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                    sseTransport.StartAsync(new Uri("http://fakeuri.org"), null, TransferMode.Text | TransferMode.Binary, connection: Mock.Of<IConnection>()));
+                    sseTransport.StartAsync(new Uri("http://fakeuri.org"), null, transferFormat, connection: Mock.Of<IConnection>()));
 
-                Assert.Contains("Invalid transfer mode.", exception.Message);
-                Assert.Equal("requestedTransferMode", exception.ParamName);
+                Assert.Contains($"The '{transferFormat}' transfer format is not supported by this transport.", exception.Message);
+                Assert.Equal("transferFormat", exception.ParamName);
             }
         }
     }

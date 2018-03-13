@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using DefaultConnectionContext = Microsoft.AspNetCore.Sockets.DefaultConnectionContext;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
@@ -47,13 +46,13 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             _connectionContext = new NoErrorHubConnectionContext(connection, TimeSpan.Zero, NullLoggerFactory.Instance);
 
-            _connectionContext.ProtocolReaderWriter = new HubProtocolReaderWriter(new FakeHubProtocol(), new FakeDataEncoder());
+            _connectionContext.Protocol = new FakeHubProtocol();
         }
 
         public class FakeHubProtocol : IHubProtocol
         {
             public string Name { get; }
-            public ProtocolType Type { get; }
+            public TransferFormat TransferFormat { get; }
 
             public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
             {
@@ -62,19 +61,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             public void WriteMessage(HubMessage message, Stream output)
             {
-            }
-        }
-
-        public class FakeDataEncoder : IDataEncoder
-        {
-            public byte[] Encode(byte[] payload)
-            {
-                return null;
-            }
-
-            public bool TryDecode(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> data)
-            {
-                return false;
             }
         }
 

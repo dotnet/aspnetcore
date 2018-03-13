@@ -2,16 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
     public class HubProtocolBenchmark
     {
-        private HubProtocolReaderWriter _hubProtocolReaderWriter;
+        private IHubProtocol _hubProtocol;
         private byte[] _binaryInput;
         private TestBinder _binder;
         private HubMessage _hubMessage;
@@ -28,10 +29,10 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             switch (HubProtocol)
             {
                 case Protocol.MsgPack:
-                    _hubProtocolReaderWriter = new HubProtocolReaderWriter(new MessagePackHubProtocol(), new PassThroughEncoder());
+                    _hubProtocol = new MessagePackHubProtocol();
                     break;
                 case Protocol.Json:
-                    _hubProtocolReaderWriter = new HubProtocolReaderWriter(new JsonHubProtocol(), new PassThroughEncoder());
+                    _hubProtocol = new JsonHubProtocol();
                     break;
             }
 
@@ -51,14 +52,15 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     break;
             }
 
-            _binaryInput = GetBytes(_hubMessage);
+            _binaryInput = _hubProtocol.WriteToArray(_hubMessage);
             _binder = new TestBinder(_hubMessage);
         }
 
         [Benchmark]
         public void ReadSingleMessage()
         {
-            if (!_hubProtocolReaderWriter.ReadMessages(_binaryInput, _binder, out var _))
+            var messages = new List<HubMessage>();
+            if (!_hubProtocol.TryParseMessages(_binaryInput, _binder, messages))
             {
                 throw new InvalidOperationException("Failed to read message");
             }
@@ -67,7 +69,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void WriteSingleMessage()
         {
-            if (_hubProtocolReaderWriter.WriteMessage(_hubMessage).Length != _binaryInput.Length)
+            var bytes = _hubProtocol.WriteToArray(_hubMessage);
+            if (bytes.Length != _binaryInput.Length)
             {
                 throw new InvalidOperationException("Failed to write message");
             }
@@ -85,11 +88,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             FewArguments = 1,
             ManyArguments = 2,
             LargeArguments = 3
-        }
-
-        private byte[] GetBytes(HubMessage hubMessage)
-        {
-            return _hubProtocolReaderWriter.WriteMessage(_hubMessage);
         }
     }
 }

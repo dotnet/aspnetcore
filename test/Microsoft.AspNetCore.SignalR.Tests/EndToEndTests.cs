@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // The test should connect to the server using WebSockets transport on Windows 8 and newer.
             // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
             var connection = new HttpConnection(new Uri(url));
-            await connection.StartAsync().OrTimeout();
+            await connection.StartAsync(TransferFormat.Binary).OrTimeout();
             await connection.DisposeAsync().OrTimeout();
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             // The test logic lives in the TestTransportFactory and FakeTransport.
             var connection = new HttpConnection(new Uri(url), new TestTransportFactory(), null, null);
-            await connection.StartAsync().OrTimeout();
+            await connection.StartAsync(TransferFormat.Text).OrTimeout();
             await connection.DisposeAsync().OrTimeout();
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var url = _serverFixture.Url + "/echo";
             var connection = new HttpConnection(new Uri(url), transportType);
-            await connection.StartAsync().OrTimeout();
+            await connection.StartAsync(TransferFormat.Text).OrTimeout();
             await connection.DisposeAsync().OrTimeout();
         }
 
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     }, receiveTcs);
 
                     var message = new byte[] { 42 };
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Binary).OrTimeout();
                     await connection.SendAsync(message).OrTimeout();
 
                     var receivedData = await receiveTcs.Task.OrTimeout();
@@ -166,8 +166,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1485")]
-        [MemberData(nameof(TransportTypesAndTransferModes))]
-        public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType, TransferMode requestedTransferMode)
+        [MemberData(nameof(TransportTypesAndTransferFormats))]
+        public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType, TransferFormat requestedTransferFormat)
         {
             using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
             {
@@ -177,9 +177,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var url = _serverFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
-
-                connection.Features.Set<ITransferModeFeature>(
-                    new TransferModeFeature { TransferMode = requestedTransferMode });
                 try
                 {
                     var closeTcs = new TaskCompletionSource<object>();
@@ -199,27 +196,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     connection.OnReceived((data, state) =>
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
-
-                        if (IsBase64Encoded(requestedTransferMode, connection))
-                        {
-                            data = Convert.FromBase64String(Encoding.UTF8.GetString(data));
-                        }
                         var tcs = (TaskCompletionSource<string>)state;
                         tcs.TrySetResult(Encoding.UTF8.GetString(data));
                         return Task.CompletedTask;
                     }, receiveTcs);
 
                     logger.LogInformation("Starting connection to {url}", url);
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(requestedTransferFormat).OrTimeout();
                     logger.LogInformation("Started connection to {url}", url);
 
                     var bytes = Encoding.UTF8.GetBytes(message);
-
-                    // Need to encode binary payloads sent over text transports
-                    if (IsBase64Encoded(requestedTransferMode, connection))
-                    {
-                        bytes = Encoding.UTF8.GetBytes(Convert.ToBase64String(bytes));
-                    }
 
                     logger.LogInformation("Sending {length} byte message", bytes.Length);
                     try
@@ -255,12 +241,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        private bool IsBase64Encoded(TransferMode transferMode, IConnection connection)
-        {
-            return transferMode == TransferMode.Binary &&
-                connection.Features.Get<ITransferModeFeature>().TransferMode == TransferMode.Text;
-        }
-
         public static IEnumerable<object[]> MessageSizesData
         {
             get
@@ -281,8 +261,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var url = _serverFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), TransportType.WebSockets, loggerFactory);
-                connection.Features.Set<ITransferModeFeature>(
-                    new TransferModeFeature { TransferMode = TransferMode.Binary });
 
                 try
                 {
@@ -296,7 +274,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     }, receiveTcs);
 
                     logger.LogInformation("Starting connection to {url}", url);
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Binary).OrTimeout();
                     logger.LogInformation("Started connection to {url}", url);
 
                     var bytes = Encoding.UTF8.GetBytes(message);
@@ -416,16 +394,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         private class FakeTransport : ITransport
         {
-            public TransferMode? Mode => TransferMode.Text;
             public string prevConnectionId = null;
             private int tries = 0;
             private IDuplexPipe _application;
 
-            public Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection)
+            public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
             {
                 _application = application;
                 tries++;
-                Assert.True(QueryHelpers.ParseQuery(url.Query.ToString()).TryGetValue("id", out var id)); 
+                Assert.True(QueryHelpers.ParseQuery(url.Query.ToString()).TryGetValue("id", out var id));
                 if (prevConnectionId == null)
                 {
                     prevConnectionId = id;
@@ -467,14 +444,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public static IEnumerable<object[]> TransportTypesAndTransferModes
+        public static IEnumerable<object[]> TransportTypesAndTransferFormats
         {
             get
             {
                 foreach (var transport in TransportTypes)
                 {
-                    yield return new object[] { transport[0], TransferMode.Text };
-                    yield return new object[] { transport[0], TransferMode.Binary };
+                    yield return new object[] { transport[0], TransferFormat.Text };
+
+                    if ((TransportType)transport[0] != TransportType.ServerSentEvents)
+                    {
+                        yield return new object[] { transport[0], TransferFormat.Binary };
+                    }
                 }
             }
         }

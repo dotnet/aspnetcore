@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -21,12 +22,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task StartAsyncCallsConnectionStart()
         {
             var connection = new Mock<IConnection>();
+            var protocol = new Mock<IHubProtocol>();
+            protocol.SetupGet(p => p.TransferFormat).Returns(TransferFormat.Text);
             connection.SetupGet(p => p.Features).Returns(new FeatureCollection());
-            connection.Setup(m => m.StartAsync()).Returns(Task.CompletedTask).Verifiable();
-            var hubConnection = new HubConnection(connection.Object, Mock.Of<IHubProtocol>(), null);
+            connection.Setup(m => m.StartAsync(TransferFormat.Text)).Returns(Task.CompletedTask).Verifiable();
+            var hubConnection = new HubConnection(connection.Object, protocol.Object, null);
             await hubConnection.StartAsync();
 
-            connection.Verify(c => c.StartAsync(), Times.Once());
+            connection.Verify(c => c.StartAsync(TransferFormat.Text), Times.Once());
         }
 
         [Fact]
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var connection = new Mock<IConnection>();
             connection.Setup(m => m.Features).Returns(new FeatureCollection());
-            connection.Setup(m => m.StartAsync()).Verifiable();
+            connection.Setup(m => m.StartAsync(TransferFormat.Text)).Verifiable();
             var hubConnection = new HubConnection(connection.Object, Mock.Of<IHubProtocol>(), null);
             await hubConnection.DisposeAsync();
 
@@ -249,7 +252,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public string Name => "MockHubProtocol";
 
-            public ProtocolType Type => ProtocolType.Binary;
+            public TransferFormat TransferFormat => TransferFormat.Binary;
 
             public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
             {

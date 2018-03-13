@@ -4,13 +4,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
@@ -30,7 +28,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IConnection _connection;
         private readonly IHubProtocol _protocol;
         private readonly HubBinder _binder;
-        private HubProtocolReaderWriter _protocolReaderWriter;
 
         private readonly object _pendingCallsLock = new object();
         private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>();
@@ -113,25 +110,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task StartAsyncCore()
         {
-            var transferModeFeature = _connection.Features.Get<ITransferModeFeature>();
-            if (transferModeFeature == null)
-            {
-                transferModeFeature = new TransferModeFeature();
-                _connection.Features.Set(transferModeFeature);
-            }
-
-            var requestedTransferMode =
-                _protocol.Type == ProtocolType.Binary
-                    ? TransferMode.Binary
-                    : TransferMode.Text;
-
-            transferModeFeature.TransferMode = requestedTransferMode;
-            await _connection.StartAsync();
+            await _connection.StartAsync(_protocol.TransferFormat);
             _needKeepAlive = _connection.Features.Get<IConnectionInherentKeepAliveFeature>() == null;
-
-            var actualTransferMode = transferModeFeature.TransferMode;
-
-            _protocolReaderWriter = new HubProtocolReaderWriter(_protocol, GetDataEncoder(requestedTransferMode, actualTransferMode));
 
             Log.HubProtocol(_logger, _protocol.Name);
 
@@ -144,20 +124,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             ResetTimeoutTimer();
-        }
-
-        private IDataEncoder GetDataEncoder(TransferMode requestedTransferMode, TransferMode actualTransferMode)
-        {
-            if (requestedTransferMode == TransferMode.Binary && actualTransferMode == TransferMode.Text)
-            {
-                // This is for instance for SSE which is a Text protocol and the user wants to use a binary
-                // protocol so we need to encode messages.
-                return new Base64Encoder();
-            }
-
-            Debug.Assert(requestedTransferMode == actualTransferMode, "All transports besides SSE are expected to support binary mode.");
-
-            return new PassThroughEncoder();
         }
 
         public async Task StopAsync() => await StopAsyncCore().ForceAsync();
@@ -295,7 +261,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             try
             {
-                var payload = _protocolReaderWriter.WriteMessage(hubMessage);
+                var payload = _protocol.WriteToArray(hubMessage);
                 Log.SendInvocation(_logger, hubMessage.InvocationId);
 
                 await _connection.SendAsync(payload, irq.CancellationToken);
@@ -328,7 +294,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
 
-                var payload = _protocolReaderWriter.WriteMessage(invocationMessage);
+                var payload = _protocol.WriteToArray(invocationMessage);
                 Log.SendInvocation(_logger, invocationMessage.InvocationId);
 
                 await _connection.SendAsync(payload, cancellationToken);
@@ -345,7 +311,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             ResetTimeoutTimer();
             Log.ParsingMessages(_logger, data.Length);
-            if (_protocolReaderWriter.ReadMessages(data, _binder, out var messages))
+            var messages = new List<HubMessage>();
+            if (_protocol.TryParseMessages(data, _binder, messages))
             {
                 Log.ReceivingMessages(_logger, messages.Count);
                 foreach (var message in messages)
@@ -620,11 +587,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 return _callback(parameters, _state);
             }
-        }
-
-        private class TransferModeFeature : ITransferModeFeature
-        {
-            public TransferMode TransferMode { get; set; }
         }
     }
 }

@@ -6,13 +6,13 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
-using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Http.Internal;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
@@ -47,9 +47,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private PipeWriter Output => _transportChannel.Output;
         private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
         private readonly TransportType _requestedTransportType = TransportType.All;
-        private TransportType _serverTransports = TransportType.All;
-        // The order of the transports here is the order determines the fallback order.
-        private static readonly TransportType[] AllTransports = new[]{ TransportType.WebSockets, TransportType.ServerSentEvents, TransportType.LongPolling };
         private readonly ConnectionLogScope _logScope;
         private readonly IDisposable _scopeDisposable;
 
@@ -153,9 +150,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _scopeDisposable = _logger.BeginScope(_logScope);
         }
 
-        public async Task StartAsync() => await StartAsyncCore().ForceAsync();
+        public Task StartAsync() => StartAsync(TransferFormat.Binary);
+        public async Task StartAsync(TransferFormat transferFormat) => await StartAsyncCore(transferFormat).ForceAsync();
 
-        private Task StartAsyncCore()
+        private Task StartAsyncCore(TransferFormat transferFormat)
         {
             if (ChangeState(from: ConnectionState.Disconnected, to: ConnectionState.Connecting) != ConnectionState.Disconnected)
             {
@@ -166,7 +164,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _eventQueue = new TaskQueue();
 
-            StartAsyncInternal()
+            StartAsyncInternal(transferFormat)
                 .ContinueWith(t =>
                 {
                     var abortException = _abortException;
@@ -195,7 +193,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return negotiationResponse;
         }
 
-        private async Task StartAsyncInternal()
+        private async Task StartAsyncInternal(TransferFormat transferFormat)
         {
             Log.HttpConnectionStarting(_logger);
 
@@ -205,7 +203,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 if (_requestedTransportType == TransportType.WebSockets)
                 {
                     Log.StartingTransport(_logger, _requestedTransportType, connectUrl);
-                    await StartTransport(connectUrl, _requestedTransportType);
+                    await StartTransport(connectUrl, _requestedTransportType, transferFormat);
                 }
                 else
                 {
@@ -219,14 +217,32 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
 
                     // This should only need to happen once
-                    _serverTransports = GetAvailableServerTransports(negotiationResponse);
                     connectUrl = CreateConnectUrl(Url, negotiationResponse.ConnectionId);
 
-                    foreach (var transport in AllTransports)
+                    // We're going to search for the transfer format as a string because we don't want to parse
+                    // all the transfer formats in the negotiation response, and we want to allow transfer formats
+                    // we don't understand in the negotiate response.
+                    var transferFormatString = transferFormat.ToString();
+
+                    foreach (var transport in negotiationResponse.AvailableTransports)
                     {
+                        if (!Enum.TryParse<TransportType>(transport.Transport, out var transportType))
+                        {
+                            Log.TransportNotSupported(_logger, transport.Transport);
+                            continue;
+                        }
+
                         try
                         {
-                            if ((transport & _serverTransports & _requestedTransportType) != 0)
+                            if ((transportType & _requestedTransportType) == 0)
+                            {
+                                Log.TransportDisabledByClient(_logger, transportType);
+                            }
+                            else if (!transport.TransferFormats.Contains(transferFormatString, StringComparer.Ordinal))
+                            {
+                                Log.TransportDoesNotSupportTransferFormat(_logger, transportType, transferFormat);
+                            }
+                            else
                             {
                                 // The negotiation response gets cleared in the fallback scenario.
                                 if (negotiationResponse == null)
@@ -235,13 +251,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
                                     connectUrl = CreateConnectUrl(Url, negotiationResponse.ConnectionId);
                                 }
 
-                                Log.StartingTransport(_logger, transport, connectUrl);
-                                await StartTransport(connectUrl, transport);
+                                Log.StartingTransport(_logger, transportType, connectUrl);
+                                await StartTransport(connectUrl, transportType, transferFormat);
                                 break;
                             }
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            Log.TransportFailed(_logger, transportType, ex);
                             // Try the next transport
                             // Clear the negotiation response so we know to re-negotiate.
                             negotiationResponse = null;
@@ -382,22 +399,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return negotiationResponse;
         }
 
-        private TransportType GetAvailableServerTransports(NegotiationResponse negotiationResponse)
-        {
-            if (negotiationResponse.AvailableTransports == null)
-            {
-                throw new FormatException("No transports returned in negotiation response.");
-            }
-
-            var availableServerTransports = (TransportType)0;
-            foreach (var t in negotiationResponse.AvailableTransports)
-            {
-                availableServerTransports |= t;
-            }
-
-            return availableServerTransports;
-        }
-
         private static Uri CreateConnectUrl(Uri url, string connectionId)
         {
             if (string.IsNullOrWhiteSpace(connectionId))
@@ -408,9 +409,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return Utils.AppendQueryString(url, "id=" + connectionId);
         }
 
-        private async Task StartTransport(Uri connectUrl, TransportType transportType)
+        private async Task StartTransport(Uri connectUrl, TransportType transportType, TransferFormat transferFormat)
         {
-
             var options = new PipeOptions(writerScheduler: PipeScheduler.Inline, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             _transportChannel = pair.Transport;
@@ -419,15 +419,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // Start the transport, giving it one end of the pipeline
             try
             {
-                await _transport.StartAsync(connectUrl, pair.Application, GetTransferMode(), this);
-
-                // actual transfer mode can differ from the one that was requested so set it on the feature
-                if (!_transport.Mode.HasValue)
-                {
-                    // This can happen with custom transports so it should be an exception, not an assert.
-                    throw new InvalidOperationException("Transport was expected to set the Mode property after StartAsync, but it has not been set.");
-                }
-                SetTransferMode(_transport.Mode.Value);
+                await _transport.StartAsync(connectUrl, pair.Application, transferFormat, this);
             }
             catch (Exception ex)
             {
@@ -435,29 +427,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 _transport = null;
                 throw;
             }
-        }
-
-        private TransferMode GetTransferMode()
-        {
-            var transferModeFeature = Features.Get<ITransferModeFeature>();
-            if (transferModeFeature == null)
-            {
-                return TransferMode.Text;
-            }
-
-            return transferModeFeature.TransferMode;
-        }
-
-        private void SetTransferMode(TransferMode transferMode)
-        {
-            var transferModeFeature = Features.Get<ITransferModeFeature>();
-            if (transferModeFeature == null)
-            {
-                transferModeFeature = new TransferModeFeature();
-                Features.Set(transferModeFeature);
-            }
-
-            transferModeFeature.TransferMode = transferMode;
         }
 
         private async Task ReceiveAsync()
@@ -753,7 +722,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private class NegotiationResponse
         {
             public string ConnectionId { get; set; }
-            public TransportType[] AvailableTransports { get; set; }
+            public AvailableTransport[] AvailableTransports { get; set; }
+        }
+
+        private class AvailableTransport
+        {
+            public string Transport { get; set; }
+            public string[] TransferFormats { get; set; }
         }
     }
 }

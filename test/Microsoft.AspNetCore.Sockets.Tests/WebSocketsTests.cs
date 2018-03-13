@@ -8,6 +8,8 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets.Features;
+using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -71,9 +73,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(TransferMode.Text, WebSocketMessageType.Text)]
-        [InlineData(TransferMode.Binary, WebSocketMessageType.Binary)]
-        public async Task WebSocketTransportSetsMessageTypeBasedOnTransferModeFeature(TransferMode transferMode, WebSocketMessageType expectedMessageType)
+        [InlineData(TransferFormat.Text, WebSocketMessageType.Text)]
+        [InlineData(TransferFormat.Binary, WebSocketMessageType.Binary)]
+        public async Task WebSocketTransportSetsMessageTypeBasedOnTransferFormatFeature(TransferFormat transferFormat, WebSocketMessageType expectedMessageType)
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
@@ -82,7 +84,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null) { TransferMode = transferMode };
+                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    connectionContext.ActiveFormat = transferFormat;
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it

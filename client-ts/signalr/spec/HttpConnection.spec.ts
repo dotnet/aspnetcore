@@ -5,7 +5,7 @@ import { DataReceived, TransportClosed } from "../src/Common";
 import { HttpConnection } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/HttpConnection";
 import { HttpResponse } from "../src/index";
-import { ITransport, TransferMode, TransportType } from "../src/Transports";
+import { ITransport, TransferFormat, TransportType } from "../src/Transports";
 import { eachEndpointUrl, eachTransport } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 
@@ -15,13 +15,13 @@ const commonOptions: IHttpConnectionOptions = {
 
 describe("HttpConnection", () => {
     it("cannot be created with relative url if document object is not present", () => {
-        expect(() => new HttpConnection("/test", commonOptions))
+        expect(() => new HttpConnection("/test", TransferFormat.Text, commonOptions))
             .toThrow(new Error("Cannot resolve '/test'."));
     });
 
     it("cannot be created with relative url if window object is not present", () => {
         (global as any).window = {};
-        expect(() => new HttpConnection("/test", commonOptions))
+        expect(() => new HttpConnection("/test", TransferFormat.Text, commonOptions))
             .toThrow(new Error("Cannot resolve '/test'."));
         delete (global as any).window;
     });
@@ -34,7 +34,7 @@ describe("HttpConnection", () => {
                 .on("GET", (r) => ""),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", options);
+        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
 
         try {
             await connection.start();
@@ -64,7 +64,7 @@ describe("HttpConnection", () => {
                 }),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", options);
+        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
 
         try {
             await connection.start();
@@ -86,7 +86,7 @@ describe("HttpConnection", () => {
                 .on("GET", (r) => ""),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", options);
+        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
 
         try {
             await connection.start();
@@ -117,7 +117,7 @@ describe("HttpConnection", () => {
                 }),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", options);
+        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
 
         try {
             await connection.start();
@@ -129,17 +129,17 @@ describe("HttpConnection", () => {
     });
 
     it("can stop a non-started connection", async (done) => {
-        const connection = new HttpConnection("http://tempuri.org", commonOptions);
+        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, commonOptions);
         await connection.stop();
         done();
     });
 
-    it("preserves users connection string", async (done) => {
+    it("preserves user's query string", async (done) => {
         let connectUrl: string;
         const fakeTransport: ITransport = {
-            connect(url: string): Promise<TransferMode> {
+            connect(url: string): Promise<void> {
                 connectUrl = url;
-                return Promise.reject(TransferMode.Text);
+                return Promise.reject("");
             },
             send(data: any): Promise<void> {
                 return Promise.reject("");
@@ -159,7 +159,7 @@ describe("HttpConnection", () => {
             transport: fakeTransport,
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org?q=myData", options);
+        const connection = new HttpConnection("http://tempuri.org?q=myData", TransferFormat.Text, options);
 
         try {
             await connection.start();
@@ -190,7 +190,7 @@ describe("HttpConnection", () => {
                     }),
             } as IHttpConnectionOptions;
 
-            connection = new HttpConnection(givenUrl, options);
+            connection = new HttpConnection(givenUrl, TransferFormat.Text, options);
 
             try {
                 await connection.start();
@@ -213,18 +213,18 @@ describe("HttpConnection", () => {
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", (r) => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
+                    .on("POST", (r) => ({ connectionId: "42", availableTransports: [] }))
                     .on("GET", (r) => ""),
                 transport: requestedTransport,
             } as IHttpConnectionOptions;
 
-            const connection = new HttpConnection("http://tempuri.org", options);
+            const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
             try {
                 await connection.start();
                 fail();
                 done();
             } catch (e) {
-                expect(e.message).toBe("No available transports found.");
+                expect(e.message).toBe("Unable to initialize any of the available transports.");
                 done();
             }
         });
@@ -234,17 +234,17 @@ describe("HttpConnection", () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
-                .on("POST", (r) => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
+                .on("POST", (r) => ({ connectionId: "42", availableTransports: [] }))
                 .on("GET", (r) => ""),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", options);
+        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
         try {
             await connection.start();
             fail();
             done();
         } catch (e) {
-            expect(e.message).toBe("No available transports found.");
+            expect(e.message).toBe("Unable to initialize any of the available transports.");
             done();
         }
     });
@@ -256,7 +256,7 @@ describe("HttpConnection", () => {
             transport: TransportType.WebSockets,
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", options);
+        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
         try {
             await connection.start();
             fail();
@@ -264,42 +264,24 @@ describe("HttpConnection", () => {
         } catch (e) {
             // WebSocket is created when the transport is connecting which happens after
             // negotiate request would be sent. No better/easier way to test this.
-            expect(e.message).toBe("WebSocket is not defined");
+            expect(e.message).toBe("'WebSocket' is not supported in your environment.");
             done();
         }
     });
 
-    [
-        [TransferMode.Text, TransferMode.Text],
-        [TransferMode.Text, TransferMode.Binary],
-        [TransferMode.Binary, TransferMode.Text],
-        [TransferMode.Binary, TransferMode.Binary],
-    ].forEach(([requestedTransferMode, transportTransferMode]) => {
-        it(`connection returns ${transportTransferMode} transfer mode when ${requestedTransferMode} transfer mode is requested`, async () => {
-            const fakeTransport = {
-                // mode: TransferMode : TransferMode.Text
-                connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> { return Promise.resolve(transportTransferMode); },
-                mode: transportTransferMode,
-                onclose: null,
-                onreceive: null,
-                send(data: any): Promise<void> { return Promise.resolve(); },
-                stop(): Promise<void> { return Promise.resolve(); },
-            } as ITransport;
+    describe(".constructor", () => {
+        it("throws if no Url is provided", async () => {
+            // Force TypeScript to let us call the constructor incorrectly :)
+            expect(() => new (HttpConnection as any)()).toThrowError("The 'url' argument is required.");
+        });
 
-            const options: IHttpConnectionOptions = {
-                ...commonOptions,
-                httpClient: new TestHttpClient()
-                    .on("POST", (r) => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
-                    .on("GET", (r) => ""),
-                transport: fakeTransport,
-            } as IHttpConnectionOptions;
+        it("throws if no TransferFormat is provided", async () => {
+            // Force TypeScript to let us call the constructor incorrectly :)
+            expect(() => new (HttpConnection as any)("http://tempuri.org")).toThrowError("The 'transferFormat' argument is required.");
+        });
 
-            const connection = new HttpConnection("https://tempuri.org", options);
-            connection.features.transferMode = requestedTransferMode;
-            await connection.start();
-            const actualTransferMode = connection.features.transferMode;
-
-            expect(actualTransferMode).toBe(transportTransferMode);
+        it("throws if an unsupported TransferFormat is provided", async () => {
+            expect(() => new HttpConnection("http://tempuri.org", 42)).toThrowError("Unknown transferFormat value: 42.");
         });
     });
 });

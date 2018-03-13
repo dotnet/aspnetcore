@@ -29,8 +29,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private CancellationTokenSource _receiveShutdownToken = new CancellationTokenSource();
         private Task _receiveLoop;
 
-        private TransferMode? _transferMode;
-
         public event Action<Exception> Closed;
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;
@@ -44,9 +42,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
-        public TestConnection(TransferMode? transferMode = null)
+        public TestConnection()
         {
-            _transferMode = transferMode;
             _receiveLoop = ReceiveLoopAsync(_receiveShutdownToken.Token);
         }
 
@@ -80,20 +77,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             throw new ObjectDisposedException("Unable to send message, underlying channel was closed");
         }
 
-        public Task StartAsync()
+        public Task StartAsync(TransferFormat transferFormat)
         {
-            if (_transferMode.HasValue)
-            {
-                var transferModeFeature = Features.Get<ITransferModeFeature>();
-                if (transferModeFeature == null)
-                {
-                    transferModeFeature = new TransferModeFeature();
-                    Features.Set(transferModeFeature);
-                }
-
-                transferModeFeature.TransferMode = _transferMode.Value;
-            }
-
             _started.TrySetResult(null);
             return Task.CompletedTask;
         }

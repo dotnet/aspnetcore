@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -42,7 +43,7 @@ namespace ClientSample
                 var closeTcs = new TaskCompletionSource<object>();
                 connection.Closed += e => closeTcs.SetResult(null);
                 connection.OnReceived(data => Console.Out.WriteLineAsync($"{Encoding.UTF8.GetString(data)}"));
-                await connection.StartAsync();
+                await connection.StartAsync(TransferFormat.Text);
 
                 Console.WriteLine($"Connected to {baseUrl}");
                 var cts = new CancellationTokenSource();

@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -141,7 +144,10 @@ namespace Microsoft.AspNetCore.SignalR
                     {
                         if (!buffer.IsEmpty)
                         {
-                            if (connection.ProtocolReaderWriter.ReadMessages(buffer, _dispatcher, out var hubMessages, out consumed, out examined))
+                            var hubMessages = new List<HubMessage>();
+
+                            // TODO: Make this incremental
+                            if (connection.Protocol.TryParseMessages(buffer.ToArray(), _dispatcher, hubMessages))
                             {
                                 foreach (var hubMessage in hubMessages)
                                 {

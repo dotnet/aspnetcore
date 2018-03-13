@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return WithConnectionAsync(CreateConnection(), async (connection, closed) =>
                 {
                     // Start the connection
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                     // Abort with an error
                     var expected = new Exception("Ruh roh!");
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return WithConnectionAsync(CreateConnection(transport: new TestTransport(onTransportStop: SyncPoint.Create(2, out var syncPoints))), async (connection, closed) =>
                 {
                     // Start the connection
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                     // Stop normally
                     var stopTask = connection.StopAsync().OrTimeout();
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return WithConnectionAsync(CreateConnection(transport: new TestTransport(onTransportStop: SyncPoint.Create(2, out var syncPoints))), async (connection, closed) =>
                 {
                     // Start the connection
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                     // Abort with an error
                     var expected = new Exception("Ruh roh!");
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return WithConnectionAsync(CreateConnection(transport: new TestTransport(onTransportStop: SyncPoint.Create(out var syncPoint))), async (connection, closed) =>
                 {
                     // Start the connection
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                     // Abort with an error
                     var expected = new Exception("Ruh roh!");
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Wait to reach the first sync point
                     await syncPoint.WaitForSyncPoint().OrTimeout();
 
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
                     Assert.Equal("Cannot start a connection that is not in the Disconnected state.", ex.Message);
 
                     // Release the sync point and wait for close to complete
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.Same(expected, actual);
 
                     // We can start now
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                     // And we can stop without getting the abort exception.
                     await connection.StopAsync().OrTimeout();

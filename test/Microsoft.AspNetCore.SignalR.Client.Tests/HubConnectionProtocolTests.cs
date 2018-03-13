@@ -325,75 +325,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task MessagesEncodedWhenUsingBinaryProtocolOverTextTransport()
-        {
-            var connection = new TestConnection(TransferMode.Text);
-
-            var hubConnection = new HubConnection(connection,
-                new MessagePackHubProtocol(), new LoggerFactory());
-            try
-            {
-                await hubConnection.StartAsync().OrTimeout();
-                await hubConnection.SendAsync("MyMethod", 42).OrTimeout();
-
-                await connection.ReadSentTextMessageAsync().OrTimeout();
-                var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
-
-                // The message is in the following format `size:payload;`
-                var parts = invokeMessage.Split(':');
-                Assert.Equal(2, parts.Length);
-                Assert.True(int.TryParse(parts[0], out var payloadSize));
-                Assert.Equal(payloadSize, parts[1].Length - 1);
-                Assert.EndsWith(";", parts[1]);
-
-                // this throws if the message is not a valid base64 string
-                Convert.FromBase64String(parts[1].Substring(0, payloadSize));
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task MessagesDecodedWhenUsingBinaryProtocolOverTextTransport()
-        {
-            var connection = new TestConnection(TransferMode.Text);
-            var hubConnection = new HubConnection(connection,
-                new MessagePackHubProtocol(), new LoggerFactory());
-
-            var invocationTcs = new TaskCompletionSource<int>();
-            try
-            {
-                await hubConnection.StartAsync().OrTimeout();
-                hubConnection.On<int>("MyMethod", result => invocationTcs.SetResult(result));
-
-                using (var ms = new MemoryStream())
-                {
-                    new MessagePackHubProtocol()
-                        .WriteMessage(new InvocationMessage(null, "MyMethod", null, 42), ms);
-
-                    var invokeMessage = Convert.ToBase64String(ms.ToArray());
-                    var payloadSize = invokeMessage.Length.ToString(CultureInfo.InvariantCulture);
-                    var message = $"{payloadSize}:{invokeMessage};";
-
-                    connection.ReceivedMessages.TryWrite(Encoding.UTF8.GetBytes(message));
-                }
-
-                Assert.Equal(42, await invocationTcs.Task.OrTimeout());
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
-            }
-        }
-
-        [Fact]
         public async Task AcceptsPingMessages()
         {
-            var connection = new TestConnection(TransferMode.Text);
+            var connection = new TestConnection();
             var hubConnection = new HubConnection(connection,
                 new JsonHubProtocol(), new LoggerFactory());
 

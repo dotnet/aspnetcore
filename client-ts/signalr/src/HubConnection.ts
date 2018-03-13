@@ -1,17 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol";
 import { ConnectionClosed } from "./Common";
 import { HttpConnection, IHttpConnectionOptions } from "./HttpConnection";
 import { IConnection } from "./IConnection";
-import { CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, NegotiationMessage, ProtocolType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import { CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, NegotiationMessage, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { ConsoleLogger, LoggerFactory, NullLogger } from "./Loggers";
 import { Observable, Subject } from "./Observable";
 import { TextMessageFormat } from "./TextMessageFormat";
-import { TransferMode, TransportType } from "./Transports";
+import { TransferFormat, TransportType } from "./Transports";
 
 export { JsonHubProtocol };
 
@@ -40,15 +39,16 @@ export class HubConnection {
 
         this.timeoutInMilliseconds = options.timeoutInMilliseconds || DEFAULT_TIMEOUT_IN_MS;
 
+        this.protocol = options.protocol || new JsonHubProtocol();
+
         if (typeof urlOrConnection === "string") {
-            this.connection = new HttpConnection(urlOrConnection, options);
+            this.connection = new HttpConnection(urlOrConnection, this.protocol.transferFormat, options);
         } else {
             this.connection = urlOrConnection;
         }
 
         this.logger = LoggerFactory.createLogger(options.logger);
 
-        this.protocol = options.protocol || new JsonHubProtocol();
         this.connection.onreceive = (data: any) => this.processIncomingData(data);
         this.connection.onclose = (error?: Error) => this.connectionClosed(error);
 
@@ -133,24 +133,13 @@ export class HubConnection {
     }
 
     public async start(): Promise<void> {
-        const requestedTransferMode =
-            (this.protocol.type === ProtocolType.Binary)
-                ? TransferMode.Binary
-                : TransferMode.Text;
-
-        this.connection.features.transferMode = requestedTransferMode;
         await this.connection.start();
-        const actualTransferMode = this.connection.features.transferMode;
 
         await this.connection.send(
             TextMessageFormat.write(
                 JSON.stringify({ protocol: this.protocol.name } as NegotiationMessage)));
 
         this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
-
-        if (requestedTransferMode === TransferMode.Binary && actualTransferMode === TransferMode.Text) {
-            this.protocol = new Base64EncodedHubProtocol(this.protocol);
-        }
 
         this.configureTimeout();
     }

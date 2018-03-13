@@ -1,4 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿import { TransferFormat } from "./Transports";
+
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 export const enum MessageType {
@@ -58,14 +60,9 @@ export interface CancelInvocationMessage extends HubInvocationMessage {
     readonly type: MessageType.CancelInvocation;
 }
 
-export const enum ProtocolType {
-    Text = 1,
-    Binary,
-}
-
 export interface IHubProtocol {
     readonly name: string;
-    readonly type: ProtocolType;
+    readonly transferFormat: TransferFormat;
     parseMessages(input: any): HubMessage[];
     writeMessage(message: HubMessage): any;
 }

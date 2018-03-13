@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
+using Microsoft.AspNetCore.Sockets;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             return Task.CompletedTask;
                         }, receiveTcs);
 
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         Assert.Contains("42", await receiveTcs.Task.OrTimeout());
                     });
             }
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             return Task.CompletedTask;
                         }, receiveTcs);
 
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         Assert.Contains("42", await receiveTcs.Task.OrTimeout());
                         Assert.True(receivedRaised);
                     });
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             return Task.CompletedTask;
                         }, receiveTcs);
 
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         Assert.Contains("42", await receiveTcs.Task.OrTimeout());
                         Assert.True(receivedRaised);
                     });

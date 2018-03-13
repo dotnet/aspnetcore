@@ -9,7 +9,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils;
 using Microsoft.AspNetCore.Sockets;
@@ -1333,10 +1332,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(synchronousCallbacks: false, protocol: protocol, invocationBinder: invocationBinder.Object))
             {
-                var transportFeature = new Mock<IConnectionTransportFeature>();
-                transportFeature.SetupGet(f => f.TransportCapabilities)
-                    .Returns(protocol.Type == ProtocolType.Binary ? TransferMode.Binary : TransferMode.Text);
-                client.Connection.Features.Set(transportFeature.Object);
+                client.Connection.SupportedFormats = protocol.TransferFormat;
 
                 var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
 
@@ -1419,7 +1415,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
             using (var client1 = new TestClient(protocol: new JsonHubProtocol()))
-            using (var client2 = new TestClient(protocol: new MessagePackHubProtocol(), dataEncoder: new Base64Encoder()))
+            using (var client2 = new TestClient(protocol: new MessagePackHubProtocol()))
             {
                 var endPointLifetime1 = endPoint.OnConnectedAsync(client1.Connection);
                 var endPointLifetime2 = endPoint.OnConnectedAsync(client2.Connection);
@@ -1617,9 +1613,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var msgPackOptions = serviceProvider.GetRequiredService<IOptions<MessagePackHubProtocolOptions>>();
             using (var client = new TestClient(synchronousCallbacks: false, protocol: new MessagePackHubProtocol(msgPackOptions)))
             {
-                var transportFeature = new Mock<IConnectionTransportFeature>();
-                transportFeature.SetupGet(f => f.TransportCapabilities).Returns(TransferMode.Binary);
-                client.Connection.Features.Set(transportFeature.Object);
+                client.Connection.SupportedFormats = TransferFormat.Binary;
                 var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
 
                 await client.Connected.OrTimeout();
@@ -1789,6 +1783,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.IsType<PingMessage>(message);
                 }
                 Assert.InRange(counter, 1, Int32.MaxValue);
+            }
+        }
+
+        [Fact]
+        public async Task NegotiatingFailsIfMsgPackRequestedOverTextOnlyTransport()
+        {
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
+                services.Configure<HubOptions>(options =>
+                    options.KeepAliveInterval = TimeSpan.FromMilliseconds(100)));
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient(false, new MessagePackHubProtocol()))
+            {
+                client.Connection.SupportedFormats = TransferFormat.Text;
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => endPoint.OnConnectedAsync(client.Connection).OrTimeout());
             }
         }
 

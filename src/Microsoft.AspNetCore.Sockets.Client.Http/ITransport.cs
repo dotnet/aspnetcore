@@ -9,8 +9,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface ITransport
     {
-        Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection);
+        Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection);
         Task StopAsync();
-        TransferMode? Mode { get; }
     }
 }

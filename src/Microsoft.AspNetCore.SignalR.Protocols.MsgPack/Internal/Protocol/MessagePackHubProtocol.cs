@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Options;
 using MsgPack;
 using MsgPack.Serialization;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public string Name => ProtocolName;
 
-        public ProtocolType Type => ProtocolType.Binary;
+        public TransferFormat TransferFormat => TransferFormat.Binary;
 
         public MessagePackHubProtocol()
             : this(Options.Create(new MessagePackHubProtocolOptions()))

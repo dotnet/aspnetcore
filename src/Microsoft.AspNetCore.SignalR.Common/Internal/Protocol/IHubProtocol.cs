@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     {
         string Name { get; }
 
-        ProtocolType Type { get; }
+        TransferFormat TransferFormat { get; }
 
         bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages);
 

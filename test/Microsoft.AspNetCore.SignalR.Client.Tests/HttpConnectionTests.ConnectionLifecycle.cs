@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -28,10 +29,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await WithConnectionAsync(CreateConnection(loggerFactory: loggerFactory), async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         var exception =
                             await Assert.ThrowsAsync<InvalidOperationException>(
-                                async () => await connection.StartAsync().OrTimeout());
+                                async () => await connection.StartAsync(TransferFormat.Text).OrTimeout());
                         Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
                     });
                 }
@@ -47,11 +48,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(loggerFactory: loggerFactory),
                         async (connection, closed) =>
                         {
-                            await connection.StartAsync().OrTimeout();
+                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
                             await connection.DisposeAsync();
                             var exception =
                                 await Assert.ThrowsAsync<InvalidOperationException>(
-                                    async () => await connection.StartAsync().OrTimeout());
+                                    async () => await connection.StartAsync(TransferFormat.Text).OrTimeout());
 
                             Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
                         });
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             await connection.DisposeAsync();
                             var exception =
                                 await Assert.ThrowsAsync<InvalidOperationException>(
-                                    async () => await connection.StartAsync().OrTimeout());
+                                    async () => await connection.StartAsync(TransferFormat.Text).OrTimeout());
 
                             Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
                         });
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection, closed) =>
                     {
                         // Start the connection and wait for the transport to start up.
-                        var startTask = connection.StartAsync();
+                        var startTask = connection.StartAsync(TransferFormat.Text);
                         await transportStart.WaitForSyncPoint().OrTimeout();
 
                         // While the transport is starting, dispose the connection
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection, closed) =>
                     {
                         Assert.Equal(0, startCounter);
-                        await connection.StartAsync();
+                        await connection.StartAsync(TransferFormat.Text);
                         Assert.Equal(passThreshold, startCounter);
                     });
                 }
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection, closed) =>
                         {
-                            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync());
+                            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text));
                             Assert.Equal("Unable to connect to the server with any of the available transports.", ex.Message);
                             Assert.Equal(3, startCounter);
                         });
@@ -180,9 +181,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(loggerFactory: loggerFactory),
                         async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await connection.StopAsync().OrTimeout();
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                     });
                 }
             }
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection, closed) =>
                     {
                         // Start and wait for the transport to start up.
-                        var startTask = connection.StartAsync();
+                        var startTask = connection.StartAsync(TransferFormat.Text);
                         await transportStart.WaitForSyncPoint().OrTimeout();
 
                         // Stop the connection while it's starting
@@ -223,7 +224,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(loggerFactory: loggerFactory),
                         async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await Task.WhenAll(connection.StopAsync(), connection.StopAsync()).OrTimeout();
                         await closed.OrTimeout();
                     });
@@ -257,14 +258,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(httpHandler, loggerFactory),
                         async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await connection.SendAsync(new byte[] { 0x42 }).OrTimeout();
 
                         // Wait for the connection to close, because the send failed.
                         await Assert.ThrowsAsync<HttpRequestException>(() => closed.OrTimeout());
 
                         // Start it up again
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                     });
                 }
             }
@@ -281,7 +282,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection, closed) =>
                     {
                         // Start the connection
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
 
                         // Stop the connection
                         var stopTask = connection.StopAsync().OrTimeout();
@@ -299,7 +300,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         await disposeTask.OrTimeout();
 
                         // We should be disposed and thus unable to restart.
-                        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().OrTimeout());
+                        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
                         Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
                     });
                 }
@@ -314,7 +315,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(loggerFactory: loggerFactory),
                         async (connection, closed) =>
                         {
-                            await connection.StartAsync().OrTimeout();
+                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
                             await connection.StopAsync().OrTimeout();
                             await closed.OrTimeout();
                             await connection.DisposeAsync().OrTimeout();
@@ -329,7 +330,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(),
                     async (connection, closed) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await connection.DisposeAsync().OrTimeout();
                         await closed.OrTimeout();
                     });
@@ -346,7 +347,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(transport: testTransport),
                 async (connection, closed) =>
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
                     testTransport.Application.Output.Complete(expected);
                     var actual = await Assert.ThrowsAsync<Exception>(() => closed.OrTimeout());
                     Assert.Same(expected, actual);
@@ -384,7 +385,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection, closed) =>
                         {
                             // Start the transport
-                            await connection.StartAsync().OrTimeout();
+                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
                             Assert.False(longPollingTransport.Running.IsCompleted, "Expected that the transport would still be running");
 
                             // Stop the connection, and we should stop the transport

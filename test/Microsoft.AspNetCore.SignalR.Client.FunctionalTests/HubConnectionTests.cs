@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var result = await connection.InvokeAsync<string>("HelloWorld").OrTimeout();
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).OrTimeout();
 
                     Assert.Equal("Hello World!", result);
                 }
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var result = await connection.InvokeAsync<string>("Echo", originalMessage).OrTimeout();
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).OrTimeout();
 
                     Assert.Equal(originalMessage, result);
                 }
@@ -115,11 +115,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var result = await connection.InvokeAsync<string>("Echo", originalMessage).OrTimeout();
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).OrTimeout();
                     Assert.Equal(originalMessage, result);
                     await connection.StopAsync().OrTimeout();
                     await connection.StartAsync().OrTimeout();
-                    result = await connection.InvokeAsync<string>("Echo", originalMessage).OrTimeout();
+                    result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).OrTimeout();
                     Assert.Equal(originalMessage, result);
                 }
                 catch (Exception ex)
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var result = await connection.InvokeAsync<string>("Echo", originalMessage).OrTimeout();
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).OrTimeout();
                     Assert.Equal(originalMessage, result);
 
                     logger.LogInformation("Stopping connection");
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await restartTcs.Task.OrTimeout();
                     logger.LogInformation("Reconnection complete");
 
-                    result = await connection.InvokeAsync<string>("Echo", originalMessage).OrTimeout();
+                    result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).OrTimeout();
                     Assert.Equal(originalMessage, result);
 
                 }
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var result = await connection.InvokeAsync<string>("echo", originalMessage).OrTimeout();
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo).ToLowerInvariant(), originalMessage).OrTimeout();
 
                     Assert.Equal(originalMessage, result);
                 }
@@ -677,7 +677,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await hubConnection.StartAsync().OrTimeout();
-                    var message = await hubConnection.InvokeAsync<string>("Echo", "Hello, World!").OrTimeout();
+                    var message = await hubConnection.InvokeAsync<string>(nameof(TestHub.Echo), "Hello, World!").OrTimeout();
                     Assert.Equal("Hello, World!", message);
                 }
                 catch (Exception ex)
@@ -708,7 +708,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await hubConnection.StartAsync().OrTimeout();
-                    var headerValues = await hubConnection.InvokeAsync<string[]>("GetHeaderValues", new object[] { new[] { "X-test", "X-42" } }).OrTimeout();
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new object[] { new[] { "X-test", "X-42" } }).OrTimeout();
                     Assert.Equal(new[] { "42", "test" }, headerValues);
                 }
                 catch (Exception ex)
@@ -742,7 +742,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await hubConnection.StartAsync().OrTimeout();
-                    var cookieValue = await hubConnection.InvokeAsync<string>("GetCookieValue", new object[] { "Foo" }).OrTimeout();
+                    var cookieValue = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetCookieValue), new object[] { "Foo" }).OrTimeout();
                     Assert.Equal("Bar", cookieValue);
                 }
                 catch (Exception ex)
@@ -772,7 +772,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await hubConnection.StartAsync().OrTimeout();
 
-                    var features = await hubConnection.InvokeAsync<object[]>("GetIHttpConnectionFeatureProperties").OrTimeout();
+                    var features = await hubConnection.InvokeAsync<object[]>(nameof(TestHub.GetIHttpConnectionFeatureProperties)).OrTimeout();
                     var localPort = (Int64)features[0];
                     var remotePort = (Int64)features[1];
                     var localIP = (string)features[2];
@@ -795,23 +795,56 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task NegotiationSkipsServerSentEventsWhenUsingBinaryProtocol()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithUrl(_serverFixture.Url + "/default-nowebsockets")
+                    .WithHubProtocol(new MessagePackHubProtocol())
+                    .WithLoggerFactory(loggerFactory)
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+
+                    var transport = await hubConnection.InvokeAsync<TransportType>(nameof(TestHub.GetActiveTransportName)).OrTimeout();
+                    Assert.Equal(TransportType.LongPolling, transport);
+                }
+                catch (Exception ex)
+                {
+                    loggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "Exception from test");
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
         public static IEnumerable<object[]> HubProtocolsAndTransportsAndHubPaths
         {
             get
             {
                 foreach (var protocol in HubProtocols)
                 {
-                    foreach (var transport in TransportTypes().SelectMany(t => t))
+                    foreach (var transport in TransportTypes().SelectMany(t => t).Cast<TransportType>())
                     {
                         foreach (var hubPath in HubPaths)
                         {
-                            yield return new object[] { protocol, transport, hubPath };
+                            if (!(protocol is MessagePackHubProtocol) || transport != TransportType.ServerSentEvents)
+                            {
+                                yield return new object[] { protocol, transport, hubPath };
+                            }
                         }
                     }
                 }
             }
         }
 
+        // This list excludes "special" hub paths like "default-nowebsockets" which exist for specific tests.
         public static string[] HubPaths = new[] { "/default", "/dynamic", "/hubT" };
 
         public static IEnumerable<IHubProtocol> HubProtocols =>

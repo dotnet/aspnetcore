@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,6 +84,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             private static readonly Action<ILogger, string, string, Exception> _connectionStateChanged =
                 LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "ConnectionStateChanged"), "Connection state changed from {previousState} to {newState}.");
+
+            private static readonly Action<ILogger, string, Exception> _transportNotSupported =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(26, "TransportNotSupported"), "Skipping transport {transportName} because it is not supported by this client.");
+
+            private static readonly Action<ILogger, string, string, Exception> _transportDoesNotSupportTransferFormat =
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(27, "TransportDoesNotSupportTransferFormat"), "Skipping transport {transportName} because it does not support the requested transfer format '{transferFormat}'.");
+
+            private static readonly Action<ILogger, string, Exception> _transportDisabledByClient =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(28, "TransportDisabledByClient"), "Skipping transport {transportName} because it was disabled by the client.");
+
+            private static readonly Action<ILogger, string, Exception> _transportFailed =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(29, "TransportFailed"), "Skipping transport {transportName} because it failed to initialize.");
 
             public static void HttpConnectionStarting(ILogger logger)
             {
@@ -217,6 +229,35 @@ namespace Microsoft.AspNetCore.Sockets.Client
             public static void ErrorDuringClosedEvent(ILogger logger, Exception exception)
             {
                 _errorDuringClosedEvent(logger, exception);
+            }
+
+            public static void TransportNotSupported(ILogger logger, string transport)
+            {
+                _transportNotSupported(logger, transport, null);
+            }
+
+            public static void TransportDoesNotSupportTransferFormat(ILogger logger, TransportType transport, TransferFormat transferFormat)
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _transportDoesNotSupportTransferFormat(logger, transport.ToString(), transferFormat.ToString(), null);
+                }
+            }
+
+            public static void TransportDisabledByClient(ILogger logger, TransportType transport)
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _transportDisabledByClient(logger, transport.ToString(), null);
+                }
+            }
+
+            public static void TransportFailed(ILogger logger, TransportType transport, Exception ex)
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _transportFailed(logger, transport.ToString(), ex);
+                }
             }
         }
     }

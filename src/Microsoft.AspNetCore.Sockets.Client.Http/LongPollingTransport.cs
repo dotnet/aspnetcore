@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Task Running { get; private set; } = Task.CompletedTask;
 
-        public TransferMode? Mode { get; private set; }
-
         public LongPollingTransport(HttpClient httpClient)
             : this(httpClient, null, null)
         { }
@@ -40,19 +38,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection)
+        public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
         {
-            if (requestedTransferMode != TransferMode.Binary && requestedTransferMode != TransferMode.Text)
+            if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
             {
-                throw new ArgumentException("Invalid transfer mode.", nameof(requestedTransferMode));
+                throw new ArgumentException($"The '{transferFormat}' transfer format is not supported by this transport.", nameof(transferFormat));
             }
 
             connection.Features.Set<IConnectionInherentKeepAliveFeature>(new ConnectionInherentKeepAliveFeature(_httpClient.Timeout));
 
             _application = application;
-            Mode = requestedTransferMode;
 
-            Log.StartTransport(_logger, Mode.Value);
+            Log.StartTransport(_logger, transferFormat);
 
             // Start sending and polling (ask for binary if the server supports it)
             _poller = Poll(url, _transportCts.Token);

@@ -1,6 +1,5 @@
 using System;
 using System.IO.Pipelines;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
@@ -12,18 +11,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private readonly Func<Task> _stopHandler;
         private readonly Func<Task> _startHandler;
 
-        public TransferMode? Mode { get; }
+        public TransferFormat? Format { get; }
         public IDuplexPipe Application { get; private set; }
 
-        public TestTransport(Func<Task> onTransportStop = null, Func<Task> onTransportStart = null, TransferMode transferMode = TransferMode.Text)
+        public TestTransport(Func<Task> onTransportStop = null, Func<Task> onTransportStart = null, TransferFormat transferFormat = TransferFormat.Text)
         {
             _stopHandler = onTransportStop ?? new Func<Task>(() => Task.CompletedTask);
             _startHandler = onTransportStart ?? new Func<Task>(() => Task.CompletedTask);
-            Mode = transferMode;
+            Format = transferFormat;
         }
 
-        public Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection)
+        public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
         {
+            if ((Format & transferFormat) == 0)
+            {
+                throw new InvalidOperationException($"The '{transferFormat}' transfer format is not supported by this transport.");
+            }
             Application = application;
             return _startHandler();
         }

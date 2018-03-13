@@ -6,7 +6,8 @@ import { DefaultHttpClient, HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { ILogger, LogLevel } from "./ILogger";
 import { LoggerFactory } from "./Loggers";
-import { ITransport, LongPollingTransport, ServerSentEventsTransport, TransferMode, TransportType, WebSocketTransport } from "./Transports";
+import { ITransport, LongPollingTransport, ServerSentEventsTransport, TransferFormat, TransportType, WebSocketTransport } from "./Transports";
+import { Arg } from "./Utils";
 
 export interface IHttpConnectionOptions {
     httpClient?: HttpClient;
@@ -23,7 +24,12 @@ const enum ConnectionState {
 
 interface INegotiateResponse {
     connectionId: string;
-    availableTransports: string[];
+    availableTransports: IAvailableTransport[];
+}
+
+interface IAvailableTransport {
+    transport: keyof typeof TransportType;
+    transferFormats: Array<keyof typeof TransferFormat>;
 }
 
 export class HttpConnection implements IConnection {
@@ -33,13 +39,19 @@ export class HttpConnection implements IConnection {
     private readonly httpClient: HttpClient;
     private readonly logger: ILogger;
     private readonly options: IHttpConnectionOptions;
+    private readonly transferFormat: TransferFormat;
     private transport: ITransport;
     private connectionId: string;
     private startPromise: Promise<void>;
 
     public readonly features: any = {};
 
-    constructor(url: string, options: IHttpConnectionOptions = {}) {
+    constructor(url: string, transferFormat: TransferFormat, options: IHttpConnectionOptions = {}) {
+        Arg.isRequired(url, "url");
+        Arg.isRequired(transferFormat, "transferFormat");
+        Arg.isIn(transferFormat, TransferFormat, "transferFormat");
+
+        this.transferFormat = transferFormat;
         this.logger = LoggerFactory.createLogger(options.logger);
         this.baseUrl = this.resolveUrl(url);
 
@@ -67,7 +79,7 @@ export class HttpConnection implements IConnection {
             if (this.options.transport === TransportType.WebSockets) {
                 // No need to add a connection ID in this case
                 this.url = this.baseUrl;
-                this.transport = this.createTransport(this.options.transport, [TransportType[TransportType.WebSockets]]);
+                this.transport = this.constructTransport(TransportType.WebSockets);
             } else {
                 let headers;
                 const token = this.options.accessTokenFactory();
@@ -91,50 +103,73 @@ export class HttpConnection implements IConnection {
 
                 if (this.connectionId) {
                     this.url = this.baseUrl + (this.baseUrl.indexOf("?") === -1 ? "?" : "&") + `id=${this.connectionId}`;
-                    this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports);
+                    this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports, this.transferFormat);
                 }
             }
 
             this.transport.onreceive = this.onreceive;
             this.transport.onclose = (e) => this.stopConnection(true, e);
 
-            const requestedTransferMode =
-                this.features.transferMode === TransferMode.Binary
-                    ? TransferMode.Binary
-                    : TransferMode.Text;
-
-            this.features.transferMode = await this.transport.connect(this.url, requestedTransferMode, this);
+            await this.transport.connect(this.url, this.transferFormat, this);
 
             // only change the state if we were connecting to not overwrite
             // the state if the connection is already marked as Disconnected
             this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
         } catch (e) {
-            this.logger.log(LogLevel.Error, "Failed to start the connection. " + e);
+            this.logger.log(LogLevel.Error, "Failed to start the connection: " + e);
             this.connectionState = ConnectionState.Disconnected;
             this.transport = null;
             throw e;
         }
     }
 
-    private createTransport(transport: TransportType | ITransport, availableTransports: string[]): ITransport {
-        if ((transport === null || transport === undefined) && availableTransports.length > 0) {
-            transport = TransportType[availableTransports[0]];
-        }
-        if (transport === TransportType.WebSockets && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new WebSocketTransport(this.options.accessTokenFactory, this.logger);
-        }
-        if (transport === TransportType.ServerSentEvents && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new ServerSentEventsTransport(this.httpClient, this.options.accessTokenFactory, this.logger);
-        }
-        if (transport === TransportType.LongPolling && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new LongPollingTransport(this.httpClient, this.options.accessTokenFactory, this.logger);
+    private createTransport(requestedTransport: TransportType | ITransport, availableTransports: IAvailableTransport[], requestedTransferFormat: TransferFormat): ITransport {
+        if (this.isITransport(requestedTransport)) {
+            this.logger.log(LogLevel.Trace, "Connection was provided an instance of ITransport, using that directly.");
+            return requestedTransport;
         }
 
-        if (this.isITransport(transport)) {
-            return transport;
+        for (const endpoint of availableTransports) {
+            const transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
+            if (transport) {
+                return this.constructTransport(transport);
+            }
         }
 
-        throw new Error("No available transports found.");
+        throw new Error("Unable to initialize any of the available transports.");
+    }
+
+    private constructTransport(transport: TransportType) {
+        switch (transport) {
+            case TransportType.WebSockets:
+                return new WebSocketTransport(this.options.accessTokenFactory, this.logger);
+            case TransportType.ServerSentEvents:
+                return new ServerSentEventsTransport(this.httpClient, this.options.accessTokenFactory, this.logger);
+            case TransportType.LongPolling:
+                return new LongPollingTransport(this.httpClient, this.options.accessTokenFactory, this.logger);
+            default:
+                throw new Error(`Unknown transport: ${transport}.`);
+        }
+    }
+
+    private resolveTransport(endpoint: IAvailableTransport, requestedTransport: TransportType, requestedTransferFormat: TransferFormat): TransportType | null {
+        const transport = TransportType[endpoint.transport];
+        if (!transport) {
+            this.logger.log(LogLevel.Trace, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
+        } else {
+            const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
+            if (!requestedTransport || transport === requestedTransport) {
+                if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
+                    this.logger.log(LogLevel.Trace, `Selecting transport '${transport}'`);
+                    return transport;
+                } else {
+                    this.logger.log(LogLevel.Trace, `Skipping transport '${transport}' because it does not support the requested transfer format '${requestedTransferFormat}'.`);
+                }
+            } else {
+                this.logger.log(LogLevel.Trace, `Skipping transport '${transport}' because it was disabled by the client.`);
+            }
+        }
+        return null;
     }
 
     private isITransport(transport: any): transport is ITransport {
@@ -151,7 +186,7 @@ export class HttpConnection implements IConnection {
 
     public send(data: any): Promise<void> {
         if (this.connectionState !== ConnectionState.Connected) {
-            throw new Error("Cannot send data if the connection is not in the 'Connected' State");
+            throw new Error("Cannot send data if the connection is not in the 'Connected' State.");
         }
 
         return this.transport.send(data);
@@ -210,7 +245,7 @@ export class HttpConnection implements IConnection {
         }
 
         const normalizedUrl = baseUrl + url;
-        this.logger.log(LogLevel.Information, `Normalizing '${url}' to '${normalizedUrl}'`);
+        this.logger.log(LogLevel.Information, `Normalizing '${url}' to '${normalizedUrl}'.`);
         return normalizedUrl;
     }
 

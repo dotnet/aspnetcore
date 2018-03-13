@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public string Name => ProtocolName;
 
-        public ProtocolType Type => ProtocolType.Text;
+        public TransferFormat TransferFormat => TransferFormat.Text;
 
         public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
         {

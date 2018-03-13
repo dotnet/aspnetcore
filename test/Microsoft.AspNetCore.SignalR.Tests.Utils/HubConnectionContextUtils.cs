@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,15 +16,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             return new HubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance)
             {
-                ProtocolReaderWriter = new HubProtocolReaderWriter(new JsonHubProtocol(), new PassThroughEncoder())
+                Protocol = new JsonHubProtocol()
             };
         }
 
         public static Mock<HubConnectionContext> CreateMock(DefaultConnectionContext connection)
         {
             var mock = new Mock<HubConnectionContext>(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance) { CallBase = true };
-            var readerWriter = new HubProtocolReaderWriter(new JsonHubProtocol(), new PassThroughEncoder());
-            mock.SetupGet(m => m.ProtocolReaderWriter).Returns(readerWriter);
+            var protocol = new JsonHubProtocol();
+            mock.SetupGet(m => m.Protocol).Returns(protocol);
             return mock;
 
         }

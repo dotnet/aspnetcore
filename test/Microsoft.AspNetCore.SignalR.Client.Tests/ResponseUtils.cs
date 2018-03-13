@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-
+using Microsoft.AspNetCore.Sockets;
+using Newtonsoft.Json;
 using SocketsTransportType = Microsoft.AspNetCore.Sockets.TransportType;
 
 namespace Microsoft.AspNetCore.Client.Tests
@@ -36,35 +37,36 @@ namespace Microsoft.AspNetCore.Client.Tests
         }
 
         public static string CreateNegotiationContent(string connectionId = "00000000-0000-0000-0000-000000000000",
-            SocketsTransportType? transportTypes = SocketsTransportType.All)
+            SocketsTransportType transportTypes = SocketsTransportType.All)
         {
-            var sb = new StringBuilder("{ ");
-            if (connectionId != null)
-            {
-                sb.Append($"\"connectionId\": \"{connectionId}\",");
-            }
-            if (transportTypes != null)
-            {
-                sb.Append($"\"availableTransports\": [ ");
-                if ((transportTypes & SocketsTransportType.WebSockets) == SocketsTransportType.WebSockets)
-                {
-                    sb.Append($"\"{nameof(SocketsTransportType.WebSockets)}\",");
-                }
-                if ((transportTypes & SocketsTransportType.ServerSentEvents) == SocketsTransportType.ServerSentEvents)
-                {
-                    sb.Append($"\"{nameof(SocketsTransportType.ServerSentEvents)}\",");
-                }
-                if ((transportTypes & SocketsTransportType.LongPolling) == SocketsTransportType.LongPolling)
-                {
-                    sb.Append($"\"{nameof(SocketsTransportType.LongPolling)}\",");
-                }
-                sb.Length--;
-                sb.Append("],");
-            }
-            sb.Length--;
-            sb.Append("}");
+            var availableTransports = new List<object>();
 
-            return sb.ToString();
+            if ((transportTypes & SocketsTransportType.WebSockets) != 0)
+            {
+                availableTransports.Add(new
+                {
+                    transport = nameof(SocketsTransportType.WebSockets),
+                    transferFormats = new[] { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
+                });
+            }
+            if ((transportTypes & SocketsTransportType.ServerSentEvents) != 0)
+            {
+                availableTransports.Add(new
+                {
+                    transport = nameof(SocketsTransportType.ServerSentEvents),
+                    transferFormats = new[] { nameof(TransferFormat.Text) }
+                });
+            }
+            if ((transportTypes & SocketsTransportType.LongPolling) != 0)
+            {
+                availableTransports.Add(new
+                {
+                    transport = nameof(SocketsTransportType.LongPolling),
+                    transferFormats = new[] { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
+                });
+            }
+
+            return JsonConvert.SerializeObject(new { connectionId, availableTransports });
         }
     }
 }

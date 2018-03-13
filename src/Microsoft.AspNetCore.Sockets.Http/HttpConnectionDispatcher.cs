@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Sockets
                 Log.EstablishedConnection(_logger);
 
                 // ServerSentEvents is a text protocol only
-                connection.TransportCapabilities = TransferMode.Text;
+                connection.SupportedFormats = TransferFormat.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
                 var sse = new ServerSentEventsTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
@@ -389,21 +389,42 @@ namespace Microsoft.AspNetCore.Sockets
                 jsonWriter.WriteStartArray();
                 if ((options.Transports & TransportType.WebSockets) != 0)
                 {
-                    jsonWriter.WriteValue(nameof(TransportType.WebSockets));
+                    WriteTransport(jsonWriter, nameof(TransportType.WebSockets), TransferFormat.Text | TransferFormat.Binary);
                 }
                 if ((options.Transports & TransportType.ServerSentEvents) != 0)
                 {
-                    jsonWriter.WriteValue(nameof(TransportType.ServerSentEvents));
+                    WriteTransport(jsonWriter, nameof(TransportType.ServerSentEvents), TransferFormat.Text);
                 }
                 if ((options.Transports & TransportType.LongPolling) != 0)
                 {
-                    jsonWriter.WriteValue(nameof(TransportType.LongPolling));
+                    WriteTransport(jsonWriter, nameof(TransportType.LongPolling), TransferFormat.Text | TransferFormat.Binary);
                 }
                 jsonWriter.WriteEndArray();
                 jsonWriter.WriteEndObject();
             }
 
             return sb.ToString();
+        }
+
+        private static void WriteTransport(JsonWriter writer, string transportName, TransferFormat supportedTransferFormats)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("transport");
+            writer.WriteValue(transportName);
+            writer.WritePropertyName("transferFormats");
+            writer.WriteStartArray();
+            if ((supportedTransferFormats & TransferFormat.Binary) != 0)
+            {
+                writer.WriteValue(nameof(TransferFormat.Binary));
+            }
+
+            if ((supportedTransferFormats & TransferFormat.Text) != 0)
+            {
+                writer.WriteValue(nameof(TransferFormat.Text));
+            }
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
         }
 
         private static string GetConnectionId(HttpContext context) => context.Request.Query["id"];
@@ -476,9 +497,6 @@ namespace Microsoft.AspNetCore.Sockets
             // Setup the connection state from the http context
             connection.User = context.User;
             connection.SetHttpContext(context);
-
-            // this is the default setting which should be overwritten by transports that have different capabilities (e.g. SSE)
-            connection.TransportCapabilities = TransferMode.Binary | TransferMode.Text;
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.

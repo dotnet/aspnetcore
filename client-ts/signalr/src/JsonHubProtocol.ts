@@ -1,8 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HubMessage, IHubProtocol, ProtocolType } from "./IHubProtocol";
+import { HubMessage, IHubProtocol } from "./IHubProtocol";
 import { TextMessageFormat } from "./TextMessageFormat";
+import { TransferFormat } from "./Transports";
 
 export const JSON_HUB_PROTOCOL_NAME: string = "json";
 
@@ -10,7 +11,7 @@ export class JsonHubProtocol implements IHubProtocol {
 
     public readonly name: string = JSON_HUB_PROTOCOL_NAME;
 
-    public readonly type: ProtocolType = ProtocolType.Text;
+    public readonly transferFormat: TransferFormat = TransferFormat.Text;
 
     public parseMessages(input: string): HubMessage[] {
         if (!input) {
