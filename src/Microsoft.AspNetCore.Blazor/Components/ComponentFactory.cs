@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.Blazor.Components
         private Action<IComponent> CreateInitializer(Type type)
         {
             // Do all the reflection up front
-            var injectableProperties = type.GetTypeInfo()
-                .GetPropertiesIncludingInherited(_injectablePropertyBindingFlags)
+            var injectableProperties =
+                GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags)
                 .Where(p => p.GetCustomAttribute<InjectAttribute>() != null);
             var injectables = injectableProperties.Select(property =>
             {
@@ -113,6 +113,22 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
             public void SetValue(object target, object value)
                 => _setterDelegate((TTarget)target, (TValue)value);
+        }
+
+        private static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
+            Type type, BindingFlags bindingFlags)
+        {
+            while (type != null)
+            {
+                var properties = type.GetProperties(bindingFlags)
+                    .Where(prop => prop.DeclaringType == type);
+                foreach (var property in properties)
+                {
+                    yield return property;
+                }
+
+                type = type.BaseType;
+            }
         }
     }
 }
