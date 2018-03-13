@@ -45,13 +45,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(((TestKestrelTrace)serviceContext.Log).Logger.Scopes.IsEmpty);
         }
 
-        private class TestConnection : TransportConnection
+        private class TestConnection : FeatureCollection, IConnectionIdFeature, IConnectionTransportFeature
         {
-            public override MemoryPool<byte> MemoryPool { get; } = KestrelMemoryPool.Create();
+            public TestConnection()
+            {
+                Set<IConnectionIdFeature>(this);
+                Set<IConnectionTransportFeature>(this);
+            }
 
-            public override PipeScheduler InputWriterScheduler => PipeScheduler.ThreadPool;
+            public MemoryPool<byte> MemoryPool { get; } = KestrelMemoryPool.Create();
 
-            public override PipeScheduler OutputReaderScheduler => PipeScheduler.ThreadPool;
+            public IDuplexPipe Transport { get; set; }
+            public IDuplexPipe Application { get; set; }
+
+            public PipeScheduler InputWriterScheduler => PipeScheduler.ThreadPool;
+
+            public PipeScheduler OutputReaderScheduler => PipeScheduler.ThreadPool;
+
+            public string ConnectionId { get; set; }
         }
     }
 }

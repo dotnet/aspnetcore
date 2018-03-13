@@ -16,13 +16,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
         public Func<MemoryPool<byte>, PipeOptions> InputOptions { get; set; } = pool => new PipeOptions(pool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         public Func<MemoryPool<byte>, PipeOptions> OutputOptions { get; set; } = pool => new PipeOptions(pool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
 
-        public void OnConnection(TransportConnection connection)
+        public void OnConnection(IFeatureCollection features)
         {
-            Input = new Pipe(InputOptions(connection.MemoryPool));
-            Output = new Pipe(OutputOptions(connection.MemoryPool));
+            var connectionContext = new DefaultConnectionContext(features);
 
-            connection.Transport = new DuplexPipe(Input.Reader, Output.Writer);
-            connection.Application = new DuplexPipe(Output.Reader, Input.Writer);
+            var feature = connectionContext.Features.Get<IConnectionTransportFeature>();
+
+            Input = new Pipe(InputOptions(feature.MemoryPool));
+            Output = new Pipe(OutputOptions(feature.MemoryPool));
+
+            connectionContext.Transport = new DuplexPipe(Input.Reader, Output.Writer);
+            feature.Application = new DuplexPipe(Output.Reader, Input.Writer);
         }
 
         public Pipe Input { get; private set; }
