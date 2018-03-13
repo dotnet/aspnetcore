@@ -77,10 +77,14 @@ IN_PROCESS_APPLICATION::ShutDown()
 
     if (!m_fShutdownCalledFromManaged)
     {
-        // Initiate a recycle such that another worker process is created to replace this one.
-
-        m_ShutdownHandler(m_ShutdownHandlerContext);
-        m_ShutdownHandler = NULL;
+        // We cannot call into managed if the dll is detaching from the process.
+        // Calling into managed code when the dll is detaching is strictly a bad idea,
+        // and usually results in an AV saying "The string binding is invalid"
+        if (!g_fProcessDetach)
+        {
+            m_ShutdownHandler(m_ShutdownHandlerContext);
+            m_ShutdownHandler = NULL;
+        }
 
         ReleaseSRWLockExclusive(&m_srwLock);
         fLocked = FALSE;
@@ -608,7 +612,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
 
         goto Finished;
     }
-
     m_hThread = CreateThread(
         NULL,       // default security attributes
         0,          // default stack size
@@ -648,7 +651,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
 
     // Wait on either the thread to complete or the event to be set
     dwResult = WaitForMultipleObjects(2, pHandles, FALSE, dwTimeout);
-
+    
     // It all timed out
     if (dwResult == WAIT_TIMEOUT)
     {
@@ -759,8 +762,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     HMODULE             hModule;
     hostfxr_main_fn     pProc;
 
-    // should be a redudant call here, but we will be safe and call it twice.
-    // TODO AV here on m_pHostFxrParameters being null
+    DBG_ASSERT(m_status == APPLICATION_STATUS::STARTING);
+
     hModule = LoadLibraryW(m_pConfig->QueryHostFxrFullPath());
 
     if (hModule == NULL)

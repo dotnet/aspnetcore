@@ -183,38 +183,8 @@ APPLICATION_INFO::EnsureApplicationCreated()
     APPLICATION*        pApplication = NULL;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
     STRU                struHostFxrDllLocation;
-    PWSTR*              pwzArgv;
-    DWORD               dwArgCount;
 
     if (m_pApplication != NULL)
-    {
-        goto Finished;
-    }
-
-    if (m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
-    {
-        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
-            g_hEventLog,
-            m_pConfiguration->QueryProcessPath()->QueryStr(),
-            m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
-            m_pConfiguration->QueryArguments()->QueryStr(),
-            &struHostFxrDllLocation,
-            &dwArgCount,
-            &pwzArgv)))
-        {
-            goto Finished;
-        }
-
-        if (FAILED(hr = m_pConfiguration->SetHostFxrFullPath(struHostFxrDllLocation.QueryStr())))
-        {
-            goto Finished;
-        }
-
-        m_pConfiguration->SetHostFxrArguments(dwArgCount, pwzArgv);
-    }
-
-    hr = FindRequestHandlerAssembly();
-    if (FAILED(hr))
     {
         goto Finished;
     }
@@ -233,6 +203,18 @@ APPLICATION_INFO::EnsureApplicationCreated()
         //
         if (!m_fAppOfflineFound)
         {
+
+            // Move the request handler check inside of the lock
+            // such that only one request finds and loads it.
+            // FindRequestHandlerAssembly obtains a global lock, but after releasing the lock,
+            // there is a period where we could call
+
+            hr = FindRequestHandlerAssembly();
+            if (FAILED(hr))
+            {
+                goto Finished;
+            }
+
             if (m_pfnAspNetCoreCreateApplication == NULL)
             {
                 hr = HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);

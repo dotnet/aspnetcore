@@ -111,6 +111,7 @@ extern BOOL       g_fWinHttpNonBlockingCallbackAvailable;
 extern BOOL       g_fWebSocketSupported;
 extern BOOL       g_fNsiApiNotSupported;
 extern BOOL       g_fEnableReferenceCountTracing;
+extern BOOL       g_fProcessDetach;
 extern DWORD      g_dwActiveServerProcesses;
 extern DWORD      g_OptionalWinHttpFlags;
 extern SRWLOCK    g_srwLockRH;

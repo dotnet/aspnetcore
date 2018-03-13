@@ -10,6 +10,7 @@ BOOL                g_fGlobalInitialize = FALSE;
 BOOL                g_fOutOfProcessInitialize = FALSE;
 BOOL                g_fOutOfProcessInitializeError = FALSE;
 BOOL                g_fWinHttpNonBlockingCallbackAvailable = FALSE;
+BOOL                g_fProcessDetach = FALSE;
 DWORD               g_OptionalWinHttpFlags = 0;
 DWORD               g_dwAspNetCoreDebugFlags = 0;
 DWORD               g_dwDebugFlags = 0;
@@ -263,6 +264,8 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         DisableThreadLibraryCalls(hModule);
         InitializeSRWLock(&g_srwLockRH);
         break;
+    case DLL_PROCESS_DETACH:
+        g_fProcessDetach = TRUE;
     default:
         break;
     }
