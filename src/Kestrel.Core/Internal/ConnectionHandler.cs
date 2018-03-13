@@ -28,29 +28,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public void OnConnection(IFeatureCollection features)
+        public void OnConnection(TransportConnection connection)
         {
-            var connectionContext = new DefaultConnectionContext(features);
-
-            var transportFeature = connectionContext.Features.Get<IConnectionTransportFeature>();
-
             // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
             // for the scheduler and limits are specified here
-            var inputOptions = GetInputPipeOptions(_serviceContext, transportFeature.MemoryPool, transportFeature.InputWriterScheduler);
-            var outputOptions = GetOutputPipeOptions(_serviceContext, transportFeature.MemoryPool, transportFeature.OutputReaderScheduler);
+            var inputOptions = GetInputPipeOptions(_serviceContext, connection.MemoryPool, connection.InputWriterScheduler);
+            var outputOptions = GetOutputPipeOptions(_serviceContext, connection.MemoryPool, connection.OutputReaderScheduler);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
-            connectionContext.ConnectionId = CorrelationIdGenerator.GetNextId();
-            connectionContext.Transport = pair.Transport;
+            connection.ConnectionId = CorrelationIdGenerator.GetNextId();
+            connection.Transport = pair.Transport;
 
             // This *must* be set before returning from OnConnection
-            transportFeature.Application = pair.Application;
+            connection.Application = pair.Application;
 
             // REVIEW: This task should be tracked by the server for graceful shutdown
             // Today it's handled specifically for http but not for aribitrary middleware
-            _ = Execute(connectionContext);
+            _ = Execute(new DefaultConnectionContext(connection));
         }
 
         private async Task Execute(ConnectionContext connectionContext)
