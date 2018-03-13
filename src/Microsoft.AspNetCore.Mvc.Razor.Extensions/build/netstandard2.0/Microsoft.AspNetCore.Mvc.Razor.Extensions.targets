@@ -12,7 +12,7 @@
     <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)'==''">.Views</RazorTargetNameSuffix>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true'">
+  <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true' AND '$(ResolvedRazorCompileToolset)'=='RazorSdk' AND ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' == 'true')">
     <AssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
       <_Parameter1>$(RazorTargetName)</_Parameter1>
     </AssemblyAttribute>
