@@ -14,10 +14,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
-    public class CookieAuthenticationHandler :
-        AuthenticationHandler<CookieAuthenticationOptions>,
-        IAuthenticationSignInHandler,
-        IAuthenticationSignOutHandler
+    public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAuthenticationOptions>
     {
         private const string HeaderValueNoCache = "no-cache";
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
@@ -252,18 +249,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        public async virtual Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+        protected async override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
-            }
-
-            var target = ResolveTarget(Options.ForwardSignIn);
-            if (target != null)
-            {
-                await Context.SignInAsync(target, user, properties);
-                return;
             }
 
             properties = properties ?? new AuthenticationProperties();
@@ -346,15 +336,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Logger.SignedIn(Scheme.Name);
         }
 
-        public async virtual Task SignOutAsync(AuthenticationProperties properties)
+        protected async override Task HandleSignOutAsync(AuthenticationProperties properties)
         {
-            var target = ResolveTarget(Options.ForwardSignOut);
-            if (target != null)
-            {
-                await Context.SignOutAsync(target, properties);
-                return;
-            }
-
             properties = properties ?? new AuthenticationProperties();
 
             _signOutCalled = true;

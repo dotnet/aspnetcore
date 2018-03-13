@@ -91,15 +91,15 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Adds a <see cref="VirtualAuthenticationHandler"/> based authentication handler which can be used to 
+        /// Adds a <see cref="PolicySchemeHandler"/> based authentication handler which can be used to 
         /// redirect to other authentication schemes.
         /// </summary>
         /// <param name="authenticationScheme">The name of this scheme.</param>
         /// <param name="displayName">The display name of this scheme.</param>
         /// <param name="configureOptions">Used to configure the scheme options.</param>
         /// <returns>The builder.</returns>
-        public virtual AuthenticationBuilder AddVirtualScheme(string authenticationScheme, string displayName, Action<VirtualSchemeOptions> configureOptions)
-            => AddSchemeHelper<VirtualSchemeOptions, VirtualAuthenticationHandler>(authenticationScheme, displayName, configureOptions);
+        public virtual AuthenticationBuilder AddPolicyScheme(string authenticationScheme, string displayName, Action<PolicySchemeOptions> configureOptions)
+            => AddSchemeHelper<PolicySchemeOptions, PolicySchemeHandler>(authenticationScheme, displayName, configureOptions);
 
         // Used to ensure that there's always a default sign in scheme that's not itself
         private class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions

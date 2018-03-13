@@ -12,26 +12,26 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication
 {
-    public class VirtualHandlerTests
+    public class PolicyTests
     {
         [Fact]
         public async Task CanDispatch()
         {
             var server = CreateServer(services =>
             {
-                services.AddAuthentication(o =>
+                services.AddLogging().AddAuthentication(o =>
                 {
                     o.AddScheme<TestHandler>("auth1", "auth1");
                     o.AddScheme<TestHandler>("auth2", "auth2");
                     o.AddScheme<TestHandler>("auth3", "auth3");
                 })
-                .AddVirtualScheme("policy1", "policy1", p =>
+                .AddPolicyScheme("policy1", "policy1", p =>
                 {
-                    p.Default = "auth1";
+                    p.ForwardDefault = "auth1";
                 })
-                .AddVirtualScheme("policy2", "policy2", p =>
+                .AddPolicyScheme("policy2", "policy2", p =>
                 {
-                    p.Authenticate = "auth2";
+                    p.ForwardAuthenticate = "auth2";
                 });
             });
 
@@ -54,16 +54,15 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task DefaultTargetSelectorWinsOverDefaultTarget()
         {
-            var services = new ServiceCollection().AddOptions();
-
+            var services = new ServiceCollection().AddOptions().AddLogging();
             services.AddAuthentication(o =>
             {
                 o.AddScheme<TestHandler>("auth1", "auth1");
                 o.AddScheme<TestHandler2>("auth2", "auth2");
             })
-            .AddVirtualScheme("forward", "forward", p => {
-                p.Default = "auth2";
-                p.DefaultSelector = ctx => "auth1";
+            .AddPolicyScheme("forward", "forward", p => {
+                p.ForwardDefault= "auth2";
+                p.ForwardDefaultSelector = ctx => "auth1";
             });
 
             var handler1 = new TestHandler();
@@ -110,16 +109,15 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task NullDefaultTargetSelectorFallsBacktoDefaultTarget()
         {
-            var services = new ServiceCollection().AddOptions();
-
+            var services = new ServiceCollection().AddOptions().AddLogging();
             services.AddAuthentication(o =>
             {
                 o.AddScheme<TestHandler>("auth1", "auth1");
                 o.AddScheme<TestHandler2>("auth2", "auth2");
             })
-            .AddVirtualScheme("forward", "forward", p => {
-                p.Default = "auth1";
-                p.DefaultSelector = ctx => null;
+            .AddPolicyScheme("forward", "forward", p => {
+                p.ForwardDefault= "auth1";
+                p.ForwardDefaultSelector = ctx => null;
             });
 
             var handler1 = new TestHandler();
@@ -166,21 +164,20 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task SpecificTargetAlwaysWinsOverDefaultTarget()
         {
-            var services = new ServiceCollection().AddOptions();
-
+            var services = new ServiceCollection().AddOptions().AddLogging();
             services.AddAuthentication(o =>
             {
                 o.AddScheme<TestHandler>("auth1", "auth1");
                 o.AddScheme<TestHandler2>("auth2", "auth2");
             })
-            .AddVirtualScheme("forward", "forward", p => {
-                p.Default = "auth2";
-                p.DefaultSelector = ctx => "auth2";
-                p.Authenticate = "auth1";
-                p.SignIn = "auth1";
-                p.SignOut = "auth1";
-                p.Forbid = "auth1";
-                p.Challenge = "auth1";
+            .AddPolicyScheme("forward", "forward", p => {
+                p.ForwardDefault= "auth2";
+                p.ForwardDefaultSelector = ctx => "auth2";
+                p.ForwardAuthenticate = "auth1";
+                p.ForwardSignIn = "auth1";
+                p.ForwardSignOut = "auth1";
+                p.ForwardForbid = "auth1";
+                p.ForwardChallenge = "auth1";
             });
 
             var handler1 = new TestHandler();
@@ -227,14 +224,13 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task VirtualSchemeTargetsForwardWithDefaultTarget()
         {
-            var services = new ServiceCollection().AddOptions();
-
+            var services = new ServiceCollection().AddOptions().AddLogging();
             services.AddAuthentication(o =>
             {
                 o.AddScheme<TestHandler>("auth1", "auth1");
                 o.AddScheme<TestHandler2>("auth2", "auth2");
             })
-            .AddVirtualScheme("forward", "forward", p => p.Default = "auth1");
+            .AddPolicyScheme("forward", "forward", p => p.ForwardDefault= "auth1");
 
             var handler1 = new TestHandler();
             services.AddSingleton(handler1);
@@ -280,18 +276,17 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task VirtualSchemeTargetsOverrideDefaultTarget()
         {
-            var services = new ServiceCollection().AddOptions();
-
+            var services = new ServiceCollection().AddOptions().AddLogging();
             services.AddAuthentication(o =>
             {
                 o.AddScheme<TestHandler>("auth1", "auth1");
                 o.AddScheme<TestHandler2>("auth2", "auth2");
             })
-            .AddVirtualScheme("forward", "forward", p =>
+            .AddPolicyScheme("forward", "forward", p =>
             {
-                p.Default = "auth1";
-                p.Challenge = "auth2";
-                p.SignIn = "auth2";
+                p.ForwardDefault= "auth1";
+                p.ForwardChallenge = "auth2";
+                p.ForwardSignIn = "auth2";
             });
 
             var handler1 = new TestHandler();
@@ -346,9 +341,9 @@ namespace Microsoft.AspNetCore.Authentication
                     o.AddScheme<TestHandler>("auth2", "auth2");
                     o.AddScheme<TestHandler>("auth3", "auth3");
                 })
-                .AddVirtualScheme("dynamic", "dynamic", p =>
+                .AddPolicyScheme("dynamic", "dynamic", p =>
                 {
-                    p.DefaultSelector = c => c.Request.QueryString.Value.Substring(1);
+                    p.ForwardDefaultSelector = c => c.Request.QueryString.Value.Substring(1);
                 });
             });
  
@@ -358,39 +353,6 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal("auth2", transaction.FindClaimValue(ClaimTypes.NameIdentifier, "auth2"));
             transaction = await server.SendAsync("http://example.com/auth/dynamic?auth3");
             Assert.Equal("auth3", transaction.FindClaimValue(ClaimTypes.NameIdentifier, "auth3"));
-        }
-
-        [Fact]
-        public async Task TargetsDefaultSchemeByDefault()
-        {
-            var server = CreateServer(services =>
-            {
-                services.AddAuthentication(o =>
-                {
-                    o.DefaultScheme = "default";
-                    o.AddScheme<TestHandler>("default", "default");
-                })
-                .AddVirtualScheme("virtual", "virtual", p => { });
-            });
-
-            var transaction = await server.SendAsync("http://example.com/auth/virtual");
-            Assert.Equal("default", transaction.FindClaimValue(ClaimTypes.NameIdentifier, "default"));
-        }
-
-        [Fact]
-        public async Task TargetsDefaultSchemeThrowsWithNoDefault()
-        {
-            var server = CreateServer(services =>
-            {
-                services.AddAuthentication(o =>
-                {
-                    o.AddScheme<TestHandler>("default", "default");
-                })
-                .AddVirtualScheme("virtual", "virtual", p => { });
-            });
-
-            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("http://example.com/auth/virtual"));
-            Assert.Contains("No authenticationScheme was specified", error.Message);
         }
 
         private class TestHandler : IAuthenticationSignInHandler

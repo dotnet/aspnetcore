@@ -1,0 +1,6 @@
+  [
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler : Microsoft.AspNetCore.Authentication.AuthenticationHandler<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>, Microsoft.AspNetCore.Authentication.IAuthenticationSignInHandler",
+      "Kind": "Removal"
+    }
+  ]
