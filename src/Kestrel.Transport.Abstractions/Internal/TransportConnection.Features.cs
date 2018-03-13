@@ -199,27 +199,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         TFeature IFeatureCollection.Get<TFeature>()
         {
-            if (typeof(TFeature) == IHttpConnectionFeatureType)
+            if (typeof(TFeature) == typeof(IHttpConnectionFeature))
             {
                 return (TFeature)_currentIHttpConnectionFeature;
             }
-            else if (typeof(TFeature) == IConnectionIdFeatureType)
+            else if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
                 return (TFeature)_currentIConnectionIdFeature;
             }
-            else if (typeof(TFeature) == IConnectionTransportFeatureType)
+            else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
                 return (TFeature)_currentIConnectionTransportFeature;
             }
-            else if (typeof(TFeature) == IMemoryPoolFeatureType)
+            else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
                 return (TFeature)_currentIMemoryPoolFeature;
             }
-            else if (typeof(TFeature) == IApplicationTransportFeatureType)
+            else if (typeof(TFeature) == typeof(IApplicationTransportFeature))
             {
                 return (TFeature)_currentIApplicationTransportFeature;
             }
-            else if (typeof(TFeature) == ITransportSchedulerFeatureType)
+            else if (typeof(TFeature) == typeof(ITransportSchedulerFeature))
             {
                 return (TFeature)_currentITransportSchedulerFeature;
             }
@@ -235,27 +235,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         {
             _featureRevision++;
 
-            if (typeof(TFeature) == IHttpConnectionFeatureType)
+            if (typeof(TFeature) == typeof(IHttpConnectionFeature))
             {
                 _currentIHttpConnectionFeature = instance;
             }
-            else if (typeof(TFeature) == IConnectionIdFeatureType)
+            else if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
                 _currentIConnectionIdFeature = instance;
             }
-            else if (typeof(TFeature) == IConnectionTransportFeatureType)
+            else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
                 _currentIConnectionTransportFeature = instance;
             }
-            else if (typeof(TFeature) == IMemoryPoolFeatureType)
+            else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
                 _currentIMemoryPoolFeature = instance;
             }
-            else if (typeof(TFeature) == IApplicationTransportFeatureType)
+            else if (typeof(TFeature) == typeof(IApplicationTransportFeature))
             {
                 _currentIApplicationTransportFeature = instance;
             }
-            else if (typeof(TFeature) == ITransportSchedulerFeatureType)
+            else if (typeof(TFeature) == typeof(ITransportSchedulerFeature))
             {
                 _currentITransportSchedulerFeature = instance;
             }
