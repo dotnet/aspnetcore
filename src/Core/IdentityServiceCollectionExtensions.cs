@@ -17,6 +17,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="TUser">The type representing a User in the system.</typeparam>
         /// <param name="services">The services available in the application.</param>
+        /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
+        public static IdentityBuilder AddIdentityCore<TUser>(this IServiceCollection services) where TUser : class
+            => services.AddIdentityCore<TUser>(o => { });
+
+        /// <summary>
+        /// Adds and configures the identity system for the specified User and Role types.
+        /// </summary>
+        /// <typeparam name="TUser">The type representing a User in the system.</typeparam>
+        /// <param name="services">The services available in the application.</param>
         /// <param name="setupAction">An action to configure the <see cref="IdentityOptions"/>.</param>
         /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
         public static IdentityBuilder AddIdentityCore<TUser>(this IServiceCollection services, Action<IdentityOptions> setupAction)

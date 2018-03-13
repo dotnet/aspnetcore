@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
-    /// Represents all the options you can use to configure the cookies middleware used by the identity system.
+    /// Represents all the options you can use to configure the cookies middleware uesd by the identity system.
     /// </summary>
     public class IdentityConstants
     {

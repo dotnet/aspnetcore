@@ -31,6 +31,26 @@ namespace Microsoft.AspNetCore.Identity
                 .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, authenticatorProviderType);
         }
 
+        private static void AddSignInManagerDeps(this IdentityBuilder builder)
+        {
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped(typeof(ISecurityStampValidator), typeof(SecurityStampValidator<>).MakeGenericType(builder.UserType));
+            builder.Services.AddScoped(typeof(ITwoFactorSecurityStampValidator), typeof(TwoFactorSecurityStampValidator<>).MakeGenericType(builder.UserType));
+        }
+
+        /// <summary>
+        /// Adds a <see cref="SignInManager{TUser}"/> for the <seealso cref="IdentityBuilder.UserType"/>.
+        /// </summary>
+        /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+        public static IdentityBuilder AddSignInManager(this IdentityBuilder builder)
+        {
+            builder.AddSignInManagerDeps();
+            var managerType = typeof(SignInManager<>).MakeGenericType(builder.UserType);
+            builder.Services.AddScoped(managerType);
+            return builder;
+        }
+
         /// <summary>
         /// Adds a <see cref="SignInManager{TUser}"/> for the <seealso cref="IdentityBuilder.UserType"/>.
         /// </summary>
@@ -39,8 +59,8 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public static IdentityBuilder AddSignInManager<TSignInManager>(this IdentityBuilder builder) where TSignInManager : class
         {
+            builder.AddSignInManagerDeps();
             var managerType = typeof(SignInManager<>).MakeGenericType(builder.UserType);
-
             var customType = typeof(TSignInManager);
             if (!managerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
             {

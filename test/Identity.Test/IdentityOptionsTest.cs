@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -71,5 +69,28 @@ namespace Microsoft.AspNetCore.Identity.Test
             var myOptions = optionsGetter.Value;
             Assert.True(myOptions.User.RequireUniqueEmail);
         }
+
+        [Fact]
+        public void CanConfigureCookieOptions()
+        {
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddIdentityCookies(o =>
+            {
+                o.ApplicationCookie.Configure(a => a.Cookie.Name = "a");
+                o.ExternalCookie.Configure(a => a.Cookie.Name = "b");
+                o.TwoFactorRememberMeCookie.Configure(a => a.Cookie.Name = "c");
+                o.TwoFactorUserIdCookie.Configure(a => a.Cookie.Name = "d");
+            });
+            var serviceProvider = services.BuildServiceProvider();
+
+            var options = serviceProvider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(options);
+
+            Assert.Equal("a", options.Get(IdentityConstants.ApplicationScheme).Cookie.Name);
+            Assert.Equal("b", options.Get(IdentityConstants.ExternalScheme).Cookie.Name);
+            Assert.Equal("c", options.Get(IdentityConstants.TwoFactorRememberMeScheme).Cookie.Name);
+            Assert.Equal("d", options.Get(IdentityConstants.TwoFactorUserIdScheme).Cookie.Name);
+        }
+
     }
 }

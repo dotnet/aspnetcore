@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EF\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Identity\Microsoft.AspNetCore.Identity.csproj" />
   </ItemGroup>
 
   <ItemGroup>

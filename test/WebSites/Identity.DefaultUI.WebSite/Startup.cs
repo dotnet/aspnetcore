@@ -35,10 +35,18 @@ namespace Identity.DefaultUI.WebSite
                     sqlOptions => sqlOptions.MigrationsAssembly("Identity.DefaultUI.WebSite")
                 ));
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddIdentityCore<IdentityUser>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
+
+            services.AddAuthentication(o =>
+            {
+                o.DefaultScheme = IdentityConstants.ApplicationScheme;
+                o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            })
+                .AddIdentityCookies(o => {});
 
             services.AddMvc()
                 .AddRazorPagesOptions(options =>

@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
         public static IdentityBuilder AddDefaultUI(this IdentityBuilder builder)
         {
+            builder.AddSignInManager();
             AddAdditionalApplicationParts(builder);
 
             builder.Services.ConfigureOptions(
