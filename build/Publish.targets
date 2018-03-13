@@ -3,7 +3,6 @@
   <PropertyGroup>
     <DependencyAssetsDir>$(RepositoryRoot).deps\assets\</DependencyAssetsDir>
     <DependencyPackagesDir>$(RepositoryRoot).deps\packages\</DependencyPackagesDir>
-    <DependencyMirrorDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorDir>
     <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFile>$(IntermediateDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
@@ -124,9 +123,6 @@
       </FilesToPublish>
 
       <!-- Packages -->
-      <PackageToMirror Include="$(DependencyMirrorDir)%(ExternalDependency.Identity).%(ExternalDependency.Version).nupkg"
-                        Condition=" '%(ExternalDependency.Mirror)' == 'true' " />
-
       <_PackageArtifactInfo
         Include="@(ArtifactInfo)"
         ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).nupkg"
@@ -172,7 +168,6 @@
     <ItemGroup>
       <_MissingArtifactFile Include="@(FilesToPublish)" Condition="!Exists(%(FilesToPublish.Identity))" />
       <_MissingArtifactFile Include="@(NpmPackageToPublish)" Condition="!Exists(%(NpmPackageToPublish.Identity))" />
-      <_MissingArtifactFile Include="@(PackageToMirror)" Condition="!Exists(%(PackageToMirror.Identity))" />
       <_MissingArtifactFile Include="@(PackageToPublish)" Condition="!Exists(%(PackageToPublish.Identity))" />
     </ItemGroup>
 
@@ -195,7 +190,6 @@
     <!-- Contains the super set of packages that we'd like to publish to MyGet and Azure blob -->
     <ItemGroup>
       <PackageToPublishToMyGet Include="@(PackageToPublish)" />
-      <PackageToPublishToMyGet Include="@(PackageToMirror)" />
     </ItemGroup>
 
     <Error Message="No packages found to publish" Condition="@(PackageToPublishToMyGet->Count()) == 0" />

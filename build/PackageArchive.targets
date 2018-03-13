@@ -33,7 +33,6 @@
 
     <ItemGroup>
       <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
-      <_FallbackArchiveRestoreSources Include="$(DependencyMirrorPackageDir)" Condition="Exists($(DependencyMirrorPackageDir))" />
     </ItemGroup>
 
     <RepoTasks.GenerateRestoreSourcesPropsFile

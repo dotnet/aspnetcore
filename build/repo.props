@@ -3,7 +3,6 @@
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
     <GenerateSignRequest>false</GenerateSignRequest>
-    <GenerateBillOfMaterials>false</GenerateBillOfMaterials>
 
     <SignType Condition=" '$(SignType)' == '' ">public</SignType>
 
@@ -14,7 +13,6 @@
     <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
-    <DependencyMirrorPackageDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorPackageDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -57,6 +55,7 @@
     <PublishToTransportFeed Condition="$(PublishType.Contains('blob'))">true</PublishToTransportFeed>
   </PropertyGroup>
 
+  <Import Project="sources.props" />
   <Import Project="external-dependencies.props" />
   <Import Project="artifacts.props" />
   <Import Project="submodules.props" />

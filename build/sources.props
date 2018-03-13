@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <RestoreSources>$(DotNetAdditionalRestoreSources)</RestoreSources>
+    <RestoreSources>
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+    </RestoreSources>
+    <RestoreSources Condition=" '$(DisableMyGetRestoreSources)' != 'true' ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json;
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
+      https://vside.myget.org/F/vssdk/api/v3/index.json;
+      https://vside.myget.org/F/vsmac/api/v3/index.json;
+      https://www.myget.org/F/xunit/api/v3/index.json;
+      https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+</Project>

@@ -15,15 +15,15 @@ All published ASP.NET Core packages can be found on <https://www.nuget.org/profi
 
 Commonly referenced packages:
 
-[all-metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore.All
-[all-metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.All.svg?style=flat-square&label=nuget
+[app-metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore.App
+[app-metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=nuget
 
 [metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore
 [metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.svg?style=flat-square&label=nuget
 
 Package                           | NuGet.org
 :---------------------------------|:---------------------------------------------------------
-Microsoft.AspNetCore.All          | [![][all-metapackage-nuget-badge]][all-metapackage-nuget]
+Microsoft.AspNetCore.App          | [![][app-metapackage-nuget-badge]][app-metapackage-nuget]
 Microsoft.AspNetCore              | [![][metapackage-nuget-badge]][metapackage-nuget]
 
 
@@ -31,16 +31,16 @@ Microsoft.AspNetCore              | [![][metapackage-nuget-badge]][metapackage-n
 
 ### NuGet packages
 
-Packages can be found on <https://dotnet.myget.org/gallery/aspnetcore-dev>. This feed may include
+Packages can be found on <https://dotnet.myget.org/gallery/dotnet-core>. This feed may include
 packages that will not be supported in a officially released build.
 
 Commonly referenced packages:
 
-[app-metapackage-myget]:  https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore.App
-[app-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
+[app-metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore.App
+[app-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
 
-[metapackage-myget]:  https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore
-[metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
+[metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore
+[metapackage-myget-badge]: http://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
 
 Package                           | MyGet
 :---------------------------------|:---------------------------------------------------------

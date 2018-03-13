@@ -100,12 +100,7 @@ namespace RepoTasks
                 {
                     dependencyMap[dep.ItemSpec] = versions = new List<string>();
                 }
-                else if (dep.GetMetadata("NoWarn") == null || dep.GetMetadata("NoWarn").IndexOf("KRB" + KoreBuildErrors.MultipleExternalDependencyVersions) < 0)
-                {
-                    Log.LogKoreBuildWarning(
-                        KoreBuildErrors.MultipleExternalDependencyVersions,
-                        message: $"Multiple versions of external dependency '{dep.ItemSpec}' are defined. In most cases, there should only be one version of external dependencies.");
-                }
+
                 versions.Add(dep.GetMetadata("Version"));
             }
 
