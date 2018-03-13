@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <!-- These package version may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <MicrosoftCSharpPackageVersion>4.5.0-preview2-26308-02</MicrosoftCSharpPackageVersion>
@@ -170,7 +170,7 @@
     <MicrosoftVisualStudioTextUIWpfPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIWpfPackageVersion>
     <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
     <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
-    <MonoAddinsPackageVersion>1.3.7</MonoAddinsPackageVersion>
+    <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <MsgPackCliPackageVersion>1.0.0-rc</MsgPackCliPackageVersion>
