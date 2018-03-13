@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Sockets.Features
 {
-    public class ConnectionInherentKeepAliveFeature : IConnectionInherentKeepAliveFeature
+    public class ConnectionInherentKeepAliveFeature : Microsoft.AspNetCore.Sockets.Features.IConnectionInherentKeepAliveFeature
     {
         public TimeSpan KeepAliveInterval { get; }
 
