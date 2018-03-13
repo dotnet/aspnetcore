@@ -424,7 +424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
         }
 
-        public override void Schedule<T>(Action<T> action, T state)
+        public override void Schedule(Action<object> action, object state)
         {
             Post(action, state);
         }
