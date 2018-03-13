@@ -359,7 +359,10 @@
   <Target
       Name="_LinkBlazorApplication"
       Condition="$(_BlazorShouldLinkApplicationAssemblies) != ''"
-      Inputs="$(BlazorBuildLinkerInputsCache)"
+      Inputs="$(BlazorBuildLinkerInputsCache);
+              @(IntermediateAssembly);
+              @(ReferenceCopyLocalPaths->WithMetadataValue('Extension','.dll'));
+              @(BlazorLinkerDescriptor)"
       Outputs="$(BlazorIntermediateLinkerResultFilePath)"
     >
     <!--
@@ -462,7 +465,9 @@
   <Target
     Name="_ResolveBlazorApplicationAssemblies"
     Condition="'$(_BlazorShouldLinkApplicationAssemblies)' == ''"
-    Inputs="$(BlazorBuildCommonInputsCache)"
+    Inputs="$(BlazorBuildCommonInputsCache);
+            @(IntermediateAssembly);
+            @(ReferenceCopyLocalPaths->WithMetadataValue('Extension','.dll'))"
     Outputs="$(BlazorResolvedAssembliesOutputPath)"
   >
     <ItemGroup>
