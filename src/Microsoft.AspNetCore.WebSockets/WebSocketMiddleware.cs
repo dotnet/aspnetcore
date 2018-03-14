@@ -119,7 +119,10 @@ namespace Microsoft.AspNetCore.WebSockets
 
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
-                return WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+                // Allocate a buffer for receive (default is 4k)
+                var buffer = new byte[receiveBufferSize];
+
+                return WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval, buffer: buffer);
             }
         }
     }
