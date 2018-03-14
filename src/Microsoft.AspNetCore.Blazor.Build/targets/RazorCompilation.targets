@@ -5,6 +5,17 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <!-- Temporary workaround for using the Razor Sdk targeted at preview2 Web.Sdk in a Preview environment -->
+  <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
+    <!-- Both the preview1 Web.Sdk and preview2 Sdk include chstml files as content. Workaround this by removing and re-adding cshtml files -->
+    <Content Remove="**\*.cshtml" />
+
+    <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+
+
   <PropertyGroup>
     <!-- Passed to Razor tasks and loaded as a plugin -->
     <_BlazorAngleSharpAssemblyPath>$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.AngleSharp.dll</_BlazorAngleSharpAssemblyPath>

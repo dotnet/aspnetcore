@@ -1,3 +1,7 @@
 ﻿<Project>
   <Import Project="Blazor.MonoRuntime.props" />
+
+  <PropertyGroup>
+    <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
+  </PropertyGroup>
 </Project>
