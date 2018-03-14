@@ -1,0 +1,16 @@
+{
+  "Default": {
+    "Client": "SignalR",
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "dev",
+      "Project": "src/Benchmarks/Benchmarks.csproj"
+    },
+    "Connections": 10,
+    "Duration": 20,
+    "Warmup": 2
+  },
+  "SignalRBroadcast": {
+    "Path": "/echo"
+  }
+}
