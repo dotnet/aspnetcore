@@ -82,12 +82,27 @@ namespace Microsoft.AspNetCore.Blazor.Cli.Server
 
         private static string FindClientBinDir(string clientAppSourceRoot)
         {
-            // Our CI scripts will use Release
-            #if DEBUG
-            var binDir = Path.Combine(clientAppSourceRoot, "bin", "Debug");
-            #else
-            var binDir = Path.Combine(clientAppSourceRoot, "bin", "Release");
-            #endif
+            // As a temporary workaround for https://github.com/aspnet/Blazor/issues/261,
+            // disallow the scenario where there is both a Debug *and* a Release dir.
+            // Only allow there to be one, and that's the one we pick.
+            var debugDirPath = Path.Combine(clientAppSourceRoot, "bin", "Debug");
+            var releaseDirPath = Path.Combine(clientAppSourceRoot, "bin", "Release");
+            var debugDirExists = Directory.Exists(debugDirPath);
+            var releaseDirExists = Directory.Exists(releaseDirPath);
+            if (debugDirExists && releaseDirExists)
+            {
+                throw new InvalidOperationException($"Cannot identify unique bin directory for Blazor app. " +
+                    $"Found both '{debugDirPath}' and '{releaseDirPath}'. Ensure that only one is present on " +
+                    $"disk. This is a temporary limitation (see https://github.com/aspnet/Blazor/issues/261).");
+            }
+
+            if (!(debugDirExists || releaseDirExists))
+            {
+                throw new InvalidOperationException($"Cannot find bin directory for Blazor app. " +
+                    $"Neither '{debugDirPath}' nor '{releaseDirPath}' exists on disk. Make sure the project has been built.");
+            }
+
+            var binDir = debugDirExists ? debugDirPath : releaseDirPath;
 
             var subdirectories = Directory.GetDirectories(binDir);
             if (subdirectories.Length != 1)
