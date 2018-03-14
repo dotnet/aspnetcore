@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Diagnostics.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Diagnostics.Abstractions, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Diagnostics.CompilationFailure",
@@ -40,6 +40,14 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_FailureSummary",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -58,6 +66,34 @@
             {
               "Name": "messages",
               "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "sourceFilePath",
+              "Type": "System.String"
+            },
+            {
+              "Name": "sourceFileContent",
+              "Type": "System.String"
+            },
+            {
+              "Name": "compiledContent",
+              "Type": "System.String"
+            },
+            {
+              "Name": "messages",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage>"
+            },
+            {
+              "Name": "failureSummary",
+              "Type": "System.String"
             }
           ],
           "Visibility": "Public",
@@ -202,6 +238,25 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -266,6 +321,25 @@
         {
           "Kind": "Method",
           "Name": "set_OriginalPath",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OriginalQueryString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OriginalQueryString",
           "Parameters": [
             {
               "Name": "value",
