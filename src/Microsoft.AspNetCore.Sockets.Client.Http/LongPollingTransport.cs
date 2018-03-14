@@ -8,9 +8,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Client.Http;
-using Microsoft.AspNetCore.Sockets.Features;
+using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Protocols;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {

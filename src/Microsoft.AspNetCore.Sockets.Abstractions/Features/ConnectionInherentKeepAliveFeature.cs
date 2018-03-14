@@ -3,9 +3,9 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Sockets.Features
+namespace Microsoft.AspNetCore.Protocols.Features
 {
-    public class ConnectionInherentKeepAliveFeature : Microsoft.AspNetCore.Sockets.Features.IConnectionInherentKeepAliveFeature
+    public class ConnectionInherentKeepAliveFeature : IConnectionInherentKeepAliveFeature
     {
         public TimeSpan KeepAliveInterval { get; }
 

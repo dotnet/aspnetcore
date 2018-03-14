@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets;
 using Newtonsoft.Json;
 using SocketsTransportType = Microsoft.AspNetCore.Sockets.TransportType;

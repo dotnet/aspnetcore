@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets;
 using Xunit;
 

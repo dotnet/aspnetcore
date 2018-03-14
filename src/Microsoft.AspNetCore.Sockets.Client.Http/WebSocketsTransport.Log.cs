@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.WebSockets;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Client

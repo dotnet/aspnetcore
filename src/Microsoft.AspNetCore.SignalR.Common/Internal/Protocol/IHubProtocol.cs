@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Protocols;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {

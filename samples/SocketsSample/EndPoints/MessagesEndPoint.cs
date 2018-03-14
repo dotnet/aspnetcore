@@ -3,12 +3,11 @@
 
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Features;
 
 namespace SocketsSample.EndPoints
 {
