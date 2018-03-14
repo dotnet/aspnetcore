@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Protocols;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class ConnectionList : IReadOnlyCollection<ConnectionContext>
+    internal class ConnectionList : IReadOnlyCollection<ConnectionContext>
     {
         private readonly ConcurrentDictionary<string, ConnectionContext> _connections = new ConcurrentDictionary<string, ConnectionContext>();
 

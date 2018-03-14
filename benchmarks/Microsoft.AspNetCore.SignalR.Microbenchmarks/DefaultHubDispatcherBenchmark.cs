@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using DefaultConnectionContext = Microsoft.AspNetCore.Sockets.DefaultConnectionContext;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             var options = new PipeOptions();
             var pair = DuplexPipe.CreateConnectionPair(options, options);
-            var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Transport, pair.Application);
+            var connection = new Sockets.DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Transport, pair.Application);
 
             _connectionContext = new NoErrorHubConnectionContext(connection, TimeSpan.Zero, NullLoggerFactory.Instance);
 

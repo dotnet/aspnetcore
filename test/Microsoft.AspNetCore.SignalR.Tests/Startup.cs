@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             services.AddSockets();
             services.AddSignalR();
-            services.AddEndPoint<EchoEndPoint>();
-            services.AddEndPoint<HttpHeaderEndPoint>();
+            services.AddSingleton<EchoEndPoint>();
+            services.AddSingleton<HttpHeaderEndPoint>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

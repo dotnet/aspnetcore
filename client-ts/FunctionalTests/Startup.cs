@@ -69,7 +69,7 @@ namespace FunctionalTests
                         }
                     };
                 });
-            services.AddEndPoint<EchoEndPoint>();
+            services.AddSingleton<EchoEndPoint>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Sockets.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public static class HttpConnectionContextExtensions
+    public static class DefaultConnectionContextExtensions
     {
         public static HttpContext GetHttpContext(this HubConnectionContext connection)
         {

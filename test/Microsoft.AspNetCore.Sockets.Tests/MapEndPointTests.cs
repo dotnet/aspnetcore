@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 .ConfigureServices(services =>
                 {
                     services.AddSockets();
-                    services.AddEndPoint<TEndPoint>();
+                    services.AddSingleton<TEndPoint>();
                 })
                 .Configure(app =>
                 {

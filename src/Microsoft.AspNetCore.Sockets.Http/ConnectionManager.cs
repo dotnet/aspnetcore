@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Sockets
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
 
-        private readonly ConcurrentDictionary<string, DefaultConnectionContext> _connections = new ConcurrentDictionary<string, DefaultConnectionContext>();
+        private readonly ConcurrentDictionary<string, (DefaultConnectionContext Connection, ValueStopwatch Timer)> _connections = new ConcurrentDictionary<string, (DefaultConnectionContext Connection, ValueStopwatch Timer)>();
         private Timer _timer;
         private readonly ILogger<ConnectionManager> _logger;
         private object _executionLock = new object();
@@ -53,7 +53,14 @@ namespace Microsoft.AspNetCore.Sockets
 
         public bool TryGetConnection(string id, out DefaultConnectionContext connection)
         {
-            return _connections.TryGetValue(id, out connection);
+            connection = null;
+
+            if (_connections.TryGetValue(id, out var pair))
+            {
+                connection = pair.Connection;
+                return true;
+            }
+            return false;
         }
 
         public DefaultConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
@@ -65,9 +72,8 @@ namespace Microsoft.AspNetCore.Sockets
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
 
             var connection = new DefaultConnectionContext(id, pair.Application, pair.Transport);
-            connection.ConnectionTimer = connectionTimer;
 
-            _connections.TryAdd(id, connection);
+            _connections.TryAdd(id, (connection, connectionTimer));
             return connection;
         }
 
@@ -78,10 +84,10 @@ namespace Microsoft.AspNetCore.Sockets
 
         public void RemoveConnection(string id)
         {
-            if (_connections.TryRemove(id, out var connection))
+            if (_connections.TryRemove(id, out var pair))
             {
                 // Remove the connection completely
-                SocketEventSource.Log.ConnectionStop(id, connection.ConnectionTimer);
+                SocketEventSource.Log.ConnectionStop(id, pair.Timer);
                 _logger.RemovedConnection(id);
             }
         }
@@ -128,33 +134,34 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     var status = DefaultConnectionContext.ConnectionStatus.Inactive;
                     var lastSeenUtc = DateTimeOffset.UtcNow;
+                    var connection = c.Value.Connection;
 
                     try
                     {
-                        c.Value.Lock.Wait();
+                        connection.Lock.Wait();
 
                         // Capture the connection state
-                        status = c.Value.Status;
+                        status = connection.Status;
 
-                        lastSeenUtc = c.Value.LastSeenUtc;
+                        lastSeenUtc = connection.LastSeenUtc;
                     }
                     finally
                     {
-                        c.Value.Lock.Release();
+                        connection.Lock.Release();
                     }
 
                     // Once the decision has been made to dispose we don't check the status again
                     // But don't clean up connections while the debugger is attached.
                     if (!Debugger.IsAttached && status == DefaultConnectionContext.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
                     {
-                        _logger.ConnectionTimedOut(c.Value.ConnectionId);
-                        SocketEventSource.Log.ConnectionTimedOut(c.Value.ConnectionId);
-                        var ignore = DisposeAndRemoveAsync(c.Value);
+                        _logger.ConnectionTimedOut(connection.ConnectionId);
+                        SocketEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
+                        var ignore = DisposeAndRemoveAsync(connection);
                     }
                     else
                     {
                         // Tick the heartbeat, if the connection is still active
-                        c.Value.TickHeartbeat();
+                        connection.TickHeartbeat();
                     }
                 }
 
@@ -191,7 +198,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                 foreach (var c in _connections)
                 {
-                    tasks.Add(DisposeAndRemoveAsync(c.Value));
+                    tasks.Add(DisposeAndRemoveAsync(c.Value.Connection));
                 }
 
                 Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));

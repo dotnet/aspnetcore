@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
                 var context = new DefaultHttpContext();
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddOptions();
                 var ms = new MemoryStream();
                 context.Request.Path = "/foo";
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
                 var context = new DefaultHttpContext();
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddOptions();
                 var ms = new MemoryStream();
                 context.Request.Path = "/foo";
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Response.Body = responseBody;
 
                     var services = new ServiceCollection();
-                    services.AddEndPoint<TestEndPoint>();
+                    services.AddSingleton<TestEndPoint>();
                     services.AddOptions();
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = new DefaultHttpContext();
                 context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddOptions();
                 var ms = new MemoryStream();
                 context.Request.Path = "/foo";
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Response.Body = strm;
 
                     var services = new ServiceCollection();
-                    services.AddEndPoint<TestEndPoint>();
+                    services.AddSingleton<TestEndPoint>();
                     services.AddOptions();
                     context.Request.Path = "/foo";
                     context.Request.Method = "GET";
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Response.Body = strm;
 
                     var services = new ServiceCollection();
-                    services.AddEndPoint<TestEndPoint>();
+                    services.AddSingleton<TestEndPoint>();
                     services.AddOptions();
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Response.Body = strm;
 
                     var services = new ServiceCollection();
-                    services.AddEndPoint<TestEndPoint>();
+                    services.AddSingleton<TestEndPoint>();
                     services.AddOptions();
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Response.Body = responseBody;
 
                     var services = new ServiceCollection();
-                    services.AddEndPoint<TestEndPoint>();
+                    services.AddSingleton<TestEndPoint>();
                     services.AddOptions();
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Response.Body = strm;
                     var services = new ServiceCollection();
                     services.AddOptions();
-                    services.AddEndPoint<TestEndPoint>();
+                    services.AddSingleton<TestEndPoint>();
                     context.Request.Path = "/foo";
                     context.Request.Method = "GET";
 
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Response.Body = strm;
                     var services = new ServiceCollection();
                     services.AddOptions();
-                    services.AddEndPoint<TestEndPoint>();
+                    services.AddSingleton<TestEndPoint>();
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
 
@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 SetTransport(context, TransportType.ServerSentEvents);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                services.AddSingleton<ImmediatelyCompleteEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 SetTransport(context, TransportType.ServerSentEvents);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<SynchronusExceptionEndPoint>();
+                services.AddSingleton<SynchronusExceptionEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<SynchronusExceptionEndPoint>();
                 var app = builder.Build();
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = MakeRequest("/foo", connection);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                services.AddSingleton<ImmediatelyCompleteEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
@@ -534,7 +534,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = MakeRequest("/foo", connection);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 SetTransport(context, TransportType.WebSockets);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                services.AddSingleton<ImmediatelyCompleteEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 SetTransport(context2, transportType);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
@@ -631,7 +631,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context2 = MakeRequest("/foo", connection);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
@@ -669,7 +669,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 SetTransport(context, transportType);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
@@ -694,7 +694,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = MakeRequest("/foo", connection);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
@@ -729,7 +729,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 SetTransport(context, TransportType.ServerSentEvents);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<BlockingEndPoint>();
+                services.AddSingleton<BlockingEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<BlockingEndPoint>();
                 var app = builder.Build();
@@ -762,7 +762,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = MakeRequest("/foo", connection);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<BlockingEndPoint>();
+                services.AddSingleton<BlockingEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<BlockingEndPoint>();
                 var app = builder.Build();
@@ -793,7 +793,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
@@ -837,7 +837,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 SetTransport(context, transportType);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                services.AddSingleton<ImmediatelyCompleteEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
@@ -865,7 +865,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = new DefaultHttpContext();
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
@@ -910,7 +910,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = new DefaultHttpContext();
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
@@ -958,7 +958,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
@@ -1014,7 +1014,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
@@ -1095,7 +1095,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddAuthorization(o =>
                 {
                     o.AddPolicy("test", policy =>
@@ -1151,7 +1151,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = new DefaultHttpContext();
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 services.AddAuthorization(o =>
                 {
                     o.AddPolicy("test", policy =>
@@ -1206,7 +1206,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = MakeRequest("/foo", connection);
 
                 var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
+                services.AddSingleton<TestEndPoint>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
@@ -1278,7 +1278,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Response.Body = strm;
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                services.AddSingleton<ImmediatelyCompleteEndPoint>();
                 SetTransport(context, transportType);
                 context.Request.Path = "/foo";
                 context.Request.Method = "GET";
@@ -1305,7 +1305,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        private static DefaultHttpContext MakeRequest(string path, DefaultConnectionContext connection, string format = null)
+        private static DefaultHttpContext MakeRequest(string path, ConnectionContext connection, string format = null)
         {
             var context = new DefaultHttpContext();
             context.Features.Set<IHttpResponseFeature>(new ResponseFeature());

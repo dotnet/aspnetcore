@@ -42,7 +42,7 @@ namespace SocketsSample
                 });
             });
 
-            services.AddEndPoint<MessagesEndPoint>();
+            services.AddSingleton<MessagesEndPoint>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

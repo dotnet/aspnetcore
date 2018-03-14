@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Sockets.Http.Features;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public static class HttpConnectionContextExtensions
+    public static class DefaultConnectionContextExtensions
     {
         public static HttpContext GetHttpContext(this ConnectionContext connection)
         {

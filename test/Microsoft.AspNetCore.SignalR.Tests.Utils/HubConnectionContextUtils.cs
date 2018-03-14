@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public static class HubConnectionContextUtils
     {
-        public static HubConnectionContext Create(DefaultConnectionContext connection)
+        public static HubConnectionContext Create(ConnectionContext connection)
         {
             return new HubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance)
             {
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             };
         }
 
-        public static Mock<HubConnectionContext> CreateMock(DefaultConnectionContext connection)
+        public static Mock<HubConnectionContext> CreateMock(ConnectionContext connection)
         {
             var mock = new Mock<HubConnectionContext>(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance) { CallBase = true };
             var protocol = new JsonHubProtocol();
