@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15742</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15744</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
