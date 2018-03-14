@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
@@ -15,12 +16,17 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
     public class LayoutDisplay : IComponent
     {
         private RenderHandle _renderHandle;
-        
+
         /// <summary>
         /// Gets or sets the type of the page component to display.
         /// The type must implement <see cref="IComponent"/>.
         /// </summary>
         public Type Page { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parameters to pass to the page.
+        /// </summary>
+        public IDictionary<string, string> PageParameters { get; set; }
 
         /// <inheritdoc />
         public void Init(RenderHandle renderHandle)
@@ -47,7 +53,7 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
             {
                 fragment = RenderComponentWithBody(layoutType, fragment);
             }
-            
+
             _renderHandle.Render(fragment);
         }
 
@@ -57,6 +63,16 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
             if (bodyParam != null)
             {
                 builder.AddAttribute(1, nameof(ILayoutComponent.Body), bodyParam);
+            }
+            else
+            {
+                if (PageParameters != null)
+                {
+                    foreach (var kvp in PageParameters)
+                    {
+                        builder.AddAttribute(1, kvp.Key, kvp.Value);
+                    }
+                }
             }
             builder.CloseComponent();
         };

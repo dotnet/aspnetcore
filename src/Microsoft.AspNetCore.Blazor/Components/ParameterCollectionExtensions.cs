@@ -57,7 +57,8 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
         private static PropertyInfo GetPropertyInfo(Type targetType, string propertyName)
         {
-            var property = targetType.GetProperty(propertyName);
+            var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
+            var property = targetType.GetProperty(propertyName, flags);
             if (property == null)
             {
                 throw new InvalidOperationException(
