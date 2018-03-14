@@ -3,14 +3,13 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public interface IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
     {
-        bool ParseRequestLine(TRequestHandler handler, ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined);
+        bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined);
 
-        bool ParseHeaders(TRequestHandler handler, ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes);
+        bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes);
     }
 }

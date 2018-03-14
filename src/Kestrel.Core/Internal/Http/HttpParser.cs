@@ -3,11 +3,9 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Protocols.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -34,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteQuestionMark = (byte)'?';
         private const byte BytePercentage = (byte)'%';
 
-        public unsafe bool ParseRequestLine(TRequestHandler handler, ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public unsafe bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -52,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // No request line end
                 return false;
             }
-            else if (TryGetNewLine(ref buffer, out var found))
+            else if (TryGetNewLine(buffer, out var found))
             {
                 span = buffer.Slice(consumed, found).ToSpan();
                 consumed = found;
@@ -189,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
         }
 
-        public unsafe bool ParseHeaders(TRequestHandler handler, ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)
+        public unsafe bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -419,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool TryGetNewLine(ref ReadOnlySequence<byte> buffer, out SequencePosition found)
+        private static bool TryGetNewLine(in ReadOnlySequence<byte> buffer, out SequencePosition found)
         {
             var byteLfPosition = buffer.PositionOf(ByteLF);
             if (byteLfPosition != null)

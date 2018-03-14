@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public static readonly NullParser<Http1ParsingHandler> Instance = new NullParser<Http1ParsingHandler>();
 
-        public bool ParseHeaders(TRequestHandler handler, ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)
+        public bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)
         {
             handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
             handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return true;
         }
 
-        public bool ParseRequestLine(TRequestHandler handler, ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             handler.OnStartLine(HttpMethod.Get,
                 HttpVersion.Http11,
