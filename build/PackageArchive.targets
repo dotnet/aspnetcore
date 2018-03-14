@@ -29,6 +29,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <_FallbackArchiveRestoreSources Include="$(RestoreSources)" />
+      <_FallbackArchiveRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
       <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
     </ItemGroup>
 
