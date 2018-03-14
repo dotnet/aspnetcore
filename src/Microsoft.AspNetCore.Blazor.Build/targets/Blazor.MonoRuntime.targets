@@ -143,6 +143,7 @@
     <PropertyGroup Label="Build properties">
       <_BlazorShouldLinkApplicationAssemblies Condition="$(BlazorLinkOnBuild) == 'false'"></_BlazorShouldLinkApplicationAssemblies>
       <_BlazorShouldLinkApplicationAssemblies Condition="$(BlazorLinkOnBuild) == 'true'">true</_BlazorShouldLinkApplicationAssemblies>
+      <_BlazorBuiltInBclLinkerDescriptor>$(MSBuildThisFileDirectory)BuiltInBclLinkerDescriptor.xml</_BlazorBuiltInBclLinkerDescriptor>
     </PropertyGroup>
 
     <PropertyGroup Label="Blazor HTML inputs">
@@ -329,6 +330,7 @@
   <Target Name="_CollectBlazorLinkerDescriptors">
 
     <ItemGroup Condition="@(BlazorLinkerDescriptor) == ''">
+      <BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
       <BlazorLinkerDescriptor Include="$(GeneratedBlazorLinkerDescriptor)" />
       <FileWrites Include="$(GeneratedBlazorLinkerDescriptor)" />
     </ItemGroup>
