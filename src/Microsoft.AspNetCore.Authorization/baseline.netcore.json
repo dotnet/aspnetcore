@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authorization, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authorization, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions",

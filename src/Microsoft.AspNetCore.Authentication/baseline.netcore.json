@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
@@ -2495,51 +2495,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Authentication.ISystemClock",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Authentication.Internal.RequestPathBaseCookieBuilder",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Http.CookieBuilder",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_AdditionalPath",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Build",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Http.HttpContext"
-            },
-            {
-              "Name": "expiresFrom",
-              "Type": "System.DateTimeOffset"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Http.CookieOptions",
-          "Virtual": true,
-          "Override": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
