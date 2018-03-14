@@ -75,18 +75,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             if (Sources.Values.Count == 0)
             {
-                Error.WriteLine($"{Sources.ValueName} should have at least one value.");
+                Error.WriteLine($"{Sources.Description} should have at least one value.");
                 return false;
             }
 
             if (Outputs.Values.Count != Sources.Values.Count)
             {
-                Error.WriteLine($"{Sources.ValueName} has {Sources.Values.Count}, but {Outputs.ValueName} has {Outputs.Values.Count}.");
+                Error.WriteLine($"{Sources.Description} has {Sources.Values.Count}, but {Outputs.Description} has {Outputs.Values.Count} values.");
             }
 
             if (RelativePaths.Values.Count != Sources.Values.Count)
             {
-                Error.WriteLine($"{Sources.ValueName} has {Sources.Values.Count}, but {RelativePaths.ValueName} has {RelativePaths.Values.Count}.");
+                Error.WriteLine($"{Sources.Description} has {Sources.Values.Count}, but {RelativePaths.Description} has {RelativePaths.Values.Count} values.");
             }
 
             if (string.IsNullOrEmpty(ProjectDirectory.Value()))
@@ -96,24 +96,24 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             if (string.IsNullOrEmpty(Version.Value()))
             {
-                Error.WriteLine($"{Version.ValueName} must be specified.");
+                Error.WriteLine($"{Version.Description} must be specified.");
                 return false;
             }
             else if (!RazorLanguageVersion.TryParse(Version.Value(), out _))
             {
-                Error.WriteLine($"{Version.ValueName} is not a valid language version.");
+                Error.WriteLine($"Invalid option {Version.Value()} for Razor language version --version; must be Latest or a valid version in range {RazorLanguageVersion.Version_1_0} to {RazorLanguageVersion.Latest}.");
                 return false;
             }
 
             if (string.IsNullOrEmpty(Configuration.Value()))
             {
-                Error.WriteLine($"{Configuration.ValueName} must be specified.");
+                Error.WriteLine($"{Configuration.Description} must be specified.");
                 return false;
             }
 
             if (ExtensionNames.Values.Count != ExtensionFilePaths.Values.Count)
             {
-                Error.WriteLine($"{ExtensionNames.ValueName} and {ExtensionFilePaths.ValueName} should have the same number of values.");
+                Error.WriteLine($"{ExtensionNames.Description} and {ExtensionFilePaths.Description} should have the same number of values.");
             }
 
             foreach (var filePath in ExtensionFilePaths.Values)
@@ -163,12 +163,22 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             foreach (var result in results)
             {
-                if (result.CSharpDocument.Diagnostics.Count > 0)
+                var errorCount = result.CSharpDocument.Diagnostics.Count;
+                if (errorCount > 0)
                 {
                     success = false;
-                    foreach (var error in result.CSharpDocument.Diagnostics)
+
+                    for (var i = 0; i < errorCount; i++)
                     {
-                        Console.Error.WriteLine(error.ToString());
+                        var error = result.CSharpDocument.Diagnostics[i];
+                        Error.WriteLine(error.ToString());
+
+                        // Only show the first 100 errors to prevent massive string allocations.
+                        if (i == 99)
+                        {
+                            Error.WriteLine($"And {errorCount - i + 1} more errors.");
+                            break;
+                        }
                     }
                 }
 

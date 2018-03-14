@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         private static ServerResponse EmptyServerResponse => new CompletedServerResponse(
             returnCode: 0,
             utf8output: false,
-            output: string.Empty);
+            output: string.Empty,
+            error: string.Empty);
 
         [Fact]
         public async Task AcceptConnection_ReadingRequestFails_ClosesConnection()

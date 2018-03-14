@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             if (string.IsNullOrEmpty(TagHelperManifest.Value()))
             {
-                Error.WriteLine($"{TagHelperManifest.ValueName} must be specified.");
+                Error.WriteLine($"{TagHelperManifest.Description} must be specified.");
                 return false;
             }
 
@@ -66,24 +66,24 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             if (string.IsNullOrEmpty(Version.Value()))
             {
-                Error.WriteLine($"{Version.ValueName} must be specified.");
+                Error.WriteLine($"{Version.Description} must be specified.");
                 return false;
             }
             else if (!RazorLanguageVersion.TryParse(Version.Value(), out _))
             {
-                Error.WriteLine($"{Version.ValueName} is not a valid language version.");
+                Error.WriteLine($"Invalid option {Version.Value()} for Razor language version --version; must be Latest or a valid version in range {RazorLanguageVersion.Version_1_0} to {RazorLanguageVersion.Latest}.");
                 return false;
             }
 
             if (string.IsNullOrEmpty(Configuration.Value()))
             {
-                Error.WriteLine($"{Configuration.ValueName} must be specified.");
+                Error.WriteLine($"{Configuration.Description} must be specified.");
                 return false;
             }
 
             if (ExtensionNames.Values.Count != ExtensionFilePaths.Values.Count)
             {
-                Error.WriteLine($"{ExtensionNames.ValueName} and {ExtensionFilePaths.ValueName} should have the same number of values.");
+                Error.WriteLine($"{ExtensionNames.Description} and {ExtensionFilePaths.Description} should have the same number of values.");
             }
 
             foreach (var filePath in ExtensionFilePaths.Values)

@@ -13,12 +13,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class Application : CommandLineApplication
     {
-        public Application(CancellationToken cancellationToken, ExtensionAssemblyLoader loader, ExtensionDependencyChecker checker, Func<string, MetadataReferenceProperties, PortableExecutableReference> assemblyReferenceProvider)
+        public Application(
+            CancellationToken cancellationToken,
+            ExtensionAssemblyLoader loader,
+            ExtensionDependencyChecker checker,
+            Func<string, MetadataReferenceProperties, PortableExecutableReference> assemblyReferenceProvider,
+            TextWriter output = null,
+            TextWriter error = null)
         {
             CancellationToken = cancellationToken;
             Checker = checker;
             Loader = loader;
             AssemblyReferenceProvider = assemblyReferenceProvider;
+            Out = output ?? Out;
+            Error = error ?? Error;
 
             Name = "rzc";
             FullName = "Microsoft ASP.NET Core Razor CLI tool";
