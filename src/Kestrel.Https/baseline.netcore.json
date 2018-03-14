@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Https, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Https, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions",
@@ -239,72 +239,6 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Server.Kestrel.Https.Internal.HttpsConnectionAdapter",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_IsHttps",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "OnConnectionAsync",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.ConnectionAdapterContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IAdaptedConnection>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "options",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "options",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions"
-            },
-            {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
-            }
-          ],
           "Visibility": "Public",
           "GenericParameter": []
         }

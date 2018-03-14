@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions",
@@ -83,14 +83,6 @@
             {
               "Name": "options",
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions>"
-            },
-            {
-              "Name": "applicationLifetime",
-              "Type": "Microsoft.AspNetCore.Hosting.IApplicationLifetime"
-            },
-            {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             }
           ],
           "Visibility": "Public",
