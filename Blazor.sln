@@ -69,9 +69,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorStandalone.CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorStandalone.CSharp\BlazorStandalone.CSharp.csproj", "{A092FA91-856B-4ACA-B1C2-10BDBA366185}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorHosted.CSharp", "BlazorHosted.CSharp", "{73DA1DFD-79F0-4BA2-B0B6-4F3A21D2C3F8}"
-	ProjectSection(SolutionItems) = preProject
-		src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\NuGet.config = src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\NuGet.config
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted.CSharp.Client", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\BlazorHosted.CSharp.Client\BlazorHosted.CSharp.Client.csproj", "{7549444A-9C81-44DE-AD0D-2C55501EAAC7}"
 EndProject
