@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Localization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Localization, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.ApplicationBuilderExtensions",
@@ -429,7 +429,7 @@
           "Kind": "Method",
           "Name": "get_Cultures",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -437,7 +437,7 @@
           "Kind": "Method",
           "Name": "get_UICultures",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -447,7 +447,7 @@
           "Parameters": [
             {
               "Name": "culture",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -459,11 +459,11 @@
           "Parameters": [
             {
               "Name": "culture",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "uiCulture",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -475,7 +475,7 @@
           "Parameters": [
             {
               "Name": "cultures",
-              "Type": "System.Collections.Generic.IList<System.String>"
+              "Type": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>"
             }
           ],
           "Visibility": "Public",
@@ -487,11 +487,11 @@
           "Parameters": [
             {
               "Name": "cultures",
-              "Type": "System.Collections.Generic.IList<System.String>"
+              "Type": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>"
             },
             {
               "Name": "uiCultures",
-              "Type": "System.Collections.Generic.IList<System.String>"
+              "Type": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>"
             }
           ],
           "Visibility": "Public",
@@ -755,6 +755,16 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "NullProviderCultureResult",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
+          "Static": true,
+          "ReadOnly": true,
           "Visibility": "Protected",
           "GenericParameter": []
         }

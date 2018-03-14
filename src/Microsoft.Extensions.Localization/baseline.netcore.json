@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Localization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Localization, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.LocalizationServiceCollectionExtensions",
@@ -104,6 +104,36 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Localization.ResourceLocationAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ResourceLocation",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "resourceLocation",
+              "Type": "System.String"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -237,6 +267,10 @@
             {
               "Name": "resourceNamesCache",
               "Type": "Microsoft.Extensions.Localization.IResourceNamesCache"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
             }
           ],
           "Visibility": "Public",
@@ -261,6 +295,38 @@
             {
               "Name": "resourceNamesCache",
               "Type": "Microsoft.Extensions.Localization.IResourceNamesCache"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "resourceManager",
+              "Type": "System.Resources.ResourceManager"
+            },
+            {
+              "Name": "resourceStringProvider",
+              "Type": "Microsoft.Extensions.Localization.Internal.IResourceStringProvider"
+            },
+            {
+              "Name": "baseName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "resourceNamesCache",
+              "Type": "Microsoft.Extensions.Localization.IResourceNamesCache"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
             }
           ],
           "Visibility": "Public",
@@ -277,6 +343,60 @@
         "Microsoft.Extensions.Localization.IStringLocalizerFactory"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetResourcePrefix",
+          "Parameters": [
+            {
+              "Name": "typeInfo",
+              "Type": "System.Reflection.TypeInfo"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetResourcePrefix",
+          "Parameters": [
+            {
+              "Name": "typeInfo",
+              "Type": "System.Reflection.TypeInfo"
+            },
+            {
+              "Name": "baseNamespace",
+              "Type": "System.String"
+            },
+            {
+              "Name": "resourcesRelativePath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetResourcePrefix",
+          "Parameters": [
+            {
+              "Name": "baseResourceName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "baseNamespace",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "Create",
@@ -314,16 +434,70 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "CreateResourceManagerStringLocalizer",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            },
+            {
+              "Name": "baseName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Localization.ResourceManagerStringLocalizer",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetResourcePrefix",
+          "Parameters": [
+            {
+              "Name": "location",
+              "Type": "System.String"
+            },
+            {
+              "Name": "baseName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "resourceLocation",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetResourceLocationAttribute",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Localization.ResourceLocationAttribute",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "hostingEnvironment",
-              "Type": "Microsoft.AspNetCore.Hosting.IHostingEnvironment"
-            },
-            {
               "Name": "localizationOptions",
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions>"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             }
           ],
           "Visibility": "Public",
@@ -415,6 +589,10 @@
             {
               "Name": "culture",
               "Type": "System.Globalization.CultureInfo"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
             }
           ],
           "Visibility": "Public",
@@ -455,58 +633,6 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Localization.Internal.AssemblyWrapper",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Assembly",
-          "Parameters": [],
-          "ReturnType": "System.Reflection.Assembly",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_FullName",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetManifestResourceStream",
-          "Parameters": [
-            {
-              "Name": "name",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.IO.Stream",
-          "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "assembly",
-              "Type": "System.Reflection.Assembly"
-            }
-          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
