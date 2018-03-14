@@ -51,13 +51,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void LibuvIsTheDefaultTransport()
+        public void SocketTransportIsTheDefault()
         {
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel()
                 .Configure(app => { });
 
-            Assert.IsType<LibuvTransportFactory>(hostBuilder.Build().Services.GetService<ITransportFactory>());
+            Assert.IsType<SocketTransportFactory>(hostBuilder.Build().Services.GetService<ITransportFactory>());
         }
 
         [Fact]
