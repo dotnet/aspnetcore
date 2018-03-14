@@ -143,6 +143,18 @@ HRESULT
             fDisableANCM = (dwData != 0);
         }
 
+        cbData = sizeof(dwData);
+        if ((RegQueryValueEx(hKey,
+            L"DebugFlags",
+            NULL,
+            &dwType,
+            (LPBYTE)&dwData,
+            &cbData) == NO_ERROR) &&
+            (dwType == REG_DWORD))
+        {
+            g_dwAspNetCoreDebugFlags = dwData;
+        }
+
         RegCloseKey(hKey);
     }
 
