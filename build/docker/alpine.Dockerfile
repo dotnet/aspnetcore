@@ -21,7 +21,6 @@ ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 # Workarounds https://github.com/dotnet/cli/issues/8738
 ENV DOTNET_INSTALL_SKIP_PREREQS=1
 ENV KOREBUILD_SKIP_RUNTIME_INSTALL=1
-ENV IsAlpineSupported=true
 
 COPY global.json /tmp/global.json
 RUN DOTNET_SDK_VERSION="$(jq -r '.sdk.version' /tmp/global.json)" \
