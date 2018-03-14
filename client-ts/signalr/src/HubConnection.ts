@@ -42,7 +42,7 @@ export class HubConnection {
         this.protocol = options.protocol || new JsonHubProtocol();
 
         if (typeof urlOrConnection === "string") {
-            this.connection = new HttpConnection(urlOrConnection, this.protocol.transferFormat, options);
+            this.connection = new HttpConnection(urlOrConnection, options);
         } else {
             this.connection = urlOrConnection;
         }
@@ -133,7 +133,7 @@ export class HubConnection {
     }
 
     public async start(): Promise<void> {
-        await this.connection.start();
+        await this.connection.start(this.protocol.transferFormat);
 
         await this.connection.send(
             TextMessageFormat.write(

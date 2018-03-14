@@ -39,19 +39,15 @@ export class HttpConnection implements IConnection {
     private readonly httpClient: HttpClient;
     private readonly logger: ILogger;
     private readonly options: IHttpConnectionOptions;
-    private readonly transferFormat: TransferFormat;
     private transport: ITransport;
     private connectionId: string;
     private startPromise: Promise<void>;
 
     public readonly features: any = {};
 
-    constructor(url: string, transferFormat: TransferFormat, options: IHttpConnectionOptions = {}) {
+    constructor(url: string, options: IHttpConnectionOptions = {}) {
         Arg.isRequired(url, "url");
-        Arg.isRequired(transferFormat, "transferFormat");
-        Arg.isIn(transferFormat, TransferFormat, "transferFormat");
 
-        this.transferFormat = transferFormat;
         this.logger = LoggerFactory.createLogger(options.logger);
         this.baseUrl = this.resolveUrl(url);
 
@@ -63,18 +59,21 @@ export class HttpConnection implements IConnection {
         this.options = options;
     }
 
-    public async start(): Promise<void> {
+    public start(transferFormat: TransferFormat): Promise<void> {
+        Arg.isRequired(transferFormat, "transferFormat");
+        Arg.isIn(transferFormat, TransferFormat, "transferFormat");
+
         if (this.connectionState !== ConnectionState.Disconnected) {
             return Promise.reject(new Error("Cannot start a connection that is not in the 'Disconnected' state."));
         }
 
         this.connectionState = ConnectionState.Connecting;
 
-        this.startPromise = this.startInternal();
+        this.startPromise = this.startInternal(transferFormat);
         return this.startPromise;
     }
 
-    private async startInternal(): Promise<void> {
+    private async startInternal(transferFormat: TransferFormat): Promise<void> {
         try {
             if (this.options.transport === TransportType.WebSockets) {
                 // No need to add a connection ID in this case
@@ -103,14 +102,14 @@ export class HttpConnection implements IConnection {
 
                 if (this.connectionId) {
                     this.url = this.baseUrl + (this.baseUrl.indexOf("?") === -1 ? "?" : "&") + `id=${this.connectionId}`;
-                    this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports, this.transferFormat);
+                    this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports, transferFormat);
                 }
             }
 
             this.transport.onreceive = this.onreceive;
             this.transport.onclose = (e) => this.stopConnection(true, e);
 
-            await this.transport.connect(this.url, this.transferFormat, this);
+            await this.transport.connect(this.url, transferFormat, this);
 
             // only change the state if we were connecting to not overwrite
             // the state if the connection is already marked as Disconnected
@@ -131,7 +130,7 @@ export class HttpConnection implements IConnection {
 
         for (const endpoint of availableTransports) {
             const transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
-            if (transport) {
+            if (typeof transport === "number") {
                 return this.constructTransport(transport);
             }
         }
@@ -154,19 +153,19 @@ export class HttpConnection implements IConnection {
 
     private resolveTransport(endpoint: IAvailableTransport, requestedTransport: TransportType, requestedTransferFormat: TransferFormat): TransportType | null {
         const transport = TransportType[endpoint.transport];
-        if (!transport) {
+        if (transport === null || transport === undefined) {
             this.logger.log(LogLevel.Trace, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
         } else {
             const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
             if (!requestedTransport || transport === requestedTransport) {
                 if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
-                    this.logger.log(LogLevel.Trace, `Selecting transport '${transport}'`);
+                    this.logger.log(LogLevel.Trace, `Selecting transport '${TransportType[transport]}'`);
                     return transport;
                 } else {
-                    this.logger.log(LogLevel.Trace, `Skipping transport '${transport}' because it does not support the requested transfer format '${requestedTransferFormat}'.`);
+                    this.logger.log(LogLevel.Trace, `Skipping transport '${TransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
                 }
             } else {
-                this.logger.log(LogLevel.Trace, `Skipping transport '${transport}' because it was disabled by the client.`);
+                this.logger.log(LogLevel.Trace, `Skipping transport '${TransportType[transport]}' because it was disabled by the client.`);
             }
         }
         return null;

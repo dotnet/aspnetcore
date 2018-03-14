@@ -1,36 +1,36 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpConnection, LogLevel, TransportType } from "@aspnet/signalr";
+import { HttpConnection, LogLevel, TransferFormat, TransportType } from "@aspnet/signalr";
 import { eachTransport, ECHOENDPOINT_URL } from "./Common";
 
 describe("connection", () => {
-    if (typeof WebSocket !== "undefined") {
-        it("can connect to the server without specifying transport explicitly", (done) => {
-            const message = "Hello World!";
-            const connection = new HttpConnection(ECHOENDPOINT_URL);
-
-            let received = "";
-            connection.onreceive = (data) => {
-                received += data;
-                if (data === message) {
-                    connection.stop();
-                }
-            };
-
-            connection.onclose = (error) => {
-                expect(error).toBeUndefined();
-                done();
-            };
-
-            connection.start().then(() => {
-                connection.send(message);
-            }).catch((e) => {
-                fail();
-                done();
-            });
+    it("can connect to the server without specifying transport explicitly", (done) => {
+        const message = "Hello World!";
+        const connection = new HttpConnection(ECHOENDPOINT_URL, {
+            logger: LogLevel.Trace,
         });
-    }
+
+        let received = "";
+        connection.onreceive = (data) => {
+            received += data;
+            if (data === message) {
+                connection.stop();
+            }
+        };
+
+        connection.onclose = (error) => {
+            expect(error).toBeUndefined();
+            done();
+        };
+
+        connection.start(TransferFormat.Text).then(() => {
+            connection.send(message);
+        }).catch((e) => {
+            fail(e);
+            done();
+        });
+    });
 
     eachTransport((transportType) => {
         it("over " + TransportType[transportType] + " can send and receive messages", (done) => {
@@ -55,10 +55,10 @@ describe("connection", () => {
                 done();
             };
 
-            connection.start().then(() => {
+            connection.start(TransferFormat.Text).then(() => {
                 connection.send(message);
             }).catch((e) => {
-                fail();
+                fail(e);
                 done();
             });
         });

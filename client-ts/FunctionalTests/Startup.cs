@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
@@ -80,10 +81,18 @@ namespace FunctionalTests
             }
 
             app.UseFileServer();
-            app.UseSockets(options => options.MapEndPoint<EchoEndPoint>("/echo"));
-            app.UseSignalR(options => options.MapHub<TestHub>("/testhub"));
-            app.UseSignalR(options => options.MapHub<UncreatableHub>("/uncreatable"));
-            app.UseSignalR(options => options.MapHub<HubWithAuthorization>("/authorizedhub"));
+            app.UseSockets(routes =>
+            {
+                routes.MapEndPoint<EchoEndPoint>("/echo");
+            });
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<TestHub>("/testhub");
+                routes.MapHub<TestHub>("/testhub-nowebsockets", options => options.Transports = TransportType.ServerSentEvents | TransportType.LongPolling);
+                routes.MapHub<UncreatableHub>("/uncreatable");
+                routes.MapHub<HubWithAuthorization>("/authorizedhub");
+            });
 
             app.Use(next => async (context) =>
             {

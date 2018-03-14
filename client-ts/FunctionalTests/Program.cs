@@ -14,7 +14,7 @@ namespace FunctionalTests
             var host = new WebHostBuilder()
                 .ConfigureLogging(factory =>
                 {
-                    factory.AddConsole();
+                    factory.AddConsole(options => options.IncludeScopes = true);
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                     factory.AddDebug();
                 })

@@ -6,16 +6,14 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "@types/selenium-webdriver": "^3.0.8",
-    "@types/yargs": "^11.0.0",
+    "@types/debug": "0.0.30",
+    "@types/node": "^9.4.6",
+    "debug": "^3.1.0",
     "es6-promise": "^4.2.2",
-    "faucet": "0.0.1",
-    "selenium-webdriver": "^4.0.0-alpha.1",
-    "tap-mocha-reporter": "^3.0.6",
-    "tree-kill": "^1.2.0",
-    "ts-node": "^4.1.0",
-    "webdriver-manager": "^12.0.6",
-    "yargs": "^11.0.0"
+    "tap-spec": "^4.1.1",
+    "tap-teamcity": "^3.0.2",
+    "tee": "^0.2.0",
+    "ts-node": "^4.1.0"
   },
   "scripts": {
     "clean": "node ../node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
@@ -23,8 +21,9 @@
     "build:lint": "node ../node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:tsc": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json",
     "build:rollup": "node ../node_modules/rollup/bin/rollup -c",
-    "rawtest": "ts-node --project ./run-tests.tsconfig.json ./run-tests.ts --browser chrome -h",
-    "test": "npm run rawtest | faucet"
+    "pretest": "npm run build",
+    "test": "dotnet build && ts-node --project ./selenium/tsconfig.json ./selenium/run-tests.ts",
+    "ci-test": "ts-node --project ./selenium/tsconfig.json ./selenium/run-ci-tests.ts"
   },
   "author": "",
   "license": "Apache-2.0"

@@ -15,13 +15,13 @@ const commonOptions: IHttpConnectionOptions = {
 
 describe("HttpConnection", () => {
     it("cannot be created with relative url if document object is not present", () => {
-        expect(() => new HttpConnection("/test", TransferFormat.Text, commonOptions))
+        expect(() => new HttpConnection("/test", commonOptions))
             .toThrow(new Error("Cannot resolve '/test'."));
     });
 
     it("cannot be created with relative url if window object is not present", () => {
         (global as any).window = {};
-        expect(() => new HttpConnection("/test", TransferFormat.Text, commonOptions))
+        expect(() => new HttpConnection("/test", commonOptions))
             .toThrow(new Error("Cannot resolve '/test'."));
         delete (global as any).window;
     });
@@ -34,10 +34,10 @@ describe("HttpConnection", () => {
                 .on("GET", (r) => ""),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
+        const connection = new HttpConnection("http://tempuri.org", options);
 
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
             fail();
             done();
         } catch (e) {
@@ -51,7 +51,7 @@ describe("HttpConnection", () => {
             ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", (r) => {
-                    connection.start()
+                    connection.start(TransferFormat.Text)
                         .then(() => {
                             fail();
                             done();
@@ -64,10 +64,10 @@ describe("HttpConnection", () => {
                 }),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
+        const connection = new HttpConnection("http://tempuri.org", options);
 
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
         } catch (e) {
             // This exception is thrown after the actual verification is completed.
             // The connection is not setup to be running so just ignore the error.
@@ -86,16 +86,16 @@ describe("HttpConnection", () => {
                 .on("GET", (r) => ""),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
+        const connection = new HttpConnection("http://tempuri.org", options);
 
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
         } catch (e) {
             expect(e).toBe("reached negotiate");
         }
 
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
         } catch (e) {
             expect(e).toBe("reached negotiate");
         }
@@ -117,10 +117,10 @@ describe("HttpConnection", () => {
                 }),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
+        const connection = new HttpConnection("http://tempuri.org", options);
 
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
             done();
         } catch (e) {
             fail();
@@ -129,7 +129,7 @@ describe("HttpConnection", () => {
     });
 
     it("can stop a non-started connection", async (done) => {
-        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, commonOptions);
+        const connection = new HttpConnection("http://tempuri.org", commonOptions);
         await connection.stop();
         done();
     });
@@ -159,10 +159,10 @@ describe("HttpConnection", () => {
             transport: fakeTransport,
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org?q=myData", TransferFormat.Text, options);
+        const connection = new HttpConnection("http://tempuri.org?q=myData", options);
 
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
             fail();
             done();
         } catch (e) {
@@ -190,10 +190,10 @@ describe("HttpConnection", () => {
                     }),
             } as IHttpConnectionOptions;
 
-            connection = new HttpConnection(givenUrl, TransferFormat.Text, options);
+            connection = new HttpConnection(givenUrl, options);
 
             try {
-                await connection.start();
+                await connection.start(TransferFormat.Text);
                 done();
             } catch (e) {
                 fail();
@@ -218,9 +218,9 @@ describe("HttpConnection", () => {
                 transport: requestedTransport,
             } as IHttpConnectionOptions;
 
-            const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
+            const connection = new HttpConnection("http://tempuri.org", options);
             try {
-                await connection.start();
+                await connection.start(TransferFormat.Text);
                 fail();
                 done();
             } catch (e) {
@@ -238,9 +238,9 @@ describe("HttpConnection", () => {
                 .on("GET", (r) => ""),
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
+        const connection = new HttpConnection("http://tempuri.org", options);
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
             fail();
             done();
         } catch (e) {
@@ -256,9 +256,9 @@ describe("HttpConnection", () => {
             transport: TransportType.WebSockets,
         } as IHttpConnectionOptions;
 
-        const connection = new HttpConnection("http://tempuri.org", TransferFormat.Text, options);
+        const connection = new HttpConnection("http://tempuri.org", options);
         try {
-            await connection.start();
+            await connection.start(TransferFormat.Text);
             fail();
             done();
         } catch (e) {
@@ -274,14 +274,21 @@ describe("HttpConnection", () => {
             // Force TypeScript to let us call the constructor incorrectly :)
             expect(() => new (HttpConnection as any)()).toThrowError("The 'url' argument is required.");
         });
+    });
 
+    describe("startAsync", () => {
         it("throws if no TransferFormat is provided", async () => {
-            // Force TypeScript to let us call the constructor incorrectly :)
-            expect(() => new (HttpConnection as any)("http://tempuri.org")).toThrowError("The 'transferFormat' argument is required.");
+            // Force TypeScript to let us call start incorrectly
+            const connection: any = new HttpConnection("http://tempuri.org");
+
+            expect(() => connection.start()).toThrowError("The 'transferFormat' argument is required.");
         });
 
         it("throws if an unsupported TransferFormat is provided", async () => {
-            expect(() => new HttpConnection("http://tempuri.org", 42)).toThrowError("Unknown transferFormat value: 42.");
+            // Force TypeScript to let us call start incorrectly
+            const connection: any = new HttpConnection("http://tempuri.org");
+
+            expect(() => connection.start(42)).toThrowError("Unknown transferFormat value: 42.");
         });
     });
 });

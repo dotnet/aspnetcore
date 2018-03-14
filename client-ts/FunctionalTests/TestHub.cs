@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Sockets;
 
 namespace FunctionalTests
 {
@@ -50,6 +51,11 @@ namespace FunctionalTests
         public IObservable<string> StreamThrowException(string message)
         {
             throw new InvalidOperationException(message);
+        }
+
+        public string GetActiveTransportName()
+        {
+            return Context.Connection.Metadata[ConnectionMetadataNames.Transport].ToString();
         }
 
         public ComplexObject EchoComplexObject(ComplexObject complexObject)

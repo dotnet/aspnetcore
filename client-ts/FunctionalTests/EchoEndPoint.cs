@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Sockets;
 
 namespace FunctionalTests
@@ -26,6 +27,21 @@ namespace FunctionalTests
             {
                 connection.Transport.Input.AdvanceTo(result.Buffer.End);
             }
+
+            // Wait for the user to close
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.Transport.Input.OnWriterCompleted((ex, state) => 
+            {
+                if (ex != null) 
+                {
+                    ((TaskCompletionSource<object>)state).TrySetException(ex);
+                }
+                else
+                {
+                    ((TaskCompletionSource<object>)state).TrySetResult(null);
+                }
+            }, tcs);
+            await tcs.Task;
         }
     }
 }

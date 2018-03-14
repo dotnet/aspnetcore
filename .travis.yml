@@ -15,6 +15,7 @@ os:
 - osx
 osx_image: xcode8.2
 addons:
+  chrome: stable
   apt:
     packages:
     - libunwind8

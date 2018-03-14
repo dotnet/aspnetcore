@@ -1,11 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HubConnection, LogLevel, TransportType } from "@aspnet/signalr";
+import { HubConnection, JsonHubProtocol, LogLevel, TransportType } from "@aspnet/signalr";
+import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol } from "./Common";
 
 const TESTHUBENDPOINT_URL = "/testhub";
+const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = "/testhub-nowebsockets";
 
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
@@ -394,15 +396,8 @@ describe("hubConnection", () => {
                             // and a Uint8Array even though Buffer instances are also Uint8Array instances
                             value.ByteArray = new Uint8Array(value.ByteArray);
 
-                            // GUIDs are serialized as raw type which is a string containing bytes which need to
-                            // be extracted. Note that with msgpack5 the original bytes will be encoded with utf8
-                            // and needs to be decoded. To not go into utf8 encoding intricacies the test uses values
-                            // less than 0x80.
-                            const guidBytes = [];
-                            for (let i = 0; i < value.GUID.length; i++) {
-                                guidBytes.push(value.GUID.charCodeAt(i));
-                            }
-                            value.GUID = new Uint8Array(guidBytes);
+                            // GUIDs are serialized as Buffer as well.
+                            value.GUID = new Uint8Array(value.GUID);
                         }
                         expect(value).toEqual(complexObject);
                     })
@@ -470,31 +465,29 @@ describe("hubConnection", () => {
             it("can connect to hub with authorization", async (done) => {
                 const message = "你好，世界！";
 
-                let hubConnection;
-                getJwtToken("http://" + document.location.host + "/generateJwtToken")
-                    .then((jwtToken) => {
-                        hubConnection = new HubConnection("/authorizedhub", {
-                            accessTokenFactory: () => jwtToken,
-                            logger: LogLevel.Trace,
-                            transport: transportType,
-                        });
-                        hubConnection.onclose((error) => {
-                            expect(error).toBe(undefined);
-                            done();
-                        });
-                        return hubConnection.start();
-                    })
-                    .then(() => {
-                        return hubConnection.invoke("Echo", message);
-                    })
-                    .then((response) => {
-                        expect(response).toEqual(message);
-                        done();
-                    })
-                    .catch((err) => {
-                        fail(err);
+                try {
+                    const jwtToken = await getJwtToken("http://" + document.location.host + "/generateJwtToken");
+                    const hubConnection = new HubConnection("/authorizedhub", {
+                        accessTokenFactory: () => jwtToken,
+                        logger: LogLevel.Trace,
+                        transport: transportType,
+                    });
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
                         done();
                     });
+                    await hubConnection.start();
+                    const response = await hubConnection.invoke("Echo", message);
+
+                    expect(response).toEqual(message);
+
+                    await hubConnection.stop();
+
+                    done();
+                } catch (err) {
+                    fail(err);
+                    done();
+                }
             });
 
             if (transportType !== TransportType.LongPolling) {

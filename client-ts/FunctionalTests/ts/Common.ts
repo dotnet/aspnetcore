@@ -37,7 +37,9 @@ export function eachTransportAndProtocol(action: (transport: TransportType, prot
     }
     getTransportTypes().forEach((t) => {
         return protocols.forEach((p) => {
-            return action(t, p);
+            if (t !== TransportType.ServerSentEvents || !(p instanceof MessagePackHubProtocol)) {
+                return action(t, p);
+            }
         });
     });
 }

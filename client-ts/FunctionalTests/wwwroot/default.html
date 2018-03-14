@@ -28,11 +28,11 @@
         }
 
         var minified = getParameterByName('release') === 'true' ? '.min' : '';
-        var cacheBust = Math.random().toString().substring(2);
+        var cacheBust = getParameterByName('cacheBust') === 'true' ? ('?' + Math.random().toString().substring(2)) : '';
         document.write(
-            '<script type="text/javascript" src="lib/signalr/signalr' + minified + '.js?' + cacheBust + '"><\/script>' +
-            '<script type="text/javascript" src="lib/signalr/signalr-protocol-msgpack' + minified + '.js?' + cacheBust + '"><\/script>' +
-            '<script type="text/javascript" src="dist/signalr-functional-tests.js?' + cacheBust + '"><\/script>');
+            '<script type="text/javascript" src="lib/signalr/signalr' + minified + '.js' + cacheBust + '"><\/script>' +
+            '<script type="text/javascript" src="lib/signalr/signalr-protocol-msgpack' + minified + '.js' + cacheBust + '"><\/script>' +
+            '<script type="text/javascript" src="dist/signalr-functional-tests.js' + cacheBust + '"><\/script>');
     </script>
 </body>
 

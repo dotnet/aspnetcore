@@ -14,21 +14,14 @@ if (typeof WebSocket !== "undefined") {
                 webSocket.send(message);
             };
 
-            let received = "";
             webSocket.onmessage = (event) => {
-                received += event.data;
-                if (received === message) {
-                    webSocket.close();
-                }
+                expect(event.data).toEqual(message);
+                webSocket.close();
             };
 
             webSocket.onclose = (event) => {
-                if (!event.wasClean) {
-                    fail("connection closed with unexpected status code: " + event.code + " " + event.reason);
-                }
-
-                // Jasmine doesn't like tests without expectations
-                expect(event.wasClean).toBe(true);
+                expect(event.code).toEqual(1000);
+                expect(event.wasClean).toBe(true, "WebSocket did not close cleanly");
 
                 done();
             };
