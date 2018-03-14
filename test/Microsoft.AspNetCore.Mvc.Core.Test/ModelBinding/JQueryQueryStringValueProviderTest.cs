@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -15,6 +16,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             CultureInfo culture)
         {
             return new JQueryQueryStringValueProvider(bindingSource, values, culture);
+        }
+
+        [Fact]
+        public void Filter_ExcludesItself()
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, StringValues>();
+            var provider = new JQueryQueryStringValueProvider(
+                BindingSource.Form,
+                dictionary,
+                CultureInfo.CurrentCulture);
+
+            // Act
+            var result = provider.Filter();
+
+            // Assert
+            Assert.Null(result);
         }
     }
 }

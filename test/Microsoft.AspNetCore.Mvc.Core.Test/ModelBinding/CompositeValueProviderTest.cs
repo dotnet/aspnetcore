@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -12,6 +14,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class CompositeValueProviderTest : EnumerableValueProviderTest
     {
+        [Fact]
+        public override void FilterInclude()
+        {
+            // Arrange
+            var provider = GetBindingSourceValueProvider(BindingSource.Query, BackingStore, culture: null);
+            var originalProviders = ((CompositeValueProvider)provider).ToArray();
+            var bindingSource = new BindingSource(
+                BindingSource.Query.Id,
+                displayName: null,
+                isGreedy: true,
+                isFromRequest: true);
+
+            // Act
+            var result = provider.Filter(bindingSource);
+
+            // Assert (does not change inner providers)
+            var newProvider = Assert.IsType<CompositeValueProvider>(result);
+            Assert.Equal(originalProviders, newProvider, ReferenceEqualityComparer.Instance);
+        }
+
         protected override IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
             Dictionary<string, StringValues> values,
@@ -96,7 +118,113 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Same(valueProvider1.Object, filteredProvider);
         }
 
-        private Mock<IBindingSourceValueProvider> GetMockValueProvider(string bindingSourceId)
+        public static TheoryData<CompositeValueProvider> Filter_ReturnsProviderData
+        {
+            get
+            {
+                // None filter themselves out.
+                var noneRewrite = new[]
+                {
+                    GetValueProvider(rewritesKeys: false),
+                    GetValueProvider(rewritesKeys: false),
+                };
+                // None implement IKeyRewriterValueProvider.
+                var noneImplement = new[] { GetMockValueProvider("One").Object, GetMockValueProvider("Two").Object };
+
+                return new TheoryData<CompositeValueProvider>
+                {
+                    // Starts empty
+                    new CompositeValueProvider(),
+
+                    new CompositeValueProvider(noneRewrite),
+                    new CompositeValueProvider(noneImplement),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Filter_ReturnsProviderData))]
+        public void Filter_ReturnsProvider(CompositeValueProvider provider)
+        {
+            // Arrange
+            var originalProviders = provider.ToArray();
+
+            // Act
+            var result = provider.Filter();
+
+            // Assert (does not change inner providers)
+            var newProvider = Assert.IsType<CompositeValueProvider>(result);
+            Assert.Equal(originalProviders, newProvider, ReferenceEqualityComparer.Instance);
+        }
+
+        [Fact]
+        public void Filter_ReturnsNull()
+        {
+            // Arrange
+            var allRewrite = new[] { GetValueProvider(rewritesKeys: true), GetValueProvider(rewritesKeys: true) };
+            var provider = new CompositeValueProvider(allRewrite);
+
+            // Act
+            var result = provider.Filter();
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void Filter_RemovesThoseThatRewrite()
+        {
+            // Arrange
+            var doesNotRewrite1 = GetValueProvider(rewritesKeys: false);
+            var doesNotRewrite2 = GetValueProvider(rewritesKeys: false);
+            var doesNotImplement1 = GetMockValueProvider("One").Object;
+            var doesNotImplement2 = GetMockValueProvider("Two").Object;
+            var rewrites1 = GetValueProvider(rewritesKeys: true);
+            var rewrites2 = GetValueProvider(rewritesKeys: true);
+            var providers = new IValueProvider[]
+            {
+                doesNotRewrite1,
+                doesNotImplement1,
+                rewrites1,
+                doesNotRewrite2,
+                doesNotImplement2,
+                rewrites2,
+            };
+            var expectedProviders = new IValueProvider[]
+            {
+                doesNotRewrite1,
+                doesNotImplement1,
+                doesNotRewrite2,
+                doesNotImplement2,
+            };
+
+            var provider = new CompositeValueProvider(providers);
+
+            // Act
+            var result = provider.Filter();
+
+            // Assert
+            Assert.NotSame(provider, result);
+            var newProvider = Assert.IsType<CompositeValueProvider>(result);
+            Assert.Equal(expectedProviders, newProvider, ReferenceEqualityComparer.Instance);
+        }
+
+        private static IKeyRewriterValueProvider GetValueProvider(bool rewritesKeys)
+        {
+            var valueProvider = new Mock<IKeyRewriterValueProvider>(MockBehavior.Strict);
+            if (rewritesKeys)
+            {
+                valueProvider.Setup(vp => vp.Filter()).Returns<IValueProvider>(null);
+            }
+            else
+            {
+                valueProvider.Setup(vp => vp.Filter()).Returns(valueProvider.Object);
+            }
+
+            return valueProvider.Object;
+        }
+
+        private static Mock<IBindingSourceValueProvider> GetMockValueProvider(string bindingSourceId)
         {
             var valueProvider = new Mock<IBindingSourceValueProvider>(MockBehavior.Strict);
 

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public abstract class EnumerableValueProviderTest
     {
-        private static readonly Dictionary<string, StringValues> _backingStore = new Dictionary<string, StringValues>
+        protected static Dictionary<string, StringValues> BackingStore { get; } = new Dictionary<string, StringValues>
         {
             { "some", new[] { "someValue1", "someValue2" } },
             { "null_value", StringValues.Empty },
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
         {
             // Arrange
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act
             var result = valueProvider.ContainsPrefix(string.Empty);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes(string prefix)
         {
             // Arrange
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act & Assert
             Assert.True(valueProvider.ContainsPrefix(prefix));
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void ContainsPrefix_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
         {
             // Arrange
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act
             var result = valueProvider.ContainsPrefix("biff");
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 { "prefix", "prefix" },
                 { "some", "some" },
             };
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act
             var result = valueProvider.GetKeysFromPrefix(string.Empty);
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetKeysFromPrefix_UnknownPrefix_ReturnsEmptyDictionary()
         {
             // Arrange
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act
             var result = valueProvider.GetKeysFromPrefix("abc");
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 { "index1", "prefix[index1]" },
                 { "index2", "prefix[index2]" },
             };
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act
             var result = valueProvider.GetKeysFromPrefix("prefix");
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 { "property", "[index].property" },
                 { "anotherIndex", "[index][anotherIndex]" }
             };
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act
             var result = valueProvider.GetKeysFromPrefix("[index]");
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture);
 
             // Act
             var result = valueProvider.GetValue("prefix.name");
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture);
 
             // Act
             var result = valueProvider.GetValue("some");
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture);
 
             // Act
             var result = valueProvider.GetValue(key);
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetValue_ReturnsNullIfKeyNotFound()
         {
             // Arrange
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             // Act
             var result = valueProvider.GetValue("prefix");
@@ -236,10 +236,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public void FilterInclude()
+        public virtual void FilterInclude()
         {
             // Arrange
-            var provider = GetBindingSourceValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var provider = GetBindingSourceValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             var bindingSource = new BindingSource(
                 BindingSource.Query.Id,
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void FilterExclude()
         {
             // Arrange
-            var provider = GetBindingSourceValueProvider(BindingSource.Query, _backingStore, culture: null);
+            var provider = GetBindingSourceValueProvider(BindingSource.Query, BackingStore, culture: null);
 
             var bindingSource = new BindingSource(
                 "Test",
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Null(result);
         }
 
-        private IBindingSourceValueProvider GetBindingSourceValueProvider(
+        protected IBindingSourceValueProvider GetBindingSourceValueProvider(
             BindingSource bindingSource,
             Dictionary<string, StringValues> values,
             CultureInfo culture)
