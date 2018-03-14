@@ -25,6 +25,9 @@
   ],
   "sources": [
     {
+      "copyOnly": [
+        "wwwroot/**"
+      ],
       "modifiers": [
         {
           "condition": "(TargetFrameworkOverride == '')",
