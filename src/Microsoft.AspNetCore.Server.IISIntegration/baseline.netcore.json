@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Server.IISIntegration, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.IISIntegration, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions",
@@ -57,19 +57,19 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_ForwardWindowsAuthentication",
+          "Name": "get_AuthenticationDisplayName",
           "Parameters": [],
-          "ReturnType": "System.Boolean",
+          "ReturnType": "System.String",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "set_ForwardWindowsAuthentication",
+          "Name": "set_AuthenticationDisplayName",
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.Boolean"
+              "Type": "System.String"
             }
           ],
           "ReturnType": "System.Void",
@@ -98,14 +98,6 @@
           "GenericParameter": []
         },
         {
-          "Kind": "Method",
-          "Name": "get_AuthenticationDescriptions",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Http.Authentication.AuthenticationDescription>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -130,6 +122,16 @@
         },
         {
           "Kind": "Field",
+          "Name": "AuthenticationScheme",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
           "Name": "Negotiate",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -149,6 +151,40 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"NTLM\""
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.IISIntegration.IISHostingStartup",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Hosting.IHostingStartup"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IHostingStartup",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -191,6 +227,14 @@
             {
               "Name": "pairingToken",
               "Type": "System.String"
+            },
+            {
+              "Name": "authentication",
+              "Type": "Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider"
+            },
+            {
+              "Name": "applicationLifetime",
+              "Type": "Microsoft.AspNetCore.Hosting.IApplicationLifetime"
             }
           ],
           "Visibility": "Public",
