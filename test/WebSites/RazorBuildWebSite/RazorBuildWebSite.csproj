@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
     <DefineConstants>$(DefineConstants)</DefineConstants>
+    <!-- We have tests that test runtime view compilation. -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
   </PropertyGroup>
 
