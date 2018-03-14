@@ -177,11 +177,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public void Post<T>(Action<T> callback, T state)
         {
+            // Handle is closed to don't bother scheduling anything
+            if (_post.IsClosed)
+            {
+                return;
+            }
+
             var work = new Work
             {
                 CallbackAdapter = CallbackAdapter<T>.PostCallbackAdapter,
                 Callback = callback,
-                //TODO: This boxes
+                // TODO: This boxes
                 State = state
             };
 
@@ -189,7 +195,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 _workAdding.Enqueue(work);
             }
-            _post.Send();
+
+            try
+            {
+                _post.Send();
+            }
+            catch (ObjectDisposedException)
+            {
+                // There's an inherent race here where we're in the middle of shutdown
+            }
         }
 
         private void Post(Action<LibuvThread> callback)
@@ -199,6 +213,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public Task PostAsync<T>(Action<T> callback, T state)
         {
+            // Handle is closed to don't bother scheduling anything
+            if (_post.IsClosed)
+            {
+                return Task.CompletedTask;
+            }
+
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var work = new Work
             {
@@ -212,7 +232,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 _workAdding.Enqueue(work);
             }
-            _post.Send();
+
+            try
+            {
+                _post.Send();
+            }
+            catch (ObjectDisposedException)
+            {
+                // There's an inherent race here where we're in the middle of shutdown
+            }
             return tcs.Task;
         }
 
