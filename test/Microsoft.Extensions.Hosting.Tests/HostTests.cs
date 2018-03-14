@@ -233,11 +233,10 @@ namespace Microsoft.Extensions.Hosting
                     });
                     services.AddSingleton<IHostLifetime>(_ => new FakeHostLifetime()
                     {
-                        StartAction = (callback, state) =>
+                        StartAction = ct =>
                         {
                             lifetimeStart.Set();
                             Assert.True(lifetimeContinue.WaitOne(TimeSpan.FromSeconds(5)));
-                            callback(state);
                         }
                     });
                 })
@@ -259,7 +258,6 @@ namespace Microsoft.Extensions.Hosting
 
                 lifetime = (FakeHostLifetime)host.Services.GetRequiredService<IHostLifetime>();
                 Assert.Equal(1, lifetime.StartCount);
-                Assert.Equal(1, lifetime.StoppingCount);
                 Assert.Equal(0, lifetime.StopCount);
             }
 
@@ -268,7 +266,6 @@ namespace Microsoft.Extensions.Hosting
             Assert.Equal(1, service.DisposeCount);
 
             Assert.Equal(1, lifetime.StartCount);
-            Assert.Equal(1, lifetime.StoppingCount);
             Assert.Equal(0, lifetime.StopCount);
         }
 
@@ -292,9 +289,10 @@ namespace Microsoft.Extensions.Hosting
                     });
                     services.AddSingleton<IHostLifetime>(_ => new FakeHostLifetime()
                     {
-                        StartAction = (callback, state) =>
+                        StartAction = ct =>
                         {
                             lifetimeStart.Set();
+                            WaitHandle.WaitAny(new[] { lifetimeContinue, ct.WaitHandle });
                         }
                     });
                 })
@@ -308,7 +306,7 @@ namespace Microsoft.Extensions.Hosting
                 Assert.False(serviceStarting.WaitOne(0));
 
                 cts.Cancel();
-                await Assert.ThrowsAsync<TaskCanceledException>(() => startTask);
+                await Assert.ThrowsAsync<OperationCanceledException>(() => startTask);
                 Assert.False(serviceStarting.WaitOne(0));
 
                 lifetimeContinue.Set();
@@ -322,7 +320,6 @@ namespace Microsoft.Extensions.Hosting
 
                 lifetime = (FakeHostLifetime)host.Services.GetRequiredService<IHostLifetime>();
                 Assert.Equal(1, lifetime.StartCount);
-                Assert.Equal(1, lifetime.StoppingCount);
                 Assert.Equal(0, lifetime.StopCount);
             }
 
@@ -331,61 +328,6 @@ namespace Microsoft.Extensions.Hosting
             Assert.Equal(1, service.DisposeCount);
 
             Assert.Equal(1, lifetime.StartCount);
-            Assert.Equal(1, lifetime.StoppingCount);
-            Assert.Equal(0, lifetime.StopCount);
-        }
-
-        [Fact]
-        public async Task HostLifetimeOnStoppingTriggersIApplicationLifetime()
-        {
-            var lifetimeRegistered = new ManualResetEvent(false);
-            Action<object> stoppingAction = null;
-            object stoppingState = null;
-            FakeHostedService service;
-            FakeHostLifetime lifetime;
-            using (var host = CreateBuilder()
-                .ConfigureServices((services) =>
-                {
-                    services.AddSingleton<IHostedService, FakeHostedService>();
-                    services.AddSingleton<IHostLifetime>(_ => new FakeHostLifetime()
-                    {
-                        StartAction = (callback, state) => callback(state),
-                        StoppingAction = (callback, state) =>
-                        {
-                            stoppingAction = callback;
-                            stoppingState = state;
-                            lifetimeRegistered.Set();
-                        }
-                    });
-                })
-                .Build())
-            {
-                await host.StartAsync();
-                Assert.True(lifetimeRegistered.WaitOne(0));
-
-                var appLifetime = host.Services.GetRequiredService<IApplicationLifetime>();
-
-                stoppingAction(stoppingState);
-
-                Assert.True(appLifetime.ApplicationStopping.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-
-                service = (FakeHostedService)host.Services.GetRequiredService<IHostedService>();
-                Assert.Equal(1, service.StartCount);
-                Assert.Equal(0, service.StopCount);
-                Assert.Equal(0, service.DisposeCount);
-
-                lifetime = (FakeHostLifetime)host.Services.GetRequiredService<IHostLifetime>();
-                Assert.Equal(1, lifetime.StartCount);
-                Assert.Equal(1, lifetime.StoppingCount);
-                Assert.Equal(0, lifetime.StopCount);
-            }
-
-            Assert.Equal(1, service.StartCount);
-            Assert.Equal(0, service.StopCount);
-            Assert.Equal(1, service.DisposeCount);
-
-            Assert.Equal(1, lifetime.StartCount);
-            Assert.Equal(1, lifetime.StoppingCount);
             Assert.Equal(0, lifetime.StopCount);
         }
 
@@ -398,10 +340,7 @@ namespace Microsoft.Extensions.Hosting
                 .ConfigureServices((services) =>
                 {
                     services.AddSingleton<IHostedService, FakeHostedService>();
-                    services.AddSingleton<IHostLifetime>(_ => new FakeHostLifetime()
-                    {
-                        StartAction = (callback, state) => callback(state),
-                    });
+                    services.AddSingleton<IHostLifetime, FakeHostLifetime>();
                 })
                 .Build())
             {
@@ -414,7 +353,6 @@ namespace Microsoft.Extensions.Hosting
 
                 lifetime = (FakeHostLifetime)host.Services.GetRequiredService<IHostLifetime>();
                 Assert.Equal(1, lifetime.StartCount);
-                Assert.Equal(1, lifetime.StoppingCount);
                 Assert.Equal(0, lifetime.StopCount);
 
                 await host.StopAsync();
@@ -424,7 +362,6 @@ namespace Microsoft.Extensions.Hosting
                 Assert.Equal(0, service.DisposeCount);
 
                 Assert.Equal(1, lifetime.StartCount);
-                Assert.Equal(1, lifetime.StoppingCount);
                 Assert.Equal(1, lifetime.StopCount);
             }
 
@@ -433,7 +370,6 @@ namespace Microsoft.Extensions.Hosting
             Assert.Equal(1, service.DisposeCount);
 
             Assert.Equal(1, lifetime.StartCount);
-            Assert.Equal(1, lifetime.StoppingCount);
             Assert.Equal(1, lifetime.StopCount);
         }
 

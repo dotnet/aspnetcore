@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Hosting.Internal
 
         private IApplicationLifetime ApplicationLifetime { get; }
 
-        public void RegisterDelayStartCallback(Action<object> callback, object state)
+        public Task WaitForStartAsync(CancellationToken cancellationToken)
         {
             if (!Options.SuppressStatusMessages)
             {
@@ -38,18 +38,15 @@ namespace Microsoft.Extensions.Hosting.Internal
                 });
             }
 
-            // Console applications start immediately.
-            callback(state);
-        }
-
-        public void RegisterStopCallback(Action<object> callback, object state)
-        {
-            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => callback(state);
+            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => ApplicationLifetime.StopApplication();
             Console.CancelKeyPress += (sender, e) =>
             {
                 e.Cancel = true;
-                callback(state);
+                ApplicationLifetime.StopApplication();
             };
+
+            // Console applications start immediately.
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
