@@ -83,6 +83,11 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     APPLICATION* pApplication = NULL;
     STACK_STRU(struFileName, 256);
+    if (g_fInShutdown)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
+        goto Finished;
+    }
 
     hr = ASPNETCORE_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext, g_hEventLog, &pConfig);
     if (FAILED(hr))
@@ -172,8 +177,15 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 Finished: 
     if (FAILED(hr))
     {
-        pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 0, hr);
         retVal = RQ_NOTIFICATION_FINISH_REQUEST;
+        if (hr == HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS))
+        {
+            pHttpContext->GetResponse()->SetStatus(503, "Service Unavailable", 0, hr);
+        }
+        else
+        {
+            pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 0, hr);
+        }
     }
 
     if (pApplication != NULL)
