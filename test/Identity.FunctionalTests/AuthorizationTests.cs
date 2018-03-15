@@ -1,14 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class AuthorizationTests : IClassFixture<ServerFactory>
+    public class AuthorizationTests : LoggedTest, IClassFixture<ServerFactory>
     {
-        public AuthorizationTests(ServerFactory serverFactory)
+        public AuthorizationTests(ServerFactory serverFactory, ITestOutputHelper output) : base(output)
         {
             ServerFactory = serverFactory;
         }
@@ -37,15 +40,18 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         [MemberData(nameof(AuthorizedPages))]
         public async Task AnonymousUserCantAccessAuthorizedPages(string url)
         {
-            // Arrange
-            var client = ServerFactory.CreateDefaultClient();
+            using (StartLog(out var loggerFactory, $"{nameof(AnonymousUserCantAccessAuthorizedPages)}_{WebUtility.UrlEncode(url)}"))
+            {
+                // Arrange
+                var client = ServerFactory.CreateDefaultClient(loggerFactory);
 
-            // Act
-            var response = await client.GetAsync(url);
+                // Act
+                var response = await client.GetAsync(url);
 
-            // Assert
-            var location = ResponseAssert.IsRedirect(response);
-            Assert.StartsWith("/Identity/Account/Login?", location.PathAndQuery);
+                // Assert
+                var location = ResponseAssert.IsRedirect(response);
+                Assert.StartsWith("/Identity/Account/Login?", location.PathAndQuery);
+            }
         }
 
         // The routes commented below are not directly accessible by
@@ -74,15 +80,18 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         [MemberData(nameof(RouteableAuthorizedPages))]
         public async Task AuthenticatedUserCanAccessAuthorizedPages(string url)
         {
-            // Arrange
-            var client = ServerFactory.CreateDefaultClient();
-            await UserStories.RegisterNewUserAsync(client);
+            using (StartLog(out var loggerFactory, $"{nameof(AuthenticatedUserCanAccessAuthorizedPages)}_{WebUtility.UrlEncode(url)}"))
+            {
+                // Arrange
+                var client = ServerFactory.CreateDefaultClient(loggerFactory);
+                await UserStories.RegisterNewUserAsync(client);
 
-            // Act
-            var response = await client.GetAsync(url);
+                // Act
+                var response = await client.GetAsync(url);
 
-            // Assert
-            await ResponseAssert.IsHtmlDocumentAsync(response);
+                // Assert
+                await ResponseAssert.IsHtmlDocumentAsync(response);
+            }
         }
 
         // The routes commented below are not directly accessible by
@@ -107,14 +116,17 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         [MemberData(nameof(UnauthorizedPages))]
         public async Task AnonymousUserCanAccessNotAuthorizedPages(string url)
         {
-            // Arrange
-            var client = ServerFactory.CreateDefaultClient();
+            using (StartLog(out var loggerFactory, $"{nameof(AnonymousUserCanAccessNotAuthorizedPages)}_{WebUtility.UrlEncode(url)}"))
+            {
+                // Arrange
+                var client = ServerFactory.CreateDefaultClient(loggerFactory);
 
-            // Act
-            var response = await client.GetAsync(url);
+                // Act
+                var response = await client.GetAsync(url);
 
-            // Assert
-            await ResponseAssert.IsHtmlDocumentAsync(response);
+                // Assert
+                await ResponseAssert.IsHtmlDocumentAsync(response);
+            }
         }
 
         public static TheoryData<string> UnauthorizedPagesAllowAnonymous =>
@@ -131,16 +143,19 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         [MemberData(nameof(UnauthorizedPagesAllowAnonymous))]
         public async Task AnonymousUserAllowedAccessToPages_WithGlobalAuthorizationFilter(string url)
         {
-            // Arrange
-            var server = ServerFactory.CreateServer(builder =>
-               builder.ConfigureServices(services => services.SetupGlobalAuthorizeFilter()));
-            var client = ServerFactory.CreateDefaultClient(server);
+            using (StartLog(out var loggerFactory, $"{nameof(AnonymousUserAllowedAccessToPages_WithGlobalAuthorizationFilter)}_{WebUtility.UrlEncode(url)}"))
+            {
+                // Arrange
+                var server = ServerFactory.CreateServer(loggerFactory, builder =>
+                   builder.ConfigureServices(services => services.SetupGlobalAuthorizeFilter()));
+                var client = ServerFactory.CreateDefaultClient(server);
 
-            // Act
-            var response = await client.GetAsync(url);
+                // Act
+                var response = await client.GetAsync(url);
 
-            // Assert
-            await ResponseAssert.IsHtmlDocumentAsync(response);
+                // Assert
+                await ResponseAssert.IsHtmlDocumentAsync(response);
+            }
         }
     }
 }
