@@ -43,6 +43,24 @@
       "type": "bind",
       "binding": "HostIdentifier"
     },
+    "HttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "HttpPortGenerated": {
+      "type": "generated",
+      "generator": "port"
+    },
+    "HttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpPort",
+        "fallbackVariableName": "HttpPortGenerated"
+      },
+      "replaces": "61501"
+    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
