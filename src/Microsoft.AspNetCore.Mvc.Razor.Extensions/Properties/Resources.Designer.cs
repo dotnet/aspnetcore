@@ -13,16 +13,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
-        internal static string ArgumentCannotBeNullOrEmpy
+        internal static string ArgumentCannotBeNullOrEmpty
         {
-            get => GetString("ArgumentCannotBeNullOrEmpy");
+            get => GetString("ArgumentCannotBeNullOrEmpty");
         }
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
-        internal static string FormatArgumentCannotBeNullOrEmpy()
-            => GetString("ArgumentCannotBeNullOrEmpy");
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+            => GetString("ArgumentCannotBeNullOrEmpty");
 
         /// <summary>
         /// Inject a service from the application's service container into a property.

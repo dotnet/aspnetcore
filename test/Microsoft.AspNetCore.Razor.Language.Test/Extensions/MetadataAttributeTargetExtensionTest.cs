@@ -65,5 +65,59 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 csharp,
                 ignoreLineEndingDifferences: true);
         }
+
+        [Fact]
+        public void WriteRazorCompiledItemAttributeMetadata_RendersCorrectly()
+        {
+            // Arrange
+            var extension = new MetadataAttributeTargetExtension()
+            {
+                CompiledItemMetadataAttributeName = "global::TestItemMetadata",
+            };
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            var node = new RazorCompiledItemMetadataAttributeIntermediateNode
+            {
+                Key = "key",
+                Value = "value",
+            };
+
+            // Act
+            extension.WriteRazorCompiledItemMetadataAttribute(context, node);
+
+            // Assert
+            var csharp = context.CodeWriter.GenerateCode().Trim();
+            Assert.Equal(
+"[global::TestItemMetadata(\"key\", \"value\")]",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteRazorCompiledItemAttributeMetadata_EscapesKeysAndValuesCorrectly()
+        {
+            // Arrange
+            var extension = new MetadataAttributeTargetExtension()
+            {
+                CompiledItemMetadataAttributeName = "global::TestItemMetadata",
+            };
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            var node = new RazorCompiledItemMetadataAttributeIntermediateNode
+            {
+                Key = "\"test\" key",
+                Value = @"""test"" value",
+            };
+
+            // Act
+            extension.WriteRazorCompiledItemMetadataAttribute(context, node);
+
+            // Assert
+            var csharp = context.CodeWriter.GenerateCode().Trim();
+            Assert.Equal(
+"[global::TestItemMetadata(\"\\\"test\\\" key\", \"\\\"test\\\" value\")]",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
     }
 }

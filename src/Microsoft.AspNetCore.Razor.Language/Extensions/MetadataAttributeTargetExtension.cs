@@ -12,6 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string SourceChecksumAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute";
 
+        public string CompiledItemMetadataAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute";
+
+
         public void WriteRazorCompiledItemAttribute(CodeRenderingContext context, RazorCompiledItemAttributeIntermediateNode node)
         {
             if (context == null)
@@ -34,6 +37,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             context.CodeWriter.Write("\", @\"");
             context.CodeWriter.Write(node.Identifier);
             context.CodeWriter.WriteLine("\")]");
+        }
+
+        public void WriteRazorCompiledItemMetadataAttribute(CodeRenderingContext context, RazorCompiledItemMetadataAttributeIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // [assembly: global::...RazorCompiledItemAttribute(@"{node.Key}", @"{node.Value}")]
+            context.CodeWriter.Write("[");
+            context.CodeWriter.Write(CompiledItemMetadataAttributeName);
+            context.CodeWriter.Write("(");
+            context.CodeWriter.WriteStringLiteral(node.Key);
+            context.CodeWriter.Write(", ");
+            context.CodeWriter.WriteStringLiteral(node.Value);
+            context.CodeWriter.WriteLine(")]");
         }
 
         public void WriteRazorSourceChecksumAttribute(CodeRenderingContext context, RazorSourceChecksumAttributeIntermediateNode node)

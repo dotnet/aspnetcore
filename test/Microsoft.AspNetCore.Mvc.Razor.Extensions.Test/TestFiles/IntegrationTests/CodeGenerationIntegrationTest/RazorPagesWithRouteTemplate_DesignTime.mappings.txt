@@ -1,0 +1,35 @@
+Source Location: (36:3,1 [41] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml)
+|using Microsoft.AspNetCore.Mvc.RazorPages|
+Generated Location: (492:14,0 [41] )
+|using Microsoft.AspNetCore.Mvc.RazorPages|
+
+Source Location: (6:0,6 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml)
+|"/About"|
+Generated Location: (1005:24,37 [8] )
+|"/About"|
+
+Source Location: (25:2,7 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml)
+|NewModel|
+Generated Location: (1076:28,0 [8] )
+|NewModel|
+
+Source Location: (213:12,18 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml)
+|Model.Name|
+Generated Location: (1573:40,18 [10] )
+|Model.Name|
+
+Source Location: (93:5,12 [97] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml)
+|
+    public class NewModel : PageModel
+    {
+        public string Name { get; set; }
+    }
+|
+Generated Location: (1781:47,12 [97] )
+|
+    public class NewModel : PageModel
+    {
+        public string Name { get; set; }
+    }
+|
+

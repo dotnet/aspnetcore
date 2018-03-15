@@ -232,6 +232,14 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
         }
 
         [Fact]
+        public void RazorPagesWithRouteTemplate_Runtime()
+        {
+            var compilation = BaseCompilation;
+
+            RunRuntimeTest(compilation);
+        }
+
+        [Fact]
         public void RazorPagesWithoutModel_Runtime()
         {
             var appCode = $@"
@@ -506,6 +514,14 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
 }}
 ";
             var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
+        }
+
+        [Fact]
+        public void RazorPagesWithRouteTemplate_DesignTime()
+        {
+            var compilation = BaseCompilation;
 
             RunDesignTimeTest(compilation);
         }
