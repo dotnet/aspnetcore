@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_WithoutViews_ProducesDepsFileWithotCompiilationContext()
+        public async Task Build_WithoutViews_ProducesDepsFileWithoutCompiilationContext()
         {
             Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
             var customDefine = "RazorSdkTest";
@@ -273,8 +273,32 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithoutViews_ProducesDepsFileWithCompiilationContext_WhenUsingPrecompilationTool()
+        {
+            Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
+            var customDefine = "RazorSdkTest";
+            var result = await DotnetMSBuild("Build", $"/p:DefineConstants={customDefine} /p:MvcRazorCompileOnPublish=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "SimpleMvc.deps.json");
+            var depsFilePath = Path.Combine(Project.DirectoryPath, OutputPath, "SimpleMvc.deps.json");
+            var dependencyContext = ReadDependencyContext(depsFilePath);
+
+            // Pick a couple of libraries and ensure they have some compile references
+            var packageReference = dependencyContext.CompileLibraries.First(l => l.Name == "Microsoft.AspNetCore.Html.Abstractions");
+            Assert.NotEmpty(packageReference.Assemblies);
+
+            var projectReference = dependencyContext.CompileLibraries.First(l => l.Name == "SimpleMvc");
+            Assert.NotEmpty(packageReference.Assemblies);
+
+            Assert.Contains(customDefine, dependencyContext.CompilationOptions.Defines);
+        }
+
+        [Fact]
         [InitializeTestProject("ClassLibrary")]
-        public async Task Build_ClassLibrary_DoesNotProduceDepsFileWithCompilationContext()
+        public async Task Build_ClassLibrary_ProducesDepsFileWithoutCompiilationContext()
         {
             var result = await DotnetMSBuild("Build");
 

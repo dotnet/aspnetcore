@@ -166,6 +166,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MvcRazorCompileOnPublish Condition="'$(MvcRazorCompileOnPublish)' == ''">true</MvcRazorCompileOnPublish>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Set PreserveCompilationContext = true, if RazorCompileToolSet = PrecompilationTool since the precompilation tool requires it to work correctly.
+      This is an important to maintain back-compat when the Sdk is used to compile 2.0 applications.
+    -->
+    <PreserveCompilationContext Condition="'$(PreserveCompilationContext)'=='' AND '$(ResolvedRazorCompileToolset)' == 'PrecompilationTool'">true</PreserveCompilationContext>
+  </PropertyGroup>
+
   <!--
     Properties that configure Razor SDK, but need to be defined in targets due to evaluation order.
   -->
