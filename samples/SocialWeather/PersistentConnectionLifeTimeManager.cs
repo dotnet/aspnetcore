@@ -23,9 +23,9 @@ namespace SocialWeather
 
         public void OnConnectedAsync(ConnectionContext connection)
         {
-            connection.Features.Get<IConnectionMetadataFeature>().Metadata["groups"] = new HashSet<string>();
+            connection.Items["groups"] = new HashSet<string>();
             var format = connection.GetHttpContext().Request.Query["formatType"].ToString();
-            connection.Features.Get<IConnectionMetadataFeature>().Metadata["format"] = format;
+            connection.Items["format"] = format;
             if (string.Equals(format, "protobuf", StringComparison.OrdinalIgnoreCase))
             {
                 var transferFormatFeature = connection.Features.Get<ITransferFormatFeature>();
@@ -47,7 +47,7 @@ namespace SocialWeather
             foreach (var connection in _connectionList)
             {
                 var context = connection.GetHttpContext();
-                var formatter = _formatterResolver.GetFormatter<T>((string)connection.Features.Get<IConnectionMetadataFeature>().Metadata["format"]);
+                var formatter = _formatterResolver.GetFormatter<T>((string)connection.Items["format"]);
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
 
@@ -72,7 +72,7 @@ namespace SocialWeather
 
         public void AddGroupAsync(ConnectionContext connection, string groupName)
         {
-            var groups = (HashSet<string>)connection.Features.Get<IConnectionMetadataFeature>().Metadata["groups"];
+            var groups = (HashSet<string>)connection.Items["groups"];
             lock (groups)
             {
                 groups.Add(groupName);
@@ -81,7 +81,7 @@ namespace SocialWeather
 
         public void RemoveGroupAsync(ConnectionContext connection, string groupName)
         {
-            var groups = (HashSet<string>)connection.Features.Get<IConnectionMetadataFeature>().Metadata["groups"];
+            var groups = (HashSet<string>)connection.Items["groups"];
             if (groups != null)
             {
                 lock (groups)

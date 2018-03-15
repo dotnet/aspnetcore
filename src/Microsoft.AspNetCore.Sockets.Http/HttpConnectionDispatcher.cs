@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Sockets
                     {
                         Log.EstablishedConnection(_logger);
 
-                        connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.LongPolling;
+                        connection.Items[ConnectionMetadataNames.Transport] = TransportType.LongPolling;
 
                         connection.ApplicationTask = ExecuteApplication(ConnectionDelegate, connection);
                     }
@@ -344,8 +344,8 @@ namespace Microsoft.AspNetCore.Sockets
         {
             // Verify some initialization invariants
             // We want to be positive that the IConnectionInherentKeepAliveFeature is initialized before invoking the application, if the long polling transport is in use.
-            Debug.Assert(connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport] != null, "Transport has not been initialized yet");
-            Debug.Assert((TransportType?)connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport] != TransportType.LongPolling ||
+            Debug.Assert(connection.Items[ConnectionMetadataNames.Transport] != null, "Transport has not been initialized yet");
+            Debug.Assert((TransportType?)connection.Items[ConnectionMetadataNames.Transport] != TransportType.LongPolling ||
                 connection.Features.Get<IConnectionInherentKeepAliveFeature>() != null, "Long-polling transport is in use but IConnectionInherentKeepAliveFeature as not configured");
 
             // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Sockets
 
             context.Response.ContentType = "text/plain";
 
-            var transport = (TransportType?)connection.Metadata[ConnectionMetadataNames.Transport];
+            var transport = (TransportType?)connection.Items[ConnectionMetadataNames.Transport];
             if (transport == TransportType.WebSockets)
             {
                 Log.PostNotAllowedForWebSockets(_logger);
@@ -473,11 +473,11 @@ namespace Microsoft.AspNetCore.Sockets
             // Set the IHttpConnectionFeature now that we can access it.
             connection.Features.Set(context.Features.Get<IHttpConnectionFeature>());
 
-            var transport = (TransportType?)connection.Metadata[ConnectionMetadataNames.Transport];
+            var transport = (TransportType?)connection.Items[ConnectionMetadataNames.Transport];
 
             if (transport == null)
             {
-                connection.Metadata[ConnectionMetadataNames.Transport] = transportType;
+                connection.Items[ConnectionMetadataNames.Transport] = transportType;
             }
             else if (transport != transportType)
             {

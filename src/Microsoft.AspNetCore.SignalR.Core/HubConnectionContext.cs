@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual IFeatureCollection Features => _connectionContext.Features;
 
-        public virtual IDictionary<object, object> Metadata => Features.Get<IConnectionMetadataFeature>().Metadata;
+        public virtual IDictionary<object, object> Items => _connectionContext.Items;
 
         public virtual PipeReader Input => _connectionContext.Transport.Input;
 

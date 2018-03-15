@@ -22,11 +22,11 @@
     <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreProtocolsAbstractionsPackageVersion>2.1.0-a-preview2-move-transfer-format-17581</MicrosoftAspNetCoreProtocolsAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreProtocolsAbstractionsPackageVersion>2.1.0-a-preview2-connection-items-17583</MicrosoftAspNetCoreProtocolsAbstractionsPackageVersion>
     <MicrosoftAspNetCoreRoutingPackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreRoutingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview2-30319</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-a-preview2-move-transfer-format-17581</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-a-preview2-connection-items-17583</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30319</MicrosoftAspNetCoreTestingPackageVersion>

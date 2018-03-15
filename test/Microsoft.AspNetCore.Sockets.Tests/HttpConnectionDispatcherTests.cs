@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
                 var pipeOptions = new PipeOptions(pauseWriterThreshold: 8, resumeWriterThreshold: 4);
                 var connection = manager.CreateConnection(pipeOptions, pipeOptions);
-                connection.Metadata[ConnectionMetadataNames.Transport] = transportType;
+                connection.Items[ConnectionMetadataNames.Transport] = transportType;
 
                 using (var requestBody = new MemoryStream())
                 using (var responseBody = new MemoryStream())
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
                 var connection = manager.CreateConnection();
-                connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.WebSockets;
+                connection.Items[ConnectionMetadataNames.Transport] = TransportType.WebSockets;
 
                 using (var strm = new MemoryStream())
                 {
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
                 var connection = manager.CreateConnection();
-                connection.Metadata[ConnectionMetadataNames.Transport] = transportType;
+                connection.Items[ConnectionMetadataNames.Transport] = transportType;
 
                 using (var requestBody = new MemoryStream())
                 using (var responseBody = new MemoryStream())

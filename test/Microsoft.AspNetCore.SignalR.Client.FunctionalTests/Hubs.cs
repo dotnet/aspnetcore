@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public string GetActiveTransportName()
         {
-            return Context.Connection.Metadata[ConnectionMetadataNames.Transport].ToString();
+            return Context.Connection.Items[ConnectionMetadataNames.Transport].ToString();
         }
     }
 

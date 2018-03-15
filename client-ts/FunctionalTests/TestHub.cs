@@ -55,7 +55,7 @@ namespace FunctionalTests
 
         public string GetActiveTransportName()
         {
-            return Context.Connection.Metadata[ConnectionMetadataNames.Transport].ToString();
+            return Context.Connection.Items[ConnectionMetadataNames.Transport].ToString();
         }
 
         public ComplexObject EchoComplexObject(ComplexObject complexObject)

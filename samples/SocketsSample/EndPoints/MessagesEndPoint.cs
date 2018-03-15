@@ -19,7 +19,7 @@ namespace SocketsSample.EndPoints
         {
             Connections.Add(connection);
 
-            await Broadcast($"{connection.ConnectionId} connected ({connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport]})");
+            await Broadcast($"{connection.ConnectionId} connected ({connection.Items[ConnectionMetadataNames.Transport]})");
 
             try
             {
@@ -52,7 +52,7 @@ namespace SocketsSample.EndPoints
             {
                 Connections.Remove(connection);
 
-                await Broadcast($"{connection.ConnectionId} disconnected ({connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport]})");
+                await Broadcast($"{connection.ConnectionId} disconnected ({connection.Items[ConnectionMetadataNames.Transport]})");
             }
         }
 

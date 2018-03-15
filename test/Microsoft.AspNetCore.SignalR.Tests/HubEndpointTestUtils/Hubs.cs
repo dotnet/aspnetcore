@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
+            var tcs = (TaskCompletionSource<bool>)Context.Connection.Items["ConnectedTask"];
             tcs?.TrySetResult(true);
             return base.OnConnectedAsync();
         }
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
+            var tcs = (TaskCompletionSource<bool>)Context.Connection.Items["ConnectedTask"];
             tcs?.TrySetResult(true);
             return base.OnConnectedAsync();
         }
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
+            var tcs = (TaskCompletionSource<bool>)Context.Connection.Items["ConnectedTask"];
             tcs?.TrySetResult(true);
             return base.OnConnectedAsync();
         }

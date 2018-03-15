@@ -15,8 +15,9 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public class DefaultConnectionContext : ConnectionContext,
                                             IConnectionIdFeature,
-                                            IConnectionMetadataFeature,
+                                            IConnectionItemsFeature,
                                             IConnectionTransportFeature,
+                                            IApplicationTransportFeature,
                                             IConnectionUserFeature,
                                             IConnectionHeartbeatFeature,
                                             ITransferFormatFeature
@@ -41,9 +42,10 @@ namespace Microsoft.AspNetCore.Sockets
             // PERF: This type could just implement IFeatureCollection
             Features = new FeatureCollection();
             Features.Set<IConnectionUserFeature>(this);
-            Features.Set<IConnectionMetadataFeature>(this);
+            Features.Set<IConnectionItemsFeature>(this);
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
+            Features.Set<IApplicationTransportFeature>(this);
             Features.Set<IConnectionHeartbeatFeature>(this);
             Features.Set<ITransferFormatFeature>(this);
         }
@@ -66,9 +68,9 @@ namespace Microsoft.AspNetCore.Sockets
 
         public ClaimsPrincipal User { get; set; }
 
-        public IDictionary<object, object> Metadata { get; set; } = new ConnectionMetadata();
+        public override IDictionary<object, object> Items { get; set; } = new ConnectionMetadata();
 
-        public IDuplexPipe Application { get; }
+        public IDuplexPipe Application { get; set; }
 
         public override IDuplexPipe Transport { get; set; }
 

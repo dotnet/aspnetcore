@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private Queue<HubMessage> _messages = new Queue<HubMessage>();
 
         public DefaultConnectionContext Connection { get; }
-        public Task Connected => ((TaskCompletionSource<bool>)Connection.Metadata["ConnectedTask"]).Task;
+        public Task Connected => ((TaskCompletionSource<bool>)Connection.Items["ConnectedTask"]).Task;
 
         public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
 
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
-            Connection.Metadata["ConnectedTask"] = new TaskCompletionSource<bool>();
+            Connection.Items["ConnectedTask"] = new TaskCompletionSource<bool>();
 
             _protocol = protocol ?? new JsonHubProtocol();
             _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
