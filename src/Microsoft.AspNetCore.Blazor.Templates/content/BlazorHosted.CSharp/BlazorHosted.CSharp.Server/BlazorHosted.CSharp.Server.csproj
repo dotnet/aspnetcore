@@ -2,9 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-
-    <!-- Temporarily, fetch Blazor packages from the blazor-dev feed -->
-    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/f/blazor-dev/api/v3/index.json</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
