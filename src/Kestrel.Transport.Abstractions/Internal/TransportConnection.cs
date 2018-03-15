@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
@@ -7,11 +8,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public abstract partial class TransportConnection
     {
+        private IDictionary<object, object> _items;
+
         public TransportConnection()
         {
             _currentIConnectionIdFeature = this;
             _currentIConnectionTransportFeature = this;
             _currentIHttpConnectionFeature = this;
+            _currentIConnectionItemsFeature = this;
             _currentIApplicationTransportFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentITransportSchedulerFeature = this;
@@ -30,6 +34,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public IDuplexPipe Transport { get; set; }
         public IDuplexPipe Application { get; set; }
+
+        public IDictionary<object, object> Items
+        {
+            get
+            {
+                // Lazily allocate connection metadata
+                return _items ?? (_items = new ConnectionItems());
+            }
+            set
+            {
+                _items = value;
+            }
+        }
 
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;

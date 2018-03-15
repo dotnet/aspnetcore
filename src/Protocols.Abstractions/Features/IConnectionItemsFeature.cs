@@ -6,8 +6,8 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Protocols.Features
 {
-    public interface IConnectionMetadataFeature
+    public interface IConnectionItemsFeature
     {
-        IDictionary<object, object> Metadata { get; set; }
+        IDictionary<object, object> Items { get; set; }
     }
 }

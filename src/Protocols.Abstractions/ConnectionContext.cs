@@ -1,4 +1,5 @@
-﻿using System.IO.Pipelines;
+﻿using System.Collections.Generic;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Protocols
@@ -8,6 +9,8 @@ namespace Microsoft.AspNetCore.Protocols
         public abstract string ConnectionId { get; set; }
 
         public abstract IFeatureCollection Features { get; }
+
+        public abstract IDictionary<object, object> Items { get; set; }
 
         public abstract IDuplexPipe Transport { get; set; }
     }

@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                                                IHttpConnectionFeature,
                                                IConnectionIdFeature,
                                                IConnectionTransportFeature,
+                                               IConnectionItemsFeature,
                                                IMemoryPoolFeature,
                                                IApplicationTransportFeature,
                                                ITransportSchedulerFeature
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private static readonly Type IHttpConnectionFeatureType = typeof(IHttpConnectionFeature);
         private static readonly Type IConnectionIdFeatureType = typeof(IConnectionIdFeature);
         private static readonly Type IConnectionTransportFeatureType = typeof(IConnectionTransportFeature);
+        private static readonly Type IConnectionItemsFeatureType = typeof(IConnectionItemsFeature);
         private static readonly Type IMemoryPoolFeatureType = typeof(IMemoryPoolFeature);
         private static readonly Type IApplicationTransportFeatureType = typeof(IApplicationTransportFeature);
         private static readonly Type ITransportSchedulerFeatureType = typeof(ITransportSchedulerFeature);
@@ -27,6 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private object _currentIHttpConnectionFeature;
         private object _currentIConnectionIdFeature;
         private object _currentIConnectionTransportFeature;
+        private object _currentIConnectionItemsFeature;
         private object _currentIMemoryPoolFeature;
         private object _currentIApplicationTransportFeature;
         private object _currentITransportSchedulerFeature;
@@ -118,6 +121,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => Application = value;
         }
 
+        IDictionary<object, object> IConnectionItemsFeature.Items
+        {
+            get => Items;
+            set => Items = value;
+        }
+
         PipeScheduler ITransportSchedulerFeature.InputWriterScheduler => InputWriterScheduler;
         PipeScheduler ITransportSchedulerFeature.OutputReaderScheduler => OutputReaderScheduler;
 
@@ -138,6 +147,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 if (key == IConnectionTransportFeatureType)
                 {
                     return _currentIConnectionTransportFeature;
+                }
+
+                if (key == IConnectionItemsFeatureType)
+                {
+                    return _currentIConnectionItemsFeature;
                 }
 
                 if (key == IMemoryPoolFeatureType)
@@ -178,6 +192,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     _currentIConnectionTransportFeature = value;
                 }
+                else if (key == IConnectionItemsFeatureType)
+                {
+                    _currentIConnectionItemsFeature = value;
+                }
                 else if (key == IMemoryPoolFeatureType)
                 {
                     _currentIMemoryPoolFeature = value;
@@ -210,6 +228,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
                 return (TFeature)_currentIConnectionTransportFeature;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionItemsFeature))
+            {
+                return (TFeature)_currentIConnectionItemsFeature;
             }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
@@ -246,6 +268,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
                 _currentIConnectionTransportFeature = instance;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionItemsFeature))
+            {
+                _currentIConnectionItemsFeature = instance;
             }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
@@ -284,6 +310,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             if (_currentIConnectionTransportFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IConnectionTransportFeatureType, _currentIConnectionTransportFeature);
+            }
+
+            if (_currentIConnectionItemsFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IConnectionItemsFeatureType, _currentIConnectionItemsFeature);
             }
 
             if (_currentIMemoryPoolFeature != null)

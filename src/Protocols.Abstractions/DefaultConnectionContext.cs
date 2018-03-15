@@ -1,4 +1,5 @@
-﻿using System.IO.Pipelines;
+﻿using System.Collections.Generic;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Features;
 
@@ -19,6 +20,9 @@ namespace Microsoft.AspNetCore.Protocols
         private IConnectionTransportFeature ConnectionTransportFeature =>
             _features.Fetch(ref _features.Cache.ConnectionTransport, _ => null);
 
+        private IConnectionItemsFeature ConnectionItemsFeature =>
+            _features.Fetch(ref _features.Cache.ConnectionItems, _ => null);
+
         public override string ConnectionId
         {
             get => ConnectionIdFeature.ConnectionId;
@@ -33,11 +37,19 @@ namespace Microsoft.AspNetCore.Protocols
             set => ConnectionTransportFeature.Transport = value;
         }
 
+        public override IDictionary<object, object> Items
+        {
+            get => ConnectionItemsFeature.Items;
+            set => ConnectionItemsFeature.Items = value;
+        }
+
         struct FeatureInterfaces
         {
             public IConnectionIdFeature ConnectionId;
 
             public IConnectionTransportFeature ConnectionTransport;
+
+            public IConnectionItemsFeature ConnectionItems;
         }
     }
 }
