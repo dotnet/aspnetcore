@@ -425,7 +425,7 @@ http_get_authentication_information(
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 VOID
-http_stop_calls_into_mananged()
+http_stop_calls_into_managed()
 {
     IN_PROCESS_APPLICATION::GetInstance()->StopCallsIntoManaged();
 }
