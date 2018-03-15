@@ -17,7 +17,7 @@ namespace Templates.Test
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(null)]
-        [InlineData("F#")]
+        [InlineData("F#", Skip= "https://github.com/aspnet/templating/issues/365")]
         public void MvcTemplate_NoAuth_Works_NetFramework(string languageOverride)
             => MvcTemplate_NoAuthImpl("net461", languageOverride);
 
