@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
-{ 
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+{
     [Collection(IISTestSiteCollection.Name)]
     public class SynchronousReadAndWriteTests
     {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             _fixture = fixture;
         }
 
-        [ConditionalFact (Skip = "See https://github.com/aspnet/IISIntegration/issues/629")]
+        [ConditionalFact]
         public async Task ReadAndWriteSynchronously()
         {
             for (int i = 0; i < 100; i++)
@@ -88,6 +88,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         // Exceptions can be thrown based on ipv6 support
                     }
                 }
+
+                Assert.True(socket.Connected);
 
                 var testString = "hello world";
                 var request = $"POST /ReadAndWriteSlowConnection HTTP/1.0\r\n" +
