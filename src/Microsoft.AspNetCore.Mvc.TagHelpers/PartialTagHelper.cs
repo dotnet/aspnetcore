@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("partial", Attributes = "name", TagStructure = TagStructure.WithoutEndTag)]
     public class PartialTagHelper : TagHelper
     {
-        private const string ForAttributeName = "asp-for";
         private readonly ICompositeViewEngine _viewEngine;
         private readonly IViewBufferScope _viewBufferScope;
 
@@ -40,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <summary>
         /// An expression to be evaluated against the current model.
         /// </summary>
-        [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
 
         /// <summary>
@@ -102,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Determine which ViewData we should use to construct a new ViewData
             var baseViewData = ViewData ?? ViewContext.ViewData;
 
-            // Use the rendering View's model only if an asp-for expression does not exist
+            // Use the rendering View's model only if an for expression does not exist
             var model = For != null ? For.Model : ViewContext.ViewData.Model;
             var newViewData = new ViewDataDictionary<object>(baseViewData, model);
             var partialViewContext = new ViewContext(ViewContext, view, newViewData, writer);

@@ -1,4 +1,4 @@
-@using HtmlGenerationWebSite.Models
+﻿@using HtmlGenerationWebSite.Models
 @model IList<Product>
 
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
@@ -15,7 +15,7 @@
                 <label asp-for="@Model[i].HomePage" class="product"></label>
                 <input asp-for="@Model[i].HomePage" type="url" size="50" disabled="disabled" readonly="readonly" />
             </div>
-            <partial name="_ProductPartial" asp-for="@Model[i]" />
+            <partial name="_ProductPartial" for="@Model[i]" />
         }
         @* Print the HtmlFieldPrefix outside of the partial tag helper to ensure it hasn't been modified *@
         <div>HtmlFieldPrefix = @ViewData.TemplateInfo.HtmlFieldPrefix</div>
