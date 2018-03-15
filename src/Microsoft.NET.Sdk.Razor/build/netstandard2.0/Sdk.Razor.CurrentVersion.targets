@@ -241,13 +241,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     This allows the project file to act as the source of truth for the applicable Razor configuration regardless 
     of how Razor is used.
 
-    The SDK expects configurations that use runtime compilation to set $(GenerateRazorAssemblyInfo) to true,
+    The SDK expects configurations that use runtime compilation to set $(GenerateRazorHostingAssemblyInfo) to true,
     it will be unset by default.
   -->
   <Target 
     Name="RazorGetAssemblyAttributes"
     AfterTargets="GetAssemblyAttributes"
-    Condition="'$(GenerateRazorAssemblyInfo)'=='true' and '$(RazorDefaultConfiguration)'!=''"
+    Condition="'$(GenerateRazorHostingAssemblyInfo)'=='true' and '$(RazorDefaultConfiguration)'!=''"
     DependsOnTargets="ResolveRazorConfiguration">
     <ItemGroup>
       <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute">

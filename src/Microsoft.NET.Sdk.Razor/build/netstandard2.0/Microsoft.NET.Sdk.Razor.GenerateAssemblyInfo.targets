@@ -76,6 +76,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RazorAssemblyAttribute Include="System.Reflection.AssemblyProductAttribute" Condition="'$(Product)' != '' and '$(GenerateAssemblyProductAttribute)' == 'true'">
         <_Parameter1>$(Product)</_Parameter1>
       </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="System.Resources.NeutralResourcesLanguageAttribute" Condition="'$(NeutralLanguage)' != '' and '$(GenerateNeutralResourcesLanguageAttribute)' == 'true'">
+        <_Parameter1>$(NeutralLanguage)</_Parameter1>
+      </RazorAssemblyAttribute>
 
       <RazorAssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(RazorAssemblyFileVersion)' != '' and '$(GenerateAssemblyFileVersionAttribute)' == 'true'">
         <_Parameter1>$(RazorAssemblyFileVersion)</_Parameter1>
