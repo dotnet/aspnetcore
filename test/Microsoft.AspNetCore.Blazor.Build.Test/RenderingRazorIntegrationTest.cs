@@ -351,8 +351,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsTwoWayBindingForDateValuesWithFormatString()
         {
             // Arrange/Act
+            var testDateFormat = "ddd yyyy-MM-dd";
             var component = CompileToComponent(
-                @"<input @bind(MyDate, ""ddd yyyy-MM-dd"") />
+                @"<input @bind(MyDate, """ + testDateFormat + @""") />
                 @functions {
                     public DateTime MyDate { get; set; } = new DateTime(2018, 3, 4);
                 }");
@@ -362,7 +363,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var frames = GetRenderTree(component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
-                frame => AssertFrame.Attribute(frame, "value", "Sun 2018-03-04", 1),
+                frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 3, 4).ToString(testDateFormat), 1),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onchange", 2);
@@ -370,7 +371,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     // Trigger the change event to show it updates the property
                     ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
                     {
-                        Value = "Mon 2018-03-05"
+                        Value = new DateTime(2018, 3, 5).ToString(testDateFormat)
                     });
                     Assert.Equal(new DateTime(2018, 3, 5), myDateProperty.GetValue(component));
                 },
