@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -49,12 +50,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 Name = "Athos",
                 Pets = new[] { "Aramis", "Porthos", "D'Artagnan" },
                 Hobby = Hobbies.Swordfighting,
-                Nicknames = new List<string> { "Comte de la Fère", "Armand" }
+                Nicknames = new List<string> { "Comte de la Fère", "Armand" },
+                BirthInstant = new DateTimeOffset(1825, 8, 6, 18, 45, 21, TimeSpan.FromHours(-6))
             };
 
             // Act/Assert
             Assert.Equal(
-                "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2,\"Nicknames\":[\"Comte de la Fère\",\"Armand\"]}",
+                "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2,\"Nicknames\":[\"Comte de la Fère\",\"Armand\"],\"BirthInstant\":\"1825-08-06T18:45:21.0000000-06:00\"}",
                 JsonUtil.Serialize(person));
         }
 
@@ -62,7 +64,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void CanDeserializeClassFromJson()
         {
             // Arrange
-            var json = "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2,\"Nicknames\":[\"Comte de la Fère\",\"Armand\"]}";
+            var json = "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2,\"Nicknames\":[\"Comte de la Fère\",\"Armand\"],\"BirthInstant\":\"1825-08-06T18:45:21.0000000-06:00\"}";
 
             // Act
             var person = JsonUtil.Deserialize<Person>(json);
@@ -73,6 +75,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(new[] { "Aramis", "Porthos", "D'Artagnan" }, person.Pets);
             Assert.Equal(Hobbies.Swordfighting, person.Hobby);
             Assert.Equal(new[] { "Comte de la Fère", "Armand" }, person.Nicknames);
+            Assert.Equal(new DateTimeOffset(1825, 8, 6, 18, 45, 21, TimeSpan.FromHours(-6)), person.BirthInstant);
         }
 
         class Person
@@ -82,6 +85,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public string[] Pets { get; set; }
             public Hobbies Hobby { get; set; }
             public IList<string> Nicknames { get; set; }
+            public DateTimeOffset BirthInstant { get; set; }
         }
 
         enum Hobbies { Reading = 1, Swordfighting = 2 }
