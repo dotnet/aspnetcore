@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 {
     public class AuthorizeIntegrationTest
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         public async Task Spec_Code_Sample()
         {
             // Arrange
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.Equal("af0ifjsldkj", stateKvp.Value);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         public async Task Spec_IdToken_Sample()
         {
             // Arrange

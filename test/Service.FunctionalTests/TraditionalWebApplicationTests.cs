@@ -19,7 +19,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
 {
     public class TraditionalWebApplicationTests
     {
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "https://github.com/aspnet/Identity/issues/1346")]
         public async Task CanPerform_AuthorizationCode_Flow()
         {
@@ -117,7 +117,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
             };
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "https://github.com/aspnet/Identity/issues/1346")]
         public async Task CanPerform_IdToken_Flow()
         {

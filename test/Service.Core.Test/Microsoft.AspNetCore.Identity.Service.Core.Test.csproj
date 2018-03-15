@@ -2,6 +2,9 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Service.Core\CryptographyHelpers.cs" Link="CryptographyHelpers.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Service.Core\Microsoft.AspNetCore.Identity.Service.Core.csproj" />
@@ -9,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
   </ItemGroup>
 
 </Project>
