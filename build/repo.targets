@@ -3,7 +3,7 @@
   <PropertyGroup>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
-    <TestDependsOn>$(PackageDependsOn);RunNativeTest</TestDependsOn>
+    <TestDependsOn>$(TestDependsOn);RunNativeTest</TestDependsOn>
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
   </PropertyGroup>
 
@@ -83,7 +83,7 @@
     <ItemGroup>
       <Platforms Include="Win32;x64" />
     </ItemGroup>
-    
+
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\AspNetCoreModuleTests\AspNetCoreModuleTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
