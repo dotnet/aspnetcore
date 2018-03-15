@@ -29,7 +29,15 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 {
-    // TODO check if anything else needs to be cleaned up
+    if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
+    {
+        m_Timer.CancelTimer();
+        CloseHandle(m_hLogFileHandle);
+        m_hLogFileHandle = INVALID_HANDLE_VALUE;
+    }
+
+    m_hThread = NULL;
+    s_Application = NULL;
 }
 
 __override

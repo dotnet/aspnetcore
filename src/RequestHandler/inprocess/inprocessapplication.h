@@ -15,8 +15,8 @@ public:
     ~IN_PROCESS_APPLICATION();
 
     __override
-        VOID
-        ShutDown();
+    VOID
+    ShutDown();
 
     VOID
     SetCallbackHandles(
@@ -35,43 +35,43 @@ public:
 
     // Executes the .NET Core process
     HRESULT
-        ExecuteApplication(
-            VOID
-        );
+    ExecuteApplication(
+        VOID
+    );
 
     VOID
-        ReadStdErrHandleInternal(
-            VOID
-        );
+    ReadStdErrHandleInternal(
+        VOID
+    );
 
     VOID
-        CloseStdErrHandles(
-            VOID
-        );
+    CloseStdErrHandles(
+        VOID
+    );
 
     HRESULT
-        LoadManagedApplication(
-            VOID
-        );
+    LoadManagedApplication(
+        VOID
+    );
 
     VOID
-        LogErrorsOnMainExit(
-            HRESULT hr
-        );
+    LogErrorsOnMainExit(
+        HRESULT hr
+    );
 
     REQUEST_NOTIFICATION_STATUS
-        OnAsyncCompletion(
-            DWORD                   cbCompletion,
-            HRESULT                 hrCompletionStatus,
-            IN_PROCESS_HANDLER*     pInProcessHandler
-        );
+    OnAsyncCompletion(
+        DWORD                   cbCompletion,
+        HRESULT                 hrCompletionStatus,
+        IN_PROCESS_HANDLER*     pInProcessHandler
+    );
 
     REQUEST_NOTIFICATION_STATUS
-        OnExecuteRequest
-        (
-            IHttpContext* pHttpContext,
-            IN_PROCESS_HANDLER* pInProcessHandler
-        );
+    OnExecuteRequest
+    (
+        IHttpContext* pHttpContext,
+        IN_PROCESS_HANDLER* pInProcessHandler
+    );
 
     VOID
     StopCallsIntoManaged(
@@ -90,10 +90,10 @@ public:
     }
 
     static
-        IN_PROCESS_APPLICATION*
-        GetInstance(
-            VOID
-        )
+    IN_PROCESS_APPLICATION*
+    GetInstance(
+        VOID
+    )
     {
         return s_Application;
     }
@@ -143,36 +143,36 @@ private:
     static IN_PROCESS_APPLICATION*  s_Application;
 
     VOID
-        SetStdOut(
-            VOID
-        );
+    SetStdOut(
+        VOID
+    );
 
     static
-        VOID
-        ExecuteAspNetCoreProcess(
-            _In_ LPVOID pContext
-        );
+    VOID
+    ExecuteAspNetCoreProcess(
+        _In_ LPVOID pContext
+    );
 
     static
-        VOID
-        ReadStdErrHandle
-        (
-            _In_ LPVOID pContext
-        );
+    VOID
+    ReadStdErrHandle
+    (
+        _In_ LPVOID pContext
+    );
 
     HRESULT
-        SetEnvironementVariablesOnWorkerProcess(
-            VOID
-        );
+    SetEnvironementVariablesOnWorkerProcess(
+        VOID
+    );
 
     static
-        INT
-        FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);
+    INT
+    FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);
 
     HRESULT
-        RunDotnetApplication(
-            DWORD argc,
-            CONST PCWSTR* argv,
-            hostfxr_main_fn pProc
-        );
+    RunDotnetApplication(
+        DWORD argc,
+        CONST PCWSTR* argv,
+        hostfxr_main_fn pProc
+    );
 };
