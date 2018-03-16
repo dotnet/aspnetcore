@@ -3,7 +3,7 @@
     <li class="@ManageNavPages.ChangePasswordNavClass(ViewContext)"><a id="change-password" asp-page="./ChangePassword">Password</a></li>
     @if ((bool)ViewData["ManageNav.HasExternalLogins"])
     {
-        <li id="external-logins" class="@ManageNavPages.ExternalLoginsNavClass(ViewContext)"><a asp-page="./ExternalLogins">External logins</a></li>
+        <li id="external-logins" class="@ManageNavPages.ExternalLoginsNavClass(ViewContext)"><a id="external-login" asp-page="./ExternalLogins">External logins</a></li>
     }
     <li class="@ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)"><a id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
     <li class="@ManageNavPages.PersonalDataNavClass(ViewContext)"><a id="personal-data" asp-page="./PersonalData">Personal data</a></li>

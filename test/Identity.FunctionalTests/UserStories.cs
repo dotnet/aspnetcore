@@ -87,6 +87,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await enableAuthenticator.SendValidCodeAsync();
         }
 
+        internal static async Task<ResetAuthenticator> ResetAuthenticator(Index index)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            var twoFactor = await manage.ClickTwoFactorEnabledLinkAsync();
+            var resetAuthenticator = await twoFactor.ClickResetAuthenticatorLinkAsync();
+            return await resetAuthenticator.ResetAuthenticatorAsync();
+        }
+
         internal static async Task<Index> LoginExistingUserRecoveryCodeAsync(
             HttpClient client,
             string userName,
@@ -134,6 +142,39 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             var resetPassword = await ResetPassword.CreateAsync(link, client, new DefaultUIContext().WithExistingUser());
             return await resetPassword.SendNewPasswordAsync(email, newPassword);
+        }
+
+        internal static async Task<ChangePassword> ChangePasswordAsync(Index index, string oldPassword, string newPassword)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            var changePassword = await manage.ClickChangePasswordLinkAsync();
+
+            return await changePassword.ChangePasswordAsync(oldPassword, newPassword);
+        }
+
+        internal static async Task<SetPassword> SetPasswordAsync(Index index, string newPassword)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            var setPassword = await manage.ClickChangePasswordLinkExternalLoginAsync();
+
+            return await setPassword.SetPasswordAsync(newPassword);
+        }
+
+        internal static async Task<ManageExternalLogin> LinkExternalLoginAsync(Index index, string loginEmail)
+        {
+            var manage = await index.ClickManageLinkWithExternalLoginAsync();
+            var linkLogin = await manage.ClickLinkLoginAsync();
+
+            return await linkLogin.LinkExternalLoginAsync(loginEmail);
+        }
+
+        internal static async Task<RemoveExternalLogin> RemoveExternalLoginAsync(ManageExternalLogin manageExternalLogin, string loginEmail)
+        {
+            // Provide an email to link an external account to
+            var removeLogin = await manageExternalLogin.ManageExternalLoginAsync(loginEmail);
+
+            // Remove external login
+            return await removeLogin.RemoveLoginAsync("Contoso", "Contoso");
         }
 
         internal static async Task<Index> DeleteUser(Index index, string password)

@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             await _userManager.ResetAuthenticatorKeyAsync(user);
             _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", user.Id);
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.";
 
             return RedirectToPage("./EnableAuthenticator");

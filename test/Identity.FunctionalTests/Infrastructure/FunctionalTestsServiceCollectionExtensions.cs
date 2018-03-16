@@ -1,7 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Identity.DefaultUI.WebSite;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -24,6 +28,13 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         public static IServiceCollection SetupTestEmailSender(this IServiceCollection services, IEmailSender sender) =>
             services.AddSingleton(sender);
+
+        public static IServiceCollection SetupGetUserClaimsPrincipal(this IServiceCollection services, Action<ClaimsPrincipal> captureUser, string schemeName) =>
+            services.Configure<CookieAuthenticationOptions>(schemeName, o => o.Events.OnSigningIn = context =>
+            {
+                captureUser(context.Principal);
+                return Task.CompletedTask;
+            });
 
         public static IServiceCollection SetupEmailRequired(this IServiceCollection services) =>
             services.Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedEmail = true);

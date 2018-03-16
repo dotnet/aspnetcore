@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
                 return Page();
             }
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.RefreshSignInAsync(user);
             _logger.LogInformation("User changed their password successfully.");
             StatusMessage = "Your password has been changed.";
 

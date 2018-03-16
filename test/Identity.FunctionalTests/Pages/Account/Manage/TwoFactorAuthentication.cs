@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
     public class TwoFactorAuthentication : DefaultUIPage
     {
         private readonly IHtmlAnchorElement _enableAuthenticatorLink;
+        private readonly IHtmlAnchorElement _resetAuthenticatorLink;
 
         public TwoFactorAuthentication(HttpClient client, IHtmlDocument twoFactor, DefaultUIContext context)
             : base(client, twoFactor, context)
@@ -18,6 +19,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
             if (!Context.TwoFactorEnabled)
             {
                 _enableAuthenticatorLink = HtmlAssert.HasLink("#enable-authenticator", twoFactor);
+            }
+            else
+            {
+                _resetAuthenticatorLink = HtmlAssert.HasLink("#reset-authenticator", twoFactor);
             }
         }
 
@@ -29,6 +34,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
             var enableAuthenticator = await ResponseAssert.IsHtmlDocumentAsync(goToEnableAuthenticator);
 
             return new EnableAuthenticator(Client, enableAuthenticator, Context);
+        }
+
+        internal async Task<ResetAuthenticator> ClickResetAuthenticatorLinkAsync()
+        {
+            var goToResetAuthenticator = await Client.GetAsync(_resetAuthenticatorLink.Href);
+            var resetAuthenticator = await ResponseAssert.IsHtmlDocumentAsync(goToResetAuthenticator);
+
+            return new ResetAuthenticator(Client, resetAuthenticator, Context);
         }
     }
 }

@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
                 return Page();
             }
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your password has been set.";
 
             return RedirectToPage();

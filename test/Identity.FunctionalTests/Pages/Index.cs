@@ -70,5 +70,16 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             return new Account.Manage.Index(Client, manage, Context);
         }
+
+        internal async Task<Account.Manage.Index> ClickManageLinkWithExternalLoginAsync()
+        {
+            Assert.True(Context.UserAuthenticated);
+
+            var goToManage = await Client.GetAsync(_manageLink.Href);
+            var manage = await ResponseAssert.IsHtmlDocumentAsync(goToManage);
+            Context.ContosoLoginEnabled = true;
+
+            return new Account.Manage.Index(Client, manage, Context);
+        }
     }
 }

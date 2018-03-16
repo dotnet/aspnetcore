@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
                 throw new InvalidOperationException($"Unexpected error occurred removing external login for user with ID '{user.Id}'.");
             }
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "The external login was removed.";
             return RedirectToPage();
         }
