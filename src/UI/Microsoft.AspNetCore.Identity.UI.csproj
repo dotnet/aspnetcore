@@ -32,17 +32,29 @@
     <ProjectReference Include="..\Stores\Microsoft.Extensions.Identity.Stores.csproj" />
   </ItemGroup>
   
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Identity.UI.props" />
-
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_parameter1>Microsoft.AspNetCore.Mvc.AdditionalReference</_parameter1>
       <_parameter2>$(RazorTargetName).dll,false</_parameter2>
     </AssemblyAttribute>
+
+    <RazorAssemblyAttribute Include="System.Reflection.AssemblyDescriptionAttribute">
+      <_Parameter1>$(PrecompiledDescription)</_Parameter1>
+    </RazorAssemblyAttribute>
+    <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+      <_Parameter1>BuildNumber</_Parameter1>
+      <_Parameter2>$(BuildNumber)</_Parameter2>
+    </RazorAssemblyAttribute>
+    <RazorAssemblyAttribute Include="System.Resources.NeutralResourcesLanguageAttribute" Condition="'$(NeutralLanguage)' != '' and '$(GenerateNeutralResourcesLanguageAttribute)' == 'true'">
+      <_Parameter1>$(NeutralLanguage)</_Parameter1>
+    </RazorAssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
+    <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
   </ItemGroup>
   
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Identity.UI.targets" />
-
   <Target Name="VerifyBuildOutputs" AfterTargets="Build">
     <PropertyGroup>
       <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
