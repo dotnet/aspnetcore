@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public abstract class HubLifetimeManager<THub>
+    public abstract class HubLifetimeManager<THub> where THub : Hub
     {
         public abstract Task OnConnectedAsync(HubConnectionContext connection);
 

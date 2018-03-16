@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.SignalR
             var methodBuilder = type.DefineMethod(interfaceMethodInfo.Name, methodAttributes);
 
             var invokeMethod = typeof(IClientProxy).GetMethod(
-                "SendAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
+                nameof(IClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
                 new Type[] { typeof(string), typeof(object[]) }, null);
 
             methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
@@ -132,14 +132,14 @@ namespace Microsoft.AspNetCore.SignalR
 
             var generator = methodBuilder.GetILGenerator();
 
-            // Declare local variable to store the arguments to IClientProxy.SendAsync
+            // Declare local variable to store the arguments to IClientProxy.SendCoreAsync
             generator.DeclareLocal(typeof(object[]));
 
             // Get IClientProxy
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldfld, proxyField);
 
-            // The first argument to IClientProxy.SendAsync is this method's name
+            // The first argument to IClientProxy.SendCoreAsync is this method's name
             generator.Emit(OpCodes.Ldstr, interfaceMethodInfo.Name);
 
             // Create an new object array to hold all the parameters to this method
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR
                 generator.Emit(OpCodes.Stelem_Ref);
             }
 
-            // Call SendAsync
+            // Call SendCoreAsync
             generator.Emit(OpCodes.Ldloc_0);
             generator.Emit(OpCodes.Callvirt, invokeMethod);
 

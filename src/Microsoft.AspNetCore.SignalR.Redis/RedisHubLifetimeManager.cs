@@ -18,7 +18,7 @@ using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis
 {
-    public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
+    public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable where THub : Hub
     {
         private readonly HubConnectionList _connections = new HubConnectionList();
         // TODO: Investigate "memory leak" entries never get removed

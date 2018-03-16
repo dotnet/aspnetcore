@@ -9,7 +9,7 @@ namespace ChatSample
 {
     public class HubWithPresence : Hub
     {
-        private IUserTracker<HubWithPresence> _userTracker;
+        private readonly IUserTracker<HubWithPresence> _userTracker;
 
         public HubWithPresence(IUserTracker<HubWithPresence> userTracker)
         {

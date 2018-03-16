@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class UserProxy<THub> : IClientProxy
+    public class UserProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _userId;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.SignalR
             _userId = userId;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendUserAsync(_userId, method, args);
         }
     }
 
-    public class MultipleUserProxy<THub> : IClientProxy
+    public class MultipleUserProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly IReadOnlyList<string> _userIds;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.SignalR
             _userIds = userIds;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendUsersAsync(_userIds, method, args);
         }
     }
 
-    public class GroupProxy<THub> : IClientProxy
+    public class GroupProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _groupName;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -51,16 +51,16 @@ namespace Microsoft.AspNetCore.SignalR
             _groupName = groupName;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendGroupAsync(_groupName, method, args);
         }
     }
 
-    public class MultipleGroupProxy<THub> : IClientProxy
+    public class MultipleGroupProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private IReadOnlyList<string> _groupNames;
+        private readonly IReadOnlyList<string> _groupNames;
 
         public MultipleGroupProxy(HubLifetimeManager<THub> lifetimeManager, IReadOnlyList<string> groupNames)
         {
@@ -68,13 +68,13 @@ namespace Microsoft.AspNetCore.SignalR
             _groupNames = groupNames;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendGroupsAsync(_groupNames, method, args);
         }
     }
 
-    public class GroupExceptProxy<THub> : IClientProxy
+    public class GroupExceptProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _groupName;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -87,13 +87,13 @@ namespace Microsoft.AspNetCore.SignalR
             _excludedIds = excludedIds;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendGroupExceptAsync(_groupName, method, args, _excludedIds);
         }
     }
 
-    public class AllClientProxy<THub> : IClientProxy
+    public class AllClientProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
 
@@ -102,16 +102,16 @@ namespace Microsoft.AspNetCore.SignalR
             _lifetimeManager = lifetimeManager;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendAllAsync(method, args);
         }
     }
 
-    public class AllClientsExceptProxy<THub> : IClientProxy
+    public class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private IReadOnlyList<string> _excludedIds;
+        private readonly IReadOnlyList<string> _excludedIds;
 
         public AllClientsExceptProxy(HubLifetimeManager<THub> lifetimeManager, IReadOnlyList<string> excludedIds)
         {
@@ -119,13 +119,13 @@ namespace Microsoft.AspNetCore.SignalR
             _excludedIds = excludedIds;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendAllExceptAsync(method, args, _excludedIds);
         }
     }
 
-    public class SingleClientProxy<THub> : IClientProxy
+    public class SingleClientProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _connectionId;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -136,16 +136,16 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionId = connectionId;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendConnectionAsync(_connectionId, method, args);
         }
     }
 
-    public class MultipleClientProxy<THub> : IClientProxy
+    public class MultipleClientProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private IReadOnlyList<string> _connectionIds;
+        private readonly IReadOnlyList<string> _connectionIds;
 
         public MultipleClientProxy(HubLifetimeManager<THub> lifetimeManager, IReadOnlyList<string> connectionIds)
         {
@@ -153,13 +153,13 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionIds = connectionIds;
         }
 
-        public Task SendAsync(string method, params object[] args)
+        public Task SendCoreAsync(string method, object[] args)
         {
             return _lifetimeManager.SendConnectionsAsync(_connectionIds, method, args);
         }
     }
 
-    public class GroupManager<THub> : IGroupManager
+    public class GroupManager<THub> : IGroupManager where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
 

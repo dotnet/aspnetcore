@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub>
+    public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where THub : Hub
     {
         private readonly HubConnectionList _connections = new HubConnectionList();
         private readonly HubGroupList _groups = new HubGroupList();
