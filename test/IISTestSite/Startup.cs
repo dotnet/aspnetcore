@@ -49,6 +49,7 @@ namespace IISTestSite
             app.Map("/TestInvalidReadOperations", TestInvalidReadOperations);
             app.Map("/TestInvalidWriteOperations", TestInvalidWriteOperations);
             app.Map("/TestReadOffsetWorks", TestReadOffsetWorks);
+            app.Map("/LargeResponseFile", LargeResponseFile);
         }
 
         private void ServerVariable(IApplicationBuilder app)
@@ -626,6 +627,27 @@ namespace IISTestSite
                 }
 
                 await context.Response.WriteAsync(success ? "Success" : "Failure");
+            });
+        }
+
+        private void LargeResponseFile(IApplicationBuilder app)
+        {
+            app.Run(async ctx =>
+            {
+                var tempFile = Path.GetTempFileName();
+                File.WriteAllText(tempFile, new string('a', 200000000));
+                await ctx.Response.SendFileAsync(tempFile, 0, null);
+
+                // Try to delete the file from the temp directory. If it fails, don't report an error
+                // to the application. File should eventually be cleaned up from the temp directory
+                // by OS.
+                try
+                {
+                    File.Delete(tempFile);
+                }
+                catch (Exception)
+                {
+                }
             });
         }
     }

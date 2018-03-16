@@ -18,11 +18,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
+        [InlineData(65000)]
         [InlineData(1000000)]
         [InlineData(10000000)]
-        public async Task LargeResponseBodyTestCheckAllResponseBodyBytesWritten(int query)
+        [InlineData(100000000)]
+        public async Task LargeResponseBodyTest_CheckAllResponseBodyBytesWritten(int query)
         {
             Assert.Equal(new string('a', query), await _fixture.Client.GetStringAsync($"/LargeResponseBody?length={query}"));
+        }
+
+        [ConditionalFact]
+        public async Task LargeResponseBodyFromFile_CheckAllResponseBodyBytesWritten()
+        {
+            Assert.Equal(200000000, (await _fixture.Client.GetStringAsync($"/LargeResponseFile")).Length);
         }
     }
 }
