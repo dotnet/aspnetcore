@@ -62,6 +62,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Set to false to disable Razor code generation from using a persistent build server process.
     -->
     <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">true</UseRazorBuildServer>
+
+    <!--
+    Configures the file extension used for generated C# files.
+    -->
+    <RazorGenerateOutputFileExtension>.g.cshtml.cs</RazorGenerateOutputFileExtension>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
