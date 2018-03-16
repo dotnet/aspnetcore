@@ -15,6 +15,8 @@ namespace BasicWebSite
                 .AddMvc()
                 .AddSessionStateTempDataProvider();
             services.AddSession();
+
+            services.ConfigureBaseWebSiteAuthPolicies();
         }
 
         public void Configure(IApplicationBuilder app)

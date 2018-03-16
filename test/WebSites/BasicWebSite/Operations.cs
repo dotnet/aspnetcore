@@ -3,12 +3,10 @@
 
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 
-namespace FiltersWebSite
+namespace BasicWebSite
 {
     public static class Operations
     {
         public static OperationAuthorizationRequirement Edit = new OperationAuthorizationRequirement { Name = "Edit" };
-        public static OperationAuthorizationRequirement Create = new OperationAuthorizationRequirement { Name = "Create" };
-        public static OperationAuthorizationRequirement Delete = new OperationAuthorizationRequirement { Name = "Delete" };
     }
 }

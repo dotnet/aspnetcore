@@ -14,6 +14,7 @@ namespace BasicWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.ConfigureBaseWebSiteAuthPolicies();
         }
 
         public void Configure(IApplicationBuilder app)

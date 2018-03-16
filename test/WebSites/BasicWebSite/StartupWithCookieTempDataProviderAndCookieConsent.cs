@@ -16,6 +16,8 @@ namespace BasicWebSite
             {
                 o.CheckConsentNeeded = httpContext => true;
             });
+
+            services.ConfigureBaseWebSiteAuthPolicies();
         }
 
         public void Configure(IApplicationBuilder app)

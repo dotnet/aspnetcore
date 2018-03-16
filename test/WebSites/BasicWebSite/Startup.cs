@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -14,8 +17,17 @@ namespace BasicWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication()
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Api", _ => { });
+            services.AddTransient<IAuthorizationHandler, ManagerHandler>();
+
             services
-                .AddMvc(options =>  options.Conventions.Add(new ApplicationDescription("This is a basic website.")))
+                .AddMvc(options =>
+                {
+                    options.Conventions.Add(new ApplicationDescription("This is a basic website."));
+                    // Filter that records a value in HttpContext.Items
+                    options.Filters.Add(new TraceResourceFilter());
+                })
                 .AddXmlDataContractSerializerFormatters();
 
             services.Configure<ApiBehaviorOptions>(options =>
@@ -34,11 +46,16 @@ namespace BasicWebSite
                 };
             });
 
+            services.ConfigureBaseWebSiteAuthPolicies();
+
+            services.AddTransient<IAuthorizationHandler, ManagerHandler>();
+
             services.AddLogging();
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
             services.AddHttpContextAccessor();
             services.AddSingleton<ContactsRepository>();
             services.AddScoped<RequestIdService>();
+            services.AddTransient<ServiceActionFilter>();
         }
 
         public void Configure(IApplicationBuilder app)
