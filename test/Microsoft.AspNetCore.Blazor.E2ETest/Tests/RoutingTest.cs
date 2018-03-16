@@ -51,6 +51,16 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         }
 
         [Fact]
+        public void CanFollowLinkToOtherPageWithBaseRelativeUrl()
+        {
+            SetUrlViaPushState($"{ServerPathBase}/RouterTest/");
+
+            var app = MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("Other with base-relative URL")).Click();
+            Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanFollowLinkToDefaultPage()
         {
             SetUrlViaPushState($"{ServerPathBase}/RouterTest/Other");
