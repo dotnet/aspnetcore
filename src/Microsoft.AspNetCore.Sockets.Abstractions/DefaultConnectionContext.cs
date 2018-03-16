@@ -22,16 +22,20 @@ namespace Microsoft.AspNetCore.Sockets
                                             IConnectionHeartbeatFeature,
                                             ITransferFormatFeature
     {
-        private List<(Action<object> handler, object state)> _heartbeatHandlers = new List<(Action<object> handler, object state)>();
+        private object _heartbeatLock = new object();
+        private List<(Action<object> handler, object state)> _heartbeatHandlers;
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
         private TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
 
-        public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
+        /// <summary>
+        /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
+        /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
+        /// </summary>
+        /// <param name="id"></param>
+        public DefaultConnectionContext(string id)
         {
-            Transport = transport;
-            Application = application;
             ConnectionId = id;
             LastSeenUtc = DateTime.UtcNow;
 
@@ -48,6 +52,13 @@ namespace Microsoft.AspNetCore.Sockets
             Features.Set<IApplicationTransportFeature>(this);
             Features.Set<IConnectionHeartbeatFeature>(this);
             Features.Set<ITransferFormatFeature>(this);
+        }
+
+        public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
+            : this(id)
+        {
+            Transport = transport;
+            Application = application;
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -80,16 +91,25 @@ namespace Microsoft.AspNetCore.Sockets
 
         public void OnHeartbeat(Action<object> action, object state)
         {
-            lock (_heartbeatHandlers)
+            lock (_heartbeatLock)
             {
+                if (_heartbeatHandlers == null)
+                {
+                    _heartbeatHandlers = new List<(Action<object> handler, object state)>();
+                }
                 _heartbeatHandlers.Add((action, state));
             }
         }
 
         public void TickHeartbeat()
         {
-            lock (_heartbeatHandlers)
+            lock (_heartbeatLock)
             {
+                if (_heartbeatHandlers == null)
+                {
+                    return;
+                }
+
                 foreach (var (handler, state) in _heartbeatHandlers)
                 {
                     handler(state);

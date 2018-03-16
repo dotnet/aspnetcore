@@ -7,6 +7,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _hubLifetimeManager = new DefaultHubLifetimeManager<Hub>();
+            _hubLifetimeManager = new DefaultHubLifetimeManager<Hub>(NullLogger<DefaultHubLifetimeManager<Hub>>.Instance);
 
 
             IHubProtocol protocol;

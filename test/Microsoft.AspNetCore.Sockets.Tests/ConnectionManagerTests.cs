@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,8 +23,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Null(connection.ApplicationTask);
             Assert.Null(connection.TransportTask);
             Assert.Null(connection.Cancellation);
-            Assert.NotEqual(default(DateTime), connection.LastSeenUtc);
-            Assert.NotNull(connection.Transport);
+            Assert.NotEqual(default, connection.LastSeenUtc);
+            Assert.Null(connection.Transport);
         }
 
         [Fact]
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void AddNewConnection()
         {
             var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
             var transport = connection.Transport;
 
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void RemoveConnection()
         {
             var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
             var transport = connection.Transport;
 
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task CloseConnectionsEndsAllPendingConnections()
         {
             var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
             connection.ApplicationTask = Task.Run(async () =>
             {
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 }
                 finally
                 {
-                    connection.Transport.Input.AdvanceTo(result.Buffer.End);    
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
                 }
             });
 
@@ -115,7 +116,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task DisposingConnectionMultipleTimesWaitsOnConnectionClose()
         {
             var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
@@ -135,7 +136,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task DisposingConnectionMultipleGetsExceptionFromTransportOrApp()
         {
             var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
@@ -159,7 +160,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task DisposingConnectionMultipleGetsCancellation()
         {
             var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task DisposeInactiveConnection()
         {
             var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();;
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
             Assert.NotNull(connection.ConnectionId);
             Assert.NotNull(connection.Transport);
@@ -209,7 +210,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             appLifetime.Start();
 
-            var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
             connection.Application.Output.OnReaderCompleted((error, state) =>
             {

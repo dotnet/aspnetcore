@@ -77,7 +77,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await dispatcher.ExecuteNegotiateAsync(context, httpSocketOptions);
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
                 var connectionId = negotiateResponse.Value<string>("connectionId");
+                context.Request.QueryString = context.Request.QueryString.Add("id", connectionId);
                 Assert.True(manager.TryGetConnection(connectionId, out var connection));
+                // Fake actual connection after negotiate to populate the pipes on the connection
+                await dispatcher.ExecuteAsync(context, httpSocketOptions, c => Task.CompletedTask);
 
                 // This write should complete immediately but it exceeds the writer threshold
                 var writeTask = connection.Application.Output.WriteAsync(new byte[] { (byte)'b', (byte)'y', (byte)'t', (byte)'e', (byte)'s' });

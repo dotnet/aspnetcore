@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var connection = _connections[connectionId];
             if (connection != null)
             {
-                return connection.WriteAsync(message.CreateInvocation());
+                return SafeWriteAsync(connection, message.CreateInvocation());
             }
 
             return PublishAsync(_channelNamePrefix + "." + connectionId, message);
@@ -402,14 +402,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     var invocation = message.CreateInvocation();
                     foreach (var connection in _connections)
                     {
-                        try
-                        {
-                            tasks.Add(connection.WriteAsync(invocation));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.FailedWritingMessage(ex);
-                        }
+                        tasks.Add(SafeWriteAsync(connection, invocation));
                     }
 
                     await Task.WhenAll(tasks);
@@ -441,14 +434,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     {
                         if (!excludedIds.Contains(connection.ConnectionId))
                         {
-                            try
-                            {
-                                tasks.Add(connection.WriteAsync(invocation));
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.FailedWritingMessage(ex);
-                            }
+                            tasks.Add(SafeWriteAsync(connection, invocation));
                         }
                     }
 
@@ -524,16 +510,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _logger.Subscribing(connectionChannel);
             return _bus.SubscribeAsync(connectionChannel, async (c, data) =>
             {
-                try
-                {
-                    var message = DeserializeMessage<RedisInvocationMessage>(data);
+                var message = DeserializeMessage<RedisInvocationMessage>(data);
 
-                    await connection.WriteAsync(message.CreateInvocation());
-                }
-                catch (Exception ex)
-                {
-                    _logger.FailedWritingMessage(ex);
-                }
+                await SafeWriteAsync(connection, message.CreateInvocation());
             });
         }
 
@@ -545,16 +524,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             // TODO: Look at optimizing (looping over connections checking for Name)
             return _bus.SubscribeAsync(userChannel, async (c, data) =>
             {
-                try
-                {
-                    var message = DeserializeMessage<RedisInvocationMessage>(data);
+                var message = DeserializeMessage<RedisInvocationMessage>(data);
 
-                    await connection.WriteAsync(message.CreateInvocation());
-                }
-                catch (Exception ex)
-                {
-                    _logger.FailedWritingMessage(ex);
-                }
+                await SafeWriteAsync(connection, message.CreateInvocation());
             });
         }
 
@@ -576,14 +548,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                             continue;
                         }
 
-                        try
-                        {
-                            tasks.Add(groupConnection.WriteAsync(invocation));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.FailedWritingMessage(ex);
-                        }
+                        tasks.Add(SafeWriteAsync(groupConnection, invocation));
                     }
 
                     await Task.WhenAll(tasks);
@@ -611,7 +576,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 // This also saves serializing and deserializing the message!
                 if (connection != null)
                 {
-                    publishTasks.Add(connection.WriteAsync(message.CreateInvocation()));
+                    publishTasks.Add(SafeWriteAsync(connection, message.CreateInvocation()));
                 }
                 else
                 {
@@ -660,6 +625,19 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
 
             return Task.CompletedTask;
+        }
+
+        // This method is to protect against connections throwing synchronously when writing to them and preventing other connections from being written to
+        private async Task SafeWriteAsync(HubConnectionContext connection, InvocationMessage message)
+        {
+            try
+            {
+                await connection.WriteAsync(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.FailedWritingMessage(ex);
+            }
         }
 
         private class LoggerTextWriter : TextWriter
