@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
             var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+
             var context = new DefaultHttpContext();
 
             var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());

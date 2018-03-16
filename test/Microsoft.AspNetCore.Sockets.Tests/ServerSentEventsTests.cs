@@ -4,7 +4,6 @@
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -57,7 +56,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
             var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
-
 
             var ms = new MemoryStream();
             context.Response.Body = ms;

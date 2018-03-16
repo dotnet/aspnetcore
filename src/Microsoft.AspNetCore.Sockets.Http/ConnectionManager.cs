@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers.Text;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -21,6 +23,8 @@ namespace Microsoft.AspNetCore.Sockets
     {
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
+
+        private static readonly RNGCryptoServiceProvider _keyGenerator = new RNGCryptoServiceProvider();
 
         private readonly ConcurrentDictionary<string, (DefaultConnectionContext Connection, ValueStopwatch Timer)> _connections = new ConcurrentDictionary<string, (DefaultConnectionContext Connection, ValueStopwatch Timer)>();
         private Timer _timer;
@@ -63,23 +67,31 @@ namespace Microsoft.AspNetCore.Sockets
             return false;
         }
 
-        public DefaultConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
+        /// <summary>
+        /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
+        /// </summary>
+        /// <returns></returns>
+        public DefaultConnectionContext CreateConnection()
         {
             var id = MakeNewConnectionId();
 
             _logger.CreatedNewConnection(id);
             var connectionTimer = SocketEventSource.Log.ConnectionStart(id);
-            var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
 
-            var connection = new DefaultConnectionContext(id, pair.Application, pair.Transport);
+            var connection = new DefaultConnectionContext(id);
 
             _connections.TryAdd(id, (connection, connectionTimer));
             return connection;
         }
 
-        public DefaultConnectionContext CreateConnection()
+        public DefaultConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
         {
-            return CreateConnection(PipeOptions.Default, PipeOptions.Default);
+            var connection = CreateConnection();
+            var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
+            connection.Application = pair.Transport;
+            connection.Transport = pair.Application;
+
+            return connection;
         }
 
         public void RemoveConnection(string id)
@@ -94,8 +106,12 @@ namespace Microsoft.AspNetCore.Sockets
 
         private static string MakeNewConnectionId()
         {
-            // TODO: We need to sign and encyrpt this
-            return Guid.NewGuid().ToString();
+            // TODO: Use Span when WebEncoders implements Span methods https://github.com/aspnet/Home/issues/2966
+            // 128 bit buffer / 8 bits per byte = 16 bytes
+            var buffer = new byte[16];
+            _keyGenerator.GetBytes(buffer);
+            // Generate the id with RNGCrypto because we want a cryptographically random id, which GUID is not
+            return WebEncoders.Base64UrlEncode(buffer);
         }
 
         private static void Scan(object state)

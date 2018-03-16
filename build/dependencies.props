@@ -51,6 +51,7 @@
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreApp21PackageVersion>

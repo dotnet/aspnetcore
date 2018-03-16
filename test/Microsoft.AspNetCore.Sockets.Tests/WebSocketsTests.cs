@@ -320,6 +320,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         // We want to verify behavior without timeout affecting it
                         CloseTimeout = TimeSpan.FromSeconds(20)
                     };
+
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
