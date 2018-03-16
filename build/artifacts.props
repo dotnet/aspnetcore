@@ -71,6 +71,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.HostFiltering" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
