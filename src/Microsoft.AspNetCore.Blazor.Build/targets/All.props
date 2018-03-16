@@ -3,5 +3,8 @@
 
   <PropertyGroup>
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
+
+    <!-- We can remove this after updating to newer Razor tooling, where it's enabled by default -->
+    <UseRazorBuildServer>true</UseRazorBuildServer>
   </PropertyGroup>
 </Project>
