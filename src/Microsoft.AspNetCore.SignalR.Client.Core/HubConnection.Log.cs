@@ -12,34 +12,34 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private static class Log
         {
             private static readonly Action<ILogger, string, int, Exception> _preparingNonBlockingInvocation =
-            LoggerMessage.Define<string, int>(LogLevel.Trace, new EventId(1, "PreparingNonBlockingInvocation"), "Preparing non-blocking invocation of '{target}', with {argumentCount} argument(s).");
+            LoggerMessage.Define<string, int>(LogLevel.Trace, new EventId(1, "PreparingNonBlockingInvocation"), "Preparing non-blocking invocation of '{Target}', with {ArgumentCount} argument(s).");
 
             private static readonly Action<ILogger, string, string, string, int, Exception> _preparingBlockingInvocation =
-                LoggerMessage.Define<string, string, string, int>(LogLevel.Trace, new EventId(2, "PreparingBlockingInvocation"), "Preparing blocking invocation '{invocationId}' of '{target}', with return type '{returnType}' and {argumentCount} argument(s).");
+                LoggerMessage.Define<string, string, string, int>(LogLevel.Trace, new EventId(2, "PreparingBlockingInvocation"), "Preparing blocking invocation '{InvocationId}' of '{Target}', with return type '{ReturnType}' and {ArgumentCount} argument(s).");
 
             private static readonly Action<ILogger, string, Exception> _registerInvocation =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "RegisterInvocation"), "Registering Invocation ID '{invocationId}' for tracking.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "RegisterInvocation"), "Registering Invocation ID '{InvocationId}' for tracking.");
 
             private static readonly Action<ILogger, string, string, string, string, Exception> _issueInvocation =
-                LoggerMessage.Define<string, string, string, string>(LogLevel.Trace, new EventId(4, "IssueInvocation"), "Issuing Invocation '{invocationId}': {returnType} {methodName}({args}).");
+                LoggerMessage.Define<string, string, string, string>(LogLevel.Trace, new EventId(4, "IssueInvocation"), "Issuing Invocation '{InvocationId}': {ReturnType} {MethodName}({Args}).");
 
             private static readonly Action<ILogger, string, Exception> _sendInvocation =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "SendInvocation"), "Sending Invocation '{invocationId}'.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "SendInvocation"), "Sending Invocation '{InvocationId}'.");
 
             private static readonly Action<ILogger, string, Exception> _sendInvocationCompleted =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "SendInvocationCompleted"), "Sending Invocation '{invocationId}' completed.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "SendInvocationCompleted"), "Sending Invocation '{InvocationId}' completed.");
 
             private static readonly Action<ILogger, string, Exception> _sendInvocationFailed =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(7, "SendInvocationFailed"), "Sending Invocation '{invocationId}' failed.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(7, "SendInvocationFailed"), "Sending Invocation '{InvocationId}' failed.");
 
             private static readonly Action<ILogger, string, string, string, Exception> _receivedInvocation =
-                LoggerMessage.Define<string, string, string>(LogLevel.Trace, new EventId(8, "ReceivedInvocation"), "Received Invocation '{invocationId}': {methodName}({args}).");
+                LoggerMessage.Define<string, string, string>(LogLevel.Trace, new EventId(8, "ReceivedInvocation"), "Received Invocation '{InvocationId}': {MethodName}({Args}).");
 
             private static readonly Action<ILogger, string, Exception> _dropCompletionMessage =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(9, "DropCompletionMessage"), "Dropped unsolicited Completion message for invocation '{invocationId}'.");
+                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(9, "DropCompletionMessage"), "Dropped unsolicited Completion message for invocation '{InvocationId}'.");
 
             private static readonly Action<ILogger, string, Exception> _dropStreamMessage =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(10, "DropStreamMessage"), "Dropped unsolicited StreamItem message for invocation '{invocationId}'.");
+                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(10, "DropStreamMessage"), "Dropped unsolicited StreamItem message for invocation '{InvocationId}'.");
 
             private static readonly Action<ILogger, Exception> _shutdownConnection =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(11, "ShutdownConnection"), "Shutting down connection.");
@@ -48,43 +48,43 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 LoggerMessage.Define(LogLevel.Error, new EventId(12, "ShutdownWithError"), "Connection is shutting down due to an error.");
 
             private static readonly Action<ILogger, string, Exception> _removeInvocation =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(13, "RemoveInvocation"), "Removing pending invocation {invocationId}.");
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(13, "RemoveInvocation"), "Removing pending invocation {InvocationId}.");
 
             private static readonly Action<ILogger, string, Exception> _missingHandler =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(14, "MissingHandler"), "Failed to find handler for '{target}' method.");
+                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(14, "MissingHandler"), "Failed to find handler for '{Target}' method.");
 
             private static readonly Action<ILogger, string, Exception> _receivedStreamItem =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(15, "ReceivedStreamItem"), "Received StreamItem for Invocation {invocationId}.");
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(15, "ReceivedStreamItem"), "Received StreamItem for Invocation {InvocationId}.");
 
             private static readonly Action<ILogger, string, Exception> _cancelingStreamItem =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(16, "CancelingStreamItem"), "Canceling dispatch of StreamItem message for Invocation {invocationId}. The invocation was canceled.");
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(16, "CancelingStreamItem"), "Canceling dispatch of StreamItem message for Invocation {InvocationId}. The invocation was canceled.");
 
             private static readonly Action<ILogger, string, Exception> _receivedStreamItemAfterClose =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(17, "ReceivedStreamItemAfterClose"), "Invocation {invocationId} received stream item after channel was closed.");
+                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(17, "ReceivedStreamItemAfterClose"), "Invocation {InvocationId} received stream item after channel was closed.");
 
             private static readonly Action<ILogger, string, Exception> _receivedInvocationCompletion =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(18, "ReceivedInvocationCompletion"), "Received Completion for Invocation {invocationId}.");
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(18, "ReceivedInvocationCompletion"), "Received Completion for Invocation {InvocationId}.");
 
             private static readonly Action<ILogger, string, Exception> _cancelingInvocationCompletion =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(19, "CancelingInvocationCompletion"), "Canceling dispatch of Completion message for Invocation {invocationId}. The invocation was canceled.");
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(19, "CancelingInvocationCompletion"), "Canceling dispatch of Completion message for Invocation {InvocationId}. The invocation was canceled.");
 
             private static readonly Action<ILogger, string, Exception> _cancelingCompletion =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(20, "CancelingCompletion"), "Canceling dispatch of Completion message for Invocation {invocationId}. The invocation was canceled.");
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(20, "CancelingCompletion"), "Canceling dispatch of Completion message for Invocation {InvocationId}. The invocation was canceled.");
 
             private static readonly Action<ILogger, string, Exception> _invokeAfterTermination =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(21, "InvokeAfterTermination"), "Invoke for Invocation '{invocationId}' was called after the connection was terminated.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(21, "InvokeAfterTermination"), "Invoke for Invocation '{InvocationId}' was called after the connection was terminated.");
 
             private static readonly Action<ILogger, string, Exception> _invocationAlreadyInUse =
-                LoggerMessage.Define<string>(LogLevel.Critical, new EventId(22, "InvocationAlreadyInUse"), "Invocation ID '{invocationId}' is already in use.");
+                LoggerMessage.Define<string>(LogLevel.Critical, new EventId(22, "InvocationAlreadyInUse"), "Invocation ID '{InvocationId}' is already in use.");
 
             private static readonly Action<ILogger, string, Exception> _receivedUnexpectedResponse =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(23, "ReceivedUnexpectedResponse"), "Unsolicited response received for invocation '{invocationId}'.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(23, "ReceivedUnexpectedResponse"), "Unsolicited response received for invocation '{InvocationId}'.");
 
             private static readonly Action<ILogger, string, Exception> _hubProtocol =
-                LoggerMessage.Define<string>(LogLevel.Information, new EventId(24, "HubProtocol"), "Using HubProtocol '{protocol}'.");
+                LoggerMessage.Define<string>(LogLevel.Information, new EventId(24, "HubProtocol"), "Using HubProtocol '{Protocol}'.");
 
             private static readonly Action<ILogger, string, string, string, int, Exception> _preparingStreamingInvocation =
-                LoggerMessage.Define<string, string, string, int>(LogLevel.Trace, new EventId(25, "PreparingStreamingInvocation"), "Preparing streaming invocation '{invocationId}' of '{target}', with return type '{returnType}' and {argumentCount} argument(s).");
+                LoggerMessage.Define<string, string, string, int>(LogLevel.Trace, new EventId(25, "PreparingStreamingInvocation"), "Preparing streaming invocation '{InvocationId}' of '{Target}', with return type '{ReturnType}' and {ArgumentCount} argument(s).");
 
             private static readonly Action<ILogger, Exception> _resettingKeepAliveTimer =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(26, "ResettingKeepAliveTimer"), "Resetting keep-alive timer, received a message from the server.");
@@ -96,22 +96,22 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(28, "SendingHubNegotiate"), "Sending Hub Negotiation.");
 
             private static readonly Action<ILogger, int, Exception> _parsingMessages =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(29, "ParsingMessages"), "Received {count} bytes. Parsing message(s).");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(29, "ParsingMessages"), "Received {Count} bytes. Parsing message(s).");
 
             private static readonly Action<ILogger, int, Exception> _receivingMessages =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(30, "ReceivingMessages"), "Received {messageCount} message(s).");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(30, "ReceivingMessages"), "Received {MessageCount} message(s).");
 
             private static readonly Action<ILogger, Exception> _receivedPing =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(31, "ReceivedPing"), "Received a ping message.");
 
             private static readonly Action<ILogger, int, Exception> _processedMessages =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(32, "ProcessedMessages"), "Finished processing {messageCount} message(s).");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(32, "ProcessedMessages"), "Finished processing {MessageCount} message(s).");
 
             private static readonly Action<ILogger, int, Exception> _failedParsing =
-                LoggerMessage.Define<int>(LogLevel.Warning, new EventId(33, "FailedParsing"), "No messages parsed from {count} byte(s).");
+                LoggerMessage.Define<int>(LogLevel.Warning, new EventId(33, "FailedParsing"), "No messages parsed from {Count} byte(s).");
 
             private static readonly Action<ILogger, string, Exception> _errorInvokingClientSideMethod =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(34, "ErrorInvokingClientSideMethod"), "Invoking client side method '{methodName}' failed.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(34, "ErrorInvokingClientSideMethod"), "Invoking client side method '{MethodName}' failed.");
 
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {

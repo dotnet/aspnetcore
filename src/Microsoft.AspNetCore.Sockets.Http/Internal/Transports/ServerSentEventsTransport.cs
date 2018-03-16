@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
         private static class Log
         {
             private static readonly Action<ILogger, long, Exception> _sseWritingMessage =
-                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(1, "SSEWritingMessage"), "Writing a {count} byte message.");
+                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(1, "SSEWritingMessage"), "Writing a {Count} byte message.");
 
             public static void SSEWritingMessage(ILogger logger, long count)
             {

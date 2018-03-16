@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private static class Log
         {
             private static readonly Action<ILogger, TransferFormat, Exception> _startTransport =
-                LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {transferFormat}.");
+                LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}.");
 
             private static readonly Action<ILogger, Exception> _transportStopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "TransportStopped"), "Transport stopped.");
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(8, "ReceivedMessages"), "Received messages from the server.");
 
             private static readonly Action<ILogger, Uri, Exception> _errorPolling =
-                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(9, "ErrorPolling"), "Error while polling '{pollUrl}'.");
+                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(9, "ErrorPolling"), "Error while polling '{PollUrl}'.");
 
             // EventIds 100 - 106 used in SendUtils
 

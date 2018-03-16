@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "PollTimedOut"), "Poll request timed out. Sending 200 response to connection.");
 
             private static readonly Action<ILogger, long, Exception> _longPollingWritingMessage =
-                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(3, "LongPollingWritingMessage"), "Writing a {count} byte message to connection.");
+                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(3, "LongPollingWritingMessage"), "Writing a {Count} byte message to connection.");
 
             private static readonly Action<ILogger, Exception> _longPollingDisconnected =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "LongPollingDisconnected"), "Client disconnected from Long Polling endpoint for connection.");

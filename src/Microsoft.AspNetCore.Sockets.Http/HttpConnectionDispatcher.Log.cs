@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Sockets
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _connectionDisposed =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionDisposed"), "Connection Id {connectionId} was disposed.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionDisposed"), "Connection Id {SocketsConnectionId} was disposed.");
 
             private static readonly Action<ILogger, string, string, Exception> _connectionAlreadyActive =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(2, "ConnectionAlreadyActive"), "Connection Id {connectionId} is already active via {requestId}.");
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(2, "ConnectionAlreadyActive"), "Connection Id {SocketsConnectionId} is already active via {RequestId}.");
 
             private static readonly Action<ILogger, string, string, Exception> _pollCanceled =
-                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(3, "PollCanceled"), "Previous poll canceled for {connectionId} on {requestId}.");
+                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(3, "PollCanceled"), "Previous poll canceled for {SocketsConnectionId} on {RequestId}.");
 
             private static readonly Action<ILogger, Exception> _establishedConnection =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "EstablishedConnection"), "Establishing new connection.");
@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.Sockets
                 LoggerMessage.Define(LogLevel.Debug, new EventId(5, "ResumingConnection"), "Resuming existing connection.");
 
             private static readonly Action<ILogger, long, Exception> _receivedBytes =
-                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(6, "ReceivedBytes"), "Received {count} bytes.");
+                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(6, "ReceivedBytes"), "Received {Count} bytes.");
 
             private static readonly Action<ILogger, TransportType, Exception> _transportNotSupported =
-                LoggerMessage.Define<TransportType>(LogLevel.Debug, new EventId(7, "TransportNotSupported"), "{transportType} transport not supported by this endpoint type.");
+                LoggerMessage.Define<TransportType>(LogLevel.Debug, new EventId(7, "TransportNotSupported"), "{TransportType} transport not supported by this endpoint type.");
 
             private static readonly Action<ILogger, TransportType, TransportType, Exception> _cannotChangeTransport =
-                LoggerMessage.Define<TransportType, TransportType>(LogLevel.Error, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {transportType}, requesting {requestedTransport}.");
+                LoggerMessage.Define<TransportType, TransportType>(LogLevel.Error, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.");
 
             private static readonly Action<ILogger, Exception> _postNotallowedForWebsockets =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(9, "PostNotAllowedForWebSockets"), "POST requests are not allowed for websocket connections.");
