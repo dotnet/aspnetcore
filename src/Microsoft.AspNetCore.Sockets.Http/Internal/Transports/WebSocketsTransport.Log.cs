@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "SocketClosed"), "Socket closed.");
 
             private static readonly Action<ILogger, WebSocketCloseStatus?, string, Exception> _clientClosed =
-                LoggerMessage.Define<WebSocketCloseStatus?, string>(LogLevel.Debug, new EventId(3, "ClientClosed"), "Client closed connection with status code '{status}' ({description}). Signaling end-of-input to application.");
+                LoggerMessage.Define<WebSocketCloseStatus?, string>(LogLevel.Debug, new EventId(3, "ClientClosed"), "Client closed connection with status code '{Status}' ({Description}). Signaling end-of-input to application.");
 
             private static readonly Action<ILogger, Exception> _waitingForSend =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "WaitingForSend"), "Waiting for the application to finish sending data.");
@@ -36,13 +36,13 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 LoggerMessage.Define(LogLevel.Debug, new EventId(8, "CloseTimedOut"), "Timed out waiting for client to send the close frame, aborting the connection.");
 
             private static readonly Action<ILogger, WebSocketMessageType, int, bool, Exception> _messageReceived =
-                LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Trace, new EventId(9, "MessageReceived"), "Message received. Type: {messageType}, size: {size}, EndOfMessage: {endOfMessage}.");
+                LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Trace, new EventId(9, "MessageReceived"), "Message received. Type: {MessageType}, size: {Size}, EndOfMessage: {EndOfMessage}.");
 
             private static readonly Action<ILogger, int, Exception> _messageToApplication =
-                LoggerMessage.Define<int>(LogLevel.Trace, new EventId(10, "MessageToApplication"), "Passing message to application. Payload size: {size}.");
+                LoggerMessage.Define<int>(LogLevel.Trace, new EventId(10, "MessageToApplication"), "Passing message to application. Payload size: {Size}.");
 
             private static readonly Action<ILogger, long, Exception> _sendPayload =
-                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(11, "SendPayload"), "Sending payload: {size} bytes.");
+                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(11, "SendPayload"), "Sending payload: {Size} bytes.");
 
             private static readonly Action<ILogger, Exception> _errorWritingFrame =
                 LoggerMessage.Define(LogLevel.Error, new EventId(12, "ErrorWritingFrame"), "Error writing frame.");

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private static class Log
         {
             private static readonly Action<ILogger, TransferFormat, Exception> _startTransport =
-                LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {transferFormat}.");
+                LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}.");
 
             private static readonly Action<ILogger, Exception> _transportStopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "TransportStopped"), "Transport stopped.");
@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Information, new EventId(6, "TransportStopping"), "Transport is stopping.");
 
             private static readonly Action<ILogger, int, Exception> _messageToApp =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(7, "MessageToApp"), "Passing message to application. Payload size: {count}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(7, "MessageToApp"), "Passing message to application. Payload size: {Count}.");
 
             private static readonly Action<ILogger, Exception> _eventStreamEnded =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(8, "EventStreamEnded"), "Server-Sent Event Stream ended.");
 
             private static readonly Action<ILogger, long, Exception> _parsingSSE =
-                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(9, "ParsingSSE"), "Received {count} bytes. Parsing SSE frame.");
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(9, "ParsingSSE"), "Received {Count} bytes. Parsing SSE frame.");
 
             // EventIds 100 - 106 used in SendUtils
 

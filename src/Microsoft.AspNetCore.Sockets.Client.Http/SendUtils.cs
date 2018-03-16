@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(102, "SendCanceled"), "Send loop canceled.");
 
             private static readonly Action<ILogger, long, Uri, Exception> _sendingMessages =
-                LoggerMessage.Define<long, Uri>(LogLevel.Debug, new EventId(103, "SendingMessages"), "Sending {count} bytes to the server using url: {url}.");
+                LoggerMessage.Define<long, Uri>(LogLevel.Debug, new EventId(103, "SendingMessages"), "Sending {Count} bytes to the server using url: {Url}.");
 
             private static readonly Action<ILogger, Exception> _sentSuccessfully =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(104, "SentSuccessfully"), "Message(s) sent successfully.");
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(105, "NoMessages"), "No messages in batch to send.");
 
             private static readonly Action<ILogger, Uri, Exception> _errorSending =
-                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(106, "ErrorSending"), "Error while sending to '{url}'.");
+                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(106, "ErrorSending"), "Error while sending to '{Url}'.");
 
             // When adding a new log message make sure to check with LongPollingTransport and ServerSentEventsTransport that share these logs to not have conflicting EventIds
             // We start the IDs at 100 to make it easy to avoid conflicting IDs

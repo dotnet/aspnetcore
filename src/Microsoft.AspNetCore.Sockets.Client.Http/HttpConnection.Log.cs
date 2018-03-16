@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "HttpConnectionClosed"), "Connection was closed from a different thread.");
 
             private static readonly Action<ILogger, string, Uri, Exception> _startingTransport =
-                LoggerMessage.Define<string, Uri>(LogLevel.Debug, new EventId(3, "StartingTransport"), "Starting transport '{transport}' with Url: {url}.");
+                LoggerMessage.Define<string, Uri>(LogLevel.Debug, new EventId(3, "StartingTransport"), "Starting transport '{Transport}' with Url: {Url}.");
 
             private static readonly Action<ILogger, Exception> _processRemainingMessages =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "ProcessRemainingMessages"), "Ensuring all outstanding messages are processed.");
@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(6, "CompleteClosed"), "Completing Closed task.");
 
             private static readonly Action<ILogger, Uri, Exception> _establishingConnection =
-                LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(7, "EstablishingConnection"), "Establishing Connection at: {url}.");
+                LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(7, "EstablishingConnection"), "Establishing Connection at: {Url}.");
 
             private static readonly Action<ILogger, Uri, Exception> _errorWithNegotiation =
-                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(8, "ErrorWithNegotiation"), "Failed to start connection. Error getting negotiation response from '{url}'.");
+                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(8, "ErrorWithNegotiation"), "Failed to start connection. Error getting negotiation response from '{Url}'.");
 
             private static readonly Action<ILogger, string, Exception> _errorStartingTransport =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(9, "ErrorStartingTransport"), "Failed to start connection. Error starting transport '{transport}'.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(9, "ErrorStartingTransport"), "Failed to start connection. Error starting transport '{Transport}'.");
 
             private static readonly Action<ILogger, Exception> _httpReceiveStarted =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(10, "HttpReceiveStarted"), "Beginning receive loop.");
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Information, new EventId(18, "StoppingClient"), "Stopping client.");
 
             private static readonly Action<ILogger, string, Exception> _exceptionThrownFromCallback =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(19, "ExceptionThrownFromCallback"), "An exception was thrown from the '{callback}' callback.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(19, "ExceptionThrownFromCallback"), "An exception was thrown from the '{Callback}' callback.");
 
             private static readonly Action<ILogger, Exception> _disposingClient =
                 LoggerMessage.Define(LogLevel.Information, new EventId(20, "DisposingClient"), "Disposing client.");
@@ -84,19 +84,19 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(24, "SkippingDispose"), "Skipping dispose, connection is already disposed.");
 
             private static readonly Action<ILogger, string, string, Exception> _connectionStateChanged =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "ConnectionStateChanged"), "Connection state changed from {previousState} to {newState}.");
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "ConnectionStateChanged"), "Connection state changed from {PreviousState} to {NewState}.");
 
             private static readonly Action<ILogger, string, Exception> _transportNotSupported =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(26, "TransportNotSupported"), "Skipping transport {transportName} because it is not supported by this client.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(26, "TransportNotSupported"), "Skipping transport {TransportName} because it is not supported by this client.");
 
             private static readonly Action<ILogger, string, string, Exception> _transportDoesNotSupportTransferFormat =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(27, "TransportDoesNotSupportTransferFormat"), "Skipping transport {transportName} because it does not support the requested transfer format '{transferFormat}'.");
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(27, "TransportDoesNotSupportTransferFormat"), "Skipping transport {TransportName} because it does not support the requested transfer format '{TransferFormat}'.");
 
             private static readonly Action<ILogger, string, Exception> _transportDisabledByClient =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(28, "TransportDisabledByClient"), "Skipping transport {transportName} because it was disabled by the client.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(28, "TransportDisabledByClient"), "Skipping transport {TransportName} because it was disabled by the client.");
 
             private static readonly Action<ILogger, string, Exception> _transportFailed =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(29, "TransportFailed"), "Skipping transport {transportName} because it failed to initialize.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(29, "TransportFailed"), "Skipping transport {TransportName} because it failed to initialize.");
 
             public static void HttpConnectionStarting(ILogger logger)
             {

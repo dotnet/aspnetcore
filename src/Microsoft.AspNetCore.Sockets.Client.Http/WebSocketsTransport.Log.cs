@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private static class Log
         {
             private static readonly Action<ILogger, TransferFormat, Exception> _startTransport =
-                LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {transferFormat}.");
+                LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}.");
 
             private static readonly Action<ILogger, Exception> _transportStopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "TransportStopped"), "Transport stopped.");
@@ -40,16 +40,16 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define(LogLevel.Debug, new EventId(9, "SendCanceled"), "Send loop canceled.");
 
             private static readonly Action<ILogger, int, Exception> _messageToApp =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(10, "MessageToApp"), "Passing message to application. Payload size: {count}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(10, "MessageToApp"), "Passing message to application. Payload size: {Count}.");
 
             private static readonly Action<ILogger, WebSocketCloseStatus?, Exception> _webSocketClosed =
-                LoggerMessage.Define<WebSocketCloseStatus?>(LogLevel.Information, new EventId(11, "WebSocketClosed"), "Websocket closed by the server. Close status {closeStatus}.");
+                LoggerMessage.Define<WebSocketCloseStatus?>(LogLevel.Information, new EventId(11, "WebSocketClosed"), "Websocket closed by the server. Close status {CloseStatus}.");
 
             private static readonly Action<ILogger, WebSocketMessageType, int, bool, Exception> _messageReceived =
-                LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Debug, new EventId(12, "MessageReceived"), "Message received. Type: {messageType}, size: {count}, EndOfMessage: {endOfMessage}.");
+                LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Debug, new EventId(12, "MessageReceived"), "Message received. Type: {MessageType}, size: {Count}, EndOfMessage: {EndOfMessage}.");
 
             private static readonly Action<ILogger, long, Exception> _receivedFromApp =
-                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(13, "ReceivedFromApp"), "Received message from application. Payload size: {count}.");
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(13, "ReceivedFromApp"), "Received message from application. Payload size: {Count}.");
 
             private static readonly Action<ILogger, Exception> _sendMessageCanceled =
                 LoggerMessage.Define(LogLevel.Information, new EventId(14, "SendMessageCanceled"), "Sending a message canceled.");

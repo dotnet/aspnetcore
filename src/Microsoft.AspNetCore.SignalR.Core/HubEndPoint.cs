@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.SignalR
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _errorDispatchingHubEvent =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, "ErrorDispatchingHubEvent"), "Error when dispatching '{hubMethod}' on hub.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, "ErrorDispatchingHubEvent"), "Error when dispatching '{HubMethod}' on hub.");
 
             private static readonly Action<ILogger, Exception> _errorProcessingRequest =
                 LoggerMessage.Define(LogLevel.Error, new EventId(2, "ErrorProcessingRequest"), "Error when processing requests.");

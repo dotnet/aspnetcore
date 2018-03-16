@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             // Category: HubConnectionContext
             private static readonly Action<ILogger, string, Exception> _usingHubProtocol =
-                LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, "UsingHubProtocol"), "Using HubProtocol '{protocol}'.");
+                LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, "UsingHubProtocol"), "Using HubProtocol '{Protocol}'.");
 
             private static readonly Action<ILogger, Exception> _negotiateCanceled =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "NegotiateCanceled"), "Negotiate was canceled.");

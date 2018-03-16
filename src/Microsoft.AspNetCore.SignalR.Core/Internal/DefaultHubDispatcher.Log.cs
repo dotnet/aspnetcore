@@ -13,49 +13,49 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private static class Log
         {
             private static readonly Action<ILogger, InvocationMessage, Exception> _receivedHubInvocation =
-                LoggerMessage.Define<InvocationMessage>(LogLevel.Debug, new EventId(1, "ReceivedHubInvocation"), "Received hub invocation: {invocationMessage}.");
+                LoggerMessage.Define<InvocationMessage>(LogLevel.Debug, new EventId(1, "ReceivedHubInvocation"), "Received hub invocation: {InvocationMessage}.");
 
             private static readonly Action<ILogger, string, Exception> _unsupportedMessageReceived =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(2, "UnsupportedMessageReceived"), "Received unsupported message of type '{messageType}'.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(2, "UnsupportedMessageReceived"), "Received unsupported message of type '{MessageType}'.");
 
             private static readonly Action<ILogger, string, Exception> _unknownHubMethod =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(3, "UnknownHubMethod"), "Unknown hub method '{hubMethod}'.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(3, "UnknownHubMethod"), "Unknown hub method '{HubMethod}'.");
 
             private static readonly Action<ILogger, Exception> _outboundChannelClosed =
                 LoggerMessage.Define(LogLevel.Warning, new EventId(4, "OutboundChannelClosed"), "Outbound channel was closed while trying to write hub message.");
 
             private static readonly Action<ILogger, string, Exception> _hubMethodNotAuthorized =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "HubMethodNotAuthorized"), "Failed to invoke '{hubMethod}' because user is unauthorized.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "HubMethodNotAuthorized"), "Failed to invoke '{HubMethod}' because user is unauthorized.");
 
             private static readonly Action<ILogger, string, string, Exception> _streamingResult =
-                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(6, "StreamingResult"), "InvocationId {invocationId}: Streaming result of type '{resultType}'.");
+                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(6, "StreamingResult"), "InvocationId {InvocationId}: Streaming result of type '{ResultType}'.");
 
             private static readonly Action<ILogger, string, string, Exception> _sendingResult =
-                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(7, "SendingResult"), "InvocationId {invocationId}: Sending result of type '{resultType}'.");
+                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(7, "SendingResult"), "InvocationId {InvocationId}: Sending result of type '{ResultType}'.");
 
             private static readonly Action<ILogger, string, Exception> _failedInvokingHubMethod =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(8, "FailedInvokingHubMethod"), "Failed to invoke hub method '{hubMethod}'.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(8, "FailedInvokingHubMethod"), "Failed to invoke hub method '{HubMethod}'.");
 
             private static readonly Action<ILogger, string, string, Exception> _hubMethodBound =
-                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(9, "HubMethodBound"), "'{hubName}' hub method '{hubMethod}' is bound.");
+                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(9, "HubMethodBound"), "'{HubName}' hub method '{HubMethod}' is bound.");
 
             private static readonly Action<ILogger, string, Exception> _cancelStream =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(10, "CancelStream"), "Canceling stream for invocation {invocationId}.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(10, "CancelStream"), "Canceling stream for invocation {InvocationId}.");
 
             private static readonly Action<ILogger, Exception> _unexpectedCancel =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(11, "UnexpectedCancel"), "CancelInvocationMessage received unexpectedly.");
 
             private static readonly Action<ILogger, StreamInvocationMessage, Exception> _receivedStreamHubInvocation =
-                LoggerMessage.Define<StreamInvocationMessage>(LogLevel.Debug, new EventId(12, "ReceivedStreamHubInvocation"), "Received stream hub invocation: {invocationMessage}.");
+                LoggerMessage.Define<StreamInvocationMessage>(LogLevel.Debug, new EventId(12, "ReceivedStreamHubInvocation"), "Received stream hub invocation: {InvocationMessage}.");
 
             private static readonly Action<ILogger, HubMethodInvocationMessage, Exception> _streamingMethodCalledWithInvoke =
-                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(13, "StreamingMethodCalledWithInvoke"), "A streaming method was invoked in the non-streaming fashion : {invocationMessage}.");
+                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(13, "StreamingMethodCalledWithInvoke"), "A streaming method was invoked in the non-streaming fashion : {InvocationMessage}.");
 
             private static readonly Action<ILogger, HubMethodInvocationMessage, Exception> _nonStreamingMethodCalledWithStream =
-                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(14, "NonStreamingMethodCalledWithStream"), "A non-streaming method was invoked in the streaming fashion : {invocationMessage}.");
+                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(14, "NonStreamingMethodCalledWithStream"), "A non-streaming method was invoked in the streaming fashion : {InvocationMessage}.");
 
             private static readonly Action<ILogger, string, Exception> _invalidReturnValueFromStreamingMethod =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(15, "InvalidReturnValueFromStreamingMethod"), "A streaming method returned a value that cannot be used to build enumerator {hubMethod}.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(15, "InvalidReturnValueFromStreamingMethod"), "A streaming method returned a value that cannot be used to build enumerator {HubMethod}.");
 
             public static void ReceivedHubInvocation(ILogger logger, InvocationMessage invocationMessage)
             {

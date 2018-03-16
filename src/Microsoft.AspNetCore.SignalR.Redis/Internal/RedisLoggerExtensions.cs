@@ -12,22 +12,22 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
     {
         // Category: RedisHubLifetimeManager<THub>
         private static readonly Action<ILogger, string, Exception> _connectingToEndpoints =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, nameof(ConnectingToEndpoints)), "Connecting to Redis endpoints: {endpoints}.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, nameof(ConnectingToEndpoints)), "Connecting to Redis endpoints: {Endpoints}.");
 
         private static readonly Action<ILogger, Exception> _connected =
             LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(Connected)), "Connected to Redis.");
 
         private static readonly Action<ILogger, string, Exception> _subscribing =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, nameof(Subscribing)), "Subscribing to channel: {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, nameof(Subscribing)), "Subscribing to channel: {Channel}.");
 
         private static readonly Action<ILogger, string, Exception> _receivedFromChannel =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, nameof(ReceivedFromChannel)), "Received message from Redis channel {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, nameof(ReceivedFromChannel)), "Received message from Redis channel {Channel}.");
 
         private static readonly Action<ILogger, string, Exception> _publishToChannel =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, nameof(PublishToChannel)), "Publishing message to Redis channel {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, nameof(PublishToChannel)), "Publishing message to Redis channel {Channel}.");
 
         private static readonly Action<ILogger, string, Exception> _unsubscribe =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(6, nameof(Unsubscribe)), "Unsubscribing from channel: {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(6, nameof(Unsubscribe)), "Unsubscribing from channel: {Channel}.");
 
         private static readonly Action<ILogger, Exception> _notConnected =
             LoggerMessage.Define(LogLevel.Warning, new EventId(7, nameof(Connected)), "Not connected to Redis.");
