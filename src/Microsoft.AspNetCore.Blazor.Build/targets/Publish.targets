@@ -12,7 +12,9 @@
     <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
   </PropertyGroup>
 
-  <Target Name="BlazorGetCopyToPublishDirectoryItems" BeforeTargets="GetCopyToPublishDirectoryItems">
+  <Target Name="BlazorGetCopyToPublishDirectoryItems"
+          BeforeTargets="GetCopyToPublishDirectoryItems"
+          DependsOnTargets="PrepareBlazorOutputs">
     <ItemGroup>
       <!-- Don't want to publish the assemblies from the regular 'bin' dir. Instead we publish ones from 'dist'. -->
       <ResolvedAssembliesToPublish Remove="@(ResolvedAssembliesToPublish)" />
