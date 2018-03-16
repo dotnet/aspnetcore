@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
             {
-                return stream.WriteAsync(_buffer);
+                return stream.WriteAsync(_buffer).AsTask();
             }
 
             protected override bool TryComputeLength(out long length)

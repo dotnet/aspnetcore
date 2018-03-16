@@ -67,7 +67,7 @@ namespace System.IO.Pipelines
         {
             _pipeWriter.Write(source.Span);
             _length += source.Length;
-            return new ValueTask(Task.CompletedTask);
+            return default;
         }
 #endif
     }

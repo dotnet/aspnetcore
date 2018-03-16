@@ -12,7 +12,9 @@ namespace System.IO.Pipelines
         {
             try
             {
-                await stream.CopyToAsync(writer, cancellationToken);
+                // REVIEW: Should we use the default buffer size here?
+                // 81920 is the default bufferSize, there is no stream.CopyToAsync overload that takes only a cancellationToken
+                await stream.CopyToAsync(new PipelineWriterStream(writer), bufferSize: 81920, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
@@ -20,19 +22,6 @@ namespace System.IO.Pipelines
                 return;
             }
             writer.Complete();
-        }
-
-        /// <summary>
-        /// Copies the content of a <see cref="Stream"/> into a <see cref="PipeWriter"/>.
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="writer"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        private static Task CopyToAsync(this Stream stream, PipeWriter writer, CancellationToken cancellationToken = default)
-        {
-            // 81920 is the default bufferSize, there is not stream.CopyToAsync overload that takes only a cancellationToken
-            return stream.CopyToAsync(new PipelineWriterStream(writer), bufferSize: 81920, cancellationToken: cancellationToken);
         }
 
         private class PipelineWriterStream : Stream
