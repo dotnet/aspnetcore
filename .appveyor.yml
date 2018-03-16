@@ -6,12 +6,8 @@ branches:
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 build_script:
-- ps: .\run.ps1 default-build
+- ps: .\run.ps1 -CI default-build
 clone_depth: 1
-environment:
-  global:
-    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    DOTNET_CLI_TELEMETRY_OPTOUT: 1
 test: 'off'
 deploy: 'off'
 image: Visual Studio 2017
