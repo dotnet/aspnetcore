@@ -22,10 +22,35 @@
     <span id="checkbox-initially-checked-value">@checkboxInitiallyCheckedValue</span>
 </p>
 
+<h2>Select</h2>
+<p>
+    <select id="select-box" @bind(selectValue)>
+        <option value=@SelectableValue.First>First choice</option>
+        <option value=@SelectableValue.Second>Second choice</option>
+        <option value=@SelectableValue.Third>Third choice</option>
+        @if (includeFourthOption)
+        {
+            <option value=@SelectableValue.Fourth>Fourth choice</option>    
+        }
+    </select>
+    <span id="select-box-value">@selectValue</span>
+    <button id="select-box-add-option" @onclick(AddAndSelectNewSelectOption)>Add and select new item</button>
+</p>
+
 @functions {
     string textboxInitiallyBlankValue = null;
     string textboxInitiallyPopulatedValue = "Hello";
 
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
+
+    bool includeFourthOption = false;
+    enum SelectableValue { First, Second, Third, Fourth }
+    SelectableValue selectValue = SelectableValue.Second;
+
+    void AddAndSelectNewSelectOption()
+    {
+        includeFourthOption = true;
+        selectValue = SelectableValue.Fourth;
+    }
 }

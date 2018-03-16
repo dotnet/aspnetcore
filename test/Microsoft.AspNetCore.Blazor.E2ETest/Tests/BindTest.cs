@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
@@ -73,6 +74,26 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             target.Click();
             Assert.False(target.Selected);
             Assert.Equal("False", boundValue.Text);
+        }
+
+        [Fact]
+        public void CanBindSelect()
+        {
+            var target = new SelectElement(Browser.FindElement(By.Id("select-box")));
+            var boundValue = Browser.FindElement(By.Id("select-box-value"));
+            Assert.Equal("Second choice", target.SelectedOption.Text);
+            Assert.Equal("Second", boundValue.Text);
+
+            // Modify target; verify value is updated
+            target.SelectByText("Third choice");
+            Assert.Equal("Third", boundValue.Text);
+
+            // Also verify we can add and select new options atomically
+            // Don't move this into a separate test, because then the previous assertions
+            // would be dependent on test execution order (or would require a full page reload)
+            Browser.FindElement(By.Id("select-box-add-option")).Click();
+            Assert.Equal("Fourth", boundValue.Text);
+            Assert.Equal("Fourth choice", target.SelectedOption.Text);
         }
     }
 }

@@ -2,6 +2,7 @@
 import { getRenderTreeEditPtr, renderTreeEdit, RenderTreeEditPointer, EditType } from './RenderTreeEdit';
 import { getTreeFramePtr, renderTreeFrame, FrameType, RenderTreeFramePointer } from './RenderTreeFrame';
 import { platform } from '../Environment';
+const selectValuePropname = '_blazorSelectValue';
 let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
 
@@ -226,8 +227,24 @@ export class BrowserRenderer {
         if (isCheckbox(element)) {
           (element as HTMLInputElement).checked = value === 'True';
         } else {
-          // Note: this doen't handle <select> correctly: https://github.com/aspnet/Blazor/issues/157
           (element as any).value = value;
+
+          if (element.tagName === 'SELECT') {
+            // <select> is special, in that anything we write to .value will be lost if there
+            // isn't yet a matching <option>. To maintain the expected behavior no matter the
+            // element insertion/update order, preserve the desired value separately so
+            // we can recover it when inserting any matching <option>.
+            element[selectValuePropname] = value;
+          }
+        }
+        return true;
+      case 'OPTION':
+        element.setAttribute('value', value!);
+        // See above for why we have this special handling for <select>/<option>
+        const parentElement = element.parentElement;
+        if (parentElement && (selectValuePropname in parentElement) && parentElement[selectValuePropname] === value) {
+          this.tryApplyValueProperty(parentElement, value);
+          delete parentElement[selectValuePropname];
         }
         return true;
       default:
