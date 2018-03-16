@@ -335,11 +335,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _statusCode = StatusCodes.Status200OK;
             _reasonPhrase = null;
 
-            RemoteIpAddress = RemoteEndPoint?.Address;
-            RemotePort = RemoteEndPoint?.Port ?? 0;
+            var remoteEndPoint = RemoteEndPoint;
+            RemoteIpAddress = remoteEndPoint?.Address;
+            RemotePort = remoteEndPoint?.Port ?? 0;
 
-            LocalIpAddress = LocalEndPoint?.Address;
-            LocalPort = LocalEndPoint?.Port ?? 0;
+            var localEndPoint = LocalEndPoint;
+            LocalIpAddress = localEndPoint?.Address;
+            LocalPort = localEndPoint?.Port ?? 0;
+
             ConnectionIdFeature = ConnectionId;
 
             HttpRequestHeaders.Reset();
