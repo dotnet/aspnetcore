@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     Assert.True(canceled.WaitOne(interval), "canceled");
                     Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
 
-                    await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
 
                     context.Dispose();
                 }
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var context = await server.AcceptAsync(Utilities.DefaultTimeout);
 
                     client.CancelPendingRequests();
-                    await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
 
                     var ct = context.DisconnectToken;
                     Assert.True(ct.CanBeCanceled, "CanBeCanceled");

@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 // First write sends headers
                 cts.Cancel();
-                await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
 
                 Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 await Assert.ThrowsAsync<IOException>(async () =>
@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 // First write sends headers
                 cts.Cancel();
-                await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
                 Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 // It can take several tries before Send notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)

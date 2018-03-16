@@ -232,7 +232,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             protected async override Task SerializeToStreamAsync(Stream stream, TransportContext context)
             {
                 await stream.WriteAsync(new byte[5], 0, 5);
-                await Block.WaitAsync();
+                await stream.FlushAsync();
+                Assert.True(await Block.WaitAsync(TimeSpan.FromSeconds(10)));
                 await stream.WriteAsync(new byte[5], 0, 5);
             }
 

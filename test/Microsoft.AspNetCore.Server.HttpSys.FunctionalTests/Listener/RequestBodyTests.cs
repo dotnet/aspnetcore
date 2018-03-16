@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 content.Block.Release();
                 context.Dispose();
 
-                await Assert.ThrowsAsync<TaskCanceledException>(async () => await responseTask);
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await responseTask);
             }
         }
 
@@ -421,6 +421,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             protected async override Task SerializeToStreamAsync(Stream stream, TransportContext context)
             {
                 await stream.WriteAsync(new byte[5], 0, 5);
+                await stream.FlushAsync();
                 await Block.WaitAsync();
                 await stream.WriteAsync(new byte[5], 0, 5);
             }
