@@ -47,6 +47,42 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return false;
         }
 
+        protected override bool ValidateParameters()
+        {
+            if (!Directory.Exists(ProjectRoot))
+            {
+                Log.LogError("The specified project root directory {0} doesn't exist.", ProjectRoot);
+                return false;
+            }
+
+            if (Configuration.Length == 0)
+            {
+                Log.LogError("The project {0} must provide a value for {1}.", ProjectRoot, nameof(Configuration));
+                return false;
+            }
+
+            for (var i = 0; i < Assemblies.Length; i++)
+            {
+                if (!Path.IsPathRooted(Assemblies[i]))
+                {
+                    Log.LogError("The assembly path {0} is invalid. Assembly paths must be rooted.", Assemblies[i]);
+                    return false;
+                }
+            }
+
+            for (var i = 0; i < Extensions.Length; i++)
+            {
+                if (!EnsureRequiredMetadata(Extensions[i], Identity) ||
+                    !EnsureRequiredMetadata(Extensions[i], AssemblyName) ||
+                    !EnsureRequiredMetadata(Extensions[i], AssemblyFilePath))
+                {
+                    return false;
+                }
+            }
+
+            return base.ValidateParameters();
+        }
+
         protected override string GenerateResponseFileCommands()
         {
             var builder = new StringBuilder();
@@ -80,6 +116,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
 
             return builder.ToString();
+        }
+
+        private bool EnsureRequiredMetadata(ITaskItem item, string metadataName)
+        {
+            var value = item.GetMetadata(metadataName);
+            if (string.IsNullOrEmpty(value))
+            {
+                Log.LogError($"Missing required metadata '{metadataName}' for '{item.ItemSpec}.");
+                return false;
+            }
+
+            return true;
         }
     }
 }
