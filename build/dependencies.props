@@ -55,7 +55,7 @@
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <MsgPackCliPackageVersion>1.0.0-rc</MsgPackCliPackageVersion>
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
