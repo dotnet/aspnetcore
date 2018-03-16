@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -44,6 +46,9 @@ namespace IISTestSite
             app.Map("/ReadAndWriteSlowConnection", ReadAndWriteSlowConnection);
             app.Map("/WebsocketRequest", WebsocketRequest);
             app.Map("/UpgradeFeatureDetection", UpgradeFeatureDetection);
+            app.Map("/TestInvalidReadOperations", TestInvalidReadOperations);
+            app.Map("/TestInvalidWriteOperations", TestInvalidWriteOperations);
+            app.Map("/TestReadOffsetWorks", TestReadOffsetWorks);
         }
 
         private void ServerVariable(IApplicationBuilder app)
@@ -439,6 +444,188 @@ namespace IISTestSite
                 {
                     await ctx.Response.WriteAsync("Disabled");
                 }
+            });
+        }
+
+        private void TestReadOffsetWorks(IApplicationBuilder app)
+        {
+            app.Run(async ctx =>
+            {
+                var buffer = new byte[11];
+                ctx.Request.Body.Read(buffer, 0, 6);
+                ctx.Request.Body.Read(buffer, 6, 5);
+
+                await ctx.Response.WriteAsync(Encoding.UTF8.GetString(buffer));
+            });
+        }
+
+        private void TestInvalidReadOperations(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var success = false;
+                if (context.Request.Path.StartsWithSegments("/NullBuffer"))
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(null, 0, 0);
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        success = true;
+                    }
+                    catch (Exception)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[1], -1, 0);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidOffsetLarge"))
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[1], 2, 0);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountSmall"))
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[1], 0, -1);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountLarge"))
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[1], 0, -1);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountWithOffset"))
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[3], 1, 3);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountZeroRead"))
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[1], 0, 0);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                    catch (Exception)
+                    {
+                        success = true;
+                    }
+                }
+
+                await context.Response.WriteAsync(success ? "Success" : "Failure");
+            });
+        }
+        private void TestInvalidWriteOperations(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var success = false;
+                if (context.Request.Path.StartsWithSegments("/NullBuffer"))
+                {
+                    try
+                    {
+                        await context.Response.Body.WriteAsync(null, 0, 0);
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
+                {
+                    try
+                    {
+                        await context.Response.Body.WriteAsync(new byte[1], -1, 0);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidOffsetLarge"))
+                {
+                    try
+                    {
+                        await context.Response.Body.WriteAsync(new byte[1], 2, 0);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountSmall"))
+                {
+                    try
+                    {
+                        await context.Response.Body.WriteAsync(new byte[1], 0, -1);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountLarge"))
+                {
+                    try
+                    {
+                        await context.Response.Body.WriteAsync(new byte[1], 0, -1);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountWithOffset"))
+                {
+                    try
+                    {
+                        await context.Response.Body.WriteAsync(new byte[3], 1, 3);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        success = true;
+                    }
+                }
+
+                await context.Response.WriteAsync(success ? "Success" : "Failure");
             });
         }
     }

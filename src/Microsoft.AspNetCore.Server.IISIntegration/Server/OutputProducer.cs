@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         }
 
         public Task WriteAsync(
-            ArraySegment<byte> buffer,
+            ReadOnlyMemory<byte> buffer,
             CancellationToken cancellationToken)
         {
             lock (_contextLock)
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     throw new ObjectDisposedException("Response is already completed");
                 }
 
-                _pipe.Writer.Write(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset, buffer.Count));
+                _pipe.Writer.Write(buffer.Span);
             }
 
             return FlushAsync(_pipe.Writer, cancellationToken);

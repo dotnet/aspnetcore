@@ -23,6 +23,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             // Start a task which will continuously call ReadFromIISAsync and WriteToIISAsync
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+            if (count == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            var memory = new Memory<byte>(buffer, offset, count);
+
             StartProcessingRequestAndResponseBody();
 
             while (true)
@@ -35,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     {
                         var actual = Math.Min(readableBuffer.Length, count);
                         readableBuffer = readableBuffer.Slice(0, actual);
-                        readableBuffer.CopyTo(buffer);
+                        readableBuffer.CopyTo(memory.Span);
                         return (int)actual;
                     }
                     else if (result.IsCompleted)
@@ -53,20 +64,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// <summary>
         /// Writes data to the output pipe.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="memory"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken = default(CancellationToken))
+        public Task WriteAsync(ReadOnlyMemory<byte> memory, CancellationToken cancellationToken = default(CancellationToken))
         {
+
+            // Want to keep exceptions consistent, 
             if (!_hasResponseStarted)
             {
-                return WriteAsyncAwaited(data, cancellationToken);
+                return WriteAsyncAwaited(memory, cancellationToken);
             }
 
             lock (_stateSync)
             {
                 DisableReads();
-                return Output.WriteAsync(data, cancellationToken: cancellationToken);
+                return Output.WriteAsync(memory, cancellationToken);
             }
         }
 
@@ -88,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
         }
 
-        public void StartProcessingRequestAndResponseBody()
+        private void StartProcessingRequestAndResponseBody()
         {
             if (_processBodiesTask == null)
             {
@@ -117,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             await flushTask;
         }
 
-        private async Task WriteAsyncAwaited(ArraySegment<byte> data, CancellationToken cancellationToken)
+        private async Task WriteAsyncAwaited(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             // WriteAsyncAwaited is only called for the first write to the body.
             // Ensure headers are flushed if Write(Chunked)Async isn't called.
@@ -288,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// Await reading from IIS, which will be cancelled if application code calls Write/FlushAsync.
         /// </summary>
         /// <returns>The Reading and Writing task.</returns>
-        public async Task ReadAndWriteLoopAsync()
+        private async Task ReadAndWriteLoopAsync()
         {
             try
             {

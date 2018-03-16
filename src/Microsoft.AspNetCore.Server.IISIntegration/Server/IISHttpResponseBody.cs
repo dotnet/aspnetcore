@@ -54,7 +54,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public override unsafe Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return _httpContext.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            return _httpContext.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
