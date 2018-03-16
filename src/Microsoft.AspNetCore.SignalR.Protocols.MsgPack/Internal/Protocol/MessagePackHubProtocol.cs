@@ -41,16 +41,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             while (BinaryMessageParser.TryParseMessage(ref input, out var payload))
             {
-                using (var memoryStream = new MemoryStream(payload.ToArray()))
-                {
-                    messages.Add(ParseMessage(memoryStream, binder));
-                }
+                messages.Add(ParseMessage(payload.ToArray(), binder));
             }
 
             return messages.Count > 0;
         }
 
-        private static HubMessage ParseMessage(Stream input, IInvocationBinder binder)
+        private static HubMessage ParseMessage(byte[] input, IInvocationBinder binder)
         {
             using (var unpacker = Unpacker.Create(input))
             {
