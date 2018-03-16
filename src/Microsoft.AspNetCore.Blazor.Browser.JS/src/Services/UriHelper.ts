@@ -33,13 +33,16 @@ registerFunction(`${registeredFunctionPrefix}.enableNavigationInteception`, () =
 });
 
 registerFunction(`${registeredFunctionPrefix}.navigateTo`, (uriDotNetString: System_String) => {
-  const href = platform.toJavaScriptString(uriDotNetString);
-  if (isWithinBaseUriSpace(toAbsoluteUri(href))) {
-    performInternalNavigation(href);
-  } else {
-    location.href = href;
-  }
+  navigateTo(platform.toJavaScriptString(uriDotNetString));
 });
+
+export function navigateTo(uri: string) {
+  if (isWithinBaseUriSpace(toAbsoluteUri(uri))) {
+    performInternalNavigation(uri);
+  } else {
+    location.href = uri;
+  }
+}
 
 function performInternalNavigation(href: string) {
   history.pushState(null, /* ignored title */ '', href);

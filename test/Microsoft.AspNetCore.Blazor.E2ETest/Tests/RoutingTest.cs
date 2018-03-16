@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             _server = serverFixture;
             Navigate(ServerPathBase, noReload: true);
+            WaitUntilDotNetRunningInBrowser();
         }
 
         [Fact]
@@ -131,7 +132,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             var jsExecutor = (IJavaScriptExecutor)Browser;
             var absoluteUri = new Uri(_server.RootUri, relativeUri);
-            jsExecutor.ExecuteScript($"history.pushState(null, '', '{absoluteUri.ToString()}')");
+            jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString()}')");
         }
     }
 }
