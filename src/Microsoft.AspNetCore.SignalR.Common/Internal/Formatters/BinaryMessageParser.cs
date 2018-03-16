@@ -7,15 +7,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
 {
     public static class BinaryMessageParser
     {
-        private static int[] _numBitsToShift = new[] { 0, 7, 14, 21, 28 };
         private const int MaxLengthPrefixSize = 5;
 
         public static bool TryParseMessage(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> payload)
         {
-            payload = default;
-
             if (buffer.IsEmpty)
             {
+                payload = default;
                 return false;
             }
 
@@ -39,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             do
             {
                 byteRead = lengthPrefixBuffer[numBytes];
-                length = length | (((uint)(byteRead & 0x7f)) << _numBitsToShift[numBytes]);
+                length = length | (((uint)(byteRead & 0x7f)) << (numBytes * 7));
                 numBytes++;
             }
             while (numBytes < lengthPrefixBuffer.Length && ((byteRead & 0x80) != 0));
@@ -47,6 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             // size bytes are missing
             if ((byteRead & 0x80) != 0 && (numBytes < MaxLengthPrefixSize))
             {
+                payload = default;
                 return false;
             }
 
@@ -58,6 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             // We don't have enough data
             if (buffer.Length < length + numBytes)
             {
+                payload = default;
                 return false;
             }
 
