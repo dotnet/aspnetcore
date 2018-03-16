@@ -2,4 +2,12 @@
   <PropertyGroup>
     <MicrosoftNETPlatformLibrary>Microsoft.AspNetCore.App</MicrosoftNETPlatformLibrary>
   </PropertyGroup>
+
+  <!--
+    Capability that enables Visual Studio support for hosting Asp.Net Core applications in the IIS process
+  -->
+  <ItemGroup>
+    <ProjectCapability Include="AspNetInProcessHosting" />
+  </ItemGroup>
+  
 </Project>

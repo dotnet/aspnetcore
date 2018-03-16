@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh -c
 
 <#
 .SYNOPSIS
@@ -13,6 +13,8 @@
     Make changes without executing git-commit
 .PARAMETER Force
     Specified this to make a commit with any changes
+.PARAMETER IgnoredRepos
+    Repos to not update (likely because they are temporarily broken).
 #>
 [cmdletbinding(SupportsShouldProcess = $true)]
 param(
@@ -20,7 +22,8 @@ param(
     [string]$GitAuthorEmail = $null,
     [string[]]$GitCommitArgs = @(),
     [switch]$NoCommit,
-    [switch]$Force
+    [switch]$Force,
+    [string[]]$IgnoredRepos = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -55,6 +58,13 @@ try {
     $submodules = Get-Submodules $RepoRoot -Verbose:$VerbosePreference
 
     foreach ($submodule in  $submodules) {
+        $submoduleName = $submodule.module
+        if ($IgnoredRepos.Contains($submoduleName))
+        {
+            Write-Host "Skipping $submoduleName due to IgnoredRepos."
+            continue
+        }
+
         $submodulePath = $submodule.path
         Write-Host "Updating $submodulePath"
 

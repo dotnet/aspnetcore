@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
   <Import Project="..\dependencies.props" />
+  <Import Project="..\sources.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RestoreAdditionalProjectSources>https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Archive" Version="$(MicrosoftDotNetArchivePackageVersion)" />
     <PackageReference Include="NuGet.Build.Tasks" Version="$(NuGetInMSBuildVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="WindowsAzure.Storage" Version="$(DevDependency_WindowsAzureStoragePackageVersion)" />

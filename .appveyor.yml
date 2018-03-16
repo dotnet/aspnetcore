@@ -11,7 +11,7 @@ install:
 skip_commits:
   message: /.*\[auto-updated:.*/
 build_script:
-  - ps: .\run.ps1 default-build /t:ComputeGraph
+  - ps: .\run.ps1 default-build /t:CheckUniverse
 clone_depth: 1
 environment:
   global:

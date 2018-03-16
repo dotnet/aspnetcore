@@ -3,7 +3,6 @@
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
     <GenerateSignRequest>false</GenerateSignRequest>
-    <GenerateBillOfMaterials>false</GenerateBillOfMaterials>
 
     <SignType Condition=" '$(SignType)' == '' ">public</SignType>
 
@@ -12,10 +11,8 @@
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
     <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
-    <LineupBuildDir>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))lineups\</LineupBuildDir>
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
-    <DependencyMirrorPackageDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorPackageDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +22,7 @@
     <IntermediateInstaller Include="win-x64" FileExt=".wixlib" />
     <IntermediateInstaller Include="osx-x64" FileExt=".tar.gz" />
     <IntermediateInstaller Include="linux-x64" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="alpine.3.6-x64" FileExt=".tar.gz" />
 
     <NativeInstaller Include="win-x86" FileExt=".exe" />
     <NativeInstaller Include="win-x86" FileExt=".zip" />
@@ -32,6 +30,7 @@
     <NativeInstaller Include="win-x64" FileExt=".zip" />
     <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
+    <NativeInstaller Include="alpine.3.6-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="x64" FileExt=".deb" />
     <NativeInstaller Include="x64" FileExt=".rpm" />
     <NativeInstaller Include="rh.rhel.7-x64" FileExt=".rpm" />
@@ -45,13 +44,18 @@
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
   </ItemGroup>
 
+  <!-- Properties for publishing -->
   <PropertyGroup>
+    <!-- myget = non-orchestrated builds -->
+    <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
     <!-- azure = non-orchestrated builds -->
     <PublishToAzureFeed Condition="$(PublishType.Contains('azure'))">true</PublishToAzureFeed>
+
     <!-- blob = orchestrated builds -->
     <PublishToTransportFeed Condition="$(PublishType.Contains('blob'))">true</PublishToTransportFeed>
   </PropertyGroup>
 
+  <Import Project="sources.props" />
   <Import Project="external-dependencies.props" />
   <Import Project="artifacts.props" />
   <Import Project="submodules.props" />

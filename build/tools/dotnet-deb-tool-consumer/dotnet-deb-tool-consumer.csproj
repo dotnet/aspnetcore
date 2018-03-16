@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
-    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/cli-deps/api/v3/index.json</RestoreSources>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreSources>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemGroup>

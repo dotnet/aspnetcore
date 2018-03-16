@@ -1,106 +1,90 @@
 ﻿<Project>
   <!-- These package version may be overridden or updated by automation. -->
-  <PropertyGroup Label="Package Versions: Auto">
-    <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <FSharpNETSdkPackageVersion>1.0.5</FSharpNETSdkPackageVersion>
-    <MicrosoftBuildFrameworkPackageVersion>15.7.0-preview-000011-1392069</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildPackageVersion>15.7.0-preview-000011-1392069</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildRuntimePackageVersion>15.7.0-preview-000011-1392069</MicrosoftBuildRuntimePackageVersion>
-    <MicrosoftBuildTasksCorePackageVersion>15.7.0-preview-000011-1392069</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion>15.7.0-preview-000011-1392069</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftCSharpPackageVersion>4.5.0-preview1-26216-02</MicrosoftCSharpPackageVersion>
-    <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview1-26216-03</MicrosoftDotNetPlatformAbstractionsPackageVersion>
-    <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-003121</MicrosoftDotNetProjectModelPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview1-26216-03</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
-    <MicrosoftNETCoreApp10PackageVersion>1.0.5</MicrosoftNETCoreApp10PackageVersion>
-    <MicrosoftNETCoreApp11PackageVersion>1.1.2</MicrosoftNETCoreApp11PackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
+  <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
+    <MicrosoftCSharpPackageVersion>4.5.0-preview2-26313-01</MicrosoftCSharpPackageVersion>
+    <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview2-26313-01</MicrosoftDotNetPlatformAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-26313-01</MicrosoftExtensionsDependencyModelPackageVersion>
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26216-03</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26216-03</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26216-03</MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26216-03</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview1-26216-02</MicrosoftNETCorePlatformsPackageVersion>
-    <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.5.0-preview1-26216-02</MicrosoftWin32RegistryPackageVersion>
-    <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
-    <NuGetFrameworksPackageVersion>4.7.0-preview1-4986</NuGetFrameworksPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26216-03</RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26216-03</RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26216-03</RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26216-03</RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26216-03</RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26216-03</RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX64MicrosoftNETCoreAppPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX86MicrosoftNETCoreAppPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26216-03</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <SystemBuffersPackageVersion>4.5.0-preview1-26216-02</SystemBuffersPackageVersion>
-    <SystemBuffersPrimitivesPackageVersion>0.1.0-preview1-180216-4</SystemBuffersPrimitivesPackageVersion>
-    <SystemCodeDomPackageVersion>4.5.0-preview1-26216-02</SystemCodeDomPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>1.5.0-preview1-26216-02</SystemCollectionsImmutablePackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview1-26216-02</SystemComponentModelAnnotationsPackageVersion>
-    <SystemCompositionAttributedModelPackageVersion>1.2.0-preview1-26216-02</SystemCompositionAttributedModelPackageVersion>
-    <SystemCompositionConventionPackageVersion>1.2.0-preview1-26216-02</SystemCompositionConventionPackageVersion>
-    <SystemCompositionHostingPackageVersion>1.2.0-preview1-26216-02</SystemCompositionHostingPackageVersion>
-    <SystemCompositionPackageVersion>1.2.0-preview1-26216-02</SystemCompositionPackageVersion>
-    <SystemCompositionRuntimePackageVersion>1.2.0-preview1-26216-02</SystemCompositionRuntimePackageVersion>
-    <SystemCompositionTypedPartsPackageVersion>1.2.0-preview1-26216-02</SystemCompositionTypedPartsPackageVersion>
-    <SystemConfigurationConfigurationManagerPackageVersion>4.5.0-preview1-26216-02</SystemConfigurationConfigurationManagerPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.5.0-preview1-26216-02</SystemDataSqlClientPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview1-26216-02</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>4.5.0-preview1-26216-02</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOFileSystemAccessControlPackageVersion>4.5.0-preview1-26216-02</SystemIOFileSystemAccessControlPackageVersion>
-    <SystemIOPackagingPackageVersion>4.5.0-preview1-26216-02</SystemIOPackagingPackageVersion>
-    <SystemIOPipelinesPackageVersion>0.1.0-preview1-180216-4</SystemIOPipelinesPackageVersion>
-    <SystemIOPipelinesTestingPackageVersion>0.1.0-preview1-180216-4</SystemIOPipelinesTestingPackageVersion>
-    <SystemIOPipesAccessControlPackageVersion>4.5.0-preview1-26216-02</SystemIOPipesAccessControlPackageVersion>
-    <SystemIOPortsPackageVersion>4.5.0-preview1-26216-02</SystemIOPortsPackageVersion>
-    <SystemJsonPackageVersion>4.5.0-preview1-26216-02</SystemJsonPackageVersion>
-    <SystemMemoryPackageVersion>4.5.0-preview1-26216-02</SystemMemoryPackageVersion>
-    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0-preview1-26216-02</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview1-26216-02</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.5.0-preview1-26216-02</SystemNumericsVectorsPackageVersion>
-    <SystemReflectionDispatchProxyPackageVersion>4.5.0-preview1-26216-02</SystemReflectionDispatchProxyPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.6.0-preview1-26216-02</SystemReflectionMetadataPackageVersion>
-    <SystemReflectionTypeExtensionsPackageVersion>4.5.0-preview1-26216-02</SystemReflectionTypeExtensionsPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-26216-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
-    <SystemSecurityAccessControlPackageVersion>4.5.0-preview1-26216-02</SystemSecurityAccessControlPackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview1-26216-02</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>4.5.0-preview1-26216-02</SystemSecurityCryptographyPkcsPackageVersion>
-    <SystemSecurityCryptographyProtectedDataPackageVersion>4.5.0-preview1-26216-02</SystemSecurityCryptographyProtectedDataPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.5.0-preview1-26216-02</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>4.5.0-preview1-26216-02</SystemSecurityPermissionsPackageVersion>
-    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview1-26216-02</SystemSecurityPrincipalWindowsPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>4.5.0-preview1-26216-02</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingCodePagesPackageVersion>4.5.0-preview1-26216-02</SystemTextEncodingCodePagesPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.5.0-preview1-26216-02</SystemTextEncodingsWebPackageVersion>
-    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-preview1-180216-4</SystemTextEncodingsWebUtf8PackageVersion>
-    <SystemTextPrimitivesPackageVersion>0.1.0-preview1-180216-4</SystemTextPrimitivesPackageVersion>
-    <SystemThreadingAccessControlPackageVersion>4.5.0-preview1-26216-02</SystemThreadingAccessControlPackageVersion>
-    <SystemThreadingChannelsPackageVersion>4.5.0-preview1-26216-02</SystemThreadingChannelsPackageVersion>
-    <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-26216-02</SystemThreadingTasksDataflowPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview1-26216-02</SystemThreadingTasksExtensionsPackageVersion>
-    <SystemValueTuplePackageVersion>4.5.0-preview1-26216-02</SystemValueTuplePackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview2-26313-01</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.5.0-preview2-26313-01</MicrosoftWin32RegistryPackageVersion>
+    <NuGetFrameworksPackageVersion>4.7.0-preview1-4958</NuGetFrameworksPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26314-02</RuntimeAlpine36X64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26314-02</RuntimeAlpine36X64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26314-02</RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26314-02</RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26314-02</RuntimeAlpine36X64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26314-02</RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26314-02</RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26314-02</RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26314-02</RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26314-02</RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26314-02</RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX86MicrosoftNETCoreAppPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26314-02</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview2-26313-01</SystemBuffersPackageVersion>
+    <SystemCodeDomPackageVersion>4.5.0-preview2-26313-01</SystemCodeDomPackageVersion>
+    <SystemCollectionsImmutablePackageVersion>1.5.0-preview2-26313-01</SystemCollectionsImmutablePackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview2-26313-01</SystemComponentModelAnnotationsPackageVersion>
+    <SystemCompositionAttributedModelPackageVersion>1.6.0-preview2-26313-01</SystemCompositionAttributedModelPackageVersion>
+    <SystemCompositionConventionPackageVersion>1.6.0-preview2-26313-01</SystemCompositionConventionPackageVersion>
+    <SystemCompositionHostingPackageVersion>1.6.0-preview2-26313-01</SystemCompositionHostingPackageVersion>
+    <SystemCompositionPackageVersion>1.6.0-preview2-26313-01</SystemCompositionPackageVersion>
+    <SystemCompositionRuntimePackageVersion>1.6.0-preview2-26313-01</SystemCompositionRuntimePackageVersion>
+    <SystemCompositionTypedPartsPackageVersion>1.6.0-preview2-26313-01</SystemCompositionTypedPartsPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>4.5.0-preview2-26313-01</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.5.0-preview2-26313-01</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview2-26313-01</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.5.0-preview2-26313-01</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOFileSystemAccessControlPackageVersion>4.5.0-preview2-26313-01</SystemIOFileSystemAccessControlPackageVersion>
+    <SystemIOPackagingPackageVersion>4.5.0-preview2-26313-01</SystemIOPackagingPackageVersion>
+    <SystemIOPipesAccessControlPackageVersion>4.5.0-preview2-26313-01</SystemIOPipesAccessControlPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26313-01</SystemIOPipelinesPackageVersion>
+    <SystemIOPortsPackageVersion>4.5.0-preview2-26313-01</SystemIOPortsPackageVersion>
+    <SystemJsonPackageVersion>4.5.0-preview2-26313-01</SystemJsonPackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview2-26313-01</SystemMemoryPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0-preview2-26313-01</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview2-26313-01</SystemNetWebSocketsWebSocketProtocolPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview2-26313-01</SystemNumericsVectorsPackageVersion>
+    <SystemReflectionDispatchProxyPackageVersion>4.5.0-preview2-26313-01</SystemReflectionDispatchProxyPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26313-01</SystemReflectionMetadataPackageVersion>
+    <SystemReflectionTypeExtensionsPackageVersion>4.5.0-preview2-26313-01</SystemReflectionTypeExtensionsPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26313-01</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityAccessControlPackageVersion>4.5.0-preview2-26313-01</SystemSecurityAccessControlPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview2-26313-01</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>4.5.0-preview2-26313-01</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>4.5.0-preview2-26313-01</SystemSecurityCryptographyProtectedDataPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.5.0-preview2-26313-01</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>4.5.0-preview2-26313-01</SystemSecurityPermissionsPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview2-26313-01</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.5.0-preview2-26313-01</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingCodePagesPackageVersion>4.5.0-preview2-26313-01</SystemTextEncodingCodePagesPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.5.0-preview2-26313-01</SystemTextEncodingsWebPackageVersion>
+    <SystemThreadingAccessControlPackageVersion>4.5.0-preview2-26313-01</SystemThreadingAccessControlPackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.5.0-preview2-26313-01</SystemThreadingChannelsPackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview2-26313-01</SystemThreadingTasksDataflowPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26313-01</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0-preview2-26313-01</SystemValueTuplePackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -117,21 +101,29 @@
 
   <!-- These are package versions that should not be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Pinned">
+    <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
+    <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
+    <BuildBundlerMinifierPackageVersion>2.4.337</BuildBundlerMinifierPackageVersion>
+    <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>2.1.0-prerelease-02430-04</DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>
     <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>2.0.0</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
     <DevDependency_WindowsAzureStoragePackageVersion>8.7.0</DevDependency_WindowsAzureStoragePackageVersion>
-    <BenchmarkDotNetPackageVersion>0.10.11</BenchmarkDotNetPackageVersion>
-    <BuildBundlerMinifierPackageVersion>2.4.337</BuildBundlerMinifierPackageVersion>
-    <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
-    <EntityFrameworkPackageVersion>6.1.3</EntityFrameworkPackageVersion>
+    <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
+    <FSharpNETSdkPackageVersion>1.0.5</FSharpNETSdkPackageVersion>
     <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
-    <MicrosoftAspNetWebApiClientPackageVersion>5.2.4-preview1</MicrosoftAspNetWebApiClientPackageVersion>
+    <MicrosoftAspNetWebApiClientPackageVersion>5.2.4</MicrosoftAspNetWebApiClientPackageVersion>
+    <MicrosoftAzureDocumentDBCorePackageVersion>1.7.1</MicrosoftAzureDocumentDBCorePackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
     <MicrosoftAzureManagementFluentPackageVersion>1.1.3</MicrosoftAzureManagementFluentPackageVersion>
     <MicrosoftAzureServicesAppAuthenticationPackageVersion>1.1.0-preview</MicrosoftAzureServicesAppAuthenticationPackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildPackageVersion>15.6.82</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildRuntimePackageVersion>15.6.82</MicrosoftBuildRuntimePackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion>15.6.82</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.6.1</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
@@ -142,8 +134,17 @@
     <MicrosoftCodeAnalysisVisualBasicPackageVersion>2.6.1</MicrosoftCodeAnalysisVisualBasicPackageVersion>
     <MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.6.1</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftDotNetArchivePackageVersion>0.2.0-beta-62606-02</MicrosoftDotNetArchivePackageVersion>
+    <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-003121</MicrosoftDotNetProjectModelPackageVersion>
+    <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0-preview2-41113220915</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
+    <MicrosoftNETCoreApp10PackageVersion>1.0.5</MicrosoftNETCoreApp10PackageVersion>
+    <MicrosoftNETCoreApp11PackageVersion>1.1.2</MicrosoftNETCoreApp11PackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinPackageVersion>3.0.1</MicrosoftOwinPackageVersion>
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
     <MicrosoftOwinSecurityPackageVersion>3.0.1</MicrosoftOwinSecurityPackageVersion>
@@ -154,6 +155,9 @@
     <MicrosoftVisualStudioLanguageIntellisensePackageVersion>15.6.161-preview</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
     <MicrosoftVisualStudioLanguageServicesPackageVersion>2.6.1</MicrosoftVisualStudioLanguageServicesPackageVersion>
     <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6070</MicrosoftVisualStudioOLEInteropPackageVersion>
+    <MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>15.3.224</MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>
+    <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>2.0.6142705</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
+    <MicrosoftVisualStudioProjectSystemSDKPackageVersion>15.3.224</MicrosoftVisualStudioProjectSystemSDKPackageVersion>
     <MicrosoftVisualStudioShell150PackageVersion>15.0.26606</MicrosoftVisualStudioShell150PackageVersion>
     <MicrosoftVisualStudioShellInterop100PackageVersion>10.0.30319</MicrosoftVisualStudioShellInterop100PackageVersion>
     <MicrosoftVisualStudioShellInterop110PackageVersion>11.0.61030</MicrosoftVisualStudioShellInterop110PackageVersion>
@@ -167,27 +171,32 @@
     <MicrosoftVisualStudioTextUIWpfPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIWpfPackageVersion>
     <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
     <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
-    <MonoAddinsPackageVersion>1.3.7</MonoAddinsPackageVersion>
+    <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
-    <MsgPackCliPackageVersion>0.9.0-beta2</MsgPackCliPackageVersion>
+    <MsgPackCliPackageVersion>1.0.0-rc</MsgPackCliPackageVersion>
     <NETStandard16PackageVersion>1.6.1</NETStandard16PackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
     <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
-    <RemotionLinqPackageVersion>2.2.0-alpha-002</RemotionLinqPackageVersion>
+    <PollySignedPackageVersion>5.8.0</PollySignedPackageVersion>
+    <RemotionLinqPackageVersion>2.2.0</RemotionLinqPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
-    <SQLitePCLRawBundleGreenPackageVersion>1.1.8</SQLitePCLRawBundleGreenPackageVersion>
-    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.8</SQLitePCLRawBundleSqlcipherPackageVersion>
-    <SQLitePCLRawCorePackageVersion>1.1.8</SQLitePCLRawCorePackageVersion>
+    <SQLitePCLRawBundleGreenPackageVersion>1.1.10-pre20180223200113</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.10-pre20180223200113</SQLitePCLRawBundleSqlcipherPackageVersion>
+    <SQLitePCLRawCorePackageVersion>1.1.10-pre20180223200113</SQLitePCLRawCorePackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
     <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
+    <SystemIdentityModelTokensJwtPackageVersion>5.2.0</SystemIdentityModelTokensJwtPackageVersion>
     <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
     <SystemManagementAutomationPackageVersion>6.1.7601.17515</SystemManagementAutomationPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
@@ -210,6 +219,6 @@
     <XunitCorePackageVersion>2.3.1</XunitCorePackageVersion>
     <XunitExtensibilityCorePackageVersion>2.3.1</XunitExtensibilityCorePackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
-    <XunitRunnerVisualstudioPackageVersion>2.3.1</XunitRunnerVisualstudioPackageVersion>
+    <XunitRunnerVisualstudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualstudioPackageVersion>
   </PropertyGroup>
 </Project>

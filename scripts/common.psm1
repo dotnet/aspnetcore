@@ -32,27 +32,31 @@ function Get-Submodules {
     $repos = $submoduleConfig.Project.ItemGroup.Repository | % { $_.Include }
 
     Get-ChildItem "$RepoRoot/modules/*" -Directory `
-    | ? { (-not $Shipping) -or $($repos -contains $($_.Name)) -or $_.Name -eq 'Templating' } `
-    | % {
+        | ? { (-not $Shipping) -or $($repos -contains $($_.Name)) -or $_.Name -eq 'Templating' } `
+        | % {
         Push-Location $_ | Out-Null
         Write-Verbose "Attempting to get submodule info for $_"
 
         if (Test-Path 'version.props') {
             [xml] $versionXml = Get-Content 'version.props'
-            $versionPrefix = $versionXml.Project.PropertyGroup.VersionPrefix
-        } else {
+            $versionPrefix = $versionXml.Project.PropertyGroup.VersionPrefix | select-object -first 1
+            $versionSuffix = $versionXml.Project.PropertyGroup.VersionSuffix | select-object -first 1
+        }
+        else {
             $versionPrefix = ''
+            $versionSuffix = ''
         }
 
         try {
             $data = [PSCustomObject] @{
-                path      = $_
-                module    = $_.Name
-                commit    = $(git rev-parse HEAD)
-                newCommit = $null
-                changed   = $false
-                branch    = $(git config -f $moduleConfigFile --get submodule.modules/$($_.Name).branch )
+                path          = $_
+                module        = $_.Name
+                commit        = $(git rev-parse HEAD)
+                newCommit     = $null
+                changed       = $false
+                branch        = $(git config -f $moduleConfigFile --get submodule.modules/$($_.Name).branch )
                 versionPrefix = $versionPrefix
+                versionSuffix = $versionSuffix
             }
 
             $submodules += $data

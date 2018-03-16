@@ -7,9 +7,6 @@
   </PropertyGroup>
 
   <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
-    <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
-    <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
-
     <!-- Clear the directories -->
     <RemoveDir Directories="$(_WorkRoot)" />
 
@@ -32,8 +29,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <_FallbackArchiveRestoreSources Include="$(RestoreSources)" />
+      <_FallbackArchiveRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
       <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
-      <_FallbackArchiveRestoreSources Include="$(DependencyMirrorPackageDir)" Condition="Exists($(DependencyMirrorPackageDir))" />
     </ItemGroup>
 
     <RepoTasks.GenerateRestoreSourcesPropsFile
@@ -47,24 +45,9 @@
     <MSBuild
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
-
-    <!-- Add global CLI tools to the LZMA -->
-
-    <!-- Join categories (defined in artifacts.props) with package version info (defined in repos) -->
-    <RepoTasks.JoinItems
-         Left="@(ArtifactInfo)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="PackageId"
-         Right="@(PackageArtifact->WithMetadataValue('LZMA', 'true')->WithMetadataValue('PackageType', 'DotnetTool'))">
-       <Output TaskParameter="JoinResult" ItemName="_DotnetToolPackageId" />
-    </RepoTasks.JoinItems>
-
-    <ItemGroup>
-      <_DotnetToolPackages Include="$(MetapackageRestoreSource)%(_DotnetToolPackageId.Identity).%(_DotnetToolPackageId.Version).nupkg" />
-    </ItemGroup>
-
-    <RepoTasks.CreateNuGetV3FolderFeed Packages="@(_DotnetToolPackages)" DestinationFolder="$(FallbackStagingDir)" Overwrite="true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
-    <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
+    <RepoTasks.CreateLzma OutputPath="$(FallbackOutputPath)" Sources="$(FallbackStagingDir)" />
   </Target>
 </Project>

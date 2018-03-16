@@ -3,8 +3,6 @@
   <PropertyGroup>
     <DependencyAssetsDir>$(RepositoryRoot).deps\assets\</DependencyAssetsDir>
     <DependencyPackagesDir>$(RepositoryRoot).deps\packages\</DependencyPackagesDir>
-    <DependencyMirrorDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorDir>
-    <DependencySymbolsDir>$(RepositoryRoot).deps\symbols\</DependencySymbolsDir>
     <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFile>$(IntermediateDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
@@ -18,6 +16,7 @@
       CopyToPublishArtifacts;
       PublishToAzureFeed;
       PublishToTransportFeed;
+      PublishToMyGet;
     </PublishDependsOn>
 
     <!-- Settings for pushing to the transport feed -->
@@ -69,8 +68,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackagesToPublishToTransport Include="$(DependencySymbolsDir)\**\*.symbols.nupkg" />
-
       <!-- Windows Server hosting bundle -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(WindowsHostingBundleInstallerFileName)">
         <RelativeBlobPath>$(BlobBasePath)$(WindowsHostingBundleInstallerFileName)</RelativeBlobPath>
@@ -126,45 +123,101 @@
       </FilesToPublish>
 
       <!-- Packages -->
-      <_Artifact
+      <_PackageArtifactInfo
         Include="@(ArtifactInfo)"
         ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).nupkg"
         Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
+
+      <_SymbolsPackageArtifactInfo
+        Include="@(ArtifactInfo)"
+        ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).symbols.nupkg"
+        Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetSymbolsPackage'" />
+
+      <NpmPackageToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NpmPackage'" />
     </ItemGroup>
 
+    <!-- Join required because shipping category is stored in universe (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
     <RepoTasks.JoinItems
-      Left="@(_Artifact)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
+      Left="@(_PackageArtifactInfo)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
       Right="@(PackageArtifact)" RightMetadata="Category">
-      <Output TaskParameter="JoinResult" ItemName="PackagesToPublish" />
+      <Output TaskParameter="JoinResult" ItemName="_PackageArtifactInfoWithCategory" />
     </RepoTasks.JoinItems>
 
     <ItemGroup>
-      <_MissingPackages Include="@(PackageArtifact)" />
-      <_MissingPackages Remove="%(PackagesToPublish.PackageId)" />
+      <_MissingPackageArtifact Include="@(PackageArtifact)" />
+      <_MissingPackageArtifact Remove="%(_PackageArtifactInfoWithCategory.PackageId)" />
     </ItemGroup>
 
-    <Error Text="Missing expected packages from PackagesToPublish: %0A - @(_MissingPackages, '%0A - ')" Condition="@(_MissingPackages->Count()) != 0" />
+    <RepoTasks.JoinItems
+      Left="@(_SymbolsPackageArtifactInfo)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
+      Right="@(PackageArtifact)" RightMetadata="Category">
+      <Output TaskParameter="JoinResult" ItemName="_SymbolsArtifactInfoWithCategory" />
+    </RepoTasks.JoinItems>
 
-    <!-- Packages from corefxlab: special case - we are shipping these in preview1 from aspnet because the pipelines API won't be in dotnet/corefx until 2.1.0-preview2. -->
+    <!--
+      Add symbols packages to PackageToPublish after validating PackageToPublish matches PackageArtifact.
+      We don't always produce a symbols package for each regular packages.
+    -->
     <ItemGroup>
-      <PackagesToPublish Include="@(ExternalDependency)" Condition="'%(ExternalDependency.Publish)' == 'true'">
-        <ArtifactPath>$(DependencyMirrorDir)%(ExternalDependency.Identity).%(ExternalDependency.Version).nupkg</ArtifactPath>
-      </PackagesToPublish>
+      <PackageToPublish Include="%(_PackageArtifactInfoWithCategory.ArtifactPath)" Category="%(_PackageArtifactInfoWithCategory.Category)" />
+      <PackageToPublish Include="%(_SymbolsArtifactInfoWithCategory.ArtifactPath)" Category="%(_SymbolsArtifactInfoWithCategory.Category)" />
     </ItemGroup>
   </Target>
 
   <Target Name="_CheckFilesToPublish">
     <ItemGroup>
-      <_MissingFiles Include="%(FilesToPublish.Identity)" Condition="!Exists(%(FilesToPublish.Identity))" />
-      <_MissingFiles Include="%(PackagesToPublish.ArtifactPath)" Condition="!Exists(%(PackagesToPublish.ArtifactPath))" />
+      <_MissingArtifactFile Include="@(FilesToPublish)" Condition="!Exists(%(FilesToPublish.Identity))" />
+      <_MissingArtifactFile Include="@(NpmPackageToPublish)" Condition="!Exists(%(NpmPackageToPublish.Identity))" />
+      <_MissingArtifactFile Include="@(PackageToPublish)" Condition="!Exists(%(PackageToPublish.Identity))" />
     </ItemGroup>
 
-    <Error Text="Missing expected files:%0A - @(_MissingFiles, '%0A - ')" Condition="@(_MissingFiles->Count()) != 0" />
+    <Error Text="Missing expected files:%0A - @(_MissingArtifactFile, '%0A - ')" Condition="@(_MissingArtifactFile->Count()) != 0" />
+    <Error Text="Missing expected packages from PackageToPublish. These were defined as expected PackageArtifact's in artifacts.props: %0A - @(_MissingPackageArtifact, '%0A - ')" Condition="@(_MissingPackageArtifact->Count()) != 0" />
   </Target>
 
   <Target Name="CopyToPublishArtifacts" DependsOnTargets="_CheckFilesToPublish">
-    <MakeDir Directories="$(ArtifactsDir)files\" />
-    <Copy SourceFiles="@(FilesToPublish)" DestinationFolder="$(ArtifactsDir)files\" />
+    <Copy SourceFiles="%(FilesToPublish.Identity)" DestinationFiles="$(ArtifactsDir)%(FilesToPublish.RelativeBlobPath)" Condition="'%(FilesToPublish.RelativeBlobPath)' != ''" />
+  </Target>
+
+  <Target Name="PublishToMyGet"
+          DependsOnTargets="_CheckFilesToPublish;GetToolsets"
+          Condition="'$(PublishToMyget)' == 'true'">
+
+    <Error Text="Missing required property: PublishMyGetFeedUrl"  Condition=" '$(PublishMyGetFeedUrl)' == '' "/>
+    <Error Text="Missing required property: PublishMyGetNpmRegistryUrl"  Condition=" '$(PublishMyGetNpmRegistryUrl)' == '' "/>
+    <Error Text="Missing required property: PublishMyGetFeedKey"  Condition=" '$(PublishMyGetFeedKey)' == '' "/>
+
+    <!-- Contains the super set of packages that we'd like to publish to MyGet and Azure blob -->
+    <ItemGroup>
+      <PackageToPublishToMyGet Include="@(PackageToPublish)" />
+    </ItemGroup>
+
+    <Error Message="No packages found to publish" Condition="@(PackageToPublishToMyGet->Count()) == 0" />
+
+    <PushNuGetPackages
+      Packages="@(PackageToPublishToMyGet)"
+      Feed="$(PublishMyGetFeedUrl)"
+      ApiKey="$(PublishMyGetFeedKey)" />
+
+    <PropertyGroup>
+      <AuthTokenSetting>$(PublishMyGetNpmRegistryUrl.Replace("https:", "")):_authToken</AuthTokenSetting>
+    </PropertyGroup>
+
+    <Exec Command="npm config set &quot;$(AuthTokenSetting)&quot; $(PublishMyGetFeedKey)"
+          StandardOutputImportance="Normal" />
+
+    <Run FileName="npm"
+         Arguments="publish;--registry;$(PublishMyGetNpmRegistryUrl);%(NpmPackageToPublish.Identity)"
+         MaxRetries="5"
+         UseShellExecute="true"
+         ContinueOnError="true">
+      <Output TaskParameter="ExitCode" ItemName="_NpmExitCodes" />
+    </Run>
+
+    <Exec Command="npm config delete $(AuthTokenSetting)"
+          StandardOutputImportance="Normal" />
+
+    <Error Text="Publishing npm modules failed" Condition="%(_NpmExitCodes.Identity) != 0" />
   </Target>
 
   <Target Name="PublishToAzureFeed"
@@ -195,14 +248,14 @@
     Condition="'$(PublishToTransportFeed)' == 'true'">
 
     <ItemGroup>
-      <PackagesToPublishToTransport
-        Include="%(PackagesToPublish.ArtifactPath)"
-        Condition="'%(PackagesToPublish.Category)' == 'ship'" />
+      <PackageToPublishToTransport
+        Include="@(PackageToPublish)"
+        Condition="'%(PackageToPublish.Category)' == 'ship'" />
 
-      <PackagesToPublishToTransport
-        Include="%(PackagesToPublish.ArtifactPath)"
+      <PackageToPublishToTransport
+        Include="@(PackageToPublish)"
         ManifestArtifactData="NonShipping=true"
-        Condition="'%(PackagesToPublish.Category)' != 'ship'" />
+        Condition="'%(PackageToPublish.Category)' != 'ship'" />
 
       <!-- Filter aliased artifacts to workaround dotnet/buildtools#1855 -->
       <FilesToPublishToTransport Include="@(FilesToPublish)"
@@ -211,19 +264,17 @@
         Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
     </ItemGroup>
 
-    <Message Text="Publishing %(PackagesToPublishToTransport.FullPath)" Importance="high" />
-    <Message Text="@(FilesToPublishToTransport -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" Importance="high" />
 
     <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
                     AccountKey="$(PublishBlobFeedKey)"
-                    ItemsToPush="@(PackagesToPublishToTransport)"
+                    ItemsToPush="@(PackageToPublishToTransport)"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
                     ManifestBuildId="$(Version)"
                     ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"
                     ManifestCommit="$(CommitHash)"
                     ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)"
-                    Condition="@(PackagesToPublish->Count()) != 0" />
+                    Condition="@(PackageToPublish->Count()) != 0" />
 
     <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
                     AccountKey="$(PublishBlobFeedKey)"

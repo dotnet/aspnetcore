@@ -8,41 +8,24 @@
   <Import Project="Publish.targets" />
 
   <PropertyGroup>
-    <!-- For external packages that come from feeds will mirrored to aspnetcore feeds. -->
-    <IntermediateMirrorPackageDir>$(IntermediateDir)mirror\</IntermediateMirrorPackageDir>
-    <!-- For external packages that come from feeds we don't mirror. -->
-    <IntermediateExternalPackageDir>$(IntermediateDir)ext\</IntermediateExternalPackageDir>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.g.props</GeneratedPackageVersionPropsPath>
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcesPropsPath>
 
-    <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;PrepareOutputPaths</PrepareDependsOn>
+    <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
-    <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreExternalDependencies</RestoreDependsOn>
+    <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildTemplates;SplitPackages</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
     <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
-    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo;GetLineupPackageInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
   <Target Name="PrepareOutputPaths">
-    <MakeDir Directories="$(ArtifactsDir);$(BuildDir);$(LineupBuildDir);$(IntermediateExternalPackageDir);$(IntermediateMirrorPackageDir)" />
-  </Target>
-
-  <Target Name="RestoreExternalDependencies">
-    <DownloadNuGetPackages
-      Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'false'))"
-      DestinationFolder="$(IntermediateExternalPackageDir)" />
-
-    <DownloadNuGetPackages
-      Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))"
-      DestinationFolder="$(IntermediateMirrorPackageDir)" />
+    <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
   </Target>
 
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
-
-    <Error Text="%(Repository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(Repository.RootPath))" />
-    <Error Text="%(ShippedRepository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(ShippedRepository.RootPath)) AND '%(ShippedRepository.Identity)' != ''" />
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
@@ -85,21 +68,29 @@
       <Solution Include="@(_NoBuildSolution);@(_ShippedSolution)" />
     </ItemGroup>
 
-    <Error Text="No solutions were found in '$(SubmoduleRoot)'" Condition="@(Solution->Count()) == 0" />
+    <Error Text="No solutions were found in '$(SubmoduleRoot)'. Did you forget to clone the submodules? Run `git submodule update --init`." Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="GeneratePropsFiles" DependsOnTargets="PrepareOutputPaths;ResolveRepoInfo">
+  <Target Name="GetLineupPackageInfo">
+    <ItemGroup>
+      <ArtifactInfo Include="$(BuildDir)Internal.AspNetCore.Universe.Lineup.$(Version).nupkg">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>Internal.AspNetCore.Universe.Lineup</PackageId>
+        <Version>$(Version)</Version>
+        <Category>noship</Category>
+        <IsLineup>true</IsLineup>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GeneratePropsFiles" DependsOnTargets="PrepareOutputPaths;GetArtifactInfo">
     <ItemGroup>
       <_LineupPackages Include="@(ExternalDependency)" />
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
-      <_LineupPackages Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" />
-      <_LineupPackages Include="Microsoft.AspNetCore.App" Version="$(PackageVersion)" />
 
-      <_RestoreSources Include="$(DotNetAdditionalRestoreSources)" Condition="'$(DotNetAdditionalRestoreSources)' != ''" />
       <_RestoreSources Include="$(DependencyPackageDir)" Condition="'$(DependencyPackageDir)' != '' AND Exists('$(DependencyPackageDir)')" />
       <_RestoreSources Include="$(BuildDir)" />
-      <_RestoreSources Include="$(IntermediateExternalPackageDir)" />
-      <_RestoreSources Include="$(IntermediateMirrorPackageDir)" />
+      <_RestoreSources Include="$(RestoreSources)" />
     </ItemGroup>
 
     <GeneratePackageVersionPropsFile
@@ -113,7 +104,7 @@
       OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
 
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
-                DestinationFolder="$(LineupBuildDir)"
+                DestinationFolder="$(BuildDir)"
                 Overwrite="true"
                 Properties="version=$(Version);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
@@ -176,13 +167,11 @@
   <Target Name="SplitPackages">
     <ItemGroup>
       <PackageArtifactFile Include="$(BuildDir)*.nupkg" />
-      <ExternalDependencyPackage Include="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))" Category="mirror" />
-      <_MirroredPackageFiles Include="$(IntermediateMirrorPackageDir)*.nupkg" />
     </ItemGroup>
 
     <RepoTasks.CopyPackagesToSplitFolders
-      Packages="@(PackageArtifact);@(ExternalDependencyPackage)"
-      Files="@(PackageArtifactFile);@(_MirroredPackageFiles)"
+      Packages="@(PackageArtifact)"
+      Files="@(PackageArtifactFile)"
       DestinationFolder="$(ArtifactsDir)"
       Overwrite="true" />
   </Target>
@@ -203,6 +192,14 @@
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AppMetapackage='true' must also be marked as AllMetapackage='true'."
            Condition="'%(PackageArtifact.AppMetapackage)' == 'true' AND '%(PackageArtifact.AllMetapackage)' != 'true' " />
   </Target>
+
+  <Target Name="VerifyExternalDependencyConfig">
+    <Error Text="Missing Version metadata for the following external dependencies: %0A - @(ExternalDependency->WithMetadataValue('Version', ''), '%0A - '). "
+           Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
+  </Target>
+
+  <Target Name="CheckUniverse"
+    DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig" />
 
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>

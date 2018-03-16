@@ -15,15 +15,15 @@ All published ASP.NET Core packages can be found on <https://www.nuget.org/profi
 
 Commonly referenced packages:
 
-[all-metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore.All
-[all-metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.All.svg?style=flat-square&label=nuget
+[app-metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore.App
+[app-metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=nuget
 
 [metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore
 [metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.svg?style=flat-square&label=nuget
 
 Package                           | NuGet.org
 :---------------------------------|:---------------------------------------------------------
-Microsoft.AspNetCore.All          | [![][all-metapackage-nuget-badge]][all-metapackage-nuget]
+Microsoft.AspNetCore.App          | [![][app-metapackage-nuget-badge]][app-metapackage-nuget]
 Microsoft.AspNetCore              | [![][metapackage-nuget-badge]][metapackage-nuget]
 
 
@@ -31,16 +31,16 @@ Microsoft.AspNetCore              | [![][metapackage-nuget-badge]][metapackage-n
 
 ### NuGet packages
 
-Packages can be found on <https://dotnet.myget.org/gallery/aspnetcore-dev>. This feed may include
+Packages can be found on <https://dotnet.myget.org/gallery/dotnet-core>. This feed may include
 packages that will not be supported in a officially released build.
 
 Commonly referenced packages:
 
-[app-metapackage-myget]:  https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore.App
-[app-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
+[app-metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore.App
+[app-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
 
-[metapackage-myget]:  https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore
-[metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
+[metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore
+[metapackage-myget-badge]: http://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
 
 Package                           | MyGet
 :---------------------------------|:---------------------------------------------------------
@@ -58,6 +58,7 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
 [debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
 [redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
+[alpine.3.6-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-alpine.3.6-x64.tar.gz
 
 [badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
 [win-x64-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
@@ -68,6 +69,7 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
 [debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
 [redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
+[alpine.3.6-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-alpine.3.6-x64.tar.gz
 
 Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.1 <br> ![][badge-rel-21]
 :---------------------|:----------------------------------------------------------------|:-------------------------------------------------------------------------
@@ -77,6 +79,7 @@ macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                         
 Linux (x64)           | [Archive (tar.gz)][linux-x64-tar]                                | [Archive (tar.gz)][linux-x64-tar-rel-21]
 Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-21]
 RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-21]
+Alpine Linux 3.6 (x64)| [Archive (tar.gz)][alpine.3.6-x64-tar]                           | [Archive (tar.gz)][alpine.3.6-x64-tar-rel-21]
 
 ## Building from source
 

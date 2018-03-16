@@ -28,7 +28,11 @@
     <PropertyGroup>
       <MetapackageSource>$(_MetapackageSrcRoot)$(MetapackageName)\</MetapackageSource>
       <MetapackageWorkDirectory>$(_WorkRoot)$(MetapackageName)\</MetapackageWorkDirectory>
-      <CommonProps>Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true</CommonProps>
+      <CommonProps />
+      <CommonProps>$(CommonProps);Configuration=$(Configuration)</CommonProps>
+      <CommonProps>$(CommonProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonProps>
+      <CommonProps>$(CommonProps);DotNetBuildOffline=true</CommonProps>
+      <CommonProps>$(CommonProps);AspNetUniverseBuildOffline=true</CommonProps>
       <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</CommonProps>
       <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
     </PropertyGroup>
@@ -119,12 +123,9 @@
       <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
       <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
 
-      <!-- Required because SQLitePCLRaw 1.1.8 uses win7-x64/win7-x86 as its RIDs, even though the e_sqlite3.dll file works on all supported win-x64/win-x86 platforms. -->
-      <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x64'">win7-x64</SharedFxRestoreRid>
-      <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x86'">win7-x86</SharedFxRestoreRid>
-
       <CommonSharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRestoreRid)</CommonSharedFxProps>
       <CommonSharedFxProps>$(CommonSharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonSharedFxProps>
+      <CommonSharedFxProps>$(CommonSharedFxProps);DotNetBuildOffline=true</CommonSharedFxProps>
       <CommonSharedFxProps>$(CommonSharedFxProps);AspNetUniverseBuildOffline=true</CommonSharedFxProps>
     </PropertyGroup>
   </Target>
@@ -148,7 +149,7 @@
     <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
     <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
       Targets="Restore"
-      Properties="$(RestoreProps);_Target=Restore" />
+      Properties="$(RestoreProps);_Target=Restore;RestoreForce=true" />
   </Target>
 
   <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
@@ -260,6 +261,8 @@
       <CrossGenToolFile Include="%(RuntimePackage.ResolvedPath)\**\$(CrossGenTool)" />
     </ItemGroup>
 
+    <Error Text="Could not identify the runtime package for $(SharedFXRid)" Condition="@(RuntimePackage->Count()) == 0" />
+
     <!-- Create tool directory with crossgen executable and runtime assemblies -->
     <Copy SourceFiles="@(RuntimePackageFiles);@(CrossGenToolFile)" DestinationFolder="$(SharedFxCrossGenToolDirectory)"/>
 
@@ -268,6 +271,7 @@
     </ItemGroup>
 
     <Error Text="Expected to resolve a single runtime package but instead resolved @(RuntimePackage->Count()) with identities %(RuntimePackage.Identity)" Condition="'@(RuntimePackage->Count())' != 1" />
+    <Error Text="Could not find crossgen in %(RuntimePackage.ResolvedPath)" Condition="@(CrossGenToolFile->Count()) == 0" />
     <Error Text="Expected to resolve a single clr jit assembly but instead resolved @(ClrJitAssembly->Count()) with identities %(ClrJitAssembly.Identity)" Condition="'@(ClrJitAssembly->Count())' != 1" />
 
     <!-- Gather details on published assemblies -->
@@ -396,7 +400,7 @@
 
     <!-- Produce symbols nupkg -->
     <PackNuspec NuspecPath="$(SymbolsWorkDir)$(SymbolsPackageId).nuspec"
-      DestinationFolder="$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))symbols\"
+      OutputPath="$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))symbols\$(SymbolsPackageId).$(PackageVersion).symbols.nupkg"
       Properties="version=$(PackageVersion);id=$(SymbolsPackageId);description=$(Description);Configuration=$(Configuration)"
       Overwrite="true"
       PackageFiles="@(SymbolFiles)"
@@ -469,10 +473,10 @@
     <!-- Create symbols nupkg -->
     <PropertyGroup>
       <AppSymbolsArguments>SymbolsWorkDir=$(AppSharedFxSymbolsDirectory)</AppSymbolsArguments>
-      <AppSymbolsArguments>$(AppSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.App.symbols</AppSymbolsArguments>
+      <AppSymbolsArguments>$(AppSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.App</AppSymbolsArguments>
       <AppSymbolsArguments>$(AppSymbolsArguments);Description=Symbol packages for Microsoft.AspNetCore.App shared framework</AppSymbolsArguments>
       <AllSymbolsArguments>SymbolsWorkDir=$(AllSharedFxSymbolsDirectory)</AllSymbolsArguments>
-      <AllSymbolsArguments>$(AllSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.All.symbols</AllSymbolsArguments>
+      <AllSymbolsArguments>$(AllSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.All</AllSymbolsArguments>
       <AllSymbolsArguments>$(AllSymbolsArguments);Description=Symbol packages for Microsoft.AspNetCore.All shared framework</AllSymbolsArguments>
     </PropertyGroup>
 
@@ -501,6 +505,6 @@
       Overwrite="true"/>
   </Target>
 
-  <Target Name="BuildSharedFx" DependsOnTargets="ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx"/>
+  <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx"/>
 
 </Project>

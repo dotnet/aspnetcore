@@ -47,9 +47,6 @@ namespace RepoTasks.Utilities
                     case "shipoob":
                         category = PackageCategory.ShipOob;
                         break;
-                    case "mirror":
-                        category = PackageCategory.Mirror;
-                        break;
                     default:
                         category = PackageCategory.Unknown;
                         break;
