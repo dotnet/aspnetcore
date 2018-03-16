@@ -35,7 +35,7 @@ public:
     );
 
     VOID
-    SetManangedHttpContext(
+    SetManagedHttpContext(
         PVOID pManagedHttpContext
     );
 

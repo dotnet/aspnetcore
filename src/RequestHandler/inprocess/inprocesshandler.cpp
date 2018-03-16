@@ -128,7 +128,7 @@ IN_PROCESS_HANDLER::SetAsyncCompletionStatus(
 }
 
 VOID
-IN_PROCESS_HANDLER::SetManangedHttpContext(
+IN_PROCESS_HANDLER::SetManagedHttpContext(
     PVOID pManagedHttpContext
 )
 {
