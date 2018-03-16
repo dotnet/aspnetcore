@@ -548,10 +548,18 @@
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
 
-    <!-- Create ubuntu.17.04 installers by renaming ubuntu.16.04 installers -->
+    <!-- Create ubuntu.17.10 installers by renaming ubuntu.16.04 installers -->
     <Copy
       SourceFiles="%(Ubuntu1604Installers.FullPath)"
-      DestinationFiles="$([System.String]::Copy('%(Ubuntu1604Installers.FullPath)').Replace('ubuntu.16.04','ubuntu.17.04'))"
+      DestinationFiles="$([System.String]::Copy('%(Ubuntu1604Installers.FullPath)').Replace('ubuntu.16.04','ubuntu.17.10'))"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create ubuntu.18.04 installers by renaming ubuntu.16.04 installers -->
+    <Copy
+      SourceFiles="%(Ubuntu1604Installers.FullPath)"
+      DestinationFiles="$([System.String]::Copy('%(Ubuntu1604Installers.FullPath)').Replace('ubuntu.16.04','ubuntu.18.04'))"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
