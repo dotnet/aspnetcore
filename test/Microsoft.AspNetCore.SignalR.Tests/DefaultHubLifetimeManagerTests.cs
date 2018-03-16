@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -11,12 +13,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class DefaultHubLifetimeManagerTests
     {
         [Fact]
-        public async Task InvokeAllAsyncWritesToAllConnectionsOutput()
+        public async Task SendAllAsyncWritesToAllConnectionsOutput()
         {
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>();
+                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
@@ -38,12 +40,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task InvokeAllAsyncDoesNotWriteToDisconnectedConnectionsOutput()
+        public async Task SendAllAsyncDoesNotWriteToDisconnectedConnectionsOutput()
         {
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>();
+                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
@@ -64,12 +66,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task InvokeGroupAsyncWritesToAllConnectionsInGroupOutput()
+        public async Task SendGroupAsyncWritesToAllConnectionsInGroupOutput()
         {
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>();
+                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
                 var connection1 = HubConnectionContextUtils.Create(client1.Connection);
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
@@ -90,11 +92,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task InvokeConnectionAsyncWritesToConnectionOutput()
+        public async Task SendConnectionAsyncWritesToConnectionOutput()
         {
             using (var client = new TestClient())
             {
-                var manager = new DefaultHubLifetimeManager<MyHub>();
+                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
                 var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
@@ -109,42 +111,71 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task InvokeConnectionAsyncThrowsIfConnectionFailsToWrite()
+        public async Task SendConnectionAsyncDoesNotThrowIfConnectionFailsToWrite()
         {
             using (var client = new TestClient())
             {
-                // Force an exception when writing to connection
-                var manager = new DefaultHubLifetimeManager<MyHub>();
+                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
 
                 var connectionMock = HubConnectionContextUtils.CreateMock(client.Connection);
+                // Force an exception when writing to connection
                 connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Throws(new Exception("Message"));
                 var connection = connectionMock.Object;
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
-                var exception = await Assert.ThrowsAsync<Exception>(() => manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout());
-                Assert.Equal("Message", exception.Message);
+                await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
             }
         }
 
         [Fact]
-        public async Task InvokeConnectionAsyncOnNonExistentConnectionNoops()
+        public async Task SendAllAsyncSendsToAllConnectionsEvenWhenSomeFailToSend()
         {
-            var manager = new DefaultHubLifetimeManager<MyHub>();
+            using (var client = new TestClient())
+            using (var client2 = new TestClient())
+            {
+                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+
+                var connectionMock = HubConnectionContextUtils.CreateMock(client.Connection);
+                var connectionMock2 = HubConnectionContextUtils.CreateMock(client2.Connection);
+
+                var tcs = new TaskCompletionSource<object>();
+                var tcs2 = new TaskCompletionSource<object>();
+                // Force an exception when writing to connection
+                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Callback(() => tcs.TrySetResult(null)).Throws(new Exception("Message"));
+                connectionMock2.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Callback(() => tcs2.TrySetResult(null)).Throws(new Exception("Message"));
+                var connection = connectionMock.Object;
+                var connection2 = connectionMock2.Object;
+
+                await manager.OnConnectedAsync(connection).OrTimeout();
+                await manager.OnConnectedAsync(connection2).OrTimeout();
+
+                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
+
+                // Check that all connections were "written" to
+                await tcs.Task.OrTimeout();
+                await tcs2.Task.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task SendConnectionAsyncOnNonExistentConnectionNoops()
+        {
+            var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
             await manager.SendConnectionAsync("NotARealConnectionId", "Hello", new object[] { "World" }).OrTimeout();
         }
 
         [Fact]
         public async Task AddGroupOnNonExistentConnectionNoops()
         {
-            var manager = new DefaultHubLifetimeManager<MyHub>();
+            var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
             await manager.AddGroupAsync("NotARealConnectionId", "MyGroup").OrTimeout();
         }
 
         [Fact]
         public async Task RemoveGroupOnNonExistentConnectionNoops()
         {
-            var manager = new DefaultHubLifetimeManager<MyHub>();
+            var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
             await manager.RemoveGroupAsync("NotARealConnectionId", "MyGroup").OrTimeout();
         }
 

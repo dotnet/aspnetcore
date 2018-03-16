@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         }
 
         [Fact]
-        public async Task WritingToLocalConnectionThatFailsThrowsException()
+        public async Task WritingToLocalConnectionThatFailsDoesNotThrowException()
         {
             var manager = new RedisHubLifetimeManager<MyHub>(new LoggerFactory().CreateLogger<RedisHubLifetimeManager<MyHub>>(), Options.Create(new RedisOptions()
             {
@@ -519,8 +519,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
-                var exception = await Assert.ThrowsAsync<Exception>(() => manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout());
-                Assert.Equal("Message", exception.Message);
+                await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
             }
         }
 
