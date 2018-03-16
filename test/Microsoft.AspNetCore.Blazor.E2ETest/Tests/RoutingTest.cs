@@ -110,6 +110,16 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
         }
 
+        [Fact]
+        public void CanNavigateProgrammatically()
+        {
+            SetUrlViaPushState($"{ServerPathBase}/RouterTest/");
+
+            var app = MountTestComponent<TestRouter>();
+            app.FindElement(By.TagName("button")).Click();
+            Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+        }
+
         public void Dispose()
         {
             // Clear any existing state

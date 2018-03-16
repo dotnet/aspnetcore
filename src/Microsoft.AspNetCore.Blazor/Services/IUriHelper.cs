@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// <summary>
         /// Gets the current absolute URI.
         /// </summary>
-        /// <returns>The browser's current absolute URI.</returns>
+        /// <returns>The current absolute URI.</returns>
         string GetAbsoluteUri();
 
         /// <summary>
@@ -44,5 +44,12 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// <param name="absoluteUri">An absolute URI that is within the space of the base URI prefix.</param>
         /// <returns>A relative URI path.</returns>
         string ToBaseRelativePath(string baseUriPrefix, string locationAbsolute);
+
+        /// <summary>
+        /// Navigates to the specified URI.
+        /// </summary>
+        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
+        /// prefix (as returned by <see cref="GetBaseUriPrefix"/>).</param>
+        void NavigateTo(string uri);
     }
 }

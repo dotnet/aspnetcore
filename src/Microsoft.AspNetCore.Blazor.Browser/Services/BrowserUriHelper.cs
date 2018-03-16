@@ -104,6 +104,17 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
             throw new ArgumentException($"The URI '{absoluteUri}' is not contained by the base URI '{baseUriPrefix}'.");
         }
 
+        /// <inheritdoc />
+        public void NavigateTo(string uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            RegisteredFunction.InvokeUnmarshalled<object>($"{_functionPrefix}.navigateTo", uri);
+        }
+
         private static void EnsureBaseUriPopulated()
         {
             // The <base href> is fixed for the lifetime of the page, so just cache it

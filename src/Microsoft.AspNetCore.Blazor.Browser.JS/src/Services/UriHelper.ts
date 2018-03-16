@@ -1,6 +1,6 @@
 ﻿import { registerFunction } from '../Interop/RegisteredFunction';
 import { platform } from '../Environment';
-import { MethodHandle } from '../Platform/Platform';
+import { MethodHandle, System_String } from '../Platform/Platform';
 const registeredFunctionPrefix = 'Microsoft.AspNetCore.Blazor.Browser.Services.BrowserUriHelper';
 let notifyLocationChangedMethod: MethodHandle;
 let hasRegisteredEventListeners = false;
@@ -24,14 +24,27 @@ registerFunction(`${registeredFunctionPrefix}.enableNavigationInteception`, () =
       const href = anchorTarget.getAttribute('href');
       if (isWithinBaseUriSpace(toAbsoluteUri(href))) {
         event.preventDefault();
-        history.pushState(null, /* ignored title */ '', href);
-        handleInternalNavigation();
+        performInternalNavigation(href);
       }
     }
   });
 
   window.addEventListener('popstate', handleInternalNavigation);
 });
+
+registerFunction(`${registeredFunctionPrefix}.navigateTo`, (uriDotNetString: System_String) => {
+  const href = platform.toJavaScriptString(uriDotNetString);
+  if (isWithinBaseUriSpace(toAbsoluteUri(href))) {
+    performInternalNavigation(href);
+  } else {
+    location.href = href;
+  }
+});
+
+function performInternalNavigation(href: string) {
+  history.pushState(null, /* ignored title */ '', href);
+  handleInternalNavigation();
+}
 
 function handleInternalNavigation() {
   if (!notifyLocationChangedMethod) {

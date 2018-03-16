@@ -1,4 +1,6 @@
-﻿<ul>
+﻿@inject Microsoft.AspNetCore.Blazor.Services.IUriHelper uriHelper
+
+<ul>
     <li><a href="/subdir/RouterTest/">Default</a></li>
     <li><a href="/subdir/RouterTest/?abc=123">Default with query</a></li>
     <li><a href="/subdir/RouterTest/#blah">Default with hash</a></li>
@@ -7,3 +9,7 @@
     <li><a href="/subdir/RouterTest/Other?abc=123">Other with query</a></li>
     <li><a href="/subdir/RouterTest/Other#blah">Other with hash</a></li>
 </ul>
+
+<button onclick=@{ uriHelper.NavigateTo("RouterTest/Other"); }>
+    Programmatic navigation
+</button>
