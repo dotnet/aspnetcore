@@ -1,0 +1,33 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    CSharpCode - 
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPageWithNoLeadingPageDirective.cshtml", typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPageWithNoLeadingPageDirective), null)]
+    NamespaceDeclaration -  - AspNetCore
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPageWithNoLeadingPageDirective - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(0, 28, true);
+                HtmlContent - (0:0,0 [28] RazorPageWithNoLeadingPageDirective.cshtml)
+                    IntermediateToken - (0:0,0 [5] RazorPageWithNoLeadingPageDirective.cshtml) - Html - <div>
+                    IntermediateToken - (5:0,5 [15] RazorPageWithNoLeadingPageDirective.cshtml) - Html - Some text here.
+                    IntermediateToken - (20:0,20 [6] RazorPageWithNoLeadingPageDirective.cshtml) - Html - </div>
+                    IntermediateToken - (26:0,26 [2] RazorPageWithNoLeadingPageDirective.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPageWithNoLeadingPageDirective> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPageWithNoLeadingPageDirective>)PageContext?.ViewData;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPageWithNoLeadingPageDirective Model => ViewData.Model;

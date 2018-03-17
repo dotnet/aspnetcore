@@ -11,6 +11,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         public static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
 
+        private static readonly RazorProjectEngine LeadingDirectiveParsingEngine = RazorProjectEngine.Create(
+            RazorConfiguration.Default,
+            RazorProjectFileSystem.Create("/"),
+            builder =>
+            {
+                for (var i = builder.Phases.Count - 1; i >= 0; i--)
+                {
+                    var phase = builder.Phases[i];
+                    builder.Phases.RemoveAt(i);
+                    if (phase is IRazorDocumentClassifierPhase)
+                    {
+                        break;
+                    }
+                }
+
+                RazorExtensions.Register(builder);
+                builder.Features.Add(new LeadingDirectiveParserOptionsFeature());
+            });
+
         protected override string DocumentKind => RazorPageDocumentKind;
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
@@ -57,6 +76,34 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 pageDirective.DirectiveNode.Diagnostics.Add(
                     RazorExtensionsDiagnosticFactory.CreatePageDirective_CannotBeImported(pageDirective.DirectiveNode.Source.Value));
+            }
+            else
+            {
+                // The document contains a page directive and it is not imported.
+                // We now want to make sure this page directive exists at the top of the file.
+                // We are going to do that by re-parsing the document until the very first line that is not Razor comment
+                // or whitespace. We then make sure the page directive still exists in the re-parsed IR tree.
+                var leadingDirectiveCodeDocument = RazorCodeDocument.Create(codeDocument.Source);
+                LeadingDirectiveParsingEngine.Engine.Process(leadingDirectiveCodeDocument);
+
+                var leadingDirectiveDocumentIRNode = leadingDirectiveCodeDocument.GetDocumentIntermediateNode();
+                if (!PageDirective.TryGetPageDirective(leadingDirectiveDocumentIRNode, out var _))
+                {
+                    // The page directive is not the leading directive. Add an error.
+                    // Note: Adding the error to the top-level document node because the directive node will be removed by a later optimization pass.
+                    document.Diagnostics.Add(
+                        RazorExtensionsDiagnosticFactory.CreatePageDirective_MustExistAtTheTopOfFile(pageDirective.DirectiveNode.Source.Value));
+                }
+            }
+        }
+
+        private class LeadingDirectiveParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
+        {
+            public int Order { get; }
+
+            public void Configure(RazorParserOptionsBuilder options)
+            {
+                options.ParseLeadingDirectives = true;
             }
         }
     }

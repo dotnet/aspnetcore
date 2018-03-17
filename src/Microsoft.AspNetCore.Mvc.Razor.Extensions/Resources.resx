@@ -171,6 +171,9 @@
   <data name="PageDirectiveCannotBeImported" xml:space="preserve">
     <value>The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.</value>
   </data>
+  <data name="PageDirectiveMustExistAtTheTopOfFile" xml:space="preserve">
+    <value>The '@{0}' directive must precede all other elements defined in a Razor file.</value>
+  </data>
   <data name="PageDirective_Description" xml:space="preserve">
     <value>Mark the page as a Razor Page.</value>
   </data>

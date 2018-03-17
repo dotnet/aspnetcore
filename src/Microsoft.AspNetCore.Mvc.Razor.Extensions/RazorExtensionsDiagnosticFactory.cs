@@ -113,5 +113,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             return diagnostic;
         }
+
+        internal static readonly RazorDiagnosticDescriptor PageDirective_MustExistAtTheTopOfFile =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}3906",
+                () => Resources.PageDirectiveMustExistAtTheTopOfFile,
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreatePageDirective_MustExistAtTheTopOfFile(SourceSpan source)
+        {
+            var fileName = Path.GetFileName(source.FilePath);
+            var diagnostic = RazorDiagnostic.Create(PageDirective_MustExistAtTheTopOfFile, source, PageDirective.Directive.Directive);
+
+            return diagnostic;
+        }
     }
 }

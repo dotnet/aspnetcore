@@ -263,6 +263,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             => string.Format(CultureInfo.CurrentCulture, GetString("PageDirectiveCannotBeImported"), p0, p1);
 
         /// <summary>
+        /// The '@{0}' directive must exist at the top of the file. Only comments and whitespace are allowed before the '@{0}' directive.
+        /// </summary>
+        internal static string PageDirectiveMustExistAtTheTopOfFile
+        {
+            get => GetString("PageDirectiveMustExistAtTheTopOfFile");
+        }
+
+        /// <summary>
+        /// The '@{0}' directive must exist at the top of the file. Only comments and whitespace are allowed before the '@{0}' directive.
+        /// </summary>
+        internal static string FormatPageDirectiveMustExistAtTheTopOfFile(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("PageDirectiveMustExistAtTheTopOfFile"), p0);
+
+        /// <summary>
         /// Mark the page as a Razor Page.
         /// </summary>
         internal static string PageDirective_Description
