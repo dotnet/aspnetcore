@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
     {
         private readonly ICompressionProvider[] _providers;
         private readonly HashSet<string> _mimeTypes;
+        private readonly HashSet<string> _excludedMimeTypes;
         private readonly bool _enableForHttps;
 
         /// <summary>
@@ -34,7 +35,9 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _providers = options.Value.Providers.ToArray();
+            var responseCompressionOptions = options.Value;
+
+            _providers = responseCompressionOptions.Providers.ToArray();
             if (_providers.Length == 0)
             {
                 // Use the factory so it can resolve IOptions<GzipCompressionProviderOptions> from DI.
@@ -59,14 +62,19 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 }
             }
 
-            var mimeTypes = options.Value.MimeTypes;
+            var mimeTypes = responseCompressionOptions.MimeTypes;
             if (mimeTypes == null || !mimeTypes.Any())
             {
                 mimeTypes = ResponseCompressionDefaults.MimeTypes;
             }
             _mimeTypes = new HashSet<string>(mimeTypes, StringComparer.OrdinalIgnoreCase);
 
-            _enableForHttps = options.Value.EnableForHttps;
+            _excludedMimeTypes = new HashSet<string>(
+                responseCompressionOptions.ExcludedMimeTypes ?? Enumerable.Empty<string>(),
+                StringComparer.OrdinalIgnoreCase
+            );
+
+            _enableForHttps = responseCompressionOptions.EnableForHttps;
         }
 
         /// <inheritdoc />
@@ -115,7 +123,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                         for (int i = 0; i < _providers.Length; i++)
                         {
                             var provider = _providers[i];
-                            
+
                             // Any provider is a candidate.
                             candidates.Add(new ProviderCandidate(provider.EncodingName, quality, i, provider));
                         }
@@ -175,8 +183,9 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 mimeType = mimeType.Trim();
             }
 
-            // TODO PERF: StringSegments?
-            return _mimeTypes.Contains(mimeType);
+            return ShouldCompressExact(mimeType) //check exact match type/subtype
+                ?? ShouldCompressPartial(mimeType) //check partial match type/*
+                ?? _mimeTypes.Contains("*/*"); //check wildcard */*
         }
 
         /// <inheritdoc />
@@ -187,6 +196,35 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return false;
             }
             return !string.IsNullOrEmpty(context.Request.Headers[HeaderNames.AcceptEncoding]);
+        }
+
+        private bool? ShouldCompressExact(string mimeType)
+        {
+            //Check excluded MIME types first, then included
+            if (_excludedMimeTypes.Contains(mimeType))
+            {
+                return false;
+            }
+
+            if (_mimeTypes.Contains(mimeType))
+            {
+                return true;
+            }
+
+            return null;
+        }
+
+        private bool? ShouldCompressPartial(string mimeType)
+        {
+            int? slashPos = mimeType?.IndexOf('/');
+
+            if (slashPos >= 0)
+            {
+                string partialMimeType = mimeType.Substring(0, slashPos.Value) + "/*";
+                return ShouldCompressExact(partialMimeType);
+            }
+
+            return null;
         }
 
         private readonly struct ProviderCandidate : IEquatable<ProviderCandidate>
