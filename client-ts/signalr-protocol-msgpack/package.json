@@ -1,6 +1,6 @@
 {
   "name": "@aspnet/signalr-protocol-msgpack",
-  "version": "1.0.0-preview2-t000",
+  "version": "1.0.0-preview3-t000",
   "description": "MsgPack Protocol support for ASP.NET Core SignalR",
   "main": "./dist/cjs/index.js",
   "browser": "./dist/browser/signalr-protocol-msgpack.js",
@@ -40,7 +40,7 @@
     "src/**/*"
   ],
   "peerDependencies": {
-    "@aspnet/signalr": "^1.0.0-preview1"
+    "@aspnet/signalr": "^1.0.0-preview3"
   },
   "dependencies": {
     "msgpack5": "^4.0.1"
