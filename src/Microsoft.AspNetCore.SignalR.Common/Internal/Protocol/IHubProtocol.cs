@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         TransferFormat TransferFormat { get; }
 
-        bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages);
+        bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages);
 
         void WriteMessage(HubMessage message, Stream output);
     }

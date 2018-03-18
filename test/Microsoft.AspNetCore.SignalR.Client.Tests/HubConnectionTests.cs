@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public TransferFormat TransferFormat => TransferFormat.Binary;
 
-            public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
+            public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
             {
                 ParseCalls += 1;
                 if (_error != null)

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [Fact]
         public void ReadMessage()
         {
-            var message = new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes("ABC\u001e"));
+            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC\u001e"));
 
             Assert.True(TextMessageParser.TryParseMessage(ref message, out var payload));
             Assert.Equal("ABC", Encoding.UTF8.GetString(payload.ToArray()));
@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [Fact]
         public void TryReadingIncompleteMessage()
         {
-            var message = new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes("ABC"));
+            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC"));
             Assert.False(TextMessageParser.TryParseMessage(ref message, out var payload));
         }
 
         [Fact]
         public void TryReadingMultipleMessages()
         {
-            var message = new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e"));
+            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e"));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out var payload));
             Assert.Equal("ABC", Encoding.UTF8.GetString(payload.ToArray()));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out payload));
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [Fact]
         public void IncompleteTrailingMessage()
         {
-            var message = new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e123"));
+            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e123"));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out var payload));
             Assert.Equal("ABC", Encoding.UTF8.GetString(payload.ToArray()));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out payload));

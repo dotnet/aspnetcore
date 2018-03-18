@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
     {
         private const int MaxLengthPrefixSize = 5;
 
-        public static bool TryParseMessage(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> payload)
+        public static bool TryParseMessage(ref ReadOnlyMemory<byte> buffer, out ReadOnlyMemory<byte> payload)
         {
             if (buffer.IsEmpty)
             {
@@ -33,10 +33,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             var numBytes = 0;
 
             var lengthPrefixBuffer = buffer.Slice(0, Math.Min(MaxLengthPrefixSize, buffer.Length));
+            var span = lengthPrefixBuffer.Span;
+
             byte byteRead;
             do
             {
-                byteRead = lengthPrefixBuffer[numBytes];
+                byteRead = span[numBytes];
                 length = length | (((uint)(byteRead & 0x7f)) << (numBytes * 7));
                 numBytes++;
             }

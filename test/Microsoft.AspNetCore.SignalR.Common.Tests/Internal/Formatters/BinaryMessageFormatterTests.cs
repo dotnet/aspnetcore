@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             {
                 BinaryMessageFormatter.WriteLengthPrefix(payload.Length, ms);
                 ms.Write(payload, 0, payload.Length);
-                var buffer = new ReadOnlySpan<byte>(ms.ToArray());
+                var buffer = new ReadOnlyMemory<byte>(ms.ToArray());
                 Assert.True(BinaryMessageParser.TryParseMessage(ref buffer, out var roundtripped));
                 Assert.Equal(payload, roundtripped.ToArray());
             }

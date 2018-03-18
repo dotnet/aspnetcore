@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
@@ -31,27 +30,27 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             TextMessageFormatter.WriteRecordSeparator(output);
         }
 
-        public static bool TryParseMessage(ReadOnlySpan<byte> input, out NegotiationMessage negotiationMessage)
+        public static bool TryParseMessage(ReadOnlyMemory<byte> input, out NegotiationMessage negotiationMessage)
         {
             if (!TextMessageParser.TryParseMessage(ref input, out var payload))
             {
                 throw new InvalidDataException("Unable to parse payload as a negotiation message.");
             }
 
-            using (var memoryStream = new MemoryStream(payload.ToArray()))
+            var textReader = new Utf8BufferTextReader(payload);
+            using (var reader = new JsonTextReader(textReader))
             {
-                using (var reader = new JsonTextReader(new StreamReader(memoryStream)))
-                {
-                    var token = JToken.ReadFrom(reader);
-                    if (token == null || token.Type != JTokenType.Object)
-                    {
-                        throw new InvalidDataException($"Unexpected JSON Token Type '{token?.Type}'. Expected a JSON Object.");
-                    }
+                reader.ArrayPool = JsonArrayPool<char>.Shared;
 
-                    var negotiationJObject = (JObject)token;
-                    var protocol = JsonUtils.GetRequiredProperty<string>(negotiationJObject, ProtocolPropertyName);
-                    negotiationMessage = new NegotiationMessage(protocol);
+                var token = JToken.ReadFrom(reader);
+                if (token == null || token.Type != JTokenType.Object)
+                {
+                    throw new InvalidDataException($"Unexpected JSON Token Type '{token?.Type}'. Expected a JSON Object.");
                 }
+
+                var negotiationJObject = (JObject)token;
+                var protocol = JsonUtils.GetRequiredProperty<string>(negotiationJObject, ProtocolPropertyName);
+                negotiationMessage = new NegotiationMessage(protocol);
             }
             return true;
         }
@@ -75,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
             var memory = buffer.IsSingleSegment ? buffer.First : buffer.ToArray();
 
-            return TryParseMessage(memory.Span, out negotiationMessage);
+            return TryParseMessage(memory, out negotiationMessage);
         }
     }
 }

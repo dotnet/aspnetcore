@@ -82,6 +82,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new object[] { PingMessage.Instance, true, NullValueHandling.Ignore, "{\"type\":6}" },
         };
 
+        public static IEnumerable<object[]> OutOfOrderJsonTestData => new[]
+        {
+            new object[] { "{ \"arguments\": [1,2], \"type\":1, \"target\": \"Method\" }", new InvocationMessage("Method", argumentBindingException: null, 1, 2) },
+            new object[] { "{ \"type\":4, \"arguments\": [1,2], \"target\": \"Method\", \"invocationId\": \"3\" }", new StreamInvocationMessage("3", "Method", argumentBindingException: null, 1, 2) },
+            new object[] { "{ \"type\":3, \"result\": 10, \"invocationId\": \"15\" }", new CompletionMessage("15", null, 10, hasResult: true) },
+            new object[] { "{ \"item\": \"foo\", \"invocationId\": \"1a\", \"type\":2 }", new StreamItemMessage("1a", "foo") }
+        };
+
         [Theory]
         [MemberData(nameof(ProtocolTestData))]
         public void WriteMessage(HubMessage message, bool camelCase, NullValueHandling nullValueHandling, string expectedOutput)
@@ -169,6 +177,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{'type':'foo'}", "Expected 'type' to be of type Integer.")]
 
         [InlineData("{'type':3,'invocationId':'42','error':'foo','result':true}", "The 'error' and 'result' properties are mutually exclusive.")]
+        [InlineData("{'type':3,'invocationId':'42','result':true", "Error reading JSON.")]
         public void InvalidMessages(string input, string expectedMessage)
         {
             input = Frame(input);
@@ -181,8 +190,24 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [Theory]
+        [MemberData(nameof(OutOfOrderJsonTestData))]
+        public void ParseOutOfOrderJson(string input, HubMessage expectedMessage)
+        {
+            input = Frame(input);
+
+            var binder = new TestBinder(expectedMessage);
+            var protocol = new JsonHubProtocol();
+            var messages = new List<HubMessage>();
+            protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, messages);
+
+            Assert.Equal(expectedMessage, messages[0], TestHubMessageEqualityComparer.Instance);
+        }
+
+        [Theory]
         [InlineData("{'type':1,'invocationId':'42','target':'foo','arguments':[]}", "Invocation provides 0 argument(s) but target expects 2.")]
+        [InlineData("{'type':1,'arguments':[], 'invocationId':'42','target':'foo'}", "Invocation provides 0 argument(s) but target expects 2.")]
         [InlineData("{'type':1,'invocationId':'42','target':'foo','arguments':[ 'abc', 'xyz']}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
+        [InlineData("{'type':1,'invocationId':'42','arguments':[ 'abc', 'xyz'], 'target':'foo'}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         [InlineData("{'type':4,'invocationId':'42','target':'foo','arguments':[]}", "Invocation provides 0 argument(s) but target expects 2.")]
         [InlineData("{'type':4,'invocationId':'42','target':'foo','arguments':[ 'abc', 'xyz']}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         public void ArgumentBindingErrors(string input, string expectedMessage)

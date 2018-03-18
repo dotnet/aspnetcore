@@ -13,8 +13,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             foreach (var header in headers)
             {
+                if (hubMessage.Headers == null)
+                {
+                    hubMessage.Headers = new Dictionary<string, string>();
+                }
+
                 hubMessage.Headers[header.Key] = header.Value;
             }
+
             return hubMessage;
         }
     }
