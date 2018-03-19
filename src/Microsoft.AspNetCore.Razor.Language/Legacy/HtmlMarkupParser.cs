@@ -12,6 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private const string ScriptTagName = "script";
 
+        private static readonly HtmlSymbol[] nonAllowedHtmlCommentEnding = new[] { HtmlSymbol.Hyphen, new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("<", HtmlSymbolType.OpenAngle) };
+        private static readonly HtmlSymbol[] singleHyphenArray = new[] { HtmlSymbol.Hyphen };
+
         private static readonly char[] ValidAfterTypeAttributeNameCharacters = { ' ', '\t', '\r', '\n', '\f', '=' };
         private SourceLocation _lastTagStart = SourceLocation.Zero;
         private HtmlSymbol _bufferedOpenAngle;
@@ -492,33 +495,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (AcceptAndMoveNext())
             {
-                if (CurrentSymbol.Type == HtmlSymbolType.DoubleHyphen)
+                if (IsHtmlCommentAhead())
                 {
-                    AcceptAndMoveNext();
-
-                    Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
-                    while (!EndOfFile)
+                    using (Context.Builder.StartBlock(BlockKindInternal.HtmlComment))
                     {
-                        SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
-                        if (At(HtmlSymbolType.DoubleHyphen))
-                        {
-                            AcceptWhile(HtmlSymbolType.DoubleHyphen);
+                        // Accept the double-hyphen symbol at the beginning of the comment block.
+                        AcceptAndMoveNext();
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
 
-                            if (At(HtmlSymbolType.Text) &&
-                                string.Equals(CurrentSymbol.Content, "-", StringComparison.Ordinal))
-                            {
-                                AcceptAndMoveNext();
-                            }
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.WhiteSpace;
+                        while (!EndOfFile)
+                        {
+                            SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
+                            var lastDoubleHyphen = AcceptAllButLastDoubleHyphens();
 
                             if (At(HtmlSymbolType.CloseAngle))
                             {
+                                // Output the content in the comment block as a separate markup
+                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+
+                                // This is the end of a comment block
+                                Accept(lastDoubleHyphen);
                                 AcceptAndMoveNext();
+                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
                                 return true;
+                            }
+                            else if (lastDoubleHyphen != null)
+                            {
+                                Accept(lastDoubleHyphen);
                             }
                         }
                     }
-
-                    return false;
                 }
                 else if (CurrentSymbol.Type == HtmlSymbolType.LeftBracket)
                 {
@@ -531,6 +538,138 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     AcceptAndMoveNext();
                     return AcceptUntilAll(HtmlSymbolType.CloseAngle);
+                }
+            }
+
+            return false;
+        }
+
+        protected HtmlSymbol AcceptAllButLastDoubleHyphens()
+        {
+            var lastDoubleHyphen = CurrentSymbol;
+            AcceptWhile(s =>
+            {
+                if (NextIs(HtmlSymbolType.DoubleHyphen))
+                {
+                    lastDoubleHyphen = s;
+                    return true;
+                }
+
+                return false;
+            });
+
+            NextToken();
+
+            if (At(HtmlSymbolType.Text) && IsHyphen(CurrentSymbol))
+            {
+                // Doing this here to maintain the order of symbols
+                if (!NextIs(HtmlSymbolType.CloseAngle))
+                {
+                    Accept(lastDoubleHyphen);
+                    lastDoubleHyphen = null;
+                }
+
+                AcceptAndMoveNext();
+            }
+
+            return lastDoubleHyphen;
+        }
+
+        internal static bool IsHyphen(HtmlSymbol symbol)
+        {
+            return symbol.Equals(HtmlSymbol.Hyphen);
+        }
+
+        protected bool IsHtmlCommentAhead()
+        {
+            /*
+             * From HTML5 Specification, available at http://www.w3.org/TR/html52/syntax.html#comments
+             * 
+             * Comments must have the following format:
+             * 1. The string "<!--"
+             * 2. Optionally, text, with the additional restriction that the text
+             *      2.1 must not start with the string ">" nor start with the string "->"
+             *      2.2 nor contain the strings
+             *          2.2.1 "<!--"
+             *          2.2.2 "-->" // As we will be treating this as a comment ending, there is no need to handle this case at all.
+             *          2.2.3 "--!>"
+             *      2.3 nor end with the string "<!-".
+             * 3. The string "-->"
+             * 
+             * */
+
+            if (CurrentSymbol.Type != HtmlSymbolType.DoubleHyphen)
+            {
+                return false;
+            }
+
+            // Check condition 2.1
+            if (NextIs(HtmlSymbolType.CloseAngle) || NextIs(next => IsHyphen(next) && NextIs(HtmlSymbolType.CloseAngle)))
+            {
+                return false;
+            }
+
+            // Check condition 2.2
+            var isValidComment = false;
+            LookaheadUntil((symbol, prevSymbols) =>
+            {
+                if (symbol.Type == HtmlSymbolType.DoubleHyphen)
+                {
+                    if (NextIs(HtmlSymbolType.CloseAngle))
+                    {
+                        // Check condition 2.3: We're at the end of a comment. Check to make sure the text ending is allowed.
+                        isValidComment = !IsCommentContentEndingInvalid(prevSymbols);
+                        return true;
+                    }
+                    else if (NextIs(ns => IsHyphen(ns) && NextIs(HtmlSymbolType.CloseAngle)))
+                    {
+                        // Check condition 2.3: we're at the end of a comment, which has an extra dash.
+                        // Need to treat the dash as part of the content and check the ending.
+                        // However, that case would have already been checked as part of check from 2.2.1 which
+                        // would already fail this iteration and we wouldn't get here
+                        isValidComment = true;
+                        return true;
+                    }
+                    else if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.CloseAngle)))
+                    {
+                        // This is condition 2.2.3
+                        isValidComment = false;
+                        return true;
+                    }
+                }
+                else if (symbol.Type == HtmlSymbolType.OpenAngle)
+                {
+                    // Checking condition 2.2.1
+                    if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.DoubleHyphen)))
+                    {
+                        isValidComment = false;
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+
+            return isValidComment;
+        }
+
+        /// <summary>
+        /// Verifies, that the sequence doesn't end with the "&lt;!-" HtmlSymbols. Note, the first symbol is an opening bracket symbol
+        /// </summary>
+        internal static bool IsCommentContentEndingInvalid(IEnumerable<HtmlSymbol> sequence)
+        {
+            var reversedSequence = sequence.Reverse();
+            var index = 0;
+            foreach (var item in reversedSequence)
+            {
+                if (!item.Equals(nonAllowedHtmlCommentEnding[index++]))
+                {
+                    return false;
+                }
+
+                if (index == nonAllowedHtmlCommentEnding.Length)
+                {
+                    return true;
                 }
             }
 
@@ -1474,8 +1613,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // Checking to see if we meet the conditions of a special '!' tag: <!DOCTYPE, <![CDATA[, <!--.
                     if (!IsBangEscape(lookahead: 1))
                     {
+                        if (Lookahead(2)?.Type == HtmlSymbolType.DoubleHyphen)
+                        {
+                            Output(SpanKindInternal.Markup);
+                        }
+
                         AcceptAndMoveNext(); // Accept '<'
                         BangTag();
+
                         return;
                     }
 

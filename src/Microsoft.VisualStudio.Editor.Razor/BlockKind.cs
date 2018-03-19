@@ -19,6 +19,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         // Special
         Comment,
-        Tag
+        Tag,
+
+        HtmlComment
     }
 }

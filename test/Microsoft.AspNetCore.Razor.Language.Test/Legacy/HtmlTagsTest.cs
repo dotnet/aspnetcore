@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("<!--Foo--> Bar",
                 new MarkupBlock(
-                    Factory.Markup("<!--Foo-->").Accepts(AcceptedCharactersInternal.None),
+                    BlockFactory.HtmlCommentBlock("Foo"),
                     Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)));
         }
 
