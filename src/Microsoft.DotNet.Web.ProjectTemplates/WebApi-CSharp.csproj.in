@@ -22,8 +22,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="${MicrosoftAspNetCoreMvcPackageVersion}" />
   </ItemGroup>
 
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="${MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion}" />
-  </ItemGroup>
-
 </Project>

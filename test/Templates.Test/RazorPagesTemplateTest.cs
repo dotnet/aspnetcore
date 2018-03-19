@@ -47,16 +47,17 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_IndividualAuth_Works_NetFramework()
             => RazorPagesTemplate_IndividualAuthImpl("net461");
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
         public void RazorPagesTemplate_IndividualAuth_Works_NetCore()
             => RazorPagesTemplate_IndividualAuthImpl(null);
-        [Fact]
+
+        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
         public void RazorPagesTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
             => RazorPagesTemplate_IndividualAuthImpl(null, true);
 
@@ -73,7 +74,6 @@ namespace Templates.Test
             }
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
-            Assert.Contains("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
 
             RunDotNetEfCreateMigration("razorpages");
 
