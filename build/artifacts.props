@@ -22,6 +22,7 @@
   <ItemGroup>
     <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="shipoob" />
     <PackageArtifact Include="dotnet-dev-certs" Category="shipoob" />
+    <PackageArtifact Include="dotnet-ef" Category="shipoob" />
     <PackageArtifact Include="dotnet-sql-cache" Category="shipoob" />
     <PackageArtifact Include="dotnet-user-secrets" Category="shipoob" />
     <PackageArtifact Include="dotnet-watch" Category="shipoob" />
@@ -215,7 +216,6 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Category="ship" LZMA="true" PackageType="DotnetCliTool" />
     <PackageArtifact Include="Microsoft.Extensions.ActivatorUtilities.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Sources" Category="noship" />
