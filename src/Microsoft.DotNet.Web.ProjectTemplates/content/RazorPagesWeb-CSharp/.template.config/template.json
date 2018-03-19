@@ -336,11 +336,6 @@
       "parameters": {
         "format": "yyyy"
       }
-    },
-    "NoTools": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false"
     }
   },
   "primaryOutputs": [

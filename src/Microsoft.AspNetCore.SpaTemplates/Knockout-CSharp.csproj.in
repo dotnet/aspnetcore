@@ -19,10 +19,6 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="${MicrosoftAspNetCoreStaticFilesPackageVersion}" />
   </ItemGroup>
 
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="${MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion}" />
-  </ItemGroup>
-
 <!--/-:cnd:noEmit -->
   <Target Name="DebugRunWebpack" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('wwwroot\dist') ">
     <!-- Ensure Node.js is installed -->

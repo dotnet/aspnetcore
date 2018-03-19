@@ -332,11 +332,6 @@
         "format": "yyyy"
       }
     },
-    "NoTools": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false"
-    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
