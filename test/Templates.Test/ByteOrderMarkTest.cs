@@ -10,7 +10,6 @@ namespace Templates.Test
     public class ByteOrderMarkTest
     {
         private readonly ITestOutputHelper _output;
-        private readonly char _separator = Path.DirectorySeparatorChar;
 
         public ByteOrderMarkTest(ITestOutputHelper output)
         {
