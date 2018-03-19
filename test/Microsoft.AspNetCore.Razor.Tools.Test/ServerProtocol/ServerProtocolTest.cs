@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public async Task ServerResponse_WriteRead_RoundtripsProperly()
         {
             // Arrange
-            var response = new CompletedServerResponse(42, utf8output: false, output: "a string");
+            var response = new CompletedServerResponse(42, utf8output: false, output: "a string", error: "an error");
             var memoryStream = new MemoryStream();
 
             // Act
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Assert.Equal(42, result.ReturnCode);
             Assert.False(result.Utf8Output);
             Assert.Equal("a string", result.Output);
-            Assert.Equal("", result.ErrorOutput);
+            Assert.Equal("an error", result.ErrorOutput);
         }
 
         [Fact]

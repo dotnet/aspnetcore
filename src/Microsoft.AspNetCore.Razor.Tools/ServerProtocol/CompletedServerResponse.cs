@@ -27,16 +27,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public readonly string Output;
         public readonly string ErrorOutput;
 
-        public CompletedServerResponse(int returnCode, bool utf8output, string output)
+        public CompletedServerResponse(int returnCode, bool utf8output, string output, string error)
         {
             ReturnCode = returnCode;
             Utf8Output = utf8output;
             Output = output;
-
-            // This field existed to support writing to Console.Error.  The compiler doesn't ever write to 
-            // this field or Console.Error.  This field is only kept around in order to maintain the existing
-            // protocol semantics.
-            ErrorOutput = string.Empty;
+            ErrorOutput = error;
         }
 
         public override ResponseType Type => ResponseType.Completed;
@@ -47,12 +43,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var utf8Output = reader.ReadBoolean();
             var output = ServerProtocol.ReadLengthPrefixedString(reader);
             var errorOutput = ServerProtocol.ReadLengthPrefixedString(reader);
-            if (!string.IsNullOrEmpty(errorOutput))
-            {
-                throw new InvalidOperationException();
-            }
 
-            return new CompletedServerResponse(returnCode, utf8Output, output);
+            return new CompletedServerResponse(returnCode, utf8Output, output, errorOutput);
         }
 
         protected override void AddResponseBody(BinaryWriter writer)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             base.Parent = parent;
             Name = name;
+            Out = parent.Out ?? Out;
+            Error = parent.Error ?? Error;
 
             Help = HelpOption("-?|-h|--help");
             OnExecute((Func<Task<int>>)ExecuteAsync);

@@ -148,9 +148,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     }
                     else
                     {
-                        Log.LogMessage(
-                            StandardOutputLoggingImportance,
-                            $"Server execution completed with return code {result}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");
+                        Log.LogMessage(StandardOutputLoggingImportance, $"Server execution completed with return code {result}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");
+
+                        if (LogStandardErrorAsError)
+                        {
+                            LogErrors(completedResponse.ErrorOutput);
+                        }
+                        else
+                        {
+                            LogMessages(completedResponse.ErrorOutput, StandardErrorLoggingImportance);
+                        }
+
+                        return true;
                     }
                 }
                 else
@@ -158,9 +167,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     Log.LogMessage(
                         StandardOutputLoggingImportance,
                         $"Server execution failed with response {response.Type}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");
-                }
 
-                result = -1;
+                    result = -1;
+                }
 
                 if (ForceServer)
                 {
@@ -172,6 +181,32 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
 
             return false;
+        }
+
+        private void LogMessages(string output, MessageImportance messageImportance)
+        {
+            var lines = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    var trimmedMessage = line.Trim();
+                    Log.LogMessageFromText(trimmedMessage, messageImportance);
+                }
+            }
+        }
+
+        private void LogErrors(string output)
+        {
+            var lines = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    var trimmedMessage = line.Trim();
+                    Log.LogError(trimmedMessage);
+                }
+            }
         }
 
         /// <summary>

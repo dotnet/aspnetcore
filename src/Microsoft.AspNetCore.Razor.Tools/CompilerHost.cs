@@ -48,27 +48,27 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
 
                 var exitCode = 0;
-                var output = string.Empty;
                 var commandArgs = parsed.args.ToArray();
 
-                var writer = ServerLogger.IsLoggingEnabled ? new StringWriter() : TextWriter.Null;
+                var outputWriter = new StringWriter();
+                var errorWriter = new StringWriter();
 
-                var checker = new DefaultExtensionDependencyChecker(Loader, writer, writer);
-                var app = new Application(cancellationToken, Loader, checker, AssemblyReferenceProvider)
-                {
-                    Out = writer,
-                    Error = writer,
-                };
+                var checker = new DefaultExtensionDependencyChecker(Loader, outputWriter, errorWriter);
+                var app = new Application(cancellationToken, Loader, checker, AssemblyReferenceProvider, outputWriter, errorWriter);
 
                 exitCode = app.Execute(commandArgs);
 
-                if (ServerLogger.IsLoggingEnabled)
-                {
-                    output = writer.ToString();
-                    ServerLogger.Log(output);
-                }
+                var output = outputWriter.ToString();
+                var error = errorWriter.ToString();
 
-                return new CompletedServerResponse(exitCode, utf8output: false, output: string.Empty);
+                outputWriter.Dispose();
+                errorWriter.Dispose();
+
+                // This will no-op if server logging is not enabled.
+                ServerLogger.Log(output);
+                ServerLogger.Log(error);
+
+                return new CompletedServerResponse(exitCode, utf8output: false, output, error);
             }
 
             private bool TryParseArguments(ServerRequest request, out (string workingDirectory, string tempDirectory, string[] args) parsed)

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
@@ -63,6 +64,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Looks like C:\...\Views\Home\Index.cshtml(1,2): error RZ1006: The code block is missi... [C:\Users\rynowak\AppData\Local\Temp\rwnv03ll.wb0\SimpleMvc.csproj]
             Assert.BuildError(result, "RZ1006");
+
+            // RazorGenerate should compile the assembly, but not the views.
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+
+            // The file should still be generated even if we had a Razor syntax error.
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerate_LotOfErrorsInRazorFile_ReportsFirstHundredErrors()
+        {
+            // Introducing a syntax error, an unclosed brace
+            var content = new StringBuilder().Insert(0, "@{ ", 100).ToString();
+            ReplaceContent(content, "Views", "Home", "Index.cshtml");
+
+            var result = await DotnetMSBuild(RazorGenerateTarget);
+
+            Assert.BuildFailed(result);
+
+            Assert.BuildOutputContainsLine(result, "And 101 more errors.");
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
