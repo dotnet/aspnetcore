@@ -543,6 +543,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public override void BeginWriteAttribute(CodeWriter codeWriter, string key)
         {
+            // Temporary workaround for https://github.com/aspnet/Blazor/issues/219
+            // Remove this logic once the underlying HTML parsing issue is fixed,
+            // as we don't really want special cases like this.
+            const string dataUnderscore = "data_";
+            if (key.StartsWith(dataUnderscore, StringComparison.Ordinal))
+            {
+                key = "data-" + key.Substring(dataUnderscore.Length);
+            }
+
             codeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
                 .Write((_sourceSequence++).ToString())

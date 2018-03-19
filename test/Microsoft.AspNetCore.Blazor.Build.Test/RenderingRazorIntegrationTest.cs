@@ -181,6 +181,79 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
+        public void SupportsHyphenedAttributesWithCSharpExpressionValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = \"My string\"; }"
+                + "<elem abc-def=@myValue />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "abc-def", "My string", 1));
+        }
+
+        [Fact]
+        public void SupportsDataDashAttributesWithLiteralValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "<elem data-abc=\"Hello\" />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "data-abc", "Hello", 1));
+        }
+        
+        [Fact(Skip = "Currently broken due to #219. TODO: Once the issue is fixed, re-enable this test, remove the test below, and remove the implementation of its workaround.")]
+        public void SupportsDataDashAttributesWithCSharpExpressionValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = \"My string\"; }"
+                + "<elem data-abc=@myValue />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "data-abc", "My string", 1));
+        }
+
+        [Fact]
+        public void TemporaryWorkaround_ConvertsDataUnderscoreAttributesToDataDash()
+        {
+            // This is a temporary workaround for https://github.com/aspnet/Blazor/issues/219
+            //
+            // Currently Razor's HtmlMarkupParser looks for data-* attributes and handles
+            // them differently: https://github.com/aspnet/Razor/blob/dev/src/Microsoft.AspNetCore.Razor.Language/Legacy/HtmlMarkupParser.cs#L934
+            // This is because Razor was historically used only on the server, and there's
+            // an argument that data-* shouldn't support conditional server-side rendering
+            // because of its HTML semantics. The result is that information about data-*
+            // attributes isn't retained in the IR - all we get there is literal HTML
+            // markup, which the Blazor code writer can't do anything useful with.
+            //
+            // The real solution would be to disable the parser's "data-*" special case
+            // for Blazor. We don't yet have a mechanism for disabling it, so as a short
+            // term workaround, we support data_* as an alternative syntax that renders
+            // as data-* in the DOM.
+            //
+            // This workaround (the automatic conversion of data_* to data-*) will be removed
+            // as soon as the underlying HTML parsing issue is resolved.
+
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = \"My string\"; }"
+                + "<elem data_abc=@myValue />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "data-abc", "My string", 1));
+        }
+
+        [Fact]
         public void SupportsAttributesWithEventHandlerValues()
         {
             // Arrange/Act
