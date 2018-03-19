@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class DefaultModelBindingContext : ModelBindingContext
     {
+        private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
+
         private IValueProvider _originalValueProvider;
         private ActionContext _actionContext;
         private ModelStateDictionary _modelState;
@@ -314,13 +316,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return valueProvider;
             }
 
-            var bindingSourceValueProvider = valueProvider as IBindingSourceValueProvider;
-            if (bindingSourceValueProvider == null)
+            if (!(valueProvider is IBindingSourceValueProvider bindingSourceValueProvider))
             {
                 return valueProvider;
             }
 
-            return bindingSourceValueProvider.Filter(bindingSource) ?? new CompositeValueProvider();
+            return bindingSourceValueProvider.Filter(bindingSource) ?? EmptyValueProvider;
         }
 
         private struct State

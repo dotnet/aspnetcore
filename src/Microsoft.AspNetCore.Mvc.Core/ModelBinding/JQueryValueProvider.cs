@@ -10,9 +10,12 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
-    /// An <see cref="IValueProvider"/> for jQuery formatted form data.
+    /// An <see cref="IValueProvider"/> for jQuery formatted data.
     /// </summary>
-    public abstract class JQueryValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
+    public abstract class JQueryValueProvider :
+        BindingSourceValueProvider,
+        IEnumerableValueProvider,
+        IKeyRewriterValueProvider
     {
         private readonly IDictionary<string, StringValues> _values;
         private PrefixContainer _prefixContainer;
@@ -84,6 +87,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             return ValueProviderResult.None;
+        }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="null"/> because <see cref="JQueryFormValueProviderFactory"/> creates this
+        /// <see cref="IValueProvider"/> with rewritten keys (if original contains brackets) or duplicate keys
+        /// (that <see cref="FormValueProvider"/> will match).
+        /// </remarks>
+        public IValueProvider Filter()
+        {
+            return null;
         }
     }
 }

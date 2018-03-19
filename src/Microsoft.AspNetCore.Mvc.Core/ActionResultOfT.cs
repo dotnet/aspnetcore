@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// A type that wraps either an <typeparamref name="TValue"/> instance or an <see cref="ActionResult"/>.
     /// </summary>
     /// <typeparam name="TValue">The type of the result.</typeparam>
-    public class ActionResult<TValue> : IConvertToActionResult
+    public sealed class ActionResult<TValue> : IConvertToActionResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ActionResult{TValue}"/> using the specified <paramref name="value"/>.

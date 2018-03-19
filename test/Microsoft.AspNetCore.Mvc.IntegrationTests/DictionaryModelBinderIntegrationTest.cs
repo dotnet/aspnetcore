@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -141,6 +142,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("?prefix[key0]=10")]
         [InlineData("?prefix[0].Key=key0&prefix[0].Value=10")]
         [InlineData("?prefix.index=low&prefix[low].Key=key0&prefix[low].Value=10")]
+        [InlineData("?prefix.index=index&prefix[index].Key=key0&prefix[index].Value=10")]
+        [InlineData("?prefix.index=index&prefix[index].Key=key0&prefix[index].Value=10&prefix[extra].Key=key4&prefix[extra].Value=5")]
         public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_WithExplicitPrefix_Success(
             string queryString)
         {
@@ -181,6 +184,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("?[key0]=10")]
         [InlineData("?[0].Key=key0&[0].Value=10")]
         [InlineData("?index=low&[low].Key=key0&[low].Value=10")]
+        [InlineData("?index=index&[index].Key=key0&[index].Value=10")]
+        [InlineData("?index=index&[index].Key=key0&[index].Value=10&[extra].Key=key4&[extra].Value=5")]
         public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_EmptyPrefix_Success(string queryString)
         {
             // Arrange
@@ -209,6 +214,186 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.NotEmpty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        public static TheoryData<Action<HttpRequest>> ThreeEntryTestData
+        {
+            get
+            {
+                var impliedPrefixQueryString = "?parameter[archive]=1&parameter[correlation]=2&parameter[index]=3";
+                var noPrefixQueryString = "?[archive]=1&[correlation]=2&[index]=3";
+                var reversedNoPrefixQueryString = "?[index]=3&[correlation]=2&[archive]=1";
+                var impliedPrefixDictionary = new Dictionary<string, StringValues>
+                {
+                    { "parameter[archive]", "1" },
+                    { "parameter[correlation]", "2" },
+                    { "parameter[index]", "3" },
+                };
+                var reversedImpliedPrefixDictionary = new Dictionary<string, StringValues>
+                {
+                    { "parameter[index]", "3" },
+                    { "parameter[correlation]", "2" },
+                    { "parameter[archive]", "1" },
+                };
+                var longFormDictionary = new Dictionary<string, StringValues>
+                {
+                    { "parameter[0].Key", "archive" },
+                    { "parameter[0].Value", "1" },
+                    { "parameter[1].Key", "correlation" },
+                    { "parameter[1].Value", "2" },
+                    { "parameter[2].Key", "index" },
+                    { "parameter[2].Value", "3" },
+                };
+                var longerFormDictionary = new Dictionary<string, StringValues>
+                {
+                    { "parameter[indexer].Key", "archive" },
+                    { "parameter[indexer].Value", "1" },
+                    { "parameter[index].Key", "correlation" },
+                    { "parameter.index", new[] { "indexer", "index", "indexes" } },
+                    { "parameter[index].Value", "2" },
+                    { "parameter[indexes].Key", "index" },
+                    { "parameter[indexes].Value", "3" },
+                };
+                var longestFormDictionary = new Dictionary<string, StringValues>
+                {
+                    { "parameter[indexer].Key", "archive" },
+                    { "parameter[indexer].Value", "1" },
+                    { "parameter[index].Key", "correlation" },
+                    { "parameter[extra].Key", "index" },
+                    { "parameter[extra].Value", "4" },
+                    { "parameter.index", new[] { "indexer", "index", "indexes" } },
+                    { "parameter[index].Value", "2" },
+                    { "parameter[indexes].Key", "index" },
+                    { "parameter[indexes].Value", "3" },
+                    { "parameter[another].Key", "index" },
+                    { "parameter[another].Value", "5" },
+                };
+                var noPrefixDictionary = new Dictionary<string, StringValues>
+                {
+                    { "[archive]", "1" },
+                    { "[correlation]", "2" },
+                    { "[index]", "3" },
+                };
+                var reversedNoPrefixDictionary = new Dictionary<string, StringValues>
+                {
+                    { "[index]", "3" },
+                    { "[correlation]", "2" },
+                    { "[archive]", "1" },
+                };
+
+                return new TheoryData<Action<HttpRequest>>
+                {
+                    request => request.QueryString = new QueryString(impliedPrefixQueryString),
+                    request => request.QueryString = new QueryString(noPrefixQueryString),
+                    request => request.QueryString = new QueryString(reversedNoPrefixQueryString),
+                    request =>
+                    {
+                        request.ContentType = "application/x-www-form-urlencoded";
+                        request.Form = new FormCollection(impliedPrefixDictionary);
+                    },
+                    request =>
+                    {
+                        request.ContentType = "application/x-www-form-urlencoded";
+                        request.Form = new FormCollection(reversedImpliedPrefixDictionary);
+                    },
+                    request =>
+                    {
+                        request.ContentType = "application/x-www-form-urlencoded";
+                        request.Form = new FormCollection(longFormDictionary);
+                    },
+                    request =>
+                    {
+                        request.ContentType = "application/x-www-form-urlencoded";
+                        request.Form = new FormCollection(longerFormDictionary);
+                    },
+                    request =>
+                    {
+                        request.ContentType = "application/x-www-form-urlencoded";
+                        request.Form = new FormCollection(longestFormDictionary);
+                    },
+                    request =>
+                    {
+                        request.ContentType = "application/x-www-form-urlencoded";
+                        request.Form = new FormCollection(noPrefixDictionary);
+                    },
+                    request =>
+                    {
+                        request.ContentType = "application/x-www-form-urlencoded";
+                        request.Form = new FormCollection(reversedNoPrefixDictionary);
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ThreeEntryTestData))]
+        public async Task DictionaryModelBinder_Binds3EntriesOfSimpleType(Action<HttpRequest> updateRequest)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, int>
+            {
+                { "archive", 1 },
+                { "correlation", 2 },
+                { "index", 3 },
+            };
+
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var testContext = ModelBindingTestHelper.GetTestContext(updateRequest);
+            var modelState = testContext.ModelState;
+            var parameter = new ParameterDescriptor
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, int>),
+            };
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, int>>(result.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [MemberData(nameof(ThreeEntryTestData))]
+        public async Task DictionaryModelBinder_Binds3EntriesOfSimpleType_WithJQueryQueryString(
+            Action<HttpRequest> updateRequest)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, int>
+            {
+                { "archive", 1 },
+                { "correlation", 2 },
+                { "index", 3 },
+            };
+
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                updateRequest,
+                options => options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory()));
+            var modelState = testContext.ModelState;
+            var parameter = new ParameterDescriptor
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, int>),
+            };
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, int>>(result.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
             Assert.True(modelState.IsValid);
         }
 
@@ -251,9 +436,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             public override bool Equals(object obj)
             {
-                var other = obj as Person;
-
-                return other != null && Id == other.Id;
+                return obj is Person other && Id == other.Id;
             }
 
             public override int GetHashCode()
@@ -274,6 +457,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("?parameter[key0].Id=10")]
         [InlineData("?parameter[0].Key=key0&parameter[0].Value.Id=10")]
         [InlineData("?parameter.index=low&parameter[low].Key=key0&parameter[low].Value.Id=10")]
+        [InlineData("?parameter.index=index&parameter[index].Key=key0&parameter[index].Value.Id=10")]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_ImpliedPrefix_Success(string queryString)
         {
             // Arrange
@@ -309,6 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("?prefix[key0].Id=10")]
         [InlineData("?prefix[0].Key=key0&prefix[0].Value.Id=10")]
         [InlineData("?prefix.index=low&prefix[low].Key=key0&prefix[low].Value.Id=10")]
+        [InlineData("?prefix.index=index&prefix[index].Key=key0&prefix[index].Value.Id=10")]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_ExplicitPrefix_Success(
             string queryString)
         {
@@ -352,6 +537,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("?parameter[key0].Id=100")]
         [InlineData("?parameter[0].Key=key0&parameter[0].Value.Id=100")]
         [InlineData("?parameter.index=low&parameter[low].Key=key0&parameter[low].Value.Id=100")]
+        [InlineData("?parameter.index=index&parameter[index].Key=key0&parameter[index].Value.Id=100")]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_ImpliedPrefix_FindsValidationErrors(
             string queryString)
         {

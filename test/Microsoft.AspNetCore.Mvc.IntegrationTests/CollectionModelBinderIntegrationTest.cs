@@ -63,6 +63,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [Theory]
         [InlineData("?prefix[0]=10&prefix[1]=11")]
         [InlineData("?prefix.index=low&prefix.index=high&prefix[low]=10&prefix[high]=11")]
+        [InlineData("?prefix.index=index&prefix.index=indexer&prefix[index]=10&prefix[indexer]=11")]
+        [InlineData("?prefix.index=index&prefix.index=indexer&prefix[index]=10&prefix[indexer]=11&prefix[extra]=12")]
         public async Task CollectionModelBinder_BindsListOfSimpleType_WithExplicitPrefix_Success(string queryString)
         {
             // Arrange
@@ -101,6 +103,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [Theory]
         [InlineData("?[0]=10&[1]=11")]
         [InlineData("?index=low&index=high&[high]=11&[low]=10")]
+        [InlineData("?index=index&index=indexer&[indexer]=11&[index]=10")]
+        [InlineData("?index=index&index=indexer&[indexer]=11&[index]=10&[extra]=12")]
         public async Task CollectionModelBinder_BindsCollectionOfSimpleType_EmptyPrefix_Success(string queryString)
         {
             // Arrange
@@ -172,6 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("?index=low&index=high&[low].Id=10&[high].Id=11")]
         [InlineData("?parameter[0].Id=10&parameter[1].Id=11")]
         [InlineData("?parameter.index=low&parameter.index=high&parameter[low].Id=10&parameter[high].Id=11")]
+        [InlineData("?parameter.index=index&parameter.index=indexer&parameter[index].Id=10&parameter[indexer].Id=11")]
         public async Task CollectionModelBinder_BindsListOfComplexType_ImpliedPrefix_Success(string queryString)
         {
             // Arrange
@@ -207,6 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [Theory]
         [InlineData("?prefix[0].Id=10&prefix[1].Id=11")]
         [InlineData("?prefix.index=low&prefix.index=high&prefix[high].Id=11&prefix[low].Id=10")]
+        [InlineData("?prefix.index=index&prefix.index=indexer&prefix[indexer].Id=11&prefix[index].Id=10")]
         public async Task CollectionModelBinder_BindsListOfComplexType_ExplicitPrefix_Success(string queryString)
         {
             // Arrange
@@ -683,6 +689,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("?index=low&[low].Street=LongStreet")]
         [InlineData("?parameter[0].Street=LongStreet")]
         [InlineData("?parameter.index=low&parameter[low].Street=LongStreet")]
+        [InlineData("?parameter.index=index&parameter[index].Street=LongStreet")]
         public async Task CollectionModelBinder_BindsCollectionOfComplexType_ImpliedPrefix_FindsValidationErrors(
             string queryString)
         {
