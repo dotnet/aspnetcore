@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
             var importItems = importFeature.GetImports(projectItem);
-            var importSourceDocuments = GetImportSourceDocuments(importItems);
+            var importSourceDocuments = GetImportSourceDocuments(importItems, suppressExceptions: true);
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeParserOptions);
             var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeCodeGenerationOptions);
@@ -137,7 +138,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         // Internal for testing
-        internal static IReadOnlyList<RazorSourceDocument> GetImportSourceDocuments(IReadOnlyList<RazorProjectItem> importItems)
+        internal static IReadOnlyList<RazorSourceDocument> GetImportSourceDocuments(
+            IReadOnlyList<RazorProjectItem> importItems,
+            bool suppressExceptions = false)
         {
             var imports = new List<RazorSourceDocument>();
             for (var i = 0; i < importItems.Count; i++)
@@ -146,8 +149,17 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 if (importItem.Exists)
                 {
-                    var sourceDocument = RazorSourceDocument.ReadFrom(importItem);
-                    imports.Add(sourceDocument);
+                    try
+                    {
+                        // Normal import, has file paths, content etc.
+                        var sourceDocument = RazorSourceDocument.ReadFrom(importItem);
+                        imports.Add(sourceDocument);
+                    }
+                    catch (IOException) when (suppressExceptions)
+                    {
+                        // Something happened when trying to read the item from disk.
+                        // Catch the exception so we don't crash the editor.
+                    }
                 }
             }
 
