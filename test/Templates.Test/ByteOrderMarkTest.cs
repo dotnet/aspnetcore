@@ -10,6 +10,7 @@ namespace Templates.Test
     public class ByteOrderMarkTest
     {
         private readonly ITestOutputHelper _output;
+        private readonly char _separator = Path.DirectorySeparatorChar;
 
         public ByteOrderMarkTest(ITestOutputHelper output)
         {
@@ -17,14 +18,16 @@ namespace Templates.Test
         }
 
         [Theory]
-        [InlineData(@"\Microsoft.AspNetCore.SpaTemplates\content")]
-        [InlineData(@"\Microsoft.DotNet.Web.ProjectTemplates\content")]
-        [InlineData(@"\Microsoft.DotNet.Web.Spa.ProjectTemplates\content")]
-        public void CheckForByteOrderMarkSpaTemplates(string path)
+        [InlineData("Microsoft.AspNetCore.SpaTemplates")]
+        [InlineData("Microsoft.DotNet.Web.ProjectTemplates")]
+        [InlineData("Microsoft.DotNet.Web.Spa.ProjectTemplates")]
+        public void CheckForByteOrderMarkSpaTemplates(string projectType)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            var srcDirectory = Path.GetFullPath(Path.Combine(currentDirectory, @"..\..\..\..\..\src"));
-            var directories = Directory.GetDirectories(srcDirectory + path, "*Sharp");
+            var repositoryPath = Directory.GetParent(currentDirectory).Parent.Parent.Parent.Parent.FullName;
+            var srcDirectory = Path.Combine(repositoryPath, "src");
+            var path = Path.Combine(projectType, "content");
+            var directories = Directory.GetDirectories(Path.Combine(srcDirectory, path), "*Sharp");
 
             var filesWithBOMCharactersPresent = false;
             foreach (var directory in directories)
