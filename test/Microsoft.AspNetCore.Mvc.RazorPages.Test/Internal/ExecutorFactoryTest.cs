@@ -327,14 +327,5 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
                 throw new NotImplementedException();
             }
         }
-
-        private class MockBinder : PageArgumentBinder
-        {
-            protected override Task<ModelBindingResult> BindAsync(PageContext context, object value, string name, Type type)
-            {
-                var result = ModelBindingResult.Failed();
-                return Task.FromResult(result);
-            }
-        }
     }
 }

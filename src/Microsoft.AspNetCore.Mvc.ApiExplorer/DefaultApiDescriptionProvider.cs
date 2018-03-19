@@ -162,7 +162,23 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 foreach (var actionParameter in context.ActionDescriptor.Parameters)
                 {
                     var visitor = new PseudoModelBindingVisitor(context, actionParameter);
-                    var metadata = _modelMetadataProvider.GetMetadataForType(actionParameter.ParameterType);
+
+                    ModelMetadata metadata = null;
+                    if (actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
+                        _modelMetadataProvider is ModelMetadataProvider provider)
+                    {
+                        // The default model metadata provider derives from ModelMetadataProvider
+                        // and can therefore supply information about attributes applied to parameters.
+                        metadata = provider.GetMetadataForParameter(controllerParameterDescriptor.ParameterInfo);
+                    }
+                    else
+                    {
+                        // For backward compatibility, if there's a custom model metadata provider that
+                        // only implements the older IModelMetadataProvider interface, access the more
+                        // limited metadata information it supplies. In this scenario, validation attributes
+                        // are not supported on parameters.
+                        metadata = _modelMetadataProvider.GetMetadataForType(actionParameter.ParameterType);
+                    }
 
                     var bindingContext = ApiParameterDescriptionContext.GetContext(
                         metadata,

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -913,6 +914,25 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
+        public void GetApiDescription_ParameterDescription_IsRequired()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(RequiredParameter));
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal("name", parameter.Name);
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
+            Assert.Equal(typeof(string), parameter.Type);
+            Assert.True(parameter.ModelMetadata.IsRequired);
+            Assert.True(parameter.ModelMetadata.IsBindingRequired);
+        }
+
+        [Fact]
         public void GetApiDescription_ParameterDescription_SourceFromRouteData()
         {
             // Arrange
@@ -1472,11 +1492,12 @@ namespace Microsoft.AspNetCore.Mvc.Description
             action.Parameters = new List<ParameterDescriptor>();
             foreach (var parameter in action.MethodInfo.GetParameters())
             {
-                action.Parameters.Add(new ParameterDescriptor()
+                action.Parameters.Add(new ControllerParameterDescriptor()
                 {
                     Name = parameter.Name,
                     ParameterType = parameter.ParameterType,
-                    BindingInfo = BindingInfo.GetBindingInfo(parameter.GetCustomAttributes().OfType<object>())
+                    BindingInfo = BindingInfo.GetBindingInfo(parameter.GetCustomAttributes().OfType<object>()),
+                    ParameterInfo = parameter
                 });
             }
 
@@ -1549,6 +1570,10 @@ namespace Microsoft.AspNetCore.Mvc.Description
         private Task<ActionResult<IEnumerable<Product>>> ReturnsTaskOfActionResultOfSequenceOfProducts() => null;
 
         private void AcceptsProduct(Product product)
+        {
+        }
+
+        private void RequiredParameter([BindRequired, Required] string name)
         {
         }
 

@@ -118,7 +118,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPageHandlerMethodSelector, DefaultPageHandlerMethodSelector>();
 
             // Page model binding
+#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddSingleton<PageArgumentBinder, DefaultPageArgumentBinder>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Action executors
             services.TryAddSingleton<PageResultExecutor>();

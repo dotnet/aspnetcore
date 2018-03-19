@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class DefaultPageArgumentBinder : PageArgumentBinder
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly ParameterBinder _parameterBinder;
 
