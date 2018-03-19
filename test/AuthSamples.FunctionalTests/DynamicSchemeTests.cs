@@ -4,15 +4,16 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace AuthSamples.FunctionalTests
 {
-    public class DynamicSchemeTests : IClassFixture<SampleTestFixture<DynamicSchemes.Startup>>
+    public class DynamicSchemeTests : IClassFixture<WebApplicationFactory<DynamicSchemes.Startup>>
     {
-        public DynamicSchemeTests(SampleTestFixture<DynamicSchemes.Startup> fixture)
+        public DynamicSchemeTests(WebApplicationFactory<DynamicSchemes.Startup> fixture)
         {
-            Client = fixture.Client;
+            Client = fixture.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }

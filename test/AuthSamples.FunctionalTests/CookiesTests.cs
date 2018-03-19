@@ -4,15 +4,16 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace AuthSamples.FunctionalTests
 {
-    public class CookiesTests : IClassFixture<SampleTestFixture<Cookies.Startup>>
+    public class CookiesTests : IClassFixture<WebApplicationFactory<Cookies.Startup>>
     {
-        public CookiesTests(SampleTestFixture<Cookies.Startup> fixture)
+        public CookiesTests(WebApplicationFactory<Cookies.Startup> fixture)
         {
-            Client = fixture.Client;
+            Client = fixture.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }

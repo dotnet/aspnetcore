@@ -4,15 +4,16 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace AuthSamples.FunctionalTests
 {
-    public class IdentityExternalClaimsTests : IClassFixture<SampleTestFixture<Identity.ExternalClaims.Startup>>
+    public class IdentityExternalClaimsTests : IClassFixture<WebApplicationFactory<Identity.ExternalClaims.Startup>>
     {
-        public IdentityExternalClaimsTests(SampleTestFixture<Identity.ExternalClaims.Startup> fixture)
+        public IdentityExternalClaimsTests(WebApplicationFactory<Identity.ExternalClaims.Startup> fixture)
         {
-            Client = fixture.Client;
+            Client = fixture.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }
