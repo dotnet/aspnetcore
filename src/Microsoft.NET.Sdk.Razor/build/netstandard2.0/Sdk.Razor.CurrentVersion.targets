@@ -300,7 +300,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <RazorGenerateWithTargetPath Condition="'%(RazorGenerateWithTargetPath.GeneratedOutput)' == ''">
-        <GeneratedOutput>$(RazorGenerateIntermediateOutputPath)$([System.IO.Path]::ChangeExtension('%(RazorGenerateWithTargetPath.TargetPath)', '.cs'))</GeneratedOutput>
+        <GeneratedOutput>$(RazorGenerateIntermediateOutputPath)$([System.IO.Path]::ChangeExtension('%(RazorGenerateWithTargetPath.TargetPath)', '$(RazorGenerateOutputFileExtension)'))</GeneratedOutput>
       </RazorGenerateWithTargetPath>
     </ItemGroup>
   </Target>

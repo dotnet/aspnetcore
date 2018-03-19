@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Build");
             var file = Path.Combine(Project.DirectoryPath, "SimpleTagHelper.cs");
             var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
-            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
 
             // Assert - 1
             Assert.BuildPassed(result);

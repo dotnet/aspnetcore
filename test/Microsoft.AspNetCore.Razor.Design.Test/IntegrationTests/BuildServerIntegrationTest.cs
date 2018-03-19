@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.Views.dll");
             Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.RazorCoreGenerate.cache");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
         }
 
         [Fact]
