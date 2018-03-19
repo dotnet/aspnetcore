@@ -89,11 +89,6 @@
                      }
                  }
              },
-             "Microsoft.EntityFrameworkCore.Tools.DotNet": {
-                "packageTypes": [
-                    "DotnetCliTool"
-                ]
-            },
             "dotnet-aspnet-codegenerator": {
               "Exclusions": {
                 "ASSEMBLY_COMMIT_HASH": {
@@ -214,6 +209,28 @@
                 "packageTypes": [
                     "DotnetTool"
                 ]
+            },
+            "dotnet-ef": {
+                "packageTypes": [
+                    "DotnetTool"
+                ],
+                "Exclusions": {
+                    "NEUTRAL_RESOURCES_LANGUAGE": {
+                        "tools/netcoreapp2.0/any/Newtonsoft.Json.dll": "External"
+                    },
+                    "SERVICING_ATTRIBUTE": {
+                        "tools/netcoreapp2.0/any/Newtonsoft.Json.dll": "External"
+                    },
+                    "VERSION_INFORMATIONALVERSION": {
+                        "tools/netcoreapp2.0/any/Newtonsoft.Json.dll": "External"
+                    },
+                    "WRONG_PUBLICKEYTOKEN": {
+                        "tools/netcoreapp2.0/any/Newtonsoft.Json.dll": "External"
+                    },
+                    "ASSEMBLY_INFORMATIONAL_VERSION_MISMATCH": {
+                        "tools/netcoreapp2.0/any/Newtonsoft.Json.dll": "External"
+                    }
+                }
             }
         }
     }
