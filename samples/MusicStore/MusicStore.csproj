@@ -4,7 +4,6 @@
     <Description>Music store application on ASP.NET Core</Description>
     <TargetFrameworks>netcoreapp2.1;netcoreapp2.0;net461</TargetFrameworks>
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
-    <RazorCompileOnBuild>true</RazorCompileOnBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RuntimeIdentifiers Condition="'$(Configuration)' != 'RuntimeStore'">win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Configurations>Debug;Release;RuntimeStore</Configurations>
