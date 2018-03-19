@@ -5,7 +5,7 @@
   <PropertyGroup>
     <DeveloperBuildTestWebsiteTfms>netcoreapp2.1</DeveloperBuildTestWebsiteTfms>
     <StandardTestWebsiteTfms>$(DeveloperBuildTestWebsiteTfms)</StandardTestWebsiteTfms>
-    <StandardTestWebsiteTfms Condition=" '$(DeveloperBuild)' != 'true' ">netcoreapp2.1;netcoreapp2.0</StandardTestWebsiteTfms>
+    <StandardTestWebsiteTfms Condition=" '$(DeveloperBuild)' != 'true' ">netcoreapp2.1</StandardTestWebsiteTfms>
     <StandardTestWebsiteTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestWebsiteTfms);net461</StandardTestWebsiteTfms>
   </PropertyGroup>
 </Project>
