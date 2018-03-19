@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleBinaryMessage()
         {
-            ReadOnlySpan<byte> buffer = _binaryInput;
+            ReadOnlyMemory<byte> buffer = _binaryInput;
             if (!BinaryMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleTextMessage()
         {
-            ReadOnlySpan<byte> buffer = _textInput;
+            ReadOnlyMemory<byte> buffer = _textInput;
             if (!TextMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");

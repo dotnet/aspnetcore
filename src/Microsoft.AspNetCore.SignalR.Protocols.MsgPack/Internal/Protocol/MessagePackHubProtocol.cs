@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             SerializationContext = options.Value.SerializationContext;
         }
 
-        public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
+        public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
         {
             while (BinaryMessageParser.TryParseMessage(ref input, out var payload))
             {
@@ -213,14 +213,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        private static T ApplyHeaders<T>(IDictionary<string, string> source, T destination) where T: HubInvocationMessage
+        private static T ApplyHeaders<T>(IDictionary<string, string> source, T destination) where T : HubInvocationMessage
         {
-            if(source != null && source.Count > 0)
+            if (source != null && source.Count > 0)
             {
-                foreach(var header in source)
-                {
-                    destination.Headers[header.Key] = header.Value;
-                }
+                destination.Headers = source;
             }
 
             return destination;

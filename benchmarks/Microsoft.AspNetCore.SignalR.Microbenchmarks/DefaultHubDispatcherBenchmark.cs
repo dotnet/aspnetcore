@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             public string Name { get; }
             public TransferFormat TransferFormat { get; }
 
-            public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
+            public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
             {
                 return false;
             }

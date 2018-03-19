@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             AssertMessages(testData.Encoded, bytes);
 
             // Unframe the message to check the binary encoding
-            ReadOnlySpan<byte> byteSpan = bytes.AsSpan();
+            ReadOnlyMemory<byte> byteSpan = bytes;
             Assert.True(BinaryMessageParser.TryParseMessage(ref byteSpan, out var unframed));
 
             // Check the baseline binary encoding, use Assert.True in order to configure the error message
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             AssertMessages(Array(HubProtocolConstants.CompletionMessageType, Map(), "0", 3, Array(42)), result);
         }
 
-        private static void AssertMessages(MessagePackObject expectedOutput, ReadOnlySpan<byte> bytes)
+        private static void AssertMessages(MessagePackObject expectedOutput, ReadOnlyMemory<byte> bytes)
         {
             Assert.True(BinaryMessageParser.TryParseMessage(ref bytes, out var message));
             var obj = Unpack(message.ToArray());

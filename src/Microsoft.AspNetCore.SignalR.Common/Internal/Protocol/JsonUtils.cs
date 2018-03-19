@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
@@ -40,6 +41,63 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 throw new InvalidDataException($"Expected '{property}' to be of type {expectedType}.");
             }
             return prop.Value<T>();
+        }
+
+        public static string GetTokenString(JsonToken tokenType)
+        {
+            switch (tokenType)
+            {
+                case JsonToken.None:
+                    break;
+                case JsonToken.StartObject:
+                    return JTokenType.Object.ToString();
+                case JsonToken.StartArray:
+                    return JTokenType.Array.ToString();
+                case JsonToken.PropertyName:
+                    return JTokenType.Property.ToString();
+                default:
+                    break;
+            }
+            return tokenType.ToString();
+        }
+
+        public static int? ReadAsInt32(JsonTextReader reader, string propertyName)
+        {
+            reader.Read();
+
+            if (reader.TokenType != JsonToken.Integer)
+            {
+                throw new InvalidDataException($"Expected '{propertyName}' to be of type {JTokenType.Integer}.");
+            }
+
+            if (reader.Value == null)
+            {
+                return null;
+            }
+
+            return Convert.ToInt32(reader.Value);
+        }
+
+        public static string ReadAsString(JsonTextReader reader, string propertyName)
+        {
+            reader.Read();
+
+            if (reader.TokenType != JsonToken.String)
+            {
+                throw new InvalidDataException($"Expected '{propertyName}' to be of type {JTokenType.String}.");
+            }
+
+            return reader.Value?.ToString();
+        }
+
+        public static bool CheckRead(JsonTextReader reader)
+        {
+            if (!reader.Read())
+            {
+                throw new JsonReaderException("Unexpected end when reading JSON");
+            }
+
+            return true;
         }
     }
 }

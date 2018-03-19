@@ -7,15 +7,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public abstract class HubInvocationMessage : HubMessage
     {
-        private Dictionary<string, string> _headers;
-
-        public IDictionary<string, string> Headers
-        {
-            get
-            {
-                return _headers ?? (_headers = new Dictionary<string, string>());
-            }
-        }
+        public IDictionary<string, string> Headers { get; set; }
 
         public string InvocationId { get; }
 
