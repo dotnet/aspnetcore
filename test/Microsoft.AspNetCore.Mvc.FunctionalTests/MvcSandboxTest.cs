@@ -7,11 +7,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class MvcSandboxTest : IClassFixture<MvcSampleFixture<MvcSandbox.Startup>>
+    public class MvcSandboxTest : IClassFixture<MvcTestFixture<MvcSandbox.Startup>>
     {
-        public MvcSandboxTest(MvcSampleFixture<MvcSandbox.Startup> fixture)
+        public MvcSandboxTest(MvcTestFixture<MvcSandbox.Startup> fixture)
         {
-            Client = fixture.Client;
+            Client = fixture.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }

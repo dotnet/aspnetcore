@@ -32,7 +32,14 @@ namespace MvcSandbox
 
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
+            var host = CreateWebHostBuilder(args)
+                .Build();
+
+            host.Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureLogging(factory =>
                 {
@@ -42,11 +49,7 @@ namespace MvcSandbox
                 })
                 .UseIISIntegration()
                 .UseKestrel()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
-        }
+                .UseStartup<Startup>();
     }
 }
 
