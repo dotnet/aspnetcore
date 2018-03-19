@@ -7,7 +7,7 @@ branches:
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 build_script:
-- ps: .\run.ps1 default-build
+- ps: .\run.ps1 -ci default-build
 on_finish:
 - ps: 7z a testlogs.zip testlogs
 - ps: Push-AppveyorArtifact testlogs.zip
@@ -16,8 +16,6 @@ install:
 clone_depth: 1
 environment:
   global:
-    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    DOTNET_CLI_TELEMETRY_OPTOUT: 1
     ASPNETCORE_TEST_LOG_DIR: $(APPVEYOR_BUILD_FOLDER)\testlogs
 test: 'off'
 deploy: 'off'
