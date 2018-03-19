@@ -39,8 +39,4 @@
     <ProjectReference Include="..\..\..\src\UI\Microsoft.AspNetCore.Identity.UI.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="$(MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion)" />
-  </ItemGroup>
-
 </Project>
