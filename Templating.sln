@@ -14,6 +14,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ProjectTemplates", "src\Microsoft.DotNet.Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj", "{260EBA09-DEF5-429C-99BF-90CA1456A576}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F34CD7D7-1E8F-41FA-AB4D-D86BFD3AC09B}"
+	ProjectSection(SolutionItems) = preProject
+		build\dependencies.props = build\dependencies.props
+		build\repo.props = build\repo.props
+		build\sources.props = build\sources.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
