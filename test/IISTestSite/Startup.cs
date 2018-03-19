@@ -464,22 +464,7 @@ namespace IISTestSite
             app.Run(async context =>
             {
                 var success = false;
-                if (context.Request.Path.StartsWithSegments("/NullBuffer"))
-                {
-                    try
-                    {
-                        await context.Request.Body.ReadAsync(null, 0, 0);
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        success = true;
-                    }
-                    catch (Exception)
-                    {
-                        success = true;
-                    }
-                }
-                else if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
+                if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
                 {
                     try
                     {
@@ -534,21 +519,6 @@ namespace IISTestSite
                         success = true;
                     }
                 }
-                else if (context.Request.Path.StartsWithSegments("/InvalidCountZeroRead"))
-                {
-                    try
-                    {
-                        await context.Request.Body.ReadAsync(new byte[1], 0, 0);
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        success = true;
-                    }
-                    catch (Exception)
-                    {
-                        success = true;
-                    }
-                }
 
                 await context.Response.WriteAsync(success ? "Success" : "Failure");
             });
@@ -558,18 +528,7 @@ namespace IISTestSite
             app.Run(async context =>
             {
                 var success = false;
-                if (context.Request.Path.StartsWithSegments("/NullBuffer"))
-                {
-                    try
-                    {
-                        await context.Response.Body.WriteAsync(null, 0, 0);
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        success = true;
-                    }
-                }
-                else if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
+                 if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
                 {
                     try
                     {

@@ -26,13 +26,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("/NullBuffer")]
         [InlineData("/InvalidOffsetSmall")]
         [InlineData("/InvalidOffsetLarge")]
         [InlineData("/InvalidCountSmall")]
         [InlineData("/InvalidCountLarge")]
         [InlineData("/InvalidCountWithOffset")]
-        [InlineData("/InvalidCountZeroRead")]
         public async Task TestInvalidReadOperations(string operation)
         {
             var result = await _fixture.Client.GetStringAsync($"/TestInvalidReadOperations{operation}");
@@ -40,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("/NullBuffer")]
         [InlineData("/InvalidOffsetSmall")]
         [InlineData("/InvalidOffsetLarge")]
         [InlineData("/InvalidCountSmall")]
