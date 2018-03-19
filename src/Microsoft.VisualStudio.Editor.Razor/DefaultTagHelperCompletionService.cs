@@ -174,6 +174,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 foreach (var rule in possibleDescriptor.TagMatchingRules)
                 {
+                    if (!TagHelperMatchingConventions.SatisfiesParentTag(completionContext.ContainingTagName, rule))
+                    {
+                        continue;
+                    }
+
                     if (rule.TagName == TagHelperMatchingConventions.ElementCatchAllName)
                     {
                         catchAllDescriptors.Add(possibleDescriptor);
@@ -210,7 +215,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 foreach (var completionTagName in elementCompletions.Keys)
                 {
-                    if (elementCompletions[completionTagName].Count > 0 || 
+                    if (elementCompletions[completionTagName].Count > 0 ||
                         !string.IsNullOrEmpty(prefix) && completionTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         // The current completion either has other TagHelper's associated with it or is prefixed with a non-empty

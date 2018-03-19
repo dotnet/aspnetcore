@@ -839,6 +839,75 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
+        public void GetElementCompletions_NoContainingParentTag_DoesNotGetCompletionForRuleWithParentTag()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("Tag1", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("outer-child-tag"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("child-tag").RequireParentTag("parent-tag"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("Tag2", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("parent-tag"))
+                    .AllowChildTag("child-tag")
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["outer-child-tag"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0] },
+                ["parent-tag"] = new HashSet<TagHelperDescriptor> { documentDescriptors[1] },
+            });
+
+            var completionContext = BuildElementCompletionContext(
+                documentDescriptors,
+                existingCompletions: Enumerable.Empty<string>(),
+                containingTagName: null,
+                containingParentTagName: null);
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetElementCompletions_WithContainingParentTag_GetsCompletionForRuleWithParentTag()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("Tag1", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("outer-child-tag"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("child-tag").RequireParentTag("parent-tag"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("Tag2", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("parent-tag"))
+                    .AllowChildTag("child-tag")
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["child-tag"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0] },
+            });
+
+            var completionContext = BuildElementCompletionContext(
+                documentDescriptors,
+                existingCompletions: Enumerable.Empty<string>(),
+                containingTagName: "parent-tag",
+                containingParentTagName: null);
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
         public void GetElementCompletions_AllowedChildrenAreIgnoredWhenAtRoot()
         {
             // Arrange
