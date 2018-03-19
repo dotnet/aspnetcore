@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             }
 
             // Parameters will be lazily initialized.
-            IDictionary<string, string> parameters = null;
+            IDictionary<string, object> parameters = null;
             for (int i = 0; i < Template.Segments.Length; i++)
             {
                 var segment = Template.Segments[i];
                 var pathSegment = context.Segments[i];
-                if (!segment.Match(pathSegment))
+                if (!segment.Match(pathSegment, out var matchedParameterValue))
                 {
                     return;
                 }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
                 {
                     if (segment.IsParameter)
                     {
-                        GetParameters()[segment.Value] = pathSegment;
+                        GetParameters()[segment.Value] = matchedParameterValue;
                     }
                 }
             }
@@ -47,11 +47,11 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             context.Parameters = parameters;
             context.Handler = Handler;
 
-            IDictionary<string, string> GetParameters()
+            IDictionary<string, object> GetParameters()
             {
                 if (parameters == null)
                 {
-                    parameters = new Dictionary<string, string>();
+                    parameters = new Dictionary<string, object>();
                 }
 
                 return parameters;

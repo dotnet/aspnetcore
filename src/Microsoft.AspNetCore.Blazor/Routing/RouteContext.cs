@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Blazor.Routing
 
         public Type Handler { get; set; }
 
-        public IDictionary<string, string> Parameters { get; set; }
+        public IDictionary<string, object> Parameters { get; set; }
     }
 }

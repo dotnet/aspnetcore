@@ -82,6 +82,28 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
         }
 
         [Theory]
+        [InlineData("/{value:bool}", "/maybe")]
+        [InlineData("/{value:datetime}", "/1955-01-32")]
+        [InlineData("/{value:decimal}", "/hello")]
+        [InlineData("/{value:double}", "/0.1.2")]
+        [InlineData("/{value:float}", "/0.1.2")]
+        [InlineData("/{value:guid}", "/not-a-guid")]
+        [InlineData("/{value:int}", "/3.141")]
+        [InlineData("/{value:long}", "/3.141")]
+        public void DoesNotMatchIfConstraintDoesNotMatch(string template, string contextUrl)
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute(template).Build();
+            var context = new RouteContext(contextUrl);
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Theory]
         [InlineData("/some")]
         [InlineData("/some/awesome/route/with/extra/segments")]
         public void DoesNotMatchIfDifferentNumberOfSegments(string path)
@@ -111,7 +133,7 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
 
             // Assert
             Assert.NotNull(context.Handler);
-            Assert.Single(context.Parameters, p => p.Key == "parameter" && p.Value == expectedValue);
+            Assert.Single(context.Parameters, p => p.Key == "parameter" && (string)p.Value == expectedValue);
         }
 
         [Fact]
@@ -121,7 +143,7 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
             var routeTable = new TestRouteTableBuilder().AddRoute("/{some}/awesome/{route}/").Build();
             var context = new RouteContext("/an/awesome/path");
 
-            var expectedParameters = new Dictionary<string, string>
+            var expectedParameters = new Dictionary<string, object>
             {
                 ["some"] = "an",
                 ["route"] = "path"
@@ -133,6 +155,60 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
             // Assert
             Assert.NotNull(context.Handler);
             Assert.Equal(expectedParameters, context.Parameters);
+        }
+
+        public static IEnumerable<object[]> CanMatchParameterWithConstraintCases() => new object[][]
+        {
+            new object[] { "/{value:bool}", "/true", true },
+            new object[] { "/{value:bool}", "/false", false },
+            new object[] { "/{value:datetime}", "/1955-01-30", new DateTime(1955, 1, 30) },
+            new object[] { "/{value:decimal}", "/5.3", 5.3m },
+            new object[] { "/{value:double}", "/0.1", 0.1d },
+            new object[] { "/{value:float}", "/0.1", 0.1f },
+            new object[] { "/{value:guid}", "/1FCEF085-884F-416E-B0A1-71B15F3E206B", Guid.Parse("1FCEF085-884F-416E-B0A1-71B15F3E206B") },
+            new object[] { "/{value:int}", "/123", 123 },
+            new object[] { "/{value:long}", "/9223372036854775807", long.MaxValue },
+        };
+
+        [Theory]
+        [MemberData(nameof(CanMatchParameterWithConstraintCases))]
+        public void CanMatchParameterWithConstraint(string template, string contextUrl, object convertedValue)
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute(template).Build();
+            var context = new RouteContext(contextUrl);
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            if (context.Handler == null)
+            {
+                // Make it easier to track down failing tests when using MemberData
+                throw new InvalidOperationException($"Failed to match template '{template}'.");
+            }
+            Assert.Equal(context.Parameters, new Dictionary<string, object>
+            {
+                { "value", convertedValue }
+            });
+        }
+
+        [Fact]
+        public void CanMatchSegmentWithMultipleConstraints()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute("/{value:double:int}/").Build();
+            var context = new RouteContext("/15");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal(context.Parameters, new Dictionary<string, object>
+            {
+                { "value", 15 } // Final constraint's convertedValue is used
+            });
         }
 
         [Fact]
@@ -163,6 +239,26 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
 
             // Act
             Assert.Equal("an/awesome", routeTable.Routes[0].Template.TemplateText);
+        }
+
+        [Fact]
+        public void PrefersMoreConstraintsOverFewer()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/products/{id}")
+                .AddRoute("/products/{id:int}").Build();
+            var context = new RouteContext("/products/456");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal(context.Parameters, new Dictionary<string, object>
+            {
+                { "id", 456 }
+            });
         }
 
         [Fact]

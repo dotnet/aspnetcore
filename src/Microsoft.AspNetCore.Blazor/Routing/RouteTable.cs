@@ -43,10 +43,12 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// less specific. The specificity of a route is given by the specificity
         /// of its segments and the position of those segments in the route.
         /// * A literal segment is more specific than a parameter segment.
+        /// * A parameter segment with more constraints is more specific than one with fewer constraints
         /// * Segment earlier in the route are evaluated before segments later in the route.
         /// For example:
         /// /Literal is more specific than /Parameter
         /// /Route/With/{parameter} is more specific than /{multiple}/With/{parameters}
+        /// /Product/{id:int} is more specific than /Product/{id}
         ///
         /// Routes can be ambigous if:
         /// They are composed of literals and those literals have the same values (case insensitive)
@@ -55,11 +57,13 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// For example:
         /// * /literal and /Literal
         /// /{parameter}/literal and /{something}/literal
+        /// /{parameter:constraint}/literal and /{something:constraint}/literal
         ///
         /// To calculate the precedence we sort the list of routes as follows:
         /// * Shorter routes go first.
         /// * A literal wins over a parameter in precedence.
         /// * For literals with different values (case insenitive) we choose the lexical order
+        /// * For parameters with different numbers of constraints, the one with more wins
         /// If we get to the end of the comparison routing we've detected an ambigous pair of routes.
         internal static int RouteComparison(RouteEntry x, RouteEntry y)
         {
@@ -83,22 +87,19 @@ namespace Microsoft.AspNetCore.Blazor.Routing
                     {
                         return 1;
                     }
-                }
 
-                for (int i = 0; i < xTemplate.Segments.Length; i++)
-                {
-                    var xSegment = xTemplate.Segments[i];
-                    var ySegment = yTemplate.Segments[i];
-                    if (!xSegment.IsParameter && ySegment.IsParameter)
+                    if (xSegment.IsParameter)
                     {
-                        return -1;
+                        if (xSegment.Constraints.Length > ySegment.Constraints.Length)
+                        {
+                            return -1;
+                        }
+                        else if (xSegment.Constraints.Length < ySegment.Constraints.Length)
+                        {
+                            return 1;
+                        }
                     }
-                    if (xSegment.IsParameter && !ySegment.IsParameter)
-                    {
-                        return 1;
-                    }
-
-                    if (!xSegment.IsParameter)
+                    else
                     {
                         var comparison = string.Compare(xSegment.Value, ySegment.Value, StringComparison.OrdinalIgnoreCase);
                         if (comparison != 0)

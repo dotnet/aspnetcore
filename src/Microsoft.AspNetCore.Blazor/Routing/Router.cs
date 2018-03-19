@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
                 : str.Substring(0, firstIndex);
         }
 
-        protected virtual void Render(RenderTreeBuilder builder, Type handler, IDictionary<string, string> parameters)
+        protected virtual void Render(RenderTreeBuilder builder, Type handler, IDictionary<string, object> parameters)
         {
             builder.OpenComponent(0, typeof(LayoutDisplay));
             builder.AddAttribute(1, nameof(LayoutDisplay.Page), handler);

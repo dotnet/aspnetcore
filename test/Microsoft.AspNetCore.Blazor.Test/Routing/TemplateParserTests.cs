@@ -104,7 +104,6 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         [InlineData("{}}", "Invalid template '{}}'. The character '}' in parameter segment '{}}' is not allowed.")]
         [InlineData("{=}", "Invalid template '{=}'. The character '=' in parameter segment '{=}' is not allowed.")]
         [InlineData("{.}", "Invalid template '{.}'. The character '.' in parameter segment '{.}' is not allowed.")]
-        [InlineData("{:}", "Invalid template '{:}'. The character ':' in parameter segment '{:}' is not allowed.")]
         public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(string template, string expectedMessage)
         {
             // Act & Assert
@@ -139,13 +138,13 @@ namespace Microsoft.AspNetCore.Blazor.Routing
 
             public ExpectedTemplateBuilder Literal(string value)
             {
-                Segments.Add(new TemplateSegment(value, isParameter: false));
+                Segments.Add(new TemplateSegment("testtemplate", value, isParameter: false));
                 return this;
             }
 
             public ExpectedTemplateBuilder Parameter(string value)
             {
-                Segments.Add(new TemplateSegment(value, isParameter: true));
+                Segments.Add(new TemplateSegment("testtemplate", value, isParameter: true));
                 return this;
             }
 

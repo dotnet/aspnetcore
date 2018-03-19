@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
     // a more performant/properly designed routing set of abstractions.
     // To be more precise these are some things we are scoping out:
     // * We are not doing link generation.
-    // * We are not supporting route constraints.
+    // * We are not supporting all the route constraint formats supported by ASP.NET server-side routing.
     // The class in here just takes care of parsing a route and extracting
     // simple parameters from it.
     // Some differences with ASP.NET Core routes are:
@@ -21,10 +21,11 @@ namespace Microsoft.AspNetCore.Blazor.Routing
     internal class TemplateParser
     {
         public static readonly char[] InvalidParameterNameCharacters =
-            new char[] { '*', '?', '{', '}', '=', '.', ':' };
+            new char[] { '*', '?', '{', '}', '=', '.' };
 
         internal static RouteTemplate ParseTemplate(string template)
         {
+            var originalTemplate = template;
             template = template.Trim('/');
             if (template == "")
             {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
                         throw new InvalidOperationException(
                             $"Invalid template '{template}'. Missing '{{' in parameter segment '{segment}'.");
                     }
-                    templateSegments[i] = new TemplateSegment(segment, isParameter: false);
+                    templateSegments[i] = new TemplateSegment(originalTemplate, segment, isParameter: false);
                 }
                 else
                 {
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
                             $"Invalid template '{template}'. The character '{segment[invalidCharacter]}' in parameter segment '{segment}' is not allowed.");
                     }
 
-                    templateSegments[i] = new TemplateSegment(segment.Substring(1, segment.Length - 2), isParameter: true);
+                    templateSegments[i] = new TemplateSegment(originalTemplate, segment.Substring(1, segment.Length - 2), isParameter: true);
                 }
             }
 
