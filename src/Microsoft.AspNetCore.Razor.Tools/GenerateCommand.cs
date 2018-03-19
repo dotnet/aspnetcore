@@ -181,9 +181,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
                         }
                     }
                 }
-
-                var outputFilePath = result.InputItem.OutputPath;
-                File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
+                else
+                {
+                    // Only output the file if we generated it without errors.
+                    var outputFilePath = result.InputItem.OutputPath;
+                    File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
+                }
             }
 
             return success ? 0 : -1;

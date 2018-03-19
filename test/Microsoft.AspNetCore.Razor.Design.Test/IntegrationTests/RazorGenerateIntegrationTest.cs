@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
-            // The file should still be generated even if we had a Razor syntax error.
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
+            // If there's a parser error, the generated file contents is likely incorrect. The file should not be written to disk.
+            Assert.FileDoesNotExist(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
         }
 
         [Fact]
@@ -90,9 +90,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
-
-            // The file should still be generated even if we had a Razor syntax error.
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
         }
 
         [ConditionalFact]
