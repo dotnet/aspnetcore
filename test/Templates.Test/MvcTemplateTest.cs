@@ -17,7 +17,7 @@ namespace Templates.Test
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(null)]
-        [InlineData("F#", Skip= "https://github.com/aspnet/templating/issues/365")]
+        [InlineData("F#", Skip = "https://github.com/aspnet/templating/issues/365")]
         public void MvcTemplate_NoAuth_Works_NetFramework(string languageOverride)
             => MvcTemplate_NoAuthImpl("net461", languageOverride);
 
@@ -55,17 +55,17 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void MvcTemplate_IndividualAuth_Works_NetFramework()
             => MvcTemplate_IndividualAuthImpl("net461");
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
         public void MvcTemplate_IndividualAuth_Works_NetCore()
             => MvcTemplate_IndividualAuthImpl(null);
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
         public void MvcTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
             => MvcTemplate_IndividualAuthImpl(null, true);
 
@@ -84,7 +84,6 @@ namespace Templates.Test
             }
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
-            Assert.Contains("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
 
             RunDotNetEfCreateMigration("mvc");
 

@@ -23,10 +23,8 @@
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.0-preview2-30355</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.1.0-preview2-30355</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0-preview2-30355</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>2.1.0-preview2-30355</MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.0-preview2-30355</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsProcessSourcesPackageVersion>
@@ -35,7 +33,6 @@
     <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.1.0-preview2-30355</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.1.0-preview2-30355</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
-    <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.1.0-preview2-30131</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
     <SeleniumSupportPackageVersion>3.7.0</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>16.16299.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
