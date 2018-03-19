@@ -1,15 +1,12 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Test", "test\Templates.Test\Templates.Test.csproj", "{D43A4D24-D514-44C2-9438-54F6EDF58680}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ItemTemplates", "src\Microsoft.DotNet.Web.ItemTemplates\Microsoft.DotNet.Web.ItemTemplates.csproj", "{ABC9D95C-7FBD-4F8D-827A-00942EA3D0C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TemplatePackages", "TemplatePackages", "{0AD6E692-E423-408C-B523-DAFB19412E4B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaTemplates", "src\Microsoft.AspNetCore.SpaTemplates\Microsoft.AspNetCore.SpaTemplates.csproj", "{01E12D5E-8540-4BC8-9A54-41EDD55E762E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\Microsoft.DotNet.Web.Spa.ProjectTemplates\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{402E62D1-7FD0-4E07-812C-0E385D98D6D9}"
 EndProject
@@ -31,10 +28,6 @@ Global
 		{ABC9D95C-7FBD-4F8D-827A-00942EA3D0C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABC9D95C-7FBD-4F8D-827A-00942EA3D0C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABC9D95C-7FBD-4F8D-827A-00942EA3D0C0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{01E12D5E-8540-4BC8-9A54-41EDD55E762E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{01E12D5E-8540-4BC8-9A54-41EDD55E762E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{01E12D5E-8540-4BC8-9A54-41EDD55E762E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{01E12D5E-8540-4BC8-9A54-41EDD55E762E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{402E62D1-7FD0-4E07-812C-0E385D98D6D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{402E62D1-7FD0-4E07-812C-0E385D98D6D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{402E62D1-7FD0-4E07-812C-0E385D98D6D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,7 +46,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{ABC9D95C-7FBD-4F8D-827A-00942EA3D0C0} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
-		{01E12D5E-8540-4BC8-9A54-41EDD55E762E} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{402E62D1-7FD0-4E07-812C-0E385D98D6D9} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{260EBA09-DEF5-429C-99BF-90CA1456A576} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
