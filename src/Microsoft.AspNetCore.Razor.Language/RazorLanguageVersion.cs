@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static readonly RazorLanguageVersion Latest = Version_2_1;
 
+        public static readonly RazorLanguageVersion Experimental = new RazorLanguageVersion(1337, 1337);
+
         public static bool TryParse(string languageVersion, out RazorLanguageVersion version)
         {
             if (languageVersion == null)
@@ -29,6 +31,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (string.Equals(languageVersion, "latest", StringComparison.OrdinalIgnoreCase))
             {
                 version = Version_2_1;
+                return true;
+            }
+            else if (string.Equals(languageVersion, "experimental", StringComparison.OrdinalIgnoreCase))
+            {
+                version = Experimental;
                 return true;
             }
             else if (languageVersion == "2.1")
