@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         protected override void OnInitialized()
         {
-            _identifierFeature = Engine.Features.OfType<IMetadataIdentifierFeature>().FirstOrDefault();    
+            _identifierFeature = Engine.Features.OfType<IMetadataIdentifierFeature>().FirstOrDefault();
         }
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
