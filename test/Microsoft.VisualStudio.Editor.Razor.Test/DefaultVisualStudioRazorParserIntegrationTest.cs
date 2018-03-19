@@ -429,6 +429,67 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
+        public async Task ImplicitExpression_AcceptsParenthesisAtEnd_SingleEdit()
+        {
+            // Arrange
+            var factory = new SpanFactory();
+            var edit = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 2, new StringTextSnapshot("foo @foo() bar"), "()");
+
+            using (var manager = CreateParserManager(edit.OldSnapshot))
+            {
+                await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
+
+                // Apply the () edit
+                manager.ApplyEdit(edit);
+
+                // Assert
+                Assert.Equal(1, manager.ParseCount);
+                ParserTestBase.EvaluateParseTree(
+                    manager.PartialParsingSyntaxTreeRoot,
+                    new MarkupBlock(
+                        factory.Markup("foo "),
+                        new ExpressionBlock(
+                            factory.CodeTransition(),
+                            factory.Code("foo()")
+                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                        factory.Markup(" bar")));
+            }
+        }
+
+        [ForegroundFact]
+        public async Task ImplicitExpression_AcceptsParenthesisAtEnd_TwoEdits()
+        {
+            // Arrange
+            var factory = new SpanFactory();
+            var edit1 = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 1, new StringTextSnapshot("foo @foo( bar"), "(");
+            var edit2 = new TestEdit(9, 0, new StringTextSnapshot("foo @foo( bar"), 1, new StringTextSnapshot("foo @foo() bar"), ")");
+            using (var manager = CreateParserManager(edit1.OldSnapshot))
+            {
+                await manager.InitializeWithDocumentAsync(edit1.OldSnapshot);
+
+                // Apply the ( edit
+                manager.ApplyEdit(edit1);
+
+                // Apply the ) edit
+                manager.ApplyEdit(edit2);
+
+                // Assert
+                Assert.Equal(1, manager.ParseCount);
+                ParserTestBase.EvaluateParseTree(
+                    manager.PartialParsingSyntaxTreeRoot,
+                    new MarkupBlock(
+                        factory.Markup("foo "),
+                        new ExpressionBlock(
+                            factory.CodeTransition(),
+                            factory.Code("foo()")
+                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                        factory.Markup(" bar")));
+            }
+        }
+
+        [ForegroundFact]
         public async Task ImplicitExpressionCorrectlyTriggersReparseIfIfKeywordTyped()
         {
             await RunTypeKeywordTestAsync("if");
