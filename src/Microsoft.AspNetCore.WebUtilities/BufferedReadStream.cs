@@ -327,21 +327,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             builder.WriteByte(b);
             _bufferOffset++;
             _bufferCount--;
-            if (b == CR)
+            if (b == LF && foundCR)
             {
-                foundCR = true;
+                foundCRLF = true;
+                return;
             }
-            else if (b == LF)
-            {
-                if (foundCR)
-                {
-                    foundCRLF = true;
-                }
-                else
-                {
-                    foundCR = false;
-                }
-            }
+            foundCR = b == CR;
         }
 
         private string DecodeLine(MemoryStream builder, bool foundCRLF)
