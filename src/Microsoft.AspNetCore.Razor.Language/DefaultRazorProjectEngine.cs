@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
             var importItems = importFeature.GetImports(projectItem);
-            var importSourceDocuments = importItems.Select(ConvertToSourceDocument);
+            var importSourceDocuments = importItems.Select(i => ConvertToSourceDocument(i));
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureParserOptions);
             var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureCodeGenerationOptions);
@@ -84,11 +85,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
             var importItems = importFeature.GetImports(projectItem);
-            var importSourceDocuments = importItems.Select(ConvertToSourceDocument);
+            var importSourceDocuments = importItems.Select(i => ConvertToSourceDocument(i, suppressExceptions: true));
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeParserOptions);
             var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeCodeGenerationOptions);
-
 
             return RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
         }
@@ -138,12 +138,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         // Internal for testing
-        internal static RazorSourceDocument ConvertToSourceDocument(RazorProjectItem importItem)
+        internal static RazorSourceDocument ConvertToSourceDocument(RazorProjectItem importItem, bool suppressExceptions = false)
         {
             if (importItem.Exists)
             {
-                // Normal import, has file paths, content etc.
-                return RazorSourceDocument.ReadFrom(importItem);
+                try
+                {
+                    // Normal import, has file paths, content etc.
+                    return RazorSourceDocument.ReadFrom(importItem);
+                }
+                catch (IOException) when (suppressExceptions)
+                {
+                    // Something happened when trying to read the item from disk.
+                    // Catch the exception so we don't crash the editor.
+                }
             }
 
             // Marker import, doesn't exist, used as an identifier for "there could be something here".
