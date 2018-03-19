@@ -164,6 +164,13 @@
                         "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     }
                 }
+            },
+            "dotnet-ef": {
+                "Exclusions": {
+                    "ASSEMBLY_COMMIT_HASH": {
+                        "tools/any/any/Newtonsoft.Json.dll": "External"
+                    }
+                }
             }
         }
     }
