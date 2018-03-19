@@ -25,7 +25,7 @@ ENV KOREBUILD_SKIP_RUNTIME_INSTALL=1
 COPY global.json /tmp/global.json
 RUN DOTNET_SDK_VERSION="$(jq -r '.sdk.version' /tmp/global.json)" \
     && echo "Installing SDK ${DOTNET_SDK_VERSION}" \
-    && curl -fsSL -o /tmp/dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-alpine.3.6-x64.tar.gz \
+    && wget -q --tries 10 -O /tmp/dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-alpine.3.6-x64.tar.gz \
     && mkdir -p /usr/share/dotnet \
     && tar xzf /tmp/dotnet.tar.gz -C /usr/share/dotnet \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
