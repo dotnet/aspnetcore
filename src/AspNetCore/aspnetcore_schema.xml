@@ -27,7 +27,6 @@
         <attribute name="disableStartUpErrorPage" type="bool" defaultValue="false" />
         <attribute name="hostingModel" type="string" />
         <element name="recycleOnFileChange">
-
             <collection addElement="file" clearElement="clear">
                 <attribute name="path" type="string" required="true" validationType="nonEmptyString" expanded="true"/>
             </collection>
@@ -36,6 +35,12 @@
             <collection addElement="environmentVariable" clearElement="clear" >
                 <attribute name="name" type="string" required="true" validationType="nonEmptyString"/>
                 <attribute name="value" type="string" required="true"/>
+            </collection>
+        </element>
+        <element name="handlerSettings">
+            <collection addElement="handlerSetting" clearElement="clear" >
+                <attribute name="name" type="string" required="true" validationType="nonEmptyString"/>
+               <attribute name="value" type="string" required="true"/>
             </collection>
         </element>
     </sectionSchema>
