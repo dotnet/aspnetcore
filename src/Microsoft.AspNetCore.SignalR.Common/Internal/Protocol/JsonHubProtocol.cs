@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const string ErrorPropertyName = "error";
         private const string TargetPropertyName = "target";
         private const string ArgumentsPropertyName = "arguments";
+        private const string PayloadPropertyName = "payload";
         private const string HeadersPropertyName = "headers";
 
         public static readonly string ProtocolName = "json";
