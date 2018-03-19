@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultHubActivator<THub> : IHubActivator<THub> where THub: Hub
     {
+        // Object factory for THub instances
+        private static readonly Lazy<ObjectFactory> _objectFactory = new Lazy<ObjectFactory>(() => ActivatorUtilities.CreateFactory(typeof(THub), Type.EmptyTypes));
         private readonly IServiceProvider _serviceProvider;
         private bool? _created;
 
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR
             var hub = _serviceProvider.GetService<THub>();
             if (hub == null)
             {
-                hub = ActivatorUtilities.CreateInstance<THub>(_serviceProvider);
+                hub = (THub)_objectFactory.Value(_serviceProvider, Array.Empty<object>());
                 _created = true;
             }
 
