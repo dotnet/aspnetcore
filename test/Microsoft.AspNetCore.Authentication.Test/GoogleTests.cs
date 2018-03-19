@@ -551,28 +551,26 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 o.ClientId = "Test Id";
                 o.ClientSecret = "Test Secret";
-                //AutomaticChallenge = true
             },
             context =>
+            {
+                var req = context.Request;
+                var res = context.Response;
+                if (req.Path == new PathString("/challenge2"))
                 {
-                    var req = context.Request;
-                    var res = context.Response;
-                    if (req.Path == new PathString("/challenge2"))
+                    return context.ChallengeAsync("Google", new AuthenticationProperties(new Dictionary<string, string>()
                     {
-                        return context.ChallengeAsync("Google", new AuthenticationProperties(
-                            new Dictionary<string, string>()
-                            {
-                                { "scope", "https://www.googleapis.com/auth/plus.login" },
-                                { "access_type", "offline" },
-                                { "approval_prompt", "force" },
-                                { "prompt", "consent" },
-                                { "login_hint", "test@example.com" },
-                                { "include_granted_scopes", "false" }
-                            }));
-                    }
+                        { "scope", "https://www.googleapis.com/auth/plus.login" },
+                        { "access_type", "offline" },
+                        { "approval_prompt", "force" },
+                        { "prompt", "consent" },
+                        { "login_hint", "test@example.com" },
+                        { "include_granted_scopes", "false" }
+                    }));
+                }
 
-                    return Task.FromResult<object>(null);
-                });
+                return Task.FromResult<object>(null);
+            });
             var transaction = await server.SendAsync("https://example.com/challenge2");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
