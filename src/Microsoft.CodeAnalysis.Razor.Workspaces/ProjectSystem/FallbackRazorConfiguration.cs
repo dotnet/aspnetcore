@@ -24,6 +24,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             "MVC-2.0",
             new[] { new FallbackRazorExtension("MVC-2.0"), });
 
+        public static readonly RazorConfiguration MVC_2_1 = new FallbackRazorConfiguration(
+             RazorLanguageVersion.Version_2_1,
+             "MVC-2.1",
+             new[] { new FallbackRazorExtension("MVC-2.1"), });
+
+
         public static RazorConfiguration SelectConfiguration(Version version)
         {
             if (version.Major == 1 && version.Minor == 0)
@@ -38,9 +44,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 return MVC_2_0;
             }
+            else if (version.Major == 2 && version.Minor == 1)
+            {
+                return MVC_2_1;
+            }
             else
             {
-                return MVC_2_0;
+                return MVC_2_1;
             }
         }
 

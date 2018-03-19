@@ -11,7 +11,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultProjectEngineFactoryService : RazorProjectEngineFactoryService
     {
-        private readonly static RazorConfiguration DefaultConfiguration = FallbackRazorConfiguration.MVC_2_0;
+        private readonly static RazorConfiguration DefaultConfiguration = FallbackRazorConfiguration.MVC_2_1;
 
         private readonly ProjectSnapshotManager _projectManager;
         private readonly IFallbackProjectEngineFactory _defaultFactory;
@@ -107,9 +107,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // things also.
             configure = configure ?? ((b) => { });
 
-            // The default configuration currently matches MVC-2.0. Beyond MVC-2.0 we added SDK support for 
-            // properly detecting project versions, so that's a good version to assume when we can't find a
-            // configuration.
+            // The default configuration currently matches the newest MVC configuration.
+            //
+            // We typically want this because the language adds features over time - we don't want to a bunch of errors
+            // to show up when a document is first opened, and then go away when the configuration loads, we'd prefer the opposite.
             var configuration = project?.Configuration ?? DefaultConfiguration;
 
             // If there's no factory to handle the configuration then fall back to a very basic configuration.
