@@ -4,15 +4,16 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace AuthSamples.FunctionalTests
 {
-    public class PathSchemeSelectionTests : IClassFixture<SampleTestFixture<PathSchemeSelection.Startup>>
+    public class PathSchemeSelectionTests : IClassFixture<WebApplicationFactory<PathSchemeSelection.Startup>>
     {
-        public PathSchemeSelectionTests(SampleTestFixture<PathSchemeSelection.Startup> fixture)
+        public PathSchemeSelectionTests(WebApplicationFactory<PathSchemeSelection.Startup> fixture)
         {
-            Client = fixture.Client;
+            Client = fixture.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }

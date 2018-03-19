@@ -4,15 +4,16 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace AuthSamples.FunctionalTests
 {
-    public class ClaimsTransformTests : IClassFixture<SampleTestFixture<ClaimsTransformer.Startup>>
+    public class ClaimsTransformTests : IClassFixture<WebApplicationFactory<ClaimsTransformer.Startup>>
     {
-        public ClaimsTransformTests(SampleTestFixture<ClaimsTransformer.Startup> fixture)
+        public ClaimsTransformTests(WebApplicationFactory<ClaimsTransformer.Startup> fixture)
         {
-            Client = fixture.Client;
+            Client = fixture.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }
