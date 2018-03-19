@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
+    [Obsolete("This type is obsolete and will be removed in a future version.")]
     public abstract class PageArgumentBinder
     {
         public async Task<object> BindModelAsync(PageContext context, Type type, object @default, string name)

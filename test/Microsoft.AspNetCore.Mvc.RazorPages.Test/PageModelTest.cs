@@ -1942,13 +1942,5 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new NotImplementedException();
             }
         }
-
-        private class TestPageArgumentBinder : PageArgumentBinder
-        {
-            protected override Task<ModelBindingResult> BindAsync(PageContext context, object value, string name, Type type)
-            {
-                return Task.FromResult(ModelBindingResult.Success(Guid.NewGuid()));
-            }
-        }
     }
 }
