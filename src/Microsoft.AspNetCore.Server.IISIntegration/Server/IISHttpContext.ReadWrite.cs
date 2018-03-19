@@ -15,11 +15,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// <summary>
         /// Reads data from the Input pipe to the user.
         /// </summary>
-        /// <param name="memory"></param>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="count"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal async Task<int> ReadAsync(Memory<byte> memory, CancellationToken cancellationToken)
+        public async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            // Start a task which will continuously call ReadFromIISAsync and WriteToIISAsync
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+            if (count == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            var memory = new Memory<byte>(buffer, offset, count);
+
             StartProcessingRequestAndResponseBody();
 
             while (true)
@@ -30,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 {
                     if (!readableBuffer.IsEmpty)
                     {
-                        var actual = Math.Min(readableBuffer.Length, memory.Length);
+                        var actual = Math.Min(readableBuffer.Length, count);
                         readableBuffer = readableBuffer.Slice(0, actual);
                         readableBuffer.CopyTo(memory.Span);
                         return (int)actual;
@@ -53,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// <param name="memory"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal Task WriteAsync(ReadOnlyMemory<byte> memory, CancellationToken cancellationToken = default(CancellationToken))
+        public Task WriteAsync(ReadOnlyMemory<byte> memory, CancellationToken cancellationToken = default(CancellationToken))
         {
 
             // Want to keep exceptions consistent, 
@@ -74,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (!_hasResponseStarted)
             {
