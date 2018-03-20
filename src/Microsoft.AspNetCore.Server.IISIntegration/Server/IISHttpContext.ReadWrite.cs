@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal partial class IISHttpContext
     {
+        private const int HttpDataChunkStackLimit = 128; // 16 bytes per HTTP_DATA_CHUNK
+
         /// <summary>
         /// Reads data from the Input pipe to the user.
         /// </summary>
@@ -212,6 +214,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var hr = 0;
             var nChunks = 0;
 
+            // Count the number of chunks in memory.
             if (buffer.IsSingleSegment)
             {
                 nChunks = 1;
@@ -224,8 +227,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
             }
 
-            if (buffer.IsSingleSegment)
+            if (nChunks == 1)
             {
+                // If there is only a single chunk, use fixed to get a pointer to the buffer
                 var pDataChunks = stackalloc HttpApiTypes.HTTP_DATA_CHUNK[1];
 
                 fixed (byte* pBuffer = &MemoryMarshal.GetReference(buffer.First.Span))
@@ -238,35 +242,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     hr = NativeMethods.http_write_response_bytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
                 }
             }
+            else if (nChunks < HttpDataChunkStackLimit)
+            {
+                // To avoid stackoverflows, we will only stackalloc if the write size is less than the StackChunkLimit
+                // The stack size is IIS is by default 128/256 KB, so we are generous with this threshold.
+                var pDataChunks = stackalloc HttpApiTypes.HTTP_DATA_CHUNK[nChunks];
+                hr = WriteSequenceToIIS(nChunks, buffer, pDataChunks, out fCompletionExpected);
+            }
             else
             {
-                // REVIEW: Do we need to guard against this getting too big? It seems unlikely that we'd have more than say 10 chunks in real life
-                var pDataChunks = stackalloc HttpApiTypes.HTTP_DATA_CHUNK[nChunks];
-                var currentChunk = 0;
-
-                // REVIEW: We don't really need this list since the memory is already pinned with the default pool,
-                // but shouldn't assume the pool implementation right now. Unfortunately, this causes a heap allocation...
-                var handles = new MemoryHandle[nChunks];
-
-                foreach (var b in buffer)
+                // Otherwise allocate the chunks on the heap.
+                var chunks = new HttpApiTypes.HTTP_DATA_CHUNK[nChunks];
+                fixed (HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks = chunks)
                 {
-                    ref var handle = ref handles[currentChunk];
-                    ref var chunk = ref pDataChunks[currentChunk];
-
-                    handle = b.Retain(true);
-
-                    chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                    chunk.fromMemory.BufferLength = (uint)b.Length;
-                    chunk.fromMemory.pBuffer = (IntPtr)handle.Pointer;
-
-                    currentChunk++;
-                }
-
-                hr = NativeMethods.http_write_response_bytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
-                // Free the handles
-                foreach (var handle in handles)
-                {
-                    handle.Dispose();
+                    hr = WriteSequenceToIIS(nChunks, buffer, pDataChunks, out fCompletionExpected);
                 }
             }
 
@@ -275,6 +264,39 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 _operation.Complete(hr, 0);
             }
             return _operation;
+        }
+
+        private unsafe int WriteSequenceToIIS(int nChunks, ReadOnlySequence<byte> buffer, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, out bool fCompletionExpected)
+        {
+            var currentChunk = 0;
+            var hr = 0;
+
+            // REVIEW: We don't really need this list since the memory is already pinned with the default pool,
+            // but shouldn't assume the pool implementation right now. Unfortunately, this causes a heap allocation...
+            var handles = new MemoryHandle[nChunks];
+
+            foreach (var b in buffer)
+            {
+                ref var handle = ref handles[currentChunk];
+                ref var chunk = ref pDataChunks[currentChunk];
+                handle = b.Retain(true);
+
+                chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+                chunk.fromMemory.BufferLength = (uint)b.Length;
+                chunk.fromMemory.pBuffer = (IntPtr)handle.Pointer;
+
+                currentChunk++;
+            }
+
+            hr = NativeMethods.http_write_response_bytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
+
+            // Free the handles
+            foreach (var handle in handles)
+            {
+                handle.Dispose();
+            }
+           
+            return hr;
         }
 
         private unsafe IISAwaitable FlushToIISAsync()
