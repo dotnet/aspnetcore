@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             IEnumerable<string> assemblyReferences,
             IEnumerable<string> jsReferences,
             IEnumerable<string> cssReferences,
+            bool linkerEnabled,
             string outputPath)
         {
             var template = GetTemplate(path);
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             }
             var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
             var entryPoint = GetAssemblyEntryPoint(assemblyPath);
-            var updatedContent = GetIndexHtmlContents(template, assemblyName, entryPoint, assemblyReferences, jsReferences, cssReferences);
+            var updatedContent = GetIndexHtmlContents(template, assemblyName, entryPoint, assemblyReferences, jsReferences, cssReferences, linkerEnabled);
             var normalizedOutputPath = Normalize(outputPath);
             Console.WriteLine("Writing index to: " + normalizedOutputPath);
             File.WriteAllText(normalizedOutputPath, updatedContent);
@@ -101,7 +102,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
             string assemblyEntryPoint,
             IEnumerable<string> assemblyReferences,
             IEnumerable<string> jsReferences,
-            IEnumerable<string> cssReferences)
+            IEnumerable<string> cssReferences,
+            bool linkerEnabled)
         {
             var resultBuilder = new StringBuilder();
 
@@ -141,6 +143,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                                     assemblyName,
                                     assemblyEntryPoint,
                                     assemblyReferences,
+                                    linkerEnabled,
                                     tag.Attributes);
 
                                 // Emit tags to reference any specified JS/CSS files
@@ -198,6 +201,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             string assemblyName,
             string assemblyEntryPoint,
             IEnumerable<string> binFiles,
+            bool linkerEnabled,
             List<KeyValuePair<string, string>> attributes)
         {
             var assemblyNameWithExtension = $"{assemblyName}.dll";
@@ -210,6 +214,15 @@ namespace Microsoft.AspNetCore.Blazor.Build
             attributesDict["main"] = assemblyNameWithExtension;
             attributesDict["entrypoint"] = assemblyEntryPoint;
             attributesDict["references"] = referencesAttribute;
+
+            if (linkerEnabled)
+            {
+                attributesDict["linker-enabled"] = "true";
+            }
+            else
+            {
+                attributesDict.Remove("linker-enabled");
+            }
 
             resultBuilder.Append("<script");
             foreach (var attributePair in attributesDict)

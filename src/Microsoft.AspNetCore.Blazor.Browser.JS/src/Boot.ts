@@ -9,6 +9,7 @@ async function boot() {
   // Read startup config from the <script> element that's importing this file
   const allScriptElems = document.getElementsByTagName('script');
   const thisScriptElem = (document.currentScript || allScriptElems[allScriptElems.length - 1]) as HTMLScriptElement;
+  const isLinkerEnabled = thisScriptElem.getAttribute('linker-enabled') === 'true';
   const entryPointDll = getRequiredBootScriptAttribute(thisScriptElem, 'main');
   const entryPointMethod = getRequiredBootScriptAttribute(thisScriptElem, 'entrypoint');
   const entryPointAssemblyName = getAssemblyNameFromUrl(entryPointDll);
@@ -17,6 +18,10 @@ async function boot() {
     .split(',')
     .map(s => s.trim())
     .filter(s => !!s);
+
+  if (!isLinkerEnabled) {
+    console.info('Blazor is running in dev mode without IL stripping. To make the bundle size significantly smaller, publish the application or see https://go.microsoft.com/fwlink/?linkid=870414');
+  }
 
   // Determine the URLs of the assemblies we want to load
   const loadAssemblyUrls = [entryPointDll]

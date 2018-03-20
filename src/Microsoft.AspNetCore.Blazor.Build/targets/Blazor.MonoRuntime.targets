@@ -260,8 +260,8 @@
       <_BlazorCommonInput Include="@(IntermediateAssembly)" />
       <_BlazorCommonInput Include="@(_BlazorDependencyInput)" />
       <_BlazorCommonInput Include="$(_BlazorShouldLinkApplicationAssemblies)" />
-      <_BlazorLinkingOption Condition="_BlazorShouldLinkApplicationAssemblies == ''" Include="false" />
-      <_BlazorLinkingOption Condition="_BlazorShouldLinkApplicationAssemblies != ''" Include="true" />
+      <_BlazorLinkingOption Condition="'$(_BlazorShouldLinkApplicationAssemblies)' == ''" Include="false" />
+      <_BlazorLinkingOption Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''" Include="true" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_BlazorCommonInput)">
@@ -570,6 +570,7 @@
       <BlazorIndexHtmlInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FullPath)')" />
       <BlazorIndexHtmlInput Include="@(BlazorPackageJsRef->'%(FullPath)')" />
       <BlazorIndexHtmlInput Include="@(BlazorPackageCssRef->'%(FullPath)')" />
+      <BlazorIndexHtmlInput Include="@(_BlazorLinkingOption)" />
     </ItemGroup>
 
     <WriteLinesToFile
@@ -594,8 +595,11 @@
       <_JsReferences Include="@(BlazorPackageJsRef->'_content/%(SourcePackage)/%(RecursiveDir)%(FileName)%(Extension)')" />
       <_CssReferences Include="@(BlazorPackageCssRef->'_content/%(SourcePackage)/%(RecursiveDir)%(FileName)%(Extension)')" />
     </ItemGroup>
+    <PropertyGroup>
+      <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
+    </PropertyGroup>
 
-    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') @(_JsReferences->'--js &quot;%(Identity)&quot;', ' ') @(_CssReferences->'--css &quot;%(Identity)&quot;', ' ') --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
+    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') @(_JsReferences->'--js &quot;%(Identity)&quot;', ' ') @(_CssReferences->'--css &quot;%(Identity)&quot;', ' ') $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
 
     <ItemGroup Condition="Exists('$(BlazorIndexHtmlOutputPath)')">
       <_BlazorIndex Include="$(BlazorIndexHtmlOutputPath)" />

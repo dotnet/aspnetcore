@@ -33,6 +33,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
             var mainAssemblyPath = command.Argument("assembly",
                 "Path to the assembly containing the entry point of the application.");
 
+            var linkerEnabledFlag = command.Option("--linker-enabled",
+                "If set, specifies that the application is being built with linking enabled.",
+                CommandOptionType.NoValue);
+
             command.OnExecute(() =>
             {
                 if (string.IsNullOrEmpty(mainAssemblyPath.Value) ||
@@ -50,6 +54,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                         references.Values.ToArray(),
                         jsReferences.Values.ToArray(),
                         cssReferences.Values.ToArray(),
+                        linkerEnabledFlag.HasValue(),
                         outputPath.Value());
                     return 0;
                 }

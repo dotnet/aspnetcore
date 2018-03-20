@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "MyNamespace.MyType::MyMethod",
                 assemblyReferences,
                 jsReferences,
-                cssReferences);
+                cssReferences,
+                linkerEnabled: true);
 
             // Act & Assert: Start and end is not modified (including formatting)
             Assert.StartsWith(htmlTemplatePrefix, instance);
@@ -55,6 +56,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             Assert.False(scriptElem.HasAttribute("type"));
             Assert.Equal(string.Empty, scriptElem.Attributes["custom1"].Value);
             Assert.Equal("value", scriptElem.Attributes["custom2"].Value);
+            Assert.Equal("true", scriptElem.Attributes["linker-enabled"].Value);
 
             // Assert: Also contains script tags referencing JS files
             Assert.Equal(
@@ -77,7 +79,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var cssReferences = new string[] { "my/styles.css" };
 
             var content = IndexHtmlWriter.GetIndexHtmlContents(
-                htmlTemplate, "MyApp.Entrypoint", "MyNamespace.MyType::MyMethod", assemblyReferences, jsReferences, cssReferences);
+                htmlTemplate, "MyApp.Entrypoint", "MyNamespace.MyType::MyMethod", assemblyReferences, jsReferences, cssReferences, linkerEnabled: true);
 
             // Assert
             Assert.Equal(htmlTemplate, content);
