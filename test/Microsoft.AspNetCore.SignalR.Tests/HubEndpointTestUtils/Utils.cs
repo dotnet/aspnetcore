@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -64,11 +65,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
             return services.BuildServiceProvider();
         }
 
-        public static dynamic GetHubEndpoint(Type hubType)
+        public static EndPoint GetHubEndpoint(Type hubType)
         {
             var serviceProvider = CreateServiceProvider();
-            dynamic endPoint = serviceProvider.GetService(HubEndPointTestUtils.GetEndPointType(hubType));
-            return endPoint;
+            return (EndPoint)serviceProvider.GetService(GetEndPointType(hubType));
         }
     }
 
