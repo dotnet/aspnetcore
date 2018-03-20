@@ -31,7 +31,7 @@ To see Blazor in action, check out [Steve Sanderson's prototype demo at NDC Oslo
 1. Install the latest *preview* of [Visual Studio 2017 (15.7)](https://www.visualstudio.com/vs/preview) with the Web development workload.
 1. Install the [ASP.NET Core Blazor Language Services extension](https://go.microsoft.com/fwlink/?linkid=870389) from the Visual Studio Marketplace.
 1. File -> New Project -> Web -> ASP.NET Core Web Application -> Blazor
-  - If you don't see the Blazor template, be sure to select .NET Core and ASP.NET Core 2.0
+   - If you don't see the Blazor template, be sure to select .NET Core and ASP.NET Core 2.0
 
 Not using Visual Studio? Install the Blazor templates on the command-line:
 
