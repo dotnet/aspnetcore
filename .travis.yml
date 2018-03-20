@@ -5,8 +5,6 @@ services:
 - docker
 env:
   global:
-  - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  - DOTNET_CLI_TELEMETRY_OPTOUT: 1
   - SIGNALR_TESTS_VERBOSE: 1
   - TRAVIS_NODE_VERSION: 8.9.3
 mono: none
@@ -28,4 +26,4 @@ before_install:
 - nvm install $TRAVIS_NODE_VERSION
 - if test "$TRAVIS_OS_NAME" == "linux"; then docker pull redis; fi
 script:
-- ./build.sh
+- ./build.sh --ci
