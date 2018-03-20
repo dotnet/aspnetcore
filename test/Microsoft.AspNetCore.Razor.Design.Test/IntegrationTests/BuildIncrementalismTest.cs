@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -90,5 +91,43 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.NotEqual(fileThumbPrint, newThumbPrint);
         }
 
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_ErrorInGeneratedCode_ReportsMSBuildError_OnIncrementalBuild()
+        {
+            // Introducing a Razor semantic error
+            ReplaceContent("@{ // Unterminated code block", "Views", "Home", "Index.cshtml");
+
+            // Regular build
+            await VerifyError();
+
+            // Incremental build
+            await VerifyError();
+
+            async Task VerifyError()
+            {
+                var result = await DotnetMSBuild("Build");
+
+                Assert.BuildFailed(result);
+
+                // This needs to be relative path. Tracked by https://github.com/aspnet/Razor/issues/2187.
+                var filePath = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
+                var location = filePath + "(1,2)";
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    // Absolute paths on OSX don't work well.
+                    location = null;
+                }
+
+                Assert.BuildError(result, "RZ1006", location: location);
+
+                // Compilation failed without creating the views assembly
+                Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
+                Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+
+                // File with error does not get written to disk.
+                Assert.FileDoesNotExist(result, IntermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs");
+            }
+        }
     }
 }
