@@ -1779,7 +1779,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
 
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.None, AcceptedCharactersInternal.WhiteSpace);
+
+                        // This should contain the optional whitespace after the optional semicolon and the new line.
+                        // Output as Markup as we want intellisense here.
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
                         break;
                     case DirectiveKind.RazorBlock:
                         AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
