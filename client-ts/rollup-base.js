@@ -15,7 +15,7 @@ export default function(rootDir, moduleGlobals) {
     return {
         input: path.join(rootDir, "dist", "cjs", "browser-index.js"),
         output: {
-            file: pkg.browser,
+            file: pkg.umd,
             format: "umd",
             name: pkg.umd_name,
             sourcemap: true,

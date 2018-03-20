@@ -3,9 +3,9 @@
   "version": "1.0.0-preview2-t000",
   "description": "ASP.NET Core SignalR Client",
   "main": "./dist/cjs/index.js",
-  "browser": "./dist/browser/signalr.js",
   "module": "./dist/esm/index.js",
   "typings": "./dist/esm/index.d.ts",
+  "umd": "./dist/browser/signalr.js",
   "umd_name": "signalR",
   "directories": {
     "test": "spec"

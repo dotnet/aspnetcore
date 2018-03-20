@@ -3,9 +3,9 @@
   "version": "1.0.0-preview2-t000",
   "description": "MsgPack Protocol support for ASP.NET Core SignalR",
   "main": "./dist/cjs/index.js",
-  "browser": "./dist/browser/signalr-protocol-msgpack.js",
   "module": "./dist/esm/index.js",
   "typings": "./dist/esm/index.d.ts",
+  "umd": "./dist/browser/signalr-protocol-msgpack.js",
   "umd_name": "signalR.protocols.msgpack",
   "directories": {
     "test": "spec"
