@@ -399,6 +399,38 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void InferBoundPropertyModelPrefixes_SetsModelPrefix_ForComplexTypeFromValueProvider()
+        {
+            // Arrange
+            var controller = GetControllerModel(typeof(ControllerWithBoundProperty));
+
+            var provider = GetProvider();
+
+            // Act
+            provider.InferBoundPropertyModelPrefixes(controller);
+
+            // Assert
+            var property = Assert.Single(controller.ControllerProperties);
+            Assert.Equal(string.Empty, property.BindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void InferParameterModelPrefixes_SetsModelPrefix_ForComplexTypeFromValueProvider()
+        {
+            // Arrange
+            var action = GetActionModel(typeof(ControllerWithBoundProperty), nameof(ControllerWithBoundProperty.SomeAction));
+
+            var provider = GetProvider();
+
+            // Act
+            provider.InferParameterModelPrefixes(action);
+
+            // Assert
+            var parameter = Assert.Single(action.Parameters);
+            Assert.Equal(string.Empty, parameter.BindingInfo.BinderModelName);
+        }
+
+        [Fact]
         public void AddMultipartFormDataConsumesAttribute_NoOpsIfBehaviorIsDisabled()
         {
             // Arrange
@@ -481,6 +513,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
             new DefaultApplicationModelProvider(Options.Create(new MvcOptions())).OnProvidersExecuting(context);
             return context;
+        }
+
+        private static ControllerModel GetControllerModel(Type controllerType)
+        {
+            var context = GetContext(controllerType);
+            return Assert.Single(context.Result.Controllers);
         }
 
         private static ActionModel GetActionModel(Type controllerType, string actionName)
@@ -621,6 +659,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
                 => sourceType == typeof(string);
+        }
+
+        [ApiController]
+        private class ControllerWithBoundProperty
+        {
+            [FromQuery]
+            public TestModel TestProperty { get; set; }
+
+            public IActionResult SomeAction([FromQuery] TestModel test) => null;
         }
     }
 }

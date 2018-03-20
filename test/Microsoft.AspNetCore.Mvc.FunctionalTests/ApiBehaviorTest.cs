@@ -124,5 +124,47 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(name, result.Name);
             Assert.Equal(email, result.Email);
         }
+
+        [Fact]
+        public async Task ActionsWithApiBehavior_InferEmptyPrefixForComplexValueProviderModel_Success()
+        {
+            // Arrange
+            var id = 31;
+            var name = "test_user";
+            var email = "email@test.com";
+            var url = $"/contact/ActionWithInferredEmptyPrefix?name={name}&contactid={id}&email={email}";
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var result = await response.Content.ReadAsAsync<Contact>();
+            Assert.Equal(id, result.ContactId);
+            Assert.Equal(name, result.Name);
+            Assert.Equal(email, result.Email);
+        }
+
+        [Fact]
+        public async Task ActionsWithApiBehavior_InferEmptyPrefixForComplexValueProviderModel_Ignored()
+        {
+            // Arrange
+            var id = 31;
+            var name = "test_user";
+            var email = "email@test.com";
+            var url = $"/contact/ActionWithInferredEmptyPrefix?contact.name={name}&contact.contactid={id}&contact.email={email}";
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var result = await response.Content.ReadAsAsync<Contact>();
+            Assert.Equal(0, result.ContactId);
+            Assert.Null(result.Name);
+            Assert.Null(result.Email);
+        }
     }
 }
