@@ -78,8 +78,12 @@
 .navbar-nav > li a:hover {
     color: #fff;
     background-color: transparent;
-    text-decoration: none;
 }
-.navbar-nav > li a:focus {
+
+a:focus:not(:hover) {
+    color: #337ab7;
+}
+
+a:hover, a:focus {
     text-decoration: none;
 }
