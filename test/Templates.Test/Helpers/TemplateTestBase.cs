@@ -107,6 +107,7 @@ namespace Templates.Test
             }
         }
 
+        // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
         protected void AssertEmptyMigration(string migration)
         {
             var fullPath = Path.Combine(TemplateOutputDir, "Data/Migrations");
