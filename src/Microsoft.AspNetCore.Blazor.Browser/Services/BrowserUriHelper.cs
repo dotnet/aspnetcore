@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         static bool _hasEnabledNavigationInterception;
         static string _cachedAbsoluteUri;
         static EventHandler<string> _onLocationChanged;
-        static string _baseUriString;
-        static Uri _baseUri;
+        static string _baseUriStringNoTrailingSlash; // No trailing slash so we can just prepend it to suffixes
+        static Uri _baseUriWithTrailingSlash; // With trailing slash so it can be used in new Uri(base, relative)
 
         /// <inheritdoc />
         public event EventHandler<string> OnLocationChanged
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         public string GetBaseUriPrefix()
         {
             EnsureBaseUriPopulated();
-            return _baseUriString;
+            return _baseUriStringNoTrailingSlash;
         }
 
         /// <inheritdoc />
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         public Uri ToAbsoluteUri(string relativeUri)
         {
             EnsureBaseUriPopulated();
-            return new Uri(_baseUri, relativeUri);
+            return new Uri(_baseUriWithTrailingSlash, relativeUri);
         }
 
         /// <inheritdoc />
@@ -118,12 +118,12 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         private static void EnsureBaseUriPopulated()
         {
             // The <base href> is fixed for the lifetime of the page, so just cache it
-            if (_baseUriString == null)
+            if (_baseUriStringNoTrailingSlash == null)
             {
                 var baseUri = RegisteredFunction.InvokeUnmarshalled<string>(
                     $"{_functionPrefix}.getBaseURI");
-                _baseUriString = ToBaseUriPrefix(baseUri);
-                _baseUri = new Uri(_baseUriString);
+                _baseUriStringNoTrailingSlash = ToBaseUriPrefix(baseUri);
+                _baseUriWithTrailingSlash = new Uri(_baseUriStringNoTrailingSlash + "/");
             }
         }
 
