@@ -60,9 +60,7 @@ export class HubConnection {
     }
 
     private processIncomingData(data: any) {
-        if (this.timeoutHandle !== undefined) {
-            clearTimeout(this.timeoutHandle);
-        }
+        this.cleanupTimeout();
 
         if (!this.receivedHandshakeResponse) {
             data = this.processHandshakeResponse(data);
@@ -196,9 +194,9 @@ export class HubConnection {
         });
         this.callbacks.clear();
 
-        this.closedCallbacks.forEach((c) => c.apply(this, [error]));
-
         this.cleanupTimeout();
+
+        this.closedCallbacks.forEach((c) => c.apply(this, [error]));
     }
 
     public async start(): Promise<void> {
@@ -213,6 +211,8 @@ export class HubConnection {
 
         this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
 
+        // defensively cleanup timeout in case we receive a message from the server before we finish start
+        this.cleanupTimeout();
         this.configureTimeout();
     }
 

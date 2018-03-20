@@ -683,6 +683,33 @@ describe("HubConnection", () => {
             expect(error).toBeUndefined();
         });
 
+        it("does not timeout if message was received before HubConnection.start", async () => {
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
+
+            const p = new PromiseSource<Error>();
+            hubConnection.onclose((e) => p.resolve(e));
+
+            // send message before start to trigger timeout handler
+            // testing for regression where we didn't cleanup timer if request received before start created a timer
+            await connection.receive({ type: MessageType.Ping });
+
+            await hubConnection.start();
+
+            await connection.receive({ type: MessageType.Ping });
+            await delay(50);
+            await connection.receive({ type: MessageType.Ping });
+            await delay(50);
+            await connection.receive({ type: MessageType.Ping });
+            await delay(50);
+
+            connection.stop();
+
+            const error = await p.promise;
+
+            expect(error).toBeUndefined();
+        });
+
         it("terminates if no messages received within timeout interval", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
