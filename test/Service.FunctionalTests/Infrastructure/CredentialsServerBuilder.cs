@@ -11,11 +11,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.Service;
 using Microsoft.AspNetCore.Identity.Service.IntegratedWebClient;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
@@ -24,9 +24,10 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
     {
         private readonly DelegatingHandler _loopBackHandler = new LoopBackHandler();
 
-        public CredentialsServerBuilder(string[] args = null)
+        public CredentialsServerBuilder(ILoggerFactory loggerFactory, string[] args = null)
         {
             Server = Program.CreateWebHostBuilder(args ?? Array.Empty<string>())
+                .ConfigureServices(collection => collection.AddSingleton(loggerFactory))
                 .UseSolutionRelativeContentRoot(@"./test/WebSites/Identity.OpenIdConnect.WebSite");
         }
 

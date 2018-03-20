@@ -3,13 +3,15 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class RegistrationTests : IClassFixture<ServerFactory>
+    public class RegistrationTests : LoggedTest, IClassFixture<ServerFactory>
     {
-        public RegistrationTests(ServerFactory serverFactory)
+        public RegistrationTests(ServerFactory serverFactory, ITestOutputHelper output) : base(output)
         {
             ServerFactory = serverFactory;
         }
@@ -19,30 +21,36 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         [Fact]
         public async Task CanRegisterAUser()
         {
-            // Arrange
-            var client = ServerFactory.CreateDefaultClient();
+            using (StartLog(out var loggerFactory))
+            {
+                // Arrange
+                var client = ServerFactory.CreateDefaultClient(loggerFactory);
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+                var userName = $"{Guid.NewGuid()}@example.com";
+                var password = $"!Test.Password1$";
 
-            // Act & Assert
-            await UserStories.RegisterNewUserAsync(client, userName, password);
+                // Act & Assert
+                await UserStories.RegisterNewUserAsync(client, userName, password);
+            }
         }
 
         [Fact]
         public async Task CanRegisterWithASocialLoginProvider()
         {
-            // Arrange
-            var server = ServerFactory.CreateServer(builder =>
-                builder.ConfigureServices(services => services.SetupTestThirdPartyLogin()));
-            var client = ServerFactory.CreateDefaultClient(server);
+            using (StartLog(out var loggerFactory))
+            {
+                // Arrange
+                var server = ServerFactory.CreateServer(loggerFactory, builder =>
+                    builder.ConfigureServices(services => services.SetupTestThirdPartyLogin()));
+                var client = ServerFactory.CreateDefaultClient(server);
 
-            var guid = Guid.NewGuid();
-            var userName = $"{guid}";
-            var email = $"{guid}@example.com";
+                var guid = Guid.NewGuid();
+                var userName = $"{guid}";
+                var email = $"{guid}@example.com";
 
-            // Act & Assert
-            await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+                // Act & Assert
+                await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+            }
         }
     }
 }
