@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="OpenIdConnect\wellknownconfig.json" />
+    <None Remove="OpenIdConnect\wellknownkeys.json" />
     <None Remove="WsFederation\federationmetadata.xml" />
     <None Remove="WsFederation\InvalidToken.xml" />
     <None Remove="WsFederation\ValidToken.xml" />
@@ -20,6 +22,11 @@
     <Content Include="WsFederation\ValidToken.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="OpenIdConnect\wellknownconfig.json" />
+    <EmbeddedResource Include="OpenIdConnect\wellknownkeys.json" />
   </ItemGroup>
 
   <ItemGroup>
