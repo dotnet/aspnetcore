@@ -327,6 +327,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyVersionAttribute(\"1.0.0.0\")]");
             Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyFileVersionAttribute(\"1.0.0.0\")]");
             Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyInformationalVersionAttribute(\"1.0.0\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyDescriptionAttribute(\"ClassLibrary Description\")]");
         }
 
         [Fact]
@@ -334,12 +335,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Build_UsesRazorSpecificAssemblyProperties()
         {
             var assemblyInfoPath = Path.Combine(IntermediateOutputPath, "ClassLibrary.RazorAssemblyInfo.cs");
-            var buildArguments = "/p:RazorAssemblyFileVersion=2.0.0.100 /p:RazorAssemblyInformationalVersion=2.0.0-preview /p:RazorAssemblyTitle=MyRazorViews /p:RazorAssemblyVersion=2.0.0";
+            var buildArguments = "/p:RazorAssemblyFileVersion=2.0.0.100 /p:RazorAssemblyInformationalVersion=2.0.0-preview " +
+                "/p:RazorAssemblyTitle=MyRazorViews /p:RazorAssemblyVersion=2.0.0 " +
+                "/p:RazorAssemblyDescription=MyRazorDescription";
             var result = await DotnetMSBuild("Build", buildArguments);
 
             Assert.BuildPassed(result);
 
             Assert.FileExists(result, assemblyInfoPath);
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyDescriptionAttribute(\"MyRazorDescription\")]");
             Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyTitleAttribute(\"MyRazorViews\")]");
             Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyVersionAttribute(\"2.0.0\")]");
             Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyFileVersionAttribute(\"2.0.0.100\")]");

@@ -14,4 +14,8 @@
   <Target Name="_IntrospectRazorCompileItems">
     <Message Text="RazorCompile: %(RazorCompile.Identity)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectUseRazorBuildServer">
+    <Message Text="UseRazorBuildServer: $(UseRazorBuildServer)" Importance="High" />
+  </Target>
 </Project>
