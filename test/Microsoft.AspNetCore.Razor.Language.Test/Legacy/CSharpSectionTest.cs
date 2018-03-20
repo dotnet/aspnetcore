@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Act & Assert
             ParseDocumentTest(
-                "@section foo      "
+                "@section foo      " 
                 + Environment.NewLine
                 + Environment.NewLine
                 + Environment.NewLine
@@ -606,8 +606,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                         Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
-                            BlockFactory.HtmlCommentBlock(" "),
-                            Factory.EmptyHtml()),
+                            Factory.Markup("<!-- -->")),
                         Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()));
         }
@@ -631,8 +630,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                         Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
-                            BlockFactory.HtmlCommentBlock(" > \" '"),
-                            Factory.EmptyHtml()),
+                            Factory.Markup("<!-- > \" '-->")),
                         Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()));
         }
@@ -657,8 +655,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             Factory.Markup(Environment.NewLine),
                             new MarkupTagBlock(
                                 Factory.Markup("<a" + Environment.NewLine)),
-                                BlockFactory.HtmlCommentBlock("  > \" '"),
-                                Factory.EmptyHtml()),
+                            Factory.Markup("<!--  > \" '-->")),
                         Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()));
         }

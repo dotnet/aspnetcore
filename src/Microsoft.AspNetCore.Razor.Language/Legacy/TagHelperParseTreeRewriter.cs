@@ -490,29 +490,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (HasAllowedChildren())
             {
-                var isDisallowedContent = true;
-                if (_featureFlags.AllowHtmlCommentsInTagHelpers)
+                var content = child.Content;
+                if (!string.IsNullOrWhiteSpace(content))
                 {
-                    isDisallowedContent = !IsComment(child) && child.Kind != SpanKindInternal.Transition && child.Kind != SpanKindInternal.Code;
-                }
-
-                if (isDisallowedContent)
-                {
-                    var content = child.Content;
-                    if (!string.IsNullOrWhiteSpace(content))
-                    {
-                        var trimmedStart = content.TrimStart();
-                        var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
-                        var errorStart = SourceLocationTracker.Advance(child.Start, whitespace);
-                        var length = trimmedStart.TrimEnd().Length;
-                        var allowedChildren = _currentTagHelperTracker.AllowedChildren;
-                        var allowedChildrenString = string.Join(", ", allowedChildren);
-                        errorSink.OnError(
-                            RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
-                                new SourceSpan(errorStart, length),
-                                _currentTagHelperTracker.TagName,
-                                allowedChildrenString));
-                    }
+                    var trimmedStart = content.TrimStart();
+                    var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
+                    var errorStart = SourceLocationTracker.Advance(child.Start, whitespace);
+                    var length = trimmedStart.TrimEnd().Length;
+                    var allowedChildren = _currentTagHelperTracker.AllowedChildren;
+                    var allowedChildrenString = string.Join(", ", allowedChildren);
+                    errorSink.OnError(
+                        RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                            new SourceSpan(errorStart, length),
+                            _currentTagHelperTracker.TagName,
+                            allowedChildrenString));
                 }
             }
         }
@@ -825,18 +816,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             return relevantSymbol.Type == HtmlSymbolType.ForwardSlash;
         }
-
-        internal static bool IsComment(Span span)
-        {
-            Block currentBlock = span.Parent;
-            while (currentBlock != null && currentBlock.Type != BlockKindInternal.Comment && currentBlock.Type != BlockKindInternal.HtmlComment)
-            {
-                currentBlock = currentBlock.Parent;
-            }
-
-            return currentBlock != null;
-        }
-
 
         private static void EnsureTagBlock(Block tagBlock)
         {
