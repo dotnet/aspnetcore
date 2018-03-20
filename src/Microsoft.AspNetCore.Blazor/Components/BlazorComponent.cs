@@ -78,6 +78,13 @@ namespace Microsoft.AspNetCore.Blazor.Components
         }
 
         /// <summary>
+        /// Method invoked when the component has received parameters from its parent in
+        /// the render tree, and the incoming values have been assigned to properties.
+        /// </summary>
+        protected virtual Task OnParametersSetAsync()
+            => null;
+
+        /// <summary>
         /// Notifies the component that its state has changed. When applicable, this will
         /// cause the component to be re-rendered.
         /// </summary>
@@ -114,8 +121,12 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
             _renderHandle = renderHandle;
         }
-
-        void IComponent.SetParameters(ParameterCollection parameters)
+        
+        /// <summary>
+        /// Method invoked to apply initial or updated parameters to the component.
+        /// </summary>
+        /// <param name="parameters">The parameters to apply.</param>
+        public virtual void SetParameters(ParameterCollection parameters)
         {
             parameters.AssignToProperties(this);
 
@@ -126,22 +137,25 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
                 // If you override OnInitAsync and return a nonnull task, then by default
                 // we automatically re-render once that task completes.
-                OnInitAsync()?.ContinueWith(task =>
-                {
-                    if (task.Exception == null)
-                    {
-                        StateHasChanged();
-                    }
-                    else
-                    {
-                        HandleException(task.Exception);
-                    }
-                });
+                OnInitAsync()?.ContinueWith(ContinueAfterLifecycleTask);
             }
 
-
             OnParametersSet();
+            OnParametersSetAsync()?.ContinueWith(ContinueAfterLifecycleTask);
+
             StateHasChanged();
+        }
+
+        private void ContinueAfterLifecycleTask(Task task)
+        {
+            if (task.Exception == null)
+            {
+                StateHasChanged();
+            }
+            else
+            {
+                HandleException(task.Exception);
+            }
         }
 
         private void HandleException(Exception ex)
