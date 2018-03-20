@@ -35,7 +35,7 @@
                     <li><a asp-page="/Contact">Contact</a></li>
                 </ul>
 @*#if (IndividualAuth || OrganizationalAuth)
-                @await Html.PartialAsync("_LoginPartial")
+                <partial name="_LoginPartial" />
 #elseif (WindowsAuth)
                 <p class="nav navbar-text navbar-right">Hello, @User.Identity.Name!</p>
 #endif*@
