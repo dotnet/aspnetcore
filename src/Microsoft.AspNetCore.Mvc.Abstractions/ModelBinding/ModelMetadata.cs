@@ -38,12 +38,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets the container type of this metadata if it represents a property, otherwise <c>null</c>.
+        /// Gets the type containing the property if this metadata is for a property; <see langword="null"/> otherwise.
         /// </summary>
         public Type ContainerType => Identity.ContainerType;
 
         /// <summary>
-        /// Gets the metadata of the container type that the current instance is part of.
+        /// Gets the metadata for <see cref="ContainerType"/> if this metadata is for a property;
+        /// <see langword="null"/> otherwise.
         /// </summary>
         public virtual ModelMetadata ContainerMetadata
         {
@@ -64,9 +65,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public Type ModelType => Identity.ModelType;
 
         /// <summary>
-        /// Gets the property name represented by the current instance.
+        /// Gets the name of the parameter or property if this metadata is for a parameter or property;
+        /// <see langword="null"/> otherwise i.e. if this is the metadata for a type.
         /// </summary>
-        public string PropertyName => Identity.Name;
+        public string Name => Identity.Name;
+
+        /// <summary>
+        /// Gets the name of the parameter if this metadata is for a parameter; <see langword="null"/> otherwise.
+        /// </summary>
+        public string ParameterName => MetadataKind == ModelMetadataKind.Parameter ? Identity.Name : null;
+
+        /// <summary>
+        /// Gets the name of the property if this metadata is for a property; <see langword="null"/> otherwise.
+        /// </summary>
+        public string PropertyName => MetadataKind == ModelMetadataKind.Property ? Identity.Name : null;
 
         /// <summary>
         /// Gets the key for the current instance.
@@ -384,12 +396,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <remarks>
         /// <see cref="GetDisplayName()"/> will return the first of the following expressions which has a
-        /// non-<c>null</c> value: <c>DisplayName</c>, <c>PropertyName</c>, <c>ModelType.Name</c>.
+        /// non-<see langword="null"/> value: <see cref="DisplayName"/>, <see cref="Name"/>, or <c>ModelType.Name</c>.
         /// </remarks>
         /// <returns>The display name.</returns>
         public string GetDisplayName()
         {
-            return DisplayName ?? PropertyName ?? ModelType.Name;
+            return DisplayName ?? Name ?? ModelType.Name;
         }
 
         /// <inheritdoc />
@@ -470,13 +482,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private string DebuggerToString()
         {
-            if (Identity.MetadataKind == ModelMetadataKind.Type)
+            switch (MetadataKind)
             {
-                return $"ModelMetadata (Type: '{ModelType.Name}')";
-            }
-            else
-            {
-                return $"ModelMetadata (Property: '{ContainerType.Name}.{PropertyName}' Type: '{ModelType.Name}')";
+                case ModelMetadataKind.Parameter:
+                    return $"ModelMetadata (Parameter: '{ParameterName}' Type: '{ModelType.Name}')";
+                case ModelMetadataKind.Property:
+                    return $"ModelMetadata (Property: '{ContainerType.Name}.{PropertyName}' Type: '{ModelType.Name}')";
+                case ModelMetadataKind.Type:
+                    return $"ModelMetadata (Type: '{ModelType.Name}')";
+                default:
+                    return $"Unsupported MetadataKind '{MetadataKind}'.";
             }
         }
 

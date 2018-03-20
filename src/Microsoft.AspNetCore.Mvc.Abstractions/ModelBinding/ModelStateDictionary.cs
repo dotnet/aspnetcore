@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <remarks>
         /// This method allows adding the <paramref name="exception"/> to the current <see cref="ModelStateDictionary"/>
-        /// when <see cref="ModelMetadata"/> is not available or the exact <paramref name="exception"/> 
+        /// when <see cref="ModelMetadata"/> is not available or the exact <paramref name="exception"/>
         /// must be maintained for later use (even if it is for example a <see cref="FormatException"/>).
         /// Where <see cref="ModelMetadata"/> is available, use <see cref="AddModelError(string, Exception, ModelMetadata)"/> instead.
         /// </remarks>

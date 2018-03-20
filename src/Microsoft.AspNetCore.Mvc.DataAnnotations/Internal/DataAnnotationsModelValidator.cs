@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             }
 
             var metadata = validationContext.ModelMetadata;
-            var memberName = metadata.PropertyName;
+            var memberName = metadata.Name;
             var container = validationContext.Container;
 
             var context = new ValidationContext(

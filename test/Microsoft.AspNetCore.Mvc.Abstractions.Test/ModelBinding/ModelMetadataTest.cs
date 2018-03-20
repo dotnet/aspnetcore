@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Xunit;
@@ -24,10 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(typeof(int))]
         public void IsComplexType_ReturnsFalseForSimpleTypes(Type type)
         {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-
-            // Act
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(type);
 
             // Assert
@@ -41,10 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(typeof(Nullable<IsComplexTypeModel>))]
         public void IsComplexType_ReturnsTrueForComplexTypes(Type type)
         {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-
-            // Act
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(type);
 
             // Assert
@@ -106,10 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(typeof(JustEnumerable))]
         public void IsCollectionType_ReturnsFalseForNonCollectionTypes(Type type)
         {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-
-            // Act
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(type);
 
             // Assert
@@ -120,10 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [MemberData(nameof(CollectionAndEnumerableData))]
         public void IsCollectionType_ReturnsTrueForCollectionTypes(Type type)
         {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-
-            // Act
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(type);
 
             // Assert
@@ -134,10 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [MemberData(nameof(NonCollectionNonEnumerableData))]
         public void IsEnumerableType_ReturnsFalseForNonEnumerableTypes(Type type)
         {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-
-            // Act
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(type);
 
             // Assert
@@ -151,10 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(typeof(JustEnumerable))]
         public void IsEnumerableType_ReturnsTrueForEnumerableTypes(Type type)
         {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-
-            // Act
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(type);
 
             // Assert
@@ -173,10 +156,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(typeof(Nullable<IsComplexTypeModel>), true)]
         public void IsNullableValueType_ReturnsExpectedValue(Type modelType, bool expected)
         {
-            // Arrange
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(modelType);
 
-            // Act & Assert
+            // Assert
             Assert.Equal(expected, modelMetadata.IsNullableValueType);
         }
 
@@ -192,10 +175,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(typeof(Nullable<IsComplexTypeModel>), true)]
         public void IsReferenceOrNullableType_ReturnsExpectedValue(Type modelType, bool expected)
         {
-            // Arrange
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(modelType);
 
-            // Act & Assert
+            // Assert
             Assert.Equal(expected, modelMetadata.IsReferenceOrNullableType);
         }
 
@@ -211,12 +194,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(typeof(Nullable<IsComplexTypeModel>), typeof(IsComplexTypeModel))]
         public void UnderlyingOrModelType_ReturnsExpectedValue(Type modelType, Type expected)
         {
-            // Arrange
+            // Arrange & Act
             var modelMetadata = new TestModelMetadata(modelType);
 
-            // Act & Assert
+            // Assert
             Assert.Equal(expected, modelMetadata.UnderlyingOrModelType);
         }
+
+        // ElementType
 
         [Theory]
         [InlineData(typeof(object))]
@@ -257,13 +242,86 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(expected, elementType);
         }
 
+        // ContainerType
+
+        [Fact]
+        public void ContainerType_IsNull_ForType()
+        {
+            // Arrange & Act
+            var metadata = new TestModelMetadata(typeof(int));
+
+            // Assert
+            Assert.Null(metadata.ContainerType);
+        }
+
+        [Fact]
+        public void ContainerType_IsNull_ForParameter()
+        {
+            // Arrange & Act
+            var method = typeof(CollectionImplementation).GetMethod(nameof(CollectionImplementation.Add));
+            var parameter = method.GetParameters()[0]; // Add(string item)
+            var metadata = new TestModelMetadata(parameter);
+
+            // Assert
+            Assert.Null(metadata.ContainerType);
+        }
+
+        [Fact]
+        public void ContainerType_ReturnExpectedMetadata_ForProperty()
+        {
+            // Arrange & Act
+            var metadata = new TestModelMetadata(typeof(int), nameof(string.Length), typeof(string));
+
+            // Assert
+            Assert.Equal(typeof(string), metadata.ContainerType);
+        }
+
+        // Name / ParameterName / PropertyName
+
+        [Fact]
+        public void Names_ReturnExpectedMetadata_ForType()
+        {
+            // Arrange & Act
+            var metadata = new TestModelMetadata(typeof(int));
+
+            // Assert
+            Assert.Null(metadata.Name);
+            Assert.Null(metadata.ParameterName);
+            Assert.Null(metadata.PropertyName);
+        }
+
+        [Fact]
+        public void Names_ReturnExpectedMetadata_ForParameter()
+        {
+            // Arrange & Act
+            var method = typeof(CollectionImplementation).GetMethod(nameof(CollectionImplementation.Add));
+            var parameter = method.GetParameters()[0]; // Add(string item)
+            var metadata = new TestModelMetadata(parameter);
+
+            // Assert
+            Assert.Equal("item", metadata.Name);
+            Assert.Equal("item", metadata.ParameterName);
+            Assert.Null(metadata.PropertyName);
+        }
+
+        [Fact]
+        public void Names_ReturnExpectedMetadata_ForProperty()
+        {
+            // Arrange & Act
+            var metadata = new TestModelMetadata(typeof(int), nameof(string.Length), typeof(string));
+
+            // Assert
+            Assert.Equal(nameof(string.Length), metadata.Name);
+            Assert.Null(metadata.ParameterName);
+            Assert.Equal(nameof(string.Length), metadata.PropertyName);
+        }
+
         // GetDisplayName()
 
         [Fact]
         public void GetDisplayName_ReturnsDisplayName_IfSet()
         {
             // Arrange
-            var provider = new EmptyModelMetadataProvider();
             var metadata = new TestModelMetadata(typeof(int), "Length", typeof(string));
             metadata.SetDisplayName("displayName");
 
@@ -275,10 +333,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public void GetDisplayName_ReturnsParameterName_WhenSetAndDisplayNameIsNull()
+        {
+            // Arrange
+            var method = typeof(CollectionImplementation).GetMethod(nameof(CollectionImplementation.Add));
+            var parameter = method.GetParameters()[0]; // Add(string item)
+            var metadata = new TestModelMetadata(parameter);
+
+            // Act
+            var result = metadata.GetDisplayName();
+
+            // Assert
+            Assert.Equal("item", result);
+        }
+
+        [Fact]
         public void GetDisplayName_ReturnsPropertyName_WhenSetAndDisplayNameIsNull()
         {
             // Arrange
-            var provider = new EmptyModelMetadataProvider();
             var metadata = new TestModelMetadata(typeof(int), "Length", typeof(string));
 
             // Act
@@ -292,7 +364,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetDisplayName_ReturnsTypeName_WhenPropertyNameAndDisplayNameAreNull()
         {
             // Arrange
-            var provider = new EmptyModelMetadataProvider();
             var metadata = new TestModelMetadata(typeof(string));
 
             // Act
@@ -301,6 +372,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Assert
             Assert.Equal("String", result);
         }
+
+        // Virtual methods and properties that throw NotImplementedException in the abstract class.
 
         [Fact]
         public void GetContainerMetadata_ThrowsNotImplementedException_ByDefault()
@@ -338,6 +411,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public TestModelMetadata(Type modelType)
                 : base(ModelMetadataIdentity.ForType(modelType))
+            {
+            }
+
+            public TestModelMetadata(ParameterInfo parameter)
+                : base(ModelMetadataIdentity.ForParameter(parameter))
             {
             }
 

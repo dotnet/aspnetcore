@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -104,7 +105,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, MethodInfo, Exception> _unableToInferParameterSources;
         private static readonly Action<ILogger, IModelBinderProvider[], Exception> _registeredModelBinderProviders;
         private static readonly Action<ILogger, string, Type, string, Type, Exception> _foundNoValueForPropertyInRequest;
-        private static readonly Action<ILogger, string, string, Type, Exception> _foundNoValueInRequest;
+        private static readonly Action<ILogger, string, string, Type, Exception> _foundNoValueForParameterInRequest;
+        private static readonly Action<ILogger, string, Type, Exception> _foundNoValueInRequest;
         private static readonly Action<ILogger, string, Type, Exception> _noPublicSettableProperties;
         private static readonly Action<ILogger, Type, Exception> _cannotBindToComplexType;
         private static readonly Action<ILogger, string, Type, Exception> _cannotBindToFilesCollectionDueToUnsupportedContentType;
@@ -115,6 +117,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, string, string, string, string, string, Exception> _attemptingToBindCollectionUsingIndices;
         private static readonly Action<ILogger, string, string, string, string, string, string, Exception> _attemptingToBindCollectionOfKeyValuePair;
         private static readonly Action<ILogger, string, string, string, Exception> _noKeyValueFormatForDictionaryModelBinder;
+        private static readonly Action<ILogger, string, Type, string, Exception> _attemptingToBindParameterModel;
+        private static readonly Action<ILogger, string, Type, Exception> _doneAttemptingToBindParameterModel;
         private static readonly Action<ILogger, Type, string, Type, string, Exception> _attemptingToBindPropertyModel;
         private static readonly Action<ILogger, Type, string, Type, Exception> _doneAttemptingToBindPropertyModel;
         private static readonly Action<ILogger, Type, string, Exception> _attemptingToBindModel;
@@ -475,7 +479,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                15,
                "Could not find a value in the request with name '{ModelName}' for binding property '{PropertyContainerType}.{ModelFieldName}' of type '{ModelType}'.");
 
-            _foundNoValueInRequest = LoggerMessage.Define<string, string, Type>(
+            _foundNoValueForParameterInRequest = LoggerMessage.Define<string, string, Type>(
                LogLevel.Debug,
                16,
                "Could not find a value in the request with name '{ModelName}' for binding parameter '{ModelFieldName}' of type '{ModelType}'.");
@@ -610,6 +614,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                LogLevel.Debug,
                43,
                "Could not create a binder for type '{ModelType}' as this binder only supports 'System.String' type or a collection of 'System.String'.");
+
+            _attemptingToBindParameterModel = LoggerMessage.Define<string, Type, string>(
+                LogLevel.Debug,
+                44,
+                "Attempting to bind parameter '{ParameterName}' of type '{ModelType}' using the name '{ModelName}' in request data ...");
+
+            _doneAttemptingToBindParameterModel = LoggerMessage.Define<string, Type>(
+               LogLevel.Debug,
+               45,
+               "Done attempting to bind parameter '{ParameterName}' of type '{ModelType}'.");
+
+            _foundNoValueInRequest = LoggerMessage.Define<string, Type>(
+               LogLevel.Debug,
+               46,
+               "Could not find a value in the request with name '{ModelName}' of type '{ModelType}'.");
         }
 
         public static void RegisteredOutputFormatters(this ILogger logger, IEnumerable<IOutputFormatter> outputFormatters)
@@ -1157,26 +1176,32 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var modelMetadata = bindingContext.ModelMetadata;
-            var isProperty = modelMetadata.ContainerType != null;
-
-            if (isProperty)
+            switch (modelMetadata.MetadataKind)
             {
-                _foundNoValueForPropertyInRequest(
-                    logger,
-                    bindingContext.ModelName,
-                    modelMetadata.ContainerType,
-                    modelMetadata.PropertyName,
-                    bindingContext.ModelType,
-                    null);
-            }
-            else
-            {
-                _foundNoValueInRequest(
-                    logger,
-                    bindingContext.ModelName,
-                    modelMetadata.PropertyName,
-                    bindingContext.ModelType,
-                    null);
+                case ModelMetadataKind.Parameter:
+                    _foundNoValueForParameterInRequest(
+                        logger,
+                        bindingContext.ModelName,
+                        modelMetadata.ParameterName,
+                        bindingContext.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _foundNoValueForPropertyInRequest(
+                        logger,
+                        bindingContext.ModelName,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        bindingContext.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    _foundNoValueInRequest(
+                        logger,
+                        bindingContext.ModelName,
+                        bindingContext.ModelType,
+                        null);
+                    break;
             }
         }
 
@@ -1218,89 +1243,237 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var modelMetadata = bindingContext.ModelMetadata;
-            var isProperty = modelMetadata.ContainerType != null;
-
-            if (isProperty)
+            switch (modelMetadata.MetadataKind)
             {
-                _attemptingToBindPropertyModel(
-                    logger,
-                    modelMetadata.ContainerType,
-                    modelMetadata.PropertyName,
-                    modelMetadata.ModelType,
-                    bindingContext.ModelName,
-                    null);
-            }
-            else
-            {
-                _attemptingToBindModel(logger, bindingContext.ModelType, bindingContext.ModelName, null);
+                case ModelMetadataKind.Parameter:
+                    _attemptingToBindParameterModel(
+                        logger,
+                        modelMetadata.ParameterName,
+                        modelMetadata.ModelType,
+                        bindingContext.ModelName,
+                        null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _attemptingToBindPropertyModel(
+                        logger,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        modelMetadata.ModelType,
+                        bindingContext.ModelName,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    _attemptingToBindModel(logger, bindingContext.ModelType, bindingContext.ModelName, null);
+                    break;
             }
         }
 
         public static void DoneAttemptingToBindModel(this ILogger logger, ModelBindingContext bindingContext)
         {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
             var modelMetadata = bindingContext.ModelMetadata;
-            var isProperty = modelMetadata.ContainerType != null;
-
-            if (isProperty)
+            switch (modelMetadata.MetadataKind)
             {
-                _doneAttemptingToBindPropertyModel(
-                    logger,
-                    modelMetadata.ContainerType,
-                    modelMetadata.PropertyName,
-                    modelMetadata.ModelType,
-                    null);
-            }
-            else
-            {
-                _doneAttemptingToBindModel(logger, bindingContext.ModelType, bindingContext.ModelName, null);
-            }
-        }
-
-        public static void AttemptingToBindParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
-        {
-            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
-            {
-                _attemptingToBindProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
-            }
-            else
-            {
-                _attemptingToBindParameter(logger, parameter.Name, bindingContext.ModelType, null);
+                case ModelMetadataKind.Parameter:
+                    _doneAttemptingToBindParameterModel(
+                        logger,
+                        modelMetadata.ParameterName,
+                        modelMetadata.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _doneAttemptingToBindPropertyModel(
+                        logger,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        modelMetadata.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    _doneAttemptingToBindModel(logger, bindingContext.ModelType, bindingContext.ModelName, null);
+                    break;
             }
         }
 
-        public static void DoneAttemptingToBindParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
+        public static void AttemptingToBindParameterOrProperty(
+            this ILogger logger,
+            ParameterDescriptor parameter,
+            ModelBindingContext bindingContext)
         {
-            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
+            if (!logger.IsEnabled(LogLevel.Debug))
             {
-                _doneAttemptingToBindProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
+                return;
             }
-            else
+
+            var modelMetadata = bindingContext.ModelMetadata;
+            switch (modelMetadata.MetadataKind)
             {
-                _doneAttemptingToBindParameter(logger, parameter.Name, bindingContext.ModelType, null);
+                case ModelMetadataKind.Parameter:
+                    _attemptingToBindParameter(logger, modelMetadata.ParameterName, modelMetadata.ModelType, null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _attemptingToBindProperty(
+                        logger,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        modelMetadata.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    if (parameter is ControllerParameterDescriptor parameterDescriptor)
+                    {
+                        _attemptingToBindParameter(
+                            logger,
+                            parameterDescriptor.ParameterInfo.Name,
+                            modelMetadata.ModelType,
+                            null);
+                    }
+                    else
+                    {
+                        // Likely binding a page handler parameter. Due to various special cases, parameter.Name may
+                        // be empty. No way to determine actual name.
+                        _attemptingToBindParameter(logger, parameter.Name, modelMetadata.ModelType, null);
+                    }
+                    break;
             }
         }
 
-        public static void AttemptingToValidateParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
+        public static void DoneAttemptingToBindParameterOrProperty(
+            this ILogger logger,
+            ParameterDescriptor parameter,
+            ModelBindingContext bindingContext)
         {
-            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
+            if (!logger.IsEnabled(LogLevel.Debug))
             {
-                _attemptingToValidateProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
+                return;
             }
-            else
+
+            var modelMetadata = bindingContext.ModelMetadata;
+            switch (modelMetadata.MetadataKind)
             {
-                _attemptingToValidateParameter(logger, parameter.Name, bindingContext.ModelType, null);
+                case ModelMetadataKind.Parameter:
+                    _doneAttemptingToBindParameter(logger, modelMetadata.ParameterName, modelMetadata.ModelType, null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _doneAttemptingToBindProperty(
+                        logger,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        modelMetadata.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    if (parameter is ControllerParameterDescriptor parameterDescriptor)
+                    {
+                        _doneAttemptingToBindParameter(
+                            logger,
+                            parameterDescriptor.ParameterInfo.Name,
+                            modelMetadata.ModelType,
+                            null);
+                    }
+                    else
+                    {
+                        // Likely binding a page handler parameter. Due to various special cases, parameter.Name may
+                        // be empty. No way to determine actual name.
+                        _doneAttemptingToBindParameter(logger, parameter.Name, modelMetadata.ModelType, null);
+                    }
+                    break;
             }
         }
 
-        public static void DoneAttemptingToValidateParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
+        public static void AttemptingToValidateParameterOrProperty(
+            this ILogger logger,
+            ParameterDescriptor parameter,
+            ModelBindingContext bindingContext)
         {
-            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
+            if (!logger.IsEnabled(LogLevel.Debug))
             {
-                _doneAttemptingToValidateProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
+                return;
             }
-            else
+
+            var modelMetadata = bindingContext.ModelMetadata;
+            switch (modelMetadata.MetadataKind)
             {
-                _doneAttemptingToValidateParameter(logger, parameter.Name, bindingContext.ModelType, null);
+                case ModelMetadataKind.Parameter:
+                    _attemptingToValidateParameter(logger, modelMetadata.ParameterName, modelMetadata.ModelType, null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _attemptingToValidateProperty(
+                        logger,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        modelMetadata.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    if (parameter is ControllerParameterDescriptor parameterDescriptor)
+                    {
+                        _attemptingToValidateParameter(
+                            logger,
+                            parameterDescriptor.ParameterInfo.Name,
+                            modelMetadata.ModelType,
+                            null);
+                    }
+                    else
+                    {
+                        // Likely binding a page handler parameter. Due to various special cases, parameter.Name may
+                        // be empty. No way to determine actual name. This case is less likely than for binding logging
+                        // (above). Should occur only with a legacy IModelMetadataProvider implementation.
+                        _attemptingToValidateParameter(logger, parameter.Name, modelMetadata.ModelType, null);
+                    }
+                    break;
+            }
+        }
+
+        public static void DoneAttemptingToValidateParameterOrProperty(
+            this ILogger logger,
+            ParameterDescriptor parameter,
+            ModelBindingContext bindingContext)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var modelMetadata = bindingContext.ModelMetadata;
+            switch (modelMetadata.MetadataKind)
+            {
+                case ModelMetadataKind.Parameter:
+                    _doneAttemptingToValidateParameter(
+                        logger,
+                        modelMetadata.ParameterName,
+                        modelMetadata.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _doneAttemptingToValidateProperty(
+                        logger,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        modelMetadata.ModelType,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    if (parameter is ControllerParameterDescriptor parameterDescriptor)
+                    {
+                        _doneAttemptingToValidateParameter(
+                            logger,
+                            parameterDescriptor.ParameterInfo.Name,
+                            modelMetadata.ModelType,
+                            null);
+                    }
+                    else
+                    {
+                        // Likely binding a page handler parameter. Due to various special cases, parameter.Name may
+                        // be empty. No way to determine actual name. This case is less likely than for binding logging
+                        // (above). Should occur only with a legacy IModelMetadataProvider implementation.
+                        _doneAttemptingToValidateParameter(logger, parameter.Name, modelMetadata.ModelType, null);
+                    }
+                    break;
             }
         }
 

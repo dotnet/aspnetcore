@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             ModelState = actionContext.ModelState;
             CurrentPath = new ValidationStack();
         }
-        
+
         protected IModelValidatorProvider ValidatorProvider { get; }
         protected IModelMetadataProvider MetadataProvider { get; }
         protected ValidatorCache Cache { get; }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         protected IValidationStrategy Strategy { get; set; }
 
         /// <summary>
-        /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false. 
+        /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false.
         /// </summary>
         public bool ValidateComplexTypesIfChildValidationFails { get; set; }
         /// <summary>
@@ -146,11 +146,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                         var result = results[i];
                         var key = ModelNames.CreatePropertyModelName(Key, result.MemberName);
 
-                        // If this is a top-level parameter/property, the key would be empty,
-                        // so use the name of the top-level property
-                        if (string.IsNullOrEmpty(key) && Metadata.PropertyName != null)
+                        // If this is a top-level parameter/property, the key would be empty.
+                        // So, use the name of the top-level property/property.
+                        if (string.IsNullOrEmpty(key) && Metadata.Name != null)
                         {
-                            key = Metadata.PropertyName;
+                            key = Metadata.Name;
                         }
 
                         ModelState.TryAddModelError(key, result.Message);
@@ -306,8 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return null;
             }
 
-            ValidationStateEntry entry;
-            ValidationState.TryGetValue(model, out entry);
+            ValidationState.TryGetValue(model, out var entry);
             return entry;
         }
 

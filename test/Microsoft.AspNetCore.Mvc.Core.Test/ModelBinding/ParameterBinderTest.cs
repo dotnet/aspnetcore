@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -309,6 +312,107 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Empty(actionContext.ModelState);
         }
 
+        public static TheoryData<RequiredAttribute, ParameterDescriptor, ModelMetadata> EnforcesTopLevelRequiredDataSet
+        {
+            get
+            {
+                var attribute = new RequiredAttribute();
+                var bindingInfo = new BindingInfo
+                {
+                    BinderModelName = string.Empty,
+                };
+                var parameterDescriptor = new ParameterDescriptor
+                {
+                    Name = string.Empty,
+                    BindingInfo = bindingInfo,
+                    ParameterType = typeof(Person),
+                };
+
+                var method = typeof(Person).GetMethod(nameof(Person.Equals), new[] { typeof(Person) });
+                var parameter = method.GetParameters()[0]; // Equals(Person other)
+                var controllerParameterDescriptor = new ControllerParameterDescriptor
+                {
+                    Name = string.Empty,
+                    BindingInfo = bindingInfo,
+                    ParameterInfo = parameter,
+                    ParameterType = typeof(Person),
+                };
+
+                var provider1 = new TestModelMetadataProvider();
+                provider1
+                    .ForParameter(parameter)
+                    .ValidationDetails(d =>
+                    {
+                        d.IsRequired = true;
+                        d.ValidatorMetadata.Add(attribute);
+                    });
+                provider1
+                    .ForProperty(typeof(Family), nameof(Family.Mom))
+                    .ValidationDetails(d =>
+                    {
+                        d.IsRequired = true;
+                        d.ValidatorMetadata.Add(attribute);
+                    });
+
+                var provider2 = new TestModelMetadataProvider();
+                provider2
+                    .ForType(typeof(Person))
+                    .ValidationDetails(d =>
+                    {
+                        d.IsRequired = true;
+                        d.ValidatorMetadata.Add(attribute);
+                    });
+
+                return new TheoryData<RequiredAttribute, ParameterDescriptor, ModelMetadata>
+                {
+                    { attribute, parameterDescriptor, provider1.GetMetadataForParameter(parameter) },
+                    { attribute, parameterDescriptor, provider1.GetMetadataForProperty(typeof(Family), nameof(Family.Mom)) },
+                    { attribute, parameterDescriptor, provider2.GetMetadataForType(typeof(Person)) },
+                    { attribute, controllerParameterDescriptor, provider2.GetMetadataForType(typeof(Person)) },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EnforcesTopLevelRequiredDataSet))]
+        public async Task BindModelAsync_EnforcesTopLevelRequiredAndLogsSuccessfully_WithEmptyPrefix(
+            RequiredAttribute attribute,
+            ParameterDescriptor parameterDescriptor,
+            ModelMetadata metadata)
+        {
+            // Arrange
+            var expectedKey = metadata.Name ?? string.Empty;
+            var expectedFieldName = metadata.Name ?? nameof(Person);
+
+            var actionContext = GetControllerContext();
+            var validator = new DataAnnotationsModelValidator(
+                new ValidationAttributeAdapterProvider(),
+                attribute,
+                stringLocalizer: null);
+
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var parameterBinder = CreateParameterBinder(metadata, validator, loggerFactory: loggerFactory);
+            var modelBindingResult = ModelBindingResult.Success(null);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                CreateMockModelBinder(modelBindingResult),
+                CreateMockValueProvider(),
+                parameterDescriptor,
+                metadata,
+                "ignoredvalue");
+
+            // Assert
+            Assert.False(actionContext.ModelState.IsValid);
+            var modelState = Assert.Single(actionContext.ModelState);
+            Assert.Equal(expectedKey, modelState.Key);
+            var error = Assert.Single(modelState.Value.Errors);
+            Assert.Equal(attribute.FormatErrorMessage(expectedFieldName), error.ErrorMessage);
+            Assert.Equal(4, sink.Writes.Count);
+        }
+
         [Fact]
         public async Task BindModelAsync_EnforcesTopLevelDataAnnotationsAttribute()
         {
@@ -426,7 +530,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private static ParameterBinder CreateParameterBinder(
             ModelMetadata modelMetadata,
             IModelValidator validator = null,
-            IOptions<MvcOptions> optionsAccessor = null)
+            IOptions<MvcOptions> optionsAccessor = null,
+            ILoggerFactory loggerFactory = null)
         {
             var mockModelMetadataProvider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
             mockModelMetadataProvider
@@ -442,7 +547,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     mockModelMetadataProvider.Object,
                     new[] { GetModelValidatorProvider(validator) }),
                 optionsAccessor,
-                NullLoggerFactory.Instance);
+                loggerFactory ?? NullLoggerFactory.Instance);
         }
 
         private static IModelValidatorProvider GetModelValidatorProvider(IModelValidator validator = null)
@@ -525,6 +630,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 return Equals(obj as Person);
             }
+        }
+
+        private class Family
+        {
+            public Person Dad { get; set; }
+
+            public Person Mom { get; set; }
+
+            public IList<Person> Kids { get; } = new List<Person>();
         }
 
         public abstract class FakeModelMetadata : ModelMetadata

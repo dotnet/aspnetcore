@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -157,12 +158,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal(message, error.ErrorMessage);
         }
 
-        [Fact]
-        public async Task BindModel_EmptyValueProviderResult_ReturnsFailed()
+        public static TheoryData<ModelMetadata> IntegerModelMetadataDataSet
+        {
+            get
+            {
+                var metadataProvider = new EmptyModelMetadataProvider();
+                var method = typeof(MetadataClass).GetMethod(nameof(MetadataClass.IsLovely));
+                var parameter = method.GetParameters()[0]; // IsLovely(int parameter)
+
+                return new TheoryData<ModelMetadata>
+                {
+                    metadataProvider.GetMetadataForParameter(parameter),
+                    metadataProvider.GetMetadataForProperty(typeof(MetadataClass), nameof(MetadataClass.Property)),
+                    metadataProvider.GetMetadataForType(typeof(int)),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(IntegerModelMetadataDataSet))]
+        public async Task BindModel_EmptyValueProviderResult_ReturnsFailedAndLogsSuccessfully(ModelMetadata metadata)
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(int));
-            var binder = new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance);
+            bindingContext.ModelMetadata = metadata;
+
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var binder = new SimpleTypeModelBinder(typeof(int), loggerFactory);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -170,6 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.Equal(ModelBindingResult.Failed(), bindingContext.Result);
             Assert.Empty(bindingContext.ModelState);
+            Assert.Equal(2, sink.Writes.Count);
         }
 
         [Theory]
@@ -236,17 +260,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
-        [Fact]
-        public async Task BindModel_ValidValueProviderResult_ReturnsModel()
+        [Theory]
+        [MemberData(nameof(IntegerModelMetadataDataSet))]
+        public async Task BindModel_ValidValueProviderResult_ReturnsModelAndLogsSuccessfully(ModelMetadata metadata)
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(int));
+            bindingContext.ModelMetadata = metadata;
             bindingContext.ValueProvider = new SimpleValueProvider
             {
                 { "theModelName", "42" }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance);
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var binder = new SimpleTypeModelBinder(typeof(int), loggerFactory);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -255,6 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.Result.IsModelSet);
             Assert.Equal(42, bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
+            Assert.Equal(2, sink.Writes.Count);
         }
 
         public static TheoryData<Type> BiggerNumericTypes
@@ -487,6 +516,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Value1 = 1,
             Value2 = 2,
             MaxValue = int.MaxValue
+        }
+
+        private class MetadataClass
+        {
+            public int Property { get; set; }
+
+            public bool IsLovely(int parameter)
+            {
+                return true;
+            }
         }
     }
 }

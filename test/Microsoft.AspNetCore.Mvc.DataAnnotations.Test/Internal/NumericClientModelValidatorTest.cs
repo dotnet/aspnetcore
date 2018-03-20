@@ -70,7 +70,39 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void AddValidation_CorrectValidationTypeAndOverriddenErrorMessage_WithNonProperty()
+        public void AddValidation_CorrectValidationTypeAndOverriddenErrorMessage_WithParameter()
+        {
+            // Arrange
+            var expectedMessage = "Error message about 'number' from override.";
+
+            var method = typeof(TypeWithNumericProperty).GetMethod(nameof(TypeWithNumericProperty.IsLovely));
+            var parameter = method.GetParameters()[0]; // IsLovely(double number)
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForParameter(parameter)
+                .BindingDetails(d =>
+                {
+                    d.ModelBindingMessageProvider.SetValueMustBeANumberAccessor(
+                        name => $"Error message about '{ name }' from override.");
+                });
+            var metadata = provider.GetMetadataForParameter(parameter);
+
+            var adapter = new NumericClientModelValidator();
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
+
+            // Act
+            adapter.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-number", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); });
+        }
+
+        [Fact]
+        public void AddValidation_CorrectValidationTypeAndOverriddenErrorMessage_WithType()
         {
             // Arrange
             var expectedMessage = "Error message from override.";
@@ -125,6 +157,11 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             [Display(Name = "DisplayId")]
             public float Id { get; set; }
+
+            public bool IsLovely(double number)
+            {
+                return true;
+            }
         }
     }
 }
