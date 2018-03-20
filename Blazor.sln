@@ -70,6 +70,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorStandalone.CSharp", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorHosted.CSharp", "BlazorHosted.CSharp", "{73DA1DFD-79F0-4BA2-B0B6-4F3A21D2C3F8}"
 	ProjectSection(SolutionItems) = preProject
+		src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\global.json = src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\global.json
 		src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\NuGet.config = src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\NuGet.config
 	EndProjectSection
 EndProject
