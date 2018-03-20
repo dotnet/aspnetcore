@@ -19,6 +19,7 @@ Blazor will have all the features of a modern web framework, including:
 - Server-side rendering 
 - Full .NET debugging both in browsers and in the IDE
 - Rich IntelliSense and tooling
+- Ability to run on older (non-WebAssembly) browsers via asm.js
 - Publishing and app size trimming 
 
 > Note: Blazor is an *experimental* project. It's not (yet) a committed product. This is to allow time to fully investigate the technical issues associated with running .NET in the browser and to ensure we can build something that developers love and can be productive with. During this experimental phase, we expect to engage deeply with early Blazor adopters like you to hear your feedback and suggestions.
