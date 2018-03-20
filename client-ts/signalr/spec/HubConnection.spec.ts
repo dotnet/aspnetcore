@@ -4,7 +4,7 @@
 import { ConnectionClosed, DataReceived } from "../src/Common";
 import { HubConnection } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
-import { MessageType } from "../src/IHubProtocol";
+import { MessageType, IHubProtocol, HubMessage } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { Observer } from "../src/Observable";
 import { TextMessageFormat } from "../src/TextMessageFormat";
@@ -80,10 +80,91 @@ describe("HubConnection", () => {
             hubConnection.stop();
         });
 
+        it("can process handshake from text", async () => {
+            let protocolCalled = false;
+
+            const mockProtocol = new TestProtocol(TransferFormat.Text);
+            mockProtocol.onreceive = (d) => {
+                protocolCalled = true;
+            };
+
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+
+            const data = "{}" + TextMessageFormat.RecordSeparator;
+
+            connection.receiveText(data);
+
+            // message only contained handshake response
+            expect(protocolCalled).toEqual(false);
+        });
+
+        it("can process handshake from binary", async () => {
+            let protocolCalled = false;
+
+            const mockProtocol = new TestProtocol(TransferFormat.Binary);
+            mockProtocol.onreceive = (d) => {
+                protocolCalled = true;
+            };
+
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+
+            // handshake response + message separator
+            const data = [0x7b, 0x7d, 0x1e];
+
+            connection.receiveBinary(new Uint8Array(data).buffer);
+
+            // message only contained handshake response
+            expect(protocolCalled).toEqual(false);
+        });
+
+        it("can process handshake and additional messages from binary", async () => {
+            let receivedProcotolData: ArrayBuffer;
+
+            const mockProtocol = new TestProtocol(TransferFormat.Binary);
+            mockProtocol.onreceive = (d) => receivedProcotolData = d;
+
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+
+            // handshake response + message separator + message pack message
+            const data = [
+                0x7b, 0x7d, 0x1e, 0x65, 0x95, 0x03, 0x80, 0xa1, 0x30, 0x01, 0xd9, 0x5d, 0x54, 0x68, 0x65, 0x20, 0x63, 0x6c,
+                0x69, 0x65, 0x6e, 0x74, 0x20, 0x61, 0x74, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x65, 0x64, 0x20, 0x74, 0x6f, 0x20,
+                0x69, 0x6e, 0x76, 0x6f, 0x6b, 0x65, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x69,
+                0x6e, 0x67, 0x20, 0x27, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x27, 0x20, 0x6d,
+                0x65, 0x74, 0x68, 0x6f, 0x64, 0x20, 0x69, 0x6e, 0x20, 0x61, 0x20, 0x6e, 0x6f, 0x6e, 0x2d, 0x73, 0x74, 0x72,
+                0x65, 0x61, 0x6d, 0x69, 0x6e, 0x67, 0x20, 0x66, 0x61, 0x73, 0x68, 0x69, 0x6f, 0x6e, 0x2e
+            ];
+
+            connection.receiveBinary(new Uint8Array(data).buffer);
+
+            // left over data is the message pack message
+            expect(receivedProcotolData.byteLength).toEqual(102);
+        });
+
+        it("can process handshake and additional messages from text", async () => {
+            let receivedProcotolData: string;
+
+            const mockProtocol = new TestProtocol(TransferFormat.Text);
+            mockProtocol.onreceive = (d) => receivedProcotolData = d;
+
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+
+            const data = "{}" + TextMessageFormat.RecordSeparator + "{\"type\":6}" + TextMessageFormat.RecordSeparator;
+
+            connection.receiveText(data);
+
+            expect(receivedProcotolData).toEqual("{\"type\":6}" + TextMessageFormat.RecordSeparator);
+        });
+
         it("rejects the promise when an error is received", async () => {
             const connection = new TestConnection();
-
             const hubConnection = new HubConnection(connection, commonOptions);
+            connection.receiveHandshakeResponse();
+
             const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, error: "foo" });
@@ -94,8 +175,9 @@ describe("HubConnection", () => {
 
         it("resolves the promise when a result is received", async () => {
             const connection = new TestConnection();
-
             const hubConnection = new HubConnection(connection, commonOptions);
+            connection.receiveHandshakeResponse();
+
             const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
@@ -107,6 +189,9 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
 
             const hubConnection = new HubConnection(connection, commonOptions);
+
+            connection.receiveHandshakeResponse();
+
             const invokePromise = hubConnection.invoke("testMethod");
             hubConnection.stop();
 
@@ -118,6 +203,9 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
 
             const hubConnection = new HubConnection(connection, commonOptions);
+    
+            connection.receiveHandshakeResponse();
+
             const invokePromise = hubConnection.invoke("testMethod");
             // Typically this would be called by the transport
             connection.onclose(new Error("Connection lost"));
@@ -139,6 +227,8 @@ describe("HubConnection", () => {
             } as ILogger;
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, { logger });
+
+            connection.receiveHandshakeResponse();
 
             connection.receive({
                 arguments: ["test"],
@@ -163,6 +253,8 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, { logger });
 
+            connection.receiveHandshakeResponse();
+
             const handler = () => { };
             hubConnection.on('message', handler);
             hubConnection.off('message', handler);
@@ -181,6 +273,9 @@ describe("HubConnection", () => {
         it("callback invoked when servers invokes a method on the client", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
+ 
+            connection.receiveHandshakeResponse();
+
             let value = "";
             hubConnection.on("message", (v) => value = v);
 
@@ -195,9 +290,67 @@ describe("HubConnection", () => {
             expect(value).toBe("test");
         });
 
+        it("stop on handshake error", async () => {
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
+   
+            let closeError: Error = null;
+            hubConnection.onclose((e) => closeError = e);
+
+            connection.receiveHandshakeResponse("Error!");
+
+            expect(closeError.message).toEqual("Server returned handshake error: Error!");
+        });
+
+        it("stop on close message", async () => {
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
+   
+            let isClosed = false;
+            let closeError: Error = null;
+            hubConnection.onclose((e) => {
+                isClosed = true;
+                closeError = e;
+            });
+
+            connection.receiveHandshakeResponse();
+
+            connection.receive({
+                type: MessageType.Close,
+            });
+
+            expect(isClosed).toEqual(true);
+            expect(closeError).toEqual(null);
+        });
+
+        it("stop on error close message", async () => {
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
+   
+            let isClosed = false;
+            let closeError: Error = null;
+            hubConnection.onclose((e) => {
+                isClosed = true;
+                closeError = e;
+            });
+
+            connection.receiveHandshakeResponse();
+
+            connection.receive({
+                error: "Error!",
+                type: MessageType.Close,
+            });
+
+            expect(isClosed).toEqual(true);
+            expect(closeError.message).toEqual("Server returned an error on close: Error!");
+        });
+
         it("can have multiple callbacks", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
+   
+            connection.receiveHandshakeResponse();
+
             let numInvocations1 = 0;
             let numInvocations2 = 0;
             hubConnection.on("message", () => numInvocations1++);
@@ -218,6 +371,8 @@ describe("HubConnection", () => {
         it("can unsubscribe from on", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
+
+            connection.receiveHandshakeResponse();
 
             let numInvocations = 0;
             const callback = () => numInvocations++;
@@ -266,6 +421,8 @@ describe("HubConnection", () => {
 
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, { logger });
+
+            connection.receiveHandshakeResponse();
 
             hubConnection.on(null, undefined);
             hubConnection.on(undefined, null);
@@ -319,8 +476,10 @@ describe("HubConnection", () => {
 
         it("completes with an error when an error is yielded", async () => {
             const connection = new TestConnection();
-
             const hubConnection = new HubConnection(connection, commonOptions);
+
+            connection.receiveHandshakeResponse();
+
             const observer = new TestObserver();
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
@@ -333,8 +492,10 @@ describe("HubConnection", () => {
 
         it("completes the observer when a completion is received", async () => {
             const connection = new TestConnection();
-
             const hubConnection = new HubConnection(connection, commonOptions);
+      
+            connection.receiveHandshakeResponse();
+
             const observer = new TestObserver();
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
@@ -374,8 +535,10 @@ describe("HubConnection", () => {
 
         it("yields items as they arrive", async () => {
             const connection = new TestConnection();
-
             const hubConnection = new HubConnection(connection, commonOptions);
+
+            connection.receiveHandshakeResponse();
+
             const observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
@@ -421,8 +584,10 @@ describe("HubConnection", () => {
 
         it("can be canceled", () => {
             const connection = new TestConnection();
-
             const hubConnection = new HubConnection(connection, commonOptions);
+
+            connection.receiveHandshakeResponse();
+
             const observer = new TestObserver();
             const subscription = hubConnection.stream("testMethod")
                 .subscribe(observer);
@@ -518,6 +683,33 @@ describe("HubConnection", () => {
             expect(error).toBeUndefined();
         });
 
+        it("does not timeout if message was received before HubConnection.start", async () => {
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
+
+            const p = new PromiseSource<Error>();
+            hubConnection.onclose((e) => p.resolve(e));
+
+            // send message before start to trigger timeout handler
+            // testing for regression where we didn't cleanup timer if request received before start created a timer
+            await connection.receive({ type: MessageType.Ping });
+
+            await hubConnection.start();
+
+            await connection.receive({ type: MessageType.Ping });
+            await delay(50);
+            await connection.receive({ type: MessageType.Ping });
+            await delay(50);
+            await connection.receive({ type: MessageType.Ping });
+            await delay(50);
+
+            connection.stop();
+
+            const error = await p.promise;
+
+            expect(error).toBeUndefined();
+        });
+
         it("terminates if no messages received within timeout interval", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
@@ -562,15 +754,51 @@ class TestConnection implements IConnection {
         return Promise.resolve();
     }
 
+    public receiveHandshakeResponse(error?: string): void {
+        this.receive({error: error});
+    }
+
     public receive(data: any): void {
         const payload = JSON.stringify(data);
         this.onreceive(TextMessageFormat.write(payload));
+    }
+
+    public receiveText(data: string) {
+        this.onreceive(data);
+    }
+
+    public receiveBinary(data: ArrayBuffer) {
+        this.onreceive(data);
     }
 
     public onreceive: DataReceived;
     public onclose: ConnectionClosed;
     public sentData: any[];
     public lastInvocationId: string;
+}
+
+class TestProtocol implements IHubProtocol {
+    public readonly name: string = "TestProtocol";
+
+    public readonly transferFormat: TransferFormat;
+
+    public onreceive: DataReceived;
+
+    constructor(transferFormat: TransferFormat) {
+        this.transferFormat = transferFormat;
+    }
+
+    public parseMessages(input: any): HubMessage[] {
+        if (this.onreceive) {
+            this.onreceive(input);
+        }
+
+        return [];
+    }
+
+    public writeMessage(message: HubMessage): any {
+
+    }
 }
 
 class TestObserver implements Observer<any> {

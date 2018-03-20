@@ -11,5 +11,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         public const int StreamInvocationMessageType = 4;
         public const int CancelInvocationMessageType = 5;
         public const int PingMessageType = 6;
+        public const int CloseMessageType = 7;
     }
 }

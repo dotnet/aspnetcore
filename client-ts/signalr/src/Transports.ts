@@ -145,7 +145,7 @@ export class ServerSentEventsTransport implements ITransport {
                 url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
             }
 
-            const eventSource = new EventSource(url);
+            const eventSource = new EventSource(url, { withCredentials: true });
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {

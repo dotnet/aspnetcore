@@ -79,30 +79,13 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         }
 
         [Fact]
-        public void DefaultHubProtocolResolverThrowsForNotSupportedProtocol()
+        public void DefaultHubProtocolResolverReturnsNullForNotSupportedProtocol()
         {
             var connection = new Mock<ConnectionContext>();
             connection.Setup(m => m.Features).Returns(new FeatureCollection());
             var mockConnection = new Mock<HubConnectionContext>(connection.Object, TimeSpan.FromSeconds(30), NullLoggerFactory.Instance) { CallBase = true };
             var resolver = new DefaultHubProtocolResolver(AllProtocols, NullLogger<DefaultHubProtocolResolver>.Instance);
-            var exception = Assert.Throws<NotSupportedException>(
-                () => resolver.GetProtocol("notARealProtocol", AllProtocolNames, mockConnection.Object));
-
-            Assert.Equal("The protocol 'notARealProtocol' is not supported.", exception.Message);
-        }
-
-        [Theory]
-        [MemberData(nameof(HubProtocols))]
-        public void DefaultHubProtocolResolverThrowsWhenNoProtocolsAreSupported(IHubProtocol protocol)
-        {
-            var connection = new Mock<ConnectionContext>();
-            connection.Setup(m => m.Features).Returns(new FeatureCollection());
-            var mockConnection = new Mock<HubConnectionContext>(connection.Object, TimeSpan.FromSeconds(30), NullLoggerFactory.Instance) { CallBase = true };
-            var supportedProtocols= new List<string>();
-            var resolver = new DefaultHubProtocolResolver(AllProtocols, NullLogger<DefaultHubProtocolResolver>.Instance);
-            var exception = Assert.Throws<NotSupportedException>(
-                () => resolver.GetProtocol(protocol.Name, supportedProtocols, mockConnection.Object));
-            Assert.Equal($"The protocol '{protocol.Name}' is not supported.", exception.Message);
+            Assert.Null(resolver.GetProtocol("notARealProtocol", AllProtocolNames, mockConnection.Object));
         }
 
         [Fact]

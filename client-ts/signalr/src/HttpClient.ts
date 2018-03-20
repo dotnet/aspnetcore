@@ -54,6 +54,7 @@ export class DefaultHttpClient extends HttpClient {
             const xhr = new XMLHttpRequest();
 
             xhr.open(request.method, request.url, true);
+            xhr.withCredentials = true;
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 
             if (request.headers) {

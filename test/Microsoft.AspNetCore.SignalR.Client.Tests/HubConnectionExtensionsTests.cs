@@ -102,6 +102,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 onAction(hubConnection, handlerTcs);
                 await hubConnection.StartAsync();
+                await connection.ReadHandshakeAndSendResponseAsync().OrTimeout();
 
                 await connection.ReceiveJsonMessage(
                     new
@@ -132,6 +133,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 hubConnection.On<int>("Foo", r => { receiveTcs.SetResult(r); });
                 await hubConnection.StartAsync().OrTimeout();
+
+                await connection.ReadHandshakeAndSendResponseAsync().OrTimeout();
 
                 await connection.ReceiveJsonMessage(
                     new
@@ -170,6 +173,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 hubConnection.On<int>("Foo", r => { receiveTcs.SetResult(r); });
                 await hubConnection.StartAsync().OrTimeout();
+                await connection.ReadHandshakeAndSendResponseAsync().OrTimeout();
 
                 await connection.ReceiveJsonMessage(
                     new

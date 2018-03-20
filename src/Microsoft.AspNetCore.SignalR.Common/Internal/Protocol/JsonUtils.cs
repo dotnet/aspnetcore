@@ -10,6 +10,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public static class JsonUtils
     {
+        public static JObject GetObject(JToken token)
+        {
+            if (token == null || token.Type != JTokenType.Object)
+            {
+                throw new InvalidDataException($"Unexpected JSON Token Type '{token?.Type}'. Expected a JSON Object.");
+            }
+
+            return (JObject)token;
+        }
+
         public static T GetOptionalProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None, T defaultValue = default)
         {
             var prop = json[property];

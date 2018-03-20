@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
+using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets.Client;
 using Newtonsoft.Json;
 
@@ -79,6 +80,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             _started.TrySetResult(null);
             return Task.CompletedTask;
+        }
+
+        public async Task ReadHandshakeAndSendResponseAsync()
+        {
+            await SentMessages.ReadAsync();
+
+            var output = new MemoryStream();
+            HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, output);
+
+            await _receivedMessages.Writer.WriteAsync(output.ToArray());
         }
 
         public async Task<string> ReadSentTextMessageAsync()

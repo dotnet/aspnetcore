@@ -37,7 +37,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public IEnumerable<string> GetHeaderValues(string[] headerNames)
         {
-            var headers = Context.Connection.GetHttpContext().Request.Headers;
+            var context = Context.Connection.GetHttpContext();
+
+            if (context == null)
+            {
+                throw new InvalidOperationException("Unable to get HttpContext from request.");
+            }
+
+            var headers = context.Request.Headers;
+
+            if (headers == null)
+            {
+                throw new InvalidOperationException("Unable to get headers from context.");
+            }
+
             return headerNames.Select(h => (string)headers[h]);
         }
 

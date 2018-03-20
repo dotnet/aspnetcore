@@ -10,6 +10,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Internal;
@@ -33,10 +34,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly ConcurrentDictionary<string, List<InvocationHandler>> _handlers = new ConcurrentDictionary<string, List<InvocationHandler>>();
         private CancellationTokenSource _connectionActive;
 
-        private int _nextId = 0;
+        private int _nextId;
         private volatile bool _startCalled;
-        private Timer _timeoutTimer;
+        private readonly Timer _timeoutTimer;
         private bool _needKeepAlive;
+        private bool _receivedHandshakeResponse;
 
         public event Action<Exception> Closed;
 
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HubConnection>();
             _connection.OnReceived((data, state) => ((HubConnection)state).OnDataReceivedAsync(data), this);
-            _connection.Closed += e => Shutdown(e);
+            _connection.Closed += Shutdown;
 
             // Create the timer for timeout, but disabled by default (we enable it when started).
             _timeoutTimer = new Timer(state => ((HubConnection)state).TimeoutElapsed(), this, Timeout.Infinite, Timeout.Infinite);
@@ -111,14 +113,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             await _connection.StartAsync(_protocol.TransferFormat);
             _needKeepAlive = _connection.Features.Get<IConnectionInherentKeepAliveFeature>() == null;
+            _receivedHandshakeResponse = false;
 
             Log.HubProtocol(_logger, _protocol.Name);
 
             _connectionActive = new CancellationTokenSource();
             using (var memoryStream = new MemoryStream())
             {
-                Log.SendingHubNegotiate(_logger);
-                NegotiationProtocol.WriteMessage(new NegotiationMessage(_protocol.Name), memoryStream);
+                Log.SendingHubHandshake(_logger);
+                HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name), memoryStream);
                 await _connection.SendAsync(memoryStream.ToArray(), _connectionActive.Token);
             }
 
@@ -309,9 +312,28 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private async Task OnDataReceivedAsync(byte[] data)
         {
             ResetTimeoutTimer();
-            Log.ParsingMessages(_logger, data.Length);
+
+            var currentData = new ReadOnlyMemory<byte>(data);
+            Log.ParsingMessages(_logger, currentData.Length);
+
+            // first message received must be handshake response
+            if (!_receivedHandshakeResponse)
+            {
+                // process handshake and return left over data to parse additional messages
+                if (!ProcessHandshakeResponse(ref currentData))
+                {
+                    return;
+                }
+
+                _receivedHandshakeResponse = true;
+                if (currentData.IsEmpty)
+                {
+                    return;
+                }
+            }
+
             var messages = new List<HubMessage>();
-            if (_protocol.TryParseMessages(data, _binder, messages))
+            if (_protocol.TryParseMessages(currentData, _binder, messages))
             {
                 Log.ReceivingMessages(_logger, messages.Count);
                 foreach (var message in messages)
@@ -342,6 +364,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
                             }
                             DispatchInvocationStreamItemAsync(streamItem, irq);
                             break;
+                        case CloseMessage close:
+                            if (string.IsNullOrEmpty(close.Error))
+                            {
+                                Log.ReceivedClose(_logger);
+                                Shutdown();
+                            }
+                            else
+                            {
+                                Log.ReceivedCloseWithError(_logger, close.Error);
+                                Shutdown(new InvalidOperationException(close.Error));
+                            }
+                            break;
                         case PingMessage _:
                             Log.ReceivedPing(_logger);
                             // Nothing to do on receipt of a ping.
@@ -358,8 +392,47 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
+        private bool ProcessHandshakeResponse(ref ReadOnlyMemory<byte> data)
+        {
+            HandshakeResponseMessage message;
+
+            try
+            {
+                // read first message out of the incoming data
+                if (!TextMessageParser.TryParseMessage(ref data, out var payload))
+                {
+                    throw new InvalidDataException("Unable to parse payload as a handshake response message.");
+                }
+
+                message = HandshakeProtocol.ParseResponseMessage(payload);
+            }
+            catch (Exception ex)
+            {
+                // shutdown if we're unable to read handshake
+                Log.ErrorReceivingHandshakeResponse(_logger, ex);
+                Shutdown(ex);
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(message.Error))
+            {
+                // shutdown if handshake returns an error
+                Log.HandshakeServerError(_logger, message.Error);
+                Shutdown();
+                return false;
+            }
+
+            return true;
+        }
+
         private void Shutdown(Exception exception = null)
         {
+            // check if connection has already been shutdown
+            if (_connectionActive.IsCancellationRequested)
+            {
+                return;
+            }
+
             Log.ShutdownConnection(_logger);
             if (exception != null)
             {

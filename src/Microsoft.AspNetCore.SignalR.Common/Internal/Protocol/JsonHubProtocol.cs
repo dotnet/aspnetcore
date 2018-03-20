@@ -204,14 +204,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                             case JsonToken.EndObject:
                                 completed = true;
                                 break;
-                            default:
-                                break;
                         }
                     }
                     while (!completed && JsonUtils.CheckRead(reader));
                 }
 
-                HubMessage message = null;
+                HubMessage message;
 
                 switch (type)
                 {
@@ -274,6 +272,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         break;
                     case HubProtocolConstants.PingMessageType:
                         return PingMessage.Instance;
+                    case HubProtocolConstants.CloseMessageType:
+                        return BindCloseMessage(error);
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -358,6 +358,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     case PingMessage _:
                         WriteMessageType(writer, HubProtocolConstants.PingMessageType);
                         break;
+                    case CloseMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
+                        WriteCloseMessage(m, writer);
+                        break;
                     default:
                         throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
                 }
@@ -423,6 +427,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             writer.WriteValue(message.Target);
 
             WriteArguments(message.Arguments, writer);
+        }
+
+        private void WriteCloseMessage(CloseMessage message, JsonTextWriter writer)
+        {
+            if (!string.IsNullOrEmpty(message.Error))
+            {
+                writer.WritePropertyName(ErrorPropertyName);
+                writer.WriteValue(message.Error);
+            }
         }
 
         private void WriteArguments(object[] arguments, JsonTextWriter writer)
@@ -567,6 +580,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
 
             throw new JsonReaderException("Unexpected end when reading JSON");
+        }
+
+        private CloseMessage BindCloseMessage(string error)
+        {
+            if (string.IsNullOrEmpty(error))
+            {
+                return CloseMessage.Empty;
+            }
+
+            var message = new CloseMessage(error);
+            return message;
         }
 
         private object[] BindArguments(JArray args, IReadOnlyList<Type> paramTypes)

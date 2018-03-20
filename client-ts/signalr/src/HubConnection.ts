@@ -4,7 +4,7 @@
 import { ConnectionClosed } from "./Common";
 import { HttpConnection, IHttpConnectionOptions } from "./HttpConnection";
 import { IConnection } from "./IConnection";
-import { CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, NegotiationMessage, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import { CancelInvocationMessage, CompletionMessage, HandshakeRequestMessage, HandshakeResponseMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { ConsoleLogger, LoggerFactory, NullLogger } from "./Loggers";
@@ -31,6 +31,7 @@ export class HubConnection {
     private closedCallbacks: ConnectionClosed[];
     private timeoutHandle: NodeJS.Timer;
     private timeoutInMilliseconds: number;
+    private receivedHandshakeResponse: boolean;
 
     constructor(url: string, options?: IHubConnectionOptions);
     constructor(connection: IConnection, options?: IHubConnectionOptions);
@@ -59,38 +60,104 @@ export class HubConnection {
     }
 
     private processIncomingData(data: any) {
-        if (this.timeoutHandle !== undefined) {
-            clearTimeout(this.timeoutHandle);
+        this.cleanupTimeout();
+
+        if (!this.receivedHandshakeResponse) {
+            data = this.processHandshakeResponse(data);
+            this.receivedHandshakeResponse = true;
         }
 
-        // Parse the messages
-        const messages = this.protocol.parseMessages(data);
+        // Data may have all been read when processing handshake response
+        if (data) {
+            // Parse the messages
+            const messages = this.protocol.parseMessages(data);
 
-        for (const message of messages) {
-            switch (message.type) {
-                case MessageType.Invocation:
-                    this.invokeClientMethod(message);
-                    break;
-                case MessageType.StreamItem:
-                case MessageType.Completion:
-                    const callback = this.callbacks.get(message.invocationId);
-                    if (callback != null) {
-                        if (message.type === MessageType.Completion) {
-                            this.callbacks.delete(message.invocationId);
+            for (const message of messages) {
+                switch (message.type) {
+                    case MessageType.Invocation:
+                        this.invokeClientMethod(message);
+                        break;
+                    case MessageType.StreamItem:
+                    case MessageType.Completion:
+                        const callback = this.callbacks.get(message.invocationId);
+                        if (callback != null) {
+                            if (message.type === MessageType.Completion) {
+                                this.callbacks.delete(message.invocationId);
+                            }
+                            callback(message);
                         }
-                        callback(message);
-                    }
-                    break;
-                case MessageType.Ping:
-                    // Don't care about pings
-                    break;
-                default:
-                    this.logger.log(LogLevel.Warning, "Invalid message type: " + data);
-                    break;
+                        break;
+                    case MessageType.Ping:
+                        // Don't care about pings
+                        break;
+                    case MessageType.Close:
+                        this.logger.log(LogLevel.Information, "Close message received from server.");
+                        this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : null);
+                        break;
+                    default:
+                        this.logger.log(LogLevel.Warning, "Invalid message type: " + data);
+                        break;
+                }
             }
         }
 
         this.configureTimeout();
+    }
+
+    private processHandshakeResponse(data: any): any {
+        let responseMessage: HandshakeResponseMessage;
+        let messageData: string;
+        let remainingData: any;
+        try {
+            if (data instanceof ArrayBuffer) {
+                // Format is binary but still need to read JSON text from handshake response
+                const binaryData = new Uint8Array(data);
+                const separatorIndex = binaryData.indexOf(TextMessageFormat.RecordSeparatorCode);
+                if (separatorIndex === -1) {
+                    throw new Error("Message is incomplete.");
+                }
+
+                // content before separator is handshake response
+                // optional content after is additional messages
+                const responseLength = separatorIndex + 1;
+                messageData = String.fromCharCode.apply(null, binaryData.slice(0, responseLength));
+                remainingData = (binaryData.byteLength > responseLength) ? binaryData.slice(responseLength).buffer : null;
+            } else {
+                const textData: string = data;
+                const separatorIndex = textData.indexOf(TextMessageFormat.RecordSeparator);
+                if (separatorIndex === -1) {
+                    throw new Error("Message is incomplete.");
+                }
+
+                // content before separator is handshake response
+                // optional content after is additional messages
+                const responseLength = separatorIndex + 1;
+                messageData = textData.substring(0, responseLength);
+                remainingData = (textData.length > responseLength) ? textData.substring(responseLength) : null;
+            }
+
+            // At this point we should have just the single handshake message
+            const messages = TextMessageFormat.parse(messageData);
+            responseMessage = JSON.parse(messages[0]);
+        } catch (e) {
+            const message = "Error parsing handshake response: " + e;
+            this.logger.log(LogLevel.Error, message);
+
+            const error = new Error(message);
+            this.connection.stop(error);
+            throw error;
+        }
+        if (responseMessage.error) {
+            const message = "Server returned handshake error: " + responseMessage.error;
+            this.logger.log(LogLevel.Error, message);
+            this.connection.stop(new Error(message));
+        } else {
+            this.logger.log(LogLevel.Trace, "Server handshake complete.");
+        }
+
+        // multiple messages could have arrived with handshake
+        // return additional data to be parsed as usual, or null if all parsed
+        return remainingData;
     }
 
     private configureTimeout() {
@@ -127,20 +194,25 @@ export class HubConnection {
         });
         this.callbacks.clear();
 
-        this.closedCallbacks.forEach((c) => c.apply(this, [error]));
-
         this.cleanupTimeout();
+
+        this.closedCallbacks.forEach((c) => c.apply(this, [error]));
     }
 
     public async start(): Promise<void> {
+        this.receivedHandshakeResponse = false;
+
         await this.connection.start(this.protocol.transferFormat);
 
+        // Handshake request is always JSON
         await this.connection.send(
             TextMessageFormat.write(
-                JSON.stringify({ protocol: this.protocol.name } as NegotiationMessage)));
+                JSON.stringify({ protocol: this.protocol.name } as HandshakeRequestMessage)));
 
         this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
 
+        // defensively cleanup timeout in case we receive a message from the server before we finish start
+        this.cleanupTimeout();
         this.configureTimeout();
     }
 
