@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubOptionsSetup : IConfigureOptions<HubOptions>
     {
-        internal static TimeSpan DefaultNegotiateTimeout => TimeSpan.FromSeconds(5);
+        internal static TimeSpan DefaultHandshakeTimeout => TimeSpan.FromSeconds(5);
 
         internal static TimeSpan DefaultKeepAliveInterval => TimeSpan.FromSeconds(15);
 
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.SignalR
                 options.KeepAliveInterval = DefaultKeepAliveInterval;
             }
 
-            if (options.NegotiateTimeout == null)
+            if (options.HandshakeTimeout == null)
             {
-                options.NegotiateTimeout = DefaultNegotiateTimeout;
+                options.HandshakeTimeout = DefaultHandshakeTimeout;
             }
 
             foreach (var protocol in _protocols)

@@ -38,9 +38,23 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 return this.createCompletionMessage(this.readHeaders(properties), properties);
             case MessageType.Ping:
                 return this.createPingMessage(properties);
+            case MessageType.Close:
+                return this.createCloseMessage(properties);
             default:
                 throw new Error("Invalid message type.");
         }
+    }
+
+    private createCloseMessage(properties: any[]): HubMessage {
+        if (properties.length !== 2) {
+            throw new Error("Invalid payload for Close message.");
+        }
+
+        return {
+            // Close messages have no headers.
+            error: properties[1],
+            type: MessageType.Close,
+        } as HubMessage;
     }
 
     private createPingMessage(properties: any[]): HubMessage {

@@ -42,7 +42,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return protocol;
             }
 
-            throw new NotSupportedException($"The protocol '{protocolName ?? "(null)"}' is not supported.");
+            // null result indicates protocol is not supported
+            // result will be validated by the caller
+            return null;
         }
 
         private static class Log

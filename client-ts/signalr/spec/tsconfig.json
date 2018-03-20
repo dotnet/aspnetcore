@@ -2,10 +2,11 @@
     "compileOnSave": false,
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es5",
+        "target": "es2016",
+        "sourceMap": true,
         "moduleResolution": "node",
         "outDir": "./obj",
-        "lib": [ "es2015", "dom" ]
+        "lib": [ "es2016", "dom" ]
     },
     "include": [
         "./**/*",

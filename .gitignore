@@ -43,3 +43,4 @@ dist/
 global.json
 BenchmarkDotNet.Artifacts/
 .rpt2_cache/
+*.orig

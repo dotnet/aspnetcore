@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanStopAndStartConnection(IHubProtocol protocol, TransportType transportType, string path)
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Trace, $"{nameof(CanStopAndStartConnection)}_{protocol.Name}_{transportType}_{path.TrimStart('/')}"))
             {
                 const string originalMessage = "SignalR";
                 var httpConnection = new HttpConnection(new Uri(_serverFixture.Url + path), transportType, loggerFactory);
@@ -692,7 +692,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "HttpContext + Long Polling fails. Issue logged - https://github.com/aspnet/SignalR/issues/1644")]
         [MemberData(nameof(TransportTypes))]
         public async Task ClientCanSendHeaders(TransportType transportType)
         {

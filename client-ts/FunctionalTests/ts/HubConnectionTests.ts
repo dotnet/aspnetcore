@@ -345,12 +345,6 @@ describe("hubConnection", () => {
             });
 
             it("closed with error if hub cannot be created", (done) => {
-                const errorRegex = {
-                    LongPolling: "Internal Server Error",
-                    ServerSentEvents: "Error occurred",
-                    WebSockets: "1011|1005", // Message is browser specific (e.g. 'Websocket closed with status code: 1011'), Edge and IE report 1005 even though the server sent 1011
-                };
-
                 const hubConnection = new HubConnection("http://" + document.location.host + "/uncreatable", {
                     logger: LogLevel.Trace,
                     protocol,
@@ -358,7 +352,7 @@ describe("hubConnection", () => {
                 });
 
                 hubConnection.onclose((error) => {
-                    expect(error.message).toMatch(errorRegex[TransportType[transportType]]);
+                    expect(error.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
                     done();
                 });
                 hubConnection.start();

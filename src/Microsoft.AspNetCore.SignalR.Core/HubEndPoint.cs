@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.SignalR
         public async Task OnConnectedAsync(ConnectionContext connection)
         {
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
-            // Then set the keepAlive and negotiateTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
+            // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
             var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
-            var negotiateTimeout = _hubOptions.NegotiateTimeout ?? _globalHubOptions.NegotiateTimeout ?? HubOptionsSetup.DefaultNegotiateTimeout;
+            var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
             var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
 
             if (supportedProtocols != null && supportedProtocols.Count == 0)
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory);
 
-            if (!await connectionContext.NegotiateAsync(negotiateTimeout, supportedProtocols, _protocolResolver, _userIdProvider))
+            if (!await connectionContext.HandshakeAsync(handshakeTimeout, supportedProtocols, _protocolResolver, _userIdProvider))
             {
                 return;
             }
@@ -83,7 +83,11 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.ErrorDispatchingHubEvent(_logger, "OnConnectedAsync", ex);
-                throw;
+
+                await SendCloseAsync(connection, ex);
+
+                // return instead of throw to let close message send successfully
+                return;
             }
 
             try
@@ -93,8 +97,11 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.ErrorProcessingRequest(_logger, ex);
+
                 await HubOnDisconnectedAsync(connection, ex);
-                throw;
+
+                // return instead of throw to let close message send successfully
+                return;
             }
 
             await HubOnDisconnectedAsync(connection, null);
@@ -102,6 +109,9 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)
         {
+            // send close message before aborting the connection
+            await SendCloseAsync(connection, exception);
+
             // We wait on abort to complete, this is so that we can guarantee that all callbacks have fired
             // before OnDisconnectedAsync
 
@@ -123,6 +133,22 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.ErrorDispatchingHubEvent(_logger, "OnDisconnectedAsync", ex);
                 throw;
+            }
+        }
+
+        private async Task SendCloseAsync(HubConnectionContext connection, Exception exception)
+        {
+            CloseMessage closeMessage = exception == null
+                ? CloseMessage.Empty
+                : new CloseMessage($"Connection closed with an error. {exception.GetType().Name}: {exception.Message}");
+
+            try
+            {
+                await connection.WriteAsync(closeMessage);
+            }
+            catch (Exception ex)
+            {
+                Log.ErrorSendingClose(_logger, ex);
             }
         }
 
@@ -186,6 +212,9 @@ namespace Microsoft.AspNetCore.SignalR
             private static readonly Action<ILogger, Exception> _abortFailed =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(3, "AbortFailed"), "Abort callback failed.");
 
+            private static readonly Action<ILogger, Exception> _errorSendingClose =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "ErrorSendingClose"), "Error when sending Close message.");
+
             public static void ErrorDispatchingHubEvent(ILogger logger, string hubMethod, Exception exception)
             {
                 _errorDispatchingHubEvent(logger, hubMethod, exception);
@@ -199,6 +228,11 @@ namespace Microsoft.AspNetCore.SignalR
             public static void AbortFailed(ILogger logger, Exception exception)
             {
                 _abortFailed(logger, exception);
+            }
+
+            public static void ErrorSendingClose(ILogger logger, Exception exception)
+            {
+                _errorSendingClose(logger, exception);
             }
         }
     }

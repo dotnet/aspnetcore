@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
     public class DisposeTrackingHub : TestHub
     {
-        private TrackDispose _trackDispose;
+        private readonly TrackDispose _trackDispose;
 
         public DisposeTrackingHub(TrackDispose trackDispose)
         {

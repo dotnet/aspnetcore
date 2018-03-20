@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 
@@ -20,11 +21,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private static int _id;
         private readonly IHubProtocol _protocol;
         private readonly IInvocationBinder _invocationBinder;
-        private CancellationTokenSource _cts;
-        private Queue<HubMessage> _messages = new Queue<HubMessage>();
+        private readonly CancellationTokenSource _cts;
+        private readonly Queue<HubMessage> _messages = new Queue<HubMessage>();
 
         public DefaultConnectionContext Connection { get; }
         public Task Connected => ((TaskCompletionSource<bool>)Connection.Items["ConnectedTask"]).Task;
+        public HandshakeResponseMessage HandshakeResponseMessage { get; private set; }
 
         public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
@@ -46,12 +48,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
 
             _cts = new CancellationTokenSource();
+        }
 
-            using (var memoryStream = new MemoryStream())
+        public async Task<Task> ConnectAsync(
+            dynamic endPoint,
+            bool sendHandshakeRequestMessage = true,
+            bool expectedHandshakeResponseMessage = true)
+        {
+            if (sendHandshakeRequestMessage)
             {
-                NegotiationProtocol.WriteMessage(new NegotiationMessage(_protocol.Name), memoryStream);
-                Connection.Application.Output.WriteAsync(memoryStream.ToArray());
+                using (var memoryStream = new MemoryStream())
+                {
+                    HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name), memoryStream);
+                    await Connection.Application.Output.WriteAsync(memoryStream.ToArray());
+                }
             }
+
+            var connection = (Task)endPoint.OnConnectedAsync(Connection);
+
+            if (expectedHandshakeResponseMessage)
+            {
+                // note that the handshake response might not immediately be readable
+                // e.g. server is waiting for request, times out after configured duration,
+                // and sends response with timeout error
+                HandshakeResponseMessage = (HandshakeResponseMessage) await ReadAsync(true).OrTimeout();
+            }
+
+            return connection;
         }
 
         public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
@@ -147,11 +170,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return message is HubInvocationMessage hubMessage ? hubMessage.InvocationId : null;
         }
 
-        public async Task<HubMessage> ReadAsync()
+        public async Task<HubMessage> ReadAsync(bool isHandshake = false)
         {
             while (true)
             {
-                var message = TryRead();
+                var message = TryRead(isHandshake);
 
                 if (message == null)
                 {
@@ -182,7 +205,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public HubMessage TryRead()
+        public HubMessage TryRead(bool isHandshake = false)
         {
             if (_messages.Count > 0)
             {
@@ -200,15 +223,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             try
             {
-                var messages = new List<HubMessage>();
-                if (_protocol.TryParseMessages(result.Buffer.ToArray(), _invocationBinder, messages))
+                if (!isHandshake)
                 {
-                    foreach (var m in messages)
+                    var messages = new List<HubMessage>();
+                    if (_protocol.TryParseMessages(result.Buffer.ToArray(), _invocationBinder, messages))
                     {
-                        _messages.Enqueue(m);
+                        foreach (var m in messages)
+                        {
+                            _messages.Enqueue(m);
+                        }
+
+                        return _messages.Dequeue();
+                    }
+                }
+                else
+                {
+                    HandshakeProtocol.TryReadMessageIntoSingleMemory(buffer, out consumed, out examined, out var data);
+
+                    // read first message out of the incoming data
+                    if (!TextMessageParser.TryParseMessage(ref data, out var payload))
+                    {
+                        throw new InvalidDataException("Unable to parse payload as a handshake response message.");
                     }
 
-                    return _messages.Dequeue();
+                    return HandshakeProtocol.ParseResponseMessage(payload);
                 }
             }
             finally

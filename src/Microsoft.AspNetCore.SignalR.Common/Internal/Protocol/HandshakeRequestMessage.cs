@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    public class NegotiationMessage
+    public class HandshakeRequestMessage : HubMessage
     {
-        public NegotiationMessage(string protocol)
+        public HandshakeRequestMessage(string protocol)
         {
             Protocol = protocol;
         }

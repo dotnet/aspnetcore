@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubOptions
     {
-        // NegotiateTimeout and KeepAliveInterval are set to null here to help identify when
+        // HandshakeTimeout and KeepAliveInterval are set to null here to help identify when
         // local hub options have been set. Global default values are set in HubOptionsSetup.
         // SupportedProtocols being null is the true default value, and it represents support
         // for all available protocols.
-        public TimeSpan? NegotiateTimeout { get; set; } = null;
+        public TimeSpan? HandshakeTimeout { get; set; } = null;
 
         public TimeSpan? KeepAliveInterval { get; set; } = null;
 

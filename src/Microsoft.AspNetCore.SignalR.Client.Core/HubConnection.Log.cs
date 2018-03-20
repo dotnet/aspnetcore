@@ -92,8 +92,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, Exception> _errorDuringClosedEvent =
                 LoggerMessage.Define(LogLevel.Error, new EventId(27, "ErrorDuringClosedEvent"), "An exception was thrown in the handler for the Closed event.");
 
-            private static readonly Action<ILogger, Exception> _sendingHubNegotiate =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(28, "SendingHubNegotiate"), "Sending Hub Negotiation.");
+            private static readonly Action<ILogger, Exception> _sendingHubHandshake =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(28, "SendingHubHandshake"), "Sending Hub Handshake.");
 
             private static readonly Action<ILogger, int, Exception> _parsingMessages =
                 LoggerMessage.Define<int>(LogLevel.Debug, new EventId(29, "ParsingMessages"), "Received {Count} bytes. Parsing message(s).");
@@ -112,6 +112,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private static readonly Action<ILogger, string, Exception> _errorInvokingClientSideMethod =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(34, "ErrorInvokingClientSideMethod"), "Invoking client side method '{MethodName}' failed.");
+
+            private static readonly Action<ILogger, Exception> _errorProcessingHandshakeResponse =
+                LoggerMessage.Define(LogLevel.Error, new EventId(35, "ErrorReceivingHandshakeResponse"), "Error processing the handshake response.");
+
+            private static readonly Action<ILogger, string, Exception> _handshakeServerError =
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(36, "HandshakeServerError"), "Server returned handshake error: {Error}");
+
+            private static readonly Action<ILogger, Exception> _receivedClose =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(37, "ReceivedClose"), "Received close message.");
+
+            private static readonly Action<ILogger, string, Exception> _receivedCloseWithError =
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(38, "ReceivedCloseWithError"), "Received close message with an error: {Error}");
 
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
@@ -256,9 +268,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _errorDuringClosedEvent(logger, exception);
             }
 
-            public static void SendingHubNegotiate(ILogger logger)
+            public static void SendingHubHandshake(ILogger logger)
             {
-                _sendingHubNegotiate(logger, null);
+                _sendingHubHandshake(logger, null);
             }
 
             public static void ParsingMessages(ILogger logger, int byteCount)
@@ -289,6 +301,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public static void ErrorInvokingClientSideMethod(ILogger logger, string methodName, Exception exception)
             {
                 _errorInvokingClientSideMethod(logger, methodName, exception);
+            }
+
+            public static void ErrorReceivingHandshakeResponse(ILogger logger, Exception exception)
+            {
+                _errorProcessingHandshakeResponse(logger, exception);
+            }
+
+            public static void HandshakeServerError(ILogger logger, string error)
+            {
+                _handshakeServerError(logger, error, null);
+            }
+
+            public static void ReceivedClose(ILogger logger)
+            {
+                _receivedClose(logger, null);
+            }
+
+            public static void ReceivedCloseWithError(ILogger logger, string error)
+            {
+                _receivedCloseWithError(logger, error, null);
             }
         }
     }

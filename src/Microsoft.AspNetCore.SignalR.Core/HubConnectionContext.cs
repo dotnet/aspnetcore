@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Runtime.ExceptionServices;
@@ -118,6 +119,23 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
+        private async Task WriteHandshakeResponseAsync(HandshakeResponseMessage message)
+        {
+            await _writeLock.WaitAsync();
+
+            try
+            {
+                var ms = new MemoryStream();
+                HandshakeProtocol.WriteResponseMessage(message, ms);
+
+                await _connectionContext.Transport.Output.WriteAsync(ms.ToArray());
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
+        }
+
         public virtual void Abort()
         {
             // If we already triggered the token then noop, this isn't thread safe but it's good enough
@@ -131,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR
             Task.Factory.StartNew(_abortedCallback, this);
         }
 
-        internal async Task<bool> NegotiateAsync(TimeSpan timeout, IList<string> supportedProtocols, IHubProtocolResolver protocolResolver, IUserIdProvider userIdProvider)
+        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IList<string> supportedProtocols, IHubProtocolResolver protocolResolver, IUserIdProvider userIdProvider)
         {
             try
             {
@@ -150,9 +168,16 @@ namespace Microsoft.AspNetCore.SignalR
                         {
                             if (!buffer.IsEmpty)
                             {
-                                if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage, out consumed, out examined))
+                                if (HandshakeProtocol.TryParseRequestMessage(buffer, out var handshakeRequestMessage, out consumed, out examined))
                                 {
-                                    Protocol = protocolResolver.GetProtocol(negotiationMessage.Protocol, supportedProtocols, this);
+                                    Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols, this);
+                                    if (Protocol == null)
+                                    {
+                                        Log.HandshakeFailed(_logger, null);
+
+                                        await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"The protocol '{handshakeRequestMessage.Protocol}' is not supported."));
+                                        return false;
+                                    }
 
                                     // If there's a transfer format feature, we need to check if we're compatible and set the active format.
                                     // If there isn't a feature, it means that the transport supports binary data and doesn't need us to tell them
@@ -162,7 +187,9 @@ namespace Microsoft.AspNetCore.SignalR
                                     {
                                         if ((transferFormatFeature.SupportedFormats & Protocol.TransferFormat) == 0)
                                         {
-                                            throw new InvalidOperationException($"Cannot use the '{Protocol.Name}' protocol on the current transport. The transport does not support the '{Protocol.TransferFormat}' transfer mode.");
+                                            Log.HandshakeFailed(_logger, null);
+                                            await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"Cannot use the '{Protocol.Name}' protocol on the current transport. The transport does not support '{Protocol.TransferFormat}' transfer format."));
+                                            return false;
                                         }
 
                                         transferFormatFeature.ActiveFormat = Protocol.TransferFormat;
@@ -170,22 +197,25 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     _cachedPingMessage = Protocol.WriteToArray(PingMessage.Instance);
 
-                                    Log.UsingHubProtocol(_logger, Protocol.Name);
-
                                     UserIdentifier = userIdProvider.GetUserId(this);
 
                                     if (Features.Get<IConnectionInherentKeepAliveFeature>() == null)
                                     {
-                                        // Only register KeepAlive after protocol negotiated otherwise KeepAliveTick could try to write without having a ProtocolReaderWriter
+                                        // Only register KeepAlive after protocol handshake otherwise KeepAliveTick could try to write without having a ProtocolReaderWriter
                                         Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);
                                     }
 
+                                    Log.HandshakeComplete(_logger, Protocol.Name);
+                                    await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
                                     return true;
                                 }
                             }
                             else if (result.IsCompleted)
                             {
-                                break;
+                                // connection was closed before we ever received a response
+                                // can't send a handshake response because there is no longer a connection
+                                Log.HandshakeFailed(_logger, null);
+                                return false;
                             }
                         }
                         finally
@@ -197,10 +227,16 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (OperationCanceledException)
             {
-                Log.NegotiateCanceled(_logger);
+                Log.HandshakeCanceled(_logger);
+                await WriteHandshakeResponseAsync(new HandshakeResponseMessage("Handshake was canceled."));
+                return false;
             }
-
-            return false;
+            catch (Exception ex)
+            {
+                Log.HandshakeFailed(_logger, ex);
+                await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"An unexpected error occurred during connection handshake. {ex.GetType().Name}: {ex.Message}"));
+                return false;
+            }
         }
 
         internal void Abort(Exception exception)
@@ -257,11 +293,11 @@ namespace Microsoft.AspNetCore.SignalR
         private static class Log
         {
             // Category: HubConnectionContext
-            private static readonly Action<ILogger, string, Exception> _usingHubProtocol =
-                LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, "UsingHubProtocol"), "Using HubProtocol '{Protocol}'.");
+            private static readonly Action<ILogger, string, Exception> _handshakeComplete =
+                LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, "HandshakeComplete"), "Completed connection handshake. Using HubProtocol '{Protocol}'.");
 
-            private static readonly Action<ILogger, Exception> _negotiateCanceled =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "NegotiateCanceled"), "Negotiate was canceled.");
+            private static readonly Action<ILogger, Exception> _handshakeCanceled =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "HandshakeCanceled"), "Handshake was canceled.");
 
             private static readonly Action<ILogger, Exception> _sentPing =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(3, "SentPing"), "Sent a ping message to the client.");
@@ -269,14 +305,17 @@ namespace Microsoft.AspNetCore.SignalR
             private static readonly Action<ILogger, Exception> _transportBufferFull =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "TransportBufferFull"), "Unable to send Ping message to client, the transport buffer is full.");
 
-            public static void UsingHubProtocol(ILogger logger, string hubProtocol)
+            private static readonly Action<ILogger, Exception> _handshakeFailed =
+                LoggerMessage.Define(LogLevel.Error, new EventId(5, "HandshakeFailed"), "Failed connection handshake.");
+
+            public static void HandshakeComplete(ILogger logger, string hubProtocol)
             {
-                _usingHubProtocol(logger, hubProtocol, null);
+                _handshakeComplete(logger, hubProtocol, null);
             }
 
-            public static void NegotiateCanceled(ILogger logger)
+            public static void HandshakeCanceled(ILogger logger)
             {
-                _negotiateCanceled(logger, null);
+                _handshakeCanceled(logger, null);
             }
 
             public static void SentPing(ILogger logger)
@@ -287,6 +326,11 @@ namespace Microsoft.AspNetCore.SignalR
             public static void TransportBufferFull(ILogger logger)
             {
                 _transportBufferFull(logger, null);
+            }
+
+            public static void HandshakeFailed(ILogger logger, Exception exception)
+            {
+                _handshakeFailed(logger, exception);
             }
         }
 

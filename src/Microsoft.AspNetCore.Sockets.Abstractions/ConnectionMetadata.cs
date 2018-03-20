@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Sockets
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Sockets
     internal class ConnectionMetadata : IDictionary<object, object>
     {
         public ConnectionMetadata()
-            : this(new Dictionary<object, object>())
+            : this(new ConcurrentDictionary<object, object>())
         {
         }
 

@@ -4,8 +4,8 @@ The SignalR Protocol is a protocol for two-way RPC over any Message-based transp
 
 ## Terms
 
-* Caller - The node that is issuing an `Negotiation`, `Invocation`, `StreamInvocation`, `CancelInvocation` messages and receiving `Completion` and `StreamItem` messages (a node can be both Caller and Callee for different invocations simultaneously)
-* Callee - The node that is receiving an `Negotiation`, `Invocation`, `StreamInvocation`, `CancelInvocation` messages and issuing `Completion` and `StreamItem` messages (a node can be both Callee and Caller for different invocations simultaneously)
+* Caller - The node that is issuing an `Invocation`, `StreamInvocation`, `CancelInvocation`, `Ping` messages and receiving `Completion`, `StreamItem` and `Ping` messages (a node can be both Caller and Callee for different invocations simultaneously)
+* Callee - The node that is receiving an `Invocation`, `StreamInvocation`, `CancelInvocation`, `Ping` messages and issuing `Completion`, `StreamItem` and `Ping` messages (a node can be both Callee and Caller for different invocations simultaneously)
 * Binder - The component on each node that handles mapping `Invocation` and `StreamInvocation` messages to method calls and return values to `Completion` and `StreamItem` messages
 
 ## Transport Requirements
@@ -16,21 +16,25 @@ The SignalR Protocol requires the following attributes from the underlying trans
 
 ## Overview
 
-This document describes two encodings of the SignalR protocol: [JSON](http://www.json.org/) and [MessagePack](http://msgpack.org/). Only one format can be used for the duration of a connection, and the format must be negotiated after opening the connection and before sending any other messages. However, each format shares a similar overall structure.
+This document describes two encodings of the SignalR protocol: [JSON](http://www.json.org/) and [MessagePack](http://msgpack.org/). Only one format can be used for the duration of a connection, and the format must be agreed on by both sides after opening the connection and before sending any other messages. However, each format shares a similar overall structure.
 
 In the SignalR protocol, the following types of messages can be sent:
 
-* `Negotiation` Message - Sent by the client to negotiate the message format.
-* `Invocation` Message - Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.
-* `StreamInvocation` Message - Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.
-* `StreamItem` Message - Indicates individual items of streamed response data from a previous Invocation message.
-* `Completion` Message - Indicates a previous Invocation or StreamInvocation has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received
-* `CancelInvocation` Message - Sent by the client to cancel a streaming invocation on the server.
-* `Ping` Message - Sent by either party to check if the connection is active.
+| Message Name          | Sender         | Description                                                                                                                    |
+| ------------------    | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `HandshakeRequest`    | Client         | Sent by the client to agree on the message format.                                                                            |
+| `HandshakeResponse`   | Server         | Sent by the server as an acknowledgment of the previous `HandshakeRequest` message. Contains an error if the handshake failed. |
+| `Close`               | Callee, Caller | Sent by the server when a connection is closed. Contains an error if the connection was closed because of an error.            |
+| `Invocation`          | Caller         | Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.                 |
+| `StreamInvocation`    | Caller         | Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.                  |
+| `StreamItem`          | Callee         | Indicates individual items of streamed response data from a previous `StreamInvocation` message.                               |
+| `Completion`          | Callee         | Indicates a previous `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
+| `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
+| `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 
-After opening a connection to the server the client must send a `Negotiation` message to the server as its first message. The negotiation message is **always** a JSON message and contains the name of the format (protocol) that will be used for the duration of the connection. If the server does not support the protocol requested by the client or the first message received from the client is not a `Negotiation` message the server must close the connection.
+After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection.
 
-The `Negotiation` message contains the following properties:
+The `HandshakeRequest` message contains the following properties:
 
 * `protocol` - the name of the protocol to be used for messages exchanged between the server and the client
 
@@ -39,6 +43,18 @@ Example:
 ```json
 {
     "protocol": "messagepack"
+}
+```
+
+The `HandshakeResponse` message contains the following properties:
+
+* `error` - the optional error message if the server does not support the request protocol
+
+Example:
+
+```json
+{
+    "error": "Requested protocol 'messagepack' is not available."
 }
 ```
 
@@ -323,7 +339,7 @@ Example:
 
 A `StreamItem` message is a JSON object with the following properties:
 
-* `type` - A `Number` with the literal value 2, indicating that this message is a StreamItem.
+* `type` - A `Number` with the literal value 2, indicating that this message is a `StreamItem`.
 * `invocationId` - A `String` encoding the `Invocation ID` for a message.
 * `item` - A `Token` encoding the stream item (see "JSON Payload Encoding" for details).
 
@@ -391,7 +407,7 @@ Example - The following `Completion` message is a protocol error because it has 
 ### CancelInvocation Message Encoding
 A `CancelInvocation` message is a JSON object with the following properties
 
-* `type` - A `Number` with the literal value `5`, indicationg that this is a `CancelInvocation`.
+* `type` - A `Number` with the literal value `5`, indicating that this message is a `CancelInvocation`.
 * `invocationId` - A `String` encoding the `Invocation ID` for a message.
 
 Example
@@ -405,12 +421,33 @@ Example
 ### Ping Message Encoding
 A `Ping` message is a JSON object with the following properties:
 
-* `type` - A `Number` with the literal value `6`, indicating that this is a `Ping`.
+* `type` - A `Number` with the literal value `6`, indicating that this message is a `Ping`.
 
 Example
 ```json
 {
     "type": 6
+}
+```
+
+### Close Message Encoding
+A `Close` message is a JSON object with the following properties
+
+* `type` - A `Number` with the literal value `7`, indicating that this message is a `Close`.
+* `error` - An optional `String` encoding the error message.
+
+Example - A `Close` message without an error
+```json
+{
+    "type": 7
+}
+```
+
+Example - A `Close` message with an error
+```json
+{
+    "type": 7,
+    "error": "Connection closed because of an error!"
 }
 ```
 
@@ -714,8 +751,37 @@ The following payload:
 
 is decoded as follows:
 
-* `0x92` - 2-element array
+* `0x91` - 1-element array
 * `0x06` - `6` (Message Type - `Ping` message)
+
+### Close Message Encoding
+
+`Close` messages have the following structure
+
+```
+[7, Error]
+```
+
+* `7` - Message Type - `7` indicates this is a `Close` message.
+* `Error` - Error - A `String` encoding the error for the message.
+
+Examples:
+
+#### Close message
+
+The following payload:
+```
+0x92 0x07 0xa3 0x78 0x79 0x7a
+```
+
+is decoded as follows:
+
+* `0x92` - 2-element array
+* `0x07` - `7` (Message Type - `Close` message)
+* `0xa3` - string of length 3 (Error)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
 
 ### MessagePack Headers Encoding
 

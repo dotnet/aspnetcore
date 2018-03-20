@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             options.SupportedProtocols = _hubOptions.SupportedProtocols;
             options.KeepAliveInterval = _hubOptions.KeepAliveInterval;
-            options.NegotiateTimeout = _hubOptions.NegotiateTimeout;
+            options.HandshakeTimeout = _hubOptions.HandshakeTimeout;
         }
     }
 }
