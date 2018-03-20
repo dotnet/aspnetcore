@@ -65,6 +65,27 @@ namespace Microsoft.AspNetCore.Blazor.Components
         }
 
         /// <summary>
+        /// Gets the value of the parameter with the specified name, or a default value
+        /// if no such parameter exists in the collection.
+        /// </summary>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="parameterName">The name of the parameter.</param>
+        /// <returns>The parameter value if found; otherwise the default value for the specified type.</returns>
+        public T GetValueOrDefault<T>(string parameterName)
+            => GetValueOrDefault<T>(parameterName, default);
+
+        /// <summary>
+        /// Gets the value of the parameter with the specified name, or a specified default value
+        /// if no such parameter exists in the collection.
+        /// </summary>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="parameterName">The name of the parameter.</param>
+        /// <param name="defaultValue">The default value to return if no such parameter exists in the collection.</param>
+        /// <returns>The parameter value if found; otherwise <paramref name="defaultValue"/>.</returns>
+        public T GetValueOrDefault<T>(string parameterName, T defaultValue)
+            => TryGetValue<T>(parameterName, out T result) ? result : defaultValue;
+
+        /// <summary>
         /// Returns a dictionary populated with the contents of the <see cref="ParameterCollection"/>.
         /// </summary>
         /// <returns>A dictionary populated with the contents of the <see cref="ParameterCollection"/>.</returns>

@@ -122,6 +122,60 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void CanGetValueOrDefault_WithExistingValue()
+        {
+            // Arrange
+            var myEntryValue = new object();
+            var parameterCollection = new ParameterCollection(new[]
+            {
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+                RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
+                RenderTreeFrame.Attribute(1, "my other entry", new object())
+            }, 0);
+
+            // Act
+            var result = parameterCollection.GetValueOrDefault<object>("my entry");
+
+            // Assert
+            Assert.Same(myEntryValue, result);
+        }
+
+        [Fact]
+        public void CanGetValueOrDefault_WithNonExistingValue()
+        {
+            // Arrange
+            var parameterCollection = new ParameterCollection(new[]
+            {
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+                RenderTreeFrame.Attribute(1, "some other entry", new object())
+            }, 0);
+
+            // Act
+            var result = parameterCollection.GetValueOrDefault<DateTime>("nonexisting entry");
+
+            // Assert
+            Assert.Equal(default, result);
+        }
+
+        [Fact]
+        public void CanGetValueOrDefault_WithNonExistingValueAndExplicitDefault()
+        {
+            // Arrange
+            var explicitDefaultValue = new DateTime(2018, 3, 20);
+            var parameterCollection = new ParameterCollection(new[]
+            {
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+                RenderTreeFrame.Attribute(1, "some other entry", new object())
+            }, 0);
+
+            // Act
+            var result = parameterCollection.GetValueOrDefault("nonexisting entry", explicitDefaultValue);
+
+            // Assert
+            Assert.Equal(explicitDefaultValue, result);
+        }
+
+        [Fact]
         public void ThrowsIfTryGetExistingValueWithIncorrectType()
         {
             // Arrange
