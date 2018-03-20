@@ -1,12 +1,12 @@
 # Blazor
 
-**An experimental web UI framework using C#/Razor and HTML, running in the browser via WebAssembly**
+**An experimental .NET web framework using C#/Razor and HTML that runs in the browser via WebAssembly**
 
 [![Gitter](https://badges.gitter.im/aspnet/Blazor.svg)](https://gitter.im/aspnet/Blazor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Blazor is a .NET web framework that runs in any browser. You author Blazor apps using C#/Razor and HTML.
 
-Blazor uses only the latest web standards. No plugins or transpilation needed. It runs in the browser on a real .NET runtime ([Mono](http://www.mono-project.com/news/2017/08/09/hello-webassembly/)) implemented in [WebAssembly](http://webassembly.org) that executes normal .NET assemblies. It works in older browsers too by falling back to an [asm.js](http://asmjs.org/) based .NET runtime.
+Blazor uses only the latest web standards. No plugins or transpilation needed. It runs in the browser on a real .NET runtime ([Mono](http://www.mono-project.com/news/2017/08/09/hello-webassembly/)) implemented in [WebAssembly](http://webassembly.org) that executes normal .NET assemblies.
 
 Blazor will have all the features of a modern web framework, including: 
 - A component model for building composable UI 
@@ -19,7 +19,6 @@ Blazor will have all the features of a modern web framework, including:
 - Server-side rendering 
 - Full .NET debugging both in browsers and in the IDE
 - Rich IntelliSense and tooling
-- Ability to run on older (non-WebAssembly) browsers via asm.js
 - Publishing and app size trimming 
 
 > Note: Blazor is an *experimental* project. It's not (yet) a committed product. This is to allow time to fully investigate the technical issues associated with running .NET in the browser and to ensure we can build something that developers love and can be productive with. During this experimental phase, we expect to engage deeply with early Blazor adopters like you to hear your feedback and suggestions.
@@ -28,7 +27,20 @@ To see Blazor in action, check out [Steve Sanderson's prototype demo at NDC Oslo
 
 ## Getting Started
 
-We are still *very early* in this project. There isn't yet anything you can download nor any project template you can use. Most of the planned features aren't implemented yet. Even the parts that are already implemented aren't yet optimized for minimal payload size. If you're keen, you can clone the repo, build it, and run the samples and tests.
+1. Install the [.NET Core 2.1 Preview 1 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300-preview1).
+1. Install the latest *preview* of [Visual Studio 2017 (15.7)](https://www.visualstudio.com/vs/preview) with the Web development workload.
+1. Install the [ASP.NET Core Blazor Language Services extension](https://go.microsoft.com/fwlink/?linkid=870389) from the Visual Studio Marketplace.
+1. File -> New Project -> Web -> ASP.NET Core Web Application -> Blazor
+  - If you don't see the Blazor template, be sure to select .NET Core and ASP.NET Core 2.0
+
+Not using Visual Studio? Install the Blazor templates on the command-line:
+
+```
+dotnet new -i Microsoft.AspNetCore.Blazor.Templates --nuget-source https://dotnet.myget.org/F/blazor-dev/api/v3/index.json
+dotnet new blazor -o BlazorApp1
+cd BlazorApp1
+dotnet run
+```
 
 ## Build
 
