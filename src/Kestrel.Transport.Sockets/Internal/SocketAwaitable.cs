@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             if (ReferenceEquals(_callback, _callbackCompleted) ||
                 ReferenceEquals(Interlocked.CompareExchange(ref _callback, continuation, null), _callbackCompleted))
             {
-                continuation();
+                Task.Run(continuation);
             }
         }
 
