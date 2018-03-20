@@ -38,7 +38,8 @@ namespace SocketsSample
                 {
                     p.AllowAnyHeader()
                      .AllowAnyMethod()
-                     .AllowAnyOrigin();
+                     .AllowAnyOrigin()
+                     .AllowCredentials();
                 });
             });
 
