@@ -38,16 +38,22 @@
         },
         {
           "condition": "(!OrganizationalAuth && !IndividualB2CAuth)",
+          "rename": {
+            "Pages/Shared/_LoginPartial.Identity.cshtml": "Pages/Shared/_LoginPartial.cshtml"
+          },
           "exclude": [
             "Controllers/**",
             "Pages/Account/**",
-            "Pages/_LoginPartial.cshtml"
+            "Pages/Shared/_LoginPartial.OrgAuth.cshtml"
           ]
         },
         {
           "condition": "(!IndividualLocalAuth)",
+          "rename": {
+            "Pages/Shared/_LoginPartial.OrgAuth.cshtml": "Pages/Shared/_LoginPartial.cshtml"
+          },
           "exclude": [
-            "Pages/Shared/_LoginPartial.cshtml"
+            "Pages/Shared/_LoginPartial.Identity.cshtml"
           ]
         },
         {
@@ -85,7 +91,7 @@
         {
           "condition": "(IndividualLocalAuth && UseLocalDB)",
           "rename": {
-            "Data/SqlServer/": "Data/Migrations/",
+            "Data/SqlServer/": "Data/Migrations/"
           },
           "exclude": [
             "Data/SqlLite/**"
