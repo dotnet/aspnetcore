@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(DeveloperBuildTestTfms)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(DeveloperBuild)' != 'true' ">$(TargetFrameworks);netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(DeveloperBuild)' != 'true' ">$(TargetFrameworks)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net46</TargetFrameworks>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
