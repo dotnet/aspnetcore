@@ -9,12 +9,13 @@ using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubEndPoint<THub> where THub : Hub
+    public class HubEndPoint<THub> : EndPoint where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly ILoggerFactory _loggerFactory;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR
             _dispatcher = dispatcher;
         }
 
-        public async Task OnConnectedAsync(ConnectionContext connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
             // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.

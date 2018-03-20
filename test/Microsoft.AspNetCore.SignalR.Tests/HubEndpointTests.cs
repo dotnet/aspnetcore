@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 // kill the connection
                 client.Dispose();
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 // kill the connection
                 client.Dispose();
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.InvokeAsync(nameof(AbortHub.Kill));
 
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 async Task Produce()
                 {
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 async Task Subscribe()
                 {
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var invocationId = await client.SendStreamInvocationAsync(nameof(ObservableHub.Subscribe)).OrTimeout();
 
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint, false, false);
+                var endPointTask = await client.ConnectAsync(endPoint, false, false);
 
                 // kill the connection
                 client.Dispose();
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint, false);
+                var endPointTask = await client.ConnectAsync(endPoint, false);
 
                 Assert.NotNull(client.HandshakeResponseMessage);
                 Assert.Equal("Handshake was canceled.", client.HandshakeResponseMessage.Error);
@@ -314,11 +314,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var hubProtocolMock = new Mock<IHubProtocol>();
             hubProtocolMock.Setup(m => m.Name).Returns("CustomProtocol");
 
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
 
             using (var client = new TestClient(protocol: hubProtocolMock.Object))
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 Assert.NotNull(client.HandshakeResponseMessage);
                 Assert.Equal("The protocol 'CustomProtocol' is not supported.", client.HandshakeResponseMessage.Error);
@@ -335,13 +335,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var hubProtocolMock = new Mock<IHubProtocol>();
             hubProtocolMock.Setup(m => m.Name).Returns("CustomProtocol");
 
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
 
             using (var client = new TestClient(protocol: new MessagePackHubProtocol()))
             {
                 client.Connection.SupportedFormats = TransferFormat.Text;
 
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 Assert.NotNull(client.HandshakeResponseMessage);
                 Assert.Equal("Cannot use the 'messagepack' protocol on the current transport. The transport does not support 'Binary' transfer format.", client.HandshakeResponseMessage.Error);
@@ -355,11 +355,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HandshakeSuccessSendsResponseWithoutError()
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 Assert.NotNull(client.HandshakeResponseMessage);
                 Assert.Null(client.HandshakeResponseMessage.Error);
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await Assert.ThrowsAsync<InvalidOperationException>(
                         async () =>
                         {
-                            Task endPointTask = await client.ConnectAsync(endPoint);
+                            var endPointTask = await client.ConnectAsync(endPoint);
                             await endPointTask.OrTimeout();
                         });
                 Assert.Equal("Lifetime manager OnConnectedAsync failed.", exception.Message);
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
                 client.Dispose();
 
                 await endPointTask.OrTimeout();
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
                 client.Dispose();
 
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
@@ -464,7 +464,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync(nameof(MethodHub.TaskValueMethod)).OrTimeout()).Result;
 
@@ -482,11 +482,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubMethodsAreCaseInsensitive(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var client = new TestClient())
             {
-                Task endPointTask = (Task)await client.ConnectAsync(endPoint);
+                var endPointTask = (Task)await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync("echo", "hello").OrTimeout()).Result;
 
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var message = await client.InvokeAsync(methodName).OrTimeout();
 
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.SendInvocationAsync(nameof(MethodHub.ValueMethod), nonBlocking: true).OrTimeout();
 
@@ -555,7 +555,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync(nameof(MethodHub.VoidMethod)).OrTimeout()).Result;
 
@@ -577,7 +577,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync("RenamedMethod").OrTimeout()).Result;
 
@@ -600,7 +600,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync("RenamedVirtualMethod").OrTimeout()).Result;
 
@@ -626,7 +626,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(synchronousCallbacks: true))
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 // This invocation should be completely synchronous
                 await client.SendInvocationAsync(methodName, nonBlocking: true).OrTimeout();
@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync(nameof(MethodHub.ConcatString), (byte)32, 42, 'm', "string").OrTimeout()).Result;
 
@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync(nameof(InheritedHub.BaseMethod), "string").OrTimeout()).Result;
 
@@ -695,7 +695,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = (await client.InvokeAsync(nameof(InheritedHub.VirtualMethod), 10).OrTimeout()).Result;
 
@@ -717,7 +717,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = await client.InvokeAsync(nameof(MethodHub.OnDisconnectedAsync)).OrTimeout();
 
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = await client.InvokeAsync(nameof(MethodHub.StaticMethod)).OrTimeout();
 
@@ -777,7 +777,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = await client.InvokeAsync(nameof(MethodHub.ToString)).OrTimeout();
                 Assert.Equal("Unknown hub method 'ToString'", result.Error);
@@ -807,7 +807,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var result = await client.InvokeAsync(nameof(MethodHub.Dispose)).OrTimeout();
 
@@ -824,7 +824,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task BroadcastHubMethodSendsToAllClients(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -894,7 +894,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToOthers(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -934,7 +934,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToCaller(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -969,7 +969,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToAllExcept(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1012,7 +1012,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToMultipleClients(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1057,7 +1057,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToMultipleUsers(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient(addClaimId: true))
             using (var secondClient = new TestClient(addClaimId: true))
@@ -1102,7 +1102,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubsCanAddAndSendToGroup(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1143,7 +1143,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToGroupExcept(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1193,7 +1193,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToOthersInGroup(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1241,7 +1241,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task InvokeMultipleGroups(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1286,7 +1286,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.SendInvocationAsync(nameof(MethodHub.GroupRemoveMethod), "testGroup").OrTimeout();
 
@@ -1301,7 +1301,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubsCanSendToUser(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient(addClaimId: true))
             using (var secondClient = new TestClient(addClaimId: true))
@@ -1332,7 +1332,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubsCanSendToConnection(Type hubType)
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1362,7 +1362,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task DelayedSendTest()
         {
-            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
+            var endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1402,7 +1402,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 client.Connection.SupportedFormats = protocol.TransferFormat;
 
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 // Wait for a connection, or for the endpoint to fail.
                 await client.Connected.OrThrowIfOtherFails(endPointTask).OrTimeout();
@@ -1430,7 +1430,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1459,7 +1459,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1550,7 +1550,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1584,7 +1584,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1618,7 +1618,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1645,7 +1645,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1682,7 +1682,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient(synchronousCallbacks: false, protocol: new MessagePackHubProtocol(msgPackOptions)))
             {
                 client.Connection.SupportedFormats = TransferFormat.Binary;
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1712,7 +1712,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var httpContext = new DefaultHttpContext();
                 client.Connection.SetHttpContext(httpContext);
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1734,7 +1734,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient())
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1755,7 +1755,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(false, new JsonHubProtocol()))
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
                 await client.Connected.OrTimeout();
 
                 // Send a ping
@@ -1781,7 +1781,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(false, new JsonHubProtocol()))
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1822,7 +1822,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(false, new JsonHubProtocol()))
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
                 await client.Connected.OrTimeout();
 
                 // Wait 500 ms, but make sure to yield some time up to unblock concurrent threads
@@ -1878,7 +1878,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(false, new JsonHubProtocol()))
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 await client.Connected.OrTimeout();
 
@@ -1904,7 +1904,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(false, new JsonHubProtocol()))
             {
-                Task endPointTask = await client.ConnectAsync(endPoint);
+                var endPointTask = await client.ConnectAsync(endPoint);
 
                 var message = await client.ReadAsync().OrTimeout();
 
