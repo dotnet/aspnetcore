@@ -97,7 +97,12 @@ tagname="universe-build-$image"
 cp "$DIR/global.json" "$(dirname "$dockerfile")"
 #endworkaround
 
-docker build "$(dirname "$dockerfile")" -f "$dockerfile" --tag $tagname
+docker build "$(dirname "$dockerfile")" \
+    --build-arg "USER=$(whoami)" \
+    --build-arg "USER_ID=$(id -u)" \
+    --build-arg "GROUP_ID=$(id -g)" \
+    --tag $tagname \
+    -f "$dockerfile"
 
 docker run \
     --rm \
