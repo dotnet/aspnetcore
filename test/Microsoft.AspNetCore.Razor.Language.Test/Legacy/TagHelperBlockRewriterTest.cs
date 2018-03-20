@@ -2950,7 +2950,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 intType),
                             RazorDiagnosticFactory.CreateParsing_TagHelperIndexerAttributeNameMustIncludeKey(
                                 new SourceSpan(7, 0, 7, 11),
-                                "int-prefix-", 
+                                "int-prefix-",
                                 "input"),
                         }
                     },
@@ -2973,7 +2973,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 stringType),
                             RazorDiagnosticFactory.CreateParsing_TagHelperIndexerAttributeNameMustIncludeKey(
                                 new SourceSpan(7, 0, 7, 14),
-                                "string-prefix-", 
+                                "string-prefix-",
                                 "input"),
                         }
                     },
@@ -3638,7 +3638,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
                                 new SourceSpan(7, 0, 7, 21),
                                 "bound-required-string",
-                                "input", 
+                                "input",
                                 stringType),
                         }
                     },
@@ -3962,7 +3962,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .Build(),
             };
 
-            var featureFlags = new TestRazorParserFeatureFlags(allowMinimizedBooleanTagHelperAttributes: false);
+            var featureFlags = new TestRazorParserFeatureFlags(allowMinimizedBooleanTagHelperAttributes: false, allowHtmlCommentsInTagHelper: false);
 
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock(
@@ -3994,12 +3994,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private class TestRazorParserFeatureFlags : RazorParserFeatureFlags
         {
-            public TestRazorParserFeatureFlags(bool allowMinimizedBooleanTagHelperAttributes)
+            public TestRazorParserFeatureFlags(bool allowMinimizedBooleanTagHelperAttributes, bool allowHtmlCommentsInTagHelper)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
+                AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelper;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
+
+            public override bool AllowHtmlCommentsInTagHelpers { get; }
         }
     }
 }

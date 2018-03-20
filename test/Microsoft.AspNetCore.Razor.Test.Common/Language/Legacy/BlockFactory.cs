@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -53,6 +54,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new MarkupTagBlock(
                 _factory.Markup(content).Accepts(acceptedCharacters)
             );
+        }
+
+        public HtmlCommentBlock HtmlCommentBlock(string content)
+        {
+            return HtmlCommentBlock(_factory, f => new SyntaxTreeNode[] { f.Markup(content).Accepts(AcceptedCharactersInternal.WhiteSpace) });
+        }
+
+        public static HtmlCommentBlock HtmlCommentBlock(SpanFactory factory, Func<SpanFactory, IEnumerable<SyntaxTreeNode>> nodesBuilder = null)
+        {
+            var nodes = new List<SyntaxTreeNode>();
+            nodes.Add(factory.Markup("<!--").Accepts(AcceptedCharactersInternal.None));
+            if (nodesBuilder != null)
+            {
+                nodes.AddRange(nodesBuilder(factory));
+            }
+            nodes.Add(factory.Markup("-->").Accepts(AcceptedCharactersInternal.None));
+
+            return new HtmlCommentBlock(nodes.ToArray());
         }
 
         public Block TagHelperBlock(

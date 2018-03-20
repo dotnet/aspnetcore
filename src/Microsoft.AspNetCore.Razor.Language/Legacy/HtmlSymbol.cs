@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class HtmlSymbol : SymbolBase<HtmlSymbolType>
     {
+        internal static readonly HtmlSymbol Hyphen = new HtmlSymbol("-", HtmlSymbolType.Text);
+
         public HtmlSymbol(string content, HtmlSymbolType type)
             : base(content, type, RazorDiagnostic.EmptyArray)
         {

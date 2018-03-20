@@ -109,6 +109,52 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return symbols[count];
         }
 
+        /// <summary>
+        /// Looks forward until the specified condition is met.
+        /// </summary>
+        /// <param name="condition">A predicate accepting the symbol being evaluated and the list of symbols which have been looped through.</param>
+        /// <returns>true, if the condition was met. false - if the condition wasn't met and the last symbol has already been processed.</returns>
+        /// <remarks>The list of previous symbols is passed in the reverse order. So the last processed element will be the first one in the list.</remarks>
+        protected bool LookaheadUntil(Func<TSymbol, IEnumerable<TSymbol>, bool> condition)
+        {
+            if (condition == null)
+            {
+                throw new ArgumentNullException(nameof(condition));
+            }
+
+            var matchFound = false;
+
+            var symbols = new List<TSymbol>();
+            symbols.Add(CurrentSymbol);
+
+            while (true)
+            {
+                if (!NextToken())
+                {
+                    break;
+                }
+
+                symbols.Add(CurrentSymbol);
+                if (condition(CurrentSymbol, symbols))
+                {
+                    matchFound = true;
+                    break;
+                }
+            }
+
+            // Restore Tokenizer's location to where it was pointing before the look-ahead.
+            for (var i = symbols.Count - 1; i >= 0; i--)
+            {
+                PutBack(symbols[i]);
+            }
+
+            // The PutBacks above will set CurrentSymbol to null. EnsureCurrent will set our CurrentSymbol to the
+            // next symbol.
+            EnsureCurrent();
+
+            return matchFound;
+        }
+
         protected internal bool NextToken()
         {
             PreviousSymbol = CurrentSymbol;
@@ -254,12 +300,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected internal bool NextIs(Func<TSymbol, bool> condition)
         {
             var cur = CurrentSymbol;
-            NextToken();
-            var result = condition(CurrentSymbol);
-            PutCurrentBack();
-            PutBack(cur);
-            EnsureCurrent();
-            return result;
+            if (NextToken())
+            {
+                var result = condition(CurrentSymbol);
+                PutCurrentBack();
+                PutBack(cur);
+                EnsureCurrent();
+                return result;
+            }
+            else
+            {
+                PutBack(cur);
+                EnsureCurrent();
+            }
+
+            return false;
         }
 
         protected internal bool Was(TSymbolType type)
