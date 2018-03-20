@@ -426,7 +426,7 @@
     <Delete Files="$(BlazorIntermediateLinkerOutputPath)*.dll" />
 
     <!-- Run the linker and put the results in /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
-    <Exec Command="dotnet $(MonoLinkerPath) $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o $(BlazorIntermediateLinkerOutputPath) @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
+    <Exec Command="dotnet &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
 
     <!-- Collect the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/ -->
     <ItemGroup>
