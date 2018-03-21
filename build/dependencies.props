@@ -4,22 +4,22 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15728</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview3-30392</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.0-preview3-30392</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26225-03</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
-    <SystemBuffersPackageVersion>4.5.0-preview2-26224-02</SystemBuffersPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.5.0-preview2-26224-02</SystemTextEncodingsWebPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview2-26313-01</SystemBuffersPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.5.0-preview2-26313-01</SystemTextEncodingsWebPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
