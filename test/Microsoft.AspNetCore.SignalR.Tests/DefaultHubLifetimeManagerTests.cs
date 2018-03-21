@@ -111,54 +111,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task SendConnectionAsyncDoesNotThrowIfConnectionFailsToWrite()
-        {
-            using (var client = new TestClient())
-            {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-
-                var connectionMock = HubConnectionContextUtils.CreateMock(client.Connection);
-                // Force an exception when writing to connection
-                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Throws(new Exception("Message"));
-                var connection = connectionMock.Object;
-
-                await manager.OnConnectedAsync(connection).OrTimeout();
-
-                await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task SendAllAsyncSendsToAllConnectionsEvenWhenSomeFailToSend()
-        {
-            using (var client = new TestClient())
-            using (var client2 = new TestClient())
-            {
-                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
-
-                var connectionMock = HubConnectionContextUtils.CreateMock(client.Connection);
-                var connectionMock2 = HubConnectionContextUtils.CreateMock(client2.Connection);
-
-                var tcs = new TaskCompletionSource<object>();
-                var tcs2 = new TaskCompletionSource<object>();
-                // Force an exception when writing to connection
-                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Callback(() => tcs.TrySetResult(null)).Throws(new Exception("Message"));
-                connectionMock2.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Callback(() => tcs2.TrySetResult(null)).Throws(new Exception("Message"));
-                var connection = connectionMock.Object;
-                var connection2 = connectionMock2.Object;
-
-                await manager.OnConnectedAsync(connection).OrTimeout();
-                await manager.OnConnectedAsync(connection2).OrTimeout();
-
-                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
-
-                // Check that all connections were "written" to
-                await tcs.Task.OrTimeout();
-                await tcs2.Task.OrTimeout();
-            }
-        }
-
-        [Fact]
         public async Task SendConnectionAsyncOnNonExistentConnectionNoops()
         {
             var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));

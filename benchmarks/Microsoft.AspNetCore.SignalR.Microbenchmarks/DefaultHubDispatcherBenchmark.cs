@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
             }
 
-            public override Task WriteAsync(HubMessage message)
+            public override ValueTask WriteAsync(HubMessage message)
             {
                 if (message is CompletionMessage completionMessage)
                 {
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     }
                 }
 
-                return Task.CompletedTask;
+                return default;
             }
         }
 

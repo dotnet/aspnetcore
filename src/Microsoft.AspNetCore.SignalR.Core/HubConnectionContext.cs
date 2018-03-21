@@ -74,20 +74,78 @@ namespace Microsoft.AspNetCore.SignalR
 
         public int? LocalPort => Features.Get<IHttpConnectionFeature>()?.LocalPort;
 
-        public virtual async Task WriteAsync(HubMessage message)
+        public virtual ValueTask WriteAsync(HubMessage message)
         {
-            await _writeLock.WaitAsync();
+            // We were unable to get the lock so take the slow async path of waiting for the semaphore
+            if (!_writeLock.Wait(0))
+            {
+                return new ValueTask(WriteSlowAsync(message));
+            }
 
+            // This method should never throw synchronously
+            var task = WriteCore(message);
+
+            // The write didn't complete synchronously so await completion
+            if (!task.IsCompletedSuccessfully)
+            {
+                return new ValueTask(CompleteWriteAsync(task));
+            }
+
+            // Otherwise, release the lock acquired when entering WriteAsync
+            _writeLock.Release();
+
+            return default;
+        }
+
+        private ValueTask<FlushResult> WriteCore(HubMessage message)
+        {
             try
             {
-                // This will internally cache the buffer for each unique HubProtocol/DataEncoder combination
+                // This will internally cache the buffer for each unique HubProtocol
                 // So that we don't serialize the HubMessage for every single connection
                 var buffer = message.WriteMessage(Protocol);
+
                 _connectionContext.Transport.Output.Write(buffer);
 
-                Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
+                return _connectionContext.Transport.Output.FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.FailedWritingMessage(_logger, ex);
 
-                await _connectionContext.Transport.Output.FlushAsync();
+                return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
+            }
+        }
+
+        private async Task CompleteWriteAsync(ValueTask<FlushResult> task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                Log.FailedWritingMessage(_logger, ex);
+            }
+            finally
+            {
+                // Release the lock acquired when entering WriteAsync
+                _writeLock.Release();
+            }
+        }
+
+        private async Task WriteSlowAsync(HubMessage message)
+        {
+            try
+            {
+                // Failed to get the lock immediately when entering WriteAsync so await until it is available
+                await _writeLock.WaitAsync();
+
+                await WriteCore(message);
+            }
+            catch (Exception ex)
+            {
+                Log.FailedWritingMessage(_logger, ex);
             }
             finally
             {
@@ -95,23 +153,33 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task TryWritePingAsync()
+        private ValueTask TryWritePingAsync()
         {
             // Don't wait for the lock, if it returns false that means someone wrote to the connection
             // and we don't need to send a ping anymore
-            if (!await _writeLock.WaitAsync(0))
+            if (!_writeLock.Wait(0))
             {
-                return;
+                return default;
             }
 
+            return new ValueTask(TryWritePingSlowAsync());
+        }
+
+        private async Task TryWritePingSlowAsync()
+        {
             try
             {
                 Debug.Assert(_cachedPingMessage != null);
+
                 _connectionContext.Transport.Output.Write(_cachedPingMessage);
 
-                Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
-
                 await _connectionContext.Transport.Output.FlushAsync();
+
+                Log.SentPing(_logger);
+            }
+            catch (Exception ex)
+            {
+                Log.FailedWritingMessage(_logger, ex);
             }
             finally
             {
@@ -254,21 +322,21 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void KeepAliveTick()
         {
+            var timestamp = Stopwatch.GetTimestamp();
             // Implements the keep-alive tick behavior
             // Each tick, we check if the time since the last send is larger than the keep alive duration (in ticks).
             // If it is, we send a ping frame, if not, we no-op on this tick. This means that in the worst case, the
             // true "ping rate" of the server could be (_hubOptions.KeepAliveInterval + HubEndPoint.KeepAliveTimerInterval),
             // because if the interval elapses right after the last tick of this timer, it won't be detected until the next tick.
-
-            if (Stopwatch.GetTimestamp() - Interlocked.Read(ref _lastSendTimestamp) > _keepAliveDuration)
+            if (timestamp - Interlocked.Read(ref _lastSendTimestamp) > _keepAliveDuration)
             {
                 // Haven't sent a message for the entire keep-alive duration, so send a ping.
                 // If the transport channel is full, this will fail, but that's OK because
                 // adding a Ping message when the transport is full is unnecessary since the
                 // transport is still in the process of sending frames.
-
                 _ = TryWritePingAsync();
-                Log.SentPing(_logger);
+
+                Interlocked.Exchange(ref _lastSendTimestamp, timestamp);
             }
         }
 
@@ -308,6 +376,9 @@ namespace Microsoft.AspNetCore.SignalR
             private static readonly Action<ILogger, Exception> _handshakeFailed =
                 LoggerMessage.Define(LogLevel.Error, new EventId(5, "HandshakeFailed"), "Failed connection handshake.");
 
+            private static readonly Action<ILogger, Exception> _failedWritingMessage =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(6, "FailedWritingMessage"), "Failed writing message.");
+
             public static void HandshakeComplete(ILogger logger, string hubProtocol)
             {
                 _handshakeComplete(logger, hubProtocol, null);
@@ -331,6 +402,11 @@ namespace Microsoft.AspNetCore.SignalR
             public static void HandshakeFailed(ILogger logger, Exception exception)
             {
                 _handshakeFailed(logger, exception);
+            }
+
+            public static void FailedWritingMessage(ILogger logger, Exception exception)
+            {
+                _failedWritingMessage(logger, exception);
             }
         }
 
