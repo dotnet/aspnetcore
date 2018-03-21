@@ -2,15 +2,13 @@
   
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
-    <PrecompiledDescription>Precompiled views assembly for the ASP.NET Core Identity UI package.</PrecompiledDescription>
+    <ViewAssemblyDescription>Compiled Razor views assembly for the ASP.NET Core Identity UI package.</ViewAssemblyDescription>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <RazorCompileOnBuild>true</RazorCompileOnBuild>
-    <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
-    <PreserveCompilationContext>false</PreserveCompilationContext>
+    <EnableDefaultCompiledViewAssemblyLoadBehavior>false</EnableDefaultCompiledViewAssemblyLoadBehavior>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,7 +37,7 @@
     </AssemblyAttribute>
 
     <RazorAssemblyAttribute Include="System.Reflection.AssemblyDescriptionAttribute">
-      <_Parameter1>$(PrecompiledDescription)</_Parameter1>
+      <_Parameter1>$(ViewAssemblyDescription)</_Parameter1>
     </RazorAssemblyAttribute>
     <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
       <_Parameter1>BuildNumber</_Parameter1>
@@ -60,8 +58,7 @@
       <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
     </PropertyGroup>
 
-    <Error Text="Unable to find precompiled view file $(ExpectedOutputFile)"
-      Condition="!Exists('$(ExpectedOutputFile)')" />
+    <Error Text="Unable to find precompiled view file $(ExpectedOutputFile)" Condition="!Exists('$(ExpectedOutputFile)')" />
   </Target>
     
 </Project>

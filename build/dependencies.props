@@ -21,9 +21,9 @@
     <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-a-preview2-application-part-18617</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
-    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreMvcTestingPackageVersion>
+    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-a-preview2-application-part-18617</MicrosoftAspNetCoreMvcTestingPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreRewritePackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreRewritePackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
