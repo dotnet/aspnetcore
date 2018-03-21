@@ -199,7 +199,7 @@
   </Target>
 
   <Target Name="CheckUniverse"
-    DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig" />
+    DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
 
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
@@ -210,6 +210,11 @@
     <RepoTasks.VerifyCoherentVersions
       PackageFiles="@(ShippingPackageFiles)"
       ExternalDependencies="@(ExternalDependency);@(ShippedExternalDependency)" />
+  </Target>
+
+  <Target Name="VerifyAllReposHaveNuGetPackageVerifier" DependsOnTargets="_PrepareRepositories">
+    <Error Condition="!Exists('%(Repository.RootPath)NuGetPackageVerifier.json')"
+           Text="Repository %(Repository.Identity) is missing NuGetPackageVerifier.json. Expected file to exist in %(Repository.RootPath)NuGetPackageVerifier.json" />
   </Target>
 
 </Project>
