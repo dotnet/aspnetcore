@@ -87,11 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     return manager;
                 }
 
-                var parts = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(entryAssemblyName);
-                foreach (var part in parts)
-                {
-                    manager.ApplicationParts.Add(part);
-                }
+                manager.PopulateDefaultParts(entryAssemblyName);
             }
 
             return manager;

@@ -45,9 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var compileTask = Compiler.CompileAsync(actionDescriptor.RelativePath);
             var viewDescriptor = compileTask.GetAwaiter().GetResult();
-            var pageAttribute = (RazorPageAttribute)viewDescriptor.ViewAttribute;
 
-            var context = new PageApplicationModelProviderContext(actionDescriptor, pageAttribute.ViewType.GetTypeInfo());
+            var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
             for (var i = 0; i < _applicationModelProviders.Length; i++)
             {
                 _applicationModelProviders[i].OnProvidersExecuting(context);

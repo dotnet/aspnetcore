@@ -421,4 +421,19 @@
   <data name="VirtualFileResultExecutor_NoFileProviderConfigured" xml:space="preserve">
     <value>No file provider has been configured to process the supplied file.</value>
   </data>
+  <data name="ApplicationPartFactory_InvalidFactoryType" xml:space="preserve">
+    <value>Type {0} specified by {1} is invalid. Type specified by {1} must derive from {2}.</value>
+  </data>
+  <data name="RelatedAssemblyAttribute_AssemblyCannotReferenceSelf" xml:space="preserve">
+    <value>{0} specified on {1} cannot be self referential.</value>
+  </data>
+  <data name="RelatedAssemblyAttribute_CouldNotBeFound" xml:space="preserve">
+    <value>Related assembly '{0}' specified by assembly '{1}' could not be found in the directory {2}. Related assemblies must be co-located with the specifying assemblies.</value>
+  </data>
+  <data name="ApplicationAssembliesProvider_DuplicateRelatedAssembly" xml:space="preserve">
+    <value>Each related assembly must be declared by exactly one assembly. The assembly '{0}' was declared as related assembly by the following:</value>
+  </data>
+  <data name="ApplicationAssembliesProvider_RelatedAssemblyCannotDefineAdditional" xml:space="preserve">
+    <value>Assembly '{0}' declared as a related assembly by assembly '{1}' cannot define additional related assemblies.</value>
+  </data>
 </root>
