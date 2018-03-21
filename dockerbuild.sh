@@ -108,6 +108,7 @@ docker run \
     --rm \
     -t \
     -e CI \
+    -e TEAMCITY_VERSION \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
     -v "$DIR:/code/build" \
