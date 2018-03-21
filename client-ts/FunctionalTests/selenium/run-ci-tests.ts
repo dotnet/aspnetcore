@@ -74,16 +74,13 @@ if (!existsSync(chromeBinary)) {
 }
 
 // Launch the tests
-const args = ["test", "--", "--chrome", chromeBinary];
+const args = ["test", "--", "--raw", "--chrome", chromeBinary];
 if (configuration) {
     args.push("--configuration");
     args.push(configuration);
 }
 if (verbose) {
     args.push("--verbose");
-}
-if (teamcity) {
-    args.push("--raw");
 }
 
 const testProcess = spawn("npm", args, { cwd: path.resolve(__dirname, "..") });
