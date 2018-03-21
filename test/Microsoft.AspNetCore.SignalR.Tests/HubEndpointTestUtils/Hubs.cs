@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public bool HasHttpContext()
         {
-            return Context.Connection.GetHttpContext() != null;
+            return Context.GetHttpContext() != null;
         }
 
         public Task SendToOthers(string message)
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = (TaskCompletionSource<bool>)Context.Connection.Items["ConnectedTask"];
+            var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
             tcs?.TrySetResult(true);
             return base.OnConnectedAsync();
         }
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = (TaskCompletionSource<bool>)Context.Connection.Items["ConnectedTask"];
+            var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
             tcs?.TrySetResult(true);
             return base.OnConnectedAsync();
         }
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = (TaskCompletionSource<bool>)Context.Connection.Items["ConnectedTask"];
+            var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
             tcs?.TrySetResult(true);
             return base.OnConnectedAsync();
         }
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public void Kill()
         {
-            Context.Connection.Abort();
+            Context.Abort();
         }
     }
 
@@ -623,9 +623,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public override Task OnConnectedAsync()
         {
-            _state.TokenStateInConnected = Context.Connection.ConnectionAbortedToken.IsCancellationRequested;
+            _state.TokenStateInConnected = Context.ConnectionAborted.IsCancellationRequested;
 
-            Context.Connection.ConnectionAbortedToken.Register(() =>
+            Context.ConnectionAborted.Register(() =>
             {
                 _state.TokenCallbackTriggered = true;
             });
@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            _state.TokenStateInDisconnected = Context.Connection.ConnectionAbortedToken.IsCancellationRequested;
+            _state.TokenStateInDisconnected = Context.ConnectionAborted.IsCancellationRequested;
 
             return base.OnDisconnectedAsync(exception);
         }

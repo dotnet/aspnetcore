@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 while (true)
                 {
-                    var result = await connection.Input.ReadAsync(connection.ConnectionAbortedToken);
+                    var result = await connection.Input.ReadAsync(connection.ConnectionAborted);
                     var buffer = result.Buffer;
                     var consumed = buffer.End;
                     var examined = buffer.End;

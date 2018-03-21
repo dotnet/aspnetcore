@@ -1,21 +1,29 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubCallerContext
+    public abstract class HubCallerContext
     {
-        public HubCallerContext(HubConnectionContext connection)
-        {
-            Connection = connection;
-        }
+        public abstract string ConnectionId { get; }
 
-        public HubConnectionContext Connection { get; }
+        public abstract string UserIdentifier { get; }
 
-        public ClaimsPrincipal User => Connection.User;
+        public abstract ClaimsPrincipal User { get; }
 
-        public string ConnectionId => Connection.ConnectionId;
+        public abstract IDictionary<object, object> Items { get; }
+
+        public abstract IFeatureCollection Features { get; }
+
+        public abstract CancellationToken ConnectionAborted { get; }
+
+        public abstract void Abort();
     }
 }
