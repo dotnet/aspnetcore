@@ -7,9 +7,9 @@ using Microsoft.VisualStudio.Shell;
 
 namespace Microsoft.VisualStudio.BlazorExtension
 {
-    // We mainly have a package so we can have an "About" dialog entry. 
+    // We mainly have a package so we can have an "About" dialog entry.
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+    [AboutDialogInfo(PackageGuidString, "ASP.NET Core Blazor Language Services", "#110", "112")]
     [Guid(BlazorPackage.PackageGuidString)]
     public sealed class BlazorPackage : Package
     {
