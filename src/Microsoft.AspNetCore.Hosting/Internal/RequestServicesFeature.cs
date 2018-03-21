@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,10 +15,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private IServiceProvider _requestServices;
         private IServiceScope _scope;
         private bool _requestServicesSet;
+        private HttpContext _context;
 
-        public RequestServicesFeature(IServiceScopeFactory scopeFactory)
+        public RequestServicesFeature(HttpContext context, IServiceScopeFactory scopeFactory)
         {
             Debug.Assert(scopeFactory != null);
+            _context = context;
             _scopeFactory = scopeFactory;
         }
 
@@ -27,6 +30,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (!_requestServicesSet)
                 {
+                    _context.Response.RegisterForDispose(this);
                     _scope = _scopeFactory.CreateScope();
                     _requestServices = _scope.ServiceProvider;
                     _requestServicesSet = true;
