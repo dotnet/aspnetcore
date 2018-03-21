@@ -3,14 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
@@ -27,71 +22,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var httpContext = new DefaultHttpContext();
 
-            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
-
-            var page = new TestPage()
+            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+            {
+                ["TempDataProperty-Test"] = "Old-Value",
+            };
+            var pageModel = new TestPageModel()
             {
                 Test = "TestString",
                 Test2 = "Test2",
             };
 
-            var filter = CreatePageSaveTempDataPropertyFilter(tempData);
-            filter.Subject = page;
-
-            var pageType = page.GetType();
-
-            var testProperty = pageType.GetProperty(nameof(TestPage.Test));
-            var test2Property = pageType.GetProperty(nameof(TestPage.Test2));
-
-            filter.OriginalValues[testProperty] = "SomeValue";
-            filter.OriginalValues[test2Property] = "Test2";
-
-            filter.Properties = new List<TempDataProperty>
-            {
-                new TempDataProperty("TempDataProperty-Test", testProperty, testProperty.GetValue, testProperty.SetValue),
-                new TempDataProperty("TempDataProperty-Test2", test2Property, test2Property.GetValue, test2Property.SetValue)
-            };
+            var filter = CreatePageSaveTempDataPropertyFilter(tempData, "TempDataProperty-");
+            filter.Subject = pageModel;
 
             // Act
             filter.OnTempDataSaving(tempData);
 
             // Assert
-            Assert.Equal("TestString", page.Test);
             Assert.Equal("TestString", tempData["TempDataProperty-Test"]);
             Assert.False(tempData.ContainsKey("TestDataProperty-Test2"));
         }
 
         [Fact]
-        public void OnPageExecuting_NullFilterFactory_Throws()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
-            tempData.Save();
-
-            var page = new TestPage();
-
-            var filter = CreatePageSaveTempDataPropertyFilter(tempData, filterFactory: false);
-
-            var context = new PageHandlerExecutingContext(
-                new PageContext()
-                {
-                    ActionDescriptor = new CompiledPageActionDescriptor(),
-                    HttpContext = httpContext,
-                    RouteData = new RouteData(),
-                },
-                Array.Empty<IFilterMetadata>(),
-                null,
-                new Dictionary<string, object>(),
-                page);
-
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => filter.OnPageHandlerExecuting(context));
-            Assert.Contains("FilterFactory", ex.Message);
-        }
-
-        [Fact]
-        public void OnPageExecuting_ToPageModel_SetsPropertyValue()
+        public void OnPageExecuting_SetsPropertyValue()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -100,16 +53,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 { "TempDataProperty-Test", "Value" }
             };
-            tempData.Save();
 
             var pageModel = new TestPageModel();
 
-            var filter = CreatePageSaveTempDataPropertyFilter(tempData);
+            var filter = CreatePageSaveTempDataPropertyFilter(tempData, "TempDataProperty-");
             filter.Subject = pageModel;
-
-            var pageType = typeof(TestPageModel);
-            var testProperty = pageType.GetProperty(nameof(TestPageModel.Test));
-            var test2Property = pageType.GetProperty(nameof(TestPageModel.Test2));
 
             var context = new PageHandlerExecutingContext(
                 new PageContext()
@@ -132,50 +80,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void OnPageExecuting_ToPage_SetsPropertyValue()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-
-            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
-            {
-                { "TempDataProperty-Test", "Value" }
-            };
-            tempData.Save();
-
-            var page = new TestPage()
-            {
-                ViewContext = CreateViewContext(httpContext, tempData)
-            };
-
-            var filter = CreatePageSaveTempDataPropertyFilter(tempData);
-            filter.Subject = page;
-
-            var pageType = page.GetType();
-            var testProperty = pageType.GetProperty(nameof(TestPage.Test));
-            var test2Property = pageType.GetProperty(nameof(TestPage.Test2));
-
-            var context = new PageHandlerExecutingContext(
-                new PageContext()
-                {
-                    ActionDescriptor = new CompiledPageActionDescriptor(),
-                    HttpContext = httpContext,
-                    RouteData = new RouteData(),
-                },
-                Array.Empty<IFilterMetadata>(),
-                null,
-                new Dictionary<string, object>(),
-                page);
-
-            // Act
-            filter.OnPageHandlerExecuting(context);
-
-            // Assert
-            Assert.Equal("Value", page.Test);
-            Assert.Null(page.Test2);
-        }
-
-        [Fact]
         public void OnPageExecuting_InitializesAndSavesProperties()
         {
             // Arrange
@@ -189,20 +93,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var pageModel = new TestPageModel();
 
-            var filter = CreatePageSaveTempDataPropertyFilter(tempData);
+            var filter = CreatePageSaveTempDataPropertyFilter(tempData, "TempDataProperty-");
             filter.Subject = pageModel;
-
-            var factory = filter.FilterFactory;
 
             var pageType = typeof(TestPageModel);
             var testProperty = pageType.GetProperty(nameof(TestPageModel.Test));
             var test2Property = pageType.GetProperty(nameof(TestPageModel.Test2));
-
-            filter.Properties = new List<TempDataProperty>
-            {
-                new TempDataProperty("TempDataProperty-Test", testProperty, testProperty.GetValue, testProperty.SetValue),
-                new TempDataProperty("TempDataProperty-Test2", test2Property, test2Property.GetValue, test2Property.SetValue)
-            };
 
             var context = new PageHandlerExecutingContext(
                 new PageContext()
@@ -224,57 +120,98 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 filter.Properties.OrderBy(p => p.PropertyInfo.Name),
                 p => Assert.Equal(testProperty, p.PropertyInfo),
                 p => Assert.Equal(test2Property, p.PropertyInfo));
-
-            Assert.Same(filter.Properties, factory.Properties);
         }
 
-        private static ViewContext CreateViewContext(HttpContext httpContext, ITempDataDictionary tempData)
+        [Fact]
+        public void OnPageExecuting_ReadsTempDataPropertiesWithoutPrefix()
         {
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var metadataProvider = new EmptyModelMetadataProvider();
-            var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
-            var viewContext = new ViewContext(
-                actionContext,
-                NullView.Instance,
-                viewData,
-                tempData,
-                TextWriter.Null,
-                new HtmlHelperOptions());
+            // Arrange
+            var httpContext = new DefaultHttpContext();
 
-            return viewContext;
+            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+            {
+                { "TempDataProperty-Test", "Prefix-Value" },
+                { "Test", "Value" }
+            };
+            tempData.Save();
+
+            var model = new TestPageModel();
+
+            var filter = CreatePageSaveTempDataPropertyFilter(tempData, string.Empty);
+            filter.Subject = model;
+
+            var context = new PageHandlerExecutingContext(
+                new PageContext()
+                {
+                    ActionDescriptor = new CompiledPageActionDescriptor(),
+                    HttpContext = httpContext,
+                    RouteData = new RouteData(),
+                },
+                Array.Empty<IFilterMetadata>(),
+                null,
+                new Dictionary<string, object>(),
+                model);
+
+            // Act
+            filter.OnPageHandlerExecuting(context);
+
+            // Assert
+            Assert.Equal("Value", model.Test);
+            Assert.Null(model.Test2);
         }
 
-        private PageSaveTempDataPropertyFilter CreatePageSaveTempDataPropertyFilter(
-            TempDataDictionary tempData,
-            bool filterFactory = true)
+        [Fact]
+        public void OnTempDataSaving_WritesToTempData_WithoutPrefix()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+
+            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+            {
+                ["Test"] = "Old-Value",
+            };
+            var pageModel = new TestPageModel
+            {
+                Test = "New-Value",
+            };
+
+            var filter = CreatePageSaveTempDataPropertyFilter(tempData, string.Empty);
+            filter.Subject = pageModel;
+
+            // Act
+            filter.OnTempDataSaving(tempData);
+
+            // Assert
+            Assert.Collection(
+                tempData,
+                item =>
+                {
+                    Assert.Equal("Test", item.Key);
+                    Assert.Equal("New-Value", item.Value);
+                });
+        }
+
+        private PageSaveTempDataPropertyFilter CreatePageSaveTempDataPropertyFilter(TempDataDictionary tempData, string prefix)
         {
             var factory = new Mock<ITempDataDictionaryFactory>();
             factory
                 .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
                 .Returns(tempData);
 
-            var propertyFilter = new PageSaveTempDataPropertyFilter(factory.Object);
+            var pageModelType = typeof(TestPageModel);
+            var property1 = pageModelType.GetProperty(nameof(TestPageModel.Test));
+            var property2 = pageModelType.GetProperty(nameof(TestPageModel.Test2));
 
-            if (filterFactory)
+            var filter = new PageSaveTempDataPropertyFilter(factory.Object)
             {
-                propertyFilter.FilterFactory = Mock.Of<PageSaveTempDataPropertyFilterFactory>();
-            }
+                Properties = new[]
+                {
+                    new LifecycleProperty(property1, prefix + property1.Name),
+                    new LifecycleProperty(property2, prefix + property2.Name),
+                }
+            };
 
-            return propertyFilter;
-        }
-
-        public class TestPage : Page
-        {
-            [TempData]
-            public string Test { get; set; }
-
-            [TempData]
-            public string Test2 { get; set; }
-
-            public override Task ExecuteAsync()
-            {
-                throw new NotImplementedException();
-            }
+            return filter;
         }
 
         public class TestPageModel : PageModel

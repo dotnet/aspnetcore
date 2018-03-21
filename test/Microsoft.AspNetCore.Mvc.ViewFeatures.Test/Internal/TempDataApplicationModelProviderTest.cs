@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -14,16 +13,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class TempDataApplicationModelProviderTest
     {
-        [Theory]
-        [InlineData(typeof(TestController_OneTempDataProperty))]
-        [InlineData(typeof(TestController_ListOfString))]
-        [InlineData(typeof(TestController_OneNullableTempDataProperty))]
-        [InlineData(typeof(TestController_TwoTempDataProperties))]
-        [InlineData(typeof(TestController_NullableNonPrimitiveTempDataProperty))]
-        public void AddsTempDataPropertyFilter_ForTempDataAttributeProperties(Type type)
+        [Fact]
+        public void OnProvidersExecuting_DoesNotAddFilter_IfTypeHasNoTempDataProperties()
         {
             // Arrange
-            var provider = new TempDataApplicationModelProvider();
+            var type = typeof(TestController_NoTempDataProperties);
+            var options = Options.Create(new MvcViewOptions());
+            var provider = new TempDataApplicationModelProvider(options);
             var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
@@ -34,14 +30,54 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Assert
             var controller = Assert.Single(context.Result.Controllers);
-            Assert.Single(controller.Filters, f => f is ControllerSaveTempDataPropertyFilterFactory);
+            Assert.Empty(controller.Filters);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_ValidatesTempDataProperties()
+        {
+            // Arrange
+            var type = typeof(TestController_PrivateSet);
+            var options = Options.Create(new MvcViewOptions());
+            var provider = new TempDataApplicationModelProvider(options);
+            var expected = $"The '{type.FullName}.Test' property with TempDataAttribute is invalid. A property using TempDataAttribute must have a public getter and setter.";
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+
+            var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
+            defaultProvider.OnProvidersExecuting(context);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void AddsTempDataPropertyFilter_ForTempDataAttributeProperties()
+        {
+            // Arrange
+            var type = typeof(TestController_NullableNonPrimitiveTempDataProperty);
+            var options = Options.Create(new MvcViewOptions());
+            var provider = new TempDataApplicationModelProvider(options);
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+
+            var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
+            defaultProvider.OnProvidersExecuting(context);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            Assert.IsType<ControllerSaveTempDataPropertyFilterFactory>(Assert.Single(controller.Filters));
         }
 
         [Fact]
         public void InitializeFilterFactory_WithExpectedPropertyHelpers_ForTempDataAttributeProperties()
         {
             // Arrange
-            var provider = new TempDataApplicationModelProvider();
+            var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
+            var options = Options.Create(new MvcViewOptions());
+            var provider = new TempDataApplicationModelProvider(options);
             var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(TestController_OneTempDataProperty).GetTypeInfo() });
@@ -50,79 +86,42 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Act
             provider.OnProvidersExecuting(context);
             var controller = context.Result.Controllers.SingleOrDefault();
-            var filter = controller.Filters.OfType<ControllerSaveTempDataPropertyFilterFactory>();
-            var saveTempDataPropertyFilterFactory = filter.SingleOrDefault();
-            var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
+            var filter = Assert.IsType<ControllerSaveTempDataPropertyFilterFactory>(Assert.Single(controller.Filters));
 
             // Assert
-            Assert.NotNull(saveTempDataPropertyFilterFactory);
-            var tempDataPropertyHelper = Assert.Single(saveTempDataPropertyFilterFactory.TempDataProperties);
-            Assert.Same(expected, tempDataPropertyHelper.PropertyInfo);
+            Assert.NotNull(filter);
+            var property = Assert.Single(filter.TempDataProperties);
+            Assert.Same(expected, property.PropertyInfo);
+            Assert.Equal("TempDataProperty-Test2", property.Key);
         }
 
         [Fact]
-        public void ThrowsInvalidOperationException_PrivateSetter()
+        public void OnProvidersExecuting_SetsKeyPrefixToEmptyString_IfCompatSwitchIsSet()
         {
             // Arrange
-            var provider = new TempDataApplicationModelProvider();
+            var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
+            var options = Options.Create(new MvcViewOptions { SuppressTempDataAttributePrefix = true });
+            var provider = new TempDataApplicationModelProvider(options);
             var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
-            var context = new ApplicationModelProviderContext(new[] { typeof(TestController_PrivateSet).GetTypeInfo() });
+            var context = new ApplicationModelProviderContext(new[] { typeof(TestController_OneTempDataProperty).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
 
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() =>
-                provider.OnProvidersExecuting(context));
+            // Act
+            provider.OnProvidersExecuting(context);
+            var controller = context.Result.Controllers.SingleOrDefault();
+            var filter = Assert.IsType<ControllerSaveTempDataPropertyFilterFactory>(Assert.Single(controller.Filters));
 
-            Assert.Equal(
-                $"The '{typeof(TestController_PrivateSet).FullName}.{nameof(TestController_NonPrimitiveType.Test)}'"
-                + $" property with {nameof(TempDataAttribute)} is invalid. A property using {nameof(TempDataAttribute)}"
-                + " must have a public getter and setter.",
-                exception.Message);
+            // Assert
+            Assert.NotNull(filter);
+            var property = Assert.Single(filter.TempDataProperties);
+            Assert.Same(expected, property.PropertyInfo);
+            Assert.Equal("Test2", property.Key);
         }
 
-        [Fact]
-        public void ThrowsInvalidOperationException_NonPrimitiveType()
+        public class TestController_NoTempDataProperties
         {
-            // Arrange
-            var provider = new TempDataApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
-
-            var context = new ApplicationModelProviderContext(new[] { typeof(TestController_NonPrimitiveType).GetTypeInfo() });
-            defaultProvider.OnProvidersExecuting(context);
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() =>
-                provider.OnProvidersExecuting(context));
-
-            Assert.Equal(
-                $"The '{typeof(TestController_NonPrimitiveType).FullName}.{nameof(TestController_NonPrimitiveType.Test)}'"
-                + $" property with {nameof(TempDataAttribute)} is invalid. The '{typeof(TempDataSerializer).FullName}'"
-                + $" cannot serialize an object of type '{typeof(Object).FullName}'.",
-                exception.Message);
-        }
-
-        [Fact]
-        public void ThrowsInvalidOperationException_NonStringDictionaryKey()
-        {
-            // Arrange
-            var provider = new TempDataApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
-
-            var context = new ApplicationModelProviderContext(
-                new[] { typeof(TestController_NonStringDictionaryKey).GetTypeInfo() });
-            defaultProvider.OnProvidersExecuting(context);
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() =>
-                provider.OnProvidersExecuting(context));
-
-            Assert.Equal(
-                $"The '{typeof(TestController_NonStringDictionaryKey).FullName}.{nameof(TestController_NonStringDictionaryKey.Test)}'"
-                + $" property with {nameof(TempDataAttribute)} is invalid. The '{typeof(TempDataSerializer).FullName}'"
-                + $" cannot serialize a dictionary with a key of type '{typeof(Object)}'. The key must be of type"
-                + $" '{typeof(string).FullName}'.",
-                exception.Message);
+            public DateTime? DateTime { get; set; }
         }
 
         public class TestController_NullableNonPrimitiveTempDataProperty
@@ -139,45 +138,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             public string Test2 { get; set; }
         }
 
-        public class TestController_TwoTempDataProperties
-        {
-            [TempData]
-            public string Test { get; set; }
-
-            [TempData]
-            public int Test2 { get; set; }
-        }
-
-        public class TestController_OneNullableTempDataProperty
-        {
-            public string Test { get; set; }
-
-            [TempData]
-            public int? Test2 { get; set; }
-        }
-
-        public class TestController_ListOfString
-        {
-            [TempData]
-            public IList<string> Test { get; set; }
-        }
-
         public class TestController_PrivateSet
         {
             [TempData]
             public string Test { get; private set; }
-        }
-
-        public class TestController_NonPrimitiveType
-        {
-            [TempData]
-            public object Test { get; set; }
-        }
-
-        public class TestController_NonStringDictionaryKey
-        {
-            [TempData]
-            public IDictionary<object, object> Test { get; set; }
         }
     }
 }

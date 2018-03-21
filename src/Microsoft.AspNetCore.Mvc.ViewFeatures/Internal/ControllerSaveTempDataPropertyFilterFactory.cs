@@ -4,13 +4,19 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    public class ControllerSaveTempDataPropertyFilterFactory : IFilterFactory
+    internal class ControllerSaveTempDataPropertyFilterFactory : IFilterFactory
     {
-        public IList<TempDataProperty> TempDataProperties { get; set; }
+        public ControllerSaveTempDataPropertyFilterFactory(IReadOnlyList<LifecycleProperty> properties)
+        {
+            TempDataProperties = properties;
+        }
+
+        public IReadOnlyList<LifecycleProperty> TempDataProperties { get; }
 
         public bool IsReusable => false;
 

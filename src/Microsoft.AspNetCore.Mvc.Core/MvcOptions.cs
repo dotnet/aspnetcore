@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets an value indicating whether the model binding system will bind undefined values to 
-        /// enum types. The default value of the property is <c>false</c>. 
+        /// enum types. The default value of the property is <c>false</c>.
         /// </summary>
         /// <remarks>
         /// <para>

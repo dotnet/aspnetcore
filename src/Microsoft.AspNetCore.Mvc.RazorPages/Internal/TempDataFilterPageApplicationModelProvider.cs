@@ -3,11 +3,20 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    public class TempDataFilterPageApplicationModelProvider : IPageApplicationModelProvider
+    internal class TempDataFilterPageApplicationModelProvider : IPageApplicationModelProvider
     {
+        private readonly MvcViewOptions _options;
+
+        public TempDataFilterPageApplicationModelProvider(IOptions<MvcViewOptions> options)
+        {
+            _options = options.Value;
+        }
+
         // The order is set to execute after the DefaultPageApplicationModelProvider.
         public int Order => -1000 + 10;
 
@@ -23,9 +32,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             var pageApplicationModel = context.PageApplicationModel;
+            var handlerType = pageApplicationModel.HandlerType.AsType();
 
-            // Support for [TempData] on properties
-            pageApplicationModel.Filters.Add(new PageSaveTempDataPropertyFilterFactory());
+            var tempDataProperties = SaveTempDataPropertyFilterBase.GetTempDataProperties(handlerType, _options);
+            if (tempDataProperties == null)
+            {
+                return;
+            }
+
+            var filter = new PageSaveTempDataPropertyFilterFactory(tempDataProperties);
+            pageApplicationModel.Filters.Add(filter);
         }
     }
 }

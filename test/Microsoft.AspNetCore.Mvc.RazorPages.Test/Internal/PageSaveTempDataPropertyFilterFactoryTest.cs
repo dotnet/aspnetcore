@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
     public class PageSaveTempDataPropertyFilterFactoryTest
     {
@@ -14,8 +15,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void CreatesInstanceWithProperties()
         {
             // Arrange
-            var factory = new PageSaveTempDataPropertyFilterFactory();
-
+            var property = typeof(TestPageModel).GetProperty(nameof(TestPageModel.Property1));
+            var lifecycleProperties = new[] { new LifecycleProperty(property, "key") };
+            var factory = new PageSaveTempDataPropertyFilterFactory(lifecycleProperties);
             var serviceProvider = CreateServiceProvider();
 
             // Act
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             var pageFilter = Assert.IsType<PageSaveTempDataPropertyFilter>(filter);
-            Assert.Same(factory, pageFilter.FilterFactory);        
+            Assert.Same(lifecycleProperties, pageFilter.Properties);
         }
 
         private ServiceProvider CreateServiceProvider()
@@ -35,6 +37,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             serviceCollection.AddTransient<PageSaveTempDataPropertyFilter>();
 
             return serviceCollection.BuildServiceProvider();
+        }
+
+        private class TestPageModel : PageModel
+        {
+            [TempData]
+            public string Property1 { get; set; }
         }
     }
 }

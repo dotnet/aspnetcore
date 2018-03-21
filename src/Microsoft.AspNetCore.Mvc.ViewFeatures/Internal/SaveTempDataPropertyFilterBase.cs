@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.Internal;
 
@@ -10,14 +11,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public abstract class SaveTempDataPropertyFilterBase : ISaveTempDataCallback
     {
-        protected const string Prefix = "TempDataProperty-";
+        protected readonly ITempDataDictionaryFactory _tempDataFactory;
 
-        protected readonly ITempDataDictionaryFactory _factory;
+        public SaveTempDataPropertyFilterBase(ITempDataDictionaryFactory tempDataFactory)
+        {
+            _tempDataFactory = tempDataFactory;
+        }
 
         /// <summary>
         /// Describes the temp data properties which exist on <see cref="Subject"/>
         /// </summary>
-        public IList<TempDataProperty> Properties { get; set; }
+        public IReadOnlyList<LifecycleProperty> Properties { get; set; }
 
         /// <summary>
         /// The <see cref="object"/> which has the temp data properties.
@@ -29,64 +33,90 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// </summary>
         public IDictionary<PropertyInfo, object> OriginalValues { get; } = new Dictionary<PropertyInfo, object>();
 
-        public SaveTempDataPropertyFilterBase(ITempDataDictionaryFactory factory)
-        {
-            _factory = factory;
-        }
-
         /// <summary>
         /// Puts the modified values of <see cref="Subject"/> into <paramref name="tempData"/>.
         /// </summary>
         /// <param name="tempData">The <see cref="ITempDataDictionary"/> to be updated.</param>
         public void OnTempDataSaving(ITempDataDictionary tempData)
         {
-            if (Subject != null && Properties != null)
+            if (Subject == null)
             {
-                for (var i = 0; i < Properties.Count; i++)
-                {
-                    var property = Properties[i];
-                    OriginalValues.TryGetValue(property.PropertyInfo, out var originalValue);
+                return;
+            }
 
-                    var newValue = property.GetValue(Subject);
-                    if (newValue != null && !newValue.Equals(originalValue))
-                    {
-                        tempData[property.TempDataKey] = newValue;
-                    }
+            for (var i = 0; i < Properties.Count; i++)
+            {
+                var property = Properties[i];
+                OriginalValues.TryGetValue(property.PropertyInfo, out var originalValue);
+
+                var newValue = property.GetValue(Subject);
+                if (newValue != null && !newValue.Equals(originalValue))
+                {
+                    tempData[property.Key] = newValue;
                 }
             }
         }
 
-        public static IList<TempDataProperty> GetTempDataProperties(Type type)
+        /// <summary>
+        /// Sets the values of the properties of <see cref="Subject"/> from <paramref name="tempData"/>.
+        /// </summary>
+        /// <param name="tempData">The <see cref="ITempDataDictionary"/>.</param>
+        protected void SetPropertyVaules(ITempDataDictionary tempData)
         {
-            List<TempDataProperty> results = null;
+            if (Properties == null)
+            {
+                return;
+            }
+
+            Debug.Assert(Subject != null, "Subject must be set before this method is invoked.");
+
+            for (var i = 0; i < Properties.Count; i++)
+            {
+                var property = Properties[i];
+                var value = tempData[property.Key];
+
+                OriginalValues[property.PropertyInfo] = value;
+                property.SetValue(Subject, value);
+            }
+        }
+
+        public static IReadOnlyList<LifecycleProperty> GetTempDataProperties(Type type, MvcViewOptions viewOptions)
+        {
+            List<LifecycleProperty> results = null;
 
             var propertyHelpers = PropertyHelper.GetVisibleProperties(type: type);
+            var prefix = viewOptions.SuppressTempDataAttributePrefix ?
+                string.Empty :
+                "TempDataProperty-";
 
             for (var i = 0; i < propertyHelpers.Length; i++)
             {
                 var propertyHelper = propertyHelpers[i];
-                if (propertyHelper.Property.IsDefined(typeof(TempDataAttribute)))
+                var property = propertyHelper.Property;
+                var tempDataAttribute = property.GetCustomAttribute<TempDataAttribute>();
+                if (tempDataAttribute != null)
                 {
-                    ValidateProperty(propertyHelper);
+                    ValidateProperty(propertyHelper.Property);
                     if (results == null)
                     {
-                        results = new List<TempDataProperty>();
+                        results = new List<LifecycleProperty>();
                     }
 
-                    results.Add(new TempDataProperty(
-                        Prefix + propertyHelper.Name,
-                        propertyHelper.Property,
-                        propertyHelper.GetValue,
-                        propertyHelper.SetValue));
+                    var key = tempDataAttribute.Key;
+                    if (string.IsNullOrEmpty(key))
+                    {
+                        key = prefix + property.Name;
+                    }
+
+                    results.Add(new LifecycleProperty(property, key));
                 }
             }
 
             return results;
         }
 
-        private static void ValidateProperty(PropertyHelper propertyHelper)
+        private static void ValidateProperty(PropertyInfo property)
         {
-            var property = propertyHelper.Property;
             if (!(property.SetMethod != null &&
                 property.SetMethod.IsPublic &&
                 property.GetMethod != null &&
@@ -106,35 +136,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     nameof(TempDataAttribute));
 
                 throw new InvalidOperationException($"{messageWithPropertyInfo} {errorMessage}");
-            }
-        }
-
-        /// <summary>
-        /// Sets the values of the properties of <paramref name="subject"/> from <paramref name="tempData"/>.
-        /// </summary>
-        /// <param name="tempData">The <see cref="ITempDataDictionary"/> with the data to set on <paramref name="subject"/>.</param>
-        /// <param name="subject">The <see cref="object"/> which will have it's properties set.</param>
-        protected void SetPropertyVaules(ITempDataDictionary tempData, object subject)
-        {
-            if (Properties == null)
-            {
-                return;
-            }
-
-            for (var i = 0; i < Properties.Count; i++)
-            {
-                var property = Properties[i];
-                var value = tempData[Prefix + property.PropertyInfo.Name];
-
-                OriginalValues[property.PropertyInfo] = value;
-
-                var propertyTypeInfo = property.PropertyInfo.PropertyType.GetTypeInfo();
-
-                var isReferenceTypeOrNullable = !propertyTypeInfo.IsValueType || Nullable.GetUnderlyingType(property.GetType()) != null;
-                if (value != null || isReferenceTypeOrNullable)
-                {
-                    property.SetValue(subject, value);
-                }
             }
         }
     }

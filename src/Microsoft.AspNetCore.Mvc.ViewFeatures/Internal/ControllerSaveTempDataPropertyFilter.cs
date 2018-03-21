@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    public class ControllerSaveTempDataPropertyFilter : SaveTempDataPropertyFilterBase, IActionFilter
+    internal class ControllerSaveTempDataPropertyFilter : SaveTempDataPropertyFilterBase, IActionFilter
     {
         public ControllerSaveTempDataPropertyFilter(ITempDataDictionaryFactory factory)
             : base(factory)
@@ -20,10 +21,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public void OnActionExecuting(ActionExecutingContext context)
         {
             Subject = context.Controller;
-            var tempData = _factory.GetTempData(context.HttpContext);
+            var tempData = _tempDataFactory.GetTempData(context.HttpContext);
 
-            SetPropertyVaules(tempData, Subject);
+            SetPropertyVaules(tempData);
         }
     }
 }
-
