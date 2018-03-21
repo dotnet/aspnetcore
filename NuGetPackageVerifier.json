@@ -47,6 +47,20 @@
             "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
             "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
             "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "ASSEMBLY_FILE_VERSION_MISMATCH": {
+            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "ASSEMBLY_VERSION_MISMATCH": {
+            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
           }
         }
       }
