@@ -73,13 +73,19 @@ public:
     );
 
 private:
+
+    VOID
+    AcquireLockExclusive();
+
+    VOID
+    ReleaseLockExclusive();
+
     HRESULT
     CreateWinHttpRequest(
         _In_ const IHttpRequest *       pRequest,
         _In_ const PROTOCOL_CONFIG *    pProtocol,
         _In_ HINTERNET                  hConnect,
         _Inout_ STRU *                  pstrUrl,
-//        _In_ ASPNETCORE_CONFIG*              pAspNetCoreConfig,
         _In_ SERVER_PROCESS*                 pServerProcess
     );
 
@@ -173,12 +179,33 @@ private:
     BOOL                                m_fWebSocketEnabled;
     BOOL                                m_fResponseHeadersReceivedAndSet;
     BOOL                                m_fResetConnection;
-    BOOL                                m_fHandleClosedDueToClient;
-    BOOL                                m_fFinishRequest;
-    BOOL                                m_fHasError;
     BOOL                                m_fDoReverseRewriteHeaders;
+    BOOL                                m_fServerResetConn;
+    volatile  BOOL                      m_fClientDisconnected;
+    //
+    // A safety guard flag indicating no more IIS PostCompletion is allowed
+    //
+    volatile  BOOL                      m_fFinishRequest;
+    //
+    // A safety guard flag to prevent from unexpect callback which may signal IIS pipeline
+    // more than once with non-pending status
+    //
+    volatile  BOOL                      m_fDoneAsyncCompletion;
+    volatile  BOOL                      m_fHasError;
+    //
+    // WinHttp may hit AV under race if handle got closed more than once simultaneously 
+    // Use two bool variables to guard
+    //
+    volatile  BOOL                      m_fHttpHandleInClose;
+    volatile  BOOL                      m_fWebSocketHandleInClose;
+
     PCSTR                               m_pszOriginalHostHeader;
     PCWSTR                              m_pszHeaders;
+    //
+    // Record the number of winhttp handles in use
+    // release IIS pipeline only after all handles got closed
+    //
+    volatile  LONG                      m_dwHandlers;
     DWORD                               m_cchHeaders;
     DWORD                               m_BytesToReceive;
     DWORD                               m_BytesToSend;

@@ -7,9 +7,9 @@
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
   </PropertyGroup>
 
-  <Target Name="BuildNativeAssets" DependsOnTargets="GetToolsets" >
+  <Target Name="BuildNativeAssets" DependsOnTargets="Prepare;GetToolsets" >
     <PropertyGroup>
-      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary</BuildArgs>
+      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary -p:CommitHash=$(CommitHash)</BuildArgs>
     </PropertyGroup>
 
     <ItemGroup>

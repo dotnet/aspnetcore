@@ -99,6 +99,17 @@ public:
     }
 
 private:
+    static
+    VOID
+    DoShutDown(
+        LPVOID lpParam
+    );
+
+    VOID
+    ShutDownInternal(
+        VOID
+    );
+
     // Thread executing the .NET Core process
     HANDLE                          m_hThread;
 
