@@ -40,9 +40,90 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
     s_Application = NULL;
 }
 
+//static
+VOID
+IN_PROCESS_APPLICATION::DoShutDown(
+    LPVOID lpParam
+)
+{
+    IN_PROCESS_APPLICATION* pApplication = static_cast<IN_PROCESS_APPLICATION*>(lpParam);
+    DBG_ASSERT(pApplication);
+    pApplication->ShutDownInternal();
+}
+
 __override
 VOID
-IN_PROCESS_APPLICATION::ShutDown()
+IN_PROCESS_APPLICATION::ShutDown(
+    VOID
+)
+{
+    HANDLE   hThread = NULL;
+    HRESULT  hr = S_OK;
+    DWORD    dwThreadStatus = 0;
+    DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
+
+    if (IsDebuggerPresent())
+    {
+        dwTimeout = INFINITE;
+    }
+
+    hThread = CreateThread(
+        NULL,       // default security attributes
+        0,          // default stack size
+        (LPTHREAD_START_ROUTINE)DoShutDown,
+        this,       // thread function arguments
+        0,          // default creation flags
+        NULL);      // receive thread identifier
+
+    if (hThread == NULL)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    if (WaitForSingleObject(hThread, dwTimeout) != WAIT_OBJECT_0)
+    {
+        // if the thread is still running, we need kill it first before exit to avoid AV
+        if (GetExitCodeThread(m_hThread, &dwThreadStatus) != 0 && dwThreadStatus == STILL_ACTIVE)
+        {
+            // Calling back into managed at this point is prone to have AVs
+            // Calling terminate thread here may be our best solution.
+            TerminateThread(hThread, STATUS_CONTROL_C_EXIT);
+            hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
+        }
+    }
+
+Finished:
+
+    if (hThread != NULL)
+    {
+        CloseHandle(hThread);
+    }
+    m_hThread = NULL;
+
+    if (FAILED(hr))
+    {
+        STACK_STRU(strEventMsg, 256);
+        //
+        // Assumption: inprocess application shutdown will be called only at process shutdown
+        // Based on this assumption, we just let shutdown continue and process will exit
+        // Log a warning for ungraceful shutdown
+        //
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_APP_SHUTDOWN_FAILURE_MSG,
+            m_pConfig->QueryConfigPath()->QueryStr())))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_WARNING_TYPE,
+                ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
+                strEventMsg.QueryStr());
+        }
+    }
+}
+
+
+VOID
+IN_PROCESS_APPLICATION::ShutDownInternal()
 {
     DWORD    dwThreadStatus = 0;
     DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
@@ -53,10 +134,6 @@ IN_PROCESS_APPLICATION::ShutDown()
     if (IsDebuggerPresent())
     {
         dwTimeout = INFINITE;
-    }
-    else
-    {
-        dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
     }
 
     if (m_fShutdownCalledFromNative ||
