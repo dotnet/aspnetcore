@@ -238,7 +238,7 @@ export class LongPollingTransport implements ITransport {
     private async poll(url: string, transferFormat: TransferFormat): Promise<void> {
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
-            headers: new Map<string, string>(),
+            headers: {},
             timeout: 90000,
         };
 
@@ -248,7 +248,8 @@ export class LongPollingTransport implements ITransport {
 
         const token = this.accessTokenFactory();
         if (token) {
-            pollOptions.headers.set("Authorization", `Bearer ${token}`);
+            // tslint:disable-next-line:no-string-literal
+            pollOptions.headers["Authorization"] = `Bearer ${token}`;
         }
 
         while (!this.pollAbort.signal.aborted) {
@@ -316,8 +317,9 @@ async function send(httpClient: HttpClient, url: string, accessTokenFactory: () 
     let headers;
     const token = accessTokenFactory();
     if (token) {
-        headers = new Map<string, string>();
-        headers.set("Authorization", `Bearer ${accessTokenFactory()}`);
+        headers = {
+            ["Authorization"]: `Bearer ${accessTokenFactory()}`,
+        };
     }
 
     await httpClient.post(url, {
