@@ -1,10 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -32,7 +28,7 @@ namespace Microsoft.AspNetCore.Identity
         public static IdentityBuilder AddDefaultUI(this IdentityBuilder builder)
         {
             builder.AddSignInManager();
-            AddAdditionalApplicationParts(builder);
+            AddRelatedParts(builder);
 
             builder.Services.ConfigureOptions(
                 typeof(IdentityDefaultUIConfigureOptions<>)
@@ -42,7 +38,7 @@ namespace Microsoft.AspNetCore.Identity
             return builder;
         }
 
-        private static void AddAdditionalApplicationParts(IdentityBuilder builder)
+        private static void AddRelatedParts(IdentityBuilder builder)
         {
             // For preview1, we don't have a good mechanism to plug in additional parts.
             // We need to provide API surface to allow libraries to plug in existing parts
@@ -51,56 +47,19 @@ namespace Microsoft.AspNetCore.Identity
             // * Discovery of the parts.
             // * Ordering of the parts.
             // * Loading of the assembly in memory.
-            var thisAssembly = typeof(IdentityBuilderUIExtensions).Assembly;
-            var additionalReferences = thisAssembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(am => string.Equals(am.Key, "Microsoft.AspNetCore.Mvc.AdditionalReference"))
-                .Select(am => am.Value.Split(',')[0])
-                .ToArray();
 
             var mvcBuilder = builder.Services
                 .AddMvc()
-                .ConfigureApplicationPartManager(apm =>
+                .ConfigureApplicationPartManager(partManager =>
                 {
-                    foreach (var reference in additionalReferences)
+                    var thisAssembly = typeof(IdentityBuilderUIExtensions).Assembly;
+                    var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
+
+                    foreach (var assembly in relatedAssemblies)
                     {
-                        var fileName = Path.GetFileName(reference);
-                        var filePath = Path.Combine(Path.GetDirectoryName(thisAssembly.Location), fileName);
-                        var additionalAssembly = LoadAssembly(filePath);
-                        // This needs to change to additional assembly part.
-                        var additionalPart = new AssemblyPart(additionalAssembly);
-                        if (!apm.ApplicationParts.Any(ap => HasSameName(ap.Name, additionalPart.Name)))
-                        {
-                            apm.ApplicationParts.Add(additionalPart);
-                        }
+                        partManager.ApplicationParts.Add(new CompiledRazorAssemblyPart(assembly));
                     }
                 });
-
-            bool HasSameName(string left, string right) => string.Equals(left, right, StringComparison.Ordinal);
-        }
-
-        private static Assembly LoadAssembly(string filePath)
-        {
-            Assembly viewsAssembly = null;
-            if (File.Exists(filePath))
-            {
-                try
-                {
-                    viewsAssembly = Assembly.LoadFile(filePath);
-                }
-                catch (FileLoadException)
-                {
-                    throw new InvalidOperationException("Unable to load the precompiled views assembly in " +
-                        $"'{filePath}'.");
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Could not find the precompiled views assembly for 'Microsoft.AspNetCore.Identity.UI' at " +
-                    $"'{filePath}'.");
-            }
-
-            return viewsAssembly;
         }
     }
 }

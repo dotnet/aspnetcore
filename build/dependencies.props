@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15742</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15744</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
@@ -21,9 +21,9 @@
     <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-a-preview2-application-part-18617</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
-    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreMvcTestingPackageVersion>
+    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-a-preview2-application-part-18617</MicrosoftAspNetCoreMvcTestingPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreRewritePackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreRewritePackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
