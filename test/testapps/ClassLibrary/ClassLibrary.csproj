@@ -18,6 +18,7 @@
     <Copyright>© Microsoft</Copyright>
     <Product>Razor Test</Product>
     <Company>Microsoft</Company>
+    <Description>ClassLibrary Description</Description>
   </PropertyGroup>
 
   <!-- Test Placeholder -->

@@ -59,11 +59,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IncludeRazorContentInPack Condition="'$(IncludeRazorContentInPack)'==''">false</IncludeRazorContentInPack>
 
     <!--
-    Set to false to disable Razor code generation from using a persistent build server process.
-    -->
-    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">true</UseRazorBuildServer>
-
-    <!--
     Configures the file extension used for generated C# files.
     -->
     <RazorGenerateOutputFileExtension>.g.cshtml.cs</RazorGenerateOutputFileExtension>

@@ -135,6 +135,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <EmbedRazorGenerateSources Condition="'$(MvcRazorEmbedViewSources)'!=''">$(MvcRazorEmbedViewSources)</EmbedRazorGenerateSources>
     <EmbedRazorGenerateSources Condition="'$(EmbedRazorGenerateSources)'==''">false</EmbedRazorGenerateSources>
+
+    <!--
+    Set to false to disable Razor code generation from using a persistent build server process.
+    -->
+    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">$(UseSharedCompilation)</UseRazorBuildServer>
+    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">true</UseRazorBuildServer>
   </PropertyGroup>
 
   <PropertyGroup>

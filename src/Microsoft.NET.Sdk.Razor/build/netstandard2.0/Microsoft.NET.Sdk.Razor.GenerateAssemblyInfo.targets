@@ -59,6 +59,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <RazorAssemblyFileVersion Condition="'$(RazorAssemblyFileVersion)' == ''">$(FileVersion)</RazorAssemblyFileVersion>
       <RazorAssemblyInformationalVersion Condition="'$(RazorAssemblyInformationalVersion)' == ''">$(InformationalVersion)</RazorAssemblyInformationalVersion>
+      <RazorAssemblyDescription Condition="'$(RazorAssemblyDescription)'==''">$(Description)</RazorAssemblyDescription>
       <RazorAssemblyTitle Condition="'$(RazorAssemblyTitle)'==''">$(RazorTargetName)</RazorAssemblyTitle>
       <RazorAssemblyVersion Condition="'$(RazorAssemblyVersion)' == ''">$(AssemblyVersion)</RazorAssemblyVersion>
     </PropertyGroup>
@@ -80,6 +81,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_Parameter1>$(NeutralLanguage)</_Parameter1>
       </RazorAssemblyAttribute>
 
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyDescriptionAttribute" Condition="'$(RazorAssemblyDescription)' != '' and '$(GenerateAssemblyDescriptionAttribute)' == 'true'">
+        <_Parameter1>$(RazorAssemblyDescription)</_Parameter1>
+      </RazorAssemblyAttribute>
       <RazorAssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(RazorAssemblyFileVersion)' != '' and '$(GenerateAssemblyFileVersionAttribute)' == 'true'">
         <_Parameter1>$(RazorAssemblyFileVersion)</_Parameter1>
       </RazorAssemblyAttribute>

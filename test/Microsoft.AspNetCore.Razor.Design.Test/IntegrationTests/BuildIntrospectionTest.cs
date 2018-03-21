@@ -35,5 +35,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputContainsLine(result, $"RazorCompile: {Path.Combine(IntermediateOutputPath, "Razor", "Views", "Home", "Index.g.cshtml.cs")}");
             Assert.BuildOutputContainsLine(result, $"RazorCompile: {Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs")}");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorSdk_UsesUseSharedCompilationToSetDefaultValueOfUseRazorBuildServer()
+        {
+            var result = await DotnetMSBuild("Build", "/t:_IntrospectUseRazorBuildServer /p:UseSharedCompilation=false");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "UseRazorBuildServer: false");
+        }
     }
 }
