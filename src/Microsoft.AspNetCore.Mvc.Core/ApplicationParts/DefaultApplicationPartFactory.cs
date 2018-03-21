@@ -8,10 +8,15 @@ using System.Reflection;
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
     /// <summary>
-    /// Configures an assembly as a <see cref="CompiledRazorAssemblyPart"/>.
+    /// Default <see cref="ApplicationPartFactory"/>.
     /// </summary>
-    public class CompiledRazorAssemblyApplicationPartFactory : ApplicationPartFactory
+    public class DefaultApplicationPartFactory : ApplicationPartFactory
     {
+        /// <summary>
+        /// Gets an instance of <see cref="DefaultApplicationPartFactory"/>.
+        /// </summary>
+        public static DefaultApplicationPartFactory Instance { get; } = new DefaultApplicationPartFactory();
+
         /// <summary>
         /// Gets the sequence of <see cref="ApplicationPart"/> instances that are created by this instance of <see cref="DefaultApplicationPartFactory"/>.
         /// <para>
@@ -27,10 +32,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            yield return new CompiledRazorAssemblyPart(assembly);
+            yield return new AssemblyPart(assembly);
         }
 
         /// <inheritdoc />
-        public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly) => GetDefaultApplicationParts(assembly);
+        public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly)
+        {
+            return GetDefaultApplicationParts(assembly);
+        }
     }
 }
