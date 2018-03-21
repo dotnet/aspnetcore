@@ -36,7 +36,7 @@ namespace ChatSample
         where THubLifetimeManager : HubLifetimeManager<THub>
         where THub : HubWithPresence
     {
-        private readonly HubConnectionList _connections = new HubConnectionList();
+        private readonly HubConnectionStore _connections = new HubConnectionStore();
         private readonly IUserTracker<THub> _userTracker;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger _logger;

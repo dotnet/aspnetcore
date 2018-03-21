@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where THub : Hub
     {
-        private readonly HubConnectionList _connections = new HubConnectionList();
+        private readonly HubConnectionStore _connections = new HubConnectionStore();
         private readonly HubGroupList _groups = new HubGroupList();
         private readonly ILogger _logger;
 
@@ -69,18 +69,37 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task SendAllAsync(string methodName, object[] args)
         {
-            return SendAllWhere(methodName, args, c => true);
-        }
+            List<Task> tasks = null;
+            var message = CreateInvocationMessage(methodName, args);
 
-        private Task SendAllWhere(string methodName, object[] args, Func<HubConnectionContext, bool> include)
-        {
-            var count = _connections.Count;
-            if (count == 0)
+            foreach (var connection in _connections)
+            {
+                var task = connection.WriteAsync(message);
+
+                if (!task.IsCompletedSuccessfully)
+                {
+                    if (tasks == null)
+                    {
+                        tasks = new List<Task>();
+                    }
+
+                    tasks.Add(task.AsTask());
+                }
+            }
+
+            // No async
+            if (tasks == null)
             {
                 return Task.CompletedTask;
             }
 
-            var tasks = new List<Task>(count);
+            // Some connections are slow
+            return Task.WhenAll(tasks);
+        }
+
+        private Task SendAllWhere(string methodName, object[] args, Func<HubConnectionContext, bool> include)
+        {
+            List<Task> tasks = null;
             var message = CreateInvocationMessage(methodName, args);
 
             foreach (var connection in _connections)
@@ -90,9 +109,25 @@ namespace Microsoft.AspNetCore.SignalR
                     continue;
                 }
 
-                tasks.Add(SafeWriteAsync(connection, message));
+                var task = connection.WriteAsync(message);
+
+                if (!task.IsCompletedSuccessfully)
+                {
+                    if (tasks == null)
+                    {
+                        tasks = new List<Task>();
+                    }
+
+                    tasks.Add(task.AsTask());
+                }
             }
 
+            if (tasks == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Some connections are slow
             return Task.WhenAll(tasks);
         }
 
@@ -112,7 +147,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             var message = CreateInvocationMessage(methodName, args);
 
-            return SafeWriteAsync(connection, message);
+            return connection.WriteAsync(message).AsTask();
         }
 
         public override Task SendGroupAsync(string groupName, string methodName, object[] args)
@@ -126,7 +161,7 @@ namespace Microsoft.AspNetCore.SignalR
             if (group != null)
             {
                 var message = CreateInvocationMessage(methodName, args);
-                var tasks = group.Values.Select(c => SafeWriteAsync(c, message));
+                var tasks = group.Values.Select(c => c.WriteAsync(message).AsTask());
                 return Task.WhenAll(tasks);
             }
 
@@ -149,7 +184,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var group = _groups[groupName];
                 if (group != null)
                 {
-                    tasks.Add(Task.WhenAll(group.Values.Select(c =>  SafeWriteAsync(c, message))));
+                    tasks.Add(Task.WhenAll(group.Values.Select(c => c.WriteAsync(message).AsTask())));
                 }
             }
 
@@ -168,7 +203,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 var message = CreateInvocationMessage(methodName, args);
                 var tasks = group.Values.Where(connection => !excludedIds.Contains(connection.ConnectionId))
-                    .Select(c => SafeWriteAsync(c, message));
+                    .Select(c => c.WriteAsync(message).AsTask());
                 return Task.WhenAll(tasks);
             }
 
@@ -221,31 +256,6 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 return userIds.Contains(connection.UserIdentifier);
             });
-        }
-
-        // This method is to protect against connections throwing synchronously when writing to them and preventing other connections from being written to
-        private async Task SafeWriteAsync(HubConnectionContext connection, InvocationMessage message)
-        {
-            try
-            {
-                await connection.WriteAsync(message);
-            }
-            // This exception isn't interesting to users
-            catch (Exception ex)
-            {
-                Log.FailedWritingMessage(_logger, ex);
-            }
-        }
-
-        private static class Log
-        {
-            private static readonly Action<ILogger, Exception> _failedWritingMessage =
-                LoggerMessage.Define(LogLevel.Warning, new EventId(1, "FailedWritingMessage"), "Failed writing message.");
-
-            public static void FailedWritingMessage(ILogger logger, Exception exception)
-            {
-                _failedWritingMessage(logger, exception);
-            }
         }
     }
 }
