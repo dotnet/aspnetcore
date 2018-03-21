@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Sockets
             logScope.ConnectionId = connection.ConnectionId;
 
             // Get the bytes for the connection id
-            var negotiateResponseBuffer = Encoding.UTF8.GetBytes(GetNegotiatePayload(connection.ConnectionId, options));
+            var negotiateResponseBuffer = Encoding.UTF8.GetBytes(GetNegotiatePayload(connection.ConnectionId, context, options));
 
             Log.NegotiationRequest(_logger);
 
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Sockets
             return context.Response.Body.WriteAsync(negotiateResponseBuffer, 0, negotiateResponseBuffer.Length);
         }
 
-        private static string GetNegotiatePayload(string connectionId, HttpSocketOptions options)
+        private static string GetNegotiatePayload(string connectionId, HttpContext context, HttpSocketOptions options)
         {
             var sb = new StringBuilder();
             using (var jsonWriter = new JsonTextWriter(new StringWriter(sb)))
@@ -387,23 +387,35 @@ namespace Microsoft.AspNetCore.Sockets
                 jsonWriter.WriteValue(connectionId);
                 jsonWriter.WritePropertyName("availableTransports");
                 jsonWriter.WriteStartArray();
-                if ((options.Transports & TransportType.WebSockets) != 0)
+
+                if (ServerHasWebSockets(context.Features))
                 {
-                    WriteTransport(jsonWriter, nameof(TransportType.WebSockets), TransferFormat.Text | TransferFormat.Binary);
+                    if ((options.Transports & TransportType.WebSockets) != 0)
+                    {
+                        WriteTransport(jsonWriter, nameof(TransportType.WebSockets), TransferFormat.Text | TransferFormat.Binary);
+                    }
                 }
+
                 if ((options.Transports & TransportType.ServerSentEvents) != 0)
                 {
                     WriteTransport(jsonWriter, nameof(TransportType.ServerSentEvents), TransferFormat.Text);
                 }
+
                 if ((options.Transports & TransportType.LongPolling) != 0)
                 {
                     WriteTransport(jsonWriter, nameof(TransportType.LongPolling), TransferFormat.Text | TransferFormat.Binary);
                 }
+
                 jsonWriter.WriteEndArray();
                 jsonWriter.WriteEndObject();
             }
 
             return sb.ToString();
+        }
+
+        private static bool ServerHasWebSockets(IFeatureCollection features)
+        {
+            return features.Get<IHttpWebSocketFeature>() != null;
         }
 
         private static void WriteTransport(JsonWriter writer, string transportName, TransferFormat supportedTransferFormats)
