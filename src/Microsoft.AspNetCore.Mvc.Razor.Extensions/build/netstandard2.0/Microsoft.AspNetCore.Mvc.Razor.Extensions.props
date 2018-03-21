@@ -12,10 +12,9 @@
     <RazorDefaultConfiguration Condition="'$(RazorDefaultConfiguration)'==''">MVC-2.1</RazorDefaultConfiguration>
 
     <!--
-      Determines the load behavior for Razor compiled views in an Mvc application. By default, the compiled assembly is initialized as an Mvc application part.
-      This results in compiled views being discovered and routes for compiled Razor Pages being set up. Setting this value to false, disables this behavior.
+      MVC uses a ProvideApplicationPartFactoryAttribute on the generated assembly to load compiled views from assembly. Set this to false, to prevent generating this attribute.
     -->
-    <EnableDefaultCompiledViewAssemblyLoadBehavior Condition="'$(EnableDefaultCompiledViewAssemblyLoadBehavior)' == ''">true</EnableDefaultCompiledViewAssemblyLoadBehavior>
+    <GenerateProvideApplicationPartFactoryAttribute>true</GenerateProvideApplicationPartFactoryAttribute>
 
     <!-- Override for testing. This path is only correct inside a nuget package. -->
     <_MvcExtensionAssemblyPath Condition="'$(_MvcExtensionAssemblyPath)'==''">$(MSBuildThisFileDirectory)..\..\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>

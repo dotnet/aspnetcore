@@ -410,15 +410,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("ClassLibrary")]
-        public async Task Build_UsesNullFactory_IfEnableDefaultCompiledViewAssemblyLoadBehaviorIsSetToFalse()
+        public async Task Build_DoesNotGenerateProvideApplicationPartFactoryAttribute_IfGenerateProvideApplicationPartFactoryAttributeIsUnset()
         {
             var razorAssemblyInfo = Path.Combine(IntermediateOutputPath, "ClassLibrary.RazorAssemblyInfo.cs");
-            var result = await DotnetMSBuild("Build", "/p:EnableDefaultCompiledViewAssemblyLoadBehavior=false");
+            var result = await DotnetMSBuild("Build", "/p:GenerateProvideApplicationPartFactoryAttribute=false");
 
             Assert.BuildPassed(result);
 
             Assert.FileExists(result, razorAssemblyInfo);
-            Assert.FileContains(result, razorAssemblyInfo, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(\"Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory");
+            Assert.FileDoesNotContain(result, razorAssemblyInfo, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute");
         }
 
         [Fact]

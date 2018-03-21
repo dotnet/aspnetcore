@@ -12,12 +12,11 @@
       Use the suffix .Views when producing compiled view assemblies. This matches the requirements for Mvc's ViewsFeatureProvider.
     -->
     <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)'==''">.Views</RazorTargetNameSuffix>
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(ProvideApplicationPartFactoryAttributeTypeName)' == ''">
-    <ProvideApplicationPartFactoryAttributeTypeName Condition="'$(EnableDefaultCompiledViewAssemblyLoadBehavior)'=='false'">Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
-
-    <ProvideApplicationPartFactoryAttributeTypeName Condition="'$(EnableDefaultCompiledViewAssemblyLoadBehavior)'=='true'">Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor</ProvideApplicationPartFactoryAttributeTypeName>
+    <!--
+      The type name of the ApplicationPartFactory applied to the generated Razor file.
+    -->
+    <ProvideApplicationPartFactoryAttributeTypeName Condition="'$(ProvideApplicationPartFactoryAttributeTypeName)' == ''">Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor</ProvideApplicationPartFactoryAttributeTypeName>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true' AND '$(ResolvedRazorCompileToolset)'=='RazorSdk' AND ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' == 'true')">
@@ -26,7 +25,7 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(ProvideApplicationPartFactoryAttributeTypeName)'!=''">
+  <ItemGroup Condition="'$(GenerateProvideApplicationPartFactoryAttribute)' == 'true' AND '$(ProvideApplicationPartFactoryAttributeTypeName)'!=''">
     <RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
       <_Parameter1>$(ProvideApplicationPartFactoryAttributeTypeName)</_Parameter1>
     </RazorAssemblyAttribute>
