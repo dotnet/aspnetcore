@@ -4,7 +4,10 @@
         <Identity Id="Microsoft.VisualStudio.BlazorExtension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
         <DisplayName>ASP.NET Core Blazor Language Services</DisplayName>
         <Description xml:space="preserve">Provides Visual Studio support for ASP.NET Core Blazor</Description>
+        <License>Content\LICENSE.txt</License>
         <PackageId>Microsoft.VisualStudio.BlazorExtension</PackageId>
+        <GettingStartedGuide>https://go.microsoft.com/fwlink/?linkid=870449</GettingStartedGuide>
+        <ReleaseNotes>https://go.microsoft.com/fwlink/?linkid=870448</ReleaseNotes>
         <Icon>Content\WebConfiguration.png</Icon>
         <PreviewImage>Content\WebConfiguration.png</PreviewImage>
     </Metadata>
@@ -18,7 +21,7 @@
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="Microsoft.VisualStudio.LanguageServices.Blazor.dll" />
-        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.AspNetCore.Blazor.AngleSharp.dll" />	
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.AspNetCore.Blazor.AngleSharp.dll" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.AspNetCore.Blazor.Razor.Extensions.dll" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.VisualStudio.LanguageServices.Blazor.dll" />
         <Asset Type="Microsoft.VisualStudio.VsPackage" Path="Templates.pkgdef" />

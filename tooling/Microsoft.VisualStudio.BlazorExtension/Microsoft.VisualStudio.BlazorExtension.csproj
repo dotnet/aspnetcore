@@ -29,7 +29,7 @@
 
       VS needs this build number to be parsable by System.Version, so it can't have any letters.
     -->
-    <VsixVersion>15.6</VsixVersion>
+    <VsixVersion>15.7</VsixVersion>
     <VsixVersion Condition="'$(BuildNumber)'!='' AND '$(BuildNumber)'!='t000'">$(VsixVersion).$(BuildNumber)</VsixVersion>
     <VsixVersion Condition="'$(BuildNumber)'=='' OR '$(BuildNumber)'=='t000'">$(VsixVersion).999999</VsixVersion>
   </PropertyGroup>
@@ -229,11 +229,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\LICENSE.txt">
+      <Link>Content\LICENSE.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\WebConfiguration.png">
       <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\BlazorPackage.ico" />
+    <Content Include="Resources\BlazorPackage.ico">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
