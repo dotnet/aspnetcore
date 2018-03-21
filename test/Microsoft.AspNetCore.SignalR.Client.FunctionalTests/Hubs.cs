@@ -9,6 +9,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public IEnumerable<string> GetHeaderValues(string[] headerNames)
         {
-            var context = Context.Connection.GetHttpContext();
+            var context = Context.GetHttpContext();
 
             if (context == null)
             {
@@ -56,17 +57,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public string GetCookieValue(string cookieName)
         {
-            return Context.Connection.GetHttpContext().Request.Cookies[cookieName];
+            return Context.GetHttpContext().Request.Cookies[cookieName];
         }
 
         public object[] GetIHttpConnectionFeatureProperties()
         {
+            var feature = Context.Features.Get<IHttpConnectionFeature>();
+
             object[] result =
             {
-                Context.Connection.LocalPort,
-                Context.Connection.RemotePort,
-                Context.Connection.LocalIpAddress.ToString(),
-                Context.Connection.RemoteIpAddress.ToString()
+                feature.LocalPort,
+                feature.RemotePort,
+                feature.LocalIpAddress.ToString(),
+                feature.RemoteIpAddress.ToString()
             };
 
             return result;
@@ -74,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public string GetActiveTransportName()
         {
-            return Context.Connection.Items[ConnectionMetadataNames.Transport].ToString();
+            return Context.Items[ConnectionMetadataNames.Transport].ToString();
         }
     }
 

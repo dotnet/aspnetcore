@@ -16,7 +16,7 @@ namespace BenchmarkServer.Hubs
             {
                 var t = new CancellationTokenSource();
                 t.CancelAfter(TimeSpan.FromSeconds(duration));
-                while (!t.IsCancellationRequested && !Context.Connection.ConnectionAbortedToken.IsCancellationRequested)
+                while (!t.IsCancellationRequested && !Context.ConnectionAborted.IsCancellationRequested)
                 {
                     await Clients.All.SendAsync("echo", DateTime.UtcNow);
                 }

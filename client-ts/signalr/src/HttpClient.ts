@@ -8,7 +8,7 @@ export interface HttpRequest {
     method?: string;
     url?: string;
     content?: string | ArrayBuffer;
-    headers?: Map<string, string>;
+    headers?: { [key: string]: string };
     responseType?: XMLHttpRequestResponseType;
     abortSignal?: AbortSignal;
     timeout?: number;
@@ -58,7 +58,8 @@ export class DefaultHttpClient extends HttpClient {
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 
             if (request.headers) {
-                request.headers.forEach((value, header) => xhr.setRequestHeader(header, value));
+                Object.keys(request.headers)
+                    .forEach((header) => xhr.setRequestHeader(header, request.headers[header]));
             }
 
             if (request.responseType) {

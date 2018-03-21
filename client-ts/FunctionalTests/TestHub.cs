@@ -30,7 +30,7 @@ namespace FunctionalTests
 
         public Task InvokeWithString(string message)
         {
-            return Clients.Client(Context.Connection.ConnectionId).SendAsync("Message", message);
+            return Clients.Client(Context.ConnectionId).SendAsync("Message", message);
         }
 
         public Task SendCustomObject(CustomObject customObject)
@@ -55,7 +55,7 @@ namespace FunctionalTests
 
         public string GetActiveTransportName()
         {
-            return Context.Connection.Items[ConnectionMetadataNames.Transport].ToString();
+            return Context.Items[ConnectionMetadataNames.Transport].ToString();
         }
 
         public ComplexObject EchoComplexObject(ComplexObject complexObject)

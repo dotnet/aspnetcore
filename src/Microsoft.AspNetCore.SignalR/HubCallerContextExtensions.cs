@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Sockets.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public static class DefaultConnectionContextExtensions
+    public static class HubCallerContextExtensions
     {
-        public static HttpContext GetHttpContext(this HubConnectionContext connection)
+        public static HttpContext GetHttpContext(this HubCallerContext connection)
         {
             return connection.Features.Get<IHttpContextFeature>()?.HttpContext;
         }

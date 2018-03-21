@@ -25,8 +25,8 @@ export class HubConnection {
     private readonly connection: IConnection;
     private readonly logger: ILogger;
     private protocol: IHubProtocol;
-    private callbacks: Map<string, (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => void>;
-    private methods: Map<string, Array<(...args: any[]) => void>>;
+    private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => void };
+    private methods: { [name: string]: Array<(...args: any[]) => void> };
     private id: number;
     private closedCallbacks: ConnectionClosed[];
     private timeoutHandle: NodeJS.Timer;
@@ -53,8 +53,8 @@ export class HubConnection {
         this.connection.onreceive = (data: any) => this.processIncomingData(data);
         this.connection.onclose = (error?: Error) => this.connectionClosed(error);
 
-        this.callbacks = new Map<string, (invocationEvent: HubMessage, error?: Error) => void>();
-        this.methods = new Map<string, Array<(...args: any[]) => void>>();
+        this.callbacks = {};
+        this.methods = {};
         this.closedCallbacks = [];
         this.id = 0;
     }
@@ -79,10 +79,10 @@ export class HubConnection {
                         break;
                     case MessageType.StreamItem:
                     case MessageType.Completion:
-                        const callback = this.callbacks.get(message.invocationId);
+                        const callback = this.callbacks[message.invocationId];
                         if (callback != null) {
                             if (message.type === MessageType.Completion) {
-                                this.callbacks.delete(message.invocationId);
+                                delete this.callbacks[message.invocationId];
                             }
                             callback(message);
                         }
@@ -174,7 +174,7 @@ export class HubConnection {
     }
 
     private invokeClientMethod(invocationMessage: InvocationMessage) {
-        const methods = this.methods.get(invocationMessage.target.toLowerCase());
+        const methods = this.methods[invocationMessage.target.toLowerCase()];
         if (methods) {
             methods.forEach((m) => m.apply(this, invocationMessage.arguments));
             if (invocationMessage.invocationId) {
@@ -189,10 +189,14 @@ export class HubConnection {
     }
 
     private connectionClosed(error?: Error) {
-        this.callbacks.forEach((callback) => {
-            callback(undefined, error ? error : new Error("Invocation canceled due to connection being closed."));
-        });
-        this.callbacks.clear();
+        const callbacks = this.callbacks;
+        this.callbacks = {};
+
+        Object.keys(callbacks)
+            .forEach((key) => {
+                const callback = callbacks[key];
+                callback(undefined, error ? error : new Error("Invocation canceled due to connection being closed."));
+            });
 
         this.cleanupTimeout();
 
@@ -228,12 +232,12 @@ export class HubConnection {
             const cancelInvocation: CancelInvocationMessage = this.createCancelInvocation(invocationDescriptor.invocationId);
             const cancelMessage: any = this.protocol.writeMessage(cancelInvocation);
 
-            this.callbacks.delete(invocationDescriptor.invocationId);
+            delete this.callbacks[invocationDescriptor.invocationId];
 
             return this.connection.send(cancelMessage);
         });
 
-        this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | StreamItemMessage, error?: Error) => {
+        this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage, error?: Error) => {
             if (error) {
                 subject.error(error);
                 return;
@@ -248,14 +252,14 @@ export class HubConnection {
             } else {
                 subject.next((invocationEvent.item) as T);
             }
-        });
+        };
 
         const message = this.protocol.writeMessage(invocationDescriptor);
 
         this.connection.send(message)
             .catch((e) => {
                 subject.error(e);
-                this.callbacks.delete(invocationDescriptor.invocationId);
+                delete this.callbacks[invocationDescriptor.invocationId];
             });
 
         return subject;
@@ -273,7 +277,7 @@ export class HubConnection {
         const invocationDescriptor = this.createInvocation(methodName, args, false);
 
         const p = new Promise<any>((resolve, reject) => {
-            this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => {
+            this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => {
                 if (error) {
                     reject(error);
                     return;
@@ -288,14 +292,14 @@ export class HubConnection {
                 } else {
                     reject(new Error(`Unexpected message type: ${invocationEvent.type}`));
                 }
-            });
+            };
 
             const message = this.protocol.writeMessage(invocationDescriptor);
 
             this.connection.send(message)
                 .catch((e) => {
                     reject(e);
-                    this.callbacks.delete(invocationDescriptor.invocationId);
+                    delete this.callbacks[invocationDescriptor.invocationId];
                 });
         });
 
@@ -308,11 +312,11 @@ export class HubConnection {
         }
 
         methodName = methodName.toLowerCase();
-        if (!this.methods.has(methodName)) {
-            this.methods.set(methodName, []);
+        if (!this.methods[methodName]) {
+            this.methods[methodName] = [];
         }
 
-        this.methods.get(methodName).push(method);
+        this.methods[methodName].push(method);
     }
 
     public off(methodName: string, method: (...args: any[]) => void) {
@@ -321,7 +325,7 @@ export class HubConnection {
         }
 
         methodName = methodName.toLowerCase();
-        const handlers = this.methods.get(methodName);
+        const handlers = this.methods[methodName];
         if (!handlers) {
             return;
         }
@@ -329,7 +333,7 @@ export class HubConnection {
         if (removeIdx !== -1) {
             handlers.splice(removeIdx, 1);
             if (handlers.length === 0) {
-                this.methods.delete(methodName);
+                delete this.methods[methodName];
             }
         }
     }

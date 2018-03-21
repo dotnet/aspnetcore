@@ -85,7 +85,7 @@ namespace ChatSample
                 else
                 {
                     return hub.OnUsersJoined(
-                        users.Where(u => u.ConnectionId != hub.Context.Connection.ConnectionId).ToArray());
+                        users.Where(u => u.ConnectionId != hub.Context.ConnectionId).ToArray());
                 }
                 return Task.CompletedTask;
             });
@@ -112,7 +112,7 @@ namespace ChatSample
                     }
 
                     hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
-                    hub.Context = new HubCallerContext(connection);
+                    hub.Context = new DefaultHubCallerContext(connection);
                     hub.Groups = _hubContext.Groups;
 
                     try

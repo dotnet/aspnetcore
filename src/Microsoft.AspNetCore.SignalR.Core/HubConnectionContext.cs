@@ -41,11 +41,11 @@ namespace Microsoft.AspNetCore.SignalR
         {
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
-            ConnectionAbortedToken = _connectionAbortedTokenSource.Token;
+            ConnectionAborted = _connectionAbortedTokenSource.Token;
             _keepAliveDuration = (int)keepAliveInterval.TotalMilliseconds * (Stopwatch.Frequency / 1000);
         }
 
-        public virtual CancellationToken ConnectionAbortedToken { get; }
+        public virtual CancellationToken ConnectionAborted { get; }
 
         public virtual string ConnectionId => _connectionContext.ConnectionId;
 
@@ -65,14 +65,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>();
-
-        public IPAddress RemoteIpAddress => Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress;
-
-        public IPAddress LocalIpAddress => Features.Get<IHttpConnectionFeature>()?.LocalIpAddress;
-
-        public int? RemotePort => Features.Get<IHttpConnectionFeature>()?.RemotePort;
-
-        public int? LocalPort => Features.Get<IHttpConnectionFeature>()?.LocalPort;
 
         public virtual ValueTask WriteAsync(HubMessage message)
         {
