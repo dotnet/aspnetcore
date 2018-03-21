@@ -18,6 +18,10 @@
     <!-- VSIXes are always signed. This is the same key that ASP.NET uses for OSS signing -->
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
+
+    <!-- Don't import the directory props and targets, they aren't compatible with an old-style csproj -->
+    <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
   </PropertyGroup>
   <PropertyGroup>
     <!-- 
