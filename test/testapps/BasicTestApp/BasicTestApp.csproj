@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <BlazorLinkOnBuild>true</BlazorLinkOnBuild>
 
     <!-- Local alternative to <RunArguments>blazor serve</RunArguments> -->
     <RunCommand>dotnet</RunCommand>

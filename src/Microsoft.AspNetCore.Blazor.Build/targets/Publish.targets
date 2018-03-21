@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <BlazorLinkOnBuild Condition="'$(Configuration)'=='Release' AND '$(BlazorLinkOnBuild)'==''">true</BlazorLinkOnBuild>
+    <BlazorLinkOnBuild Condition="'$(BlazorLinkOnBuild)'==''">true</BlazorLinkOnBuild>
     <BlazorPublishDistDir>$(AssemblyName)\dist\</BlazorPublishDistDir>
 
     <!-- Disable unwanted parts of the default publish process -->

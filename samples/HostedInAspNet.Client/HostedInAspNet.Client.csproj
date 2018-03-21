@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <BlazorLinkOnBuild>true</BlazorLinkOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
