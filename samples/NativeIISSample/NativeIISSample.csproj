@@ -1,19 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <Import Project="..\..\build\testsite.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <!-- x86 -->
-    <None Include="..\..\src\RequestHandler\bin\$(Configuration)\Win32\*.*" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x86\%(FileName)%(Extension)" />
-    <None Include="..\..\src\AspNetCore\bin\$(Configuration)\Win32\*.*" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x86\%(FileName)%(Extension)" />
-    <!-- x64 -->
-    <None Include="..\..\src\RequestHandler\bin\$(Configuration)\x64\*.*" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x64\%(FileName)%(Extension)" />
-    <None Include="..\..\src\AspNetCore\bin\$(Configuration)\x64\*.*" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x64\%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,23 +8,16 @@
     }
   },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
     "Local ANCM": {
       "commandName": "Executable",
-      "executablePath": "$(ProgramW6432)\\IIS Express\\iisexpress.exe",
-      "commandLineArgs": "/config:\"$(MSBuildThisFileDirectory)applicationhost.config\" /site:\"$(ProjectName)\" /apppool:\"Clr4IntegratedAppPool\"",
+      "executablePath": "$(IISExpress)",
+      "commandLineArgs": "/config:\"$(IISExpressAppHostConfig)\" /apppool:\"Clr4IntegratedAppPool\"",
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
-        "ANCM_PATH": "$(MSBuildThisFileDirectory)bin\\$(Configuration)\\$(TargetFramework)\\x64\\aspnetcore.dll",
+        "ANCM_PATH": "$(TargetDir)$(NativePlatform)\\aspnetcore.dll",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "LAUNCHER_PATH": "dotnet.exe"
+        "LAUNCHER_PATH": "$(DotNetPath)"
       }
     },
     "NativeIISSample": {
