@@ -6,7 +6,7 @@
     <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFile>$(IntermediateDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
-    <LatestRuntimeVersionFileName>latest.aspnetcore.version</LatestRuntimeVersionFileName>
+    <LatestRuntimeVersionFileName>latest.version</LatestRuntimeVersionFileName>
     <LatestRuntimeVersionFile>$(IntermediateDir)$(LatestRuntimeVersionFileName)</LatestRuntimeVersionFile>
 
     <PublishDependsOn>
