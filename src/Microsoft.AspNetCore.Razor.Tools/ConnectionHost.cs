@@ -13,9 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
     // https://github.com/dotnet/roslyn/blob/14aed138a01c448143b9acf0fe77a662e3dfe2f4/src/Compilers/Server/VBCSCompiler/NamedPipeClientConnection.cs#L17
     internal abstract class ConnectionHost
     {
-        // Size of the buffers to use: 64K
-        private const int PipeBufferSize = 0x10000;
-
         private static int counter;
 
         public abstract Task<Connection> WaitForConnectionAsync(CancellationToken cancellationToken);
@@ -33,6 +30,15 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private class NamedPipeConnectionHost : ConnectionHost
         {
+            // Size of the buffers to use: 64K
+            private const int PipeBufferSize = 0x10000;
+
+            // From https://github.com/dotnet/corefx/blob/29cd6a0b0ac2993cee23ebaf36ca3d4bce6dd75f/src/System.IO.Pipes/ref/System.IO.Pipes.cs#L93.
+            // Using the enum value directly as this option is not available in netstandard.
+            private const PipeOptions PipeOptionCurrentUserOnly = (PipeOptions)536870912;
+
+            private static readonly PipeOptions _pipeOptions = GetPipeOptions();
+
             public NamedPipeConnectionHost(string pipeName)
             {
                 PipeName = pipeName;
@@ -45,15 +51,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // Create the pipe and begin waiting for a connection. This  doesn't block, but could fail 
                 // in certain circumstances, such as the OS refusing to create the pipe for some reason 
                 // or the pipe was disconnected before we starting listening.
-                //
-                // Also, note that we're waiting on CoreFx to implement some security features for us.
-                // https://github.com/dotnet/corefx/issues/24040
                 var pipeStream = new NamedPipeServerStream(
                     PipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances, // Maximum connections.
                     PipeTransmissionMode.Byte,
-                    PipeOptions.Asynchronous | PipeOptions.WriteThrough,
+                    _pipeOptions,
                     PipeBufferSize, // Default input buffer
                     PipeBufferSize);// Default output buffer
 
@@ -69,6 +72,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 pipeStream.Close();
                 throw new Exception("Insufficient resources to process new connection.");
+            }
+
+            private static PipeOptions GetPipeOptions()
+            {
+                var options = PipeOptions.Asynchronous | PipeOptions.WriteThrough;
+
+                if (Enum.IsDefined(typeof(PipeOptions), PipeOptionCurrentUserOnly))
+                {
+                    return options | PipeOptionCurrentUserOnly;
+                }
+
+                return options;
             }
         }
 
