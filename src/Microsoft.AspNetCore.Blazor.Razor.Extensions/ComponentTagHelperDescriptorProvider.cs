@@ -114,11 +114,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                     if (property.kind == PropertyKind.Delegate)
                     {
-                        var propertyType = (INamedTypeSymbol)property.property.Type;
-                        var parameters = propertyType.DelegateInvokeMethod.Parameters;
-
-                        var signature = "(" + string.Join(", ", parameters.Select(p => p.Name)) + ")";
-                        pb.Metadata.Add(DelegateSignatureMetadata, signature);
+                        pb.Metadata.Add(DelegateSignatureMetadata, bool.TrueString);
                     }
 
                     xml = property.property.GetDocumentationCommentXml();

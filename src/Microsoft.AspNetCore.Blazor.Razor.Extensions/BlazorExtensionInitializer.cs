@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.Features.Add(new ConfigureBlazorCodeGenerationOptions());
 
             builder.Features.Add(new ComponentDocumentClassifierPass());
+            builder.Features.Add(new ComplexAttributeContentPass());
             builder.Features.Add(new ComponentLoweringPass());
 
             builder.Features.Add(new ComponentTagHelperDescriptorProvider());

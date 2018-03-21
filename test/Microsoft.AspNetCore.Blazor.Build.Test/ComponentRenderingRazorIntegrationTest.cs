@@ -153,8 +153,15 @@ namespace Test
         }
 
 
-        [Fact]
-        public void Render_ChildComponent_WithLambdaEventHandler()
+        [Theory]
+        [InlineData("e => Increment(e)")]
+        [InlineData("(e) => Increment(e)")]
+        [InlineData("@(e => Increment(e))")]
+        [InlineData("@(e => { Increment(e); })")]
+        [InlineData("Increment")]
+        [InlineData("@Increment")]
+        [InlineData("@(Increment)")]
+        public void Render_ChildComponent_WithEventHandler(string expression)
         {
             // Arrange
             AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
@@ -171,16 +178,17 @@ namespace Test
 }
 "));
 
-            var component = CompileToComponent(@"
+            var component = CompileToComponent($@"
 @addTagHelper *, TestAssembly
-<MyComponent OnClick=""Increment()""/>
+@using Microsoft.AspNetCore.Blazor
+<MyComponent OnClick=""{expression}""/>
 
-@functions {
+@functions {{
     private int counter;
-    private void Increment() {
+    private void Increment(UIEventArgs e) {{
         counter++;
-    }
-}");
+    }}
+}}");
 
             // Act
             var frames = GetRenderTree(component);

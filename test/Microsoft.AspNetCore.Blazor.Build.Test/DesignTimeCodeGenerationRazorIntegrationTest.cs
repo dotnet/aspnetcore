@@ -268,7 +268,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @addTagHelper *, TestAssembly
-<MyComponent OnClick=""Increment()""/>
+<MyComponent OnClick=""@((e) => { Increment(); })""/>
 
 @functions {
     private int counter;
@@ -308,9 +308,9 @@ global::System.Object __typeHelper = ""*, TestAssembly"";
         {
             base.BuildRenderTree(builder);
 
-            __o = new Microsoft.AspNetCore.Blazor.UIEventHandler((eventArgs) => 
+            __o = new Microsoft.AspNetCore.Blazor.UIEventHandler(
 #line 2 ""x:\dir\subdir\Test\TestComponent.cshtml""
-                      Increment()
+                        (e) => { Increment(); }
 
 #line default
 #line hidden

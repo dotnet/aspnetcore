@@ -447,39 +447,24 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
             else if (node.BoundAttribute?.IsDelegateProperty() ?? false)
             {
-                // This is a UIEventHandler property. We do some special code generation for this
-                // case so that it's easier to write for common cases.
-                //
-                // Example: 
-                //      <MyComponent OnClick="Foo()"/> 
-                //      --> builder.AddAttribute(X, "OnClick", new UIEventHandler((e) => Foo()));
-                //
-                // The constructor is important because we want to put type inference into a state where
-                // we know the delegate's type should be UIEventHandler. AddAttribute has an overload that
-                // accepts object, so without the 'new UIEventHandler' things will get ugly.
-                //
-                // The escape for this behavior is to prefix the expression with @. This is similar to
-                // how escaping works for ModelExpression in MVC.
-                // Example: 
-                //      <MyComponent OnClick="@Foo"/> 
-                //      --> builder.AddAttribute(X, "OnClick", new UIEventHandler(Foo));
+                // We always surround the expression with the delegate constructor. This makes type
+                // inference inside lambdas, and method group conversion do the right thing.
+                IntermediateToken token = null;
                 if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
                 {
-                    // This is an escaped event handler;
-                    context.CodeWriter.Write("new ");
-                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
-                    context.CodeWriter.Write("(");
-                    context.CodeWriter.Write(((IntermediateToken)cSharpNode.Children[0]).Content);
-                    context.CodeWriter.Write(")");
+                    token = cSharpNode.Children[0] as IntermediateToken;
                 }
                 else
                 {
+                    token = node.Children[0] as IntermediateToken;
+                }
+
+                if (token != null)
+                {
                     context.CodeWriter.Write("new ");
                     context.CodeWriter.Write(node.BoundAttribute.TypeName);
                     context.CodeWriter.Write("(");
-                    context.CodeWriter.Write(node.BoundAttribute.GetDelegateSignature());
-                    context.CodeWriter.Write(" => ");
-                    context.CodeWriter.Write(((IntermediateToken)node.Children[0]).Content);
+                    context.CodeWriter.Write(token.Content);
                     context.CodeWriter.Write(")");
                 }
             }
