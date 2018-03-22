@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.Sockets;
@@ -41,15 +43,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             while (BinaryMessageParser.TryParseMessage(ref input, out var payload))
             {
-                messages.Add(ParseMessage(payload.ToArray(), binder));
+                var isArray = MemoryMarshal.TryGetArray(payload, out var arraySegment);
+                // This will never be false unless we started using un-managed buffers
+                Debug.Assert(isArray);
+                messages.Add(ParseMessage(arraySegment.Array, arraySegment.Offset, binder));
             }
 
             return messages.Count > 0;
         }
 
-        private static HubMessage ParseMessage(byte[] input, IInvocationBinder binder)
+        private static HubMessage ParseMessage(byte[] input, int startOffset, IInvocationBinder binder)
         {
-            using (var unpacker = Unpacker.Create(input))
+            using (var unpacker = Unpacker.Create(input, startOffset))
             {
                 _ = ReadArrayLength(unpacker, "elementCount");
 
