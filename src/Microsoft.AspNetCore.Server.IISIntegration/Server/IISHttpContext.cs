@@ -332,10 +332,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public unsafe void SendResponseHeaders(bool appCompleted)
         {
             // Verifies we have sent the statuscode before writing a header
-            var reasonPhraseBytes = Encoding.UTF8.GetBytes(ReasonPhrase ?? ReasonPhrases.GetReasonPhrase(StatusCode));
+            var reasonPhrase = string.IsNullOrWhiteSpace(ReasonPhrase) ? ReasonPhrases.GetReasonPhrase(StatusCode) : ReasonPhrase;
+            var reasonPhraseBytes = Encoding.UTF8.GetBytes(reasonPhrase);
 
             fixed (byte* pReasonPhrase = reasonPhraseBytes)
             {
+                Debug.Assert((IntPtr)pReasonPhrase != IntPtr.Zero);
                 // This copies data into the underlying buffer
                 NativeMethods.http_set_response_status_code(_pInProcessHandler, (ushort)StatusCode, pReasonPhrase);
             }
