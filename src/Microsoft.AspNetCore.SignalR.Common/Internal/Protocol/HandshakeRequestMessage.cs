@@ -5,11 +5,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public class HandshakeRequestMessage : HubMessage
     {
-        public HandshakeRequestMessage(string protocol)
+        public HandshakeRequestMessage(string protocol, int version)
         {
             Protocol = protocol;
+            Version = version;
         }
 
         public string Protocol { get; }
+        public int Version { get; }
     }
 }

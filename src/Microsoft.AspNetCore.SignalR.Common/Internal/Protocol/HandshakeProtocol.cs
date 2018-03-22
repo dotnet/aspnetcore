@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
@@ -17,6 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         private const string ProtocolPropertyName = "protocol";
+        private const string ProtocolVersionName = "version";
         private const string ErrorPropertyName = "error";
         private const string TypePropertyName = "type";
 
@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 writer.WriteStartObject();
                 writer.WritePropertyName(ProtocolPropertyName);
                 writer.WriteValue(requestMessage.Protocol);
+                writer.WritePropertyName(ProtocolVersionName);
+                writer.WriteValue(requestMessage.Version);
                 writer.WriteEndObject();
             }
 
@@ -101,7 +103,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 var token = JToken.ReadFrom(reader);
                 var handshakeJObject = JsonUtils.GetObject(token);
                 var protocol = JsonUtils.GetRequiredProperty<string>(handshakeJObject, ProtocolPropertyName);
-                requestMessage = new HandshakeRequestMessage(protocol);
+                var protocolVersion = JsonUtils.GetRequiredProperty<int>(handshakeJObject, ProtocolVersionName, JTokenType.Integer);
+                requestMessage = new HandshakeRequestMessage(protocol, protocolVersion);
             }
 
             return true;

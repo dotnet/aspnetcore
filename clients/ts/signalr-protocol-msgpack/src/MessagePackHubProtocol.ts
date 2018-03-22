@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageHeaders, MessageType, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
+import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage, LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
 import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
@@ -9,14 +9,18 @@ import { BinaryMessageFormat } from "./BinaryMessageFormat";
 export class MessagePackHubProtocol implements IHubProtocol {
 
     public readonly name: string = "messagepack";
+    public readonly version: number = 1;
 
     public readonly transferFormat: TransferFormat = TransferFormat.Binary;
 
-    public parseMessages(input: ArrayBuffer): HubMessage[] {
-        return BinaryMessageFormat.parse(input).map((m) => this.parseMessage(m));
+    public parseMessages(input: ArrayBuffer, logger: ILogger): HubMessage[] {
+        if (logger === null) {
+            logger = new NullLogger();
+        }
+        return BinaryMessageFormat.parse(input).map((m) => this.parseMessage(m, logger));
     }
 
-    private parseMessage(input: Uint8Array): HubMessage {
+    private parseMessage(input: Uint8Array, logger: ILogger): HubMessage {
         if (input.length === 0) {
             throw new Error("Invalid payload.");
         }
@@ -41,12 +45,15 @@ export class MessagePackHubProtocol implements IHubProtocol {
             case MessageType.Close:
                 return this.createCloseMessage(properties);
             default:
-                throw new Error("Invalid message type.");
+                // Future protocol changes can add message types, old clients can ignore them
+                logger.log(LogLevel.Information, "Unknown message type '" + messageType + "' ignored.");
+                return null;
         }
     }
 
     private createCloseMessage(properties: any[]): HubMessage {
-        if (properties.length !== 2) {
+        // check minimum length to allow protocol to add items to the end of objects in future releases
+        if (properties.length < 2) {
             throw new Error("Invalid payload for Close message.");
         }
 
@@ -58,7 +65,8 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private createPingMessage(properties: any[]): HubMessage {
-        if (properties.length !== 1) {
+        // check minimum length to allow protocol to add items to the end of objects in future releases
+        if (properties.length < 1) {
             throw new Error("Invalid payload for Ping message.");
         }
 
@@ -69,7 +77,8 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private createInvocationMessage(headers: MessageHeaders, properties: any[]): InvocationMessage {
-        if (properties.length !== 5) {
+        // check minimum length to allow protocol to add items to the end of objects in future releases
+        if (properties.length < 5) {
             throw new Error("Invalid payload for Invocation message.");
         }
 
@@ -94,8 +103,9 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private createStreamItemMessage(headers: MessageHeaders, properties: any[]): StreamItemMessage {
-        if (properties.length !== 4) {
-            throw new Error("Invalid payload for stream Result message.");
+        // check minimum length to allow protocol to add items to the end of objects in future releases
+        if (properties.length < 4) {
+            throw new Error("Invalid payload for StreamItem message.");
         }
 
         return {
@@ -107,6 +117,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private createCompletionMessage(headers: MessageHeaders, properties: any[]): CompletionMessage {
+        // check minimum length to allow protocol to add items to the end of objects in future releases
         if (properties.length < 4) {
             throw new Error("Invalid payload for Completion message.");
         }
@@ -117,8 +128,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
         const resultKind = properties[3];
 
-        if ((resultKind === voidResult && properties.length !== 4) ||
-            (resultKind !== voidResult && properties.length !== 5)) {
+        if (resultKind !== voidResult && properties.length < 5) {
             throw new Error("Invalid payload for Completion message.");
         }
 

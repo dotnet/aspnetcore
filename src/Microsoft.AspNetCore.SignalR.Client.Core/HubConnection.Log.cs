@@ -80,8 +80,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, string, Exception> _receivedUnexpectedResponse =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(23, "ReceivedUnexpectedResponse"), "Unsolicited response received for invocation '{InvocationId}'.");
 
-            private static readonly Action<ILogger, string, Exception> _hubProtocol =
-                LoggerMessage.Define<string>(LogLevel.Information, new EventId(24, "HubProtocol"), "Using HubProtocol '{Protocol}'.");
+            private static readonly Action<ILogger, string, int, Exception> _hubProtocol =
+                LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(24, "HubProtocol"), "Using HubProtocol '{Protocol} v{Version}'.");
 
             private static readonly Action<ILogger, string, string, string, int, Exception> _preparingStreamingInvocation =
                 LoggerMessage.Define<string, string, string, int>(LogLevel.Trace, new EventId(25, "PreparingStreamingInvocation"), "Preparing streaming invocation '{InvocationId}' of '{Target}', with return type '{ReturnType}' and {ArgumentCount} argument(s).");
@@ -253,9 +253,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _receivedUnexpectedResponse(logger, invocationId, null);
             }
 
-            public static void HubProtocol(ILogger logger, string hubProtocol)
+            public static void HubProtocol(ILogger logger, string hubProtocol, int version)
             {
-                _hubProtocol(logger, hubProtocol, null);
+                _hubProtocol(logger, hubProtocol, version, null);
             }
 
             public static void ResettingKeepAliveTimer(ILogger logger)

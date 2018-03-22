@@ -239,6 +239,14 @@ namespace Microsoft.AspNetCore.SignalR
                                         return false;
                                     }
 
+                                    if (!Protocol.IsVersionSupported(handshakeRequestMessage.Version))
+                                    {
+                                        Log.ProtocolVersionFailed(_logger, handshakeRequestMessage.Protocol, handshakeRequestMessage.Version);
+                                        await WriteHandshakeResponseAsync(new HandshakeResponseMessage(
+                                            $"The server does not support version {handshakeRequestMessage.Version} of the '{handshakeRequestMessage.Protocol}' protocol."));
+                                        return false;
+                                    }
+
                                     // If there's a transfer format feature, we need to check if we're compatible and set the active format.
                                     // If there isn't a feature, it means that the transport supports binary data and doesn't need us to tell them
                                     // what format we're writing.
@@ -371,6 +379,9 @@ namespace Microsoft.AspNetCore.SignalR
             private static readonly Action<ILogger, Exception> _failedWritingMessage =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(6, "FailedWritingMessage"), "Failed writing message.");
 
+            private static readonly Action<ILogger, string, int, Exception> _protocolVersionFailed =
+                LoggerMessage.Define<string, int>(LogLevel.Warning, new EventId(7, "ProtocolVersionFailed"), "Server does not support version {Version} of the {Protocol} protocol.");
+
             public static void HandshakeComplete(ILogger logger, string hubProtocol)
             {
                 _handshakeComplete(logger, hubProtocol, null);
@@ -399,6 +410,11 @@ namespace Microsoft.AspNetCore.SignalR
             public static void FailedWritingMessage(ILogger logger, Exception exception)
             {
                 _failedWritingMessage(logger, exception);
+            }
+
+            public static void ProtocolVersionFailed(ILogger logger, string protocolName, int version)
+            {
+                _protocolVersionFailed(logger, protocolName, version, null);
             }
         }
 

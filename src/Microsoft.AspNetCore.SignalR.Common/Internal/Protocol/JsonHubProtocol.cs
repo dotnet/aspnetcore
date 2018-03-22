@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const string HeadersPropertyName = "headers";
 
         public static readonly string ProtocolName = "json";
+        public static readonly int ProtocolVersion = 1;
 
         // ONLY to be used for application payloads (args, return values, etc.)
         public JsonSerializer PayloadSerializer { get; }
@@ -44,14 +45,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public string Name => ProtocolName;
 
+        public int Version => ProtocolVersion;
+
         public TransferFormat TransferFormat => TransferFormat.Text;
+
+        public bool IsVersionSupported(int version)
+        {
+            return version == Version;
+        }
 
         public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
         {
             while (TextMessageParser.TryParseMessage(ref input, out var payload))
             {
                 var textReader = new Utf8BufferTextReader(payload);
-                messages.Add(ParseMessage(textReader, binder));
+                var message = ParseMessage(textReader, binder);
+                if (message != null)
+                {
+                    messages.Add(message);
+                }
             }
 
             return messages.Count > 0;
@@ -277,7 +289,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
-                        throw new InvalidDataException($"Unknown message type: {type}");
+                        // Future protocol changes can add message types, old clients can ignore them
+                        return null;
                 }
 
                 return ApplyHeaders(message, headers);

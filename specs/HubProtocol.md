@@ -32,23 +32,25 @@ In the SignalR protocol, the following types of messages can be sent:
 | `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 
-After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection.
+After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection.
 
 The `HandshakeRequest` message contains the following properties:
 
 * `protocol` - the name of the protocol to be used for messages exchanged between the server and the client
+* `version` - the value must always be 1, for both MessagePack and Json protocols
 
 Example:
 
 ```json
 {
-    "protocol": "messagepack"
+    "protocol": "messagepack",
+    "version": 1
 }
 ```
 
 The `HandshakeResponse` message contains the following properties:
 
-* `error` - the optional error message if the server does not support the request protocol
+* `error` - the optional error message if the server does not support the requested protocol
 
 Example:
 

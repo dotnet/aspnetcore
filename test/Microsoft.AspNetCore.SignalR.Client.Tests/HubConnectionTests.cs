@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -252,8 +251,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             public string Name => "MockHubProtocol";
+            public int Version => 1;
 
             public TransferFormat TransferFormat => TransferFormat.Binary;
+
+            public bool IsVersionSupported(int version)
+            {
+                return true;
+            }
 
             public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
             {

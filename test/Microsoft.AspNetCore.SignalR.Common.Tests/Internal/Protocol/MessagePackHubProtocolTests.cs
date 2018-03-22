@@ -293,6 +293,28 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(testData.Message, messages[0], TestHubMessageEqualityComparer.Instance);
         }
 
+        [Fact]
+        public void ParseMessageWithExtraData()
+        {
+            var expectedMessage = new InvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null);
+            var encodedObj = Array(HubProtocolConstants.InvocationMessageType, Map(), "xyz", "method", Array(), "ex");
+            var binary = "lgGAo3h5eqZtZXRob2SQomV4";
+
+            // Verify that the input binary string decodes to the expected MsgPack primitives
+            var bytes = Convert.FromBase64String(binary);
+            var obj = Unpack(bytes);
+            Assert.Equal(encodedObj, obj);
+
+            // Parse the input fully now.
+            bytes = Frame(bytes);
+            var protocol = new MessagePackHubProtocol();
+            var messages = new List<HubMessage>();
+            Assert.True(protocol.TryParseMessages(bytes, new TestBinder(expectedMessage), messages));
+
+            Assert.Single(messages);
+            Assert.Equal(expectedMessage, messages[0], TestHubMessageEqualityComparer.Instance);
+        }
+
         [Theory]
         [MemberData(nameof(TestDataNames))]
         public void WriteMessages(string testDataName)
@@ -315,7 +337,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             // Message Type
             new object[] { new InvalidMessageData("MessageTypeString", Array("foo"), "Reading 'messageType' as Int32 failed.") },
-            new object[] { new InvalidMessageData("MessageTypeOutOfRange", Array(10), "Invalid message type: 10.") },
 
             // Headers
             new object[] { new InvalidMessageData("HeadersNotAMap", Array(HubProtocolConstants.InvocationMessageType, "foo"), "Reading map length for 'headers' failed.") },
