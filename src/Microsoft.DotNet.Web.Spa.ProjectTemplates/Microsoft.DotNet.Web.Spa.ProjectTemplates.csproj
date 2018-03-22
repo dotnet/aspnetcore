@@ -4,7 +4,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <NuspecFile>Microsoft.DotNet.Web.Spa.ProjectTemplates.nuspec</NuspecFile>
+    <Description>Single Page Application templates for ASP.NET Core</Description>
+    <PackageTags>$(PackageTags);spa</PackageTags>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
