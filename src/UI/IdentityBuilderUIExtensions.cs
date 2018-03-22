@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -54,10 +55,11 @@ namespace Microsoft.AspNetCore.Identity
                 {
                     var thisAssembly = typeof(IdentityBuilderUIExtensions).Assembly;
                     var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
+                    var relatedParts = relatedAssemblies.SelectMany(CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts);
 
-                    foreach (var assembly in relatedAssemblies)
+                    foreach (var part in relatedParts)
                     {
-                        partManager.ApplicationParts.Add(new CompiledRazorAssemblyPart(assembly));
+                        partManager.ApplicationParts.Add(part);
                     }
                 });
         }
