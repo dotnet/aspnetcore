@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="_BuildRepositories">
+  <Target Name="_BuildRepositories" Condition=" @(RepositoryBuildOrder->Count()) != 0 ">
     <ItemGroup>
       <BatchedRepository Include="$(MSBuildProjectFullPath)">
         <BuildGroup>%(RepositoryBuildOrder.Order)</BuildGroup>

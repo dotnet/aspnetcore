@@ -40,7 +40,8 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
              Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition=" '%(Repository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="FinalBuildArtifactInfo" />
     </MSBuild>
 

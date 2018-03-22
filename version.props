@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>2.0.6</VersionPrefix>
+    <VersionPrefix>2.0.7</VersionPrefix>
     <VersionSuffix>rtm</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersionNoTimestamp Condition="'$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersionNoTimestamp>
@@ -9,7 +9,7 @@
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 
     <!-- Chains in the previous runtime store installer and files. This must be updated with every patch. -->
-    <PreviousRuntimeStoreArchiveVersion>2.0.5-155</PreviousRuntimeStoreArchiveVersion>
-    <RuntimeStoreInstallerDependencyVersion>2.0.5</RuntimeStoreInstallerDependencyVersion>
+    <PreviousRuntimeStoreArchiveVersion>2.0.6-10011</PreviousRuntimeStoreArchiveVersion>
+    <RuntimeStoreInstallerDependencyVersion>2.0.6</RuntimeStoreInstallerDependencyVersion>
   </PropertyGroup>
 </Project>

@@ -96,13 +96,14 @@
 
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
 
-    <Error Text="%(Repository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(Repository.RootPath))" />
-    <Error Text="%(ShippedRepository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(ShippedRepository.RootPath))" />
+    <Error Text="%(Repository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodule update --init`." Condition="'%(Repository.RootPath)' != '' AND !Exists(%(Repository.RootPath))" />
+    <Error Text="%(ShippedRepository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodule update --init`." Condition="'%(ShippedRepository.RootPath)' != '' AND !Exists(%(ShippedRepository.RootPath))" />
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
              Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(Repository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
@@ -116,7 +117,8 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(Repository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="Solution" Condition="'%(Repository.Build)' == 'true'" />
       <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" Condition="'%(Repository.Build)' != 'true'" />
     </MSBuild>
@@ -128,13 +130,15 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
              Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(ShippedRepository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ShippedArtifactInfo" />
     </MSBuild>
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(ShippedRepository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="_ShippedSolution" />
     </MSBuild>
 
