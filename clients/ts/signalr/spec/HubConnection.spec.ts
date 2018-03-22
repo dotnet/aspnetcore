@@ -4,7 +4,7 @@
 import { ConnectionClosed, DataReceived } from "../src/Common";
 import { HubConnection } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
-import { MessageType, IHubProtocol, HubMessage } from "../src/IHubProtocol";
+import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { Observer } from "../src/Observable";
 import { TextMessageFormat } from "../src/TextMessageFormat";
@@ -27,6 +27,7 @@ describe("HubConnection", () => {
             expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
                 protocol: "json",
+                version: 1,
             });
             await hubConnection.stop();
         });
@@ -203,7 +204,7 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
 
             const hubConnection = new HubConnection(connection, commonOptions);
-    
+
             connection.receiveHandshakeResponse();
 
             const invokePromise = hubConnection.invoke("testMethod");
@@ -232,7 +233,7 @@ describe("HubConnection", () => {
 
             connection.receive({
                 arguments: ["test"],
-                invocationId: 0,
+                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -240,7 +241,7 @@ describe("HubConnection", () => {
 
             expect(warnings).toEqual(["No client method with the name 'message' found."]);
         });
-        
+
         it("invocations ignored in callbacks that have registered then unregistered", async () => {
             const warnings: string[] = [];
             const logger = {
@@ -261,7 +262,7 @@ describe("HubConnection", () => {
 
             connection.receive({
                 arguments: ["test"],
-                invocationId: 0,
+                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -273,7 +274,7 @@ describe("HubConnection", () => {
         it("callback invoked when servers invokes a method on the client", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
- 
+
             connection.receiveHandshakeResponse();
 
             let value = "";
@@ -281,7 +282,7 @@ describe("HubConnection", () => {
 
             connection.receive({
                 arguments: ["test"],
-                invocationId: 0,
+                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -293,7 +294,7 @@ describe("HubConnection", () => {
         it("stop on handshake error", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
-   
+
             let closeError: Error = null;
             hubConnection.onclose((e) => closeError = e);
 
@@ -305,7 +306,7 @@ describe("HubConnection", () => {
         it("stop on close message", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
-   
+
             let isClosed = false;
             let closeError: Error = null;
             hubConnection.onclose((e) => {
@@ -326,7 +327,7 @@ describe("HubConnection", () => {
         it("stop on error close message", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
-   
+
             let isClosed = false;
             let closeError: Error = null;
             hubConnection.onclose((e) => {
@@ -348,7 +349,7 @@ describe("HubConnection", () => {
         it("can have multiple callbacks", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
-   
+
             connection.receiveHandshakeResponse();
 
             let numInvocations1 = 0;
@@ -358,7 +359,7 @@ describe("HubConnection", () => {
 
             connection.receive({
                 arguments: [],
-                invocationId: 0,
+                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -380,7 +381,7 @@ describe("HubConnection", () => {
 
             connection.receive({
                 arguments: [],
-                invocationId: 0,
+                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -390,7 +391,7 @@ describe("HubConnection", () => {
 
             connection.receive({
                 arguments: [],
-                invocationId: 0,
+                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -434,7 +435,7 @@ describe("HubConnection", () => {
             // invoke a method to make sure we are not trying to use null/undefined
             connection.receive({
                 arguments: [],
-                invocationId: 0,
+                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -493,7 +494,7 @@ describe("HubConnection", () => {
         it("completes the observer when a completion is received", async () => {
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, commonOptions);
-      
+
             connection.receiveHandshakeResponse();
 
             const observer = new TestObserver();
@@ -779,6 +780,7 @@ class TestConnection implements IConnection {
 
 class TestProtocol implements IHubProtocol {
     public readonly name: string = "TestProtocol";
+    public readonly version: number = 1;
 
     public readonly transferFormat: TransferFormat;
 

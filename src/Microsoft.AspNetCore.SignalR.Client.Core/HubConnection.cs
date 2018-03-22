@@ -115,13 +115,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _needKeepAlive = _connection.Features.Get<IConnectionInherentKeepAliveFeature>() == null;
             _receivedHandshakeResponse = false;
 
-            Log.HubProtocol(_logger, _protocol.Name);
+            Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
 
             _connectionActive = new CancellationTokenSource();
             using (var memoryStream = new MemoryStream())
             {
                 Log.SendingHubHandshake(_logger);
-                HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name), memoryStream);
+                HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name, _protocol.Version), memoryStream);
                 await _connection.SendAsync(memoryStream.ToArray(), _connectionActive.Token);
             }
 

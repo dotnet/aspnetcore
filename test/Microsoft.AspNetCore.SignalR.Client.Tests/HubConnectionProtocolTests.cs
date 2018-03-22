@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.IO;
-using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -55,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var handshakeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("{\"protocol\":\"json\"}\u001e", handshakeMessage);
+                Assert.Equal("{\"protocol\":\"json\",\"version\":1}\u001e", handshakeMessage);
             }
             finally
             {

@@ -1,4 +1,5 @@
-﻿import { TransferFormat } from "./Transports";
+﻿import { ILogger } from "./ILogger";
+import { TransferFormat } from "./Transports";
 
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -51,6 +52,7 @@ export interface CompletionMessage extends HubInvocationMessage {
 
 export interface HandshakeRequestMessage {
     readonly protocol: string;
+    readonly version: number;
 }
 
 export interface HandshakeResponseMessage {
@@ -72,7 +74,8 @@ export interface CancelInvocationMessage extends HubInvocationMessage {
 
 export interface IHubProtocol {
     readonly name: string;
+    readonly version: number;
     readonly transferFormat: TransferFormat;
-    parseMessages(input: any): HubMessage[];
+    parseMessages(input: any, logger: ILogger): HubMessage[];
     writeMessage(message: HubMessage): any;
 }

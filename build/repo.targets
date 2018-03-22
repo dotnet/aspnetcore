@@ -1,10 +1,10 @@
 ﻿<Project>
   <ItemGroup>
-    <NPMPackage Include="$(RepositoryRoot)client-ts/signalr">
+    <NPMPackage Include="$(RepositoryRoot)clients/ts/signalr">
       <TarName>aspnet-signalr</TarName>
       <PackageId>@aspnet/signalr</PackageId>
     </NPMPackage>
-    <NPMPackage Include="$(RepositoryRoot)client-ts/signalr-protocol-msgpack">
+    <NPMPackage Include="$(RepositoryRoot)clients/ts/signalr-protocol-msgpack">
       <TarName>aspnet-signalr-protocol-msgpack</TarName>
       <PackageId>@aspnet/signalr-protocol-msgpack</PackageId>
     </NPMPackage>
@@ -15,11 +15,11 @@
   </PropertyGroup>
   <Target Name="RestoreNpm" Condition="'$(PreflightRestore)' != 'True'">
     <Message Text="Restoring NPM modules" Importance="high" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)client-ts" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)client-ts/FunctionalTests" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)client-ts/signalr" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)client-ts/signalr-protocol-msgpack" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)client-ts/webdriver-tap-runner" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr-protocol-msgpack" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/webdriver-tap-runner" />
   </Target>
 
   <PropertyGroup>
@@ -28,12 +28,12 @@
 
   <Target Name="RunTSClientNodeTests">
     <Message Text="Running TypeScript client Node tests" Importance="high" />
-    <Exec Command="npm test" WorkingDirectory="$(RepositoryRoot)client-ts" IgnoreStandardErrorWarningFormat="true" />
+    <Exec Command="npm test" WorkingDirectory="$(RepositoryRoot)clients/ts" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
   <Target Name="RunBrowserTests">
     <Message Text="Running TypeScript client Browser tests" Importance="high" />
-    <Exec Command="npm run ci-test -- --configuration $(Configuration) -v" WorkingDirectory="$(RepositoryRoot)client-ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
+    <Exec Command="npm run ci-test -- --configuration $(Configuration) -v" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
   <PropertyGroup>

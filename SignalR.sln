@@ -51,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.FunctionalTests", "test\Microsoft.AspNetCore.SignalR.Client.FunctionalTests\Microsoft.AspNetCore.SignalR.Client.FunctionalTests.csproj", "{455B68D2-C5B6-4BF4-A685-964B07AFAAF8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client-ts", "client-ts", "{3A76C5A2-79ED-49BC-8BDC-6A3A766FFA1B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{3A76C5A2-79ED-49BC-8BDC-6A3A766FFA1B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Microbenchmarks", "benchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj", "{96771B3F-4D18-41A7-A75B-FF38E76AAC89}"
 EndProject
@@ -85,7 +85,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.MsgPack", "src\Microsoft.AspNetCore.SignalR.Client.MsgPack\Microsoft.AspNetCore.SignalR.Client.MsgPack.csproj", "{4DBF918E-BD37-4309-B448-BA68C935944D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "client-ts\FunctionalTests\FunctionalTests.csproj", "{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "clients\ts\FunctionalTests\FunctionalTests.csproj", "{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkServer", "benchmarks\BenchmarkServer\BenchmarkServer.csproj", "{B5286020-C218-443C-91A9-B65751FB9B29}"
 EndProject

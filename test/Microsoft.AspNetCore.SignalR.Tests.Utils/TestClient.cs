@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 using (var memoryStream = new MemoryStream())
                 {
-                    HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name), memoryStream);
+                    HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name, _protocol.Version), memoryStream);
                     await Connection.Application.Output.WriteAsync(memoryStream.ToArray());
                 }
             }

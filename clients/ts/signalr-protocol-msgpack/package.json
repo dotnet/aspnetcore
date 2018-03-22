@@ -18,7 +18,7 @@
     "build:cjs": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs --target ES5",
     "build:browser": "node ../node_modules/rollup/bin/rollup -c",
     "build:uglify": "node ../node_modules/uglify-js/bin/uglifyjs --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
-    "pretest": "node ../node_modules/rimraf/bin.js ./spec/obj && node ../node_modules/typescript/bin/tsc --project ./spec/tsconfig.json && cd ./spec/obj/src && npm init -y && npm install ../../../../signalr",
+    "pretest": "node ../node_modules/rimraf/bin.js ./spec/obj && node ../node_modules/typescript/bin/tsc --project ./spec/tsconfig.json && cd ./spec/obj && npm init -y && npm install ../../../signalr",
     "test": "node ../node_modules/jasmine/bin/jasmine.js ./spec/obj/spec/**/*.spec.js"
   },
   "keywords": [

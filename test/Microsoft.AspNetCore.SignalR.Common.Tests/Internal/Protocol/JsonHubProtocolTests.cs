@@ -173,7 +173,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{'type':4,'invocationId':'42','target':'foo'}", "Missing required property 'arguments'.")]
         [InlineData("{'type':4,'invocationId':'42','target':'foo','arguments':{}}", "Expected 'arguments' to be of type Array.")]
 
-        [InlineData("{'type':9}", "Unknown message type: 9")]
         [InlineData("{'type':'foo'}", "Expected 'type' to be of type Integer.")]
 
         [InlineData("{'type':3,'invocationId':'42','error':'foo','result':true}", "The 'error' and 'result' properties are mutually exclusive.")]
@@ -201,6 +200,19 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, messages);
 
             Assert.Equal(expectedMessage, messages[0], TestHubMessageEqualityComparer.Instance);
+        }
+
+        [Theory]
+        [InlineData("{'type':1,'invocationId':'42','target':'foo','arguments':[],'extraParameter':'1'}")]
+        public void ExtraItemsInMessageAreIgnored(string input)
+        {
+            input = Frame(input);
+
+            var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
+            var protocol = new JsonHubProtocol();
+            var messages = new List<HubMessage>();
+            Assert.True(protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, messages));
+            Assert.Single(messages);
         }
 
         [Theory]

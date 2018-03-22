@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { CompletionMessage, InvocationMessage, MessageType, StreamItemMessage } from "@aspnet/signalr";
+import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "../src/MessagePackHubProtocol";
 
 describe("MessageHubProtocol", () => {
@@ -14,7 +14,7 @@ describe("MessageHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new MessagePackHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation));
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -27,7 +27,7 @@ describe("MessageHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new MessagePackHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation));
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -42,7 +42,7 @@ describe("MessageHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new MessagePackHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation));
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -56,7 +56,7 @@ describe("MessageHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new MessagePackHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation));
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -93,9 +93,18 @@ describe("MessageHubProtocol", () => {
             result: new Date(Date.UTC(2018, 0, 1, 11, 24, 0)),
             type: MessageType.Completion,
         } as CompletionMessage],
+        // extra property at the end should be ignored (testing older protocol client working with newer protocol server)
+        [[0x09, 0x95, 0x03, 0x80, 0xa3, 0x61, 0x62, 0x63, 0x02, 0x00],
+        {
+            error: null,
+            headers: {},
+            invocationId: "abc",
+            result: null,
+            type: MessageType.Completion,
+        } as CompletionMessage],
     ] as Array<[number[], CompletionMessage]>).forEach(([payload, expectedMessage]) =>
         it("can read Completion message", () => {
-            const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer);
+            const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, new NullLogger());
             expect(messages).toEqual([expectedMessage]);
         }));
 
@@ -113,10 +122,10 @@ describe("MessageHubProtocol", () => {
             invocationId: "abc",
             item: new Date(Date.UTC(2018, 0, 1, 11, 24, 0)),
             type: MessageType.StreamItem,
-        } as StreamItemMessage]
+        } as StreamItemMessage],
     ] as Array<[number[], StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
         it("can read StreamItem message", () => {
-            const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer);
+            const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, new NullLogger());
             expect(messages).toEqual([expectedMessage]);
         }));
 
@@ -132,7 +141,7 @@ describe("MessageHubProtocol", () => {
         } as StreamItemMessage],
     ] as Array<[number[], StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
         it("can read message with headers", () => {
-            const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer);
+            const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, new NullLogger());
             expect(messages).toEqual([expectedMessage]);
         }));
 
@@ -140,18 +149,15 @@ describe("MessageHubProtocol", () => {
         ["message with no payload", [0x00], new Error("Invalid payload.")],
         ["message with empty array", [0x01, 0x90], new Error("Invalid payload.")],
         ["message without outer array", [0x01, 0xc2], new Error("Invalid payload.")],
-        ["message with out-of-range message type", [0x03, 0x92, 0x05, 0x80], new Error("Invalid message type.")],
-        ["message with non-integer message type", [0x04, 0x92, 0xa1, 0x78, 0x80], new Error("Invalid message type.")],
         ["message with invalid headers", [0x03, 0x92, 0x01, 0x05], new Error("Invalid headers.")],
         ["Invocation message with invalid invocation id", [0x03, 0x92, 0x01, 0x80], new Error("Invalid payload for Invocation message.")],
-        ["StreamItem message with invalid invocation id", [0x03, 0x92, 0x02, 0x80], new Error("Invalid payload for stream Result message.")],
+        ["StreamItem message with invalid invocation id", [0x03, 0x92, 0x02, 0x80], new Error("Invalid payload for StreamItem message.")],
         ["Completion message with invalid invocation id", [0x04, 0x93, 0x03, 0x80, 0xa0], new Error("Invalid payload for Completion message.")],
-        ["Completion message with unexpected result", [0x06, 0x95, 0x03, 0x80, 0xa0, 0x02, 0x00], new Error("Invalid payload for Completion message.")],
         ["Completion message with missing result", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x01], new Error("Invalid payload for Completion message.")],
         ["Completion message with missing error", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x03], new Error("Invalid payload for Completion message.")],
     ] as Array<[string, number[], Error]>).forEach(([name, payload, expectedError]) =>
         it("throws for " + name, () => {
-            expect(() => new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer))
+            expect(() => new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, new NullLogger()))
                 .toThrow(expectedError);
         }));
 
@@ -159,7 +165,7 @@ describe("MessageHubProtocol", () => {
         const payload = [
             0x08, 0x94, 0x02, 0x80, 0xa3, 0x61, 0x62, 0x63, 0x08,
             0x0b, 0x95, 0x03, 0x80, 0xa3, 0x61, 0x62, 0x63, 0x03, 0xa2, 0x4f, 0x4b];
-        const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer);
+        const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, new NullLogger());
         expect(messages).toEqual([
             {
                 headers: {},
@@ -183,7 +189,7 @@ describe("MessageHubProtocol", () => {
             0x91, // message array length = 1 (fixarray)
             0x06, // type = 6 = Ping (fixnum)
         ];
-        const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer);
+        const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, new NullLogger());
         expect(messages).toEqual([
             {
                 type: MessageType.Ping,

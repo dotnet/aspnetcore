@@ -70,7 +70,7 @@ export class HubConnection {
         // Data may have all been read when processing handshake response
         if (data) {
             // Parse the messages
-            const messages = this.protocol.parseMessages(data);
+            const messages = this.protocol.parseMessages(data, this.logger);
 
             for (const message of messages) {
                 switch (message.type) {
@@ -211,7 +211,7 @@ export class HubConnection {
         // Handshake request is always JSON
         await this.connection.send(
             TextMessageFormat.write(
-                JSON.stringify({ protocol: this.protocol.name } as HandshakeRequestMessage)));
+                JSON.stringify({ protocol: this.protocol.name, version: this.protocol.version } as HandshakeRequestMessage)));
 
         this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
 
