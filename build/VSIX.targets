@@ -103,7 +103,8 @@
         /p:DeployExtension=false;
         /p:TargetVSIXContainer=$(VSIXOutputPath);
         /p:SymbolsPublishDir=$(BuildDir);
-        /p:Configuration=$(Configuration);" />
+        /p:Configuration=$(Configuration);
+        /p:LangVersion=7.1" />
     </ItemGroup>
 
     <MakeDir Directories="$(LogOutputDir)" />
