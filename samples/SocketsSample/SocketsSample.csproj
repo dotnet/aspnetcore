@@ -27,13 +27,13 @@
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
     <ItemGroup>
-      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr\dist\browser\*" />
-      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr-protocol-msgpack\dist\browser\*" />
+      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr\dist\browser\*" />
+      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr-protocol-msgpack\dist\browser\*" />
     </ItemGroup>
     <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
 
     <ItemGroup>
-      <MsgPackClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr-protocol-msgpack\node_modules\msgpack5\dist\*" />
+      <MsgPackClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr-protocol-msgpack\node_modules\msgpack5\dist\*" />
     </ItemGroup>
     <Copy SourceFiles="@(MsgPackClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\msgpack5" />
   </Target>
