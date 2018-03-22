@@ -34,6 +34,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyActivatorSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsSecurityHelperSourcesPackageVersion)" />

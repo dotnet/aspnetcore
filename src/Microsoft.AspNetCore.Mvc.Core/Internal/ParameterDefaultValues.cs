@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -21,34 +22,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                var parameterInfo = parameters[i];
-                object defaultValue;
-
-                if (parameterInfo.HasDefaultValue)
-                {
-                    defaultValue = parameterInfo.DefaultValue;
-                }
-                else
-                {
-                    var defaultValueAttribute = parameterInfo
-                        .GetCustomAttribute<DefaultValueAttribute>(inherit: false);
-
-                    if (defaultValueAttribute?.Value == null)
-                    {
-                        defaultValue = parameterInfo.ParameterType.GetTypeInfo().IsValueType
-                            ? Activator.CreateInstance(parameterInfo.ParameterType)
-                            : null;
-                    }
-                    else
-                    {
-                        defaultValue = defaultValueAttribute.Value;
-                    }
-                }
-
-                values[i] = defaultValue;
+                values[i] = GetParameterDefaultValue(parameters[i]);
             }
 
             return values;
+        }
+
+        private static object GetParameterDefaultValue(ParameterInfo parameterInfo)
+        {
+            if (!ParameterDefaultValue.TryGetDefaultValue(parameterInfo, out var defaultValue))
+            {
+                var defaultValueAttribute = parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: false);
+                defaultValue = defaultValueAttribute?.Value;
+
+                if (defaultValue == null && parameterInfo.ParameterType.IsValueType)
+                {
+                    defaultValue = Activator.CreateInstance(parameterInfo.ParameterType);
+                }
+            }
+            return defaultValue;
         }
     }
 }
