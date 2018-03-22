@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Authentication
             string jwtBearerScheme,
             Action<AzureADB2COptions> configureOptions) {
 
-            builder.AddVirtualScheme(scheme, displayName: null, configureOptions: o =>
+            builder.AddPolicyScheme(scheme, displayName: null, configureOptions: o =>
             {
-                o.Default = jwtBearerScheme;
+                o.ForwardDefault = jwtBearerScheme;
             });
 
             builder.Services.Configure(TryAddJwtBearerSchemeMapping(scheme, jwtBearerScheme));
@@ -105,10 +105,10 @@ namespace Microsoft.AspNetCore.Authentication
             Action<AzureADB2COptions> configureOptions)
         {
             AddAdditionalMvcApplicationParts(builder.Services);
-            builder.AddVirtualScheme(scheme, displayName, o =>
+            builder.AddPolicyScheme(scheme, displayName, o =>
             {
-                o.Default = cookieScheme;
-                o.Challenge = openIdConnectScheme;
+                o.ForwardDefault = cookieScheme;
+                o.ForwardChallenge = openIdConnectScheme;
             });
 
             builder.Services.Configure(TryAddOpenIDCookieSchemeMappings(scheme, openIdConnectScheme, cookieScheme));
