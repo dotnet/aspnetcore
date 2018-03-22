@@ -6,6 +6,8 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
+using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Text;
@@ -333,6 +335,96 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     Assert.True(connection.Transport.Input.TryRead(out var result));
                     Assert.Equal("Hello World", Encoding.UTF8.GetString(result.Buffer.ToArray()));
                     connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HttpContextFeatureForLongpollingWorksBetweenPolls()
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var connection = manager.CreateConnection();
+
+                using (var requestBody = new MemoryStream())
+                using (var responseBody = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Request.Body = requestBody;
+                    context.Response.Body = responseBody;
+
+                    var services = new ServiceCollection();
+                    services.AddSingleton<HttpContextEndPoint>();
+                    services.AddOptions();
+
+                    // Setup state on the HttpContext
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "GET";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = connection.ConnectionId;
+                    values["another"] = "value";
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
+                    context.Request.Headers["header1"] = "h1";
+                    context.Request.Headers["header2"] = "h2";
+                    context.Request.Headers["header3"] = "h3";
+                    context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("claim1", "claimValue") }));
+                    context.TraceIdentifier = "requestid";
+                    context.Connection.Id = "connectionid";
+                    context.Connection.LocalIpAddress = IPAddress.Loopback;
+                    context.Connection.LocalPort = 4563;
+                    context.Connection.RemoteIpAddress = IPAddress.IPv6Any;
+                    context.Connection.RemotePort = 43456;
+
+                    var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                    builder.UseEndPoint<HttpContextEndPoint>();
+                    var app = builder.Build();
+
+                    // Start a poll
+                    var task = dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+
+                    // Send to the application
+                    var buffer = Encoding.UTF8.GetBytes("Hello World");
+                    await connection.Application.Output.WriteAsync(buffer);
+
+                    // The poll request should end
+                    await task;
+
+                    // Make sure the actual response isn't affected
+                    Assert.Equal("application/octet-stream", context.Response.ContentType);
+
+                    // Now do a new send again without the poll (that request should have ended)
+                    await connection.Application.Output.WriteAsync(buffer);
+
+                    connection.Application.Output.Complete();
+
+                    // Wait for the endpoint to end
+                    await connection.ApplicationTask;
+
+                    var connectionHttpContext = connection.GetHttpContext();
+                    Assert.NotNull(connectionHttpContext);
+
+                    Assert.Equal(2, connectionHttpContext.Request.Query.Count);
+                    Assert.Equal(connection.ConnectionId, connectionHttpContext.Request.Query["id"]);
+                    Assert.Equal("value", connectionHttpContext.Request.Query["another"]);
+
+                    Assert.Equal(3, connectionHttpContext.Request.Headers.Count);
+                    Assert.Equal("h1", connectionHttpContext.Request.Headers["header1"]);
+                    Assert.Equal("h2", connectionHttpContext.Request.Headers["header2"]);
+                    Assert.Equal("h3", connectionHttpContext.Request.Headers["header3"]);
+                    Assert.Equal("requestid", connectionHttpContext.TraceIdentifier);
+                    Assert.Equal("claimValue", connectionHttpContext.User.Claims.FirstOrDefault().Value);
+                    Assert.Equal("connectionid", connectionHttpContext.Connection.Id);
+                    Assert.Equal(IPAddress.Loopback, connectionHttpContext.Connection.LocalIpAddress);
+                    Assert.Equal(4563, connectionHttpContext.Connection.LocalPort);
+                    Assert.Equal(IPAddress.IPv6Any, connectionHttpContext.Connection.RemoteIpAddress);
+                    Assert.Equal(43456, connectionHttpContext.Connection.RemotePort);
+                    Assert.NotNull(connectionHttpContext.RequestServices);
+                    Assert.Equal(Stream.Null, connectionHttpContext.Response.Body);
+                    Assert.NotNull(connectionHttpContext.Response.Headers);
+                    Assert.Equal("application/xml", connectionHttpContext.Response.ContentType);
                 }
             }
         }
@@ -713,7 +805,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await task;
 
                 Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
-                Assert.Null(connection.GetHttpContext());
+                Assert.NotNull(connection.GetHttpContext());
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }
@@ -1415,6 +1507,39 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public override Task OnConnectedAsync(ConnectionContext connection)
         {
             return Task.CompletedTask;
+        }
+    }
+
+    public class HttpContextEndPoint : EndPoint
+    {
+        public override async Task OnConnectedAsync(ConnectionContext connection)
+        {
+            while (true)
+            {
+                var result = await connection.Transport.Input.ReadAsync();
+
+                try
+                {
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+
+                    // Make sure we have an http context
+                    var context = connection.GetHttpContext();
+                    Assert.NotNull(context);
+
+                    // Setting the response headers should have no effect
+                    context.Response.ContentType = "application/xml";
+
+                    // Echo the results
+                    await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                }
+            }
         }
     }
 

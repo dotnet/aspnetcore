@@ -540,7 +540,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 client.Dispose();
 
                 // Ensure the client channel is empty
-                Assert.Null(client.TryRead());
+                var message = client.TryRead();
+                switch (message)
+                {
+                    case CloseMessage close:
+                        break;
+                    default:
+                        Assert.Null(message);
+                        break;
+                }
 
                 await endPointTask.OrTimeout();
             }

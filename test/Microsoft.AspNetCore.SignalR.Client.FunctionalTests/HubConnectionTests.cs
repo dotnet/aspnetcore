@@ -692,7 +692,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory(Skip = "HttpContext + Long Polling fails. Issue logged - https://github.com/aspnet/SignalR/issues/1644")]
+        [Theory]
         [MemberData(nameof(TransportTypes))]
         public async Task ClientCanSendHeaders(TransportType transportType)
         {

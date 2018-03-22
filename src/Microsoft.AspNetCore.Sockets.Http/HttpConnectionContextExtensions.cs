@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Sockets
     {
         public static HttpContext GetHttpContext(this ConnectionContext connection)
         {
-            return connection.Features.Get<IHttpContextFeature>().HttpContext;
+            return connection.Features.Get<IHttpContextFeature>()?.HttpContext;
         }
 
         public static void SetHttpContext(this ConnectionContext connection, HttpContext httpContext)
