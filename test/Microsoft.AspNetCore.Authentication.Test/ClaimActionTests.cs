@@ -51,5 +51,62 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal("role", roleClaims[1].Type);
             Assert.Equal("role2", roleClaims[1].Value);
         }
+
+        [Fact]
+        public void MapAllSucceeds()
+        {
+            var userData = new JObject
+            {
+                ["name0"] = "value0",
+                ["name1"] = "value1",
+            };
+
+            var identity = new ClaimsIdentity();
+            var action = new MapAllClaimsAction();
+            action.Run(userData, identity, "iss");
+
+            Assert.Equal("name0", identity.FindFirst("name0").Type);
+            Assert.Equal("value0", identity.FindFirst("name0").Value);
+            Assert.Equal("name1", identity.FindFirst("name1").Type);
+            Assert.Equal("value1", identity.FindFirst("name1").Value);
+        }
+
+        [Fact]
+        public void MapAllAllowesDulicateKeysWithUniqueValues()
+        {
+            var userData = new JObject
+            {
+                ["name0"] = "value0",
+                ["name1"] = "value1",
+            };
+
+            var identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim("name0", "value2"));
+            identity.AddClaim(new Claim("name1", "value3"));
+            var action = new MapAllClaimsAction();
+            action.Run(userData, identity, "iss");
+
+            Assert.Equal(2, identity.FindAll("name0").Count());
+            Assert.Equal(2, identity.FindAll("name1").Count());
+        }
+
+        [Fact]
+        public void MapAllSkipsDuplicateValues()
+        {
+            var userData = new JObject
+            {
+                ["name0"] = "value0",
+                ["name1"] = "value1",
+            };
+
+            var identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim("name0", "value0"));
+            identity.AddClaim(new Claim("name1", "value1"));
+            var action = new MapAllClaimsAction();
+            action.Run(userData, identity, "iss");
+
+            Assert.Single(identity.FindAll("name0"));
+            Assert.Single(identity.FindAll("name1"));
+        }
     }
 }

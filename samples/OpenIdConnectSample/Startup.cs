@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Encodings.Web;
@@ -44,6 +45,8 @@ namespace OpenIdConnectSample
 
         public void ConfigureServices(IServiceCollection services)
         {
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -56,9 +59,13 @@ namespace OpenIdConnectSample
                 o.ClientId = Configuration["oidc:clientid"];
                 o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
                 o.Authority = Configuration["oidc:authority"];
+
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
+
+                o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
+
                 o.Events = new OpenIdConnectEvents()
                 {
                     OnAuthenticationFailed = c =>
