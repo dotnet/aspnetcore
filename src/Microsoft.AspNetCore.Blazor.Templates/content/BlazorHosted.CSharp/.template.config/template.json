@@ -53,6 +53,14 @@
       "target": "./",
       "exclude": [
         ".template.config/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "*.sln"
+          ]
+        }
       ]
     }
   ],
