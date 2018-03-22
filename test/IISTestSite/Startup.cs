@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,33 +24,16 @@ namespace IISTestSite
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.Map("/ServerVariable", ServerVariable);
-            app.Map("/AuthenticationAnonymous", AuthenticationAnonymous);
-            app.Map("/AuthenticationRestricted", AuthenticationRestricted);
-            app.Map("/AuthenticationForbidden", AuthenticationForbidden);
-            app.Map("/AuthenticationRestrictedNTLM", AuthenticationRestrictedNTLM);
-            app.Map("/FeatureCollectionSetRequestFeatures", FeatureCollectionSetRequestFeatures);
-            app.Map("/FeatureCollectionSetResponseFeatures", FeatureCollectionSetResponseFeatures);
-            app.Map("/FeatureCollectionSetConnectionFeatures", FeatureCollectionSetConnectionFeatures);
-            app.Map("/HelloWorld", HelloWorld);
-            app.Map("/LargeResponseBody", LargeResponseBody);
-            app.Map("/ResponseHeaders", ResponseHeaders);
-            app.Map("/ResponseInvalidOrdering", ResponseInvalidOrdering);
-            app.Map("/CheckEnvironmentVariable", CheckEnvironmentVariable);
-            app.Map("/CheckEnvironmentLongValueVariable", CheckEnvironmentLongValueVariable);
-            app.Map("/CheckAppendedEnvironmentVariable", CheckAppendedEnvironmentVariable);
-            app.Map("/CheckRemoveAuthEnvironmentVariable", CheckRemoveAuthEnvironmentVariable);
-            app.Map("/ReadAndWriteSynchronously", ReadAndWriteSynchronously);
-            app.Map("/ReadAndWriteEcho", ReadAndWriteEcho);
-            app.Map("/ReadAndWriteCopyToAsync", ReadAndWriteCopyToAsync);
-            app.Map("/ReadAndWriteEchoTwice", ReadAndWriteEchoTwice);
-            app.Map("/ReadAndWriteSlowConnection", ReadAndWriteSlowConnection);
-            app.Map("/WebsocketRequest", WebsocketRequest);
-            app.Map("/UpgradeFeatureDetection", UpgradeFeatureDetection);
-            app.Map("/TestInvalidReadOperations", TestInvalidReadOperations);
-            app.Map("/TestInvalidWriteOperations", TestInvalidWriteOperations);
-            app.Map("/TestReadOffsetWorks", TestReadOffsetWorks);
-            app.Map("/LargeResponseFile", LargeResponseFile);
+            foreach (var method in GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                var parameters = method.GetParameters();
+                if (method.Name != nameof(Configure) &&
+                    parameters.Length == 1 &&
+                    parameters[0].ParameterType == typeof(IApplicationBuilder))
+                {
+                    app.Map("/" + method.Name, innerAppBuilder => method.Invoke(this, new[] { innerAppBuilder }));
+                }
+            }
         }
 
         private void ServerVariable(IApplicationBuilder app)
@@ -227,6 +211,21 @@ namespace IISTestSite
                 }
                 await context.Response.WriteAsync("_Failure");
             });
+        }
+
+        private void Throw(IApplicationBuilder app)
+        {
+            app.Run(ctx => { throw new Exception(); });
+        }
+
+        private void SetCustomErorCode(IApplicationBuilder app)
+        {
+            app.Run(async ctx => {
+                    var feature = ctx.Features.Get<IHttpResponseFeature>();
+                    feature.ReasonPhrase = ctx.Request.Query["reason"];
+                    feature.StatusCode = int.Parse(ctx.Request.Query["code"]);
+                    await ctx.Response.WriteAsync("Body");
+                });
         }
 
         private void HelloWorld(IApplicationBuilder app)
