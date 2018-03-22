@@ -33,12 +33,16 @@
         tfmGroup=$(TargetFrameworkIdentifier)$(_TargetFrameworkVersionWithoutV);
         configuration=$(Configuration);
         copyright=$(Copyright);
+        author=$(Authors);
         licenseUrl=$(PackageLicenseUrl);
         iconUrl=$(PackageIconUrl);
         projectUrl=$(PackageProjectUrl);
         repositoryUrl=$(RepositoryUrl);
+        repositoryType=$(RepositoryType);
+        repositoryCommit=$(RepositoryCommit);
         version=$(PackageVersion);
         description=$(Description);
+        serviceable=$([MSBuild]::ValueOrDefault('$(Serviceable)', 'false'));
       </NuspecProperties>
     </PropertyGroup>
   </Target>

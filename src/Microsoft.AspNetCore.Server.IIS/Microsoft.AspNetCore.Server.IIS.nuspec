@@ -3,8 +3,7 @@
   <metadata>
     <id>Microsoft.AspNetCore.Server.IIS</id>
     <version>$version$</version>
-    <authors>Microsoft</authors>
-    <owners>Microsoft</owners>
+    <authors>$author$</authors>
     <licenseUrl>$licenseUrl$</licenseUrl>
     <copyright>$copyright$</copyright>
     <projectUrl>$projectUrl$</projectUrl>
@@ -13,7 +12,8 @@
     <description>$description$</description>
     <language>en-US</language>
     <tags>aspnetcore iis</tags>
-    <repository type="git" url="$repositoryUrl$" />
+    <serviceable>$serviceable$</serviceable>
+    <repository type="$repositoryType$" url="$repositoryUrl$" commit="$repositoryCommit$" />
     <dependencies>
       <group targetFramework="$tfmGroup$">
         <dependency id="Microsoft.AspNetCore.Server.IISIntegration" version="[$version$ , )" />

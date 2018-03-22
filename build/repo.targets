@@ -3,7 +3,7 @@
   <PropertyGroup>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
-    <TestDependsOn>$(TestDependsOn);RunNativeTest</TestDependsOn>
+    <TestDependsOn>RunNativeTest;$(TestDependsOn)</TestDependsOn>
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
   </PropertyGroup>
 
@@ -79,7 +79,7 @@
       WorkingDirectory="$(RepositoryRoot)" />
   </Target>
 
-  <Target Name="RunNativeTest">
+  <Target Name="RunNativeTest" DependsOnTargets="GetToolsets">
     <ItemGroup>
       <Platforms Include="Win32;x64" />
     </ItemGroup>
