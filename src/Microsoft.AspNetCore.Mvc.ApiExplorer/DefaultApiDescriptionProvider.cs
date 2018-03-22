@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     {
         private readonly MvcOptions _mvcOptions;
+        private readonly IActionResultTypeMapper _mapper;
         private readonly IInlineConstraintResolver _constraintResolver;
         private readonly IModelMetadataProvider _modelMetadataProvider;
 
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
             IInlineConstraintResolver constraintResolver,
@@ -43,6 +46,26 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             _mvcOptions = optionsAccessor.Value;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
+        /// </summary>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
+        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
+        /// constraints.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        public DefaultApiDescriptionProvider(
+            IOptions<MvcOptions> optionsAccessor,
+            IInlineConstraintResolver constraintResolver,
+            IModelMetadataProvider modelMetadataProvider,
+            IActionResultTypeMapper mapper)
+        {
+            _mvcOptions = optionsAccessor.Value;
+            _constraintResolver = constraintResolver;
+            _modelMetadataProvider = modelMetadataProvider;
+            _mapper = mapper;
         }
 
         /// <inheritdoc />
@@ -481,12 +504,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 return typeof(void);
             }
-
+            
             // Unwrap the type if it's a Task<T>. The Task (non-generic) case was already handled.
-            var unwrappedType = UnwrapGenericType(declaredReturnType, typeof(Task<>));
-
-            // Unwrap the type if it's ActionResult<T> or Task<ActionResult<T>>.
-            unwrappedType = UnwrapGenericType(unwrappedType, typeof(ActionResult<>));
+            Type unwrappedType = declaredReturnType;
+            if (declaredReturnType.IsGenericType && 
+                declaredReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                unwrappedType = declaredReturnType.GetGenericArguments()[0];
+            }
 
             // If the method is declared to return IActionResult or a derived class, that information
             // isn't valuable to the formatter.
@@ -494,16 +519,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 return null;
             }
-            else
-            {
-                return unwrappedType;
-            }
 
-            Type UnwrapGenericType(Type type, Type queryType)
-            {
-                var genericType = ClosedGenericMatcher.ExtractGenericInterface(type, queryType);
-                return genericType?.GenericTypeArguments[0] ?? type;
-            }
+            // If we get here, the type should be a user-defined data type or an envelope type
+            // like ActionResult<T>. The mapper service will unwrap envelopes.
+            unwrappedType = _mapper.GetResultDataType(unwrappedType);
+            return unwrappedType;
         }
 
         private Type GetRuntimeReturnType(Type declaredReturnType)

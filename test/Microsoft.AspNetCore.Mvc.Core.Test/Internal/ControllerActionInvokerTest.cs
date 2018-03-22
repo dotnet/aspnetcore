@@ -1345,6 +1345,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var invoker = new ControllerActionInvoker(
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
+                new ActionResultTypeMapper(),
                 controllerContext,
                 cacheEntry,
                 new IFilterMetadata[0]);
@@ -1624,6 +1625,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var invoker = new ControllerActionInvoker(
                 logger,
                 diagnosticSource,
+                new ActionResultTypeMapper(),
                 controllerContext,
                 cacheEntry,
                 filters);

@@ -27,7 +27,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             new AwaitableObjectResultExecutor(),
         };
 
-        public abstract ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments);
+        public abstract ValueTask<IActionResult> Execute(
+            IActionResultTypeMapper mapper,
+            ObjectMethodExecutor executor,
+            object controller,
+            object[] arguments);
 
         protected abstract bool CanExecute(ObjectMethodExecutor executor);
 
@@ -48,7 +52,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // void LogMessage(..)
         private class VoidResultExecutor : ActionMethodExecutor
         {
-            public override ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 executor.Execute(controller, arguments);
                 return new ValueTask<IActionResult>(new EmptyResult());
@@ -62,7 +70,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // CreatedAtResult Put(..)
         private class SyncActionResultExecutor : ActionMethodExecutor
         {
-            public override ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 var actionResult = (IActionResult)executor.Execute(controller, arguments);
                 EnsureActionResultNotNull(executor, actionResult);
@@ -78,11 +90,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // object Index(..)
         private class SyncObjectResultExecutor : ActionMethodExecutor
         {
-            public override ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 // Sync method returning arbitrary object
                 var returnValue = executor.Execute(controller, arguments);
-                var actionResult = ConvertToActionResult(returnValue, executor.MethodReturnType);
+                var actionResult = ConvertToActionResult(mapper, returnValue, executor.MethodReturnType);
                 return new ValueTask<IActionResult>(actionResult);
             }
 
@@ -93,7 +109,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Task SaveState(..)
         private class TaskResultExecutor : ActionMethodExecutor
         {
-            public override async ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override async ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 await (Task)executor.Execute(controller, arguments);
                 return new EmptyResult();
@@ -106,7 +126,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Custom task-like type with no return value.
         private class AwaitableResultExecutor : ActionMethodExecutor
         {
-            public override async ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override async ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 await executor.ExecuteAsync(controller, arguments);
                 return new EmptyResult();
@@ -122,7 +146,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Task<IActionResult> Post(..)
         private class TaskOfIActionResultExecutor : ActionMethodExecutor
         {
-            public override async ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override async ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 // Async method returning Task<IActionResult>
                 // Avoid extra allocations by calling Execute rather than ExecuteAsync and casting to Task<IActionResult>.
@@ -141,7 +169,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // ValueTask<ViewResult> GetViewsAsync(..)
         private class TaskOfActionResultExecutor : ActionMethodExecutor
         {
-            public override async ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override async ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 // Async method returning awaitable-of-IActionResult (e.g., Task<ViewResult>)
                 // We have to use ExecuteAsync because we don't know the awaitable's type at compile time.
@@ -161,11 +193,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Task<Customer> GetCustomerAsync(..)
         private class AwaitableObjectResultExecutor : ActionMethodExecutor
         {
-            public override async ValueTask<IActionResult> Execute(ObjectMethodExecutor executor, object controller, object[] arguments)
+            public override async ValueTask<IActionResult> Execute(
+                IActionResultTypeMapper mapper,
+                ObjectMethodExecutor executor,
+                object controller,
+                object[] arguments)
             {
                 // Async method returning awaitable-of-nonvoid
                 var returnValue = await executor.ExecuteAsync(controller, arguments);
-                var actionResult = ConvertToActionResult(returnValue, executor.MethodReturnType);
+                var actionResult = ConvertToActionResult(mapper, returnValue, executor.MethodReturnType);
                 return actionResult;
             }
 
@@ -176,30 +212,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             if (actionResult == null)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatActionResult_ActionReturnValueCannotBeNull(executor.AsyncResultType ?? executor.MethodReturnType));
+                var type = executor.AsyncResultType ?? executor.MethodReturnType;
+                throw new InvalidOperationException(Resources.FormatActionResult_ActionReturnValueCannotBeNull(type));
             }
         }
 
-        private static IActionResult ConvertToActionResult(object returnValue, Type declaredType)
+        private IActionResult ConvertToActionResult(IActionResultTypeMapper mapper, object returnValue, Type declaredType)
         {
-            IActionResult result;
-            switch (returnValue)
-            {
-                case IActionResult actionResult:
-                    result = actionResult;
-                    break;
-                case IConvertToActionResult convertToActionResult:
-                    result = convertToActionResult.Convert();
-                    break;
-                default:
-                    result = new ObjectResult(returnValue)
-                    {
-                        DeclaredType = declaredType,
-                    };
-                    break;
-            }
-
+            var result = (returnValue as IActionResult) ?? mapper.Convert(returnValue, declaredType);
             if (result == null)
             {
                 throw new InvalidOperationException(Resources.FormatActionResult_ActionReturnValueCannotBeNull(declaredType));

@@ -1449,7 +1449,8 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var provider = new DefaultApiDescriptionProvider(
                 optionsAccessor,
                 constraintResolver.Object,
-                modelMetadataProvider);
+                modelMetadataProvider,
+                new ActionResultTypeMapper());
 
             provider.OnProvidersExecuting(context);
             provider.OnProvidersExecuted(context);

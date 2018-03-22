@@ -9,6 +9,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -43,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IPageHandlerMethodSelector handlerMethodSelector,
             DiagnosticSource diagnosticSource,
             ILogger logger,
+            IActionResultTypeMapper mapper,
             PageContext pageContext,
             IFilterMetadata[] filterMetadata,
             PageActionInvokerCacheEntry cacheEntry,
@@ -52,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             : base(
                   diagnosticSource,
                   logger,
+                  mapper,
                   pageContext,
                   filterMetadata,
                   pageContext.ValueProviderFactories)

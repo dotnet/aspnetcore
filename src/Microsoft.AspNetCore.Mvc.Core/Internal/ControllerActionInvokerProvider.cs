@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,18 +21,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly int _maxModelValidationErrors;
         private readonly ILogger _logger;
         private readonly DiagnosticSource _diagnosticSource;
+        private readonly IActionResultTypeMapper _mapper;
 
         public ControllerActionInvokerProvider(
             ControllerActionInvokerCache controllerActionInvokerCache,
             IOptions<MvcOptions> optionsAccessor,
             ILoggerFactory loggerFactory,
-            DiagnosticSource diagnosticSource)
+            DiagnosticSource diagnosticSource,
+            IActionResultTypeMapper mapper)
         {
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
             _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
             _diagnosticSource = diagnosticSource;
+            _mapper = mapper;
         }
 
         public int Order => -1000;
@@ -56,6 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var invoker = new ControllerActionInvoker(
                     _logger,
                     _diagnosticSource,
+                    _mapper,
                     controllerContext,
                     cacheResult.cacheEntry,
                     cacheResult.filters);

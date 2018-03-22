@@ -28,10 +28,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         internal ControllerActionInvoker(
             ILogger logger,
             DiagnosticSource diagnosticSource,
+            IActionResultTypeMapper mapper,
             ControllerContext controllerContext,
             ControllerActionInvokerCacheEntry cacheEntry,
             IFilterMetadata[] filters)
-            : base(diagnosticSource, logger, controllerContext, filters, controllerContext.ValueProviderFactories)
+            : base(diagnosticSource, logger, mapper, controllerContext, filters, controllerContext.ValueProviderFactories)
         {
             if (cacheEntry == null)
             {
@@ -347,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     controller);
                 logger.ActionMethodExecuting(controllerContext, orderedArguments);
                 var stopwatch = ValueStopwatch.StartNew();
-                var actionResultValueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, orderedArguments);
+                var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, controller, orderedArguments);
                 if (actionResultValueTask.IsCompletedSuccessfully)
                 {
                     result = actionResultValueTask.Result;
@@ -368,18 +369,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     controllerContext,
                     result);
             }
-        }
-
-        private static bool IsResultIActionResult(ObjectMethodExecutor executor)
-        {
-            var resultType = executor.AsyncResultType ?? executor.MethodReturnType;
-            return typeof(IActionResult).IsAssignableFrom(resultType);
-        }
-
-        private bool IsConvertibleToActionResult(ObjectMethodExecutor executor)
-        {
-            var resultType = executor.AsyncResultType ?? executor.MethodReturnType;
-            return typeof(IConvertToActionResult).IsAssignableFrom(resultType);
         }
 
         /// <remarks><see cref="ResourceInvoker.InvokeFilterPipelineAsync"/> for details on what the
