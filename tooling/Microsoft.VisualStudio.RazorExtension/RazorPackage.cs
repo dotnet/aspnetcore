@@ -9,8 +9,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 namespace Microsoft.VisualStudio.RazorExtension
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-    [Guid(RazorPackage.PackageGuidString)]
+    [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
+    [Guid(PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
 #if RAZOR_EXTENSION_DEVELOPER_MODE
     [ProvideToolWindow(typeof(Microsoft.VisualStudio.RazorExtension.RazorInfo.RazorInfoToolWindow))]
