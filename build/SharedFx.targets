@@ -22,6 +22,20 @@
       Properties="PackageOutputPath=$(BuildDir);BuildNumber=$(BuildNumber);DesignTimeBuild=true;IsFinalBuild=$(IsFinalBuild)">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
+
+    <ItemGroup>
+      <!-- Cartesian products in MSBuild are fun :) -->
+      <_SharedFrameworkSymbolsPackage Include="@(SharedFrameworkName)">
+        <Rid>%(AllSharedFxRIDs.Identity)</Rid>
+      </_SharedFrameworkSymbolsPackage>
+      <_SharedFrameworkSymbolsPackage Update="@(_SharedFrameworkSymbolsPackage)" PackageId="runtime.%(Rid).%(Identity)" />
+      <ArtifactInfo Include="@(_SharedFrameworkSymbolsPackage->'$(BuildDir)%(PackageId).$(PackageVersion).symbols.nupkg')">
+        <ArtifactType>NuGetSymbolsPackage</ArtifactType>
+        <PackageId>%(_SharedFrameworkSymbolsPackage.PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <Category>shipoob</Category>
+      </ArtifactInfo>
+    </ItemGroup>
   </Target>
 
   <Target Name="_BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
