@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -14,21 +13,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public void CreateInstance_CreatesFilter()
         {
             // Arrange
-            var factory = new ControllerSaveTempDataPropertyFilterFactory();
-            var propertyInfo = typeof(StringController).GetProperty("StringProp");
-
-            factory.TempDataProperties = new List<TempDataProperty>()
-            {
-                new TempDataProperty("TempDataProperty-StringProp", propertyInfo, null, null)
-            };
+            var property = typeof(StringController).GetProperty(nameof(StringController.StringProp));
+            var lifecycleProperties = new[] { new LifecycleProperty(property, "key") };
+            var factory = new ControllerSaveTempDataPropertyFilterFactory(lifecycleProperties);
 
             // Act
             var filter = factory.CreateInstance(CreateServiceProvider());
 
             // Assert
-            Assert.Collection(
-                Assert.IsType<ControllerSaveTempDataPropertyFilter>(filter).Properties,
-                property => Assert.Equal(propertyInfo, property.PropertyInfo));
+            var tempDataFilter = Assert.IsType<ControllerSaveTempDataPropertyFilter>(filter);
+            Assert.Same(lifecycleProperties, tempDataFilter.Properties);
         }
 
         private ServiceProvider CreateServiceProvider()
@@ -44,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private class StringController
         {
+            [TempData]
             public string StringProp { get; set; }
         }
     }
