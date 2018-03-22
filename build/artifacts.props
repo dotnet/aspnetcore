@@ -36,6 +36,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Core" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Facebook" Category="ship" AppMetapackage="true" AllMetapackage="true"/>

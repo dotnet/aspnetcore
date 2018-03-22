@@ -1,3 +1,7 @@
+[submodule "modules/AADIntegration"]
+	path = modules/AADIntegration
+	url = https://github.com/aspnet/AADIntegration.git
+	branch = dev
 [submodule "modules/Antiforgery"]
 	path = modules/Antiforgery
 	url = https://github.com/aspnet/Antiforgery.git

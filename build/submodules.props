@@ -6,6 +6,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <Repository Include="AADIntegration" />
     <Repository Include="Antiforgery" />
     <Repository Include="AuthSamples" />
     <Repository Include="AzureIntegration" />

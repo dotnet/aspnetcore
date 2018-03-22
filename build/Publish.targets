@@ -59,6 +59,7 @@
   <Target Name="GetFilesToPublish" DependsOnTargets="GetArtifactInfo;GeneratePublishFiles">
     <PropertyGroup>
       <BlobBasePath>aspnetcore/Runtime/$(PackageVersion)/</BlobBasePath>
+      <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>
       <AliasBlobBasePath>aspnetcore/Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
       <PackageArchiveFileName>nuGetPackagesArchive-$(PackageVersion).lzma</PackageArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
@@ -133,38 +134,33 @@
         ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).symbols.nupkg"
         Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetSymbolsPackage'" />
 
-      <NpmPackageToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NpmPackage'" />
+      <NpmPackageToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NpmPackage'">
+        <RelativeBlobPath>$(NpmBlobBasePath)%(ArtifactInfo.PackageId)/%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
+        <ManifestArtifactData>Type=NpmPackage</ManifestArtifactData>
+        <ContentType>application/tar+gzip</ContentType>
+      </NpmPackageToPublish>
     </ItemGroup>
 
     <!-- Join required because shipping category is stored in universe (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
     <RepoTasks.JoinItems
-      Left="@(_PackageArtifactInfo)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
+      Left="@(_PackageArtifactInfo->WithMetadataValue('Category',''))" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
       Right="@(PackageArtifact)" RightMetadata="Category">
       <Output TaskParameter="JoinResult" ItemName="_PackageArtifactInfoWithCategory" />
     </RepoTasks.JoinItems>
 
-    <ItemGroup>
-      <_MissingPackageArtifact Include="@(PackageArtifact)" />
-      <_MissingPackageArtifact Remove="%(_PackageArtifactInfoWithCategory.PackageId)" />
-    </ItemGroup>
-
     <RepoTasks.JoinItems
-      Left="@(_SymbolsPackageArtifactInfo)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
+      Left="@(_SymbolsPackageArtifactInfo->WithMetadataValue('Category',''))" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
       Right="@(PackageArtifact)" RightMetadata="Category">
       <Output TaskParameter="JoinResult" ItemName="_SymbolsArtifactInfoWithCategory" />
     </RepoTasks.JoinItems>
 
-    <!--
-      Add symbols packages to PackageToPublish after validating PackageToPublish matches PackageArtifact.
-      We don't always produce a symbols package for each regular packages.
-    -->
     <ItemGroup>
       <PackageToPublish Include="%(_PackageArtifactInfoWithCategory.ArtifactPath)" Category="%(_PackageArtifactInfoWithCategory.Category)" />
+      <PackageToPublish Include="%(_PackageArtifactInfo.ArtifactPath)" Category="%(_PackageArtifactInfo.Category)" Condition="'%(_PackageArtifactInfo.Category)' != ''" />
       <PackageToPublish Include="%(_SymbolsArtifactInfoWithCategory.ArtifactPath)" Category="%(_SymbolsArtifactInfoWithCategory.Category)" />
+      <PackageToPublish Include="%(_SymbolsPackageArtifactInfo.ArtifactPath)" Category="%(_SymbolsPackageArtifactInfo.Category)" Condition="'%(_SymbolsPackageArtifactInfo.Category)' != ''" />
     </ItemGroup>
-  </Target>
 
-  <Target Name="_CheckFilesToPublish">
     <ItemGroup>
       <_MissingArtifactFile Include="@(FilesToPublish)" Condition="!Exists(%(FilesToPublish.Identity))" />
       <_MissingArtifactFile Include="@(NpmPackageToPublish)" Condition="!Exists(%(NpmPackageToPublish.Identity))" />
@@ -172,15 +168,14 @@
     </ItemGroup>
 
     <Error Text="Missing expected files:%0A - @(_MissingArtifactFile, '%0A - ')" Condition="@(_MissingArtifactFile->Count()) != 0" />
-    <Error Text="Missing expected packages from PackageToPublish. These were defined as expected PackageArtifact's in artifacts.props: %0A - @(_MissingPackageArtifact, '%0A - ')" Condition="@(_MissingPackageArtifact->Count()) != 0" />
   </Target>
 
-  <Target Name="CopyToPublishArtifacts" DependsOnTargets="_CheckFilesToPublish">
+  <Target Name="CopyToPublishArtifacts" DependsOnTargets="GetFilesToPublish">
     <Copy SourceFiles="%(FilesToPublish.Identity)" DestinationFiles="$(ArtifactsDir)%(FilesToPublish.RelativeBlobPath)" Condition="'%(FilesToPublish.RelativeBlobPath)' != ''" />
   </Target>
 
   <Target Name="PublishToMyGet"
-          DependsOnTargets="_CheckFilesToPublish;GetToolsets"
+          DependsOnTargets="GetFilesToPublish;GetToolsets"
           Condition="'$(PublishToMyget)' == 'true'">
 
     <Error Text="Missing required property: PublishMyGetFeedUrl"  Condition=" '$(PublishMyGetFeedUrl)' == '' "/>
@@ -221,7 +216,7 @@
   </Target>
 
   <Target Name="PublishToAzureFeed"
-    DependsOnTargets="_CheckFilesToPublish"
+    DependsOnTargets="GetFilesToPublish"
     Condition="'$(PublishToAzureFeed)' == 'true'">
 
     <PropertyGroup>
@@ -244,7 +239,7 @@
   </Target>
 
   <Target Name="PublishToTransportFeed"
-    DependsOnTargets="ResolveCommitHash;GetFilesToPublish;_CheckFilesToPublish"
+    DependsOnTargets="ResolveCommitHash;GetFilesToPublish"
     Condition="'$(PublishToTransportFeed)' == 'true'">
 
     <ItemGroup>
@@ -256,6 +251,10 @@
         Include="@(PackageToPublish)"
         ManifestArtifactData="NonShipping=true"
         Condition="'%(PackageToPublish.Category)' != 'ship'" />
+
+      <FilesToPublishToTransport Include="@(NpmPackageToPublish)"
+        RelativeBlobPath="$(BlobFileRelativePathBase)%(NpmPackageToPublish.RelativeBlobPath)"
+        ManifestArtifactData="%(NpmPackageToPublish.ManifestArtifactData)" />
 
       <!-- Filter aliased artifacts to workaround dotnet/buildtools#1855 -->
       <FilesToPublishToTransport Include="@(FilesToPublish)"
