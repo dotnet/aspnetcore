@@ -231,6 +231,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 response.StatusCode = statusCode.Value;
             }
 
+            OnExecuting(viewContext);
+
             using (var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
             {
                 var view = viewContext.View;
@@ -255,6 +257,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
                 // response as part of the Dispose which has a perf impact.
                 await writer.FlushAsync();
+            }
+        }
+
+        private void OnExecuting(ViewContext viewContext)
+        {
+            var viewDataValuesProvider = viewContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
+            if (viewDataValuesProvider != null)
+            {
+                viewDataValuesProvider.ProvideViewDataValues(viewContext.ViewData);
             }
         }
     }

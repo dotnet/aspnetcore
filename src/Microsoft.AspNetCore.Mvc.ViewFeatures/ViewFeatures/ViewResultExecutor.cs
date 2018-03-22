@@ -167,7 +167,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var view = viewEngineResult.View;
             using (view as IDisposable)
             {
-
                 await ExecuteAsync(
                     context,
                     view,

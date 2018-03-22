@@ -845,7 +845,6 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
             Assert.Equal(expected, response.Headers.Location.ToString());
         }
 
-
         [Fact]
         public async Task RedirectToSelfWorks()
         {

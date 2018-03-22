@@ -5,33 +5,24 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    internal class PageSaveTempDataPropertyFilterFactory : IFilterFactory
+    internal class PageViewDataAttributeFilterFactory : IFilterFactory
     {
-
-        public PageSaveTempDataPropertyFilterFactory(IReadOnlyList<LifecycleProperty> properties)
+        public PageViewDataAttributeFilterFactory(IReadOnlyList<LifecycleProperty> properties)
         {
             Properties = properties;
         }
 
         public IReadOnlyList<LifecycleProperty> Properties { get; }
 
+        // PageViewDataAttributeFilter is stateful and cannot be reused.
         public bool IsReusable => false;
 
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            var service = serviceProvider.GetRequiredService<PageSaveTempDataPropertyFilter>();
-            service.Properties = Properties;
-
-            return service;
+            return new PageViewDataAttributeFilter(Properties);
         }
     }
 }
