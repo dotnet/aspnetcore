@@ -157,6 +157,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
                 var context = new DefaultHttpContext();
                 context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                context.Features.Set<IHttpWebSocketFeature>(new TestWebSocketConnectionFeature());
                 var services = new ServiceCollection();
                 services.AddSingleton<TestEndPoint>();
                 services.AddOptions();
@@ -1222,6 +1223,31 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 Assert.NotNull(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
                 Assert.Equal(options.LongPolling.PollTimeout, connection.Features.Get<IConnectionInherentKeepAliveFeature>().KeepAliveInterval);
+            }
+        }
+
+        [Fact]
+        public async Task NegotiateDoesNotReturnWebSocketsWhenNotAvailable()
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                var services = new ServiceCollection();
+                services.AddSingleton<TestEndPoint>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                await dispatcher.ExecuteNegotiateAsync(context, new HttpSocketOptions { Transports = TransportType.WebSockets });
+
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+                var availableTransports = (JArray)negotiateResponse["availableTransports"];
+
+                Assert.Empty(availableTransports);
             }
         }
 
