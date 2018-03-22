@@ -333,15 +333,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             // Verifies we have sent the statuscode before writing a header
             var reasonPhrase = string.IsNullOrEmpty(ReasonPhrase) ? ReasonPhrases.GetReasonPhrase(StatusCode) : ReasonPhrase;
-            var reasonPhraseBytes = new byte [reasonPhrase.Length + 1];
-            Encoding.ASCII.GetBytes(reasonPhrase, 0, reasonPhrase.Length, reasonPhraseBytes, 0);
- 
-            fixed (byte* pReasonPhrase = reasonPhraseBytes)
-            {
-                Debug.Assert((IntPtr)pReasonPhrase != IntPtr.Zero);
-                // This copies data into the underlying buffer
-                NativeMethods.http_set_response_status_code(_pInProcessHandler, (ushort)StatusCode, pReasonPhrase);
-            }
+         
+            // This copies data into the underlying buffer
+            NativeMethods.http_set_response_status_code(_pInProcessHandler, (ushort)StatusCode, reasonPhrase);
 
             HttpResponseHeaders.IsReadOnly = true;
             foreach (var headerPair in HttpResponseHeaders)
