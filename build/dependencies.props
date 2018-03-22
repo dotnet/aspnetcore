@@ -29,7 +29,7 @@
     <MicrosoftNETCoreApp10PackageVersion>1.0.8</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.5</MicrosoftNETCoreApp11PackageVersion>
     <LZMAMicrosoftNETCoreApp20PackageVersion>2.0.0</LZMAMicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.6</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.7-servicing-26322-01</MicrosoftNETCoreApp20PackageVersion>
   </PropertyGroup>
 
   <!-- .NET Core feed -->
