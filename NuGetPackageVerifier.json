@@ -8,6 +8,15 @@
                 "Exclusions": {
                     "DOC_MISSING": {
                         "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Views.dll": "This library contains precompiled views."
+                    },
+                    "ASSEMBLY_DESCRIPTION": {
+                        "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Views.dll": "Enter justification"
+                    },
+                    "NEUTRAL_RESOURCES_LANGUAGE": {
+                        "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Views.dll": "Enter justification"
+                    },
+                    "SERVICING_ATTRIBUTE": {
+                        "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Views.dll": "Enter justification"
                     }
                 }
             }

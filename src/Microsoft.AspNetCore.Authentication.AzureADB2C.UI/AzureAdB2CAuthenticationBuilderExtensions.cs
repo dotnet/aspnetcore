@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADB2COptions"/>.
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        public static AuthenticationBuilder AddAzureADB2CBearer(this AuthenticationBuilder builder, Action<AzureADB2COptions> configureOptions) => 
+        public static AuthenticationBuilder AddAzureADB2CBearer(this AuthenticationBuilder builder, Action<AzureADB2COptions> configureOptions) =>
             builder.AddAzureADB2CBearer(
                 AzureADB2CDefaults.BearerAuthenticationScheme,
                 AzureADB2CDefaults.JwtBearerAuthenticationScheme,
@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Authentication
             this AuthenticationBuilder builder,
             string scheme,
             string jwtBearerScheme,
-            Action<AzureADB2COptions> configureOptions) {
+            Action<AzureADB2COptions> configureOptions)
+        {
 
             builder.AddPolicyScheme(scheme, displayName: null, configureOptions: o =>
             {
@@ -190,27 +191,22 @@ namespace Microsoft.AspNetCore.Authentication
         private static void AddAdditionalMvcApplicationParts(IServiceCollection services)
         {
             var thisAssembly = typeof(AzureADB2CAuthenticationBuilderExtensions).Assembly;
-            var additionalReferences = thisAssembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(am => string.Equals(am.Key, "Microsoft.AspNetCore.Mvc.AdditionalReference"))
-                .Select(am => am.Value.Split(',')[0])
-                .ToArray();
+            var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
 
             var mvcBuilder = services
                 .AddMvc()
                 .AddRazorPagesOptions(o => o.AllowAreas = true)
                 .ConfigureApplicationPartManager(apm =>
                 {
-                    foreach (var reference in additionalReferences)
+                    foreach (var reference in relatedAssemblies)
                     {
-                        var fileName = Path.GetFileName(reference);
-                        var filePath = Path.Combine(Path.GetDirectoryName(thisAssembly.Location), fileName);
-                        var additionalAssembly = LoadAssembly(filePath);
-                        // This needs to change to additional assembly part.
-                        var additionalPart = new AdditionalAssemblyPart(additionalAssembly);
-                        if (!apm.ApplicationParts.Any(ap => HasSameName(ap.Name, additionalPart.Name)))
+                        var factory = (AzureADB2CPartFactory)ApplicationPartFactory.GetApplicationPartFactory(reference);
+                        foreach (var additionalPart in factory.CreateApplicationParts())
                         {
-                            apm.ApplicationParts.Add(additionalPart);
+                            if (!apm.ApplicationParts.Any(ap => HasSameName(ap.Name, additionalPart.Name)))
+                            {
+                                apm.ApplicationParts.Add(additionalPart);
+                            }
                         }
                     }
 
@@ -218,30 +214,6 @@ namespace Microsoft.AspNetCore.Authentication
                 });
 
             bool HasSameName(string left, string right) => string.Equals(left, right, StringComparison.Ordinal);
-        }
-
-        private static Assembly LoadAssembly(string filePath)
-        {
-            Assembly viewsAssembly = null;
-            if (File.Exists(filePath))
-            {
-                try
-                {
-                    viewsAssembly = Assembly.LoadFile(filePath);
-                }
-                catch (FileLoadException)
-                {
-                    throw new InvalidOperationException("Unable to load the precompiled views assembly in " +
-                        $"'{filePath}'.");
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Could not find the precompiled views assembly for 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' at " +
-                    $"'{filePath}'.");
-            }
-
-            return viewsAssembly;
         }
     }
 }

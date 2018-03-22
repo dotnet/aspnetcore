@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Authentication
             // Assert
             Assert.NotNull(provider.GetService<OpenIdConnectHandler>());
             Assert.NotNull(provider.GetService<CookieAuthenticationHandler>());
-            Assert.NotNull(provider.GetService<VirtualAuthenticationHandler>());
+            Assert.NotNull(provider.GetService<PolicySchemeHandler>());
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             // Assert
             Assert.NotNull(provider.GetService<JwtBearerHandler>());
-            Assert.NotNull(provider.GetService<VirtualAuthenticationHandler>());
+            Assert.NotNull(provider.GetService<PolicySchemeHandler>());
         }
 
         [Fact]
