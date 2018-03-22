@@ -74,13 +74,15 @@ Finished:
     return hr;
 }
 
-EXTERN_C __MIDL_DECLSPEC_DLLEXPORT VOID http_set_response_status_code(
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_set_response_status_code(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler,
     _In_ USHORT statusCode,
     _In_ PCSTR pszReason
 )
 {
-    pInProcessHandler->QueryHttpContext()->GetResponse()->SetStatus(statusCode, pszReason);
+    return pInProcessHandler->QueryHttpContext()->GetResponse()->SetStatus(statusCode, pszReason);
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT

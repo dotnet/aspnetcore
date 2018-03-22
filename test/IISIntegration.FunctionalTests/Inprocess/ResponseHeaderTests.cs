@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
         
         [ConditionalFact]
-        public async Task ErrorCodeIsSetForExceoptionDuringRequest()
+        public async Task ErrorCodeIsSetForExceptionDuringRequest()
         {
             var response = await _fixture.Client.GetAsync("Throw");
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData(1, "custom", "custom")]
+        [InlineData(200, "custom", "custom")]
         [InlineData(500, "", "Internal Server Error")]
         [InlineData(999, "", "")]
         public async Task CustomErrorCodeWorks(int code, string reason, string expectedReason)

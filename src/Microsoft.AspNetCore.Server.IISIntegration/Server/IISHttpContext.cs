@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
          
             // This copies data into the underlying buffer
             NativeMethods.http_set_response_status_code(_pInProcessHandler, (ushort)StatusCode, reasonPhrase);
-
+            
             HttpResponseHeaders.IsReadOnly = true;
             foreach (var headerPair in HttpResponseHeaders)
             {

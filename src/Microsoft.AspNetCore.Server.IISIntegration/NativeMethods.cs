@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         internal unsafe static extern HttpApiTypes.HTTP_RESPONSE_V2* http_get_raw_response(IntPtr pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll, CharSet = CharSet.Ansi)]
-        public unsafe static extern void http_set_response_status_code(IntPtr pInProcessHandler, ushort statusCode, string pszReason);
+        public unsafe static extern int http_set_response_status_code(IntPtr pInProcessHandler, ushort statusCode, string pszReason);
 
         [DllImport(AspNetCoreModuleDll)]
         public unsafe static extern int http_read_request_bytes(IntPtr pInProcessHandler, byte* pvBuffer, int cbBuffer, out int dwBytesReceived, out bool fCompletionExpected);
