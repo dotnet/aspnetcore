@@ -25,13 +25,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
+        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
         public Task NtlmAuthentication_Clr_X64()
         {
             return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051);
         }
 
-        [Fact]
+        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
         public Task NtlmAuthentication_CoreClr_X64_Portable()
         {
             return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052);
