@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace HtmlGenerationWebSite.Components
+namespace BasicWebSite.Components
 {
     public class PassThroughViewComponent : ViewComponent
     {

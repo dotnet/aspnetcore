@@ -203,6 +203,8 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, TempDataApplicationModelProvider>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IApplicationModelProvider, ViewDataAttributeApplicationModelProvider>());
             services.TryAddSingleton<SaveTempDataFilter>();
 
 

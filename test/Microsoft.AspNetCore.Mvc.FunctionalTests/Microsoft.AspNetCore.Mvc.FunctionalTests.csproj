@@ -18,20 +18,10 @@
 
   <ItemGroup>
     <!-- For testing the testing infrastructure only -->
-    <WebApplicationFactoryContentRootAttribute
-      Include="BasicWebSite"
-      AssemblyName="BasicWebsite"
-      ContentRootPath="../../../../WebSites/BasicWebSite"
-      ContentRootTest="BasicWebSite.csproj"
-      Priority="-1" />
+    <WebApplicationFactoryContentRootAttribute Include="BasicWebSite" AssemblyName="BasicWebsite" ContentRootPath="../../../../WebSites/BasicWebSite" ContentRootTest="BasicWebSite.csproj" Priority="-1" />
     <!-- For testing the testing infrastructure only. This attribute is
      incorrect by design to ensure that the infrastructure falls back. -->
-    <WebApplicationFactoryContentRootAttribute
-      Include="FiltersWebSite"
-      AssemblyName="FiltersWebSite"
-      ContentRootPath="/../WebSites/FiltersWebSite"
-      ContentRootTest="Incorrect.csproj"
-      Priority="-1" />
+    <WebApplicationFactoryContentRootAttribute Include="FiltersWebSite" AssemblyName="FiltersWebSite" ContentRootPath="/../WebSites/FiltersWebSite" ContentRootTest="Incorrect.csproj" Priority="-1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,6 +49,7 @@
     <ProjectReference Include="..\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.csproj" />
     <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
 
+    <PackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />

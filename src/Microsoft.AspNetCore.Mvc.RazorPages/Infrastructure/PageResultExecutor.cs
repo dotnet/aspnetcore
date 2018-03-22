@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -66,6 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 pageContext.ViewData.Model = result.Model;
             }
 
+            OnExecuting(pageContext);
+
             var viewStarts = new IRazorPage[pageContext.ViewStartFactories.Count];
             for (var i = 0; i < pageContext.ViewStartFactories.Count; i++)
             {
@@ -82,6 +85,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _diagnosticSource);
 
             return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);
+        }
+
+        private void OnExecuting(PageContext pageContext)
+        {
+            var viewDataValuesProvider = pageContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
+            if (viewDataValuesProvider != null)
+            {
+                viewDataValuesProvider.ProvideViewDataValues(pageContext.ViewData);
+            }
         }
     }
 }
