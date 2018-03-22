@@ -50,10 +50,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            return GetRelatedAssemblies(assembly, throwOnError, AssemblyLoadFileDelegate);
+            return GetRelatedAssemblies(assembly, throwOnError, File.Exists, AssemblyLoadFileDelegate);
         }
 
-        internal static IReadOnlyList<Assembly> GetRelatedAssemblies(Assembly assembly, bool throwOnError, Func<string, Assembly> loadFile)
+        internal static IReadOnlyList<Assembly> GetRelatedAssemblies(
+            Assembly assembly,
+            bool throwOnError,
+            Func<string, bool> fileExists,
+            Func<string, Assembly> loadFile)
         {
             if (assembly == null)
             {
@@ -74,7 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             }
 
             var assemblyName = assembly.GetName().Name;
-            var assemblyDirectory = Path.GetDirectoryName(assembly.CodeBase);
+            var assemblyLocation = GetAssemblyLocation(assembly);
+            var assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
 
             var relatedAssemblies = new List<Assembly>();
             for (var i = 0; i < attributes.Length; i++)
@@ -87,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 }
 
                 var relatedAssemblyLocation = Path.Combine(assemblyDirectory, attribute.AssemblyFileName + ".dll");
-                if (!File.Exists(relatedAssemblyLocation))
+                if (!fileExists(relatedAssemblyLocation))
                 {
                     if (throwOnError)
                     {
@@ -106,6 +111,16 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             }
 
             return relatedAssemblies;
+        }
+
+        internal static string GetAssemblyLocation(Assembly assembly)
+        {
+            if (Uri.TryCreate(assembly.CodeBase, UriKind.Absolute, out var result) && result.IsFile)
+            {
+                return result.LocalPath;
+            }
+
+            return assembly.Location;
         }
     }
 }
