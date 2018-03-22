@@ -7,6 +7,9 @@
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoWarn>2008;8021</NoWarn>
+    <PackageTags>aspnet;templates</PackageTags>
+    <NuspecFile>$(MSBuildThisFileDirectory)templates.nuspec</NuspecFile>
+    <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">

@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ProjectTemplates.2.1</PackageId>
-    <NuspecFile>Microsoft.DotNet.Web.ProjectTemplates.nuspec</NuspecFile>
+    <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

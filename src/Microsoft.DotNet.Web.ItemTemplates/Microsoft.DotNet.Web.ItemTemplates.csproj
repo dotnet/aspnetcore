@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <NuspecFile>Microsoft.DotNet.Web.ItemTemplates.nuspec</NuspecFile>
+    <Description>Web File Templates for Microsoft Template Engine</Description>
   </PropertyGroup>
 
 </Project>
