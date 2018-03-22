@@ -59,6 +59,7 @@
   <Target Name="GetFilesToPublish" DependsOnTargets="GetArtifactInfo;GeneratePublishFiles">
     <PropertyGroup>
       <BlobBasePath>aspnetcore/Runtime/$(PackageVersion)/</BlobBasePath>
+      <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>
       <AliasBlobBasePath>aspnetcore/Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
       <PackageArchiveFileName>nuGetPackagesArchive-$(PackageVersion).lzma</PackageArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
@@ -133,7 +134,11 @@
         ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).symbols.nupkg"
         Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetSymbolsPackage'" />
 
-      <NpmPackageToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NpmPackage'" />
+      <NpmPackageToPublish Include="$(DependencyAssetsDir)%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NpmPackage'">
+        <RelativeBlobPath>$(NpmBlobBasePath)%(ArtifactInfo.PackageId)/%(ArtifactInfo.FileName)%(ArtifactInfo.Extension)</RelativeBlobPath>
+        <ManifestArtifactData>Type=NpmPackage</ManifestArtifactData>
+        <ContentType>application/tar+gzip</ContentType>
+      </NpmPackageToPublish>
     </ItemGroup>
 
     <!-- Join required because shipping category is stored in universe (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
@@ -246,6 +251,10 @@
         Include="@(PackageToPublish)"
         ManifestArtifactData="NonShipping=true"
         Condition="'%(PackageToPublish.Category)' != 'ship'" />
+
+      <FilesToPublishToTransport Include="@(NpmPackageToPublish)"
+        RelativeBlobPath="$(BlobFileRelativePathBase)%(NpmPackageToPublish.RelativeBlobPath)"
+        ManifestArtifactData="%(NpmPackageToPublish.ManifestArtifactData)" />
 
       <!-- Filter aliased artifacts to workaround dotnet/buildtools#1855 -->
       <FilesToPublishToTransport Include="@(FilesToPublish)"

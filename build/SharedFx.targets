@@ -25,7 +25,7 @@
 
     <ItemGroup>
       <!-- Cartesian products in MSBuild are fun :) -->
-      <_SharedFrameworkSymbolsPackage Include="@(SharedFrameworkName)">
+      <_SharedFrameworkSymbolsPackage Include="@(SharedFrameworkName)" Condition="'%(AllSharedFxRIDs.CrossgenSymbolsSupported)' != 'false'">
         <Rid>%(AllSharedFxRIDs.Identity)</Rid>
       </_SharedFrameworkSymbolsPackage>
       <_SharedFrameworkSymbolsPackage Update="@(_SharedFrameworkSymbolsPackage)" PackageId="runtime.%(Rid).%(Identity)" />
