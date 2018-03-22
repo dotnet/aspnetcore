@@ -8,25 +8,29 @@
     }
   },
   "profiles": {
-    "Local ANCM": {
+    "ANCM IIS Express": {
       "commandName": "Executable",
-      "executablePath": "$(IISExpress)",
-      "commandLineArgs": "/config:\"$(IISExpressAppHostConfig)\" /apppool:\"Clr4IntegratedAppPool\"",
+      "executablePath": "$(IISExpressPath)",
+      "commandLineArgs": "$(IISExpressArguments)",
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
-        "ANCM_PATH": "$(TargetDir)$(NativePlatform)\\aspnetcore.dll",
+        "ANCM_PATH": "$(TargetDir)$(AncmPath)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "$(DotNetPath)"
       }
     },
-    "NativeIISSample": {
-      "commandName": "Project",
-      "launchBrowser": true,
+    "ANCM IIS": {
+      "commandName": "Executable",
+      "executablePath": "$(IISPath)",
+      "commandLineArgs": "$(IISArguments)",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:5763/"
+        "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
+        "ANCM_PATH": "$(TargetDir)$(AncmPath)",
+        "LAUNCHER_ARGS": "$(TargetPath)",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "LAUNCHER_PATH": "$(DotNetPath)"
+      }
     }
   }
 }

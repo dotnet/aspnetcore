@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSites", "test\TestSites
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7E80C58E-9CC8-450C-8A8D-94FC76428150}"
 	ProjectSection(SolutionItems) = preProject
+		build\applicationhost.config = build\applicationhost.config
+		build\applicationhost.iis.config = build\applicationhost.iis.config
 		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
 		build\native.targets = build\native.targets
