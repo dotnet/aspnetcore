@@ -39,7 +39,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return _httpContext.ReadAsync(buffer, offset, count, cancellationToken);
+            var memory = new Memory<byte>(buffer, offset, count);
+
+            return _httpContext.ReadAsync(memory, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)

@@ -47,7 +47,9 @@ namespace IISTestSite
             app.Map("/WebsocketRequest", WebsocketRequest);
             app.Map("/UpgradeFeatureDetection", UpgradeFeatureDetection);
             app.Map("/TestInvalidReadOperations", TestInvalidReadOperations);
+            app.Map("/TestValidReadOperations", TestValidReadOperations);
             app.Map("/TestInvalidWriteOperations", TestInvalidWriteOperations);
+            app.Map("/TestValidWriteOperations", TestValidWriteOperations);
             app.Map("/TestReadOffsetWorks", TestReadOffsetWorks);
             app.Map("/LargeResponseFile", LargeResponseFile);
         }
@@ -471,10 +473,6 @@ namespace IISTestSite
                     {
                         await context.Request.Body.ReadAsync(null, 0, 0);
                     }
-                    catch (ArgumentNullException)
-                    {
-                        success = true;
-                    }
                     catch (Exception)
                     {
                         success = true;
@@ -535,42 +533,46 @@ namespace IISTestSite
                         success = true;
                     }
                 }
-                else if (context.Request.Path.StartsWithSegments("/InvalidCountZeroRead"))
-                {
-                    try
-                    {
-                        await context.Request.Body.ReadAsync(new byte[1], 0, 0);
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        success = true;
-                    }
-                    catch (Exception)
-                    {
-                        success = true;
-                    }
-                }
+
 
                 await context.Response.WriteAsync(success ? "Success" : "Failure");
             });
         }
+
+        private void TestValidReadOperations(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var count = -1;
+
+                if (context.Request.Path.StartsWithSegments("/NullBuffer"))
+                {
+                    count = await context.Request.Body.ReadAsync(null, 0, 0);
+                }
+                else if (context.Request.Path.StartsWithSegments("/NullBufferPost"))
+                {
+                    count = await context.Request.Body.ReadAsync(null, 0, 0);
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountZeroRead"))
+                {
+                    count = await context.Request.Body.ReadAsync(new byte[1], 0, 0);
+                }
+                else if (context.Request.Path.StartsWithSegments("/InvalidCountZeroReadPost"))
+                {
+                    count = await context.Request.Body.ReadAsync(new byte[1], 0, 0);
+                }
+
+                await context.Response.WriteAsync(count == 0 ? "Success" : "Failure");
+            });
+        }
+
         private void TestInvalidWriteOperations(IApplicationBuilder app)
         {
             app.Run(async context =>
             {
                 var success = false;
-                if (context.Request.Path.StartsWithSegments("/NullBuffer"))
-                {
-                    try
-                    {
-                        await context.Response.Body.WriteAsync(null, 0, 0);
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        success = true;
-                    }
-                }
-                else if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
+
+                if (context.Request.Path.StartsWithSegments("/InvalidOffsetSmall"))
                 {
                     try
                     {
@@ -627,6 +629,24 @@ namespace IISTestSite
                 }
 
                 await context.Response.WriteAsync(success ? "Success" : "Failure");
+            });
+        }
+
+        private void TestValidWriteOperations(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+
+                if (context.Request.Path.StartsWithSegments("/NullBuffer"))
+                {
+                    await context.Response.Body.WriteAsync(null, 0, 0);
+                }
+                else if (context.Request.Path.StartsWithSegments("/NullBufferPost"))
+                {
+                    await context.Response.Body.WriteAsync(null, 0, 0);
+                }
+
+                await context.Response.WriteAsync("Success");
             });
         }
 

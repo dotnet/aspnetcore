@@ -26,13 +26,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("/NullBuffer")]
         [InlineData("/InvalidOffsetSmall")]
         [InlineData("/InvalidOffsetLarge")]
         [InlineData("/InvalidCountSmall")]
         [InlineData("/InvalidCountLarge")]
         [InlineData("/InvalidCountWithOffset")]
-        [InlineData("/InvalidCountZeroRead")]
         public async Task TestInvalidReadOperations(string operation)
         {
             var result = await _fixture.Client.GetStringAsync($"/TestInvalidReadOperations{operation}");
@@ -41,6 +39,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalTheory]
         [InlineData("/NullBuffer")]
+        [InlineData("/InvalidCountZeroRead")]
+        public async Task TestValidReadOperations(string operation)
+        {
+            var result = await _fixture.Client.GetStringAsync($"/TestValidReadOperations{operation}");
+            Assert.Equal("Success", result);
+        }
+
+        [ConditionalTheory]
+        [InlineData("/NullBufferPost")]
+        [InlineData("/InvalidCountZeroReadPost")]
+        public async Task TestValidReadOperationsPost(string operation)
+        {
+            var result = await _fixture.Client.PostAsync($"/TestValidReadOperations{operation}", new StringContent("hello"));
+            Assert.Equal("Success", await result.Content.ReadAsStringAsync());
+        }
+
+        [ConditionalTheory]
         [InlineData("/InvalidOffsetSmall")]
         [InlineData("/InvalidOffsetLarge")]
         [InlineData("/InvalidCountSmall")]
@@ -50,6 +65,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var result = await _fixture.Client.GetStringAsync($"/TestInvalidWriteOperations{operation}");
             Assert.Equal("Success", result);
+        }
+
+        [ConditionalFact]
+        public async Task TestValidWriteOperations()
+        {
+            var result = await _fixture.Client.GetStringAsync($"/TestValidWriteOperations/NullBuffer");
+            Assert.Equal("Success", result);
+        }
+
+        [ConditionalFact]
+        public async Task TestValidWriteOperationsPost()
+        {
+            var result = await _fixture.Client.PostAsync($"/TestValidWriteOperations/NullBufferPost", new StringContent("hello"));
+            Assert.Equal("Success", await result.Content.ReadAsStringAsync());
         }
     }
 }
