@@ -40,13 +40,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal("1", headerValues.First());
             Assert.Equal("2", headerValues.Last());
         }
-
+        
         [ConditionalFact]
         public async Task ErrorCodeIsSetForExceoptionDuringRequest()
         {
             var response = await _fixture.Client.GetAsync("Throw");
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal("Internal Server Error", response.ReasonPhrase);
+        }
+
+        [ConditionalTheory]
+        [InlineData(1, "custom", "custom")]
+        [InlineData(500, "", "Internal Server Error")]
+        [InlineData(999, "", "")]
+        public async Task CustomErrorCodeWorks(int code, string reason, string expectedReason)
+        {
+            var response = await _fixture.Client.GetAsync($"SetCustomErorCode?code={code}&reason={reason}");
+            Assert.Equal((HttpStatusCode)code, response.StatusCode);
+            Assert.Equal(expectedReason, response.ReasonPhrase);
+            Assert.Equal("Body", await response.Content.ReadAsStringAsync());
         }
     }
 }

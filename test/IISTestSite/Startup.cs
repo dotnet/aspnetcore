@@ -218,6 +218,16 @@ namespace IISTestSite
             app.Run(ctx => { throw new Exception(); });
         }
 
+        private void SetCustomErorCode(IApplicationBuilder app)
+        {
+            app.Run(async ctx => {
+                    var feature = ctx.Features.Get<IHttpResponseFeature>();
+                    feature.ReasonPhrase = ctx.Request.Query["reason"];
+                    feature.StatusCode = int.Parse(ctx.Request.Query["code"]);
+                    await ctx.Response.WriteAsync("Body");
+                });
+        }
+
         private void HelloWorld(IApplicationBuilder app)
         {
             app.Run(async ctx =>
