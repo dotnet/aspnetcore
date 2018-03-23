@@ -10,23 +10,16 @@ namespace Microsoft.Extensions.Hosting.Tests.Fakes
     public class FakeHostLifetime : IHostLifetime
     {
         public int StartCount { get; internal set; }
-        public int StoppingCount { get; internal set; }
         public int StopCount { get; internal set; }
 
-        public Action<Action<object>, object> StartAction { get; set; }
-        public Action<Action<object>, object> StoppingAction { get; set; }
+        public Action<CancellationToken> StartAction { get; set; }
         public Action StopAction { get; set; }
         
-        public void RegisterDelayStartCallback(Action<object> callback, object state)
+        public Task WaitForStartAsync(CancellationToken cancellationToken)
         {
             StartCount++;
-            StartAction?.Invoke(callback, state);
-        }
-
-        public void RegisterStopCallback(Action<object> callback, object state)
-        {
-            StoppingCount++;
-            StoppingAction?.Invoke(callback, state);
+            StartAction?.Invoke(cancellationToken);
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

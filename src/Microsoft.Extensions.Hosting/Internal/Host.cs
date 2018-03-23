@@ -36,13 +36,9 @@ namespace Microsoft.Extensions.Hosting.Internal
         {
             _logger.Starting();
 
-            var delayStart = new TaskCompletionSource<object>();
-            cancellationToken.Register(obj => ((TaskCompletionSource<object>)obj).TrySetCanceled(), delayStart);
-            _hostLifetime.RegisterDelayStartCallback(obj => ((TaskCompletionSource<object>)obj).TrySetResult(null), delayStart);
-            _hostLifetime.RegisterStopCallback(obj => (obj as IApplicationLifetime)?.StopApplication(), _applicationLifetime);
+            await _hostLifetime.WaitForStartAsync(cancellationToken);
 
-            await delayStart.Task;
-
+            cancellationToken.ThrowIfCancellationRequested();
             _hostedServices = Services.GetService<IEnumerable<IHostedService>>();
 
             foreach (var hostedService in _hostedServices)

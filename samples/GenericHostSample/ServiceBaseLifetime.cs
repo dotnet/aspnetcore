@@ -23,23 +23,35 @@ namespace GenericHostSample
 
     public class ServiceBaseLifetime : ServiceBase, IHostLifetime
     {
-        private Action<object> _startCallback;
-        private Action<object> _stopCallback;
-        private object _startState;
-        private object _stopState;
+        private TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
 
-        public void RegisterDelayStartCallback(Action<object> callback, object state)
+        public ServiceBaseLifetime(IApplicationLifetime applicationLifetime)
         {
-            _startCallback = callback ?? throw new ArgumentNullException(nameof(callback));
-            _startState = state;
-
-            Run(this);
+            ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
         }
 
-        public void RegisterStopCallback(Action<object> callback, object state)
+        private IApplicationLifetime ApplicationLifetime { get; }
+
+        public Task WaitForStartAsync(CancellationToken cancellationToken)
         {
-            _stopCallback = callback ?? throw new ArgumentNullException(nameof(callback));
-            _stopState = state;
+            cancellationToken.Register(() => _delayStart.TrySetCanceled());
+            ApplicationLifetime.ApplicationStopping.Register(Stop);
+
+            new Thread(Run).Start(); // Otherwise this would block and prevent IHost.StartAsync from finishing.
+            return _delayStart.Task;
+        }
+
+        private void Run()
+        {
+            try
+            {
+                Run(this); // This blocks until the service is stopped.
+                _delayStart.TrySetException(new InvalidOperationException("Stopped without starting"));
+            }
+            catch (Exception ex)
+            {
+                _delayStart.TrySetException(ex);
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -48,15 +60,18 @@ namespace GenericHostSample
             return Task.CompletedTask;
         }
 
+        // Called by base.Run when the service is ready to start.
         protected override void OnStart(string[] args)
         {
-            _startCallback(_startState);
+            _delayStart.TrySetResult(null);
             base.OnStart(args);
         }
 
+        // Called by base.Stop. This may be called multiple times by service Stop, ApplicationStopping, and StopAsync.
+        // That's OK because StopApplication uses a CancellationTokenSource and prevents any recursion.
         protected override void OnStop()
         {
-            _stopCallback(_stopState);
+            ApplicationLifetime.StopApplication();
             base.OnStop();
         }
     }
