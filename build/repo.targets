@@ -15,7 +15,7 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildTemplates;SplitPackages</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildTemplates;CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
     <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo;GetLineupPackageInfo</GetArtifactInfoDependsOn>
@@ -164,18 +164,6 @@
     </RepoTasks.AnalyzeBuildGraph>
   </Target>
 
-  <Target Name="SplitPackages">
-    <ItemGroup>
-      <PackageArtifactFile Include="$(BuildDir)*.nupkg" />
-    </ItemGroup>
-
-    <RepoTasks.CopyPackagesToSplitFolders
-      Packages="@(PackageArtifact)"
-      Files="@(PackageArtifactFile)"
-      DestinationFolder="$(ArtifactsDir)"
-      Overwrite="true" />
-  </Target>
-
   <Target Name="VerifyPackageArtifactConfig">
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). PackageArtifact must have the 'Category' metadata."
            Condition="'%(PackageArtifact.Category)' == '' " />
@@ -210,6 +198,14 @@
     <RepoTasks.VerifyCoherentVersions
       PackageFiles="@(ShippingPackageFiles)"
       ExternalDependencies="@(ExternalDependency);@(ShippedExternalDependency)" />
+  </Target>
+
+  <Target Name="CheckExpectedPackagesExist">
+    <ItemGroup>
+      <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
+    </ItemGroup>
+
+    <RepoTasks.CheckExpectedPackagesExist Packages="@(PackageArtifact)" Files="@(PackageArtifactFile)" />
   </Target>
 
   <Target Name="VerifyAllReposHaveNuGetPackageVerifier" DependsOnTargets="_PrepareRepositories">

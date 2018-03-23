@@ -13,7 +13,7 @@
       ResolveCommitHash;
       PrepareOutputPaths;
       GetFilesToPublish;
-      CopyToPublishArtifacts;
+      PublishToLocalFolder;
       PublishToAzureFeed;
       PublishToTransportFeed;
       PublishToMyGet;
@@ -47,7 +47,7 @@
       Overwrite="true" />
 
     <ItemGroup>
-      <SharedFxVersionBadge Include="$(ArtifactsDir)$(SharedFxInstallerName)-%(AllSharedFxRIDs.Identity)-version-badge.svg" />
+      <SharedFxVersionBadge Include="$(IntermediateDir)$(SharedFxInstallerName)-%(AllSharedFxRIDs.Identity)-version-badge.svg" />
     </ItemGroup>
 
     <GenerateSvgBadge
@@ -148,17 +148,10 @@
       <Output TaskParameter="JoinResult" ItemName="_PackageArtifactInfoWithCategory" />
     </RepoTasks.JoinItems>
 
-    <RepoTasks.JoinItems
-      Left="@(_SymbolsPackageArtifactInfo->WithMetadataValue('Category',''))" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
-      Right="@(PackageArtifact)" RightMetadata="Category">
-      <Output TaskParameter="JoinResult" ItemName="_SymbolsArtifactInfoWithCategory" />
-    </RepoTasks.JoinItems>
-
     <ItemGroup>
       <PackageToPublish Include="%(_PackageArtifactInfoWithCategory.ArtifactPath)" Category="%(_PackageArtifactInfoWithCategory.Category)" />
       <PackageToPublish Include="%(_PackageArtifactInfo.ArtifactPath)" Category="%(_PackageArtifactInfo.Category)" Condition="'%(_PackageArtifactInfo.Category)' != ''" />
-      <PackageToPublish Include="%(_SymbolsArtifactInfoWithCategory.ArtifactPath)" Category="%(_SymbolsArtifactInfoWithCategory.Category)" />
-      <PackageToPublish Include="%(_SymbolsPackageArtifactInfo.ArtifactPath)" Category="%(_SymbolsPackageArtifactInfo.Category)" Condition="'%(_SymbolsPackageArtifactInfo.Category)' != ''" />
+      <PackageToPublish Include="%(_SymbolsPackageArtifactInfo.ArtifactPath)" Category="symbols" />
     </ItemGroup>
 
     <ItemGroup>
@@ -170,8 +163,10 @@
     <Error Text="Missing expected files:%0A - @(_MissingArtifactFile, '%0A - ')" Condition="@(_MissingArtifactFile->Count()) != 0" />
   </Target>
 
-  <Target Name="CopyToPublishArtifacts" DependsOnTargets="GetFilesToPublish">
+  <Target Name="PublishToLocalFolder" DependsOnTargets="GetFilesToPublish">
     <Copy SourceFiles="%(FilesToPublish.Identity)" DestinationFiles="$(ArtifactsDir)%(FilesToPublish.RelativeBlobPath)" Condition="'%(FilesToPublish.RelativeBlobPath)' != ''" />
+    <Copy SourceFiles="%(NpmPackageToPublish.Identity)" DestinationFolder="$(ArtifactsDir)npm\" />
+    <Copy SourceFiles="%(PackageToPublish.Identity)" DestinationFolder="$(ArtifactsDir)packages\%(PackageToPublish.Category)\" />
   </Target>
 
   <Target Name="PublishToMyGet"
