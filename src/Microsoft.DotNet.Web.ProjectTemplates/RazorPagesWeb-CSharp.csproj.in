@@ -15,7 +15,6 @@
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
     <PackageReference Include="Microsoft.AspNetCore.App" Version="${MicrosoftAspNetCoreAllPackageVersion}" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqlitePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="${MicrosoftVisualStudioWebBrowserLinkPackageVersion}" Condition="'$(UseBrowserLink)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="${MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion}" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
   </ItemGroup>

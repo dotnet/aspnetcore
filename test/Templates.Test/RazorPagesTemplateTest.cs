@@ -72,7 +72,6 @@ namespace Templates.Test
             {
                 Assert.Contains(".db", projectFileContents);
             }
-            Assert.Contains("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
 
             RunDotNetEfCreateMigration("razorpages");
