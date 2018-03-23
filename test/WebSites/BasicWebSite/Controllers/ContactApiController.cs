@@ -61,5 +61,11 @@ namespace BasicWebSite
                 Email = email,
             };
         }
+
+        [HttpGet("[action]")]
+        public ActionResult<Contact> ActionWithInferredEmptyPrefix([FromQuery] Contact contact)
+        {
+            return contact;
+        }
     }
 }

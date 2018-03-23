@@ -64,6 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     controllerModel.ApiExplorer.IsVisible = true;
                 }
 
+                if (isApiController)
+                {
+                    InferBoundPropertyModelPrefixes(controllerModel);
+                }
+
                 var controllerHasSelectorModel = controllerModel.Selectors.Any(s => s.AttributeRouteModel != null);
 
                 foreach (var actionModel in controllerModel.Actions)
@@ -78,6 +83,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     AddInvalidModelStateFilter(actionModel);
 
                     InferParameterBindingSources(actionModel);
+
+                    InferParameterModelPrefixes(actionModel);
 
                     AddMultipartFormDataConsumesAttribute(actionModel);
                 }
@@ -179,6 +186,50 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
+        // For any complex types that are bound from value providers, set the prefix
+        // to the empty prefix by default. This makes binding much more predictable
+        // and describable via ApiExplorer
+
+        // internal for testing
+        internal void InferBoundPropertyModelPrefixes(ControllerModel controllerModel)
+        {
+            foreach (var property in controllerModel.ControllerProperties)
+            {
+                if (property.BindingInfo != null &&
+                    property.BindingInfo.BinderModelName == null &&
+                    property.BindingInfo.BindingSource != null &&
+                    !property.BindingInfo.BindingSource.IsGreedy)
+                {
+                    var metadata = _modelMetadataProvider.GetMetadataForProperty(
+                        controllerModel.ControllerType,
+                        property.PropertyInfo.Name);
+                    if (metadata.IsComplexType)
+                    {
+                        property.BindingInfo.BinderModelName = string.Empty;
+                    }
+                }
+            }
+        }
+        
+        // internal for testing
+        internal void InferParameterModelPrefixes(ActionModel actionModel)
+        {
+            foreach (var parameter in actionModel.Parameters)
+            {
+                if (parameter.BindingInfo != null &&
+                    parameter.BindingInfo.BinderModelName == null &&
+                    parameter.BindingInfo.BindingSource != null &&
+                    !parameter.BindingInfo.BindingSource.IsGreedy)
+                {
+                    var metadata = GetParameterMetadata(parameter);
+                    if (metadata.IsComplexType)
+                    {
+                        parameter.BindingInfo.BinderModelName = string.Empty;
+                    }
+                }
+            }
+        }
+
         // Internal for unit testing.
         internal BindingSource InferBindingSourceForParameter(ParameterModel parameter)
         {
@@ -189,16 +240,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             else
             {
-                ModelMetadata parameterMetadata;
-                if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider)
-                {
-                    parameterMetadata = modelMetadataProvider.GetMetadataForParameter(parameter.ParameterInfo);
-                }
-                else
-                {
-                    parameterMetadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
-                }
-
+                var parameterMetadata = GetParameterMetadata(parameter);
                 if (parameterMetadata != null)
                 {
                     var bindingSource = parameterMetadata.IsComplexType ?
@@ -233,6 +275,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return parameterExistsInSomeRoute;
+        }
+
+        private ModelMetadata GetParameterMetadata(ParameterModel parameter)
+        {
+            if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider)
+            {
+                return modelMetadataProvider.GetMetadataForParameter(parameter.ParameterInfo);
+            }
+            else
+            {
+                return _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
+            }
         }
     }
 }
