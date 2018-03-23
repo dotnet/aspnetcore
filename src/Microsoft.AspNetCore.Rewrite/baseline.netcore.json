@@ -1,0 +1,5915 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Rewrite, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Builder.RewriteBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseRewriter",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseRewriter",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.ApacheModRewriteOptionsExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddApacheModRewrite",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "fileProvider",
+              "Type": "Microsoft.Extensions.FileProviders.IFileProvider"
+            },
+            {
+              "Name": "filePath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddApacheModRewrite",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "reader",
+              "Type": "System.IO.TextReader"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.IISUrlRewriteOptionsExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddIISUrlRewrite",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "fileProvider",
+              "Type": "Microsoft.Extensions.FileProviders.IFileProvider"
+            },
+            {
+              "Name": "filePath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddIISUrlRewrite",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "reader",
+              "Type": "System.IO.TextReader"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.IRule",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ApplyRule",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.RewriteContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HttpContext",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpContext",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StaticFileProvider",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileProviders.IFileProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_StaticFileProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.FileProviders.IFileProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Logger",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Logger",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Result",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RuleResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Result",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.RuleResult"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.RewriteMiddleware",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            },
+            {
+              "Name": "hostingEnvironment",
+              "Type": "Microsoft.AspNetCore.Hosting.IHostingEnvironment"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Rewrite.RewriteOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Rules",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.IRule>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StaticFileProvider",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileProviders.IFileProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_StaticFileProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.FileProviders.IFileProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.RewriteOptionsExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "rule",
+              "Type": "Microsoft.AspNetCore.Rewrite.IRule"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "applyRule",
+              "Type": "System.Action<Microsoft.AspNetCore.Rewrite.RewriteContext>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRewrite",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "regex",
+              "Type": "System.String"
+            },
+            {
+              "Name": "replacement",
+              "Type": "System.String"
+            },
+            {
+              "Name": "skipRemainingRules",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRedirect",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "regex",
+              "Type": "System.String"
+            },
+            {
+              "Name": "replacement",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRedirect",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "regex",
+              "Type": "System.String"
+            },
+            {
+              "Name": "replacement",
+              "Type": "System.String"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRedirectToHttpsPermanent",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRedirectToHttps",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRedirectToHttps",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRedirectToHttps",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteOptions"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "sslPort",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RewriteOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.RuleResult",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "ContinueRules",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "EndResponse",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "SkipRemainingRules",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "references",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "references",
+              "Type": "System.Text.RegularExpressions.GroupCollection"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "reference",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.DelegateRule",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Rewrite.IRule"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ApplyRule",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Rewrite.IRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "onApplyRule",
+              "Type": "System.Action<Microsoft.AspNetCore.Rewrite.RewriteContext>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Success",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Success",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BackReferences",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BackReferences",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "EmptySuccess",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "EmptyFailure",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ParserContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Index",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Index",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "System.Char",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Back",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Next",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HasNext",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Mark",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetIndex",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Capture",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "condition",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Template",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.Pattern",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_PatternSegments",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.PatternSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "patternSegments",
+              "Type": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.PatternSegment>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.RedirectRule",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Rewrite.IRule"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_InitialMatch",
+          "Parameters": [],
+          "ReturnType": "System.Text.RegularExpressions.Regex",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Replacement",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StatusCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyRule",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Rewrite.IRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "regex",
+              "Type": "System.String"
+            },
+            {
+              "Name": "replacement",
+              "Type": "System.String"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.RedirectToHttpsRule",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Rewrite.IRule"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_SSLPort",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SSLPort",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StatusCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_StatusCode",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyRule",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Rewrite.IRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.RewriteRule",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Rewrite.IRule"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_InitialMatch",
+          "Parameters": [],
+          "ReturnType": "System.Text.RegularExpressions.Regex",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Replacement",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StopProcessing",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyRule",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Rewrite.IRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "regex",
+              "Type": "System.String"
+            },
+            {
+              "Name": "replacement",
+              "Type": "System.String"
+            },
+            {
+              "Name": "stopProcessing",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Url",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.Pattern",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Url",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Negate",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Negate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.ExactMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "ignoreCase",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "input",
+              "Type": "System.String"
+            },
+            {
+              "Name": "negate",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.FileSizeMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "negate",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.IntegerMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.IntegerOperationType"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.IntegerOperationType"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.IntegerOperationType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Equal",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Greater",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "GreaterEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Less",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "LessEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NotEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.IsDirectoryMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "negate",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.IsFileMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "negate",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.RegexMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "match",
+              "Type": "System.Text.RegularExpressions.Regex"
+            },
+            {
+              "Name": "negate",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.StringMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.StringOperationType"
+            },
+            {
+              "Name": "ignoreCase",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatches.StringOperationType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Equal",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Greater",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "GreaterEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Less",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "LessEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.AbortAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.ChangeCookieAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Value",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Domain",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Domain",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Lifetime",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Lifetime",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Path",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Secure",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Secure",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HttpOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpOnly",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.CustomResponseAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_StatusCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StatusReason",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_StatusReason",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StatusDescription",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_StatusDescription",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "statusCode",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.ForbiddenAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.GoneAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.NoneAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Result",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RuleResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "Microsoft.AspNetCore.Rewrite.RuleResult"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.RedirectAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_StatusCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_QueryStringAppend",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_QueryStringDelete",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EscapeBackReferences",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "statusCode",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            },
+            {
+              "Name": "queryStringAppend",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "queryStringDelete",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "escapeBackReferences",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "statusCode",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            },
+            {
+              "Name": "queryStringAppend",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.RewriteAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Result",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.RuleResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_QueryStringAppend",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_QueryStringDelete",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EscapeBackReferences",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyAction",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "Microsoft.AspNetCore.Rewrite.RuleResult"
+            },
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            },
+            {
+              "Name": "queryStringAppend",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "queryStringDelete",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "escapeBackReferences",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "Microsoft.AspNetCore.Rewrite.RuleResult"
+            },
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            },
+            {
+              "Name": "queryStringAppend",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.ConditionMatchSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.DateTimeSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReference",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "segment",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.HeaderSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "header",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.IsHttpsModSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.IsHttpsUrlSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.IsIPV6Segment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.LiteralSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "literal",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.LocalAddressSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.LocalPortSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.QueryStringSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackRefernces",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.RemoteAddressSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.RemotePortSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.RequestFileNameSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.RequestMethodSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.RewriteMapSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "rewriteMap",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMap"
+            },
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.RuleMatchSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.SchemeSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.ServerProtocolSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.ToLowerSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.UrlEncodeSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegments.UrlSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "uriMatchPart",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ActionType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Rewrite",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Redirect",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "CustomResponse",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "AbortRequest",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Input",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.Pattern",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Input",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Match",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ConditionCollection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Grouping",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.LogicalGrouping",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TrackAllCaptures",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "condition",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddConditions",
+          "Parameters": [
+            {
+              "Name": "conditions",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "grouping",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.LogicalGrouping"
+            },
+            {
+              "Name": "trackAllCaptures",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ConditionEvaluator",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "conditions",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ConditionCollection"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "backReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMap",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Item",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMapCollection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMap>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "rewriteMap",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMap"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMap",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMap>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMap>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISUrlRewriteRule",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Rewrite.IRule"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_InitialMatch",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Conditions",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ConditionCollection",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Action",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Global",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyRule",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Rewrite.IRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "initialMatch",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch"
+            },
+            {
+              "Name": "conditions",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ConditionCollection"
+            },
+            {
+              "Name": "action",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "initialMatch",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch"
+            },
+            {
+              "Name": "conditions",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ConditionCollection"
+            },
+            {
+              "Name": "action",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction"
+            },
+            {
+              "Name": "global",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.InputParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ParseInputString",
+          "Parameters": [
+            {
+              "Name": "testString",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.Pattern",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseInputString",
+          "Parameters": [
+            {
+              "Name": "testString",
+              "Type": "System.String"
+            },
+            {
+              "Name": "uriMatchPart",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.Pattern",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "rewriteMaps",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMapCollection"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.InvalidUrlRewriteFormatException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.FormatException",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_LineNumber",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_LinePosition",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "innerException",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.LogicalGrouping",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "MatchAll",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchAny",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.MatchType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Pattern",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "IsFile",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "IsDirectory",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.PatternSyntax",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "ECMAScript",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Wildcard",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "ExactMatch",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.RedirectType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Permanent",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "301"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Found",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "302"
+        },
+        {
+          "Kind": "Field",
+          "Name": "SeeOther",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "303"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Temporary",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "307"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.RewriteMapParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "xmlRoot",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMapCollection",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.RewriteTags",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Action",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"action\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Add",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"add\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AppendQueryString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"appendQueryString\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Conditions",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"conditions\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Enabled",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"enabled\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "GlobalRules",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"globalRules\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "IgnoreCase",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"ignoreCase\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Input",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"input\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Key",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"key\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "LogicalGrouping",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"logicalGrouping\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "LogRewrittenUrl",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"logRewrittenUrl\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Match",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"match\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchPattern",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"matchPattern\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"matchType\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"name\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Negate",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"negate\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Pattern",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"pattern\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "PatternSyntax",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"patternSyntax\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "RedirectType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"redirectType\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Rewrite",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"rewrite\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "RewriteMap",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"rewriteMap\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "RewriteMaps",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"rewriteMaps\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Rule",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"rule\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Rules",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"rules\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "StatusCode",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"statusCode\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "SubStatusCode",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"subStatusCode\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "StatusDescription",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"statusDescription\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "StatusReason",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"statusReason\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "StopProcessing",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"stopProcessing\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "TrackAllCaptures",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"trackAllCaptures\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Type",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"type\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Url",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"url\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Value",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"value\""
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.ServerVariables",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "FindServerVariable",
+          "Parameters": [
+            {
+              "Name": "serverVariable",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ParserContext"
+            },
+            {
+              "Name": "uriMatchPart",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchCondition",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "inputParser",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.InputParser"
+            },
+            {
+              "Name": "input",
+              "Type": "System.String"
+            },
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            },
+            {
+              "Name": "uriMatchPart",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart"
+            },
+            {
+              "Name": "ignoreCase",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "negate",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Full",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Path",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UrlRewriteFileParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "reader",
+              "Type": "System.IO.TextReader"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISUrlRewriteRule>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UrlRewriteRuleBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Enabled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Enabled",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Global",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Global",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UriMatchPart",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISUrlRewriteRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddUrlAction",
+          "Parameters": [
+            {
+              "Name": "action",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlAction"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddUrlMatch",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.String"
+            },
+            {
+              "Name": "ignoreCase",
+              "Type": "System.Boolean",
+              "DefaultValue": "True"
+            },
+            {
+              "Name": "negate",
+              "Type": "System.Boolean",
+              "DefaultValue": "False"
+            },
+            {
+              "Name": "patternSyntax",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.PatternSyntax",
+              "DefaultValue": "0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureConditionBehavior",
+          "Parameters": [
+            {
+              "Name": "logicalGrouping",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.LogicalGrouping"
+            },
+            {
+              "Name": "trackAllCaptures",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddUrlCondition",
+          "Parameters": [
+            {
+              "Name": "condition",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddUrlConditions",
+          "Parameters": [
+            {
+              "Name": "conditions",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ApacheModRewriteRule",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Rewrite.IRule"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_InitialMatch",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Conditions",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Condition>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Actions",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.UrlAction>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyRule",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Rewrite.IRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "initialMatch",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch"
+            },
+            {
+              "Name": "conditions",
+              "Type": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Condition>"
+            },
+            {
+              "Name": "urlActions",
+              "Type": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.UrlAction>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Condition",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Input",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.Pattern",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Input",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Match",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.UrlMatch"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OrNext",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OrNext",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "ruleBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "conditionBackReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ConditionEvaluator",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "conditions",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Condition>"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "backReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "conditions",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Condition>"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.RewriteContext"
+            },
+            {
+              "Name": "backReferences",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection"
+            },
+            {
+              "Name": "trackAllCaptures",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.MatchResults",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ConditionPatternParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ParseActionCondition",
+          "Parameters": [
+            {
+              "Name": "condition",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ParsedModRewriteInput",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ConditionType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Regex",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "PropertyTest",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "StringComp",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "IntComp",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.CookieActionFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "flagValue",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.UrlActions.ChangeCookieAction",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FileParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.IO.TextReader"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.IRule>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "flagString",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Flags",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Flags",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FlagDictionary",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType, System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetFlag",
+          "Parameters": [
+            {
+              "Name": "flag",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetValue",
+          "Parameters": [
+            {
+              "Name": "flag",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "flag",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Item",
+          "Parameters": [
+            {
+              "Name": "flag",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HasFlag",
+          "Parameters": [
+            {
+              "Name": "flag",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "flags",
+              "Type": "System.Collections.Generic.IDictionary<Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType, System.String>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.FlagType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "EscapeBackreference",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Chain",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Cookie",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "DiscardPath",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Env",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "End",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Forbidden",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "6"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Gone",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "7"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Handler",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "8"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Last",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "9"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Next",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "10"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoCase",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "11"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoEscape",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "12"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoSubReq",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "13"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoVary",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "14"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Or",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "15"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Proxy",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "16"
+        },
+        {
+          "Kind": "Field",
+          "Name": "PassThrough",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "17"
+        },
+        {
+          "Kind": "Field",
+          "Name": "QSAppend",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "18"
+        },
+        {
+          "Kind": "Field",
+          "Name": "QSDiscard",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "19"
+        },
+        {
+          "Kind": "Field",
+          "Name": "QSLast",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "20"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Redirect",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "21"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Skip",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "22"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Type",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "23"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.OperationType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Equal",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Greater",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "GreaterEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Less",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "LessEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NotEqual",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "6"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Directory",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "7"
+        },
+        {
+          "Kind": "Field",
+          "Name": "RegularFile",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "8"
+        },
+        {
+          "Kind": "Field",
+          "Name": "ExistingFile",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "9"
+        },
+        {
+          "Kind": "Field",
+          "Name": "SymbolicLink",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "10"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Size",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "11"
+        },
+        {
+          "Kind": "Field",
+          "Name": "ExistingUrl",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "12"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Executable",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "13"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ParsedModRewriteInput",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Invert",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Invert",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConditionType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ConditionType",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConditionType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ConditionType"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OperationType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.OperationType",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OperationType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.OperationType"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Operand",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Operand",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invert",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "conditionType",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ConditionType"
+            },
+            {
+              "Name": "operationType",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.OperationType"
+            },
+            {
+              "Name": "operand",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.RuleBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ApacheModRewriteRule",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRule",
+          "Parameters": [
+            {
+              "Name": "rule",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddConditionFromParts",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            },
+            {
+              "Name": "input",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ParsedModRewriteInput"
+            },
+            {
+              "Name": "flags",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Flags"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMatch",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ParsedModRewriteInput"
+            },
+            {
+              "Name": "flags",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Flags"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAction",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.Pattern"
+            },
+            {
+              "Name": "flags",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Flags"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.RuleRegexParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ParseRuleRegex",
+          "Parameters": [
+            {
+              "Name": "regex",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ParsedModRewriteInput",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.SegmentType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Literal",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "ServerParameter",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "ConditionParameter",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "RuleParameter",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.ServerVariables",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "FindServerVariable",
+          "Parameters": [
+            {
+              "Name": "serverVariable",
+              "Type": "System.String"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Rewrite.Internal.ParserContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.PatternSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.TestStringParser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "testString",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Rewrite.Internal.Pattern",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite.Tokenizer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Tokenize",
+          "Parameters": [
+            {
+              "Name": "rule",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
