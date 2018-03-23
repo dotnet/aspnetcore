@@ -6,7 +6,6 @@
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
     <PackageTags>aspnet;cli</PackageTags>
 
-    <PackageArtifactCategory>shipoob</PackageArtifactCategory>
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
   </PropertyGroup>
 
