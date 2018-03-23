@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using System.Reflection;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -11,16 +11,18 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public static string GetProjectDirectory(Type type)
         {
-            var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-            var name = type.GetTypeInfo().Assembly.GetName().Name;
+            var solutionDir = TestPathUtilities.GetSolutionRootDirectory("Razor");
 
-            while (currentDirectory != null &&
-                !string.Equals(currentDirectory.Name, name, StringComparison.Ordinal))
+            var assemblyName = type.Assembly.GetName().Name;
+            var projectDirectory = Path.Combine(solutionDir, "test", assemblyName);
+            if (!Directory.Exists(projectDirectory))
             {
-                currentDirectory = currentDirectory.Parent;
+                throw new InvalidOperationException(
+$@"Could not locate project directory for type {type.FullName}.
+Directory probe path: {projectDirectory}.");
             }
 
-            return currentDirectory.FullName;
+            return projectDirectory;
         }
     }
 }
