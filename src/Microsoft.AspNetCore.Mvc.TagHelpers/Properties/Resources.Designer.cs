@@ -192,6 +192,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         internal static string FormatViewEngine_PartialViewNotFound(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("ViewEngine_PartialViewNotFound"), p0, p1);
 
+        /// <summary>
+        /// Cannot use '{0}' with both '{1}' and '{2}' attributes.
+        /// </summary>
+        internal static string PartialTagHelper_InvalidModelAttributes
+        {
+            get => GetString("PartialTagHelper_InvalidModelAttributes");
+        }
+
+        /// <summary>
+        /// Cannot use '{0}' with both '{1}' and '{2}' attributes.
+        /// </summary>
+        internal static string FormatPartialTagHelper_InvalidModelAttributes(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("PartialTagHelper_InvalidModelAttributes"), p0, p1, p2);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

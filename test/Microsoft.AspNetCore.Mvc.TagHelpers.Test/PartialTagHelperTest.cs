@@ -24,6 +24,90 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public class PartialTagHelperTest
     {
         [Fact]
+        public void ResolveModel_ReturnsModelWhenProvided()
+        {
+            // Arrange
+            var expectedModel = new object();
+            var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
+            {
+                Model = expectedModel,
+            };
+
+            // Act
+            var model = tagHelper.ResolveModel();
+
+            // Assert
+            Assert.Same(expectedModel, model);
+        }
+
+        [Fact]
+        public void ResolveModel_ReturnsForModelWhenProvided()
+        {
+            // Arrange
+            var expectedModel = new PropertyModel();
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var containerModel = new TestModel()
+            {
+                Property = expectedModel
+            };
+            var containerModelExplorer = modelMetadataProvider.GetModelExplorerForType(
+                typeof(TestModel),
+                containerModel);
+            var propertyModelExplorer = containerModelExplorer.GetExplorerForProperty(nameof(TestModel.Property));
+            var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
+            {
+                For = new ModelExpression("Property", propertyModelExplorer),
+            };
+
+            // Act
+            var model = tagHelper.ResolveModel();
+
+            // Assert
+            Assert.Same(expectedModel, model);
+        }
+
+        [Fact]
+        public void ResolveModel_ReturnsViewContextsViewDataModelWhenModelAndForAreNull()
+        {
+            // Arrange
+            var expectedModel = new object();
+            var viewContext = GetViewContext();
+            viewContext.ViewData.Model = expectedModel;
+            var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
+            {
+                ViewContext = viewContext
+            };
+
+            // Act
+            var model = tagHelper.ResolveModel();
+
+            // Assert
+            Assert.Same(expectedModel, model);
+        }
+
+        [Fact]
+        public void ResolveModel_ThrowsWhenModelAndForProvided()
+        {
+            // Arrange
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var containerModel = new TestModel();
+            var containerModelExplorer = modelMetadataProvider.GetModelExplorerForType(
+                typeof(TestModel),
+                containerModel);
+            var propertyModelExplorer = containerModelExplorer.GetExplorerForProperty(nameof(TestModel.Property));
+            var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
+            {
+                Model = new object(),
+                For = new ModelExpression("Property", propertyModelExplorer),
+            };
+            var expectedMessage = Resources.FormatPartialTagHelper_InvalidModelAttributes(typeof(PartialTagHelper).FullName, "for", "model");
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => tagHelper.ResolveModel());
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
         public async Task ProcessAsync_RendersPartialView_IfGetViewReturnsView()
         {
             // Arrange

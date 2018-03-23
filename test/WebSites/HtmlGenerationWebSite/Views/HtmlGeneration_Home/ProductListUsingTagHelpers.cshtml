@@ -21,5 +21,7 @@
         <div>HtmlFieldPrefix = @ViewData.TemplateInfo.HtmlFieldPrefix</div>
         <input type="submit" />
     </form>
+
+    <partial name="_ProductRecommendations" model='new ProductRecommendations(new Product() { ProductName = "THE Best Product", HomePage = new Uri("http://www.contoso.com")})' />
 </body>
 </html>
