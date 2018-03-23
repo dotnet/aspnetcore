@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Session, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Session, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions",
@@ -101,6 +101,69 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "get_Cookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Cookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.CookieBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IdleTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IdleTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IOTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IOTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_CookieName",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -185,19 +248,19 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_IdleTimeout",
+          "Name": "get_CookieSecure",
           "Parameters": [],
-          "ReturnType": "System.TimeSpan",
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieSecurePolicy",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "set_IdleTimeout",
+          "Name": "set_CookieSecure",
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.TimeSpan"
+              "Type": "Microsoft.AspNetCore.Http.CookieSecurePolicy"
             }
           ],
           "ReturnType": "System.Void",
@@ -326,7 +389,13 @@
         {
           "Kind": "Method",
           "Name": "LoadAsync",
-          "Parameters": [],
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
           "ReturnType": "System.Threading.Tasks.Task",
           "Sealed": true,
           "Virtual": true,
@@ -337,7 +406,13 @@
         {
           "Kind": "Method",
           "Name": "CommitAsync",
-          "Parameters": [],
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
           "ReturnType": "System.Threading.Tasks.Task",
           "Sealed": true,
           "Virtual": true,
@@ -359,6 +434,10 @@
             },
             {
               "Name": "idleTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "ioTimeout",
               "Type": "System.TimeSpan"
             },
             {
@@ -398,6 +477,10 @@
             },
             {
               "Name": "idleTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "ioTimeout",
               "Type": "System.TimeSpan"
             },
             {
@@ -452,6 +535,10 @@
             },
             {
               "Name": "idleTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "ioTimeout",
               "Type": "System.TimeSpan"
             },
             {
@@ -596,6 +683,5 @@
       ],
       "GenericParameters": []
     }
-  ],
-  "SourceFilters": []
+  ]
 }
