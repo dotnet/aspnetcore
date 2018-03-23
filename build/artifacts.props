@@ -6,6 +6,10 @@
       <AppMetapackage>false</AppMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
       <AllMetapackage>false</AllMetapackage>
+      <!-- When true, this dependency will be included in the runtime.win.Microsoft.AspNetCore.App metapackage. -->
+      <WinAppMetapackage>false</WinAppMetapackage>
+      <!-- When true, this dependency will be included in the runtime.win.Microsoft.AspNetCore.All metapackage. -->
+      <WinAllMetapackage>false</WinAllMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.Analyzers metapackage. -->
       <Analyzer>false</Analyzer>
       <!-- When true, this dependency will be included in the LZMA. -->
@@ -36,6 +40,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Core" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -141,7 +146,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" WinAppMetapackage="true" WinAllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -303,6 +308,8 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
+    <PackageArtifact Include="runtime.win.Microsoft.AspNetCore.App" Category="ship" />
+    <PackageArtifact Include="runtime.win.Microsoft.AspNetCore.All" Category="ship" />
 
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" PackageType="Lineup" />
   </ItemGroup>

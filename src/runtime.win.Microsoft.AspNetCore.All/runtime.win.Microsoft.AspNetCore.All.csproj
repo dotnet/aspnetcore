@@ -7,15 +7,8 @@
     <IncludeSymbols>false</IncludeSymbols>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
-    <Description>Microsoft.AspNetCore.All</Description>
+    <Description>runtime.win.Microsoft.AspNetCore.All</Description>
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="build\$(TargetFramework)\*.props" PackagePath="%(Identity)" />
-    <Content Include="build\$(TargetFramework)\*.targets" PackagePath="%(Identity)" />
-    <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
-    <Content Include="runtime.json" PackagePath="%(Identity)" />
-  </ItemGroup>
 
 </Project>
