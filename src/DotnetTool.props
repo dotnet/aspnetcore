@@ -4,7 +4,6 @@
     <NuspecFile Condition=" ! Exists($(NuspecFile))" />
     <Serviceable Condition=" '$(Serviceable)' == '' ">true</Serviceable>
 
-    <PackageArtifactCategory>ship</PackageArtifactCategory>
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
     <IncludeSymbols>false</IncludeSymbols>
     <IncludeSource>false</IncludeSource>
