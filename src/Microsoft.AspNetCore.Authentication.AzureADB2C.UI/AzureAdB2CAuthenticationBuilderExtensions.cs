@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -190,23 +191,17 @@ namespace Microsoft.AspNetCore.Authentication
 
         private static void AddAdditionalMvcApplicationParts(IServiceCollection services)
         {
-            var thisAssembly = typeof(AzureADB2CAuthenticationBuilderExtensions).Assembly;
-            var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
-
+            var additionalParts = GetAdditionalParts();
             var mvcBuilder = services
                 .AddMvc()
                 .AddRazorPagesOptions(o => o.AllowAreas = true)
                 .ConfigureApplicationPartManager(apm =>
                 {
-                    foreach (var reference in relatedAssemblies)
+                    foreach (var part in additionalParts)
                     {
-                        var factory = (AzureADB2CPartFactory)ApplicationPartFactory.GetApplicationPartFactory(reference);
-                        foreach (var additionalPart in factory.CreateApplicationParts())
+                        if (!apm.ApplicationParts.Any(ap => HasSameName(ap.Name, part.Name)))
                         {
-                            if (!apm.ApplicationParts.Any(ap => HasSameName(ap.Name, additionalPart.Name)))
-                            {
-                                apm.ApplicationParts.Add(additionalPart);
-                            }
+                            apm.ApplicationParts.Add(part);
                         }
                     }
 
@@ -214,6 +209,17 @@ namespace Microsoft.AspNetCore.Authentication
                 });
 
             bool HasSameName(string left, string right) => string.Equals(left, right, StringComparison.Ordinal);
+        }
+
+        private static IEnumerable<ApplicationPart> GetAdditionalParts()
+        {
+            var thisAssembly = typeof(AzureADB2CAuthenticationBuilderExtensions).Assembly;
+            var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
+
+            foreach (var reference in relatedAssemblies)
+            {
+                yield return new CompiledRazorAssemblyPart(reference);
+            }
         }
     }
 }

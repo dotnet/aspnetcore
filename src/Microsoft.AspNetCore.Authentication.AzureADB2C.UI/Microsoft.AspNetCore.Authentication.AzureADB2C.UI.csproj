@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Azure Active Directory B2C Integration provides components for easily integrating Azure Active Directory B2C authentication within your ASP.NET Core application.</Description>
-    <PrecompiledDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory B2C Integration package.</PrecompiledDescription>
+    <ViewAssemblyDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory B2C Integration package.</ViewAssemblyDescription>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>aspnetcore;authentication;AzureADB2C</PackageTags>
     <RazorCompileOnBuild>true</RazorCompileOnBuild>
     <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
     <PreserveCompilationContext>false</PreserveCompilationContext>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureAdB2CViewsPartFactory, Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Views</ProvideApplicationPartFactoryAttributeTypeName>
+    <EnableDefaultCompiledViewAssemblyLoadBehavior>false</EnableDefaultCompiledViewAssemblyLoadBehavior>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,9 +19,22 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <RazorCompile Include="AzureAdB2CViewsPartFactory.cs" />
-    <Compile Remove="AzureAdB2CViewsPartFactory.cs" />
-  </ItemGroup>
+    <ItemGroup>
+     <RazorAssemblyAttribute Include="System.Reflection.AssemblyDescriptionAttribute">
+       <_Parameter1>$(ViewAssemblyDescription)</_Parameter1>
+     </RazorAssemblyAttribute>
+     <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+       <_Parameter1>BuildNumber</_Parameter1>
+       <_Parameter2>$(BuildNumber)</_Parameter2>
+     </RazorAssemblyAttribute>
+     <RazorAssemblyAttribute Include="System.Resources.NeutralResourcesLanguageAttribute" Condition="'$(NeutralLanguage)' != '' and '$(GenerateNeutralResourcesLanguageAttribute)' == 'true'">
+       <_Parameter1>$(NeutralLanguage)</_Parameter1>
+     </RazorAssemblyAttribute>
+   </ItemGroup>
+ 
+   <ItemGroup>
+     <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
+     <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
+   </ItemGroup>
   
 </Project>
