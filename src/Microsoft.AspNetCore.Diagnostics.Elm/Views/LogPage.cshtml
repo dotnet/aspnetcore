@@ -23,35 +23,35 @@
             if (log.Severity >= Model.Options.MinLevel &&
                 (string.IsNullOrEmpty(Model.Options.NamePrefix) || log.Name.StartsWith(Model.Options.NamePrefix, StringComparison.Ordinal)))
             {
+                PushWriter(writer);
+                WriteLiteral("        <tr class=\"logRow\">\r\n            <td>");
+                Write(string.Format("{0:MM/dd/yy}", log.Time));
 
-                WriteLiteralTo(writer, "        <tr class=\"logRow\">\r\n            <td>");
-                WriteTo(writer, string.Format("{0:MM/dd/yy}", log.Time));
+                WriteLiteral("</td>\r\n            <td>");
+                Write(string.Format("{0:H:mm:ss}", log.Time));
 
-                WriteLiteralTo(writer, "</td>\r\n            <td>");
-                WriteTo(writer, string.Format("{0:H:mm:ss}", log.Time));
-
-                WriteLiteralTo(writer, $"</td>\r\n            <td title=\"{log.Name}\">");
-                WriteTo(writer, log.Name);
+                WriteLiteral($"</td>\r\n            <td title=\"{log.Name}\">");
+                Write(log.Name);
                 var severity = log.Severity.ToString().ToLowerInvariant();
-                WriteLiteralTo(writer, $"</td>\r\n            <td class=\"{severity}\">");
-                WriteTo(writer, log.Severity);
+                WriteLiteral($"</td>\r\n            <td class=\"{severity}\">");
+                Write(log.Severity);
 
-                WriteLiteralTo(writer, $"</td>\r\n            <td title=\"{log.Message}\"> \r\n");
+                WriteLiteral($"</td>\r\n            <td title=\"{log.Message}\"> \r\n");
 
                 for (var i = 0; i < level; i++)
                 {
-                    WriteLiteralTo(writer, "                    <span class=\"tab\"></span>\r\n");
+                    WriteLiteral("                    <span class=\"tab\"></span>\r\n");
                 }
 
-                WriteLiteralTo(writer, "                ");
-                WriteTo(writer, log.Message);
+                WriteLiteral("                ");
+                Write(log.Message);
 
-                WriteLiteralTo(writer, $"\r\n            </td>\r\n            <td title=\"{log.Exception}\">");
+                WriteLiteral($"\r\n            </td>\r\n            <td title=\"{log.Exception}\">");
 
-                WriteTo(writer, log.Exception);
+                Write(log.Exception);
 
-                WriteLiteralTo(writer, "</td>\r\n        </tr>\r\n");
-
+                WriteLiteral("</td>\r\n        </tr>\r\n");
+                PopWriter();
             }
         });
     }
@@ -59,8 +59,10 @@
     public HelperResult Traverse(ScopeNode node, int level, Dictionary<string, int> counts)
     {
         return new HelperResult((writer) => {
+            PushWriter(writer);
+
             // print start of scope
-            WriteTo(writer, LogRow(new LogInfo()
+            Write(LogRow(new LogInfo()
             {
                 Name = node.Name,
                 Time = node.StartTime,
@@ -74,14 +76,14 @@
             {
                 if (node.Messages[messageIndex].Time < node.Children[childIndex].StartTime)
                 {
-                    WriteTo(writer, LogRow(node.Messages[messageIndex], level));
+                    Write(LogRow(node.Messages[messageIndex], level));
 
                     counts[node.Messages[messageIndex].Severity.ToString()]++;
                     messageIndex++;
                 }
                 else
                 {
-                    WriteTo(writer, Traverse(node.Children[childIndex], level + 1, counts));
+                    Write(Traverse(node.Children[childIndex], level + 1, counts));
                     childIndex++;
                 }
             }
@@ -89,7 +91,7 @@
             {
                 for (var i = messageIndex; i < node.Messages.Count; i++)
                 {
-                    WriteTo(writer, LogRow(node.Messages[i], level));
+                    Write(LogRow(node.Messages[i], level));
                     counts[node.Messages[i].Severity.ToString()]++;
                 }
             }
@@ -97,17 +99,19 @@
             {
                 for (var i = childIndex; i < node.Children.Count; i++)
                 {
-                    WriteTo(writer, Traverse(node.Children[i], level + 1, counts));
+                    Write(Traverse(node.Children[i], level + 1, counts));
                 }
             }
             // print end of scope
-            WriteTo(writer, LogRow(new LogInfo()
+            Write(LogRow(new LogInfo()
             {
                 Name = node.Name,
                 Time = node.EndTime,
                 Severity = LogLevel.Debug,
                 Message = string.Format("Completed {0} in {1}ms", node.State, node.EndTime - node.StartTime)
             }, level));
+
+            PopWriter();
         });
     }
 }

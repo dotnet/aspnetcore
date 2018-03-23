@@ -36,8 +36,6 @@
                 @{
                     var stackFrameCount = 0;
                     var frameId = "";
-                 }
-                @{
                     var fileName = errorDetail.StackFrames.FirstOrDefault()?.File;
                     if (!string.IsNullOrEmpty(fileName))
                     {
@@ -52,10 +50,9 @@
                 <ul>
                 @foreach (var frame in errorDetail.StackFrames)
                 {
-                    @{
-                        stackFrameCount++;
-                        frameId = "frame" + stackFrameCount;
-                    }
+                    stackFrameCount++;
+                    frameId = "frame" + stackFrameCount;
+
                     <li class="frame" id="@frameId">
                         @if (!string.IsNullOrEmpty(frame.ErrorDetails))
                         {
