@@ -23,11 +23,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
         //
         // This is similar to (and based on) the code used by Roslyn in VBCSCompiler:
         // https://github.com/dotnet/roslyn/blob/c273b6a9f19570a344c274ae89185b3a2b64d93d/src/Compilers/Shared/BuildServerConnection.cs#L528
-        public static string ComputeDefault()
+        public static string ComputeDefault(string toolDirectory = null)
         {
+            if (string.IsNullOrEmpty(toolDirectory))
+            {
+                // This can be null in cases where we don't have a way of knowing the tool assembly path like when someone manually
+                // invokes the cli tool without passing in a pipe name as argument.
+                toolDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            }
+
             // Include a prefix so we can't conflict with VBCSCompiler if we somehow end up in the same directory.
             // That would be a pretty wacky bug to try and unravel.
-            var baseName = ComputeBaseName("Razor:" + AppDomain.CurrentDomain.BaseDirectory);
+            var baseName = ComputeBaseName("Razor:" + toolDirectory);
 
             // Prefix with username and elevation
             var isAdmin = false;
