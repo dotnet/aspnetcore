@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class HttpsConnectionAdapterTests
     {
-        private static X509Certificate2 _x509Certificate2 = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
         private readonly ITestOutputHelper _output;
 
         public HttpsConnectionAdapterTests(ITestOutputHelper output)
@@ -148,6 +149,211 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task UsesProvidedServerCertificateSelector()
+        {
+            var selectorCalled = 0;
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificateSelector = (features, name) =>
+                        {
+                            Assert.NotNull(features);
+                            Assert.NotNull(features.Get<SslStream>());
+#if NETCOREAPP2_1
+                            Assert.Equal("localhost", name);
+#else
+                            Assert.Null(name);
+#endif
+                            selectorCalled++;
+                            return _x509Certificate2;
+                        }
+                    })
+                }
+            };
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
+            {
+                using (var client = new TcpClient())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
+                    Assert.Equal(1, selectorCalled);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UsesProvidedServerCertificateSelectorEachTime()
+        {
+            var selectorCalled = 0;
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificateSelector = (features, name) =>
+                        {
+                            Assert.NotNull(features);
+                            Assert.NotNull(features.Get<SslStream>());
+#if NETCOREAPP2_1
+                            Assert.Equal("localhost", name);
+#else
+                            Assert.Null(name);
+#endif
+                            selectorCalled++;
+                            if (selectorCalled == 1)
+                            {
+                                return _x509Certificate2;
+                            }
+                            return _x509Certificate2NoExt;
+                        }
+                    })
+                }
+            };
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
+            {
+                using (var client = new TcpClient())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
+                    Assert.Equal(1, selectorCalled);
+                }
+                using (var client = new TcpClient())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2NoExt));
+                    Assert.Equal(2, selectorCalled);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UsesProvidedServerCertificateSelectorValidatesEkus()
+        {
+            var selectorCalled = 0;
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificateSelector = (features, name) =>
+                        {
+                            selectorCalled++;
+                            return TestResources.GetTestCertificate("eku.code_signing.pfx");
+                        }
+                    })
+                }
+            };
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
+            {
+                using (var client = new TcpClient())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var stream = await OpenSslStream(client, server);
+                    await Assert.ThrowsAsync<IOException>(() =>
+                        stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
+                    Assert.Equal(1, selectorCalled);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UsesProvidedServerCertificateSelectorOverridesServerCertificate()
+        {
+            var selectorCalled = 0;
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = _x509Certificate2NoExt,
+                        ServerCertificateSelector = (features, name) =>
+                        {
+                            Assert.NotNull(features);
+                            Assert.NotNull(features.Get<SslStream>());
+#if NETCOREAPP2_1
+                            Assert.Equal("localhost", name);
+#else
+                            Assert.Null(name);
+#endif
+                            selectorCalled++;
+                            return _x509Certificate2;
+                        }
+                    })
+                }
+            };
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
+            {
+                using (var client = new TcpClient())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
+                    Assert.Equal(1, selectorCalled);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UsesProvidedServerCertificateSelectorFailsIfYouReturnNull()
+        {
+            var selectorCalled = 0;
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificateSelector = (features, name) =>
+                        {
+                            selectorCalled++;
+                            return null;
+                        }
+                    })
+                }
+            };
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
+            {
+                using (var client = new TcpClient())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var stream = await OpenSslStream(client, server);
+                    await Assert.ThrowsAsync<IOException>(() =>
+                        stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
+                    Assert.Equal(1, selectorCalled);
+                }
+            }
+        }
 
         [Fact]
         public async Task CertificatePassedToHttpContext()

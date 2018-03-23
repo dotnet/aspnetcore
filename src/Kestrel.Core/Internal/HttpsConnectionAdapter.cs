@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         private readonly HttpsConnectionAdapterOptions _options;
         private readonly X509Certificate2 _serverCertificate;
+        private readonly Func<IFeatureCollection, string, X509Certificate2> _serverCertificateSelector;
+
         private readonly ILogger _logger;
 
         public HttpsConnectionAdapter(HttpsConnectionAdapterOptions options)
@@ -36,15 +38,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.ServerCertificate == null)
+            // capture the certificate now so it can't be switched after validation
+            _serverCertificate = options.ServerCertificate;
+            _serverCertificateSelector = options.ServerCertificateSelector;
+            if (_serverCertificate == null && _serverCertificateSelector == null)
             {
-                throw new ArgumentException(CoreStrings.ServiceCertificateRequired, nameof(options));
+                throw new ArgumentException(CoreStrings.ServerCertificateRequired, nameof(options));
             }
 
-            // capture the certificate now so it can be switched after validation
-            _serverCertificate = options.ServerCertificate;
-
-            EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
+            // If a selector is provided then ignore the cert, it may be a default cert.
+            if (_serverCertificateSelector != null)
+            {
+                // SslStream doesn't allow both.
+                _serverCertificate = null;
+            }
+            else
+            {
+                EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
+            }
 
             _options = options;
             _logger = loggerFactory?.CreateLogger(nameof(HttpsConnectionAdapter));
@@ -115,9 +126,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             try
             {
 #if NETCOREAPP2_1
+                // Adapt to the SslStream signature
+                ServerCertificateSelectionCallback selector = null;
+                if (_serverCertificateSelector != null)
+                {
+                    selector = (sender, name) =>
+                    {
+                        context.Features.Set(sslStream);
+                        var cert = _serverCertificateSelector(context.Features, name);
+                        if (cert != null)
+                        {
+                            EnsureCertificateIsAllowedForServerAuth(cert);
+                        }
+                        return cert;
+                    };
+                }
+
                 var sslOptions = new SslServerAuthenticationOptions()
                 {
                     ServerCertificate = _serverCertificate,
+                    ServerCertificateSelectionCallback = selector,
                     ClientCertificateRequired = certificateRequired,
                     EnabledSslProtocols = _options.SslProtocols,
                     CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
@@ -137,7 +165,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                 await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
 #else
-                await sslStream.AuthenticateAsServerAsync(_serverCertificate, certificateRequired,
+                var serverCert = _serverCertificate;
+                if (_serverCertificateSelector != null)
+                {
+                    context.Features.Set(sslStream);
+                    serverCert = _serverCertificateSelector(context.Features, null);                
+                    if (serverCert != null)
+                    {
+                        EnsureCertificateIsAllowedForServerAuth(serverCert);
+                    }
+                }
+                await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
                         _options.SslProtocols, _options.CheckCertificateRevocation);
 #endif
             }

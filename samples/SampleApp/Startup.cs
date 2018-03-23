@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -105,10 +106,23 @@ namespace SampleApp
                         listenOptions.UseHttps(StoreName.My, "localhost", allowInvalid: true);
                     });
 
+                    options.ListenAnyIP(basePort + 5, listenOptions =>
+                    {
+                        listenOptions.UseHttps(httpsOptions =>
+                        {
+                            var localhostCert = CertificateLoader.LoadFromStoreCert("localhost", "My", StoreLocation.CurrentUser, allowInvalid: true);
+                            httpsOptions.ServerCertificateSelector = (features, name) =>
+                            {
+                                // Here you would check the name, select an appropriate cert, and provide a fallback or fail for null names.
+                                return localhostCert;
+                            };
+                        });
+                    });
+
                     options
                         .Configure()
-                        .Endpoint(IPAddress.Loopback, basePort + 5)
-                        .LocalhostEndpoint(basePort + 6)
+                        .Endpoint(IPAddress.Loopback, basePort + 6)
+                        .LocalhostEndpoint(basePort + 7)
                         .Load();
 
                     options
