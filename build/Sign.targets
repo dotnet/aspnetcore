@@ -60,6 +60,7 @@
         $(UnsignedSharedFxPath)**\microsoft.*.dll;
         $(UnsignedSharedFxPath)**\system.*.dll;
         $(UnsignedSharedFxPath)**\libuv.dll;
+        $(UnsignedSharedFxPath)**\aspnetcorerh.dll;
         $(UnsignedSharedFxPath)**\sni.dll"
         Exclude="@(SharedFxThirdPartyBinaries)"/>
 
