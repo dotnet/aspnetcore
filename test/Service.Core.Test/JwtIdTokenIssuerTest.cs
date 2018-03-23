@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.Equal($"Missing '{IdentityServiceClaimTypes.ClientId}' claim from the application.", exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         public async Task JwtIdTokenIssuer_SignsAccessToken()
         {
             // Arrange
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.Equal(expectedDateTime.UtcDateTime, jwtToken.ValidFrom);
         }
 
-        [Theory(Skip="https://github.com/aspnet/Identity/issues/1630")]
+        [Theory(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         [InlineData(null, null, null)]
         [InlineData("nonce", null, null)]
         [InlineData("nonce", "code", null)]

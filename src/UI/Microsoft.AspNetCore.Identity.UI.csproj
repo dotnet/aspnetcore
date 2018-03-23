@@ -8,7 +8,7 @@
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <EnableDefaultCompiledViewAssemblyLoadBehavior>false</EnableDefaultCompiledViewAssemblyLoadBehavior>
+    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
   </PropertyGroup>
 
   <ItemGroup>
