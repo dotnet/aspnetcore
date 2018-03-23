@@ -2,9 +2,8 @@ init:
   - git config --global core.autocrlf true
 branches:
   only:
-    - master
-    - release
     - dev
+    - /^release\/.*$/
     - /^(.*\/)?ci-.*$/
 install:
   - ps: .\tools\update_schema.ps1

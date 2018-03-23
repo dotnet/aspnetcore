@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #if NETCOREAPP2_0 || NETCOREAPP2_1
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -20,13 +19,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
+        [Fact(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
         public Task HelloWorld_IISExpress_Clr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable);
         }
 
-        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
+        [Fact]
         public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable);
@@ -59,7 +58,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
-                    deploymentResult.HttpClient.Timeout = TimeSpan.FromSeconds(5);
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
@@ -86,7 +84,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                         response = await deploymentResult.HttpClient.GetAsync("/Auth");
                         responseText = await response.Content.ReadAsStringAsync();
-                        Assert.True("backcompat;Windows".Equals(responseText) || "latest;null".Equals(responseText), "Auth");
+
+                        // We adapted the Http.config file to be used for inprocess too. We specify WindowsAuth is enabled
+                        // We now expect that windows auth is enabled rather than disabled.
+                        Assert.True("backcompat;Windows".Equals(responseText) || "latest;Windows".Equals(responseText), "Auth");
                     }
                     catch (XunitException)
                     {
