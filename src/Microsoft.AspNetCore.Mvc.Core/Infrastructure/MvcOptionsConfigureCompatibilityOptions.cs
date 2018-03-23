@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         public MvcOptionsConfigureCompatibilityOptions(
             ILoggerFactory loggerFactory,
-            IOptions<MvcCompatibilityOptions> compatibilityOptions) 
+            IOptions<MvcCompatibilityOptions> compatibilityOptions)
             : base(loggerFactory, compatibilityOptions)
         {
         }
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 {
                     values[nameof(MvcOptions.AllowCombiningAuthorizeFilters)] = true;
                     values[nameof(MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes)] = true;
+                    values[nameof(MvcOptions.AllowValidatingTopLevelNodes)] = true;
                     values[nameof(MvcOptions.InputFormatterExceptionPolicy)] = InputFormatterExceptionPolicy.MalformedInputExceptions;
                     values[nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true;
                 }

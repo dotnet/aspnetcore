@@ -90,7 +90,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
             CompiledPageActionDescriptor actionDescriptor,
-            HandlerMethodDescriptor handler)
+            HandlerMethodDescriptor handler,
+            MvcOptions mvcOptions)
         {
             if (handler.Parameters == null || handler.Parameters.Count == 0)
             {
@@ -103,7 +104,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 var parameter = handler.Parameters[i];
                 ModelMetadata metadata;
-                if (modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
+                if (mvcOptions.AllowValidatingTopLevelNodes &&
+                    modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
                 {
                     // The default model metadata provider derives from ModelMetadataProvider
                     // and can therefore supply information about attributes applied to parameters.

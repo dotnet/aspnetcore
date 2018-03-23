@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -22,6 +23,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ParameterBinderTest
     {
+        private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(new MvcOptions
+        {
+            AllowValidatingTopLevelNodes = true,
+        });
+
         public static TheoryData BindModelAsyncData
         {
             get
@@ -98,7 +104,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var parameterBinder = new ParameterBinder(
                 metadataProvider,
                 factory.Object,
-                Mock.Of< IObjectModelValidator>(),
+                Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             var controllerContext = GetControllerContext();
@@ -150,6 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 factory.Object,
                 Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             var valueProvider = new SimpleValueProvider
@@ -175,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             mockModelMetadata.Setup(o => o.IsBindingRequired).Returns(true);
             mockModelMetadata.Setup(o => o.DisplayName).Returns("Ignored Display Name"); // Bind attribute errors are phrased in terms of the model name, not display name
 
-            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, validator: null);
+            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object);
             var modelBindingResult = ModelBindingResult.Failed();
 
             // Act
@@ -196,6 +204,37 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public async Task BindModelAsync_DoesNotEnforceTopLevelBindRequired_IfNotValidatingTopLevelNodes()
+        {
+            // Arrange
+            var actionContext = GetControllerContext();
+
+            var mockModelMetadata = CreateMockModelMetadata();
+            mockModelMetadata.Setup(o => o.IsBindingRequired).Returns(true);
+
+            // Bind attribute errors are phrased in terms of the model name, not display name
+            mockModelMetadata.Setup(o => o.DisplayName).Returns("Ignored Display Name");
+
+            // Do not set AllowValidatingTopLevelNodes.
+            var optionsAccessor = Options.Create(new MvcOptions());
+            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, optionsAccessor: optionsAccessor);
+            var modelBindingResult = ModelBindingResult.Failed();
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                CreateMockModelBinder(modelBindingResult),
+                CreateMockValueProvider(),
+                new ParameterDescriptor { Name = "myParam", ParameterType = typeof(Person) },
+                mockModelMetadata.Object,
+                "ignoredvalue");
+
+            // Assert
+            Assert.True(actionContext.ModelState.IsValid);
+            Assert.Empty(actionContext.ModelState);
+        }
+
+        [Fact]
         public async Task BindModelAsync_EnforcesTopLevelRequired()
         {
             // Arrange
@@ -213,9 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new RequiredAttribute(),
                 stringLocalizer: null);
 
-            var parameterBinder = CreateParameterBinder(
-                mockModelMetadata.Object,
-                validator);
+            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, validator);
             var modelBindingResult = ModelBindingResult.Success(null);
 
             // Act
@@ -236,6 +273,43 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public async Task BindModelAsync_DoesNotEnforceTopLevelRequired_IfNotValidatingTopLevelNodes()
+        {
+            // Arrange
+            var actionContext = GetControllerContext();
+            var mockModelMetadata = CreateMockModelMetadata();
+            mockModelMetadata.Setup(o => o.IsRequired).Returns(true);
+            mockModelMetadata.Setup(o => o.DisplayName).Returns("My Display Name");
+            mockModelMetadata.Setup(o => o.ValidatorMetadata).Returns(new[]
+            {
+                new RequiredAttribute()
+            });
+
+            var validator = new DataAnnotationsModelValidator(
+                new ValidationAttributeAdapterProvider(),
+                new RequiredAttribute(),
+                stringLocalizer: null);
+
+            // Do not set AllowValidatingTopLevelNodes.
+            var optionsAccessor = Options.Create(new MvcOptions());
+            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, validator, optionsAccessor);
+            var modelBindingResult = ModelBindingResult.Success(null);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                CreateMockModelBinder(modelBindingResult),
+                CreateMockValueProvider(),
+                new ParameterDescriptor { Name = "myParam", ParameterType = typeof(Person) },
+                mockModelMetadata.Object,
+                "ignoredvalue");
+
+            // Assert
+            Assert.True(actionContext.ModelState.IsValid);
+            Assert.Empty(actionContext.ModelState);
+        }
+
+        [Fact]
         public async Task BindModelAsync_EnforcesTopLevelDataAnnotationsAttribute()
         {
             // Arrange
@@ -252,9 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 validationAttribute,
                 stringLocalizer: null);
 
-            var parameterBinder = CreateParameterBinder(
-                mockModelMetadata.Object,
-                validator);
+            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, validator);
             var modelBindingResult = ModelBindingResult.Success(123);
 
             // Act
@@ -353,7 +425,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private static ParameterBinder CreateParameterBinder(
             ModelMetadata modelMetadata,
-            IModelValidator validator)
+            IModelValidator validator = null,
+            IOptions<MvcOptions> optionsAccessor = null)
         {
             var mockModelMetadataProvider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
             mockModelMetadataProvider
@@ -361,12 +434,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .Returns(modelMetadata);
 
             var mockModelBinderFactory = new Mock<IModelBinderFactory>(MockBehavior.Strict);
+            optionsAccessor = optionsAccessor ?? _optionsAccessor;
             return new ParameterBinder(
                 mockModelMetadataProvider.Object,
                 mockModelBinderFactory.Object,
                 new DefaultObjectValidator(
-                    mockModelMetadataProvider.Object, 
+                    mockModelMetadataProvider.Object,
                     new[] { GetModelValidatorProvider(validator) }),
+                optionsAccessor,
                 NullLoggerFactory.Instance);
         }
 
@@ -390,7 +465,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 });
             return validatorProvider.Object;
         }
-        
+
         private static ParameterBinder CreateBackCompatParameterBinder(
             ModelMetadata modelMetadata,
             IObjectModelValidator validator)

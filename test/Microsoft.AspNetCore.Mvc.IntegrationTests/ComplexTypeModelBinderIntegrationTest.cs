@@ -2701,7 +2701,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             entry = Assert.Single(modelState, e => e.Key == "Info.Value.GpsCoordinates").Value;
             Assert.Equal("10,20", entry.AttemptedValue);
-            Assert.Equal(new[] { "10", "20" }, entry.RawValue);
+            Assert.Equal("10,20", entry.RawValue);
         }
 
         private static void SetJsonBodyContent(HttpRequest request, string content)

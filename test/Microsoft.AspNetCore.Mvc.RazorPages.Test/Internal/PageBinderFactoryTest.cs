@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -22,6 +23,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageBinderFactoryTest
     {
+        private static readonly MvcOptions _options = new MvcOptions
+        {
+            AllowValidatingTopLevelNodes = true,
+        };
+        private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(_options);
+
         [Fact]
         public void GetModelBinderFactory_ReturnsNullIfPageHasNoBoundProperties()
         {
@@ -37,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelMetadataProvider,
                 modelBinderFactory,
                 Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -62,6 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelMetadataProvider,
                 modelBinderFactory,
                 Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -86,6 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelMetadataProvider,
                 modelBinderFactory,
                 Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -111,6 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelMetadataProvider,
                 modelBinderFactory,
                 Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -135,6 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelMetadataProvider,
                 modelBinderFactory,
                 Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -160,6 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelMetadataProvider,
                 modelBinderFactory,
                 Mock.Of<IObjectModelValidator>(),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -285,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             // Verify that the page properties were not bound.
-            Assert.Equal(default(int), page.Id);
+            Assert.Equal(default, page.Id);
             Assert.Null(page.RouteDifferentValue);
 
             Assert.Equal(10, model.Id);
@@ -541,6 +554,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             var factory = PageBinderFactory.CreatePropertyBinder(binder, modelMetadataProvider, modelBinderFactory, actionDescriptor);
@@ -581,13 +595,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
-
             var factory = PageBinderFactory.CreateHandlerBinder(
                 parameterBinder,
                 modelMetadataProvider,
                 modelBinderFactory,
                 actionDescriptor,
-                actionDescriptor.HandlerMethods[0]);
+                actionDescriptor.HandlerMethods[0],
+                _options);
 
             var page = new PageWithProperty
             {
@@ -625,13 +639,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
-
             var factory = PageBinderFactory.CreateHandlerBinder(
                 parameterBinder,
                 modelMetadataProvider,
                 modelBinderFactory,
                 actionDescriptor,
-                actionDescriptor.HandlerMethods[0]);
+                actionDescriptor.HandlerMethods[0],
+                _options);
 
             var page = new PageWithProperty
             {
@@ -659,13 +673,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
-
             var parameterBinder = new ParameterBinder(
                 modelMetadataProvider,
                 modelBinderFactory,
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             var factory = PageBinderFactory.CreateHandlerBinder(
@@ -673,7 +687,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelMetadataProvider,
                 modelBinderFactory,
                 actionDescriptor,
-                actionDescriptor.HandlerMethods[0]);
+                actionDescriptor.HandlerMethods[0],
+                _options);
 
             var page = new PageWithProperty
             {
@@ -690,11 +705,60 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var modelState = page.PageContext.ModelState;
             Assert.False(modelState.IsValid);
             Assert.Collection(
-                page.PageContext.ModelState,
+                modelState,
                 kvp =>
                 {
                     Assert.Equal("name", kvp.Key);
                 });
+        }
+
+        [Fact]
+        public async Task CreateHandlerBinder_DoesNotValidateTopLevelParameters_IfDisabled()
+        {
+            // Arrange
+            var type = typeof(PageModelWithExecutors);
+            var actionDescriptor = GetActionDescriptorWithHandlerMethod(
+                type,
+                nameof(PageModelWithExecutors.OnPostWithValidation));
+
+            // Act
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelBinderFactory = TestModelBinderFactory.CreateDefault();
+            var mvcOptions = new MvcOptions();
+
+            var parameterBinder = new ParameterBinder(
+                modelMetadataProvider,
+                modelBinderFactory,
+                new DefaultObjectValidator(
+                    modelMetadataProvider,
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                Options.Create(mvcOptions),
+                NullLoggerFactory.Instance);
+
+            var factory = PageBinderFactory.CreateHandlerBinder(
+                parameterBinder,
+                modelMetadataProvider,
+                modelBinderFactory,
+                actionDescriptor,
+                actionDescriptor.HandlerMethods[0],
+                mvcOptions);
+
+            var page = new PageWithProperty
+            {
+                PageContext = GetPageContext()
+            };
+
+            var model = new PageModelWithExecutors();
+            var arguments = new Dictionary<string, object>();
+
+            // Act
+            await factory(page.PageContext, arguments);
+
+            // Assert
+            var modelState = page.PageContext.ModelState;
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
         }
 
         private static CompiledPageActionDescriptor GetActionDescriptorWithHandlerMethod(Type type, string method)
@@ -756,6 +820,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     TestModelMetadataProvider.CreateDefaultProvider(),
                     TestModelBinderFactory.CreateDefault(),
                     Mock.Of<IObjectModelValidator>(),
+                    _optionsAccessor,
                     NullLoggerFactory.Instance)
             {
                 _args = args;
@@ -914,8 +979,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public void OnPostWithValidation([Required] string name)
             {
             }
-
         }
-
     }
 }

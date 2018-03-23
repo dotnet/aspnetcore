@@ -16,11 +16,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ParameterBinder parameterBinder,
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
-            ControllerActionDescriptor actionDescriptor)
+            ControllerActionDescriptor actionDescriptor,
+            MvcOptions mvcOptions)
         {
             if (parameterBinder == null)
             {
                 throw new ArgumentNullException(nameof(parameterBinder));
+            }
+
+            if (modelBinderFactory == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinderFactory));
             }
 
             if (modelMetadataProvider == null)
@@ -33,7 +39,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            var parameterBindingInfo = GetParameterBindingInfo(modelBinderFactory, modelMetadataProvider, actionDescriptor);
+            if (mvcOptions == null)
+            {
+                throw new ArgumentNullException(nameof(mvcOptions));
+            }
+
+            var parameterBindingInfo = GetParameterBindingInfo(
+                modelBinderFactory,
+                modelMetadataProvider,
+                actionDescriptor,
+                mvcOptions);
             var propertyBindingInfo = GetPropertyBindingInfo(modelBinderFactory, modelMetadataProvider, actionDescriptor);
 
             if (parameterBindingInfo == null && propertyBindingInfo == null)
@@ -104,7 +119,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static BinderItem[] GetParameterBindingInfo(
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
-            ControllerActionDescriptor actionDescriptor)
+            ControllerActionDescriptor actionDescriptor,
+            MvcOptions mvcOptions)
         {
             var parameters = actionDescriptor.Parameters;
             if (parameters.Count == 0)
@@ -118,8 +134,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var parameter = parameters[i];
 
                 ModelMetadata metadata;
-                if (modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase
-                    && parameter is ControllerParameterDescriptor controllerParameterDescriptor)
+                if (mvcOptions.AllowValidatingTopLevelNodes &&
+                    modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase &&
+                    parameter is ControllerParameterDescriptor controllerParameterDescriptor)
                 {
                     // The default model metadata provider derives from ModelMetadataProvider
                     // and can therefore supply information about attributes applied to parameters.
