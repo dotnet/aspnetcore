@@ -182,6 +182,16 @@ namespace Microsoft.AspNetCore
                     logging.AddConsole();
                     logging.AddDebug();
                 })
+                .ConfigureServices((hostingContext, services) =>
+                {
+                    var hosts = hostingContext.Configuration["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    services.AddHostFiltering(options =>
+                    {
+                        options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
+                    });
+
+                    services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
+                })
                 .UseIISIntegration()
                 .UseDefaultServiceProvider((context, options) =>
                 {
