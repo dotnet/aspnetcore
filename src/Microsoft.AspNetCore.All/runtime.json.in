@@ -1,0 +1,9 @@
+{
+  "runtimes": {
+    "win": {
+      "${METAPACKAGE_ID}": {
+        "runtime.win.${METAPACKAGE_ID}": "${PACKAGE_VERSION}"
+      }
+    }
+  }
+}
