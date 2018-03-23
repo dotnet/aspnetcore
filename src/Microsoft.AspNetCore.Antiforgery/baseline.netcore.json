@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Antiforgery, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Antiforgery, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions",
@@ -55,19 +55,19 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_CookieName",
+          "Name": "get_Cookie",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieBuilder",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "set_CookieName",
+          "Name": "set_Cookie",
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.AspNetCore.Http.CookieBuilder"
             }
           ],
           "ReturnType": "System.Void",
@@ -118,7 +118,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_RequireSsl",
+          "Name": "get_SuppressXFrameOptionsHeader",
           "Parameters": [],
           "ReturnType": "System.Boolean",
           "Visibility": "Public",
@@ -126,7 +126,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "set_RequireSsl",
+          "Name": "set_SuppressXFrameOptionsHeader",
           "Parameters": [
             {
               "Name": "value",
@@ -139,7 +139,70 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_SuppressXFrameOptionsHeader",
+          "Name": "get_CookieName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookieName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookiePath",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<Microsoft.AspNetCore.Http.PathString>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookiePath",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<Microsoft.AspNetCore.Http.PathString>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookieDomain",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookieDomain",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RequireSsl",
           "Parameters": [],
           "ReturnType": "System.Boolean",
           "Visibility": "Public",
@@ -147,7 +210,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "set_SuppressXFrameOptionsHeader",
+          "Name": "set_RequireSsl",
           "Parameters": [
             {
               "Name": "value",
@@ -1035,6 +1098,27 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Antiforgery.Internal.CryptographyAlgorithms",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateSHA256",
+          "Parameters": [],
+          "ReturnType": "System.Security.Cryptography.SHA256",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Antiforgery.Internal.DefaultAntiforgery",
       "Visibility": "Public",
       "Kind": "Class",
@@ -1120,6 +1204,20 @@
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Antiforgery.IAntiforgery",
           "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetDoNotCacheHeaders",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
           "GenericParameter": []
         },
         {
