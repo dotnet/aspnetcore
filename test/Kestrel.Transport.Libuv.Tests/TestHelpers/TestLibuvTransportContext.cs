@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             var logger = new TestApplicationErrorLogger();
 
             AppLifetime = new LifetimeNotImplemented();
-            ConnectionHandler = new MockConnectionHandler();
+            ConnectionDispatcher = new MockConnectionDispatcher();
             Log = new LibuvTrace(logger);
             Options = new LibuvTransportOptions { ThreadCount = 1 };
         }

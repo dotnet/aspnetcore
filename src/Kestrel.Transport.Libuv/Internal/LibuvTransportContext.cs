@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public ILibuvTrace Log { get; set; }
 
-        public IConnectionHandler ConnectionHandler { get; set; }
+        public IConnectionDispatcher ConnectionDispatcher { get; set; }
     }
 }

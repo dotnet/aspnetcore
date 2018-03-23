@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var transportContext = new TestLibuvTransportContext()
             {
-                ConnectionHandler = new ConnectionHandler(serviceContext, listenOptions.Build())
+                ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build())
             };
 
             var transport = new LibuvTransport(transportContext, listenOptions);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var transportContext = new TestLibuvTransportContext()
             {
-                ConnectionHandler = new ConnectionHandler(serviceContext, listenOptions.Build()),
+                ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build()),
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }
             };
 

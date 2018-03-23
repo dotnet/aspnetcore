@@ -100,7 +100,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Tests", "test\Kestr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{A95C3BE1-B850-4265-97A0-777ADCCD437F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols.Abstractions", "src\Protocols.Abstractions\Protocols.Abstractions.csproj", "{6956CF5C-3163-4398-8628-4ECA569245B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connections.Abstractions", "src\Connections.Abstractions\Connections.Abstractions.csproj", "{6956CF5C-3163-4398-8628-4ECA569245B5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{C2910A13-B2C2-46D8-81D8-7E166F4F5981}"
 	ProjectSection(SolutionItems) = preProject

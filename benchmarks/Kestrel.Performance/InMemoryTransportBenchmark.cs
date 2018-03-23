@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 _connectionsPerEndPoint = connectionsPerEndPoint;
             }
 
-            public ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler)
+            public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher handler)
             {
                 var connections = new InMemoryConnection[_connectionsPerEndPoint];
                 for (var i = 0; i < _connectionsPerEndPoint; i++)
@@ -124,12 +124,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public class InMemoryTransport : ITransport
         {
-            private readonly IConnectionHandler _handler;
+            private readonly IConnectionDispatcher _dispatcher;
             private readonly IReadOnlyList<InMemoryConnection> _connections;
 
-            public InMemoryTransport(IConnectionHandler handler, IReadOnlyList<InMemoryConnection> connections)
+            public InMemoryTransport(IConnectionDispatcher dispatcher, IReadOnlyList<InMemoryConnection> connections)
             {
-                _handler = handler;
+                _dispatcher = dispatcher;
                 _connections = connections;
             }
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 foreach (var connection in _connections)
                 {
-                    _handler.OnConnection(connection);
+                    _dispatcher.OnConnection(connection);
                 }
 
                 return Task.CompletedTask;

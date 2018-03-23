@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace Microsoft.AspNetCore.Protocols.Features
+namespace Microsoft.AspNetCore.Connections.Features
 {
     public interface IConnectionUserFeature
     {

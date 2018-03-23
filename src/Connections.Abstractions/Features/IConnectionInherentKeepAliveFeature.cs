@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Protocols.Features
+namespace Microsoft.AspNetCore.Connections.Features
 {
     /// <summary>
     /// Indicates if the connection transport has an "inherent keep-alive", which means that the transport will automatically

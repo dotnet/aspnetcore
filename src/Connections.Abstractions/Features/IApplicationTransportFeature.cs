@@ -5,10 +5,10 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Protocols.Features
+namespace Microsoft.AspNetCore.Connections.Features
 {
-    public interface IMemoryPoolFeature
+    public interface IApplicationTransportFeature
     {
-        MemoryPool<byte> MemoryPool { get; }
+        IDuplexPipe Application { get; set; }
     }
 }

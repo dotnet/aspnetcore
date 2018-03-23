@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Protocols
+namespace Microsoft.AspNetCore.Connections
 {
     public class ConnectionBuilder : IConnectionBuilder
     {

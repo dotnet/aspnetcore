@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNetCore.Protocols
+namespace Microsoft.AspNetCore.Connections
 {
     public interface IConnectionBuilder
     {

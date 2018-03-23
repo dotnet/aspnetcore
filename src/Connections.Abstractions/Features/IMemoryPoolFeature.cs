@@ -5,12 +5,10 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Protocols.Features
+namespace Microsoft.AspNetCore.Connections.Features
 {
-    public interface ITransportSchedulerFeature
+    public interface IMemoryPoolFeature
     {
-        PipeScheduler InputWriterScheduler { get; }
-
-        PipeScheduler OutputReaderScheduler { get; }
+        MemoryPool<byte> MemoryPool { get; }
     }
 }

@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
             };
         }
 
-        public ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler)
+        public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher)
         {
             var transportContext = new LibuvTransportContext
             {
                 Options = _baseTransportContext.Options,
                 AppLifetime = _baseTransportContext.AppLifetime,
                 Log = _baseTransportContext.Log,
-                ConnectionHandler = handler
+                ConnectionDispatcher = dispatcher
             };
 
             return new LibuvTransport(transportContext, endPointInformation);
