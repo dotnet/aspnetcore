@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core Azure Active Directory Integration provides components for easily integrating Azure Active Directory authentication within your ASP.NET Core application.</Description>
+    <ViewAssemblyDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory Integration package.</ViewAssemblyDescription>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageTags>aspnetcore;authentication;AzureAD</PackageTags>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
+    <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnableDefaultCompiledViewAssemblyLoadBehavior>false</EnableDefaultCompiledViewAssemblyLoadBehavior>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)" />
+  </ItemGroup>
+
+    <ItemGroup>
+     <RazorAssemblyAttribute Include="System.Reflection.AssemblyDescriptionAttribute">
+       <_Parameter1>$(ViewAssemblyDescription)</_Parameter1>
+     </RazorAssemblyAttribute>
+     <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+       <_Parameter1>BuildNumber</_Parameter1>
+       <_Parameter2>$(BuildNumber)</_Parameter2>
+     </RazorAssemblyAttribute>
+     <RazorAssemblyAttribute Include="System.Resources.NeutralResourcesLanguageAttribute" Condition="'$(NeutralLanguage)' != '' and '$(GenerateNeutralResourcesLanguageAttribute)' == 'true'">
+       <_Parameter1>$(NeutralLanguage)</_Parameter1>
+     </RazorAssemblyAttribute>
+   </ItemGroup>
+ 
+   <ItemGroup>
+     <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
+     <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
+   </ItemGroup>
+  
+</Project>
