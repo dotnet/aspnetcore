@@ -8,7 +8,12 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+#endif
+#if (OrganizationalAuth)
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+#endif
+#if (IndividualB2CAuth)
+using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,17 +34,12 @@ namespace Company.WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-#if (OrganizationalAuth || IndividualB2CAuth)
-            services.AddAuthentication(sharedOptions =>
-            {
-                sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-    #if (IndividualB2CAuth)
-            .AddAzureAdB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
-    #elif (OrganizationalAuth)
-            .AddAzureAdBearer(options => Configuration.Bind("AzureAd", options));
-    #endif
-
+#if (OrganizationalAuth)
+            services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
+                .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
+#elif (IndividualB2CAuth)
+            services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
+                .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
 #endif
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

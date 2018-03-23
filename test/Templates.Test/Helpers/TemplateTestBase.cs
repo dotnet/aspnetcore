@@ -19,7 +19,7 @@ namespace Templates.Test
 
         protected string ProjectName { get; set; }
         protected string ProjectGuid { get; set; }
-        protected string TemplateOutputDir { get; private set; }
+        protected string TemplateOutputDir { get; set; }
         protected ITestOutputHelper Output { get; private set; }
 
         public TemplateTestBase(ITestOutputHelper output)
@@ -77,6 +77,14 @@ namespace Templates.Test
             lock (DotNetNewLock)
             {
                 ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
+            }
+        }
+
+        protected void RunDotNet(string arguments)
+        {
+            lock (DotNetNewLock)
+            {
+                ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), arguments).WaitForExit(assertSuccess: true);
             }
         }
 

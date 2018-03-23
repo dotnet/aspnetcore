@@ -43,20 +43,6 @@
           "exclude": [
             "Properties/launchSettings.json"
           ]
-        },
-        {
-          "condition": "(!OrganizationalAuth)",
-          "exclude": [
-            "Extensions/AzureAdAuthenticationBuilderExtensions.cs",
-            "Extensions/AzureAdOptions.cs"
-          ]
-        },
-        {
-          "condition": "(!IndividualB2CAuth)",
-          "exclude": [
-            "Extensions/AzureAdB2CAuthenticationBuilderExtensions.cs",
-            "Extensions/AzureAdB2COptions.cs"
-          ]
         }
       ]
     }

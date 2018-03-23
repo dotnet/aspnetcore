@@ -36,21 +36,38 @@
           ]
         },
         {
-          "condition": "(!IndividualAuth && !OrganizationalAuth && !IndividualB2CAuth)",
+          "condition": "(!OrganizationalAuth && !IndividualAuth)",
           "exclude": [
-            "Controllers/AccountController.cs",
-            "Views/Account/**",
-            "Views/Shared/_LoginPartial.cshtml"
+            "Views/Shared/_LoginPartial.Identity.cshtml",
+            "Views/Shared/_LoginPartial.OrgAuth.cshtml"
           ]
         },
         {
-          "condition": "(!IndividualAuth || UseLocalDB)",
+          "condition": "(OrganizationalAuth || IndividualB2CAuth)",
+          "rename": {
+            "Views/Shared/_LoginPartial.OrgAuth.cshtml": "Views/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Views/Shared/_LoginPartial.Identity.cshtml"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "rename": {
+            "Views/Shared/_LoginPartial.Identity.cshtml": "Views/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Views/Shared/_LoginPartial.OrgAuth.cshtml"
+          ]
+        },
+        {
+          "condition": "(!IndividualLocalAuth || UseLocalDB)",
           "exclude": [
             "app.db"
           ]
         },
         {
-          "condition": "(!IndividualAuth)",
+          "condition": "(!IndividualLocalAuth)",
           "exclude": [
             "Data/**",
             "Areas/**"
@@ -63,30 +80,9 @@
           ]
         },
         {
-          "condition": "(IndividualLocalAuth)",
-          "exclude": [
-            "Controllers/AccountController.cs",
-            "Views/Account/**"
-          ]
-        },
-        {
-          "condition": "(!OrganizationalAuth)",
-          "exclude": [
-            "Extensions/AzureAdAuthenticationBuilderExtensions.cs",
-            "Extensions/AzureAdOptions.cs"
-          ]
-        },
-        {
-          "condition": "(!IndividualB2CAuth)",
-          "exclude": [
-            "Extensions/AzureAdB2CAuthenticationBuilderExtensions.cs",
-            "Extensions/AzureAdB2COptions.cs"
-          ]
-        },
-        {
           "condition": "(IndividualLocalAuth && UseLocalDB)",
           "rename": {
-            "Data/SqlServer/": "Data/Migrations/",
+            "Data/SqlServer/": "Data/Migrations/"
           },
           "exclude": [
             "Data/SqlLite/**"
