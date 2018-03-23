@@ -17,7 +17,7 @@
   "isApi": false,
   "usesOidc": true,
   "supportsDocker": true,
-  "useBrowserLink": true,
+  "useBrowserLink": false,
   "legacyTemplateIdentity": "Microsoft.NetCore.CSharp.RazorPages",
   "supportedAuthentications": [
     {
