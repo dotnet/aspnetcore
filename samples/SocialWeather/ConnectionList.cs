@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Sockets
 {

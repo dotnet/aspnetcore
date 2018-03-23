@@ -5,13 +5,13 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
-using Microsoft.AspNetCore.Protocols.Features;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Sockets;
 
-namespace SocketsSample.EndPoints
+namespace SocketsSample.ConnectionHandlers
 {
-    public class MessagesEndPoint : EndPoint
+    public class MessagesConnectionHandler : ConnectionHandler
     {
         private ConnectionList Connections { get; } = new ConnectionList();
 

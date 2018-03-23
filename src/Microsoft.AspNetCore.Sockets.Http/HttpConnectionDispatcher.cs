@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Protocols;
-using Microsoft.AspNetCore.Protocols.Features;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
 using Microsoft.Extensions.Logging;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets
             _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
         }
 
-        public async Task ExecuteAsync(HttpContext context, HttpSocketOptions options, ConnectionDelegate connectionDelegate)
+        public async Task ExecuteAsync(HttpContext context, HttpConnectionOptions options, ConnectionDelegate connectionDelegate)
         {
             // Create the log scope and attempt to pass the Connection ID to it so as many logs as possible contain
             // the Connection ID metadata. If this is the negotiate request then the Connection ID for the scope will
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Sockets
                 else if (HttpMethods.IsGet(context.Request.Method))
                 {
                     // GET /{path}
-                    await ExecuteEndpointAsync(context, connectionDelegate, options, logScope);
+                    await ExecuteAsync(context, connectionDelegate, options, logScope);
                 }
                 else
                 {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        public async Task ExecuteNegotiateAsync(HttpContext context, HttpSocketOptions options)
+        public async Task ExecuteNegotiateAsync(HttpContext context, HttpConnectionOptions options)
         {
             // Create the log scope and the scope connectionId param will be set when the connection is created.
             var logScope = new ConnectionLogScope(connectionId: string.Empty);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        private async Task ExecuteEndpointAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpSocketOptions options, ConnectionLogScope logScope)
+        private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionOptions options, ConnectionLogScope logScope)
         {
             var supportedTransports = options.Transports;
 
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Sockets
             await connectionDelegate(connection);
         }
 
-        private Task ProcessNegotiate(HttpContext context, HttpSocketOptions options, ConnectionLogScope logScope)
+        private Task ProcessNegotiate(HttpContext context, HttpConnectionOptions options, ConnectionLogScope logScope)
         {
             context.Response.ContentType = "application/json";
 
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Sockets
             return context.Response.Body.WriteAsync(negotiateResponseBuffer, 0, negotiateResponseBuffer.Length);
         }
 
-        private static string GetNegotiatePayload(string connectionId, HttpContext context, HttpSocketOptions options)
+        private static string GetNegotiatePayload(string connectionId, HttpContext context, HttpConnectionOptions options)
         {
             var sb = new StringBuilder();
             using (var jsonWriter = new JsonTextWriter(new StringWriter(sb)))
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private static string GetConnectionId(HttpContext context) => context.Request.Query["id"];
 
-        private async Task ProcessSend(HttpContext context, HttpSocketOptions options)
+        private async Task ProcessSend(HttpContext context, HttpConnectionOptions options)
         {
             var connection = await GetConnectionAsync(context, options);
             if (connection == null)
@@ -471,7 +471,7 @@ namespace Microsoft.AspNetCore.Sockets
             await connection.Application.Output.FlushAsync();
         }
 
-        private async Task<bool> EnsureConnectionStateAsync(DefaultConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpSocketOptions options)
+        private async Task<bool> EnsureConnectionStateAsync(DefaultConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)
         {
             if ((supportedTransports & transportType) == 0)
             {
@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Sockets
             return newHttpContext;
         }
 
-        private async Task<DefaultConnectionContext> GetConnectionAsync(HttpContext context, HttpSocketOptions options)
+        private async Task<DefaultConnectionContext> GetConnectionAsync(HttpContext context, HttpConnectionOptions options)
         {
             var connectionId = GetConnectionId(context);
 
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.Sockets
             return connection;
         }
 
-        private void EnsureConnectionStateInternal(DefaultConnectionContext connection, HttpSocketOptions options)
+        private void EnsureConnectionStateInternal(DefaultConnectionContext connection, HttpConnectionOptions options)
         {
             // If the connection doesn't have a pipe yet then create one, we lazily create the pipe to save on allocations until the client actually connects
             if (connection.Transport == null)
@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.Sockets
         }
 
         // This is only used for WebSockets connections, which can connect directly without negotiating
-        private async Task<DefaultConnectionContext> GetOrCreateConnectionAsync(HttpContext context, HttpSocketOptions options)
+        private async Task<DefaultConnectionContext> GetOrCreateConnectionAsync(HttpContext context, HttpConnectionOptions options)
         {
             var connectionId = GetConnectionId(context);
             DefaultConnectionContext connection;

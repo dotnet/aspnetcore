@@ -23,7 +23,7 @@ namespace FunctionalTests
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSockets();
+            services.AddConnections();
             services.AddSignalR()
                 .AddJsonProtocol(options =>
                 {
@@ -70,7 +70,6 @@ namespace FunctionalTests
                         }
                     };
                 });
-            services.AddSingleton<EchoEndPoint>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -81,9 +80,9 @@ namespace FunctionalTests
             }
 
             app.UseFileServer();
-            app.UseSockets(routes =>
+            app.UseConnections(routes =>
             {
-                routes.MapEndPoint<EchoEndPoint>("/echo");
+                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
             });
 
             app.UseSignalR(routes =>

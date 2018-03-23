@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
                     "calling 'IServiceCollection.AddSignalR()'.");
             }
 
-            app.UseSockets(routes =>
+            app.UseConnections(routes =>
             {
                 configure(new HubRouteBuilder(routes));
             });

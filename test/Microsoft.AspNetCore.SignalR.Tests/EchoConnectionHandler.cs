@@ -4,12 +4,12 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class EchoEndPoint : EndPoint
+    public class EchoConnectionHandler : ConnectionHandler
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {

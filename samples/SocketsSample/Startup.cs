@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using MsgPack.Serialization;
-using SocketsSample.EndPoints;
+using SocketsSample.ConnectionHandlers;
 using SocketsSample.Hubs;
 using StackExchange.Redis;
 
@@ -19,7 +19,7 @@ namespace SocketsSample
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSockets();
+            services.AddConnections();
 
             services.AddSignalR(options =>
             {
@@ -42,8 +42,6 @@ namespace SocketsSample
                      .AllowCredentials();
                 });
             });
-
-            services.AddSingleton<MessagesEndPoint>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,9 +64,9 @@ namespace SocketsSample
                 routes.MapHub<HubTChat>("/hubT");
             });
 
-            app.UseSockets(routes =>
+            app.UseConnections(routes =>
             {
-                routes.MapEndPoint<MessagesEndPoint>("/chat");
+                routes.MapConnectionHandler<MessagesConnectionHandler>("/chat");
             });
         }
     }

@@ -14,8 +14,8 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Protocols;
-using Microsoft.AspNetCore.Protocols.Features;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.SignalR
             Abort();
         }
 
-        // Used by the HubEndPoint only
+        // Used by the HubConnectionHandler only
         internal Task AbortAsync()
         {
             Abort();
