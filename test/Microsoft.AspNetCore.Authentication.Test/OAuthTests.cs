@@ -572,6 +572,88 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Contains("path=/", correlation);
         }
 
+        [Fact]
+        public async Task RedirectToAuthorizeEndpoint_HasScopeAsConfigured()
+        {
+            var server = CreateServer(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        ConfigureDefaults(opt);
+                        opt.Scope.Clear();
+                        opt.Scope.Add("foo");
+                        opt.Scope.Add("bar");
+                    }),
+                async ctx =>
+                {
+                    await ctx.ChallengeAsync("Weblie");
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("https://www.example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=foo%20bar", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task RedirectToAuthorizeEndpoint_HasScopeAsOverwritten()
+        {
+            var server = CreateServer(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        ConfigureDefaults(opt);
+                        opt.Scope.Clear();
+                        opt.Scope.Add("foo");
+                        opt.Scope.Add("bar");
+                    }),
+                async ctx =>
+                {
+                    var properties = new OAuthChallengeProperties();
+                    properties.SetScope("baz", "qux");
+                    await ctx.ChallengeAsync("Weblie", properties);
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("https://www.example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task RedirectToAuthorizeEndpoint_HasScopeAsOverwrittenWithBaseAuthenticationProperties()
+        {
+            var server = CreateServer(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        ConfigureDefaults(opt);
+                        opt.Scope.Clear();
+                        opt.Scope.Add("foo");
+                        opt.Scope.Add("bar");
+                    }),
+                async ctx =>
+                {
+                    var properties = new AuthenticationProperties();
+                    properties.SetParameter(OAuthChallengeProperties.ScopeKey, new string[] { "baz", "qux" });
+                    await ctx.ChallengeAsync("Weblie", properties);
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("https://www.example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
+        }
+
         private void ConfigureDefaults(OAuthOptions o)
         {
             o.ClientId = "Test Id";

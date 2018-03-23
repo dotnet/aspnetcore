@@ -526,6 +526,57 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
         }
 
         [Fact]
+        public async Task ChallengeWillIncludeScopeAsConfigured()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.Scope.Clear();
+                o.Scope.Add("foo");
+                o.Scope.Add("bar");
+            });
+            var transaction = await server.SendAsync("http://example.com/challenge");
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=foo%20bar", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task ChallengeWillIncludeScopeAsOverwritten()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.Scope.Clear();
+                o.Scope.Add("foo");
+                o.Scope.Add("bar");
+            });
+            var transaction = await server.SendAsync("http://example.com/challengeWithOtherScope");
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task ChallengeWillIncludeScopeAsOverwrittenWithBaseAuthenticationProperties()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.Scope.Clear();
+                o.Scope.Add("foo");
+                o.Scope.Add("bar");
+            });
+            var transaction = await server.SendAsync("http://example.com/challengeWithOtherScopeWithBaseAuthenticationProperties");
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
+        }
+
+        [Fact]
         public async Task AuthenticatedEventCanGetRefreshToken()
         {
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("MsftTest"));
@@ -607,6 +658,18 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                         if (req.Path == new PathString("/challenge"))
                         {
                             await context.ChallengeAsync("Microsoft");
+                        }
+                        else if (req.Path == new PathString("/challengeWithOtherScope"))
+                        {
+                            var properties = new OAuthChallengeProperties();
+                            properties.SetScope("baz", "qux");
+                            await context.ChallengeAsync("Microsoft", properties);
+                        }
+                        else if (req.Path == new PathString("/challengeWithOtherScopeWithBaseAuthenticationProperties"))
+                        {
+                            var properties = new AuthenticationProperties();
+                            properties.SetParameter(OAuthChallengeProperties.ScopeKey, new string[] { "baz", "qux" });
+                            await context.ChallengeAsync("Microsoft", properties);
                         }
                         else if (req.Path == new PathString("/me"))
                         {

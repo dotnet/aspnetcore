@@ -209,7 +209,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
-            var scope = FormatScope();
+            var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
+            var scope = scopeParameter != null ? FormatScope(scopeParameter) : FormatScope();
 
             var state = Options.StateDataFormat.Protect(properties);
             var parameters = new Dictionary<string, string>
@@ -223,10 +224,20 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters);
         }
 
+        /// <summary>
+        /// Format a list of OAuth scopes.
+        /// </summary>
+        /// <param name="scopes">List of scopes.</param>
+        /// <returns>Formatted scopes.</returns>
+        protected virtual string FormatScope(IEnumerable<string> scopes)
+            => string.Join(" ", scopes); // OAuth2 3.3 space separated
+
+        /// <summary>
+        /// Format the <see cref="OAuthOptions.Scope"/> property.
+        /// </summary>
+        /// <returns>Formatted scopes.</returns>
+        /// <remarks>Subclasses should rather override <see cref="FormatScope(IEnumerable{string})"/>.</remarks>
         protected virtual string FormatScope()
-        {
-            // OAuth2 3.3 space separated
-            return string.Join(" ", Options.Scope);
-        }
+            => FormatScope(Options.Scope);
     }
 }

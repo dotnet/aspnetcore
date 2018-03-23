@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
@@ -65,12 +66,15 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             }
         }
 
-        protected override string FormatScope()
+        protected override string FormatScope(IEnumerable<string> scopes)
         {
             // Facebook deviates from the OAuth spec here. They require comma separated instead of space separated.
             // https://developers.facebook.com/docs/reference/dialogs/oauth
             // http://tools.ietf.org/html/rfc6749#section-3.3
-            return string.Join(",", Options.Scope);
+            return string.Join(",", scopes);
         }
+
+        protected override string FormatScope()
+            => base.FormatScope();
     }
 }

@@ -225,11 +225,28 @@ namespace OpenIdConnectSample
                     return;
                 }
 
+                if (context.Request.Path.Equals("/login-challenge"))
+                {
+                    // Challenge the user authentication, and force a login prompt by overwriting the
+                    // "prompt". This could be used for example to require the user to re-enter their
+                    // credentials at the authentication provider, to add an extra confirmation layer.
+                    await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties()
+                    {
+                        Prompt = "login",
+
+                        // it is also possible to specify different scopes, e.g.
+                        // Scope = new string[] { "openid", "profile", "other" }
+                    });
+
+                    return;
+                }
+
                 await WriteHtmlAsync(response, async res =>
                 {
                     await res.WriteAsync($"<h1>Hello Authenticated User {HtmlEncode(user.Identity.Name)}</h1>");
                     await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
                     await res.WriteAsync("<a class=\"btn btn-default\" href=\"/restricted\">Restricted</a>");
+                    await res.WriteAsync("<a class=\"btn btn-default\" href=\"/login-challenge\">Login challenge</a>");
                     await res.WriteAsync("<a class=\"btn btn-default\" href=\"/signout\">Sign Out</a>");
                     await res.WriteAsync("<a class=\"btn btn-default\" href=\"/signout-remote\">Sign Out Remote</a>");
 

@@ -329,15 +329,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 RedirectUri = BuildRedirectUri(Options.CallbackPath),
                 Resource = Options.Resource,
                 ResponseType = Options.ResponseType,
-                Prompt = Options.Prompt,
-                Scope = string.Join(" ", Options.Scope)
+                Prompt = properties.GetParameter<string>(OpenIdConnectParameterNames.Prompt) ?? Options.Prompt,
+                Scope = string.Join(" ", properties.GetParameter<ICollection<string>>(OpenIdConnectParameterNames.Scope) ?? Options.Scope),
             };
 
             // Add the 'max_age' parameter to the authentication request if MaxAge is not null.
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
-            if (Options.MaxAge.HasValue)
+            var maxAge = properties.GetParameter<TimeSpan?>(OpenIdConnectParameterNames.MaxAge) ?? Options.MaxAge;
+            if (maxAge.HasValue)
             {
-                message.MaxAge = Convert.ToInt64(Math.Floor((Options.MaxAge.Value).TotalSeconds))
+                message.MaxAge = Convert.ToInt64(Math.Floor((maxAge.Value).TotalSeconds))
                     .ToString(CultureInfo.InvariantCulture);
             }
 
@@ -783,7 +784,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <param name="properties">The authentication properties.</param>
         /// <returns><see cref="HandleRequestResult"/> which is used to determine if the remote authentication was successful.</returns>
         protected virtual async Task<HandleRequestResult> GetUserInformationAsync(
-            OpenIdConnectMessage message, JwtSecurityToken jwt, 
+            OpenIdConnectMessage message, JwtSecurityToken jwt,
             ClaimsPrincipal principal, AuthenticationProperties properties)
         {
             var userInfoEndpoint = _configuration?.UserInfoEndpoint;
