@@ -17,7 +17,5 @@
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
-    <!-- https://github.com/aspnet/KestrelHttpServer/issues/2350 -->
-    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 </Project>
