@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
@@ -545,12 +546,65 @@ namespace Microsoft.AspNetCore.Authentication.Google
         }
 
         [Fact]
-        public async Task ChallengeWillUseAuthenticationPropertiesAsParameters()
+        public async Task ChallengeWillUseAuthenticationPropertiesParametersAsQueryArguments()
         {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(o =>
             {
                 o.ClientId = "Test Id";
                 o.ClientSecret = "Test Secret";
+                o.StateDataFormat = stateFormat;
+            },
+            context =>
+            {
+                var req = context.Request;
+                var res = context.Response;
+                if (req.Path == new PathString("/challenge2"))
+                {
+                    return context.ChallengeAsync("Google", new GoogleChallengeProperties
+                    {
+                        Scope = new string[] { "openid", "https://www.googleapis.com/auth/plus.login" },
+                        AccessType = "offline",
+                        ApprovalPrompt = "force",
+                        Prompt = "consent",
+                        LoginHint = "test@example.com",
+                        IncludeGrantedScopes = false,
+                    });
+                }
+
+                return Task.FromResult<object>(null);
+            });
+            var transaction = await server.SendAsync("https://example.com/challenge2");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+
+            // verify query arguments
+            var query = QueryHelpers.ParseQuery(transaction.Response.Headers.Location.Query);
+            Assert.Equal("openid https://www.googleapis.com/auth/plus.login", query["scope"]);
+            Assert.Equal("offline", query["access_type"]);
+            Assert.Equal("force", query["approval_prompt"]);
+            Assert.Equal("consent", query["prompt"]);
+            Assert.Equal("false", query["include_granted_scopes"]);
+            Assert.Equal("test@example.com", query["login_hint"]);
+
+            // verify that the passed items were not serialized
+            var stateProperties = stateFormat.Unprotect(query["state"]);
+            Assert.DoesNotContain("scope", stateProperties.Items.Keys);
+            Assert.DoesNotContain("access_type", stateProperties.Items.Keys);
+            Assert.DoesNotContain("include_granted_scopes", stateProperties.Items.Keys);
+            Assert.DoesNotContain("approval_prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
+        }
+
+        [Fact]
+        public async Task ChallengeWillUseAuthenticationPropertiesItemsAsParameters()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = stateFormat;
             },
             context =>
             {
@@ -573,13 +627,79 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             var transaction = await server.SendAsync("https://example.com/challenge2");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            var query = transaction.Response.Headers.Location.Query;
-            Assert.Contains("scope=" + UrlEncoder.Default.Encode("https://www.googleapis.com/auth/plus.login"), query);
-            Assert.Contains("access_type=offline", query);
-            Assert.Contains("approval_prompt=force", query);
-            Assert.Contains("prompt=consent", query);
-            Assert.Contains("include_granted_scopes=false", query);
-            Assert.Contains("login_hint=" + UrlEncoder.Default.Encode("test@example.com"), query);
+
+            // verify query arguments
+            var query = QueryHelpers.ParseQuery(transaction.Response.Headers.Location.Query);
+            Assert.Equal("https://www.googleapis.com/auth/plus.login", query["scope"]);
+            Assert.Equal("offline", query["access_type"]);
+            Assert.Equal("force", query["approval_prompt"]);
+            Assert.Equal("consent", query["prompt"]);
+            Assert.Equal("false", query["include_granted_scopes"]);
+            Assert.Equal("test@example.com", query["login_hint"]);
+
+            // verify that the passed items were not serialized
+            var stateProperties = stateFormat.Unprotect(query["state"]);
+            Assert.DoesNotContain("scope", stateProperties.Items.Keys);
+            Assert.DoesNotContain("access_type", stateProperties.Items.Keys);
+            Assert.DoesNotContain("include_granted_scopes", stateProperties.Items.Keys);
+            Assert.DoesNotContain("approval_prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
+        }
+
+        [Fact]
+        public async Task ChallengeWillUseAuthenticationPropertiesItemsAsQueryArgumentsButParametersWillOverwrite()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = stateFormat;
+            },
+            context =>
+            {
+                var req = context.Request;
+                var res = context.Response;
+                if (req.Path == new PathString("/challenge2"))
+                {
+                    return context.ChallengeAsync("Google", new GoogleChallengeProperties(new Dictionary<string, string>
+                    {
+                        ["scope"] = "https://www.googleapis.com/auth/plus.login",
+                        ["access_type"] = "offline",
+                        ["include_granted_scopes"] = "false",
+                        ["approval_prompt"] = "force",
+                        ["prompt"] = "login",
+                        ["login_hint"] = "this-will-be-overwritten@example.com",
+                    })
+                    {
+                        Prompt = "consent",
+                        LoginHint = "test@example.com",
+                    });
+                }
+
+                return Task.FromResult<object>(null);
+            });
+            var transaction = await server.SendAsync("https://example.com/challenge2");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+
+            // verify query arguments
+            var query = QueryHelpers.ParseQuery(transaction.Response.Headers.Location.Query);
+            Assert.Equal("https://www.googleapis.com/auth/plus.login", query["scope"]);
+            Assert.Equal("offline", query["access_type"]);
+            Assert.Equal("force", query["approval_prompt"]);
+            Assert.Equal("consent", query["prompt"]);
+            Assert.Equal("false", query["include_granted_scopes"]);
+            Assert.Equal("test@example.com", query["login_hint"]);
+
+            // verify that the passed items were not serialized
+            var stateProperties = stateFormat.Unprotect(query["state"]);
+            Assert.DoesNotContain("scope", stateProperties.Items.Keys);
+            Assert.DoesNotContain("access_type", stateProperties.Items.Keys);
+            Assert.DoesNotContain("include_granted_scopes", stateProperties.Items.Keys);
+            Assert.DoesNotContain("approval_prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
         }
 
         [Fact]

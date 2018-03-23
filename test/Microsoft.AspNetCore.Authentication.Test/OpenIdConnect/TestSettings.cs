@@ -206,6 +206,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     case OpenIdConnectParameterNames.MaxAge:
                         ValidateMaxAge(actualValues, errors, htmlEncoded);
                         break;
+                    case OpenIdConnectParameterNames.Prompt:
+                        ValidatePrompt(actualValues, errors, htmlEncoded);
+                        break;
                     default:
                         throw new InvalidOperationException($"Unknown parameter \"{paramToValidate}\".");
                 }
@@ -283,6 +286,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 errors.Add($"Parameter {OpenIdConnectParameterNames.MaxAge} is present but it should be absent");
             }
         }
+
+        private void ValidatePrompt(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.Prompt, _options.Prompt, actualParams, errors, htmlEncoded);
 
         private void ValidateParameter(
             string parameterName,

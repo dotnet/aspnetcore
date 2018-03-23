@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         [Fact]
         public async Task AuthorizationRequestDoesNotIncludeTelemetryParametersWhenDisabled()
         {
-            var setting = new TestSettings(opt =>
+            var settings = new TestSettings(opt =>
             {
                 opt.ClientId = "Test Id";
                 opt.Authority = TestServerBuilder.DefaultAuthority;
                 opt.DisableTelemetry = true;
             });
 
-            var server = setting.CreateTestServer();
+            var server = settings.CreateTestServer();
             var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
@@ -425,6 +425,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             var res = transaction.Response;
 
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             settings.ValidateChallengeRedirect(
                 res.Headers.Location,
                 OpenIdConnectParameterNames.MaxAge);
@@ -446,9 +447,170 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             var res = transaction.Response;
 
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             settings.ValidateChallengeRedirect(
                 res.Headers.Location,
                 OpenIdConnectParameterNames.MaxAge);
+        }
+
+        [Fact]
+        public async Task Challenge_HasExpectedPromptParam()
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.Prompt = "consent";
+            });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            settings.ValidateChallengeRedirect(res.Headers.Location, OpenIdConnectParameterNames.Prompt);
+            Assert.Contains("prompt=consent", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task Challenge_HasOverwrittenPromptParam()
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.Prompt = "consent";
+            });
+            var properties = new OpenIdConnectChallengeProperties()
+            {
+                Prompt = "login",
+            };
+
+            var server = settings.CreateTestServer(properties);
+            var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            settings.ValidateChallengeRedirect(res.Headers.Location);
+            Assert.Contains("prompt=login", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task Challenge_HasOverwrittenPromptParamFromBaseAuthenticationProperties()
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.Prompt = "consent";
+            });
+            var properties = new AuthenticationProperties();
+            properties.SetParameter(OpenIdConnectChallengeProperties.PromptKey, "login");
+
+            var server = settings.CreateTestServer(properties);
+            var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            settings.ValidateChallengeRedirect(res.Headers.Location);
+            Assert.Contains("prompt=login", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task Challenge_HasOverwrittenScopeParam()
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.Scope.Clear();
+                opt.Scope.Add("foo");
+                opt.Scope.Add("bar");
+            });
+            var properties = new OpenIdConnectChallengeProperties();
+            properties.SetScope("baz", "qux");
+
+            var server = settings.CreateTestServer(properties);
+            var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            settings.ValidateChallengeRedirect(res.Headers.Location);
+            Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task Challenge_HasOverwrittenScopeParamFromBaseAuthenticationProperties()
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.Scope.Clear();
+                opt.Scope.Add("foo");
+                opt.Scope.Add("bar");
+            });
+            var properties = new AuthenticationProperties();
+            properties.SetParameter(OpenIdConnectChallengeProperties.ScopeKey, new string[] { "baz", "qux" });
+
+            var server = settings.CreateTestServer(properties);
+            var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            settings.ValidateChallengeRedirect(res.Headers.Location);
+            Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task Challenge_HasOverwrittenMaxAgeParam()
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.MaxAge = TimeSpan.FromSeconds(500);
+            });
+            var properties = new OpenIdConnectChallengeProperties()
+            {
+                MaxAge = TimeSpan.FromSeconds(1234),
+            };
+
+            var server = settings.CreateTestServer(properties);
+            var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            settings.ValidateChallengeRedirect(res.Headers.Location);
+            Assert.Contains("max_age=1234", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task Challenge_HasOverwrittenMaxAgeParaFromBaseAuthenticationPropertiesm()
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.Authority = TestServerBuilder.DefaultAuthority;
+                opt.MaxAge = TimeSpan.FromSeconds(500);
+            });
+            var properties = new AuthenticationProperties();
+            properties.SetParameter(OpenIdConnectChallengeProperties.MaxAgeKey, TimeSpan.FromSeconds(1234));
+
+            var server = settings.CreateTestServer(properties);
+            var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            settings.ValidateChallengeRedirect(res.Headers.Location);
+            Assert.Contains("max_age=1234", res.Headers.Location.Query);
         }
     }
 }

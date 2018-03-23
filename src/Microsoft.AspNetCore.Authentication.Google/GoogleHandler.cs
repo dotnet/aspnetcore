@@ -57,12 +57,12 @@ namespace Microsoft.AspNetCore.Authentication.Google
             queryStrings.Add("client_id", Options.ClientId);
             queryStrings.Add("redirect_uri", redirectUri);
 
-            AddQueryString(queryStrings, properties, "scope", FormatScope());
-            AddQueryString(queryStrings, properties, "access_type", Options.AccessType);
-            AddQueryString(queryStrings, properties, "approval_prompt");
-            AddQueryString(queryStrings, properties, "prompt");
-            AddQueryString(queryStrings, properties, "login_hint");
-            AddQueryString(queryStrings, properties, "include_granted_scopes");
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.ScopeKey, FormatScope, Options.Scope);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.AccessTypeKey, Options.AccessType);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString().ToLower(), (bool?)null);
 
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);
@@ -71,29 +71,38 @@ namespace Microsoft.AspNetCore.Authentication.Google
             return authorizationEndpoint;
         }
 
-        private static void AddQueryString(
+        private void AddQueryString<T>(
+            IDictionary<string, string> queryStrings,
+            AuthenticationProperties properties,
+            string name,
+            Func<T, string> formatter,
+            T defaultValue)
+        {
+            string value = null;
+            var parameterValue = properties.GetParameter<T>(name);
+            if (parameterValue != null)
+            {
+                value = formatter(parameterValue);
+            }
+            else if (!properties.Items.TryGetValue(name, out value))
+            {
+                value = formatter(defaultValue);
+            }
+
+            // Remove the parameter from AuthenticationProperties so it won't be serialized into the state
+            properties.Items.Remove(name);
+
+            if (value != null)
+            {
+                queryStrings[name] = value;
+            }
+        }
+
+        private void AddQueryString(
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
             string defaultValue = null)
-        {
-            string value;
-            if (!properties.Items.TryGetValue(name, out value))
-            {
-                value = defaultValue;
-            }
-            else
-            {
-                // Remove the parameter from AuthenticationProperties so it won't be serialized to state parameter
-                properties.Items.Remove(name);
-            }
-
-            if (value == null)
-            {
-                return;
-            }
-
-            queryStrings[name] = value;
-        }
+            => AddQueryString(queryStrings, properties, name, x => x, defaultValue);
     }
 }

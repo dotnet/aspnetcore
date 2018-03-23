@@ -560,6 +560,97 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         }
 
         [Fact]
+        public async Task ChallengeWillIncludeScopeAsConfigured()
+        {
+            var server = CreateServer(
+                app => app.UseAuthentication(),
+                services =>
+                {
+                    services.AddAuthentication().AddFacebook(o =>
+                    {
+                        o.AppId = "Test App Id";
+                        o.AppSecret = "Test App Secret";
+                        o.Scope.Clear();
+                        o.Scope.Add("foo");
+                        o.Scope.Add("bar");
+                    });
+                },
+                async context =>
+                {
+                    await context.ChallengeAsync(FacebookDefaults.AuthenticationScheme);
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("http://example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=foo,bar", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task ChallengeWillIncludeScopeAsOverwritten()
+        {
+            var server = CreateServer(
+                app => app.UseAuthentication(),
+                services =>
+                {
+                    services.AddAuthentication().AddFacebook(o =>
+                    {
+                        o.AppId = "Test App Id";
+                        o.AppSecret = "Test App Secret";
+                        o.Scope.Clear();
+                        o.Scope.Add("foo");
+                        o.Scope.Add("bar");
+                    });
+                },
+                async context =>
+                {
+                    var properties = new OAuthChallengeProperties();
+                    properties.SetScope("baz", "qux");
+                    await context.ChallengeAsync(FacebookDefaults.AuthenticationScheme, properties);
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("http://example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=baz,qux", res.Headers.Location.Query);
+        }
+
+        [Fact]
+        public async Task ChallengeWillIncludeScopeAsOverwrittenWithBaseAuthenticationProperties()
+        {
+            var server = CreateServer(
+                app => app.UseAuthentication(),
+                services =>
+                {
+                    services.AddAuthentication().AddFacebook(o =>
+                    {
+                        o.AppId = "Test App Id";
+                        o.AppSecret = "Test App Secret";
+                        o.Scope.Clear();
+                        o.Scope.Add("foo");
+                        o.Scope.Add("bar");
+                    });
+                },
+                async context =>
+                {
+                    var properties = new AuthenticationProperties();
+                    properties.SetParameter(OAuthChallengeProperties.ScopeKey, new string[] { "baz", "qux" });
+                    await context.ChallengeAsync(FacebookDefaults.AuthenticationScheme, properties);
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("http://example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.Contains("scope=baz,qux", res.Headers.Location.Query);
+        }
+
+        [Fact]
         public async Task NestedMapWillNotAffectRedirect()
         {
             var server = CreateServer(app => app.Map("/base", map =>
