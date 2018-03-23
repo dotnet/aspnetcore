@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -15,31 +15,31 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubEndPoint<THub> : EndPoint where THub : Hub
+    public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger<HubEndPoint<THub>> _logger;
+        private readonly ILogger<HubConnectionHandler<THub>> _logger;
         private readonly IHubProtocolResolver _protocolResolver;
         private readonly HubOptions<THub> _hubOptions;
         private readonly HubOptions _globalHubOptions;
         private readonly IUserIdProvider _userIdProvider;
         private readonly HubDispatcher<THub> _dispatcher;
 
-        public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
-                           IHubProtocolResolver protocolResolver,
-                           IOptions<HubOptions> globalHubOptions,
-                           IOptions<HubOptions<THub>> hubOptions,
-                           ILoggerFactory loggerFactory,
-                           IUserIdProvider userIdProvider,
-                           HubDispatcher<THub> dispatcher)
+        public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager,
+                                    IHubProtocolResolver protocolResolver,
+                                    IOptions<HubOptions> globalHubOptions,
+                                    IOptions<HubOptions<THub>> hubOptions,
+                                    ILoggerFactory loggerFactory,
+                                    IUserIdProvider userIdProvider,
+                                    HubDispatcher<THub> dispatcher)
         {
             _protocolResolver = protocolResolver;
             _lifetimeManager = lifetimeManager;
             _loggerFactory = loggerFactory;
             _hubOptions = hubOptions.Value;
             _globalHubOptions = globalHubOptions.Value;
-            _logger = loggerFactory.CreateLogger<HubEndPoint<THub>>();
+            _logger = loggerFactory.CreateLogger<HubConnectionHandler<THub>>();
             _userIdProvider = userIdProvider;
             _dispatcher = dispatcher;
         }

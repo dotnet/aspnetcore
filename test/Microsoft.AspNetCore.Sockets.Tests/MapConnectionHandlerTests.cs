@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,20 +19,20 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
 {
-    public class MapEndPointTests
+    public class MapConnectionHandlerTests
     {
         private ITestOutputHelper _output;
 
-        public MapEndPointTests(ITestOutputHelper output)
+        public MapConnectionHandlerTests(ITestOutputHelper output)
         {
             _output = output;
         }
 
         [Fact]
-        public void MapEndPointFindsAuthAttributeOnEndPoint()
+        public void MapConnectionHandlerFindsAuthAttributeOnEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<AuthEndPoint>("/auth",
+            using (var builder = BuildWebHost<AuthConnectionHandler>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
                 builder.Start();
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Fact]
-        public void MapEndPointFindsAuthAttributeOnInheritedEndPoint()
+        public void MapConnectionHandlerFindsAuthAttributeOnInheritedEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<InheritedAuthEndPoint>("/auth",
+            using (var builder = BuildWebHost<InheritedAuthConnectionHandler>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
                 builder.Start();
@@ -55,10 +55,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Fact]
-        public void MapEndPointFindsAuthAttributesOnDoubleAuthEndPoint()
+        public void MapConnectionHandlerFindsAuthAttributesOnDoubleAuthEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<DoubleAuthEndPoint>("/auth",
+            using (var builder = BuildWebHost<DoubleAuthConnectionHandler>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
                 builder.Start();
@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
-        public async Task MapEndPointWithWebSocketSubProtocolSetsProtocol()
+        public async Task MapConnectionHandlerWithWebSocketSubProtocolSetsProtocol()
         {
-            var host = BuildWebHost<MyEndPoint>("/socket",
+            var host = BuildWebHost<MyConnectionHandler>("/socket",
                 options => options.WebSockets.SubProtocol = "protocol1");
 
             await host.StartAsync();
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
         }
 
-        private class MyEndPoint : EndPoint
+        private class MyConnectionHandler : ConnectionHandler
         {
             public override async Task OnConnectedAsync(ConnectionContext connection)
             {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        private class InheritedAuthEndPoint : AuthEndPoint
+        private class InheritedAuthConnectionHandler : AuthConnectionHandler
         {
             public override Task OnConnectedAsync(ConnectionContext connection)
             {
@@ -117,12 +117,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Authorize]
-        private class DoubleAuthEndPoint : AuthEndPoint
+        private class DoubleAuthConnectionHandler : AuthConnectionHandler
         {
         }
 
         [Authorize]
-        private class AuthEndPoint : EndPoint
+        private class AuthConnectionHandler : ConnectionHandler
         {
             public override Task OnConnectedAsync(ConnectionContext connection)
             {
@@ -130,22 +130,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        private IWebHost BuildWebHost<TEndPoint>(string path, Action<HttpSocketOptions> configure) where TEndPoint : EndPoint
+        private IWebHost BuildWebHost<TConnectionHandler>(string path, Action<HttpConnectionOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             return new WebHostBuilder()
                 .UseUrls("http://127.0.0.1:0")
                 .UseKestrel()
                 .ConfigureServices(services =>
                 {
-                    services.AddSockets();
-                    services.AddSingleton<TEndPoint>();
+                    services.AddConnections();
                 })
                 .Configure(app =>
                 {
-                    app.UseSockets(routes =>
+                    app.UseConnections(routes =>
                     {
-                        routes.MapEndPoint<TEndPoint>(path,
-                            httpSocketOptions => configure(httpSocketOptions));
+                        routes.MapConnectionHandler<TConnectionHandler>(path, configureOptions);
                     });
                 })
                 .ConfigureLogging(factory =>

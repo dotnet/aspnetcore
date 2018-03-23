@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;

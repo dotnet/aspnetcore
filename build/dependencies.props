@@ -22,11 +22,11 @@
     <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreProtocolsAbstractionsPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreProtocolsAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>2.1.0-a-preview2-bedrock-renames-17598</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>
     <MicrosoftAspNetCoreRoutingPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreRoutingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview2-30355</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-a-preview2-bedrock-renames-17598</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30355</MicrosoftAspNetCoreTestingPackageVersion>

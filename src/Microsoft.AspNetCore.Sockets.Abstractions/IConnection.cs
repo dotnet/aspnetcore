@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {

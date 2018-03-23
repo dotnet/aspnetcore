@@ -11,16 +11,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSockets();
+            services.AddConnections();
             services.AddSignalR();
-            services.AddSingleton<EchoEndPoint>();
-            services.AddSingleton<HttpHeaderEndPoint>();
+            services.AddSingleton<EchoConnectionHandler>();
+            services.AddSingleton<HttpHeaderConnectionHandler>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseSockets(options => options.MapEndPoint<EchoEndPoint>("/echo"));
-            app.UseSockets(options => options.MapEndPoint<HttpHeaderEndPoint>("/httpheader"));
+            app.UseConnections(options => options.MapConnectionHandler<EchoConnectionHandler>("/echo"));
+            app.UseConnections(options => options.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader"));
             app.UseSignalR(options => options.MapHub<UncreatableHub>("/uncreatable"));
         }
     }

@@ -4,21 +4,21 @@
 using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
-using Microsoft.AspNetCore.Protocols.Features;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 
 namespace SocialWeather
 {
-    public class SocialWeatherEndPoint : EndPoint
+    public class SocialWeatherConnectionHandler : ConnectionHandler
     {
         private readonly PersistentConnectionLifeTimeManager _lifetimeManager;
         private readonly FormatterResolver _formatterResolver;
-        private readonly ILogger<SocialWeatherEndPoint> _logger;
+        private readonly ILogger<SocialWeatherConnectionHandler> _logger;
 
-        public SocialWeatherEndPoint(PersistentConnectionLifeTimeManager lifetimeManager,
-            FormatterResolver formatterResolver, ILogger<SocialWeatherEndPoint> logger)
+        public SocialWeatherConnectionHandler(PersistentConnectionLifeTimeManager lifetimeManager,
+            FormatterResolver formatterResolver, ILogger<SocialWeatherConnectionHandler> logger)
         {
             _lifetimeManager = lifetimeManager;
             _formatterResolver = formatterResolver;

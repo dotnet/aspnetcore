@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Sockets
                 LoggerMessage.Define<long>(LogLevel.Trace, new EventId(6, "ReceivedBytes"), "Received {Count} bytes.");
 
             private static readonly Action<ILogger, TransportType, Exception> _transportNotSupported =
-                LoggerMessage.Define<TransportType>(LogLevel.Debug, new EventId(7, "TransportNotSupported"), "{TransportType} transport not supported by this endpoint type.");
+                LoggerMessage.Define<TransportType>(LogLevel.Debug, new EventId(7, "TransportNotSupported"), "{TransportType} transport not supported by this connection handler.");
 
             private static readonly Action<ILogger, TransportType, TransportType, Exception> _cannotChangeTransport =
                 LoggerMessage.Define<TransportType, TransportType>(LogLevel.Error, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.");

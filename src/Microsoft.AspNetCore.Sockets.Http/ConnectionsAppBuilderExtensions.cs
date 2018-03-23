@@ -8,15 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public static class SocketsAppBuilderExtensions
+    public static class ConnectionsAppBuilderExtensions
     {
-        public static IApplicationBuilder UseSockets(this IApplicationBuilder app, Action<SocketRouteBuilder> callback)
+        public static IApplicationBuilder UseConnections(this IApplicationBuilder app, Action<ConnectionsRouteBuilder> callback)
         {
             var dispatcher = app.ApplicationServices.GetRequiredService<HttpConnectionDispatcher>();
 
             var routes = new RouteBuilder(app);
 
-            callback(new SocketRouteBuilder(routes, dispatcher));
+            callback(new ConnectionsRouteBuilder(routes, dispatcher));
 
             app.UseWebSockets();
             app.UseRouter(routes.Build());

@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {

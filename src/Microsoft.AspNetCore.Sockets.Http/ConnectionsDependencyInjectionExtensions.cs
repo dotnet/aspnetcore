@@ -6,9 +6,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class SocketsDependencyInjectionExtensions
+    public static class ConnectionsDependencyInjectionExtensions
     {
-        public static IServiceCollection AddSockets(this IServiceCollection services)
+        public static IServiceCollection AddConnections(this IServiceCollection services)
         {
             services.AddRouting();
             services.AddAuthorizationPolicyEvaluator();

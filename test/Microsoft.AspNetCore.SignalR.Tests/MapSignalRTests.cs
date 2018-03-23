@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var ex = Assert.Throws<NotSupportedException>(() =>
             {
-                using (var builder = BuildWebHost(options => options.MapHub<InvalidHub>("/overloads")))
+                using (var builder = BuildWebHost(routes => routes.MapHub<InvalidHub>("/overloads")))
                 {
                     builder.Start();
                 }
@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             .Configure(app =>
             {
                 var ex = Assert.Throws<InvalidOperationException>(() => {
-                    app.UseSignalR(options =>
+                    app.UseSignalR(routes =>
                     {
-                        options.MapHub<AuthHub>("/overloads");
+                        routes.MapHub<AuthHub>("/overloads");
                     });
                 });
 
@@ -47,9 +47,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsAuthAttributeOnHub()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost(options => options.MapHub<AuthHub>("/path", httpSocketOptions =>
+            using (var builder = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
             {
-                authCount += httpSocketOptions.AuthorizationData.Count;
+                authCount += options.AuthorizationData.Count;
             })))
             {
                 builder.Start();
@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsAuthAttributeOnInheritedHub()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost(options => options.MapHub<InheritedAuthHub>("/path", httpSocketOptions =>
+            using (var builder = BuildWebHost(routes => routes.MapHub<InheritedAuthHub>("/path", options =>
             {
-                authCount += httpSocketOptions.AuthorizationData.Count;
+                authCount += options.AuthorizationData.Count;
             })))
             {
                 builder.Start();
@@ -77,9 +77,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsMultipleAuthAttributesOnDoubleAuthHub()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost(options => options.MapHub<DoubleAuthHub>("/path", httpSocketOptions =>
+            using (var builder = BuildWebHost(routes => routes.MapHub<DoubleAuthHub>("/path", options =>
             {
-                authCount += httpSocketOptions.AuthorizationData.Count;
+                authCount += options.AuthorizationData.Count;
             })))
             {
                 builder.Start();

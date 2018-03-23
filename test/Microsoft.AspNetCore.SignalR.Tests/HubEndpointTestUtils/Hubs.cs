@@ -9,7 +9,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
+namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class MethodHub : TestHub
     {

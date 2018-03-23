@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class HttpSocketOptions
+    public class HttpConnectionOptions
     {
         public IList<IAuthorizeData> AuthorizationData { get; } = new List<IAuthorizeData>();
 

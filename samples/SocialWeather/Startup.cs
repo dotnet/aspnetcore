@@ -15,9 +15,7 @@ namespace SocialWeather
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
-            services.AddSockets();
-            services.AddSingleton<SocialWeatherEndPoint>();
+            services.AddConnections();
             services.AddTransient<PersistentConnectionLifeTimeManager>();
             services.AddSingleton(typeof(JsonStreamFormatter<>), typeof(JsonStreamFormatter<>));
             services.AddSingleton<PipeWeatherStreamFormatter>();
@@ -32,7 +30,7 @@ namespace SocialWeather
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSockets(o => { o.MapEndPoint<SocialWeatherEndPoint>("/weather"); });
+            app.UseConnections(o => o.MapConnectionHandler<SocialWeatherConnectionHandler>("/weather"));
             app.UseFileServer();
 
             var formatterResolver = app.ApplicationServices.GetRequiredService<FormatterResolver>();

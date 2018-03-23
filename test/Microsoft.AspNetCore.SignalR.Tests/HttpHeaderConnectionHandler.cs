@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class HttpHeaderEndPoint : EndPoint
+    public class HttpHeaderConnectionHandler : ConnectionHandler
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {

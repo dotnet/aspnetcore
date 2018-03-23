@@ -3,13 +3,13 @@
 
 using System.Buffers;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
-using Microsoft.AspNetCore.Protocols.Features;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Sockets;
 
 namespace FunctionalTests
 {
-    public class EchoEndPoint : EndPoint
+    public class EchoConnectionHandler : ConnectionHandler
     {
         public async override Task OnConnectedAsync(ConnectionContext connection)
         {
