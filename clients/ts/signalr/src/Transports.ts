@@ -71,7 +71,7 @@ export class WebSocketTransport implements ITransport {
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
-                this.logger.log(LogLevel.Trace, `(WebSockets transport) data received: ${message.data}`);
+                this.logger.log(LogLevel.Trace, `(WebSockets transport) data received. Length ${getDataLength(message.data)}.`);
                 if (this.onreceive) {
                     this.onreceive(message.data);
                 }
@@ -151,7 +151,7 @@ export class ServerSentEventsTransport implements ITransport {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onreceive) {
                         try {
-                            this.logger.log(LogLevel.Trace, `(SSE transport) data received: ${e.data}`);
+                            this.logger.log(LogLevel.Trace, `(SSE transport) data received. Length ${getDataLength(e.data)}.`);
                             this.onreceive(e.data);
                         } catch (error) {
                             if (this.onclose) {
@@ -276,7 +276,7 @@ export class LongPollingTransport implements ITransport {
                 } else {
                     // Process the response
                     if (response.content) {
-                        this.logger.log(LogLevel.Trace, `(LongPolling transport) data received: ${response.content}`);
+                        this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. Length ${getDataLength(response.content)}.`);
                         if (this.onreceive) {
                             this.onreceive(response.content);
                         }
@@ -311,6 +311,16 @@ export class LongPollingTransport implements ITransport {
 
     public onreceive: DataReceived;
     public onclose: TransportClosed;
+}
+
+function getDataLength(data: any): number {
+    let length: number = null;
+    if (data instanceof ArrayBuffer) {
+        length = data.byteLength;
+    } else if (data instanceof String) {
+        length = data.length;
+    }
+    return length;
 }
 
 async function send(httpClient: HttpClient, url: string, accessTokenFactory: () => string, content: string | ArrayBuffer): Promise<void> {

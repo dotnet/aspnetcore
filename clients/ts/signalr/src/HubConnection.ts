@@ -95,7 +95,7 @@ export class HubConnection {
                         this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : null);
                         break;
                     default:
-                        this.logger.log(LogLevel.Warning, "Invalid message type: " + data);
+                        this.logger.log(LogLevel.Warning, "Invalid message type: " + message.type);
                         break;
                 }
             }
