@@ -10,7 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -60,12 +60,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public override PipeScheduler InputWriterScheduler => _scheduler;
         public override PipeScheduler OutputReaderScheduler => _scheduler;
 
-        public async Task StartAsync(IConnectionHandler connectionHandler)
+        public async Task StartAsync(IConnectionDispatcher connectionDispatcher)
         {
             Exception sendError = null;
             try
             {
-                connectionHandler.OnConnection(this);
+                connectionDispatcher.OnConnection(this);
 
                 // Spawn send and receive logic
                 Task receiveTask = DoReceive();

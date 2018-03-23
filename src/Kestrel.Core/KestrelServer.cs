@@ -148,8 +148,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
                     }
 
-                    var connectionHandler = new ConnectionHandler(ServiceContext, connectionDelegate);
-                    var transport = _transportFactory.Create(endpoint, connectionHandler);
+                    var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
+                    var transport = _transportFactory.Create(endpoint, connectionDispatcher);
                     _transports.Add(transport);
 
                     await transport.BindAsync().ConfigureAwait(false);

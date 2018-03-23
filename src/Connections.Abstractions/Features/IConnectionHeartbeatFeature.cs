@@ -3,12 +3,10 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Protocols
+namespace Microsoft.AspNetCore.Connections.Features
 {
-    [Flags]
-    public enum TransferFormat
+    public interface IConnectionHeartbeatFeature
     {
-        Binary = 0x01,
-        Text = 0x02
+        void OnHeartbeat(Action<object> action, object state);
     }
 }

@@ -2,7 +2,7 @@
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Protocols
+namespace Microsoft.AspNetCore.Connections
 {
     public abstract class ConnectionContext
     {

@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _trace = new SocketsTrace(logger);
         }
 
-        public ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler)
+        public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher)
         {
             if (endPointInformation == null)
             {
@@ -52,12 +52,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentException(SocketsStrings.OnlyIPEndPointsSupported, nameof(endPointInformation));
             }
 
-            if (handler == null)
+            if (dispatcher == null)
             {
-                throw new ArgumentNullException(nameof(handler));
+                throw new ArgumentNullException(nameof(dispatcher));
             }
 
-            return new SocketTransport(endPointInformation, handler, _appLifetime, _options.IOQueueCount, _trace);
+            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options.IOQueueCount, _trace);
         }
     }
 }

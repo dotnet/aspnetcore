@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public interface ITransportFactory
     {
-        ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler);
+        ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher);
     }
 }

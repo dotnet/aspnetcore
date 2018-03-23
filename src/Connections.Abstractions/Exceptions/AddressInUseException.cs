@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Protocols
+namespace Microsoft.AspNetCore.Connections
 {
     public class AddressInUseException : InvalidOperationException
     {

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.Scheduler = PipeScheduler.ThreadPool;
 
             var mockScheduler = Mock.Of<PipeScheduler>();
-            var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, KestrelMemoryPool.Create(), readerScheduler: mockScheduler);
+            var outputPipeOptions = ConnectionDispatcher.GetOutputPipeOptions(serviceContext, KestrelMemoryPool.Create(), readerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.ResumeWriterThreshold);
             Assert.Equal(expectedMaximumSizeHigh, outputPipeOptions.PauseWriterThreshold);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.Scheduler = PipeScheduler.ThreadPool;
 
             var mockScheduler = Mock.Of<PipeScheduler>();
-            var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, KestrelMemoryPool.Create(), writerScheduler: mockScheduler);
+            var inputPipeOptions = ConnectionDispatcher.GetInputPipeOptions(serviceContext, KestrelMemoryPool.Create(), writerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.ResumeWriterThreshold);
             Assert.Equal(expectedMaximumSizeHigh, inputPipeOptions.PauseWriterThreshold);

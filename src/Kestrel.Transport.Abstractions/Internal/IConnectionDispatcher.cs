@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
-    public interface IConnectionHandler
+    public interface IConnectionDispatcher
     {
         void OnConnection(TransportConnection connection);
     }

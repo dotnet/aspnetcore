@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Protocols.Features;
+using Microsoft.AspNetCore.Connections.Features;
 
-namespace Microsoft.AspNetCore.Protocols
+namespace Microsoft.AspNetCore.Connections
 {
     public class DefaultConnectionContext : ConnectionContext
     {

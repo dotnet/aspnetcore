@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Protocols.Abstractions
+namespace Microsoft.AspNetCore.Connections.Abstractions
 {
     internal class UrlDecoder
     {

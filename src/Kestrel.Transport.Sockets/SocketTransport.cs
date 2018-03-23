@@ -11,7 +11,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
         private readonly IEndPointInformation _endPointInformation;
-        private readonly IConnectionHandler _handler;
+        private readonly IConnectionDispatcher _dispatcher;
         private readonly IApplicationLifetime _appLifetime;
         private readonly int _numSchedulers;
         private readonly PipeScheduler[] _schedulers;
@@ -36,19 +36,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         internal SocketTransport(
             IEndPointInformation endPointInformation,
-            IConnectionHandler handler,
+            IConnectionDispatcher dispatcher,
             IApplicationLifetime applicationLifetime,
             int ioQueueCount,
             ISocketsTrace trace)
         {
             Debug.Assert(endPointInformation != null);
             Debug.Assert(endPointInformation.Type == ListenType.IPEndPoint);
-            Debug.Assert(handler != null);
+            Debug.Assert(dispatcher != null);
             Debug.Assert(applicationLifetime != null);
             Debug.Assert(trace != null);
 
             _endPointInformation = endPointInformation;
-            _handler = handler;
+            _dispatcher = dispatcher;
             _appLifetime = applicationLifetime;
             _trace = trace;
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                             acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
                             var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
-                            _ = connection.StartAsync(_handler);
+                            _ = connection.StartAsync(_dispatcher);
                         }
                         catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
                         {
