@@ -27,15 +27,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateRazorAssemblyInfoDependsOn>
       GetRazorAssemblyAttributes;
       CreateRazorGeneratedAssemblyInfoInputsCacheFile;
+      CoreGenerateRazorAssemblyInfo
     </GenerateRazorAssemblyInfoDependsOn>
   </PropertyGroup>
 
   <Target
     Name="GenerateRazorAssemblyInfo"
     DependsOnTargets="$(GenerateRazorAssemblyInfoDependsOn)"
+    Condition="'$(GenerateRazorTargetAssemblyInfo)'=='true'">
+  </Target>
+
+  <Target
+    Name="CoreGenerateRazorAssemblyInfo"
     Inputs="$(_GeneratedRazorAssemblyInfoInputsCacheFile)"
     Outputs="$(GeneratedRazorTargetAssemblyInfo)"
-    Condition="'$(GenerateRazorTargetAssemblyInfo)'=='true' AND '@(RazorAssemblyAttribute)'!='' AND '@(RazorCompile)'!=''">
+    Condition="'@(RazorCompile)'!=''">
 
     <ItemGroup Condition="'$(GenerateRazorTargetAssemblyInfo)'=='true'">
       <!-- Ensure the generated assemblyinfo file is not already part of RazorCompile sources -->
