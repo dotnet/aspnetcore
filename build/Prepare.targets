@@ -5,20 +5,13 @@
 
   <Target Name="ExtractInputs">
     <ItemGroup>
-      <UnsignedPackages Include="$(UnsignedShipPackagesDir)*.nupkg" />
-      <UnsignedNoShipPackages Include="$(DepsDirectory)noship\*.nupkg" />
-      <UnsignedOobPackages Include="$(DepsDirectory)shipoob\*.nupkg" />
-      <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\*.nupkg" />
+      <UnsignedPackages Include="$(UnsignedPackagesDir)*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)build\*.vsix" />
       <UnsignedSharedFx Include="$(DepsDirectory)assets\Runtime\*\*.zip" />
       <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip" />
-      <PoliCheckPackages Include="@(UnsignedSymbolPackages)" />
+      <PoliCheckPackages Include="@(UnsignedPackages)" />
       <UnsignedMPacks Include="$(DepsDirectory)build\**\*.mpack" />
 
-      <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
-      <_UnzipFiles Include="@(UnsignedNoShipPackages)" Destination="$(UnsignedNoShipPackagesPath)" />
-      <_UnzipFiles Include="@(UnsignedOobPackages)" Destination="$(UnsignedOobPackagesPath)" />
-      <_UnzipFiles Include="@(UnsignedSymbolPackages)" Destination="$(UnsignedSymbolPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
       <_UnzipFiles Include="@(UnsignedSharedFx)" Destination="$(UnsignedSharedFxPath)" />
       <_UnzipFiles Include="@(UnsignedOobArchive)" Destination="$(UnsignedOobArchivePath)" />
@@ -27,7 +20,6 @@
     </ItemGroup>
 
     <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
-    <Error Text="No OOB packages found for signing." Condition="'@(UnsignedOobPackages)'==''" />
     <Warning Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
     <Error Text="No aspnetcore shared framework found for signing." Condition="'@(UnsignedSharedFx)'==''" />
     <Error Text="No MPacks found for signing." Condition="'@(UnsignedMPacks)'==''" />
@@ -38,9 +30,6 @@
       Condition="!Exists('%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)')" />
 
     <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
-    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedNoShipPackagesPath)" />
-    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedOobPackagesPath)" />
-    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedSymbolPackagesPath)" />
 
     <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
     <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
@@ -52,7 +41,7 @@
   -->
   <Target Name="VerifyUnsignedPackages">
     <VerifyPackages
-      ArtifactDirectory="$(UnsignedShipPackagesDir)"
+      ArtifactDirectory="$(UnsignedPackagesDir)"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Presign.json" />
   </Target>
 

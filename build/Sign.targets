@@ -22,27 +22,6 @@
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;" />
 
-      <NoShipPackageBinaries Include="
-        $(UnsignedNoShipPackagesPath)**\*.dll;
-        $(UnsignedNoShipPackagesPath)**\*.exe;
-        $(UnsignedNoShipPackagesPath)**\*.psd1;
-        $(UnsignedNoShipPackagesPath)**\*.psm1;
-        $(UnsignedNoShipPackagesPath)**\*.ps1;" />
-
-      <OobPackageBinaries Include="
-        $(UnsignedOobPackagesPath)**\*.dll;
-        $(UnsignedOobPackagesPath)**\*.exe;
-        $(UnsignedOobPackagesPath)**\*.psd1;
-        $(UnsignedOobPackagesPath)**\*.psm1;
-        $(UnsignedOobPackagesPath)**\*.ps1;" />
-
-      <SymbolsPackageBinaries Include="
-        $(UnsignedSymbolPackagesPath)**\*.dll;
-        $(UnsignedSymbolPackagesPath)**\*.exe;
-        $(UnsignedSymbolPackagesPath)**\*.psd1;
-        $(UnsignedSymbolPackagesPath)**\*.psm1;
-        $(UnsignedSymbolPackagesPath)**\*.ps1;" />
-
       <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
       <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll" />
@@ -77,9 +56,6 @@
     <ItemGroup>
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
-        @(NoShipPackageBinaries);
-        @(OobPackageBinaries);
-        @(SymbolsPackageBinaries);
         @(VSIXBinaries);
         @(OobArchiveBinaries);
         @(MPackBinaries);" />
@@ -123,9 +99,6 @@
 
     <ItemGroup>
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
-      <NuSpecNoShip Include="$(UnsignedNoShipPackagesPath)**\*.nuspec" />
-      <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
-      <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
     </ItemGroup>
 
     <MSBuild
@@ -133,21 +106,6 @@
       Targets="ZipFile"
       Properties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath);Extension=.nupkg"
       Condition="'@(NuSpec)'!=''" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="ZipFile"
-      Properties="ZipRoot=%(NuSpecNoShip.RootDir)%(NuSpecNoShip.Directory);OutputDir=$(PackagesNoShipOutputPath);Extension=.nupkg"
-      Condition="'@(NuSpecNoShip)'!=''" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="ZipFile"
-      Properties="ZipRoot=%(NuSpecOob.RootDir)%(NuSpecOob.Directory);OutputDir=$(PackagesOobOutputPath);Extension=.nupkg"
-      Condition="'@(NuSpecOob)'!=''" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="ZipFile"
-      Properties="ZipRoot=%(SymbolsNuSpec.RootDir)%(SymbolsNuSpec.Directory);OutputDir=$(SymbolsOutputPath);Extension=.nupkg"
-      Condition="'@(SymbolsNuSpec)'!=''" />
   </Target>
 
   <!-- Repacks MPacks with their signed binaries -->
