@@ -24,7 +24,8 @@ namespace RazorPagesWebSite
                     options.Conventions.AuthorizeAreaFolder("Accounts", "/RequiresAuth");
                     options.Conventions.AllowAnonymousToAreaPage("Accounts", "/RequiresAuth/AllowAnonymous");
                     options.Conventions.Add(new CustomModelTypeConvention());
-                });
+                })
+                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1);
         }
 
         public void Configure(IApplicationBuilder app)
