@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             foreach (var assembly in applicationAssemblies)
             {
                 var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
-                foreach (var part in partFactory.GetApplicationParts(assembly, context: ApplicationPartFactory.DefaultContextName))
+                foreach (var part in partFactory.GetApplicationParts(assembly))
                 {
                     ApplicationParts.Add(part);
                 }

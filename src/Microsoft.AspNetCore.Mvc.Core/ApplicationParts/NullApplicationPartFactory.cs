@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     public class NullApplicationPartFactory : ApplicationPartFactory
     {
         /// <inheritdoc />
-        public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly, string context)
+        public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly)
         {
             return Enumerable.Empty<ApplicationPart>();
         }

@@ -67,20 +67,46 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             };
             var relatedAssembly = typeof(RelatedAssemblyPartTest).Assembly;
 
-            try
+            var result = RelatedAssemblyAttribute.GetRelatedAssemblies(assembly, throwOnError: true, file => true, file =>
             {
-                File.WriteAllBytes(destination, new byte[0]);
-                var result = RelatedAssemblyAttribute.GetRelatedAssemblies(assembly, throwOnError: true, file =>
-                {
-                    Assert.Equal(file, destination);
-                    return relatedAssembly;
-                });
-                Assert.Equal(new[] { relatedAssembly }, result);
-            }
-            finally
+                Assert.Equal(file, destination);
+                return relatedAssembly;
+            });
+            Assert.Equal(new[] { relatedAssembly }, result);
+        }
+
+        [Fact]
+        public void GetAssemblyLocation_UsesCodeBase()
+        {
+            // Arrange
+            var destination = Path.Combine(AssemblyDirectory, "RelatedAssembly.dll");
+            var codeBase = "file://x/file/Assembly.dll";
+            var expected = new Uri(codeBase).LocalPath;
+            var assembly = new TestAssembly
             {
-                File.Delete(destination);
-            }
+                CodeBaseSettable = codeBase,
+            };
+
+            // Act
+            var actual = RelatedAssemblyAttribute.GetAssemblyLocation(assembly);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GetAssemblyLocation_UsesLocation_IfCodeBaseIsNotLocal()
+        {
+            // Arrange
+            var destination = Path.Combine(AssemblyDirectory, "RelatedAssembly.dll");
+            var expected = Path.Combine(AssemblyDirectory, "Some-Dir", "Assembly.dll");
+            var assembly = new TestAssembly
+            {
+                CodeBaseSettable = "https://www.microsoft.com/test.dll",
+                LocationSettable = expected,
+            };
+
+            // Act
+            var actual = RelatedAssemblyAttribute.GetAssemblyLocation(assembly);
+            Assert.Equal(expected, actual);
         }
 
         private class TestAssembly : Assembly
@@ -92,7 +118,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
             public string AttributeAssembly { get; set; }
 
-            public override string CodeBase => Path.Combine(AssemblyDirectory, "MyAssembly.dll");
+            public string CodeBaseSettable { get; set; } = Path.Combine(AssemblyDirectory, "MyAssembly.dll");
+
+            public override string CodeBase => CodeBaseSettable;
+
+            public string LocationSettable { get; set; } = Path.Combine(AssemblyDirectory, "MyAssembly.dll");
+
+            public override string Location => LocationSettable;
 
             public override object[] GetCustomAttributes(Type attributeType, bool inherit)
             {

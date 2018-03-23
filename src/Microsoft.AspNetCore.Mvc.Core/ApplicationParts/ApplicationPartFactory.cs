@@ -19,27 +19,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     /// </summary>
     public abstract class ApplicationPartFactory
     {
-        public static readonly string DefaultContextName = "Default";
-
-        /// <summary>
-        /// Default implementation for <see cref="ApplicationPartFactory"/>.
-        /// </summary>
-        public static ApplicationPartFactory Default { get; } = new DefaultApplicationPartFactory();
-
         /// <summary>
         /// Gets one or more <see cref="ApplicationPart"/> instances for the specified <paramref name="assembly"/>.
         /// </summary>
         /// <param name="assembly">The <see cref="Assembly"/>.</param>
-        /// <param name="context">
-        /// The context name. By default, value of this parameter is <see cref="DefaultContextName"/>.
-        /// </param>
-        public abstract IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly, string context);
+        public abstract IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly);
 
         /// <summary>
         /// Gets the <see cref="ApplicationPartFactory"/> for the specified assembly.
         /// <para>
         /// An assembly may specify an <see cref="ApplicationPartFactory"/> using <see cref="ProvideApplicationPartFactoryAttribute"/>.
-        /// Otherwise, <see cref="ApplicationPartFactory.Default"/> is used.
+        /// Otherwise, <see cref="DefaultApplicationPartFactory"/> is used.
         /// </para>
         /// </summary>
         /// <param name="assembly">The <see cref="Assembly"/>.</param>
@@ -54,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var provideAttribute = assembly.GetCustomAttribute<ProvideApplicationPartFactoryAttribute>();
             if (provideAttribute == null)
             {
-                return ApplicationPartFactory.Default;
+                return DefaultApplicationPartFactory.Instance;
             }
 
             var type = provideAttribute.GetFactoryType();
@@ -67,19 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             }
 
             return (ApplicationPartFactory)Activator.CreateInstance(type);
-        }
-
-        private class DefaultApplicationPartFactory : ApplicationPartFactory
-        {
-            public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly, string context)
-            {
-                if (assembly == null)
-                {
-                    throw new ArgumentNullException(nameof(assembly));
-                }
-
-                yield return new AssemblyPart(assembly);
-            }
         }
     }
 }
