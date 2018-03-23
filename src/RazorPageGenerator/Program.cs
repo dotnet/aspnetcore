@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace RazorPageGenerator
 {
@@ -59,6 +60,10 @@ Examples:
                         @class.Modifiers.Clear();
                         @class.Modifiers.Add("internal");
                     });
+
+                FunctionsDirective.Register(builder);
+                InheritsDirective.Register(builder);
+                SectionDirective.Register(builder);
 
                 builder.Features.Add(new SuppressChecksumOptionsFeature());
                 builder.Features.Add(new SuppressMetadataAttributesFeature());
