@@ -1,17 +1,29 @@
 <Project>
   <PropertyGroup>
-    <_PoliCheckOutputFile>$(Temp)\$([System.Guid]::NewGuid()).xml</_PoliCheckOutputFile>
+    <_PoliCheckOutputFile>$(IntermediateDir)policheck_results.xml</_PoliCheckOutputFile>
   </PropertyGroup>
 
-  <Target Name="PoliCheck">
+  <Target Name="PoliCheck" DependsOnTargets="_GetPolicheckSettings;_CorePolicheck;_VerifyPolicheckResults" />
+
+  <Target Name="_GetPolicheckSettings">
     <!-- These are terms that appear frequently but are not used offensively e.g. red is a color constant name. -->
     <PropertyGroup>
       <Exclusions>countries;country;race</Exclusions>
+      <!-- Refers to the browser. -->
+      <Exclusions>$(Exclusions);Edge</Exclusions>
     </PropertyGroup>
 
     <ItemGroup>
+      <PolicheckFiles Include="$(PoliCheckPath)**\*" />
+      <!-- incremental builds fail due to max path checks. https://github.com/Microsoft/msbuild/issues/53 -->
+      <PolicheckFiles Remove="%(PolicheckFiles.FullPath)" Condition="!Exists(%(PolicheckFiles.FullPath))" />
+
       <!-- List is sorted OrdinalIgnoreCase. Path must be the relative path (non-wildcard) of the file inside the symbols nupkg -->
 
+      <SrcExclusions Include="Angular-CSharp\ClientApp\package.json">
+        <term>ssr</term>
+        <Justification>Refers to server side rendering.</Justification>
+      </SrcExclusions>
       <SrcExclusions Include="
         src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
         src\Microsoft.AspNetCore.Server.IntegrationTesting\Deployers\IISExpressDeployer.cs;
@@ -40,21 +52,28 @@
     <ItemGroup>
       <!-- Path must be the relative path (non-wildcard) of the file inside the symbols nupkg -->
       <FileExclusions Include="
-        src\EFCore.Specification.Tests\TestModels\Northwind\NorthwindData.Objects.cs;">
+        src\EFCore.Specification.Tests\TestModels\Northwind\NorthwindData.Objects.cs">
         <Justification>Northwind database contains too many violations to track them individually.</Justification>
       </FileExclusions>
 
+      <!-- Paths using wildcards must use $(PoliCheckPath) as the base for MSBuild to be happy -->
       <FileExclusions Include="
-        **\System.Text.Encoding.CodePages.dll">
-        <Justification>This BCL library includes geopolitical terms to support localized code pages.</Justification>
+        $(PoliCheckPath)**\System.Text.Encoding.CodePages.dll;
+        $(PoliCheckPath)**\System.Text.Encodings.Web.dll;">
+        <Justification>These BCL libraries includes geopolitical terms to support localized code pages.</Justification>
       </FileExclusions>
 
       <FileExclusions Include="
-        **\jquery\dist\jquery.js;
-        **\jquery-validation\dist\additional-methods.js">
+        $(PoliCheckPath)**\jquery\dist\jquery.js;
+        $(PoliCheckPath)**\jquery-validation\dist\additional-methods.js">
         <Justification>Third party code shipping in our packages</Justification>
       </FileExclusions>
     </ItemGroup>
+  </Target>
+
+  <Target Name="_CorePolicheck"
+          Inputs="@(PolicheckFiles)"
+          Outputs="$(_PoliCheckOutputFile)">
 
     <PropertyGroup>
       <_PoliCheckDirectory>$(MSBuildProgramFiles32)\Microsoft\Policheck\</_PoliCheckDirectory>
@@ -77,19 +96,14 @@
       Command="&quot;$(_PoliCheckExe)&quot; $(_PoliCheckArguments)"
       IgnoreExitCode="true"
       Condition="Exists('$(_PoliCheckExe)')" />
+  </Target>
 
+  <Target Name="_VerifyPolicheckResults">
     <RepoTasks.VerifyPoliCheckResults
       PoliCheckOutputFile="$(_PoliCheckOutputFile)"
       ExcludeTerms="$(Exclusions)"
       ExcludeFiles="@(FileExclusions)"
       DetailedExclusions="@(SrcExclusions)"
       Condition="Exists('$(_PoliCheckOutputFile)')" />
-
-    <CallTarget Targets="_CleanupPolicheckOutputs" />
-    <OnError ExecuteTargets="_CleanupPolicheckOutputs" />
-  </Target>
-
-  <Target Name="_CleanupPolicheckOutputs">
-    <Delete Files="$(_PoliCheckOutputFile)" TreatErrorsAsWarnings="true" Condition="Exists('$(_PoliCheckOutputFile)')" />
   </Target>
 </Project>
