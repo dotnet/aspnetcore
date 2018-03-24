@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Security.Claims;
@@ -10,17 +11,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Sockets.Http.Features;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class DefaultConnectionContext : ConnectionContext,
-                                            IConnectionIdFeature,
-                                            IConnectionItemsFeature,
-                                            IConnectionTransportFeature,
-                                            IApplicationTransportFeature,
-                                            IConnectionUserFeature,
-                                            IConnectionHeartbeatFeature,
-                                            ITransferFormatFeature
+    public class HttpConnectionContext : ConnectionContext,
+                                         IConnectionIdFeature,
+                                         IConnectionItemsFeature,
+                                         IConnectionTransportFeature,
+                                         IApplicationTransportFeature,
+                                         IConnectionUserFeature,
+                                         IConnectionHeartbeatFeature,
+                                         ITransferFormatFeature,
+                                         IHttpContextFeature
     {
         private object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
@@ -34,7 +38,7 @@ namespace Microsoft.AspNetCore.Sockets
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
         /// <param name="id"></param>
-        public DefaultConnectionContext(string id)
+        public HttpConnectionContext(string id)
         {
             ConnectionId = id;
             LastSeenUtc = DateTime.UtcNow;
@@ -52,9 +56,10 @@ namespace Microsoft.AspNetCore.Sockets
             Features.Set<IApplicationTransportFeature>(this);
             Features.Set<IConnectionHeartbeatFeature>(this);
             Features.Set<ITransferFormatFeature>(this);
+            Features.Set<IHttpContextFeature>(this);
         }
 
-        public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
+        public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
             : this(id)
         {
             Transport = transport;
@@ -79,7 +84,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         public ClaimsPrincipal User { get; set; }
 
-        public override IDictionary<object, object> Items { get; set; } = new ConnectionMetadata();
+        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems(new ConcurrentDictionary<object, object>());
 
         public IDuplexPipe Application { get; set; }
 
@@ -88,6 +93,8 @@ namespace Microsoft.AspNetCore.Sockets
         public TransferFormat SupportedFormats { get; set; }
 
         public TransferFormat ActiveFormat { get; set; }
+
+        public HttpContext HttpContext { get; set; }
 
         public void OnHeartbeat(Action<object> action, object state)
         {

@@ -19,20 +19,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class ConnectionManager
+    public class HttpConnectionManager
     {
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
 
         private static readonly RNGCryptoServiceProvider _keyGenerator = new RNGCryptoServiceProvider();
 
-        private readonly ConcurrentDictionary<string, (DefaultConnectionContext Connection, ValueStopwatch Timer)> _connections = new ConcurrentDictionary<string, (DefaultConnectionContext Connection, ValueStopwatch Timer)>();
+        private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections = new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>();
         private Timer _timer;
-        private readonly ILogger<ConnectionManager> _logger;
+        private readonly ILogger<HttpConnectionManager> _logger;
         private object _executionLock = new object();
         private bool _disposed;
 
-        public ConnectionManager(ILogger<ConnectionManager> logger, IApplicationLifetime appLifetime)
+        public HttpConnectionManager(ILogger<HttpConnectionManager> logger, IApplicationLifetime appLifetime)
         {
             _logger = logger;
             appLifetime.ApplicationStarted.Register(() => Start());
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        public bool TryGetConnection(string id, out DefaultConnectionContext connection)
+        public bool TryGetConnection(string id, out HttpConnectionContext connection)
         {
             connection = null;
 
@@ -71,20 +71,20 @@ namespace Microsoft.AspNetCore.Sockets
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        public DefaultConnectionContext CreateConnection()
+        public HttpConnectionContext CreateConnection()
         {
             var id = MakeNewConnectionId();
 
             _logger.CreatedNewConnection(id);
             var connectionTimer = SocketEventSource.Log.ConnectionStart(id);
 
-            var connection = new DefaultConnectionContext(id);
+            var connection = new HttpConnectionContext(id);
 
             _connections.TryAdd(id, (connection, connectionTimer));
             return connection;
         }
 
-        public DefaultConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
+        public HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
         {
             var connection = CreateConnection();
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private static void Scan(object state)
         {
-            ((ConnectionManager)state).Scan();
+            ((HttpConnectionManager)state).Scan();
         }
 
         public void Scan()
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Sockets
                 // Scan the registered connections looking for ones that have timed out
                 foreach (var c in _connections)
                 {
-                    var status = DefaultConnectionContext.ConnectionStatus.Inactive;
+                    var status = HttpConnectionContext.ConnectionStatus.Inactive;
                     var lastSeenUtc = DateTimeOffset.UtcNow;
                     var connection = c.Value.Connection;
 
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                     // Once the decision has been made to dispose we don't check the status again
                     // But don't clean up connections while the debugger is attached.
-                    if (!Debugger.IsAttached && status == DefaultConnectionContext.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
+                    if (!Debugger.IsAttached && status == HttpConnectionContext.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
                     {
                         _logger.ConnectionTimedOut(connection.ConnectionId);
                         SocketEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        public async Task DisposeAndRemoveAsync(DefaultConnectionContext connection)
+        public async Task DisposeAndRemoveAsync(HttpConnectionContext connection)
         {
             try
             {

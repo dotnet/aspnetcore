@@ -9,6 +9,8 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -16,8 +18,11 @@ using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class TestClient : IDisposable
+    public class TestClient : ITransferFormatFeature, IConnectionHeartbeatFeature, IDisposable
     {
+        private object _heartbeatLock = new object();
+        private List<(Action<object> handler, object state)> _heartbeatHandlers;
+
         private static int _id;
         private readonly IHubProtocol _protocol;
         private readonly IInvocationBinder _invocationBinder;
@@ -28,11 +33,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public Task Connected => ((TaskCompletionSource<bool>)Connection.Items["ConnectedTask"]).Task;
         public HandshakeResponseMessage HandshakeResponseMessage { get; private set; }
 
+        public TransferFormat SupportedFormats { get; set; } = TransferFormat.Text | TransferFormat.Binary;
+
+        public TransferFormat ActiveFormat { get; set; }
+
         public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
             var options = new PipeOptions(readerScheduler: synchronousCallbacks ? PipeScheduler.Inline : null);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Transport, pair.Application);
+
+            // Add features SignalR needs for testing
+            Connection.Features.Set<ITransferFormatFeature>(this);
+            Connection.Features.Set<IConnectionHeartbeatFeature>(this);
 
             var claimValue = Interlocked.Increment(ref _id).ToString();
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, claimValue) };
@@ -269,6 +282,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Guid.NewGuid().ToString("N");
         }
 
+        public void OnHeartbeat(Action<object> action, object state)
+        {
+            lock (_heartbeatLock)
+            {
+                if (_heartbeatHandlers == null)
+                {
+                    _heartbeatHandlers = new List<(Action<object> handler, object state)>();
+                }
+                _heartbeatHandlers.Add((action, state));
+            }
+        }
+
+        public void TickHeartbeat()
+        {
+            lock (_heartbeatLock)
+            {
+                if (_heartbeatHandlers == null)
+                {
+                    return;
+                }
+
+                foreach (var (handler, state) in _heartbeatHandlers)
+                {
+                    handler(state);
+                }
+            }
+        }
         private class DefaultInvocationBinder : IInvocationBinder
         {
             public IReadOnlyList<Type> GetParameterTypes(string methodName)

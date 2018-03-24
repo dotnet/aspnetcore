@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(protocol: new MessagePackHubProtocol()))
             {
-                client.Connection.SupportedFormats = TransferFormat.Text;
+                client.SupportedFormats = TransferFormat.Text;
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
@@ -1430,7 +1430,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var client = new TestClient(synchronousCallbacks: false, protocol: protocol, invocationBinder: invocationBinder.Object))
             {
-                client.Connection.SupportedFormats = protocol.TransferFormat;
+                client.SupportedFormats = protocol.TransferFormat;
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
@@ -1711,7 +1711,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var msgPackOptions = serviceProvider.GetRequiredService<IOptions<MessagePackHubProtocolOptions>>();
             using (var client = new TestClient(synchronousCallbacks: false, protocol: new MessagePackHubProtocol(msgPackOptions)))
             {
-                client.Connection.SupportedFormats = TransferFormat.Binary;
+                client.SupportedFormats = TransferFormat.Binary;
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                 await client.Connected.OrTimeout();
@@ -1860,7 +1860,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // being available for the endpoint to run.
                 for (var i = 0; i < 50; i += 1)
                 {
-                    client.Connection.TickHeartbeat();
+                    client.TickHeartbeat();
                     await Task.Yield();
                     await Task.Delay(10);
                 }

@@ -32,11 +32,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
@@ -79,11 +79,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     connectionContext.ActiveFormat = transferFormat;
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         }
                     }
 
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
@@ -169,11 +169,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         CloseTimeout = TimeSpan.FromSeconds(1)
                     };
 
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         CloseTimeout = TimeSpan.FromSeconds(1)
                     };
 
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         CloseTimeout = TimeSpan.FromSeconds(20)
                     };
 
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         CloseTimeout = TimeSpan.FromSeconds(20)
                     };
 
-                    var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
                     var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();

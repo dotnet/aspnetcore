@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public partial class HttpConnectionDispatcher
     {
-        private readonly ConnectionManager _manager;
+        private readonly HttpConnectionManager _manager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
 
-        public HttpConnectionDispatcher(ConnectionManager manager, ILoggerFactory loggerFactory)
+        public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
         {
             _manager = manager;
             _loggerFactory = loggerFactory;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     await connection.Lock.WaitAsync();
 
-                    if (connection.Status == DefaultConnectionContext.ConnectionStatus.Disposed)
+                    if (connection.Status == HttpConnectionContext.ConnectionStatus.Disposed)
                     {
                         Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Sockets
                         return;
                     }
 
-                    if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
+                    if (connection.Status == HttpConnectionContext.ConnectionStatus.Active)
                     {
                         var existing = connection.GetHttpContext();
                         Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, existing.TraceIdentifier);
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Sockets
                     }
 
                     // Mark the connection as active
-                    connection.Status = DefaultConnectionContext.ConnectionStatus.Active;
+                    connection.Status = HttpConnectionContext.ConnectionStatus.Active;
 
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (connection.ApplicationTask == null)
@@ -271,12 +271,12 @@ namespace Microsoft.AspNetCore.Sockets
                     {
                         await connection.Lock.WaitAsync();
 
-                        if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
+                        if (connection.Status == HttpConnectionContext.ConnectionStatus.Active)
                         {
                             // Mark the connection as inactive
                             connection.LastSeenUtc = DateTime.UtcNow;
 
-                            connection.Status = DefaultConnectionContext.ConnectionStatus.Inactive;
+                            connection.Status = HttpConnectionContext.ConnectionStatus.Inactive;
 
                             // Dispose the cancellation token
                             connection.Cancellation.Dispose();
@@ -295,13 +295,13 @@ namespace Microsoft.AspNetCore.Sockets
         private async Task DoPersistentConnection(ConnectionDelegate connectionDelegate,
                                                   IHttpTransport transport,
                                                   HttpContext context,
-                                                  DefaultConnectionContext connection)
+                                                  HttpConnectionContext connection)
         {
             try
             {
                 await connection.Lock.WaitAsync();
 
-                if (connection.Status == DefaultConnectionContext.ConnectionStatus.Disposed)
+                if (connection.Status == HttpConnectionContext.ConnectionStatus.Disposed)
                 {
                     Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Sockets
                 }
 
                 // There's already an active request
-                if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
+                if (connection.Status == HttpConnectionContext.ConnectionStatus.Active)
                 {
                     Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
 
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Sockets
                 }
 
                 // Mark the connection as active
-                connection.Status = DefaultConnectionContext.ConnectionStatus.Active;
+                connection.Status = HttpConnectionContext.ConnectionStatus.Active;
 
                 // Call into the end point passing the connection
                 connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
@@ -471,7 +471,7 @@ namespace Microsoft.AspNetCore.Sockets
             await connection.Application.Output.FlushAsync();
         }
 
-        private async Task<bool> EnsureConnectionStateAsync(DefaultConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)
+        private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)
         {
             if ((supportedTransports & transportType) == 0)
             {
@@ -512,11 +512,11 @@ namespace Microsoft.AspNetCore.Sockets
                 // To make the IHttpContextFeature work well, we make a copy of the relevant properties
                 // to a new HttpContext. This means that it's impossible to affect the context
                 // with subsequent requests.
-                var existing = connection.GetHttpContext();
+                var existing = connection.HttpContext;
                 if (existing == null)
                 {
                     var httpContext = CloneHttpContext(context);
-                    connection.SetHttpContext(httpContext);
+                    connection.HttpContext = httpContext;
                 }
                 else
                 {
@@ -527,7 +527,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
             else
             {
-                connection.SetHttpContext(context);
+                connection.HttpContext = context;
             }
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Sockets
             return newHttpContext;
         }
 
-        private async Task<DefaultConnectionContext> GetConnectionAsync(HttpContext context, HttpConnectionOptions options)
+        private async Task<HttpConnectionContext> GetConnectionAsync(HttpContext context, HttpConnectionOptions options)
         {
             var connectionId = GetConnectionId(context);
 
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.Sockets
             return connection;
         }
 
-        private void EnsureConnectionStateInternal(DefaultConnectionContext connection, HttpConnectionOptions options)
+        private void EnsureConnectionStateInternal(HttpConnectionContext connection, HttpConnectionOptions options)
         {
             // If the connection doesn't have a pipe yet then create one, we lazily create the pipe to save on allocations until the client actually connects
             if (connection.Transport == null)
@@ -637,10 +637,10 @@ namespace Microsoft.AspNetCore.Sockets
         }
 
         // This is only used for WebSockets connections, which can connect directly without negotiating
-        private async Task<DefaultConnectionContext> GetOrCreateConnectionAsync(HttpContext context, HttpConnectionOptions options)
+        private async Task<HttpConnectionContext> GetOrCreateConnectionAsync(HttpContext context, HttpConnectionOptions options)
         {
             var connectionId = GetConnectionId(context);
-            DefaultConnectionContext connection;
+            HttpConnectionContext connection;
 
             // There's no connection id so this is a brand new connection
             if (StringValues.IsNullOrEmpty(connectionId))
