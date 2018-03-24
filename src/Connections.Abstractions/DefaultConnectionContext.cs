@@ -1,55 +1,64 @@
-﻿using System.Collections.Generic;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
-    public class DefaultConnectionContext : ConnectionContext
+    public class DefaultConnectionContext : ConnectionContext,
+                                            IConnectionIdFeature,
+                                            IConnectionItemsFeature,
+                                            IConnectionTransportFeature,
+                                            IApplicationTransportFeature,
+                                            IConnectionUserFeature
     {
-        private FeatureReferences<FeatureInterfaces> _features;
-
-        public DefaultConnectionContext(IFeatureCollection features)
+        public DefaultConnectionContext() :
+            this(Guid.NewGuid().ToString())
         {
-            _features = new FeatureReferences<FeatureInterfaces>(features);
         }
 
-        private IConnectionIdFeature ConnectionIdFeature =>
-            _features.Fetch(ref _features.Cache.ConnectionId, _ => null);
-
-        private IConnectionTransportFeature ConnectionTransportFeature =>
-            _features.Fetch(ref _features.Cache.ConnectionTransport, _ => null);
-
-        private IConnectionItemsFeature ConnectionItemsFeature =>
-            _features.Fetch(ref _features.Cache.ConnectionItems, _ => null);
-
-        public override string ConnectionId
+        /// <summary>
+        /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
+        /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
+        /// </summary>
+        /// <param name="id"></param>
+        public DefaultConnectionContext(string id)
         {
-            get => ConnectionIdFeature.ConnectionId;
-            set => ConnectionIdFeature.ConnectionId = value;
+            ConnectionId = id;
+
+            Features = new FeatureCollection();
+            Features.Set<IConnectionUserFeature>(this);
+            Features.Set<IConnectionItemsFeature>(this);
+            Features.Set<IConnectionIdFeature>(this);
+            Features.Set<IConnectionTransportFeature>(this);
+            Features.Set<IApplicationTransportFeature>(this);
         }
 
-        public override IFeatureCollection Features => _features.Collection;
-
-        public override IDuplexPipe Transport
+        public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
+            : this(id)
         {
-            get => ConnectionTransportFeature.Transport;
-            set => ConnectionTransportFeature.Transport = value;
+            Transport = transport;
+            Application = application;
         }
 
-        public override IDictionary<object, object> Items
-        {
-            get => ConnectionItemsFeature.Items;
-            set => ConnectionItemsFeature.Items = value;
-        }
+        public override string ConnectionId { get; set; }
 
-        struct FeatureInterfaces
-        {
-            public IConnectionIdFeature ConnectionId;
+        public override IFeatureCollection Features { get; }
 
-            public IConnectionTransportFeature ConnectionTransport;
+        public ClaimsPrincipal User { get; set; }
 
-            public IConnectionItemsFeature ConnectionItems;
-        }
+        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
+
+        public IDuplexPipe Application { get; set; }
+
+        public override IDuplexPipe Transport { get; set; }
     }
 }

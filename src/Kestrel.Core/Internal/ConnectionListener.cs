@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             // REVIEW: This task should be tracked by the server for graceful shutdown
             // Today it's handled specifically for http but not for aribitrary middleware
-            _ = Execute(new DefaultConnectionContext(connection));
+            _ = Execute(connection);
         }
 
         private async Task Execute(ConnectionContext connectionContext)
