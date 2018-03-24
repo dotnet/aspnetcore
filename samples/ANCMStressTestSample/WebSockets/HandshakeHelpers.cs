@@ -13,7 +13,7 @@ namespace ANCMStressTestApp
     {
         public static IEnumerable<KeyValuePair<string, string>> GenerateResponseHeaders(string key)
         {
-            yield return new KeyValuePair<string, string>(Constants.Headers.Connection, Constants.Headers.ConnectionUpgrade);
+            yield return new KeyValuePair<string, string>(Constants.Headers.Connection, Constants.Headers.Upgrade);
             yield return new KeyValuePair<string, string>(Constants.Headers.Upgrade, Constants.Headers.UpgradeWebSocket);
             yield return new KeyValuePair<string, string>(Constants.Headers.SecWebSocketAccept, CreateResponseKey(key));
         }
