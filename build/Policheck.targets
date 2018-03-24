@@ -43,16 +43,9 @@
         src\EFCore.Specification.Tests\TestModels\Northwind\NorthwindData.Objects.cs;">
         <Justification>Northwind database contains too many violations to track them individually.</Justification>
       </FileExclusions>
+
       <FileExclusions Include="
-        tools\runtimes\unix\lib\netstandard1.3\System.Text.Encoding.CodePages.dll;
-        tools\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll">
-        <Justification>This BCL library includes geopolitical terms to support localized code pages.</Justification>
-      </FileExclusions>
-      <FileExclusions Include="
-        runtimes\win-x64\lib\netcoreapp2.1\System.Text.Encoding.CodePages.dll;
-        runtimes\win-x86\lib\netcoreapp2.1\System.Text.Encoding.CodePages.dll;
-        runtimes\osx-x64\lib\netcoreapp2.1\System.Text.Encoding.CodePages.dll;
-        runtimes\linux-x64\lib\netcoreapp2.1\System.Text.Encoding.CodePages.dll">
+        **\System.Text.Encoding.CodePages.dll">
         <Justification>This BCL library includes geopolitical terms to support localized code pages.</Justification>
       </FileExclusions>
 
