@@ -1,3 +1,5 @@
+$ErrorActionPreference = 'Stop'
+
 function Assert-Git {
     if (!(Get-Command git -ErrorAction Ignore)) {
         Write-Error 'git is required to execute this script'
@@ -109,4 +111,96 @@ function PackageIdVarName([string]$packageId) {
     }
     $canonicalVarName += "PackageVersion"
     return $canonicalVarName
+}
+
+function Ensure-Hub() {
+    $tmpDir = "$PSScriptRoot\tmp"
+    $zipDir = "$tmpDir\Hub\"
+    $hubLocation = "$zipDir\bin\hub.exe"
+
+    if (-Not (Test-Path $hubLocation) ) {
+        $source = "https://github.com/github/hub/releases/download/v2.3.0-pre9/hub-windows-amd64-2.3.0-pre9.zip"
+        $zipLocation = "$tmpDir\hub.zip"
+        Invoke-WebRequest -OutFile $zipLocation -Uri $source
+
+        Expand-Archive -Path $zipLocation -DestinationPath $zipDir -Force
+        if (-Not (Test-Path $hubLocation)) {
+            throw "Hub couldn't be downloaded"
+        }
+    }
+
+    return $hubLocation
+}
+
+function CommitUpdatedVersions([hashtable]$updatedVars, [xml]$dependencies, [string]$depsPath) {
+    $count = $updatedVars.Count
+    if ($count -gt 0) {
+        $hubLocation = Ensure-Hub
+
+        $destinationBranch = "rybrande/UpgradeDepsTest"
+        $currentBranch = & git rev-parse --abbrev-ref HEAD
+
+        $remote = "origin"
+        $baseBranch = "dev"
+
+        Invoke-Block { & git checkout -tb $destinationBranch "$remote/$baseBranch" }
+        try
+        {
+            & git add build\dependencies.props
+
+            $subject = "Updating external dependencies"
+            & git commit -m $subject
+
+            $body = "$subject`n`n"
+
+            $body += "New versions:`n"
+
+            foreach ($var in $updatedVars.GetEnumerator()) {
+                $body += "    $($var.Name)`n"
+            }
+            Invoke-Block { & git push -f origin $destinationBranch }
+
+            Invoke-Block { & $hubLocation pull-request -b $baseBranch -h $destinationBranch -m $body }
+        }
+        finally{
+            & git checkout $currentBranch
+        }
+    }
+}
+
+function UpdateVersions([hashtable]$variables, [xml]$dependencies, [string]$depsPath) {
+    $updatedVars = @{}
+
+    foreach ($varName in ($variables.Keys | sort)) {
+        $packageVersions = $variables[$varName]
+        if ($packageVersions.Length -gt 1) {
+            Write-Warning "Skipped $varName. Multiple version found. { $($packageVersions -join ', ') }."
+            continue
+        }
+
+        $packageVersion = $packageVersions | Select-Object -First 1
+
+        $depVarNode = $dependencies.SelectSingleNode("//PropertyGroup[`@Label=`"Package Versions: Auto`"]/$varName")
+        if ($depVarNode -and $depVarNode.InnerText -ne $packageVersion) {
+            $depVarNode.InnerText = $packageVersion
+            Write-Host -f DarkGray "   Updating $varName to $packageVersion"
+            $updatedVars[$varName] = $packageVersion
+        }
+        elseif ($depVarNode) {
+            Write-Host -f DarkBlue "   Didn't update $varName to $packageVersion because it was $($depVarNode.InnerText)"
+        }
+        else {
+            # This isn't a dependency we use
+        }
+    }
+
+    if ($updatedVars.Count -gt 0) {
+        Write-Host -f Cyan "Updating $count version variables in $depsPath"
+        SaveXml $dependencies $depsPath
+    }
+    else {
+        Write-Host -f Green "No changes found"
+    }
+
+    return $updatedVars
 }
