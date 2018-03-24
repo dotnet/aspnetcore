@@ -12,10 +12,7 @@ namespace ANCMStressTestApp
             public const string Connection = "Connection";
             public const string ConnectionUpgrade = "Upgrade";
             public const string SecWebSocketKey = "Sec-WebSocket-Key";
-            public const string SecWebSocketVersion = "Sec-WebSocket-Version";
-            public const string SecWebSocketProtocol = "Sec-WebSocket-Protocol";
             public const string SecWebSocketAccept = "Sec-WebSocket-Accept";
-            public const string SupportedVersion = "13";
         }
     }
 }

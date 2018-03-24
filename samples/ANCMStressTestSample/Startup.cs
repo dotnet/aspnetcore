@@ -158,7 +158,7 @@ namespace ANCMStressTestApp
                 var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
 
                 // Generate WebSocket response headers
-                string key = string.Join(", ", context.Request.Headers[Constants.Headers.SecWebSocketKey]);
+                string key = context.Request.Headers[Constants.Headers.SecWebSocketKey].ToString();
                 var responseHeaders = HandshakeHelpers.GenerateResponseHeaders(key);
                 foreach (var headerPair in responseHeaders)
                 {
@@ -171,43 +171,59 @@ namespace ANCMStressTestApp
                 // Get the WebSocket object
                 var ws = WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
 
-                await Echo(ws);
+                await Echo(ws, Program.Cts.Token);
             });
         }
 
-        private async Task Echo(WebSocket webSocket)
+        private async Task Echo(WebSocket webSocket, CancellationToken token)
         {
-            var buffer = new byte[1024 * 4];
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            bool closeFromServer = false;
-            string closeFromServerCmd = "CloseFromServer";
-            int closeFromServerLength = closeFromServerCmd.Length;
-
-            while (!result.CloseStatus.HasValue)
+            try
             {
-                if ((result.Count == closeFromServerLength && System.Text.Encoding.ASCII.GetString(buffer).Substring(0, result.Count) == closeFromServerCmd)
-                    || Program.AppLifetimeStopping == true)
+                var buffer = new byte[1024 * 4];
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+                bool closeFromServer = false;
+                string closeFromServerCmd = "CloseFromServer";
+                int closeFromServerLength = closeFromServerCmd.Length;
+
+                while (!result.CloseStatus.HasValue && !token.IsCancellationRequested && !closeFromServer)
                 {
-                    // start closing handshake from backend process when client send "CloseFromServer" text message 
-                    // or when any message is sent from client during the graceful shutdown.
-                    closeFromServer = true;
-                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeFromServerCmd, CancellationToken.None);
+                    if (result.Count == closeFromServerLength &&
+                        System.Text.Encoding.ASCII.GetString(buffer).Substring(0, result.Count) == closeFromServerCmd)
+                    {
+                        // The client sent "CloseFromServer" text message to request the server to close (a test scenario).
+                        closeFromServer = true;
+                    }
+                    else
+                    {
+                        await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, token);
+                        result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+                    }
+                }
+
+                if (result.CloseStatus.HasValue)
+                {
+                    // Client-initiated close handshake
+                    await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
                 }
                 else
                 {
-                    await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                    // Server-initiated close handshake due to either of the two conditions:
+                    // (1) The applicaton host is performing a graceful shutdown.
+                    // (2) The client sent "CloseFromServer" text message to request the server to close (a test scenario).
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeFromServerCmd, CancellationToken.None);
+
+                    // The server has sent the Close frame.
+                    // Stop sending but keep receiving until we get the Close frame from the client.
+                    while (!result.CloseStatus.HasValue)
+                    {
+                        result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    }
                 }
-
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
-
-            if (!closeFromServer)
+            catch (Exception e)
             {
-                await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-                
+                Console.WriteLine("{0} Exception caught!", e);
             }
-
-            webSocket.Dispose();
         }
     }
 }

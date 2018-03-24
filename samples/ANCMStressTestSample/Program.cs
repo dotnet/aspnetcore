@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +18,7 @@ namespace ANCMStressTestApp
     public class Program
     {
         public static IApplicationLifetime AppLifetime;
-        public static bool AppLifetimeStopping = false;
+        public static CancellationTokenSource Cts = new CancellationTokenSource();
 
         public static void Main(string[] args)
         {
@@ -33,7 +34,8 @@ namespace ANCMStressTestApp
             AppLifetime = (IApplicationLifetime)host.Services.GetService(typeof(IApplicationLifetime));
             AppLifetime.ApplicationStopping.Register(
                 () => {
-                    AppLifetimeStopping = true;
+                    Cts.Cancel();
+                    Cts.Dispose();
                 }
             );
 
