@@ -54,17 +54,19 @@ namespace CodeSign
             Console.WriteLine($"Job '{JobName}' contains {fileMapping.Count} unique file(s)");
 
             var sb = new StringBuilder();
-            foreach (var file in fileMapping)
+            foreach (var group in fileMapping)
             {
-                sb.Append(file.Value[0].FileName).Append(", hash=").AppendLine(file.Key);
-                foreach (var request in file.Value)
+                var first = group.Value[0];
+                var fileName = Path.GetFileName(first.OriginalPath);
+                sb.Append(fileName).Append(", hash=").AppendLine(first.Hash);
+                foreach (var request in group.Value)
                 {
                     sb.Append("      ").AppendLine(request.OriginalPath);
                 }
                 sb.AppendLine();
             }
 
-            File.WriteAllText(Path.Combine(LogDir, $"Signjob-{JobName}-files.txt"), sb.ToString());
+            File.WriteAllText(Path.Combine(LogDir, $"signjob-{JobName}-files.txt"), sb.ToString());
 
             string completionPath;
             if (!LocalBuild)
@@ -140,8 +142,13 @@ namespace CodeSign
             Parallel.ForEach(Files, f =>
             {
                 var hash = GetFileHash(f);
-                var request = new FileRequest { OriginalPath = f, FileName = Path.GetFileName(f), Hash = hash };
-                fileMapping.AddOrUpdate(hash,
+                var mapKey = hash + Path.GetExtension(f);
+                var request = new FileRequest
+                {
+                    OriginalPath = f,
+                    Hash = hash,
+                };
+                fileMapping.AddOrUpdate(mapKey,
                     (_) => { return new List<FileRequest> { request }; },
                     (_, list) => { list.Add(request); return list; });
             });
@@ -273,7 +280,6 @@ namespace CodeSign
         private struct FileRequest
         {
             public string OriginalPath;
-            public string FileName;
             public string Hash;
         }
 
