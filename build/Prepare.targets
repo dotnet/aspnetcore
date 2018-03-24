@@ -21,7 +21,7 @@
       <_UnzipProject Include="$(MSBuildProjectFullPath)" Condition="!Exists('%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)')">
          <AdditionalProperties>
           ZipFile=%(_UnzipFiles.FullPath);
-          ZipDestination=%(_UnzipFiles.Destination)%(_UnzipFiles.FileName);
+          ZipDestination=%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)
          </AdditionalProperties>
       </_UnzipProject>
     </ItemGroup>

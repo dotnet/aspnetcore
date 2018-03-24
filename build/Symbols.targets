@@ -31,7 +31,7 @@
           PdbExePath=%(_ExecutableBinaries.FullPath);
           PdbPath=%(RootDir)%(Directory)%(FileName).pdb;
           PdbOutputDir=$(FullSymbolsOutputPath)%(RecursiveDir);
-          PdbOutputPath=$(FullSymbolsOutputPath)%(RecursiveDir)%(FileName).pdb;
+          PdbOutputPath=$(FullSymbolsOutputPath)%(RecursiveDir)%(FileName).pdb
         </AdditionalProperties>
       </ExecutableWithSymbol>
     </ItemGroup>
