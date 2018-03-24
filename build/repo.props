@@ -2,7 +2,7 @@
   <Import Project="dependencies.props" />
   <PropertyGroup>
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
-    <UnsignedShipPackagesDir>$(DepsDirectory)ship\</UnsignedShipPackagesDir>
+    <UnsignedPackagesDir>$(DepsDirectory)build\</UnsignedPackagesDir>
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
     <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
@@ -10,25 +10,18 @@
 
     <!-- Output -->
     <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
-    <PackagesNoShipOutputPath>$(ArtifactsDir)Signed\NoShipPackages\</PackagesNoShipOutputPath>
-    <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>
     <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
-    <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
     <SignedMPacksOutputPath>$(ArtifactsDir)Signed\MPacks\</SignedMPacksOutputPath>
     <SignedOobArchivePath>$(ArtifactsDir)Signed\OobArchives\</SignedOobArchivePath>
     <FullSymbolsOutputPath>$(ArtifactsDir)FullSymbols\</FullSymbolsOutputPath>
-    
+
     <!-- Working directories -->
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
-    <UnsignedNoShipPackagesPath>$(IntermediateDir)UnsignedNoShipPackages\</UnsignedNoShipPackagesPath>
-    <UnsignedOobPackagesPath>$(IntermediateDir)UnsignedOobPackages\</UnsignedOobPackagesPath>
-    <UnsignedSymbolPackagesPath>$(IntermediateDir)UnsignedSymbolsPackages\</UnsignedSymbolPackagesPath>
     <UnsignedVSIXPath>$(IntermediateDir)UnsignedVSIX\</UnsignedVSIXPath>
     <UnsignedSharedFxPath>$(IntermediateDir)SharedFx\</UnsignedSharedFxPath>
     <UnsignedOobArchivePath>$(IntermediateDir)UnsignedOobArchives\</UnsignedOobArchivePath>
-    <SignedAllMetapackagePath>$(IntermediateDir)SignedAllMetapackage\</SignedAllMetapackagePath>
     <UnsignedVSIXWithSignedBinariesPath>$(IntermediateDir)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
     <UnsignedBinariesPath>$(IntermediateDir)FilesToSign\</UnsignedBinariesPath>
     <UnsignedMPacksPath>$(IntermediateDir)UnsignedMPacks\</UnsignedMPacksPath>

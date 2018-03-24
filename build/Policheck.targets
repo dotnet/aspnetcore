@@ -57,10 +57,8 @@
       </FileExclusions>
 
       <FileExclusions Include="
-        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js;
-        src\UI\wwwroot\Identity\lib\jquery-validation\dist\additional-methods.js;
-        Templates\Identity\wwwroot\lib\jquery\dist\jquery.js;
-        Templates\Identity\wwwroot\lib\jquery-validation\dist\additional-methods.js">
+        **\jquery\dist\jquery.js;
+        **\jquery-validation\dist\additional-methods.js">
         <Justification>Third party code shipping in our packages</Justification>
       </FileExclusions>
     </ItemGroup>

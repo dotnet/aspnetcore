@@ -52,13 +52,11 @@
     <ItemGroup>
       <ExcludedRules Include="PowerShellScriptIsSignedRule" Condition="'$(SignType)' != 'real'" />
       <ExcludedRules Include="AuthenticodeSigningRule" Condition="'$(SignType)' != 'real'" />
-      <DirectoriesToScan Include="$(PackagesOutputPath);$(PackagesOobOutputPath);$(PackagesNoShipOutputPath);$(SymbolsOutputPath)" />
     </ItemGroup>
 
     <VerifyPackages
-      ArtifactDirectory="%(DirectoriesToScan.Identity)"
+      ArtifactDirectory="$(PackagesOutputPath))"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
-      Condition="Exists('%(DirectoriesToScan.Identity)')"
       ExcludedRules="@(ExcludedRules)" />
   </Target>
 
