@@ -69,7 +69,7 @@ namespace CodeSign
             string completionPath;
             if (!LocalBuild)
             {
-                var job = InitializeJob(fileMapping.Keys);
+                var job = InitializeJob(fileMapping.Keys.Select(k => Path.Combine(_stagingDirectory, k)));
                 job.Send();
                 var timer = Stopwatch.StartNew();
                 Console.WriteLine($"Job #{job.JobNumber} was sent.");
@@ -140,7 +140,7 @@ namespace CodeSign
             Parallel.ForEach(Files, f =>
             {
                 var hash = GetFileHash(f);
-                var request = new FileRequest { OriginalPath = f, FileName = Path.GetFileName(f) };
+                var request = new FileRequest { OriginalPath = f, FileName = Path.GetFileName(f), Hash = hash };
                 fileMapping.AddOrUpdate(hash,
                     (_) => { return new List<FileRequest> { request }; },
                     (_, list) => { list.Add(request); return list; });
