@@ -36,6 +36,7 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </Content>
 
+    <ProjectCapability Include="Blazor" />
     <ProjectCapability Include="DotNetCoreRazorConfiguration" />
     
     <RazorConfiguration Include="Blazor-0.1">
