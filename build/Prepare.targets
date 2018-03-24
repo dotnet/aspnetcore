@@ -12,6 +12,7 @@
       <PoliCheckPackages Include="@(UnsignedPackages)" />
       <UnsignedMPacks Include="$(DepsDirectory)build\**\*.mpack" />
 
+      <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
       <_UnzipFiles Include="@(UnsignedSharedFx)" Destination="$(UnsignedSharedFxPath)" />
       <_UnzipFiles Include="@(UnsignedOobArchive)" Destination="$(UnsignedOobArchivePath)" />
