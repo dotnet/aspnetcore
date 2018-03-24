@@ -738,7 +738,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await request1;
 
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
-                Assert.Equal(DefaultConnectionContext.ConnectionStatus.Active, connection.Status);
+                Assert.Equal(HttpConnectionContext.ConnectionStatus.Active, connection.Status);
 
                 Assert.False(request2.IsCompleted);
 
@@ -757,7 +757,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
-                connection.Status = DefaultConnectionContext.ConnectionStatus.Disposed;
+                connection.Status = HttpConnectionContext.ConnectionStatus.Disposed;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
@@ -804,7 +804,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 await task;
 
-                Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
+                Assert.Equal(HttpConnectionContext.ConnectionStatus.Inactive, connection.Status);
                 Assert.NotNull(connection.GetHttpContext());
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
@@ -1459,9 +1459,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        private static ConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
+        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
         {
-            return new ConnectionManager(new Logger<ConnectionManager>(loggerFactory ?? new LoggerFactory()), new EmptyApplicationLifetime());
+            return new HttpConnectionManager(new Logger<HttpConnectionManager>(loggerFactory ?? new LoggerFactory()), new EmptyApplicationLifetime());
         }
 
         private string GetContentAsString(Stream body)

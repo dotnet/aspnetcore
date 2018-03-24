@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
         private readonly IDuplexPipe _application;
-        private readonly DefaultConnectionContext _connection;
+        private readonly HttpConnectionContext _connection;
         private volatile bool _aborted;
 
-        public WebSocketsTransport(WebSocketOptions options, IDuplexPipe application, DefaultConnectionContext connection, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
 {
-    public class ConnectionManagerTests
+    public class HttpConnectionManagerTests
     {
         [Fact]
         public void NewConnectionsHaveConnectionId()
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var connection = connectionManager.CreateConnection();
 
             Assert.NotNull(connection.ConnectionId);
-            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
+            Assert.Equal(HttpConnectionContext.ConnectionStatus.Inactive, connection.Status);
             Assert.Null(connection.ApplicationTask);
             Assert.Null(connection.TransportTask);
             Assert.Null(connection.Cancellation);
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.NotNull(connection.Transport);
 
             await connection.DisposeAsync();
-            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Disposed, connection.Status);
+            Assert.Equal(HttpConnectionContext.ConnectionStatus.Disposed, connection.Status);
         }
 
         [Fact]
@@ -224,10 +224,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             await tcs.Task.OrTimeout();
         }
 
-        private static ConnectionManager CreateConnectionManager(IApplicationLifetime lifetime = null)
+        private static HttpConnectionManager CreateConnectionManager(IApplicationLifetime lifetime = null)
         {
             lifetime = lifetime ?? new EmptyApplicationLifetime();
-            return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()), lifetime);
+            return new HttpConnectionManager(new Logger<HttpConnectionManager>(new LoggerFactory()), lifetime);
         }
     }
 }
