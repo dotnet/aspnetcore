@@ -68,7 +68,8 @@
         @(PackageBinaries);
         @(VSIXBinaries);
         @(OobArchiveBinaries);
-        @(MPackBinaries);" />
+        @(MPackBinaries);
+        @(SharedFxBinaries);" />
 
       <_SignProject Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
@@ -80,15 +81,6 @@
         </AdditionalProperties>
       </_SignProject>
 
-      <_SignProject Include="$(MSBuildProjectFullPath)">
-        <AdditionalProperties>
-          LocalBuild=$(LocalBuild);
-          Certificate=$(BinaryCodeSignCertificate);
-          JobName=SharedFxBinaries;
-          Description=Signing AspNetCore Package Cache binaries;
-          Files=@(SharedFxBinaries)
-        </AdditionalProperties>
-      </_SignProject>
 
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(ThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
@@ -207,6 +199,8 @@
       <_ResponseFileLines Include="--description=$(Description)" />
       <_ResponseFileLines Include="--display-name=$(CodeSignDisplayName)" />
       <_ResponseFileLines Include="--display-url=$(CodeSignUrl)" />
+      <_ResponseFileLines Include="--job-name=$(Jobname)" />
+      <_ResponseFileLines Include="--log-dir=$(LogOutputDir)" />
       <_ResponseFileLines Include="-f=%(_Files.Identity)" />
     </ItemGroup>
 
