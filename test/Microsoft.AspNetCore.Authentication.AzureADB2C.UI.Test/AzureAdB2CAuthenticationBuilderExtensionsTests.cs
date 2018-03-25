@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     o.Instance = "https://login.microsoftonline.com/tfp";
                     o.ClientId = "ClientId";
+                    o.ClientSecret = "ClientSecret";
                     o.CallbackPath = "/signin-oidc";
                     o.Domain = "domain.onmicrosoft.com";
                     o.SignUpSignInPolicyId = "B2C_1_SiUpIn";
@@ -63,6 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(AzureADB2CDefaults.CookieScheme, azureADB2COptions.CookieSchemeName);
             Assert.Equal("https://login.microsoftonline.com/tfp", azureADB2COptions.Instance);
             Assert.Equal("ClientId", azureADB2COptions.ClientId);
+            Assert.Equal("ClientSecret", azureADB2COptions.ClientSecret);
             Assert.Equal("/signin-oidc", azureADB2COptions.CallbackPath);
             Assert.Equal("domain.onmicrosoft.com", azureADB2COptions.Domain);
             Assert.Equal("B2C_1_SiUpIn", azureADB2COptions.SignUpSignInPolicyId);

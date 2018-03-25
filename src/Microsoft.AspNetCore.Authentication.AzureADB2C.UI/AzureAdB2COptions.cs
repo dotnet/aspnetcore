@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
         public string ClientId { get; set; }
 
         /// <summary>
+        /// Gets or sets the client secret.
+        /// </summary>
+        public string ClientSecret { get; set; }
+
+        /// <summary>
         /// Gets or sets the Azure Active Directory B2C instance.
         /// </summary>
         public string Instance { get; set; }

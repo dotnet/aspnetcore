@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     o.Instance = "https://login.microsoftonline.com";
                     o.ClientId = "ClientId";
+                    o.ClientSecret = "ClientSecret";
                     o.CallbackPath = "/signin-oidc";
                     o.Domain = "domain.onmicrosoft.com";
                     o.TenantId = "Common";
@@ -61,6 +62,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(AzureADDefaults.CookieScheme, azureADOptions.CookieSchemeName);
             Assert.Equal("https://login.microsoftonline.com", azureADOptions.Instance);
             Assert.Equal("ClientId", azureADOptions.ClientId);
+            Assert.Equal("ClientSecret", azureADOptions.ClientSecret);
             Assert.Equal("/signin-oidc", azureADOptions.CallbackPath);
             Assert.Equal("domain.onmicrosoft.com", azureADOptions.Domain);
 

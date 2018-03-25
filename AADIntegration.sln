@@ -19,6 +19,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureAD.UI.Test", "test\Microsoft.AspNetCore.Authentication.AzureAD.UI.Test\Microsoft.AspNetCore.Authentication.AzureAD.UI.Test.csproj", "{3D0CF896-3A9D-4A8F-A343-A2E1A131C861}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests", "test\Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests\Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests.csproj", "{1967296B-614B-43E5-B1BA-A601579961D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{2AEF59C3-7ADA-404D-B965-26B700FBD03F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAD.WebSite", "test\WebSites\AzureAD.WebSite\AzureAD.WebSite.csproj", "{4DB3C5B2-9FBF-42BC-80B2-2190EB1AE316}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +51,14 @@ Global
 		{3D0CF896-3A9D-4A8F-A343-A2E1A131C861}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D0CF896-3A9D-4A8F-A343-A2E1A131C861}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D0CF896-3A9D-4A8F-A343-A2E1A131C861}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1967296B-614B-43E5-B1BA-A601579961D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1967296B-614B-43E5-B1BA-A601579961D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1967296B-614B-43E5-B1BA-A601579961D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1967296B-614B-43E5-B1BA-A601579961D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DB3C5B2-9FBF-42BC-80B2-2190EB1AE316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DB3C5B2-9FBF-42BC-80B2-2190EB1AE316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DB3C5B2-9FBF-42BC-80B2-2190EB1AE316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DB3C5B2-9FBF-42BC-80B2-2190EB1AE316}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +69,9 @@ Global
 		{454089F9-ED16-4A11-9C52-2BA74DCF5D35} = {57F46508-E53D-4F6B-B77C-2EFE95925AEF}
 		{1762840C-A14A-4498-9883-CC671956F0F2} = {75A812B0-D98C-45F3-B2A9-357BBDF7331A}
 		{3D0CF896-3A9D-4A8F-A343-A2E1A131C861} = {57F46508-E53D-4F6B-B77C-2EFE95925AEF}
+		{1967296B-614B-43E5-B1BA-A601579961D5} = {57F46508-E53D-4F6B-B77C-2EFE95925AEF}
+		{2AEF59C3-7ADA-404D-B965-26B700FBD03F} = {57F46508-E53D-4F6B-B77C-2EFE95925AEF}
+		{4DB3C5B2-9FBF-42BC-80B2-2190EB1AE316} = {2AEF59C3-7ADA-404D-B965-26B700FBD03F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C6DBF56C-E862-46EA-A4E0-993D2950D78D}
