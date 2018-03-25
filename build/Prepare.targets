@@ -18,6 +18,12 @@
       <_UnzipFiles Include="@(UnsignedOobArchive)" Destination="$(UnsignedOobArchivePath)" />
       <_UnzipFiles Include="@(PoliCheckPackages)" Destination="$(PoliCheckPath)" />
       <_UnzipFiles Include="@(UnsignedMPacks)" Destination="$(UnsignedMPacksPath)" />
+      <_UnzipProject Include="$(MSBuildProjectFullPath)" Condition="!Exists('%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)')">
+         <AdditionalProperties>
+          ZipFile=%(_UnzipFiles.FullPath);
+          ZipDestination=%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)
+         </AdditionalProperties>
+      </_UnzipProject>
     </ItemGroup>
 
     <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
@@ -25,15 +31,16 @@
     <Error Text="No aspnetcore shared framework found for signing." Condition="'@(UnsignedSharedFx)'==''" />
     <Error Text="No MPacks found for signing." Condition="'@(UnsignedMPacks)'==''" />
 
-    <UnzipArchive
-      File="%(_UnzipFiles.FullPath)"
-      Destination="%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)"
-      Condition="!Exists('%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)')" />
+    <MSBuild Projects="@(_UnzipProject)" BuildInParallel="true" Targets="_ExtractZipFile" />
 
     <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
 
     <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
     <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
+  </Target>
+
+  <Target Name="_ExtractZipFile">
+    <UnzipArchive File="$(ZipFile)" Destination="$(ZipDestination)" />
   </Target>
 
   <!--

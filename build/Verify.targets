@@ -12,11 +12,12 @@
 
     <ItemGroup>
       <!--
-        Skipping native binaries. BinScope only works on managed assemblies.
+        Skipping native binaries and crossgened assemblies. BinScope only works on managed assemblies.
       -->
       <BinScopeTargetFiles
         Include="$(UnsignedPackagesPath)**\*.dll"
         Exclude="
+          $(UnsignedPackagesPath)runtime.*.symbols\**\*.dll;
           $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\any\any\runtimes\**\native\sni.dll;
           $(UnsignedPackagesPath)Microsoft.AspNetCore.Server.IIS*\runtimes\**\aspnetcorerh.dll;
           $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\**\aspnetcore.dll;
@@ -55,7 +56,7 @@
     </ItemGroup>
 
     <VerifyPackages
-      ArtifactDirectory="$(PackagesOutputPath))"
+      ArtifactDirectory="$(PackagesOutputPath)"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
       ExcludedRules="@(ExcludedRules)" />
   </Target>

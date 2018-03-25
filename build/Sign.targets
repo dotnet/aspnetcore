@@ -15,18 +15,28 @@
 
   <Target Name="PrepareFilesForSigning">
     <ItemGroup>
+      <ThirdPartyBinaries Include="
+        $(UnsignedPackagesPath)**\MsgPack.dll;
+        $(UnsignedPackagesPath)**\newtonsoft*.dll;
+        $(UnsignedPackagesPath)**\remotion*.dll;
+        $(UnsignedPackagesPath)**\sqlitepclraw*.dll;
+        $(UnsignedPackagesPath)**\e_sqlite3.dll;
+        $(UnsignedPackagesPath)**\stackexchange*.dll;
+        $(UnsignedPackagesPath)**\System.Interactive.Async.dll" />
+
       <PackageBinaries Include="
         $(UnsignedPackagesPath)**\*.dll;
         $(UnsignedPackagesPath)**\*.exe;
         $(UnsignedPackagesPath)**\*.psd1;
         $(UnsignedPackagesPath)**\*.psm1;
-        $(UnsignedPackagesPath)**\*.ps1;" />
+        $(UnsignedPackagesPath)**\*.ps1;"
+        Exclude="@(ThirdPartyBinaries)" />
 
       <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
       <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll" />
 
-      <SharedFxThirdPartyBinaries Include="
+      <ThirdPartyBinaries Include="
         $(UnsignedSharedFxPath)**\MsgPack.dll;
         $(UnsignedSharedFxPath)**\newtonsoft*.dll;
         $(UnsignedSharedFxPath)**\remotion*.dll;
@@ -41,9 +51,9 @@
         $(UnsignedSharedFxPath)**\libuv.dll;
         $(UnsignedSharedFxPath)**\aspnetcorerh.dll;
         $(UnsignedSharedFxPath)**\sni.dll"
-        Exclude="@(SharedFxThirdPartyBinaries)"/>
+        Exclude="@(ThirdPartyBinaries)"/>
 
-      <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries)"/>
+      <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(ThirdPartyBinaries)"/>
 
       <MPackBinaries Include="$(UnsignedMPacksPath)**\*.dll" />
     </ItemGroup>
@@ -58,7 +68,8 @@
         @(PackageBinaries);
         @(VSIXBinaries);
         @(OobArchiveBinaries);
-        @(MPackBinaries);" />
+        @(MPackBinaries);
+        @(SharedFxBinaries);" />
 
       <_SignProject Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
@@ -70,23 +81,14 @@
         </AdditionalProperties>
       </_SignProject>
 
-      <_SignProject Include="$(MSBuildProjectFullPath)">
-        <AdditionalProperties>
-          LocalBuild=$(LocalBuild);
-          Certificate=$(BinaryCodeSignCertificate);
-          JobName=SharedFxBinaries;
-          Description=Signing AspNetCore Package Cache binaries;
-          Files=@(SharedFxBinaries)
-        </AdditionalProperties>
-      </_SignProject>
 
-      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(SharedFxThirdPartyBinaries)'!=''" >
+      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(ThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(ThirdParthCodeSignCertificate);
           JobName=ThirdPartyBinaries;
           Description=Signing third party binaries;
-          Files=@(SharedFxThirdPartyBinaries)
+          Files=@(ThirdPartyBinaries)
         </AdditionalProperties>
       </_SignProject>
     </ItemGroup>
@@ -197,6 +199,8 @@
       <_ResponseFileLines Include="--description=$(Description)" />
       <_ResponseFileLines Include="--display-name=$(CodeSignDisplayName)" />
       <_ResponseFileLines Include="--display-url=$(CodeSignUrl)" />
+      <_ResponseFileLines Include="--job-name=$(Jobname)" />
+      <_ResponseFileLines Include="--log-dir=$(LogOutputDir)" />
       <_ResponseFileLines Include="-f=%(_Files.Identity)" />
     </ItemGroup>
 
