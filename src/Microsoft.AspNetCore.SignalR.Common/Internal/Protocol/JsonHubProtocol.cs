@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private object[] BindArguments(JsonTextReader reader, IReadOnlyList<Type> paramTypes)
         {
-            var arguments = new object[paramTypes.Count];
+            object[] arguments = null;
             var paramIndex = 0;
             var argumentsCount = 0;
 
@@ -572,7 +572,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         throw new InvalidDataException($"Invocation provides {argumentsCount} argument(s) but target expects {paramTypes.Count}.");
                     }
 
-                    return arguments;
+                    return arguments ?? Array.Empty<object>();
+                }
+
+                if (arguments == null)
+                {
+                    arguments = new object[paramTypes.Count];
                 }
 
                 try
@@ -608,11 +613,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private object[] BindArguments(JArray args, IReadOnlyList<Type> paramTypes)
         {
-            var arguments = new object[args.Count];
-            if (paramTypes.Count != arguments.Length)
+            if (paramTypes.Count != args.Count)
             {
-                throw new InvalidDataException($"Invocation provides {arguments.Length} argument(s) but target expects {paramTypes.Count}.");
+                throw new InvalidDataException($"Invocation provides {args.Count} argument(s) but target expects {paramTypes.Count}.");
             }
+
+            if (paramTypes.Count == 0)
+            {
+                return Array.Empty<object>();
+            }
+
+            var arguments = new object[args.Count];
 
             try
             {
