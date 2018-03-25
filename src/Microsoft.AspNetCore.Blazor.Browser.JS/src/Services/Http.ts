@@ -7,19 +7,22 @@ const httpClientTypeName = 'BrowserHttpMessageHandler';
 const httpClientFullTypeName = `${httpClientNamespace}.${httpClientTypeName}`;
 let receiveResponseMethod: MethodHandle;
 
-registerFunction(`${httpClientFullTypeName}.Send`, (id: number, method: string, requestUri: string, body: string | null, headersJson: string | null) => {
-  sendAsync(id, method, requestUri, body, headersJson);
+registerFunction(`${httpClientFullTypeName}.Send`, (id: number, method: string, requestUri: string, body: string | null, headersJson: string | null, fetchArgs: RequestInit | null) => {
+  sendAsync(id, method, requestUri, body, headersJson, fetchArgs);
 });
 
-async function sendAsync(id: number, method: string, requestUri: string, body: string | null, headersJson: string | null) {
+async function sendAsync(id: number, method: string, requestUri: string, body: string | null, headersJson: string | null, fetchArgs: RequestInit | null) {
   let response: Response;
   let responseText: string;
+
+  const requestInit = fetchArgs || {};
+  requestInit.method = method;
+  requestInit.body = body || undefined;
+
   try {
-    response = await fetch(requestUri, {
-      method: method,
-      body: body || undefined,
-      headers: headersJson ? (JSON.parse(headersJson) as string[][]) : undefined
-    });
+    requestInit.headers = headersJson ? (JSON.parse(headersJson) as string[][]) : undefined;
+
+    response = await fetch(requestUri, requestInit);
     responseText = await response.text();
   } catch (ex) {
     dispatchErrorResponse(id, ex.toString());

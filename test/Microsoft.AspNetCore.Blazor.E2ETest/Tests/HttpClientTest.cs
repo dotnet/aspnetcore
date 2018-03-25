@@ -97,6 +97,15 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("{\"id\":123,\"name\":\"Bert\"}", _responseBody.Text);
         }
 
+        [Fact]
+        public void CanSetRequestReferer()
+        {
+            SetValue("request-referrer", "/test-referrer");
+            IssueRequest("GET", "/api/person/referrer");
+            Assert.Equal("OK", _responseStatus.Text);
+            Assert.EndsWith("/test-referrer", _responseBody.Text);
+        }
+
         private void IssueRequest(string requestMethod, string relativeUri, string requestBody = null)
         {
             var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);

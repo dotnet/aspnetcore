@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
@@ -30,6 +29,12 @@ namespace TestServer.Controllers
                 var plainTextBodyContent = await reader.ReadToEndAsync();
                 return $"You posted: {plainTextBodyContent}";
             }
+        }
+
+        [HttpGet("referrer")]
+        public string GetReferer()
+        {
+            return $"The referrer is: {Request.Headers["Referer"].ToString()}";
         }
 
         // PUT api/person

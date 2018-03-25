@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
         static IDictionary<int, TaskCompletionSource<HttpResponseMessage>> _pendingRequests
             = new Dictionary<int, TaskCompletionSource<HttpResponseMessage>>();
 
+        public const string FetchArgs = "BrowserHttpMessageHandler.FetchArgs";
+
         /// <inheritdoc />
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
@@ -36,13 +38,16 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
                 _pendingRequests.Add(id, tcs);
             }
 
+            request.Properties.TryGetValue(FetchArgs, out var fetchArgs);
+
             RegisteredFunction.Invoke<object>(
                 $"{typeof(BrowserHttpMessageHandler).FullName}.Send",
                 id,
                 request.Method.Method,
                 request.RequestUri,
                 request.Content == null ? null : await GetContentAsString(request.Content),
-                SerializeHeadersAsJson(request));
+                SerializeHeadersAsJson(request),
+                fetchArgs);
 
             return await tcs.Task;
         }
