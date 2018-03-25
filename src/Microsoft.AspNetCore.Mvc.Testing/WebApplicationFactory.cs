@@ -49,15 +49,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <typeparamref name="TEntryPoint" /> will be loaded as application assemblies.
         /// </para>
         /// </summary>
-        public WebApplicationFactory() : 
-            this(builder => { }, new WebApplicationFactoryClientOptions())
+        public WebApplicationFactory()
         {
-        }
-
-        private WebApplicationFactory(Action<IWebHostBuilder> configuration, WebApplicationFactoryClientOptions options)
-        {
-            _configuration = configuration;
-            ClientOptions = options;
+            _configuration = ConfigureWebHost;
         }
 
         /// <summary>
@@ -75,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <summary>
         /// Gets the <see cref="WebApplicationFactoryClientOptions"/> used by <see cref="CreateClient()"/>.
         /// </summary>
-        public WebApplicationFactoryClientOptions ClientOptions { get; }
+        public WebApplicationFactoryClientOptions ClientOptions { get; private set; } = new WebApplicationFactoryClientOptions();
 
         /// <summary>
         /// Creates a new <see cref="WebApplicationFactory{TEntryPoint}"/> with a <see cref="IWebHostBuilder"/>
@@ -87,12 +81,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <returns>A new <see cref="WebApplicationFactory{TEntryPoint}"/>.</returns>
         public WebApplicationFactory<TEntryPoint> WithWebHostBuilder(Action<IWebHostBuilder> configuration)
         {
-            var factory = new WebApplicationFactory<TEntryPoint>(builder => 
-            {
-                _configuration(builder);
-                configuration(builder);
-            },
-            new WebApplicationFactoryClientOptions(ClientOptions));
+            var factory = new DelegatedWebApplicationFactory(
+                ClientOptions,
+                CreateServer,
+                CreateWebHostBuilder,
+                GetTestAssemblies,
+                builder =>
+                {
+                    _configuration(builder);
+                    configuration(builder);
+                });
 
             _derivedFactories.Add(factory);
 
@@ -111,7 +109,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             var builder = CreateWebHostBuilder();
             SetContentRoot(builder);
-            ConfigureWebHost(builder);
             _configuration(builder);
             _server = CreateServer(builder);
         }
@@ -340,6 +337,35 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
 
             _server?.Dispose();
+        }
+
+        private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
+        {
+            private readonly Func<IWebHostBuilder, TestServer> _createServer;
+            private readonly Func<IWebHostBuilder> _createWebHostBuilder;
+            private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
+
+            public DelegatedWebApplicationFactory(
+                WebApplicationFactoryClientOptions options,
+                Func<IWebHostBuilder, TestServer> createServer,
+                Func<IWebHostBuilder> createWebHostBuilder,
+                Func<IEnumerable<Assembly>> getTestAssemblies,
+                Action<IWebHostBuilder> configureWebHost)
+            {
+                ClientOptions = new WebApplicationFactoryClientOptions(options);
+                _createServer = createServer;
+                _createWebHostBuilder = createWebHostBuilder;
+                _getTestAssemblies = getTestAssemblies;
+                _configuration = configureWebHost;
+            }
+
+            protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
+
+            protected override IWebHostBuilder CreateWebHostBuilder() => _createWebHostBuilder();
+
+            protected override IEnumerable<Assembly> GetTestAssemblies() => _getTestAssemblies();
+
+            protected override void ConfigureWebHost(IWebHostBuilder builder) => _configuration(builder);
         }
     }
 }
