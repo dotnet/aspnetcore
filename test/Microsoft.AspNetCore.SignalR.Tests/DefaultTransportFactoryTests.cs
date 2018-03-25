@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransportType.WebSockets, typeof(WebSocketsTransport))]
         [InlineData(TransportType.ServerSentEvents, typeof(ServerSentEventsTransport))]
         [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        [WebSocketsSupportedCondition]
         public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable(TransportType requestedTransport, Type expectedTransportType)
         {
             var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        [WebSocketsSupportedCondition]
         public void DefaultTransportFactoryCreatesWebSocketsTransportIfAvailable()
         {
             Assert.IsType<WebSocketsTransport>(
