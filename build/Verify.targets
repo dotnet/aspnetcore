@@ -56,7 +56,7 @@
     </ItemGroup>
 
     <VerifyPackages
-      ArtifactDirectory="$(PackagesOutputPath))"
+      ArtifactDirectory="$(PackagesOutputPath)"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
       ExcludedRules="@(ExcludedRules)" />
   </Target>
