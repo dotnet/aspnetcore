@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalFact]
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public void HttpOptionsSetOntoWebSocketOptions()
         {
             ClientWebSocketOptions webSocketsOptions = null;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalFact]
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketsTransportStopsSendAndReceiveLoopsWhenTransportIsStopped()
         {
             using (StartLog(out var loggerFactory))
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalFact(Skip = "Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627")]
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketsTransportSendsUserAgent()
         {
             using (StartLog(out var loggerFactory))
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalFact]
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketsTransportStopsWhenConnectionChannelClosed()
         {
             using (StartLog(out var loggerFactory))
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalTheory]
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         [InlineData(TransferFormat.Text)]
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportStopsWhenConnectionClosedByTheServer(TransferFormat transferFormat)
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalTheory]
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         [InlineData(TransferFormat.Text)]
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportSetsTransferFormat(TransferFormat transferFormat)
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [ConditionalTheory]
         [InlineData(TransferFormat.Text | TransferFormat.Binary)] // Multiple values not allowed
         [InlineData((TransferFormat)42)] // Unexpected value
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketsTransportThrowsForInvalidTransferFormat(TransferFormat transferFormat)
         {
             using (StartLog(out var loggerFactory))

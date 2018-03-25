@@ -724,7 +724,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [ConditionalFact]
-        [WebSocketsSupportedCondition]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketOptionsAreApplied()
         {
             using (StartLog(out var loggerFactory, $"{nameof(WebSocketOptionsAreApplied)}"))
