@@ -139,7 +139,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             actionModel.Filters.Add(_modelStateInvalidFilter);
         }
 
-        private void InferParameterBindingSources(ActionModel actionModel)
+        // Internal for unit testing
+        internal void InferParameterBindingSources(ActionModel actionModel)
         {
             if (_modelMetadataProvider == null || _apiBehaviorOptions.SuppressInferBindingSourcesForParameters)
             {

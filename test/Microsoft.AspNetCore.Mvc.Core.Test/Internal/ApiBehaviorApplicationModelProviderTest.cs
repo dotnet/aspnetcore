@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -384,6 +385,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void InferParameterBindingSources_SetsCorrectBindingSourceForComplexTypesWithCancellationToken()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.ComplexTypeModelWithCancellationToken);
+            var actionModel = GetActionModel(typeof(ParameterBindingController), actionName);
+
+            // Go through MvcOptions and MvcCoreMvcOptionsSetup to make
+            // sure we pick up the proper ModelMetadataDetailsProviders from the options.
+            var options = new MvcOptions();
+            new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory()).Configure(options);
+            var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
+            var provider = GetProvider(modelMetadataProvider: metadataProvider);
+
+            // Act
+            provider.InferParameterBindingSources(actionModel);
+
+            // Assert
+            var model = GetParameterModel<TestModel>(actionModel);
+            Assert.Same(BindingSource.Body, model.BindingInfo.BindingSource);
+
+            var cancellationToken = GetParameterModel<CancellationToken>(actionModel);
+            Assert.Same(BindingSource.Special, cancellationToken.BindingInfo.BindingSource);
+        }
+
+        [Fact]
         public void InferBindingSourceForParameter_ReturnsBodyForSimpleTypes()
         {
             // Arrange
@@ -535,6 +561,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return Assert.Single(action.Parameters);
         }
 
+        private static ParameterModel GetParameterModel<T>(ActionModel action)
+        {
+            return Assert.Single(action.Parameters.Where(x => typeof(T).IsAssignableFrom(x.ParameterType)));
+        }
+
         [ApiController]
         [Route("TestApi")]
         private class TestApiController : Controller
@@ -612,6 +643,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             [HttpPost]
             [Consumes("application/json")]
             public IActionResult ActionWithConsumesAttribute([FromForm] string parameter) => null;
+
+            [HttpPut("cancellation")]
+            public IActionResult ComplexTypeModelWithCancellationToken(TestModel model, CancellationToken cancellationToken) => null;
         }
 
         [ApiController]
