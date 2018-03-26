@@ -22,25 +22,27 @@
             if (log.Severity >= Model.Options.MinLevel &&
                (string.IsNullOrEmpty(Model.Options.NamePrefix) || log.Name.StartsWith(Model.Options.NamePrefix, StringComparison.Ordinal)))
             {
-                WriteLiteralTo(writer, "        <tr>\r\n            <td>");
-                WriteTo(writer, string.Format("{0:MM/dd/yy}", log.Time));
-                WriteLiteralTo(writer, "</td>\r\n            <td>");
-                WriteTo(writer, string.Format("{0:H:mm:ss}", log.Time));
+                PushWriter(writer);
+                WriteLiteral("        <tr>\r\n            <td>");
+                Write(string.Format("{0:MM/dd/yy}", log.Time));
+                WriteLiteral("</td>\r\n            <td>");
+                Write(string.Format("{0:H:mm:ss}", log.Time));
                 var severity = log.Severity.ToString().ToLowerInvariant();
-                WriteLiteralTo(writer, $"</td>\r\n            <td class=\"{severity}\">");
-                WriteTo(writer, log.Severity);
+                WriteLiteral($"</td>\r\n            <td class=\"{severity}\">");
+                Write(log.Severity);
 
-                WriteLiteralTo(writer, $"</td>\r\n            <td title=\"{log.Name}\">");
-                WriteTo(writer, log.Name);
+                WriteLiteral($"</td>\r\n            <td title=\"{log.Name}\">");
+                Write(log.Name);
 
-                WriteLiteralTo(writer, $"</td>\r\n            <td title=\"{log.Message}\""+
+                WriteLiteral($"</td>\r\n            <td title=\"{log.Message}\""+
                     "class=\"logState\" width=\"100px\">");
-                WriteTo(writer, log.Message);
+                Write(log.Message);
 
-                WriteLiteralTo(writer, $"</td>\r\n            <td title=\"{log.Exception}\">");
-                WriteTo(writer, log.Exception);
+                WriteLiteral($"</td>\r\n            <td title=\"{log.Exception}\">");
+                Write(log.Exception);
 
-                WriteLiteralTo(writer, "</td>\r\n        </tr>\r\n");
+                WriteLiteral("</td>\r\n        </tr>\r\n");
+                PopWriter();
             }
         });
     }
