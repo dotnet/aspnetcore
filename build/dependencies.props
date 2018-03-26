@@ -44,6 +44,7 @@
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisRazorPackageVersion>2.1.0-preview2-30355</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftDiaSymReaderNativePackageVersion>1.7.0</MicrosoftDiaSymReaderNativePackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsConfigurationJsonPackageVersion>
