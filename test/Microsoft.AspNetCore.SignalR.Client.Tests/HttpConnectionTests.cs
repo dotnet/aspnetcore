@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Client.Http;
+using Microsoft.AspNetCore.Sockets.Client.Http.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -171,6 +173,44 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Assert.False(httpClientHandler.UseDefaultCredentials);
             Assert.Same(httpOptions.Proxy, httpClientHandler.Proxy);
             Assert.Same(httpOptions.Credentials, httpClientHandler.Credentials);
+        }
+
+        [Fact]
+        public async Task HttpRequestAndErrorResponseLogged()
+        {
+            var testHttpHandler = new TestHttpMessageHandler(false);
+
+            testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.BadGateway));
+
+            var httpOptions = new HttpOptions();
+            httpOptions.HttpMessageHandler = inner => testHttpHandler;
+
+            const string loggerName = "Microsoft.AspNetCore.Sockets.Client.Http.Internal.LoggingHttpMessageHandler";
+            var testSink = new TestSink();
+            var logger = new TestLogger(loggerName, testSink, true);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(m => m.CreateLogger(It.IsAny<string>()))
+                .Returns((string categoryName) => (categoryName == loggerName) ? (ILogger)logger : NullLogger.Instance);
+
+            try
+            {
+                await WithConnectionAsync(
+                    CreateConnection(httpOptions, loggerFactory: mockLoggerFactory.Object, url: "http://fakeuri.org/"),
+                    async (connection, closed) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                    });
+            }
+            catch
+            {
+                // ignore connection error
+            }
+
+            Assert.Equal(2, testSink.Writes.Count);
+            Assert.Equal("SendingHttpRequest", testSink.Writes[0].EventId.Name);
+            Assert.Equal("UnsuccessfulHttpResponse", testSink.Writes[1].EventId.Name);
         }
     }
 }

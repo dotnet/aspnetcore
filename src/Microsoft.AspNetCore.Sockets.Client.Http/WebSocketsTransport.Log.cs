@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         private static class Log
         {
-            private static readonly Action<ILogger, TransferFormat, Exception> _startTransport =
-                LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}.");
+            private static readonly Action<ILogger, TransferFormat, Uri, Exception> _startTransport =
+                LoggerMessage.Define<TransferFormat, Uri>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}. Url: '{WebSocketUrl}'.");
 
             private static readonly Action<ILogger, Exception> _transportStopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "TransportStopped"), "Transport stopped.");
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 LoggerMessage.Define<int>(LogLevel.Debug, new EventId(10, "MessageToApp"), "Passing message to application. Payload size: {Count}.");
 
             private static readonly Action<ILogger, WebSocketCloseStatus?, Exception> _webSocketClosed =
-                LoggerMessage.Define<WebSocketCloseStatus?>(LogLevel.Information, new EventId(11, "WebSocketClosed"), "Websocket closed by the server. Close status {CloseStatus}.");
+                LoggerMessage.Define<WebSocketCloseStatus?>(LogLevel.Information, new EventId(11, "WebSocketClosed"), "WebSocket closed by the server. Close status {CloseStatus}.");
 
             private static readonly Action<ILogger, WebSocketMessageType, int, bool, Exception> _messageReceived =
                 LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Debug, new EventId(12, "MessageReceived"), "Message received. Type: {MessageType}, size: {Count}, EndOfMessage: {EndOfMessage}.");
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
             private static readonly Action<ILogger, Exception> _cancelMessage =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(18, "CancelMessage"), "Canceled passing message to application.");
 
-            public static void StartTransport(ILogger logger, TransferFormat transferFormat)
+            public static void StartTransport(ILogger logger, TransferFormat transferFormat, Uri webSocketUrl)
             {
-                _startTransport(logger, transferFormat, null);
+                _startTransport(logger, transferFormat, webSocketUrl, null);
             }
 
             public static void TransportStopped(ILogger logger, Exception exception)

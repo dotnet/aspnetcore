@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Sockets.Client.Http;
+using Microsoft.AspNetCore.Sockets.Client.Http.Internal;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Http.Internal;
 using Microsoft.AspNetCore.Sockets.Internal;
@@ -26,7 +27,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
     public partial class HttpConnection : IConnection
     {
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
+#if !NETCOREAPP2_1
         private static readonly Version Windows8Version = new Version(6, 2);
+#endif
 
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -99,10 +102,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private HttpClient CreateHttpClient()
         {
-            HttpMessageHandler httpMessageHandler = null;
+            var httpClientHandler = new HttpClientHandler();
+            HttpMessageHandler httpMessageHandler = httpClientHandler;
+
             if (_httpOptions != null)
             {
-                var httpClientHandler = new HttpClientHandler();
                 if (_httpOptions.Proxy != null)
                 {
                     httpClientHandler.Proxy = _httpOptions.Proxy;
@@ -135,7 +139,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 }
             }
 
-            var httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+            // Wrap message handler in a logging handler last to ensure it is always present
+            httpMessageHandler = new LoggingHttpMessageHandler(httpMessageHandler, _loggerFactory);
+
+            var httpClient = new HttpClient(httpMessageHandler);
             httpClient.Timeout = HttpClientTimeout;
 
             return httpClient;
