@@ -58,11 +58,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             while (TextMessageParser.TryParseMessage(ref input, out var payload))
             {
-                var textReader = new Utf8BufferTextReader(payload);
-                var message = ParseMessage(textReader, binder);
-                if (message != null)
+                var textReader = Utf8BufferTextReader.Get(payload);
+
+                try
                 {
-                    messages.Add(message);
+                    var message = ParseMessage(textReader, binder);
+                    if (message != null)
+                    {
+                        messages.Add(message);
+                    }
+                }
+                finally
+                {
+                    Utf8BufferTextReader.Return(textReader);
                 }
             }
 
@@ -103,6 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 using (var reader = new JsonTextReader(textReader))
                 {
                     reader.ArrayPool = JsonArrayPool<char>.Shared;
+                    reader.CloseInput = false;
 
                     JsonUtils.CheckRead(reader);
 

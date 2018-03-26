@@ -11,10 +11,54 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     internal class Utf8BufferTextReader : TextReader
     {
         private ReadOnlyMemory<byte> _utf8Buffer;
+        private Decoder _decoder;
 
-        public Utf8BufferTextReader(ReadOnlyMemory<byte> utf8Buffer)
+        [ThreadStatic]
+        private static Utf8BufferTextReader _cachedInstance;
+
+#if DEBUG
+        private bool _inUse;
+#endif
+
+        public Utf8BufferTextReader()
+        {
+            _decoder = Encoding.UTF8.GetDecoder();
+        }
+
+        public static Utf8BufferTextReader Get(ReadOnlyMemory<byte> utf8Buffer)
+        {
+            var reader = _cachedInstance;
+            if (reader == null)
+            {
+                reader = new Utf8BufferTextReader();
+            }
+
+            // Taken off the the thread static
+            _cachedInstance = null;
+#if DEBUG
+            if (reader._inUse)
+            {
+                throw new InvalidOperationException("The reader wasn't returned!");
+            }
+
+            reader._inUse = true;
+#endif
+            reader.SetBuffer(utf8Buffer);
+            return reader;
+        }
+
+        public static void Return(Utf8BufferTextReader reader)
+        {
+            _cachedInstance = reader;
+#if DEBUG
+            reader._inUse = false;
+#endif
+        }
+
+        public void SetBuffer(ReadOnlyMemory<byte> utf8Buffer)
         {
             _utf8Buffer = utf8Buffer;
+            _decoder.Reset();
         }
 
         public override int Read(char[] buffer, int index, int count)
@@ -25,33 +69,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
 
             var source = _utf8Buffer.Span;
-            var destination = new Span<char>(buffer, index, count);
-            var destinationBytesCount = Encoding.UTF8.GetByteCount(buffer, index, count);
-
-            // We have then the destination
-            if (source.Length > destinationBytesCount)
-            {
-                source = source.Slice(0, destinationBytesCount);
-
-                _utf8Buffer = _utf8Buffer.Slice(destinationBytesCount);
-            }
-            else
-            {
-                _utf8Buffer = ReadOnlyMemory<byte>.Empty;
-            }
-
+            var bytesUsed = 0;
+            var charsUsed = 0;
 #if NETCOREAPP2_1
-            return Encoding.UTF8.GetChars(source, destination);
+            var destination = new Span<char>(buffer, index, count);
+            _decoder.Convert(source, destination, false, out bytesUsed, out charsUsed, out var completed);
 #else
             unsafe
             {
-                fixed (char* destinationChars = &MemoryMarshal.GetReference(destination))
+                fixed (char* destinationChars = &buffer[index])
                 fixed (byte* sourceBytes = &MemoryMarshal.GetReference(source))
                 {
-                    return Encoding.UTF8.GetChars(sourceBytes, source.Length, destinationChars, destination.Length);
+                    _decoder.Convert(sourceBytes, source.Length, destinationChars, count, false, out bytesUsed, out charsUsed, out var completed);
                 }
             }
 #endif
+            _utf8Buffer = _utf8Buffer.Slice(bytesUsed);
+
+            return charsUsed;
         }
     }
 }

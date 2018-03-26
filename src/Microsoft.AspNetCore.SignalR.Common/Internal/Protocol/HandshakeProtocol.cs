@@ -58,7 +58,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private static JsonTextReader CreateJsonTextReader(ReadOnlyMemory<byte> payload)
         {
-            var textReader = new Utf8BufferTextReader(payload);
+            var textReader = new Utf8BufferTextReader();
+            textReader.SetBuffer(payload);
             var reader = new JsonTextReader(textReader);
             reader.ArrayPool = JsonArrayPool<char>.Shared;
 
