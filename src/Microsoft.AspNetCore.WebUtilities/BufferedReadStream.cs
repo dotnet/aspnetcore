@@ -10,7 +10,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    internal class BufferedReadStream : Stream
+    /// <summary>
+    /// A Stream that wraps another stream and allows reading lines.
+    /// The data is buffered in memory.
+    /// </summary>
+    public class BufferedReadStream : Stream
     {
         private const byte CR = (byte)'\r';
         private const byte LF = (byte)'\n';
@@ -22,11 +26,22 @@ namespace Microsoft.AspNetCore.WebUtilities
         private int _bufferCount = 0;
         private bool _disposed;
 
+        /// <summary>
+        /// Creates a new stream.
+        /// </summary>
+        /// <param name="inner">The stream to wrap.</param>
+        /// <param name="bufferSize">Size of buffer in bytes.</param>
         public BufferedReadStream(Stream inner, int bufferSize)
             : this(inner, bufferSize, ArrayPool<byte>.Shared)
         {
         }
 
+        /// <summary>
+        /// Creates a new stream.
+        /// </summary>
+        /// <param name="inner">The stream to wrap.</param>
+        /// <param name="bufferSize">Size of buffer in bytes.</param>
+        /// <param name="bytePool">ArrayPool for the buffer.</param>
         public BufferedReadStream(Stream inner, int bufferSize, ArrayPool<byte> bytePool)
         {
             if (inner == null)
@@ -39,36 +54,45 @@ namespace Microsoft.AspNetCore.WebUtilities
             _buffer = bytePool.Rent(bufferSize);
         }
 
+        /// <summary>
+        /// The currently buffered data.
+        /// </summary>
         public ArraySegment<byte> BufferedData
         {
             get { return new ArraySegment<byte>(_buffer, _bufferOffset, _bufferCount); }
         }
 
+        /// <inheritdoc/>
         public override bool CanRead
         {
             get { return _inner.CanRead || _bufferCount > 0; }
         }
 
+        /// <inheritdoc/>
         public override bool CanSeek
         {
             get { return _inner.CanSeek; }
         }
 
+        /// <inheritdoc/>
         public override bool CanTimeout
         {
             get { return _inner.CanTimeout; }
         }
 
+        /// <inheritdoc/>
         public override bool CanWrite
         {
             get { return _inner.CanWrite; }
         }
 
+        /// <inheritdoc/>
         public override long Length
         {
             get { return _inner.Length; }
         }
 
+        /// <inheritdoc/>
         public override long Position
         {
             get { return _inner.Position - _bufferCount; }
@@ -112,6 +136,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
             if (origin == SeekOrigin.Begin)
@@ -129,11 +154,13 @@ namespace Microsoft.AspNetCore.WebUtilities
             return Position;
         }
 
+        /// <inheritdoc/>
         public override void SetLength(long value)
         {
             _inner.SetLength(value);
         }
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -148,26 +175,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override void Flush()
         {
             _inner.Flush();
         }
 
+        /// <inheritdoc/>
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             return _inner.FlushAsync(cancellationToken);
         }
 
+        /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
             _inner.Write(buffer, offset, count);
         }
 
+        /// <inheritdoc/>
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             return _inner.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
+        /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
             ValidateBuffer(buffer, offset, count);
@@ -185,6 +217,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return _inner.Read(buffer, offset, count);
         }
 
+        /// <inheritdoc/>
         public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             ValidateBuffer(buffer, offset, count);
@@ -202,6 +235,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             return await _inner.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
+        /// <summary>
+        /// Ensures that the buffer is not empty.
+        /// </summary>
+        /// <returns>Returns <c>true</c> if the buffer is not empty; <c>false</c> otherwise.</returns>
         public bool EnsureBuffered()
         {
             if (_bufferCount > 0)
@@ -214,6 +251,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             return _bufferCount > 0;
         }
 
+        /// <summary>
+        /// Ensures that the buffer is not empty.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns <c>true</c> if the buffer is not empty; <c>false</c> otherwise.</returns>
         public async Task<bool> EnsureBufferedAsync(CancellationToken cancellationToken)
         {
             if (_bufferCount > 0)
@@ -226,6 +268,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             return _bufferCount > 0;
         }
 
+        /// <summary>
+        /// Ensures that a minimum amount of buffered data is available.
+        /// </summary>
+        /// <param name="minCount">Minimum amount of buffered data.</param>
+        /// <returns>Returns <c>true</c> if the minimum amount of buffered data is available; <c>false</c> otherwise.</returns>
         public bool EnsureBuffered(int minCount)
         {
             if (minCount > _buffer.Length)
@@ -253,6 +300,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             return true;
         }
 
+        /// <summary>
+        /// Ensures that a minimum amount of buffered data is available.
+        /// </summary>
+        /// <param name="minCount">Minimum amount of buffered data.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns <c>true</c> if the minimum amount of buffered data is available; <c>false</c> otherwise.</returns>
         public async Task<bool> EnsureBufferedAsync(int minCount, CancellationToken cancellationToken)
         {
             if (minCount > _buffer.Length)
@@ -280,6 +333,13 @@ namespace Microsoft.AspNetCore.WebUtilities
             return true;
         }
 
+        /// <summary>
+        /// Reads a line. A line is defined as a sequence of characters followed by
+        /// a carriage return immediately followed by a line feed. The resulting string does not
+        /// contain the terminating carriage return and line feed.
+        /// </summary>
+        /// <param name="lengthLimit">Maximum allowed line length.</param>
+        /// <returns>A line.</returns>
         public string ReadLine(int lengthLimit)
         {
             CheckDisposed();
@@ -300,6 +360,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <summary>
+        /// Reads a line. A line is defined as a sequence of characters followed by
+        /// a carriage return immediately followed by a line feed. The resulting string does not
+        /// contain the terminating carriage return and line feed.
+        /// </summary>
+        /// <param name="lengthLimit">Maximum allowed line length.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A line.</returns>
         public async Task<string> ReadLineAsync(int lengthLimit, CancellationToken cancellationToken)
         {
             CheckDisposed();
