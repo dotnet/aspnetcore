@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.OutOfProcessNodeInstance" />
     internal class HttpNodeInstance : OutOfProcessNodeInstance
     {
-        private static readonly Regex PortMessageRegex =
-            new Regex(@"^\[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on port (\d+)\]$");
+        private static readonly Regex EndpointMessageRegex =
+            new Regex(@"^\[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on {(.*?)} port (\d+)\]$");
 
         private static readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
         {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         private readonly HttpClient _client;
         private bool _disposed;
-        private int _portNumber;
+        private string _endpoint;
 
         public HttpNodeInstance(NodeServicesOptions options, int port = 0)
         : base(
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         {
             var payloadJson = JsonConvert.SerializeObject(invocationInfo, jsonSerializerSettings);
             var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync("http://localhost:" + _portNumber, payload, cancellationToken);
+            var response = await _client.PostAsync(_endpoint, payload, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -111,13 +111,19 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         protected override void OnOutputDataReceived(string outputData)
         {
-            // Watch for "port selected" messages, and when observed, store the port number
+            // Watch for "port selected" messages, and when observed, 
+            // store the IP (IPv4/IPv6) and port number
             // so we can use it when making HTTP requests. The child process will always send
             // one of these messages before it sends a "ready for connections" message.
-            var match = _portNumber != 0 ? null : PortMessageRegex.Match(outputData);
+            var match = string.IsNullOrEmpty(_endpoint) ? EndpointMessageRegex.Match(outputData) : null;
             if (match != null && match.Success)
             {
-                _portNumber = int.Parse(match.Groups[1].Captures[0].Value);
+                var port = int.Parse(match.Groups[2].Captures[0].Value);
+                var resolvedIpAddress = match.Groups[1].Captures[0].Value;
+
+                //IPv6 must be wrapped with [] brackets
+                resolvedIpAddress = resolvedIpAddress == "::1" ? $"[{resolvedIpAddress}]" : resolvedIpAddress;
+                _endpoint = $"http://{resolvedIpAddress}:{port}";
             }
             else
             {
