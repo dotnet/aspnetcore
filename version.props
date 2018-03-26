@@ -1,12 +1,19 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>2.0.7</VersionPrefix>
-    <VersionSuffix>rtm</VersionSuffix>
+    <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
+    <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>7</AspNetCorePatchVersion>
+    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
+    <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
+    <VersionSuffix>$(PrereleaseVersionLabel)</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersionNoTimestamp Condition="'$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersionNoTimestamp>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <PackageVersionNoTimestamp Condition="'$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersionNoTimestamp>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+
+    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2" -->
+    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
 
     <!-- Chains in the previous runtime store installer and files. This must be updated with every patch. -->
     <PreviousRuntimeStoreArchiveVersion>2.0.6-10011</PreviousRuntimeStoreArchiveVersion>
