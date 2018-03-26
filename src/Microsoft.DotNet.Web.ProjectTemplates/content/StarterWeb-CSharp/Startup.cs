@@ -52,10 +52,8 @@ namespace Company.WebApplication1
                     Configuration.GetConnectionString("DefaultConnection")));
     #endif
             
-            services.AddIdentity<IdentityUser, IdentityRole>(options => options.Stores.MaxLengthForKeys = 128)
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultUI()
-                .AddDefaultTokenProviders();
+            services.AddDefaultIdentity<IdentityUser>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
 #elif (OrganizationalAuth || IndividualB2CAuth)
             services.AddAuthentication(sharedOptions =>
