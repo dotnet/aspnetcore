@@ -188,7 +188,7 @@ namespace ANCMStressTestApp
                 while (!result.CloseStatus.HasValue && !token.IsCancellationRequested && !closeFromServer)
                 {
                     if (result.Count == closeFromServerLength &&
-                        System.Text.Encoding.ASCII.GetString(buffer).Substring(0, result.Count) == closeFromServerCmd)
+                        Encoding.ASCII.GetString(buffer).Substring(0, result.Count) == closeFromServerCmd)
                     {
                         // The client sent "CloseFromServer" text message to request the server to close (a test scenario).
                         closeFromServer = true;

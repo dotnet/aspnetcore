@@ -28,6 +28,7 @@ namespace ANCMStressTestApp
                     factory.AddConsole();
                 })
                 .UseKestrel()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
