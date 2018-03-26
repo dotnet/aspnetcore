@@ -83,19 +83,19 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public static Task<ServerResponse> RunOnServer(
             string pipeName,
             IList<string> arguments,
-            ServerPaths buildPaths,
+            ServerPaths serverPaths,
             CancellationToken cancellationToken,
             string keepAlive = null,
             bool debug = false)
         {
             if (string.IsNullOrEmpty(pipeName))
             {
-                pipeName = PipeName.ComputeDefault();
+                pipeName = PipeName.ComputeDefault(serverPaths.ClientDirectory);
             }
 
             return RunOnServerCore(
                 arguments,
-                buildPaths,
+                serverPaths,
                 pipeName: pipeName,
                 keepAlive: keepAlive,
                 timeoutOverride: null,
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private static async Task<ServerResponse> RunOnServerCore(
             IList<string> arguments,
-            ServerPaths buildPaths,
+            ServerPaths serverPaths,
             string pipeName,
             string keepAlive,
             int? timeoutOverride,
@@ -119,12 +119,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 return new RejectedServerResponse();
             }
 
-            if (buildPaths.TempDirectory == null)
+            if (serverPaths.TempDirectory == null)
             {
                 return new RejectedServerResponse();
             }
 
-            var clientDir = buildPaths.ClientDirectory;
+            var clientDir = serverPaths.ClientDirectory;
             var timeoutNewProcess = timeoutOverride ?? TimeOutMsNewProcess;
             var timeoutExistingProcess = timeoutOverride ?? TimeOutMsExistingProcess;
             var clientMutexName = MutexName.GetClientMutexName(pipeName);
@@ -175,8 +175,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 if (client != null)
                 {
                     var request = ServerRequest.Create(
-                        buildPaths.WorkingDirectory,
-                        buildPaths.TempDirectory,
+                        serverPaths.WorkingDirectory,
+                        serverPaths.TempDirectory,
                         arguments,
                         keepAlive);
 
