@@ -8,7 +8,7 @@
       <GeneratedNoTimestampPackageVersionPropsPath>$(IntermediateDir)dependencies.notimestamp.props</GeneratedNoTimestampPackageVersionPropsPath>
       <TemplateProjCommmonProperties>
         RepositoryRoot=$(TemplatingProjectRoot);
-        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath);
         BuildNumber=$(BuildNumber);
         Configuration=$(Configuration);
         SkipBillOfMaterials=true;

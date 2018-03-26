@@ -49,12 +49,12 @@
     <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
     <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
       Targets="Restore"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true;_Target=Restore" />
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath);AspNetUniverseBuildOffline=true;_Target=Restore" />
 
     <!-- Pack -->
     <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
       Targets="Pack"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath);AspNetUniverseBuildOffline=true" />
 
     <!-- Copy to output directory -->
     <ItemGroup>
@@ -86,12 +86,12 @@
     <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
     <MSBuild Projects="$(RSReferencesWorkDirectory)RS.References.csproj"
       Targets="Restore"
-      Properties="Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);_Target=Restore" />
+      Properties="Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath);_Target=Restore" />
 
     <!-- Pack -->
     <MSBuild Projects="$(RSReferencesWorkDirectory)RS.References.csproj"
       Targets="Pack"
-      Properties="Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)" />
+      Properties="Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)" />
 
     <!-- Copy to output directory -->
     <ItemGroup>
@@ -110,11 +110,11 @@
 
     <RepoTasks.GenerateRestoreSourcesPropsFile
       Sources="@(_RuntimeStoreRestoreSources)"
-      OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
+      OutputPath="$(GeneratedRestoreSourcePropsPath)" />
 
     <PropertyGroup>
       <_RsManifestProps>MicrosoftAspNetCoreAllPackageVersion=$(PackageVersion)</_RsManifestProps>
-      <_RsManifestProps>$(_RsManifestProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_RsManifestProps>
+      <_RsManifestProps>$(_RsManifestProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)</_RsManifestProps>
     </PropertyGroup>
   </Target>
 
@@ -152,7 +152,7 @@
     <PropertyGroup>
       <HostingStartupWorkDir>$(_WorkRoot)HostingStartup\</HostingStartupWorkDir>
       <_HostingStartupProps>DepsOutputPath=$(_DepsOutputDirectory)</_HostingStartupProps>
-      <_HostingStartupProps>$(_HostingStartupProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)</_HostingStartupProps>
       <_HostingStartupProps>$(_HostingStartupProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion)</_HostingStartupProps>
       <_HostingStartupProps>$(_HostingStartupProps);HostingStartupPackageName=$(HostingStartupPackageName)</_HostingStartupProps>
       <_HostingStartupProps>$(_HostingStartupProps);HostingStartupPackageVersion=$(HostingStartupPackageVersion)</_HostingStartupProps>

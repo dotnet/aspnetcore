@@ -41,7 +41,7 @@
       <!-- Should reduce allowable package feeds to only nuget.org. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>

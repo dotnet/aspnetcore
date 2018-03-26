@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(DotNetRestoreSourcesPropsPath)" Condition="'$(DotNetRestoreSourcesPropsPath)' != ''" />
+  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>

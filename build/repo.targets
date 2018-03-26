@@ -18,7 +18,7 @@
     <!-- For external packages that come from feeds we don't mirror. -->
     <IntermediateExternalPackageDir>$(IntermediateDir)ext\</IntermediateExternalPackageDir>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.props</GeneratedPackageVersionPropsPath>
-    <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.props</GeneratedRestoreSourcesPropsPath>
+    <GeneratedRestoreSourcePropsPath>$(IntermediateDir)sources.props</GeneratedRestoreSourcePropsPath>
 
     <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;PrepareOutputPath</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
@@ -62,7 +62,7 @@
 
     <RepoTasks.GenerateRestoreSourcesPropsFile
       Sources="@(_LineupSources)"
-      OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
+      OutputPath="$(GeneratedRestoreSourcePropsPath)" />
   </Target>
 
   <Target Name="CleanUniverseArtifacts">
@@ -166,14 +166,14 @@
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
       Repositories="@(Repository);@(ShippedRepository)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)" />
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)" />
 
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
       Dependencies="@(ExternalDependency)"
       StartGraphAt="$(BuildGraphOf)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
   </Target>
