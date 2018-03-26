@@ -44,6 +44,7 @@
   <!-- .NET Core patch feed -->
   <PropertyGroup>
     <DotNetCorePatchFeed Condition="'$(DotNetCorePatchFeed)' == ''">https://api.nuget.org/v3/index.json</DotNetCorePatchFeed>
+    <DotNetCorePatchFeed>$(DotNetCorePatchFeed);$(DotNetCoreFeed)</DotNetCorePatchFeed>
   </PropertyGroup>
 
   <ItemGroup>

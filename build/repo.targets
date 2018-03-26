@@ -33,11 +33,11 @@
   </Target>
 
   <Target Name="RestoreExternalDependencies">
-    <RepoTasks.DownloadNuGetPackages
+    <DownloadNuGetPackages
       Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'false'))"
       DestinationFolder="$(IntermediateExternalPackageDir)" />
 
-    <RepoTasks.DownloadNuGetPackages
+    <DownloadNuGetPackages
       Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))"
       DestinationFolder="$(IntermediateMirrorPackageDir)" />
   </Target>
