@@ -1,15 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <Description>ASP.NET Core Azure Active Directory Integration provides components for easily integrating Azure Active Directory authentication within your ASP.NET Core application.</Description>
     <ViewAssemblyDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory Integration package.</ViewAssemblyDescription>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>aspnetcore;authentication;AzureAD</PackageTags>
-    <RazorCompileOnBuild>true</RazorCompileOnBuild>
-    <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
-    <PreserveCompilationContext>false</PreserveCompilationContext>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EnableDefaultCompiledViewAssemblyLoadBehavior>false</EnableDefaultCompiledViewAssemblyLoadBehavior>
+    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
   </PropertyGroup>
 
   <ItemGroup>
