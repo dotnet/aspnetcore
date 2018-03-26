@@ -588,7 +588,7 @@
   <Target
     Name="_GenerateBlazorIndexHtml"
     DependsOnTargets="_ResolveBlazorIndexHtmlInputs"
-    Inputs="$(BlazorBuildIndexInputsCache)"
+    Inputs="$(BlazorBuildIndexInputsCache);$(BlazorIndexHtml)"
     Outputs="$(BlazorIndexHtmlOutputPath)">
     <ItemGroup>
       <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->WithMetadataValue('PrimaryOutput','')->'%(FileName)%(Extension)')" />
