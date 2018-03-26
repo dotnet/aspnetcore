@@ -1635,8 +1635,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task Sending100ContinueDoesNotStartResponse()
+        public async Task RequestDrainingFor100ContinueDoesNotBlockResponse()
         {
+            var foundMessage = false;
             using (var server = new TestServer(httpContext =>
             {
                 return httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
@@ -1675,15 +1676,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.Send(
                         "gg");
 
-                    // If 100 Continue sets HttpProtocol.HasResponseStarted to true,
-                    // a success response will be produced before the server sees the
-                    // bad chunk header above, making this test fail.
+                    // Wait for the server to drain the request body and log an error.
+                    // Time out after 10 seconds
+                    for (int i = 0; i < 10 && !foundMessage; i++)
+                    {
+                        while (TestApplicationErrorLogger.Messages.TryDequeue(out var message))
+                        {
+                            if (message.EventId.Id == 17 && message.LogLevel == LogLevel.Information && message.Exception is BadHttpRequestException
+                                && ((BadHttpRequestException)message.Exception).StatusCode == StatusCodes.Status400BadRequest)
+                            {
+                                foundMessage = true;
+                                break;
+                            }
+                        }
+
+                        if (!foundMessage)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(1));
+                        }
+                    }
+
                     await connection.ReceiveEnd();
                 }
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information && w.Exception is BadHttpRequestException
-                && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+            Assert.True(foundMessage, "Expected log not found");
         }
 
         [Fact]
