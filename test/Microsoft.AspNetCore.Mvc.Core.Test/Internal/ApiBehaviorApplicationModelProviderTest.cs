@@ -501,11 +501,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 InvalidModelStateResponseFactory = _ => null,
             };
-            var optionsProvider = Options.Create(options);
+            var optionsAccessor = Options.Create(options);
+
             modelMetadataProvider = modelMetadataProvider ?? new TestModelMetadataProvider();
             var loggerFactory = NullLoggerFactory.Instance;
 
-            return new ApiBehaviorApplicationModelProvider(optionsProvider, modelMetadataProvider, loggerFactory);
+            return new ApiBehaviorApplicationModelProvider(optionsAccessor, modelMetadataProvider, loggerFactory);
         }
 
         private static ApplicationModelProviderContext GetContext(Type type)

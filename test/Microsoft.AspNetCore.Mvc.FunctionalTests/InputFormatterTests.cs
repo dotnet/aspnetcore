@@ -109,9 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-            // Update me in 3.0 xD
-            Assert.Equal("{\"\":[\"The input was not valid.\"]}", responseBody);
+            Assert.Equal("{\"\":[\"Unexpected end when reading JSON. Path '', line 1, position 1.\"]}", responseBody);
         }
 
         [Theory]

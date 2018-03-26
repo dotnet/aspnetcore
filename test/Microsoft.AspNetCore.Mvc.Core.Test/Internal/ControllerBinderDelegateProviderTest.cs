@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -27,8 +28,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ControllerBinderDelegateProviderTest
     {
+        private static readonly MvcOptions _options = new MvcOptions
+        {
+            AllowValidatingTopLevelNodes = true,
+        };
+        private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(_options);
+
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnParameter()
+        public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnParameter()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -61,6 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new[] { GetModelValidatorProvider(mockValidator.Object) }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -68,7 +76,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -85,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnProperty()
+        public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnProperty()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -109,12 +118,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var factory = GetModelBinderFactory(binder.Object);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var controller = new TestController();
+
             var parameterBinder = new ParameterBinder(
                 modelMetadataProvider,
                 factory,
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new[] { GetModelValidatorProvider(mockValidator.Object) }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -122,7 +133,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -139,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsNull()
+        public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArguments_IfBinderReturnsNull()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -155,6 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
                 .Returns(Task.CompletedTask);
+
             var factory = GetModelBinderFactory(binder.Object);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var parameterBinder = new ParameterBinder(
@@ -163,6 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             var controllerContext = GetControllerContext(actionDescriptor);
@@ -174,7 +188,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -183,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderDoesNotSetModel()
+        public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArguments_IfBinderDoesNotSetModel()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -199,6 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
                 .Returns(Task.CompletedTask);
+
             var factory = GetModelBinderFactory(binder.Object);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var parameterBinder = new ParameterBinder(
@@ -207,6 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             var controllerContext = GetControllerContext(actionDescriptor);
@@ -218,7 +235,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -227,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_AddsActionArguments_IfBinderReturnsNotNull()
+        public async Task CreateBinderDelegate_Delegate_AddsActionArguments_IfBinderReturnsNotNull()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -251,6 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     context.Result = ModelBindingResult.Success(value);
                 })
                 .Returns(Task.CompletedTask);
+
             var factory = GetModelBinderFactory(binder.Object);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var parameterBinder = new ParameterBinder(
@@ -259,6 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             var controllerContext = GetControllerContext(actionDescriptor);
@@ -270,7 +290,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -280,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_GetsMetadataFromParameter()
+        public async Task CreateBinderDelegate_Delegate_GetsMetadataFromParameter()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -307,12 +328,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockMetadataProvider
                 .Setup(p => p.GetMetadataForParameter(ParameterInfos.NoAttributesParameterInfo))
                 .Returns(modelMetadata.Object);
+
             var parameterBinder = new ParameterBinder(
                 mockMetadataProvider.Object,
                 factory,
                 new DefaultObjectValidator(
                     mockMetadataProvider.Object,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -320,7 +343,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 mockMetadataProvider.Object,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -332,7 +356,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_GetsMetadataFromType_IsMetadataProviderIsNotDefaultMetadataProvider()
+        public async Task CreateBinderDelegate_Delegate_GetsMetadataFromType_IsMetadataProviderIsNotDefaultMetadataProvider()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -357,12 +381,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockMetadataProvider
                 .Setup(p => p.GetMetadataForType(typeof(Person)))
                 .Returns(modelMetadata.Object);
+
             var parameterBinder = new ParameterBinder(
                 mockMetadataProvider.Object,
                 factory,
                 new DefaultObjectValidator(
                     mockMetadataProvider.Object,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -370,7 +396,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 mockMetadataProvider.Object,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -382,7 +409,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_CallsValidator_IfModelBinderSucceeds()
+        public async Task CreateBinderDelegate_Delegate_CallsValidator_IfModelBinderSucceeds()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -410,6 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new[] { GetModelValidatorProvider(mockValidator.Object) }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -419,15 +447,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
             // Assert
-            mockValidator
-                .Verify(o => o.Validate(
-                    It.IsAny<ModelValidationContext>()),
-            Times.Once());
+            mockValidator.Verify(o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Once());
 
             Assert.False(controllerContext.ModelState.IsValid);
             Assert.Equal(
@@ -436,7 +462,58 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotCallValidator_IfModelBinderFails()
+        public async Task CreateBinderDelegate_Delegate_DoesNotCallValidator_IfNotValidatingTopLevelNodes()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.Parameters.Add(
+                new ControllerParameterDescriptor
+                {
+                    Name = "foo",
+                    ParameterType = typeof(object),
+                    ParameterInfo = ParameterInfos.CustomValidationParameterInfo
+                });
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+            var factory = GetModelBinderFactory("Hello");
+
+            var mockValidator = new Mock<IModelValidator>();
+            mockValidator
+                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
+                .Returns(new[] { new ModelValidationResult("memberName", "some message") });
+
+            // Do not set AllowValidatingTopLevelNodes.
+            var mvcOptions = new MvcOptions();
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var parameterBinder = new ParameterBinder(
+                modelMetadataProvider,
+                factory,
+                new DefaultObjectValidator(
+                    modelMetadataProvider,
+                    new[] { GetModelValidatorProvider(mockValidator.Object) }),
+                Options.Create(mvcOptions),
+                NullLoggerFactory.Instance);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                modelMetadataProvider,
+                actionDescriptor,
+                mvcOptions);
+
+            await binderDelegate(controllerContext, controller, arguments);
+
+            // Assert
+            Assert.True(controllerContext.ModelState.IsValid);
+            mockValidator.Verify(o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task CreateBinderDelegate_Delegate_DoesNotCallValidator_IfModelBinderFails()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -467,6 +544,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -474,7 +552,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -486,7 +565,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_CallsValidator_ForControllerProperties_IfModelBinderSucceeds()
+        public async Task CreateBinderDelegate_Delegate_CallsValidator_ForControllerProperties_IfModelBinderSucceeds()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -508,13 +587,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var factory = GetModelBinderFactory("Hello");
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-
             var parameterBinder = new ParameterBinder(
                 modelMetadataProvider,
                 factory,
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new[] { GetModelValidatorProvider(mockValidator.Object) }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -522,15 +601,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
             // Assert
-            mockValidator
-                .Verify(o => o.Validate(
-                    It.IsAny<ModelValidationContext>()),
-                Times.Once());
+            mockValidator.Verify(o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Once());
             Assert.False(controllerContext.ModelState.IsValid);
             Assert.Equal(
                 "some message",
@@ -567,6 +644,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 modelMetadataProvider,
                 factory,
                 mockValidator.Object,
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -574,7 +652,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -583,7 +662,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotCallValidator_ForControllerProperties_IfModelBinderFails()
+        public async Task CreateBinderDelegate_Delegate_DoesNotCallValidator_ForControllerProperties_IfModelBinderFails()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -613,6 +692,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new[] { GetModelValidatorProvider(mockValidator.Object) }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -620,7 +700,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -632,7 +713,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_SetsControllerProperties_ForReferenceTypes()
+        public async Task CreateBinderDelegate_Delegate_SetsControllerProperties_ForReferenceTypes()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -656,6 +737,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -663,7 +745,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -674,7 +757,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_AddsToCollectionControllerProperties()
+        public async Task CreateBinderDelegate_Delegate_AddsToCollectionControllerProperties()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -699,6 +782,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -706,7 +790,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -717,7 +802,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotSetNullValues_ForNonNullableProperties()
+        public async Task CreateBinderDelegate_Delegate_DoesNotSetNullValues_ForNonNullableProperties()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -742,6 +827,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Some non default value.
@@ -752,7 +838,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -761,7 +848,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_SetsNullValues_ForNullableProperties()
+        public async Task CreateBinderDelegate_Delegate_SetsNullValues_ForNullableProperties()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -786,6 +873,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Some non default value.
@@ -796,7 +884,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -805,7 +894,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_SupportsRequestPredicate_ForPropertiesAndParameters_NotBound()
+        public async Task CreateBinderDelegate_Delegate_SupportsRequestPredicate_ForPropertiesAndParameters_NotBound()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -851,6 +940,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Some non default value.
@@ -861,7 +951,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -871,7 +962,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_SupportsRequestPredicate_ForPropertiesAndParameters_Bound()
+        public async Task CreateBinderDelegate_Delegate_SupportsRequestPredicate_ForPropertiesAndParameters_Bound()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -917,6 +1008,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Some non default value.
@@ -927,7 +1019,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -978,7 +1071,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         [Theory]
         [MemberData(nameof(SkippedPropertyData))]
-        public async Task BindActionArgumentsAsync_SkipsReadOnlyControllerProperties(
+        public async Task CreateBinderDelegate_Delegate_SkipsReadOnlyControllerProperties(
             string propertyName,
             Type propertyType,
             Func<object, object> propertyAccessor,
@@ -1007,6 +1100,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -1014,7 +1108,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -1025,7 +1120,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_SetsMultipleControllerProperties()
+        public async Task CreateBinderDelegate_Delegate_SetsMultipleControllerProperties()
         {
             // Arrange
             var boundPropertyTypes = new Dictionary<string, Type>
@@ -1085,6 +1180,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultObjectValidator(
                     modelMetadataProvider,
                     new IModelValidatorProvider[] { }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
 
             // Act
@@ -1092,7 +1188,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder,
                 factory,
                 modelMetadataProvider,
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, controller, arguments);
 
@@ -1182,6 +1279,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new EmptyModelMetadataProvider(),
                 factory,
                 new DefaultObjectValidator(modelMetadataProvider, new[] { modelValidatorProvider }),
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
             parameterBinder.Setup(p => p.BindModelAsync(
                 It.IsAny<ActionContext>(),
@@ -1223,7 +1321,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterBinder.Object,
                 factory,
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                actionDescriptor);
+                actionDescriptor,
+                _options);
 
             await binderDelegate(controllerContext, new TestController(), arguments);
 
@@ -1340,10 +1439,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var objectModelValidator = new DefaultObjectValidator(
                 metadataProvider,
                 new[] { modelValidatorProvider });
+
             return new ParameterBinder(
                 metadataProvider,
                 factory,
                 objectModelValidator,
+                _optionsAccessor,
                 NullLoggerFactory.Instance);
         }
 

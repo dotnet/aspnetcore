@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -18,23 +19,31 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IModelBinderFactory _modelBinderFactory;
+        private readonly MvcOptions _mvcOptions;
         private readonly IObjectModelValidator _objectModelValidator;
 
         /// <summary>
         /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
+        /// is the overload that also takes a <see cref="MvcOptions"/> accessor and an <see cref="ILoggerFactory"/>.
+        /// </para>
         /// <para>Initializes a new instance of <see cref="ParameterBinder"/>.</para>
         /// </summary>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="modelBinderFactory">The <see cref="IModelBinderFactory"/>.</param>
         /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
         [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
+            + " is the overload that also takes a " + nameof(MvcOptions) + " accessor and an "
+            + nameof(ILoggerFactory) + " .")]
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
             IObjectModelValidator validator)
-            : this(modelMetadataProvider, modelBinderFactory, validator, NullLoggerFactory.Instance)
+            : this(
+                  modelMetadataProvider,
+                  modelBinderFactory,
+                  validator,
+                  Options.Create(new MvcOptions()),
+                  NullLoggerFactory.Instance)
         {
         }
 
@@ -44,11 +53,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="modelBinderFactory">The <see cref="IModelBinderFactory"/>.</param>
         /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/> accessor.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
             IObjectModelValidator validator,
+            IOptions<MvcOptions> mvcOptions,
             ILoggerFactory loggerFactory)
         {
             if (modelMetadataProvider == null)
@@ -66,6 +77,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(validator));
             }
 
+            if (mvcOptions == null)
+            {
+                throw new ArgumentNullException(nameof(mvcOptions));
+            }
+
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -74,6 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _modelMetadataProvider = modelMetadataProvider;
             _modelBinderFactory = modelBinderFactory;
             _objectModelValidator = validator;
+            _mvcOptions = mvcOptions.Value;
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
@@ -224,8 +241,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var modelBindingResult = modelBindingContext.Result;
 
-            var baseObjectValidator = _objectModelValidator as ObjectModelValidator;
-            if (baseObjectValidator == null)
+            if (_mvcOptions.AllowValidatingTopLevelNodes &&
+                _objectModelValidator is ObjectModelValidator baseObjectValidator)
+            {
+                Logger.AttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+
+                EnforceBindRequiredAndValidate(
+                    baseObjectValidator,
+                    actionContext,
+                    metadata,
+                    modelBindingContext,
+                    modelBindingResult);
+
+                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+            }
+            else
             {
                 // For legacy implementations (which directly implemented IObjectModelValidator), fall back to the
                 // back-compatibility logic. In this scenario, top-level validation attributes will be ignored like
@@ -238,19 +268,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                         modelBindingContext.ModelName,
                         modelBindingResult.Model);
                 }
-            }
-            else
-            {
-                Logger.AttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
-
-                EnforceBindRequiredAndValidate(
-                    baseObjectValidator,
-                    actionContext,
-                    metadata,
-                    modelBindingContext,
-                    modelBindingResult);
-
-                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
             }
 
             return modelBindingResult;

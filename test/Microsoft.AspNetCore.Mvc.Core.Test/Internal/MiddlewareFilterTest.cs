@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public async Task MiddlewareFilter_SetsMiddlewareFilterFeature_OnExecution()
         {
             // Arrange
-            RequestDelegate requestDelegate = (context) => Task.FromResult(true);
+            Task requestDelegate(HttpContext context) => Task.FromResult(true);
             var middlwareFilter = new MiddlewareFilter(requestDelegate);
             var httpContext = new DefaultHttpContext();
             var resourceExecutingContext = GetResourceExecutingContext(httpContext);
@@ -315,8 +315,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var services = CreateServices();
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = services.BuildServiceProvider();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = services.BuildServiceProvider()
+            };
 
             return httpContext;
         }
@@ -326,8 +328,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var applicationServices = new ServiceCollection();
             var applicationBuilder = new ApplicationBuilder(applicationServices.BuildServiceProvider());
             var middlewareFilterBuilderService = new MiddlewareFilterBuilder(
-                new MiddlewareFilterConfigurationProvider());
-            middlewareFilterBuilderService.ApplicationBuilder = applicationBuilder;
+                new MiddlewareFilterConfigurationProvider())
+            {
+                ApplicationBuilder = applicationBuilder
+            };
+
             return middlewareFilterBuilderService.GetPipeline(middlewarePipelineProviderType);
         }
 
@@ -444,11 +449,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class TestParameterBinder : ParameterBinder
         {
             private readonly IDictionary<string, object> _actionParameters;
+
             public TestParameterBinder(IDictionary<string, object> actionParameters)
                 : base(
                     new EmptyModelMetadataProvider(),
                     TestModelBinderFactory.CreateDefault(),
                     Mock.Of<IObjectModelValidator>(),
+                    Options.Create(new MvcOptions
+                    {
+                        AllowValidatingTopLevelNodes = true,
+                    }),
                     NullLoggerFactory.Instance)
             {
                 _actionParameters = actionParameters;

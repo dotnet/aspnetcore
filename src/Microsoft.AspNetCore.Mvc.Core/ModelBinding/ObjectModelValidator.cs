@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Initializes a new instance of <see cref="ObjectModelValidator"/>.
         /// </summary>
-        /// <param name="modelMetadataProvider">The <see cref="ModelMetadataProvider"/>.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="validatorProviders">The list of <see cref="IModelValidatorProvider"/>.</param>
         public ObjectModelValidator(
             IModelMetadataProvider modelMetadataProvider,

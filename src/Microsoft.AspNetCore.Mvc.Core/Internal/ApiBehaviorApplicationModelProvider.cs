@@ -210,22 +210,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
             }
         }
-        
+
         // internal for testing
         internal void InferParameterModelPrefixes(ActionModel actionModel)
         {
             foreach (var parameter in actionModel.Parameters)
             {
-                if (parameter.BindingInfo != null &&
-                    parameter.BindingInfo.BinderModelName == null &&
-                    parameter.BindingInfo.BindingSource != null &&
-                    !parameter.BindingInfo.BindingSource.IsGreedy)
+                var bindingInfo = parameter.BindingInfo;
+                if (bindingInfo?.BindingSource != null &&
+                    bindingInfo.BinderModelName == null &&
+                    !bindingInfo.BindingSource.IsGreedy &&
+                    IsComplexTypeParameter(parameter))
                 {
-                    var metadata = GetParameterMetadata(parameter);
-                    if (metadata.IsComplexType)
-                    {
-                        parameter.BindingInfo.BinderModelName = string.Empty;
-                    }
+                    parameter.BindingInfo.BinderModelName = string.Empty;
                 }
             }
         }
@@ -233,25 +230,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Internal for unit testing.
         internal BindingSource InferBindingSourceForParameter(ParameterModel parameter)
         {
-            var parameterType = parameter.ParameterInfo.ParameterType;
             if (ParameterExistsInAllRoutes(parameter.Action, parameter.ParameterName))
             {
                 return BindingSource.Path;
             }
-            else
-            {
-                var parameterMetadata = GetParameterMetadata(parameter);
-                if (parameterMetadata != null)
-                {
-                    var bindingSource = parameterMetadata.IsComplexType ?
-                        BindingSource.Body :
-                        BindingSource.Query;
 
-                    return bindingSource;
-                }
-            }
+            var bindingSource = IsComplexTypeParameter(parameter) ?
+                BindingSource.Body :
+                BindingSource.Query;
 
-            return null;
+            return bindingSource;
         }
 
         private bool ParameterExistsInAllRoutes(ActionModel actionModel, string parameterName)
@@ -277,16 +265,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return parameterExistsInSomeRoute;
         }
 
-        private ModelMetadata GetParameterMetadata(ParameterModel parameter)
+        private bool IsComplexTypeParameter(ParameterModel parameter)
         {
-            if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider)
-            {
-                return modelMetadataProvider.GetMetadataForParameter(parameter.ParameterInfo);
-            }
-            else
-            {
-                return _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
-            }
+            // No need for information from attributes on the parameter. Just use its type.
+            return _modelMetadataProvider
+                .GetMetadataForType(parameter.ParameterInfo.ParameterType)
+                .IsComplexType;
         }
     }
 }

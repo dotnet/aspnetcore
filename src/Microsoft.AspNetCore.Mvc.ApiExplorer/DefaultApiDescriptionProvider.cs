@@ -24,10 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     /// </summary>
     public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     {
-        private readonly IList<IInputFormatter> _inputFormatters;
-        private readonly IList<IOutputFormatter> _outputFormatters;
-        private readonly IModelMetadataProvider _modelMetadataProvider;
+        private readonly MvcOptions _mvcOptions;
         private readonly IInlineConstraintResolver _constraintResolver;
+        private readonly IModelMetadataProvider _modelMetadataProvider;
 
         /// <summary>
         /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
@@ -41,8 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             IInlineConstraintResolver constraintResolver,
             IModelMetadataProvider modelMetadataProvider)
         {
-            _inputFormatters = optionsAccessor.Value.InputFormatters;
-            _outputFormatters = optionsAccessor.Value.OutputFormatters;
+            _mvcOptions = optionsAccessor.Value;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
         }
@@ -164,7 +162,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     var visitor = new PseudoModelBindingVisitor(context, actionParameter);
 
                     ModelMetadata metadata = null;
-                    if (actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
+                    if (_mvcOptions.AllowValidatingTopLevelNodes &&
+                        actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
                         _modelMetadataProvider is ModelMetadataProvider provider)
                     {
                         // The default model metadata provider derives from ModelMetadataProvider
@@ -344,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var results = new List<ApiRequestFormat>();
             foreach (var contentType in contentTypes)
             {
-                foreach (var formatter in _inputFormatters)
+                foreach (var formatter in _mvcOptions.InputFormatters)
                 {
                     if (formatter is IApiRequestFormatMetadataProvider requestFormatMetadataProvider)
                     {
@@ -422,7 +421,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 contentTypes.Add((string)null);
             }
 
-            var responseTypeMetadataProviders = _outputFormatters.OfType<IApiResponseTypeMetadataProvider>();
+            var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
             foreach (var objectType in objectTypes)
             {

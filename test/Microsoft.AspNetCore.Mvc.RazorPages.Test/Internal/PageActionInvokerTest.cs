@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -1240,10 +1241,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var mvcOptions = new MvcOptions
+            {
+                AllowValidatingTopLevelNodes = true,
+            };
+
             return new ParameterBinder(
                 metadataProvider,
                 factory,
                 new DefaultObjectValidator(metadataProvider, new[] { validator }),
+                Options.Create(mvcOptions),
                 NullLoggerFactory.Instance);
         }
 

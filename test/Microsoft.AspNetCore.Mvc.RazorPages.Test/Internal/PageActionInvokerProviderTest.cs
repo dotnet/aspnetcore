@@ -487,10 +487,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
+            var mvcOptions = new MvcOptions
+            {
+                AllowValidatingTopLevelNodes = true,
+            };
+
             var parameterBinder = new ParameterBinder(
                 modelMetadataProvider,
                 TestModelBinderFactory.CreateDefault(),
                 Mock.Of<IObjectModelValidator>(),
+                Options.Create(mvcOptions),
                 NullLoggerFactory.Instance);
 
             return new PageActionInvokerProvider(

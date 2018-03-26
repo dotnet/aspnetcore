@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc
         // See CompatibilitySwitch.cs for guide on how to implement these.
         private readonly CompatibilitySwitch<bool> _allowBindingHeaderValuesToNonStringModelTypes;
         private readonly CompatibilitySwitch<bool> _allowCombiningAuthorizeFilters;
+        private readonly CompatibilitySwitch<bool> _allowValidatingTopLevelNodes;
         private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
         private readonly ICompatibilitySwitch[] _switches;
@@ -50,6 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             _allowCombiningAuthorizeFilters = new CompatibilitySwitch<bool>(nameof(AllowCombiningAuthorizeFilters));
             _allowBindingHeaderValuesToNonStringModelTypes = new CompatibilitySwitch<bool>(nameof(AllowBindingHeaderValuesToNonStringModelTypes));
+            _allowValidatingTopLevelNodes = new CompatibilitySwitch<bool>(nameof(AllowValidatingTopLevelNodes));
             _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
 
@@ -57,6 +59,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 _allowCombiningAuthorizeFilters,
                 _allowBindingHeaderValuesToNonStringModelTypes,
+                _allowValidatingTopLevelNodes,
                 _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
             };
@@ -89,8 +92,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// are applied.
         /// </para>
         /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
         /// guidance and examples of setting the application's compatibility version.
         /// </para>
         /// <para>
@@ -114,15 +117,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets a value that determines if <see cref="HeaderModelBinder"/> should bind to types other than
-        /// <see cref="String"/> or a collection of <see cref="String"/>. If set to <c>true</c>,
-        /// <see cref="HeaderModelBinder"/> would bind to simple types (like <see cref="String"/>, <see cref="Int32"/>,
-        /// <see cref="Enum"/>, <see cref="Boolean"/> etc.) or a collection of simple types. The default value of the
+        /// <see cref="string"/> or a collection of <see cref="string"/>. If set to <c>true</c>,
+        /// <see cref="HeaderModelBinder"/> would bind to simple types (like <see cref="string"/>, <see cref="int"/>,
+        /// <see cref="Enum"/>, <see cref="bool"/> etc.) or a collection of simple types. The default value of the
         /// property is <c>false</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
         /// guidance and examples of setting the application's compatibility version.
         /// </para>
         /// <para>
@@ -142,6 +145,41 @@ namespace Microsoft.AspNetCore.Mvc
         {
             get => _allowBindingHeaderValuesToNonStringModelTypes.Value;
             set => _allowBindingHeaderValuesToNonStringModelTypes.Value = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines if model bound action parameters, controller properties, page handler
+        /// parameters, or page model properties are validated (in addition to validating their elements or
+        /// properties). If set to <see langword="true"/>, <see cref="BindRequiredAttribute"/> and
+        /// <c>ValidationAttribute</c>s on these top-level nodes are checked. Otherwise, such attributes are ignored.
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/> if the version is
+        /// <see cref="CompatibilityVersion.Version_2_1"/> or later; <see langword="false"/> otherwise.
+        /// </value>
+        /// <remarks>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
+        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
+        /// this setting will have the value <see langword="false"/> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowValidatingTopLevelNodes
+        {
+            get => _allowValidatingTopLevelNodes.Value;
+            set => _allowValidatingTopLevelNodes.Value = value;
         }
 
         /// <summary>
@@ -173,8 +211,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
         /// guidance and examples of setting the application's compatibility version.
         /// </para>
         /// <para>
@@ -204,13 +242,13 @@ namespace Microsoft.AspNetCore.Mvc
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
 
         /// <summary>
-        /// Gets or sets an value indicating whether the model binding system will bind undefined values to 
+        /// Gets or sets a value indicating whether the model binding system will bind undefined values to
         /// enum types. The default value of the property is <c>false</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
         /// guidance and examples of setting the application's compatibility version.
         /// </para>
         /// <para>

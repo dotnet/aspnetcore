@@ -441,14 +441,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Action<HttpRequest> updateRequest = null,
             Action<MvcOptions> updateOptions = null)
         {
-            if (updateOptions == null)
-            {
-                updateOptions = o =>
-                {
-                    o.AllowBindingHeaderValuesToNonStringModelTypes = true;
-                };
-            }
-
             return ModelBindingTestHelper.GetTestContext(updateRequest, updateOptions);
         }
 

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IFilterProvider[] _filterProviders;
         private readonly IControllerFactoryProvider _controllerFactoryProvider;
-
+        private readonly MvcOptions _mvcOptions;
         private volatile InnerCache _currentCache;
 
         public ControllerActionInvokerCache(
@@ -30,7 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
             IEnumerable<IFilterProvider> filterProviders,
-            IControllerFactoryProvider factoryProvider)
+            IControllerFactoryProvider factoryProvider,
+            IOptions<MvcOptions> mvcOptions)
         {
             _collectionProvider = collectionProvider;
             _parameterBinder = parameterBinder;
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _modelMetadataProvider = modelMetadataProvider;
             _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
             _controllerFactoryProvider = factoryProvider;
+            _mvcOptions = mvcOptions.Value;
         }
 
         private InnerCache CurrentCache
@@ -82,13 +85,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     _parameterBinder,
                     _modelBinderFactory,
                     _modelMetadataProvider,
-                    actionDescriptor);
+                    actionDescriptor,
+                    _mvcOptions);
 
                 var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
                 cacheEntry = new ControllerActionInvokerCacheEntry(
-                    filterFactoryResult.CacheableFilters, 
-                    controllerFactory, 
+                    filterFactoryResult.CacheableFilters,
+                    controllerFactory,
                     controllerReleaser,
                     propertyBinderFactory,
                     objectMethodExecutor,

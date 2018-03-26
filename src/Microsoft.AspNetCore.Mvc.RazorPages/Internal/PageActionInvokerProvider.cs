@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -37,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly ParameterBinder _parameterBinder;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
+        private readonly MvcOptions _mvcOptions;
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly IPageHandlerMethodSelector _selector;
         private readonly RazorProjectFileSystem _razorFileSystem;
@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _parameterBinder = parameterBinder;
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataFactory = tempDataFactory;
+            _mvcOptions = mvcOptions.Value;
             _htmlHelperOptions = htmlHelperOptions.Value;
             _selector = selector;
             _razorFileSystem = razorFileSystem;
@@ -261,7 +262,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     _modelMetadataProvider,
                     _modelBinderFactory,
                     actionDescriptor,
-                    actionDescriptor.HandlerMethods[i]);
+                    actionDescriptor.HandlerMethods[i],
+                    _mvcOptions);
             }
 
             return results;
