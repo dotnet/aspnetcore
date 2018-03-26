@@ -9,6 +9,10 @@ ASP.NET Core Identity is the membership system for building ASP.NET Core web app
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 
+## ASP.NET Identity for ASP.NET MVC 5
+
+The previous versions of Identity for MVC5 and lower, previously available on CodePlex, are available at https://github.com/aspnet/AspNetIdentity
+
 ## Community Maintained Store Providers
 
  - [ASP.NET Identity MongoDB Provider](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
