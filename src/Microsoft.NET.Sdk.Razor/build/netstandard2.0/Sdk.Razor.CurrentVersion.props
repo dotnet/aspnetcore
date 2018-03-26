@@ -62,6 +62,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Configures the file extension used for generated C# files.
     -->
     <RazorGenerateOutputFileExtension>.g.cshtml.cs</RazorGenerateOutputFileExtension>
+
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
