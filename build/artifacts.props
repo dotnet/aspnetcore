@@ -236,11 +236,11 @@
     <PackageArtifact Include="Microsoft.Extensions.Configuration.AzureKeyVault" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Binder" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.CommandLine" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.DockerSecrets" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.FileExtensions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Ini" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Json" Category="ship" AppMetapackage="true" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Configuration.KeyPerFile" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.UserSecrets" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Xml" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Category="noship" />
