@@ -85,8 +85,10 @@
     Condition="'$(MvcRazorCompileOnPublish)'=='true' AND '$(_MvcViewCompilationAddDesktopReferences)'!='false' AND '$(TargetFrameworkIdentifier)'=='.NETFramework'">
 
     <PropertyGroup Condition="'$(_MvcViewCompilationBinaryPath)'==''">
-      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x64'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x64.exe</_MvcViewCompilationBinaryPath>
       <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x86'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x86.exe</_MvcViewCompilationBinaryPath>
+
+      <!-- For PlatformTarget = AnyCPU or x64, we will use the x64 binary -->
+      <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x64.exe</_MvcViewCompilationBinaryPath>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(_MvcViewCompilationBinaryPath)'!=''">
@@ -99,18 +101,22 @@
     DependsOnTargets="_AddDesktopReferences;_CreateResponseFileForMvcRazorPrecompile"
     Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
 
+    <PropertyGroup>
+      <_MvcViewCompilationBinaryName>$([System.IO.Path]::GetFileName('$(_MvcViewCompilationBinaryPath)'))</_MvcViewCompilationBinaryName>
+    </PropertyGroup>
+
     <ItemGroup>
       <_PreCompilationFilesToCopy
         Include="$(OutputPath)$(AssemblyName).exe.config"
-        Destination="$(OutputPath)$(MSBuildThisFileName)-$(PlatformTarget).exe.config" />
+        Destination="$(OutputPath)$(_MvcViewCompilationBinaryName).config" />
 
       <_PreCompilationFilesToCopy
         Include="$(_MvcViewCompilationBinaryPath)"
-        Destination="$(OutputPath)$(MSBuildThisFileName)-$(PlatformTarget).exe" />
+        Destination="$(OutputPath)$(_MvcViewCompilationBinaryName)" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(MvcRazorRunCommand)'==''">
-      <MvcRazorRunCommand>$(OutputPath)$(MSBuildThisFileName)-$(PlatformTarget).exe</MvcRazorRunCommand>
+      <MvcRazorRunCommand>$(OutputPath)$(_MvcViewCompilationBinaryName)</MvcRazorRunCommand>
     </PropertyGroup>
 
     <Copy

@@ -11,12 +11,11 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests
 {
-    [OSSkipCondition(OperatingSystems.Linux)]
-    [OSSkipCondition(OperatingSystems.MacOSX)]
-    public class PublishWithDebugTest_Desktop :
-        LoggedTest, IClassFixture<PublishWithDebugTest_Desktop.TestFixture>
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    public class SimpleAppTest_WithAnyCPU_Desktop :
+        LoggedTest, IClassFixture<SimpleAppTest_WithAnyCPU_Desktop.TestFixture>
     {
-        public PublishWithDebugTest_Desktop(
+        public SimpleAppTest_WithAnyCPU_Desktop(
             TestFixture fixture,
             ITestOutputHelper output)
             : base(output)
@@ -27,16 +26,16 @@ namespace FunctionalTests
         public ApplicationTestFixture Fixture { get; }
 
         [ConditionalFact]
-        public async Task PublishingInDebugWorks()
+        public async Task Precompilation_WorksForSimpleApps_BuiltWithPlatformTargetAnyCPU()
         {
             using (StartLog(out var loggerFactory))
             {
                 // Arrange
                 var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
 
-                // Assert
-                var expected = Path.Combine(deployment.ContentRoot, $"{Fixture.ApplicationName}.PrecompiledViews.dll");
-                Assert.True(File.Exists(expected), $"File {expected} does not exist.");
+                // Act & Assert
+                var dllFile = Path.Combine(deployment.ContentRoot, "SimpleApp.PrecompiledViews.dll");
+                Assert.True(File.Exists(dllFile), $"{dllFile} exists at deployment.");
             }
         }
 
@@ -50,7 +49,7 @@ namespace FunctionalTests
             protected override DeploymentParameters GetDeploymentParameters()
             {
                 var deploymentParameters = base.GetDeploymentParameters();
-                deploymentParameters.Configuration = "Debug";
+                deploymentParameters.AdditionalPublishParameters = "/p:PlatformTarget=AnyCPU";
 
                 return deploymentParameters;
             }
