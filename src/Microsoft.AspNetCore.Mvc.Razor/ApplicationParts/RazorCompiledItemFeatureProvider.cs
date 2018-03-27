@@ -36,18 +36,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
                 foreach (var item in provider.CompiledItems)
                 {
-                    var descriptor = GetCompiledViewDescriptor(item);
+                    var descriptor = new CompiledViewDescriptor(item, attribute: null);
                     feature.ViewDescriptors.Add(descriptor);
                 }
             }
-        }
-
-        private static CompiledViewDescriptor GetCompiledViewDescriptor(RazorCompiledItem item)
-        {
-            var itemAssembly = item.Type.Assembly;
-            var razorViewAttribute = itemAssembly.GetCustomAttributes<RazorViewAttribute>()
-                .FirstOrDefault(attribute => attribute.ViewType == item.Type);
-            return new CompiledViewDescriptor(item, razorViewAttribute);
         }
     }
 }

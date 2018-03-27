@@ -7,8 +7,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -96,18 +98,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                var pageAttribute = (RazorPageAttribute)viewDescriptor.ViewAttribute;
+                var relativePath = viewDescriptor.RelativePath;
+                var routeTemplate = GetRouteTemplate(viewDescriptor);
                 PageRouteModel routeModel = null;
 
                 // When RootDirectory and AreaRootDirectory overlap (e.g. RootDirectory = '/', AreaRootDirectory = '/Areas'), we
                 // only want to allow a page to be associated with the area route.
-                if (_pagesOptions.AllowAreas && viewDescriptor.RelativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
+                if (_pagesOptions.AllowAreas && relativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    routeModel = _routeModelFactory.CreateAreaRouteModel(viewDescriptor.RelativePath, pageAttribute.RouteTemplate);
+                    routeModel = _routeModelFactory.CreateAreaRouteModel(relativePath, routeTemplate);
                 }
-                else if (viewDescriptor.RelativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
+                else if (relativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    routeModel = _routeModelFactory.CreateRouteModel(pageAttribute.Path, pageAttribute.RouteTemplate);
+                    routeModel = _routeModelFactory.CreateRouteModel(relativePath, routeTemplate);
                 }
 
                 if (routeModel != null)
@@ -115,6 +118,24 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     context.RouteModels.Add(routeModel);
                 }
             }
+        }
+
+        internal static string GetRouteTemplate(CompiledViewDescriptor viewDescriptor)
+        {
+            if (viewDescriptor.ViewAttribute != null)
+            {
+                return ((RazorPageAttribute)viewDescriptor.ViewAttribute).RouteTemplate;
+            }
+
+            if (viewDescriptor.Item != null)
+            {
+                return viewDescriptor.Item.Metadata
+                    .OfType<RazorCompiledItemMetadataAttribute>()
+                    .FirstOrDefault(f => f.Key == RazorPageDocumentClassifierPass.RouteTemplateKey)
+                    ?.Value;
+            }
+
+            return null;
         }
     }
 }
