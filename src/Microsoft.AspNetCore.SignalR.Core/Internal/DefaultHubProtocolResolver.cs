@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        public IHubProtocol GetProtocol(string protocolName, IList<string> supportedProtocols, HubConnectionContext connection)
+        public IHubProtocol GetProtocol(string protocolName, IList<string> supportedProtocols)
         {
             protocolName = protocolName ?? throw new ArgumentNullException(nameof(protocolName));
 
