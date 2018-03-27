@@ -134,6 +134,24 @@ describe("HttpConnection", () => {
         done();
     });
 
+    it("start throws after all transports fail", async (done) => {
+        const options: IHttpConnectionOptions = {
+            httpClient: new TestHttpClient()
+                .on("POST", (r) => ({ connectionId: "42", availableTransports: [] }))
+                .on("GET", (r) => { throw new Error("fail"); }),
+        } as IHttpConnectionOptions;
+
+        const connection = new HttpConnection("http://tempuri.org?q=myData", options);
+        try {
+            await connection.start(TransferFormat.Text);
+            fail();
+            done();
+        } catch (e) {
+            expect(e.message).toBe("Unable to initialize any of the available transports.");
+        }
+        done();
+    });
+
     it("preserves user's query string", async (done) => {
         let connectUrl: string;
         const fakeTransport: ITransport = {
