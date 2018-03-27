@@ -56,33 +56,32 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return new JsonTextWriter(new StreamWriter(output, _utf8NoBom, 1024, leaveOpen: true));
         }
 
-        private static JsonTextReader CreateJsonTextReader(ReadOnlyMemory<byte> payload)
-        {
-            var textReader = new Utf8BufferTextReader();
-            textReader.SetBuffer(payload);
-            var reader = new JsonTextReader(textReader);
-            reader.ArrayPool = JsonArrayPool<char>.Shared;
-
-            return reader;
-        }
-
         public static HandshakeResponseMessage ParseResponseMessage(ReadOnlyMemory<byte> payload)
         {
-            using (var reader = CreateJsonTextReader(payload))
+            var textReader = Utf8BufferTextReader.Get(payload);
+
+            try
             {
-                var token = JToken.ReadFrom(reader);
-                var handshakeJObject = JsonUtils.GetObject(token);
-
-                // a handshake response does not have a type
-                // check the incoming message was not any other type of message
-                var type = JsonUtils.GetOptionalProperty<string>(handshakeJObject, TypePropertyName);
-                if (!string.IsNullOrEmpty(type))
+                using (var reader = JsonUtils.CreateJsonTextReader(textReader))
                 {
-                    throw new InvalidOperationException("Handshake response should not have a 'type' value.");
-                }
+                    var token = JToken.ReadFrom(reader);
+                    var handshakeJObject = JsonUtils.GetObject(token);
 
-                var error = JsonUtils.GetOptionalProperty<string>(handshakeJObject, ErrorPropertyName);
-                return new HandshakeResponseMessage(error);
+                    // a handshake response does not have a type
+                    // check the incoming message was not any other type of message
+                    var type = JsonUtils.GetOptionalProperty<string>(handshakeJObject, TypePropertyName);
+                    if (!string.IsNullOrEmpty(type))
+                    {
+                        throw new InvalidOperationException("Handshake response should not have a 'type' value.");
+                    }
+
+                    var error = JsonUtils.GetOptionalProperty<string>(handshakeJObject, ErrorPropertyName);
+                    return new HandshakeResponseMessage(error);
+                }
+            }
+            finally
+            {
+                Utf8BufferTextReader.Return(textReader);
             }
         }
 
@@ -99,13 +98,21 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 throw new InvalidDataException("Unable to parse payload as a handshake request message.");
             }
 
-            using (var reader = CreateJsonTextReader(payload))
+            var textReader = Utf8BufferTextReader.Get(payload);
+            try
             {
-                var token = JToken.ReadFrom(reader);
-                var handshakeJObject = JsonUtils.GetObject(token);
-                var protocol = JsonUtils.GetRequiredProperty<string>(handshakeJObject, ProtocolPropertyName);
-                var protocolVersion = JsonUtils.GetRequiredProperty<int>(handshakeJObject, ProtocolVersionName, JTokenType.Integer);
-                requestMessage = new HandshakeRequestMessage(protocol, protocolVersion);
+                using (var reader = JsonUtils.CreateJsonTextReader(textReader))
+                {
+                    var token = JToken.ReadFrom(reader);
+                    var handshakeJObject = JsonUtils.GetObject(token);
+                    var protocol = JsonUtils.GetRequiredProperty<string>(handshakeJObject, ProtocolPropertyName);
+                    var protocolVersion = JsonUtils.GetRequiredProperty<int>(handshakeJObject, ProtocolVersionName, JTokenType.Integer);
+                    requestMessage = new HandshakeRequestMessage(protocol, protocolVersion);
+                }
+            }
+            finally
+            {
+                Utf8BufferTextReader.Return(textReader);
             }
 
             return true;
