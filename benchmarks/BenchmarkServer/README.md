@@ -12,6 +12,6 @@ The SignalRWorker that runs against this server is located at https://github.com
 3. If cloned go to the BenchmarksDriver project
 4. Use the following command as a guideline for running a test using your changes
 
-`dotnet run --server <server-endpoint> --client <client-endpoint> --properties "Transport=WebSockets" --properties "HubProtocol=messagepack" -j <path to signalr.json> --repository signalr@branch-name --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj`
+`benchmarks --server <server-endpoint> --client <client-endpoint> -p TransportType=WebSockets -p HubProtocol=messagepack -j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json`
 
 5. For more info/commands see https://github.com/aspnet/benchmarks/blob/dev/src/BenchmarksDriver/README.md
