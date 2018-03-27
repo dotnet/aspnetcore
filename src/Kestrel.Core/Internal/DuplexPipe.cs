@@ -2,7 +2,7 @@
 
 namespace System.IO.Pipelines
 {
-    public class DuplexPipe : IDuplexPipe
+    internal class DuplexPipe : IDuplexPipe
     {
         public DuplexPipe(PipeReader reader, PipeWriter writer)
         {
