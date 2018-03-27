@@ -104,11 +104,7 @@ Finished:
     if (FAILED(hr))
     {
         STACK_STRU(strEventMsg, 256);
-        //
-        // Assumption: inprocess application shutdown will be called only at process shutdown
-        // Based on this assumption, we just let shutdown continue and process will exit
-        // Log a warning for ungraceful shutdown
-        //
+
         if (SUCCEEDED(strEventMsg.SafeSnwprintf(
             ASPNETCORE_EVENT_APP_SHUTDOWN_FAILURE_MSG,
             m_pConfig->QueryConfigPath()->QueryStr())))
@@ -118,6 +114,13 @@ Finished:
                 ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
                 strEventMsg.QueryStr());
         }
+
+        //
+        // Managed layer may block the shutdown and lead to shutdown timeout
+        // Assumption: only one inprocess application is hosted.
+        // Call process exit to force shutdown
+        //
+        exit(hr);
     }
 }
 
