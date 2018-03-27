@@ -618,8 +618,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 return new ApiParameterDescriptionContext
                 {
                     ModelMetadata = metadata,
-                    BinderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName,
-                    BindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource,
+                    BinderModelName = bindingInfo?.BinderModelName,
+                    BindingSource = bindingInfo?.BindingSource,
                     PropertyName = propertyName ?? metadata.Name,
                 };
             }
@@ -716,9 +716,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     var propertyMetadata = modelMetadata.Properties[i];
                     var key = new PropertyKey(propertyMetadata, source);
+                    var bindingInfo = BindingInfo.GetBindingInfo(Enumerable.Empty<object>(), propertyMetadata);
+
                     var propertyContext = ApiParameterDescriptionContext.GetContext(
                         propertyMetadata,
-                        bindingInfo: null,
+                        bindingInfo: bindingInfo,
                         propertyName: null);
 
                     if (Visited.Add(key))

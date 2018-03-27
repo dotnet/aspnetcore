@@ -310,10 +310,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // This is to avoid adding validation errors for an 'empty' prefix when a simple
                 // type fails to bind. The fix for #7503 uncovered this issue, and was likely the
                 // original problem being worked around that regressed #7503.
-                string modelName = modelBindingContext.ModelName;
+                var modelName = modelBindingContext.ModelName;
 
                 if (string.IsNullOrEmpty(modelBindingContext.ModelName) &&
-                    (parameter.BindingInfo?.BinderModelName ?? metadata.BinderModelName) == null)
+                    parameter.BindingInfo?.BinderModelName == null)
                 {
                     // If we get here then this is a fallback case. The model name wasn't explicitly set
                     // and we ended up with an empty prefix.

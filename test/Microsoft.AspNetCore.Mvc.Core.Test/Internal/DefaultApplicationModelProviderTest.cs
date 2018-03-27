@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -75,6 +76,49 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_ReadsBindingSourceForPropertiesFromModelMetadata()
+        {
+            // Arrange
+            var detailsProvider = new BindingSourceMetadataProvider(typeof(string), BindingSource.Services);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+            var provider = new TestApplicationModelProvider(Options.Create(new MvcOptions()), modelMetadataProvider);
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            Assert.Collection(
+                controllerModel.ControllerProperties.OrderBy(p => p.PropertyName),
+                property =>
+                {
+                    Assert.Equal(nameof(ModelBinderController.Bound), property.PropertyName);
+                    Assert.Equal(BindingSource.Query, property.BindingInfo.BindingSource);
+                    Assert.Same(controllerModel, property.Controller);
+
+                    var attribute = Assert.Single(property.Attributes);
+                    Assert.IsType<FromQueryAttribute>(attribute);
+                },
+                property =>
+                {
+                    Assert.Equal(nameof(ModelBinderController.FormFile), property.PropertyName);
+                    Assert.Equal(BindingSource.FormFile, property.BindingInfo.BindingSource);
+                    Assert.Same(controllerModel, property.Controller);
+
+                    Assert.Empty(property.Attributes);
+                },
+                property =>
+                {
+                    Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
+                    Assert.Equal(BindingSource.Services, property.BindingInfo.BindingSource);
+                    Assert.Same(controllerModel, property.Controller);
+                });
+        }
+
+        [Fact]
         public void OnProvidersExecuting_AddsBindingSources_ForActionParameters()
         {
             // Arrange
@@ -88,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             var controllerModel = Assert.Single(context.Result.Controllers);
-            var action = Assert.Single(controllerModel.Actions);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionMethod.Name == nameof(ModelBinderController.PostAction));
             Assert.Collection(
                 action.Parameters,
                 parameter =>
@@ -113,6 +157,107 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal("unbound", parameter.ParameterName);
                     Assert.Null(parameter.BindingInfo);
                     Assert.Same(action, parameter.Action);
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AddsBindingSources_ForActionParameters_WithLegacyValidationBehavior()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var options = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = false });
+            var builder = new TestApplicationModelProvider(options, modelMetadataProvider);
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            builder.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionMethod.Name == nameof(ModelBinderController.PostAction));
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("fromQuery", parameter.ParameterName);
+                    Assert.Equal(BindingSource.Query, parameter.BindingInfo.BindingSource);
+                    Assert.Same(action, parameter.Action);
+
+                    var attribute = Assert.Single(parameter.Attributes);
+                    Assert.IsType<FromQueryAttribute>(attribute);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileCollection", parameter.ParameterName);
+                    // BindingSource for IFormFileCollection comes from ModelMetadata which we are not using here.
+                    Assert.Null(parameter.BindingInfo);
+                    Assert.Same(action, parameter.Action);
+
+                    Assert.Empty(parameter.Attributes);
+                },
+                parameter =>
+                {
+                    Assert.Equal("unbound", parameter.ParameterName);
+                    Assert.Null(parameter.BindingInfo);
+                    Assert.Same(action, parameter.Action);
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AddsBindingSources_ForActionParameters_ReadFromModelMetadata()
+        {
+            // Arrange
+            var options = new MvcOptions { AllowValidatingTopLevelNodes = true };
+            var detailsProvider = new BindingSourceMetadataProvider(typeof(Guid), BindingSource.Special);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
+
+            var provider = new TestApplicationModelProvider(Options.Create(options), modelMetadataProvider);
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionName == nameof(ModelBinderController.PostAction1));
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("guid", parameter.ParameterName);
+                    Assert.Equal(BindingSource.Special, parameter.BindingInfo.BindingSource);
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_UsesBindingSourceSpecifiedOnParameter()
+        {
+            // Arrange
+            var options = new MvcOptions();
+            var detailsProvider = new BindingSourceMetadataProvider(typeof(Guid), BindingSource.Special);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
+
+            var provider = new TestApplicationModelProvider(Options.Create(options), modelMetadataProvider);
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionName == nameof(ModelBinderController.PostAction2));
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("fromQuery", parameter.ParameterName);
+                    Assert.Equal(BindingSource.Query, parameter.BindingInfo.BindingSource);
                 });
         }
 
@@ -1363,6 +1508,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public IFormFile FormFile { get; set; }
 
             public IActionResult PostAction([FromQuery] string fromQuery, IFormFileCollection formFileCollection, string unbound) => null;
+
+            public IActionResult PostAction1(Guid guid) => null;
+
+            public IActionResult PostAction2([FromQuery] Guid fromQuery) => null;
         }
 
         public class SomeFiltersController : IAsyncActionFilter, IResultFilter
@@ -1404,13 +1553,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class TestApplicationModelProvider : DefaultApplicationModelProvider
         {
             public TestApplicationModelProvider()
-                : this(Options.Create(new MvcOptions()))
+                : this(Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }), TestModelMetadataProvider.CreateDefaultProvider())
             {
             }
 
             public TestApplicationModelProvider(
-                IOptions<MvcOptions> options)
-                : base(options)
+                IOptions<MvcOptions> options,
+                IModelMetadataProvider modelMetadataProvider)
+                : base(options, modelMetadataProvider)
             {
             }
 

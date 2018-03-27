@@ -88,7 +88,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ActionsWithApiBehavior_InferFromBodyParameters()
+        public Task ActionsWithApiBehavior_InferFromBodyParameters()
+            => ActionsWithApiBehaviorInferFromBodyParameters("ActionWithInferredFromBodyParameter");
+
+        [Fact]
+        public Task ActionsWithApiBehavior_InferFromBodyParameters_DoNotConsiderCancellationTokenSourceParameter()
+            => ActionsWithApiBehaviorInferFromBodyParameters("ActionWithInferredFromBodyParameterAndCancellationToken");
+
+        private async Task ActionsWithApiBehaviorInferFromBodyParameters(string action)
         {
             // Arrange
             var input = new Contact
@@ -98,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await Client.PostAsJsonAsync("/contact/ActionWithInferredFromBodyParameter", input);
+            var response = await Client.PostAsJsonAsync($"/contact/{action}", input);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

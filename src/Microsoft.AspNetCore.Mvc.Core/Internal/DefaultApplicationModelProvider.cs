@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -19,11 +18,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultApplicationModelProvider : IApplicationModelProvider
     {
-        private readonly ICollection<IFilterMetadata> _globalFilters;
+        private readonly MvcOptions _mvcOptions;
+        private readonly IModelMetadataProvider _modelMetadataProvider;
 
-        public DefaultApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor)
+        public DefaultApplicationModelProvider(
+            IOptions<MvcOptions> mvcOptionsAccessor,
+            IModelMetadataProvider modelMetadataProvider)
         {
-            _globalFilters = mvcOptionsAccessor.Value.Filters;
+            _mvcOptions = mvcOptionsAccessor.Value;
+            _modelMetadataProvider = modelMetadataProvider;
         }
 
         /// <inheritdoc />
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            foreach (var filter in _globalFilters)
+            foreach (var filter in _mvcOptions.Filters)
             {
                 context.Result.Filters.Add(filter);
             }
@@ -118,9 +121,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             do
             {
                 routeAttributes = currentTypeInfo
-                        .GetCustomAttributes(inherit: false)
-                        .OfType<IRouteTemplateProvider>()
-                        .ToArray();
+                    .GetCustomAttributes(inherit: false)
+                    .OfType<IRouteTemplateProvider>()
+                    .ToArray();
 
                 if (routeAttributes.Length > 0)
                 {
@@ -213,24 +216,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(propertyInfo));
             }
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToArray() is object
             var attributes = propertyInfo.GetCustomAttributes(inherit: true);
-            var propertyModel = new PropertyModel(propertyInfo, attributes);
-            var bindingInfo = BindingInfo.GetBindingInfo(attributes);
-            if (bindingInfo != null)
-            {
-                propertyModel.BindingInfo = bindingInfo;
-            }
-            else if (IsFormFileType(propertyInfo.PropertyType))
-            {
-                propertyModel.BindingInfo = new BindingInfo
-                {
-                    BindingSource = BindingSource.FormFile,
-                };
-            }
 
-            propertyModel.PropertyName = propertyInfo.Name;
+
+            var modelMetadata = _modelMetadataProvider.GetMetadataForProperty(propertyInfo.DeclaringType, propertyInfo.Name);
+            var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+            var propertyModel = new PropertyModel(propertyInfo, attributes)
+            {
+                PropertyName = propertyInfo.Name,
+                BindingInfo = bindingInfo,
+            };
 
             return propertyModel;
         }
@@ -433,25 +429,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(parameterInfo));
             }
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToArray() is object
             var attributes = parameterInfo.GetCustomAttributes(inherit: true);
-            var parameterModel = new ParameterModel(parameterInfo, attributes);
 
-            var bindingInfo = BindingInfo.GetBindingInfo(attributes);
-            if (bindingInfo != null)
+            BindingInfo bindingInfo;
+            if (_mvcOptions.AllowValidatingTopLevelNodes && _modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
             {
-                parameterModel.BindingInfo = bindingInfo;
+                var modelMetadata = modelMetadataProviderBase.GetMetadataForParameter(parameterInfo);
+                bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
             }
-            else if (IsFormFileType(parameterInfo.ParameterType))
+            else
             {
-                parameterModel.BindingInfo = new BindingInfo
-                {
-                    BindingSource = BindingSource.FormFile,
-                };
+                // GetMetadataForParameter should only be used if the user has opted in to the 2.1 behavior.
+                bindingInfo = BindingInfo.GetBindingInfo(attributes);
             }
 
-            parameterModel.ParameterName = parameterInfo.Name;
+            var parameterModel = new ParameterModel(parameterInfo, attributes)
+            {
+                ParameterName = parameterInfo.Name,
+                BindingInfo = bindingInfo,
+            };
 
             return parameterModel;
         }
@@ -669,13 +665,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 list.Add(item);
             }
-        }
-
-        private static bool IsFormFileType(Type parameterType)
-        {
-            return parameterType == typeof(IFormFile) ||
-                parameterType == typeof(IFormFileCollection) ||
-                typeof(IEnumerable<IFormFile>).IsAssignableFrom(parameterType);
         }
     }
 }

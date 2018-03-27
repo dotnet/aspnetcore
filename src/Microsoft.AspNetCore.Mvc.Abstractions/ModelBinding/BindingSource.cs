@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             isFromRequest: false);
 
         /// <summary>
-        /// A <see cref="BindingSource"/> for <see cref="IFormFile"/> and <see cref="IFormCollection"/>.
+        /// A <see cref="BindingSource"/> for <see cref="IFormFile"/>, <see cref="IFormCollection"/>, and <see cref="IFormFileCollection"/>.
         /// </summary>
         public static readonly BindingSource FormFile = new BindingSource(
             "FormFile",

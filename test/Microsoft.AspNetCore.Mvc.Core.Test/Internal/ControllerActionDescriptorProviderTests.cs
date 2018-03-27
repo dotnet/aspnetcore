@@ -709,7 +709,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
             var options = Options.Create(new MvcOptions());
             options.Value.Conventions.Add(new TestRoutingConvention());
-            var modelProvider = new DefaultApplicationModelProvider(options);
+            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
             var provider = new ControllerActionDescriptorProvider(
                 manager,
                 new[] { modelProvider },
@@ -1397,7 +1397,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
 
-            var modelProvider = new DefaultApplicationModelProvider(options);
+            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
@@ -1413,7 +1413,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var options = Options.Create(new MvcOptions());
 
             var manager = GetApplicationManager(controllerTypeInfos);
-            var modelProvider = new DefaultApplicationModelProvider(options);
+            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
@@ -1432,7 +1432,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
 
-            var modelProvider = new DefaultApplicationModelProvider(options);
+            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,

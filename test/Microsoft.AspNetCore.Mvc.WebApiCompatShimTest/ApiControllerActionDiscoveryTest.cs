@@ -379,22 +379,18 @@ namespace System.Web.Http
             var setup = new WebApiCompatShimOptionsSetup();
             setup.Configure(options);
 
-            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            optionsAccessor
-                .SetupGet(o => o.Value)
-                .Returns(options);
-
             var authorizationOptionsAccessor = new Mock<IOptions<AuthorizationOptions>>();
             authorizationOptionsAccessor
                 .SetupGet(o => o.Value)
                 .Returns(new AuthorizationOptions());
 
-            var modelProvider = new DefaultApplicationModelProvider(optionsAccessor.Object);
+            var optionsAccessor = Options.Create(options);
+            var modelProvider = new DefaultApplicationModelProvider(optionsAccessor, TestModelMetadataProvider.CreateDefaultProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
                 new[] { modelProvider },
-                optionsAccessor.Object);
+                optionsAccessor);
 
             return provider;
         }

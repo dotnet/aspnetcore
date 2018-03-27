@@ -389,14 +389,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var actionName = nameof(ParameterBindingController.ComplexTypeModelWithCancellationToken);
-            var actionModel = GetActionModel(typeof(ParameterBindingController), actionName);
 
-            // Go through MvcOptions and MvcCoreMvcOptionsSetup to make
-            // sure we pick up the proper ModelMetadataDetailsProviders from the options.
-            var options = new MvcOptions();
-            new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory()).Configure(options);
-            var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
-            var provider = GetProvider(modelMetadataProvider: metadataProvider);
+            // Use the default set of ModelMetadataProviders so we get metadata details for CancellationToken. 
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var actionModel = Assert.Single(controllerModel.Actions, m => m.ActionName == actionName);
+
+            var provider = GetProvider();
 
             // Act
             provider.InferParameterBindingSources(actionModel);
@@ -529,16 +529,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             };
             var optionsAccessor = Options.Create(options);
 
-            modelMetadataProvider = modelMetadataProvider ?? new TestModelMetadataProvider();
             var loggerFactory = NullLoggerFactory.Instance;
-
+            modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
             return new ApiBehaviorApplicationModelProvider(optionsAccessor, modelMetadataProvider, loggerFactory);
         }
 
-        private static ApplicationModelProviderContext GetContext(Type type)
+        private static ApplicationModelProviderContext GetContext(
+            Type type,
+            IModelMetadataProvider modelMetadataProvider = null)
         {
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
-            new DefaultApplicationModelProvider(Options.Create(new MvcOptions())).OnProvidersExecuting(context);
+            var mvcOptions = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true });
+            modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
+            var provider = new DefaultApplicationModelProvider(mvcOptions, modelMetadataProvider);
+            provider.OnProvidersExecuting(context);
+
             return context;
         }
 

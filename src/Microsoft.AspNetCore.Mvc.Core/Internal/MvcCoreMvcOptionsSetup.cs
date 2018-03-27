@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
@@ -76,28 +77,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
 
             // Set up metadata providers
-
-            // Don't bind the Type class by default as it's expensive. A user can override this behavior
-            // by altering the collection of providers.
-            options.ModelMetadataDetailsProviders.Add(new ExcludeBindingMetadataProvider(typeof(Type)));
-
-            options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
-            options.ModelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
-
-            options.ModelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(CancellationToken), BindingSource.Special));
-            options.ModelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormFile), BindingSource.FormFile));
-            options.ModelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormCollection), BindingSource.FormFile));
+            ConfigureAdditionalModelMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
 
             // Set up validators
             options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
+        }
+
+        internal static void ConfigureAdditionalModelMetadataDetailsProvider(IList<IMetadataDetailsProvider> modelMetadataDetailsProviders)
+        {
+            // Don't bind the Type class by default as it's expensive. A user can override this behavior
+            // by altering the collection of providers.
+            modelMetadataDetailsProviders.Add(new ExcludeBindingMetadataProvider(typeof(Type)));
+
+            modelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
+            modelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
+
+            modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(CancellationToken), BindingSource.Special));
+            modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormFile), BindingSource.FormFile));
+            modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormCollection), BindingSource.FormFile));
+            modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormFileCollection), BindingSource.FormFile));
 
             // Add types to be excluded from Validation
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Type)));
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Uri)));
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(CancellationToken)));
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormFile)));
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormCollection)));
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Stream)));
+            modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Type)));
+            modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Uri)));
+            modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(CancellationToken)));
+            modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormFile)));
+            modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormCollection)));
+            modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormFileCollection)));
+            modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Stream)));
         }
     }
 }
