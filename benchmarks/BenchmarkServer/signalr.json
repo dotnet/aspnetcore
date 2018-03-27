@@ -8,9 +8,16 @@
     },
     "Connections": 10,
     "Duration": 20,
-    "Warmup": 2
+    "Warmup": 2,
+    "Path": "/echo"
   },
   "SignalRBroadcast": {
-    "Path": "/echo"
+    "ClientProperties": { "Scenario": "broadcast" }
+  },
+  "SignalREcho": {
+    "ClientProperties": { "Scenario": "echo" }
+  },
+  "SignalREchoAll": {
+    "ClientProperties": { "Scenario": "echoAll" }
   }
 }

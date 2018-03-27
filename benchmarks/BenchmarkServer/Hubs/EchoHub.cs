@@ -10,23 +10,34 @@ namespace BenchmarkServer.Hubs
 {
     public class EchoHub : Hub
     {
-        public async Task Echo(int duration)
+        public async Task Broadcast(int duration)
         {
+            var sent = 0;
             try
             {
                 var t = new CancellationTokenSource();
                 t.CancelAfter(TimeSpan.FromSeconds(duration));
                 while (!t.IsCancellationRequested && !Context.ConnectionAborted.IsCancellationRequested)
                 {
-                    await Clients.All.SendAsync("echo", DateTime.UtcNow);
+                    await Clients.All.SendAsync("send", DateTime.UtcNow);
+                    sent++;
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+            Console.WriteLine("Broadcast exited: Sent {0} messages", sent);
+        }
 
-            Console.WriteLine("Echo exited");
+        public Task Echo(DateTime time)
+        {
+            return Clients.Client(Context.ConnectionId).SendAsync("send", time);
+        }
+
+        public Task EchoAll(DateTime time)
+        {
+            return Clients.All.SendAsync("send", time);
         }
     }
 }
