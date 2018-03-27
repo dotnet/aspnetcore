@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnGetAsync(string userId, string code) => throw new NotImplementedException();
     }
 
-    internal class ConfirmEmailModel<TUser> : ConfirmEmailModel where TUser : IdentityUser
+    internal class ConfirmEmailModel<TUser> : ConfirmEmailModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
 

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
-    internal class DeletePersonalDataModel<TUser> : DeletePersonalDataModel where TUser : IdentityUser
+    internal class DeletePersonalDataModel<TUser> : DeletePersonalDataModel where TUser: class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly SignInManager<TUser> _signInManager;
@@ -77,14 +77,15 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             }
 
             var result = await _userManager.DeleteAsync(user);
+            var userId = await _userManager.GetUserIdAsync(user);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException($"Unexpected error occurred deleteing user with ID '{user.Id}'.");
+                throw new InvalidOperationException($"Unexpected error occurred deleteing user with ID '{userId}'.");
             }
 
             await _signInManager.SignOutAsync();
 
-            _logger.LogInformation("User with ID '{UserId}' deleted themselves.", _userManager.GetUserId(User));
+            _logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
 
             return Redirect("~/");
         }

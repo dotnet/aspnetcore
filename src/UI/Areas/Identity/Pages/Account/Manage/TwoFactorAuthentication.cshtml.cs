@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 
     }
 
-    internal class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : IdentityUser
+    internal class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly SignInManager<TUser> _signInManager;

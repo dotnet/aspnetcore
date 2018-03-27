@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
-    internal class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel where TUser : IdentityUser
+    internal class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly ILogger<DownloadPersonalDataModel> _logger;

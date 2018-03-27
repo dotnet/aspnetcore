@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnPost(string returnUrl = null) => throw new NotImplementedException();
     }
 
-    internal class LogoutModel<TUser> : LogoutModel where TUser : IdentityUser
+    internal class LogoutModel<TUser> : LogoutModel where TUser : class
     {
         private readonly SignInManager<TUser> _signInManager;
         private readonly ILogger<LogoutModel> _logger;

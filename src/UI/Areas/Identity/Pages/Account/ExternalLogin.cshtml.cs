@@ -40,19 +40,22 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null) => throw new NotImplementedException();
     }
 
-    internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : IdentityUser, new()
+    internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class
     {
         private readonly SignInManager<TUser> _signInManager;
         private readonly UserManager<TUser> _userManager;
+        private readonly IUserFactory<TUser> _userFactory;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
             SignInManager<TUser> signInManager,
             UserManager<TUser> userManager,
+            IUserFactory<TUser> userFactory,
             ILogger<ExternalLoginModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _userFactory = userFactory;
             _logger = logger;
         }
 
@@ -124,7 +127,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 
             if (ModelState.IsValid)
             {
-                var user = new TUser { UserName = Input.Email, Email = Input.Email };
+                var user = _userFactory.CreateUser(email: Input.Email, userName: Input.Email);
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

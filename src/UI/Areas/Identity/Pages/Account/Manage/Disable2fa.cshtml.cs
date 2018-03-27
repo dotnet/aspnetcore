@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
-    internal class Disable2faModel<TUser> : Disable2faModel where TUser : IdentityUser
+    internal class Disable2faModel<TUser> : Disable2faModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly ILogger<Disable2faModel> _logger;

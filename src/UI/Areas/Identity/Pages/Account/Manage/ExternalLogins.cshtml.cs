@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -32,17 +33,20 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         public virtual Task<IActionResult> OnGetLinkLoginCallbackAsync() => throw new NotImplementedException();
     }
 
-    internal class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : IdentityUser
+    internal class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly SignInManager<TUser> _signInManager;
+        private readonly IUserStore<TUser> _userStore;
 
         public ExternalLoginsModel(
             UserManager<TUser> userManager,
-            SignInManager<TUser> signInManager)
+            SignInManager<TUser> signInManager,
+            IUserStore<TUser> userStore)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userStore = userStore;
         }
 
         public override async Task<IActionResult> OnGetAsync()
@@ -57,7 +61,14 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             OtherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
                 .Where(auth => CurrentLogins.All(ul => auth.Name != ul.LoginProvider))
                 .ToList();
-            ShowRemoveButton = user.PasswordHash != null || CurrentLogins.Count > 1;
+
+            string passwordHash = null;
+            if (_userStore is IUserPasswordStore<TUser> userPasswordStore)
+            {
+                passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);
+            }
+
+            ShowRemoveButton = passwordHash != null || CurrentLogins.Count > 1;
             return Page();
         }
 
@@ -72,7 +83,8 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             var result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException($"Unexpected error occurred removing external login for user with ID '{user.Id}'.");
+                var userId = await _userManager.GetUserIdAsync(user);
+                throw new InvalidOperationException($"Unexpected error occurred removing external login for user with ID '{userId}'.");
             }
 
             await _signInManager.RefreshSignInAsync(user);
@@ -99,16 +111,17 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var info = await _signInManager.GetExternalLoginInfoAsync(await _userManager.GetUserIdAsync(user));
+            var userId = await _userManager.GetUserIdAsync(user);
+            var info = await _signInManager.GetExternalLoginInfoAsync(userId);
             if (info == null)
             {
-                throw new InvalidOperationException($"Unexpected error occurred loading external login info for user with ID '{user.Id}'.");
+                throw new InvalidOperationException($"Unexpected error occurred loading external login info for user with ID '{userId}'.");
             }
 
             var result = await _userManager.AddLoginAsync(user, info);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException($"Unexpected error occurred adding external login for user with ID '{user.Id}'.");
+                throw new InvalidOperationException($"Unexpected error occurred adding external login for user with ID '{userId}'.");
             }
 
             // Clear the existing external cookie to ensure a clean login process
