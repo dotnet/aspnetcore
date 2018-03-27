@@ -10,6 +10,7 @@
     <OutputType>exe</OutputType>
     <TasksProjectDirectory>..\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\</TasksProjectDirectory>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net461'">
