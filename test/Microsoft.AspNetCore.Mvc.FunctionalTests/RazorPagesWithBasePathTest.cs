@@ -484,5 +484,25 @@ Hello from /Pages/Shared/";
             // Assert
             Assert.Contains("Name is required", response);
         }
+
+        [Fact]
+        public async Task PagesFromClassLibraries_CanBeServed()
+        {
+            // Act
+            var response = await Client.GetStringAsync("/ClassLibraryPages/Served");
+
+            // Assert
+            Assert.Contains("This page is served from RazorPagesClassLibrary", response);
+        }
+
+        [Fact]
+        public async Task PagesFromClassLibraries_CanBeOverriden()
+        {
+            // Act
+            var response = await Client.GetStringAsync("/ClassLibraryPages/Overriden");
+
+            // Assert
+            Assert.Contains("This page is overriden by RazorPagesWebSite", response);
+        }
     }
 }

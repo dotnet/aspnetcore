@@ -58,22 +58,55 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
         }
 
-        /// <summary>
-        /// Gets the sequence of <see cref="CompiledViewDescriptor"/> from <paramref name="applicationManager"/>.
-        /// </summary>
-        /// <param name="applicationManager">The <see cref="ApplicationPartManager"/>s</param>
-        /// <returns>The sequence of <see cref="CompiledViewDescriptor"/>.</returns>
-        protected virtual IEnumerable<CompiledViewDescriptor> GetViewDescriptors(ApplicationPartManager applicationManager)
+        private IEnumerable<CompiledViewDescriptor> GetViewDescriptors(ApplicationPartManager applicationManager)
         {
             if (applicationManager == null)
             {
                 throw new ArgumentNullException(nameof(applicationManager));
             }
 
+            var viewsFeature = GetViewFeature(applicationManager);
+
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var viewDescriptor in viewsFeature.ViewDescriptors)
+            {
+                if (!visited.Add(viewDescriptor.RelativePath))
+                {
+                    // Already seen an descriptor with a higher "order"
+                    continue;
+                }
+
+                if (!viewDescriptor.IsPrecompiled)
+                {
+                    continue;
+                }
+
+                if (IsRazorPage(viewDescriptor))
+                {
+                    yield return viewDescriptor;
+                }
+            }
+
+            bool IsRazorPage(CompiledViewDescriptor viewDescriptor)
+            {
+                if (viewDescriptor.Item != null)
+                {
+                    return viewDescriptor.Item.Kind == RazorPageDocumentClassifierPass.RazorPageDocumentKind;
+                }
+                else if (viewDescriptor.ViewAttribute != null)
+                {
+                    return viewDescriptor.ViewAttribute is RazorPageAttribute;
+                }
+
+                return false;
+            }
+        }
+
+        protected virtual ViewsFeature GetViewFeature(ApplicationPartManager applicationManager)
+        {
             var viewsFeature = new ViewsFeature();
             applicationManager.PopulateFeature(viewsFeature);
-
-            return viewsFeature.ViewDescriptors.Where(d => d.IsPrecompiled && d.ViewAttribute is RazorPageAttribute);
+            return viewsFeature;
         }
 
         private void CreateModels(PageRouteModelProviderContext context)
