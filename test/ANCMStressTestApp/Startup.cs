@@ -171,7 +171,9 @@ namespace ANCMStressTestApp
                 // Get the WebSocket object
                 var ws = WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
 
-                await Echo(ws, Program.Cts.Token);
+                var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+
+                await Echo(ws, appLifetime.ApplicationStopping);
             });
         }
 

@@ -17,9 +17,6 @@ namespace ANCMStressTestApp
 {
     public class Program
     {
-        public static IApplicationLifetime AppLifetime;
-        public static CancellationTokenSource Cts = new CancellationTokenSource();
-
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
@@ -31,14 +28,6 @@ namespace ANCMStressTestApp
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
-
-            AppLifetime = (IApplicationLifetime)host.Services.GetService(typeof(IApplicationLifetime));
-            AppLifetime.ApplicationStopping.Register(
-                () => {
-                    Cts.Cancel();
-                    Cts.Dispose();
-                }
-            );
 
             host.Run();
         }
