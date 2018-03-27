@@ -306,8 +306,8 @@ export class HubConnection {
         return p;
     }
 
-    public on(methodName: string, method: (...args: any[]) => void) {
-        if (!methodName || !method) {
+    public on(methodName: string, newMethod: (...args: any[]) => void) {
+        if (!methodName || !newMethod) {
             return;
         }
 
@@ -316,11 +316,16 @@ export class HubConnection {
             this.methods[methodName] = [];
         }
 
-        this.methods[methodName].push(method);
+        // Preventing adding the same handler multiple times.
+        if (this.methods[methodName].indexOf(newMethod) !== -1) {
+            return;
+         }
+
+        this.methods[methodName].push(newMethod);
     }
 
-    public off(methodName: string, method: (...args: any[]) => void) {
-        if (!methodName || !method) {
+    public off(methodName: string, method?: (...args: any[]) => void) {
+        if (!methodName) {
             return;
         }
 
@@ -329,13 +334,18 @@ export class HubConnection {
         if (!handlers) {
             return;
         }
-        const removeIdx = handlers.indexOf(method);
-        if (removeIdx !== -1) {
-            handlers.splice(removeIdx, 1);
-            if (handlers.length === 0) {
-                delete this.methods[methodName];
+        if (method) {
+            const removeIdx = handlers.indexOf(method);
+            if (removeIdx !== -1) {
+                handlers.splice(removeIdx, 1);
+                if (handlers.length === 0) {
+                    delete this.methods[methodName];
+                }
             }
+        } else {
+            delete this.methods[methodName];
         }
+
     }
 
     public onclose(callback: ConnectionClosed) {
