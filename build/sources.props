@@ -18,7 +18,7 @@
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
-      https://dotnet.myget.org/F/aspnetcoremodule/api/v3/index.jsonl
+      https://dotnet.myget.org/F/aspnetcoremodule/api/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
 </Project>
