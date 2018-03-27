@@ -1,508 +1,93 @@
 ﻿<Project>
-
-  <ItemDefinitionGroup>
-    <ExternalDependency>
-      <!-- The NuGet package version. Floating versions not allowed. -->
-      <Version></Version>
-      <!-- A list of warnings to suppress. -->
-      <NoWarn></NoWarn>
-      <!-- This dependency is 'Private', aka. it should not end up as a public-facing external dependency. This is validated by checking the nuspec on generated packages. -->
-      <Private>false</Private>
-      <!-- When true, this dependency will be included in the metapackage. -->
-      <Metapackage>false</Metapackage>
-      <!-- When true, this dependency will be included in the runtime store. -->
-      <RuntimeStore>false</RuntimeStore>
-      <!-- When true, this dependency will be used to generate a deps.json for hosting startup that will be included in the runtime store. -->
-      <HostingStartup>false</HostingStartup>
-      <!-- When true, this dependency will be included in the LZMA. -->
-      <LZMA>false</LZMA>
-      <!-- When true, this tool dependency will be included in the metapackage. -->
-      <LZMATools>false</LZMATools>
-    </ExternalDependency>
-  </ItemDefinitionGroup>
-
   <PropertyGroup>
+    <BenchmarkDotNetPackageVersion>0.10.3</BenchmarkDotNetPackageVersion>
+    <EntityFrameworkPackageVersion>6.1.3</EntityFrameworkPackageVersion>
+    <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
+    <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
+    <LZMAMicrosoftNETCoreApp20PackageVersion>2.0.0</LZMAMicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>1.0.0-pre-10057</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(KoreBuildVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
+    <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
+    <MicrosoftAspNetWebApiClientPackageVersion>5.2.2</MicrosoftAspNetWebApiClientPackageVersion>
+    <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
+    <MicrosoftBuildPackageVersion>15.3.409</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildRuntimePackageVersion>15.3.409</MicrosoftBuildRuntimePackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion>15.3.409</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.3.409</MicrosoftBuildUtilitiesCorePackageVersion>
+    <MicrosoftCodeAnalysisCommonPackageVersion>2.3.1</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.3.1</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.3.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.3.1</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCSharpPackageVersion>4.4.0</MicrosoftCSharpPackageVersion>
+    <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.0.3</MicrosoftDotNetPlatformAbstractionsPackageVersion>
+    <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-003121</MicrosoftDotNetProjectModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.0.3</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.1</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>2.1.4</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
     <MicrosoftNETCoreApp10PackageVersion>1.0.8</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.5</MicrosoftNETCoreApp11PackageVersion>
-    <LZMAMicrosoftNETCoreApp20PackageVersion>2.0.0</LZMAMicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.7-servicing-26322-01</MicrosoftNETCoreApp20PackageVersion>
-  </PropertyGroup>
-
-  <!-- .NET Core feed -->
-  <ItemGroup>
-    <ExternalDependency Include="System.Memory" Version="4.4.0-preview3-25519-03" Private="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.3" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>RuntimeFrameworkVersion</VariableName>
-      <TargetFramework>netcoreapp2.0</TargetFramework>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftNETCoreApp20PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetHostPolicy" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHostPolicy" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHost" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostPolicy" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
-  </ItemGroup>
-
-  <!-- ASP.NET Core Tools feed -->
-  <PropertyGroup>
+    <MicrosoftNETCorePlatformsPackageVersion>2.0.1</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
+    <MicrosoftOwinSecurityPackageVersion>3.0.1</MicrosoftOwinSecurityPackageVersion>
+    <MicrosoftOwinTestingPackageVersion>3.0.1</MicrosoftOwinTestingPackageVersion>
+    <MicrosoftVisualStudioEditorPackageVersion>15.0.26606</MicrosoftVisualStudioEditorPackageVersion>
+    <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6070</MicrosoftVisualStudioOLEInteropPackageVersion>
+    <MicrosoftVisualStudioShell150PackageVersion>15.0.26606</MicrosoftVisualStudioShell150PackageVersion>
+    <MicrosoftVisualStudioShellInterop100PackageVersion>10.0.30319</MicrosoftVisualStudioShellInterop100PackageVersion>
+    <MicrosoftVisualStudioShellInterop110PackageVersion>11.0.61030</MicrosoftVisualStudioShellInterop110PackageVersion>
+    <MicrosoftVisualStudioShellInterop120PackageVersion>12.0.30110</MicrosoftVisualStudioShellInterop120PackageVersion>
+    <MicrosoftVisualStudioShellInterop80PackageVersion>8.0.50727</MicrosoftVisualStudioShellInterop80PackageVersion>
+    <MicrosoftVisualStudioShellInterop90PackageVersion>9.0.30729</MicrosoftVisualStudioShellInterop90PackageVersion>
+    <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6071</MicrosoftVisualStudioShellInteropPackageVersion>
+    <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.4.0</MicrosoftWin32RegistryPackageVersion>
+    <MoqPackageVersion>4.7.49</MoqPackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
+    <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
+    <NuGetFrameworksPackageVersion>4.0.0</NuGetFrameworksPackageVersion>
+    <RemotionLinqPackageVersion>2.1.1</RemotionLinqPackageVersion>
     <RoslynDevPackageVersion>2.6.0-beta1-61924-08</RoslynDevPackageVersion>
+    <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
+    <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
+    <SQLitePCLRawBundleGreenPackageVersion>1.1.7</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawCorePackageVersion>1.1.7</SQLitePCLRawCorePackageVersion>
+    <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
+    <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
+    <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
+    <SystemBuffersPackageVersion>4.4.0</SystemBuffersPackageVersion>
+    <SystemCollectionsImmutablePackageVersion>1.4.0</SystemCollectionsImmutablePackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.4.0</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.4.3</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.4.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemIdentityModelTokensJwtPackageVersion>5.2.0</SystemIdentityModelTokensJwtPackageVersion>
+    <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
+    <SystemMemoryPackageVersion>4.4.0-preview3-25519-03</SystemMemoryPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.4.0</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.4.0</SystemNumericsVectorsPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.5.0</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.4.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.4.0</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.4.0</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.4.0</SystemTextEncodingsWebPackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.8.0</SystemThreadingTasksDataflowPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.4.0</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.4.0</SystemValueTuplePackageVersion>
+    <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
+    <WindowsAzureStoragePackageVersion>8.1.4</WindowsAzureStoragePackageVersion>
+    <XunitAbstractionsPackageVersion>2.0.1</XunitAbstractionsPackageVersion>
+    <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
+    <XunitAssertStablePackageVersion>2.2.0</XunitAssertStablePackageVersion>
+    <XunitExtensibilityCorePackageVersion>2.2.0</XunitExtensibilityCorePackageVersion>
+    <XunitPackageVersion>2.3.1</XunitPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.3.1</XunitRunnerVisualStudioPackageVersion>
+    <XunitStablePackageVersion>2.2.0</XunitStablePackageVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="$(RoslynDevPackageVersion)" Private="true">
-      <!-- This version is required for Razor to build the VSIX for VS. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftCodeAnalysisToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevPackageVersion)" Private="true">
-      <!-- This version is required for Razor to build the VSIX for VS. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftCodeAnalysisCommonToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevPackageVersion)" Private="true">
-      <!-- This version is required for Razor to build the VSIX for VS. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftCodeAnalysisCSharpToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynDevPackageVersion)" Private="true">
-      <!-- This version is required for Razor to build the VSIX for VS. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftCodeAnalysisCSharpWorkspacesToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(RoslynDevPackageVersion)" Private="true">
-      <!-- This version is required for Razor to build the VSIX for VS. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftCodeAnalysisVisualBasicToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(RoslynDevPackageVersion)" Private="true">
-      <!-- This version is required for Razor to build the VSIX for VS. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftCodeAnalysisVisualBasicWorkspacesToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevPackageVersion)" Private="true">
-      <!-- This version is required for Razor to build the VSIX for VS. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftCodeAnalysisWorkspacesCommonToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Workspaces" Version="$(RoslynDevPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevPackageVersion)" Private="true" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(KoreBuildVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion)" Private="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10057" Private="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.NETCore.Platforms" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp10PackageVersion)">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>RuntimeFrameworkVersion</VariableName>
-      <TargetFramework>netcoreapp1.0</TargetFramework>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp10PackageVersion)">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftNETCoreApp10PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp11PackageVersion)">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>RuntimeFrameworkVersion</VariableName>
-      <TargetFramework>netcoreapp1.1</TargetFramework>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp11PackageVersion)">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftNETCoreApp11PackageVersion</VariableName>
-    </ExternalDependency>
-    <!-- This should remain hard-coded to 2.0.0. DotNetCliTool packages should use the 2.0.0 package so ensure maximum compatibility with most CLI installations. -->
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="2.0.0">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>DotNetCliTool_MicrosoftNETCoreApp20PackageVersion</VariableName>
-      <TargetFramework>netcoreapp2.0</TargetFramework>
-    </ExternalDependency>
-    <ExternalDependency Include="Libuv" Version="1.10.0" />
-    <ExternalDependency Include="BenchmarkDotNet" Version="0.10.3" Private="true" />
-    <ExternalDependency Include="EntityFramework" Version="6.1.3" Private="true" />
-    <ExternalDependency Include="FSharp.Core" Version="4.2.1" Private="true" />
-    <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
-    <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.1" />
-    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="5.2.2" />
-    <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
-    <ExternalDependency Include="Microsoft.Build.Runtime" Version="15.3.409" />
-    <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="15.3.409" />
-    <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="15.3.409" />
-    <ExternalDependency Include="Microsoft.Build" Version="15.3.409" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="2.3.1">
-      <!-- This version is used by the Razor runtime packages and any other piece of aspnetcore that uses Roslyn. -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.3.1">
-      <!-- This version is used by the Razor runtime packages and any other piece of aspnetcore that uses Roslyn. -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="2.3.1">
-      <!-- This version is used by the Razor runtime packages and any other piece of aspnetcore that uses Roslyn. -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.3.1">
-      <!-- This version is used by the Razor runtime packages and any other piece of aspnetcore that uses Roslyn. -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CSharp" Version="4.4.0" />
-    <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="1.0.0-rc3-003121" Private="true" />
-    <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" />
-    <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="2.1.4" />
-    <ExternalDependency Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="5.2.0" />
-    <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.6.1" Private="true" />
-    <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="1.0.1" />
-    <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="3.0.1" />
-    <ExternalDependency Include="Microsoft.Owin.Security" Version="3.0.1" />
-    <ExternalDependency Include="Microsoft.Owin.Testing" Version="3.0.1" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.0.26606" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" Private="true" />
-    <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" />
-    <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.4.0" />
-    <ExternalDependency Include="Moq" Version="4.7.49" Private="true" />
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.1">
-      <VariableName>NETStandardLibrary20PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" />
-    <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Private="true">
-      <!-- This version is used by tooling packages to match what is in VS and MSBuild. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NewtonsoftJsonToolingPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1">
-      <!-- This version is used by runtime packages. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NewtonsoftJsonRuntimePackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="NuGet.Frameworks" Version="4.0.0" />
-    <ExternalDependency Include="Remotion.Linq" Version="2.1.1" />
-    <ExternalDependency Include="Serilog.Extensions.Logging" Version="1.4.0" />
-    <ExternalDependency Include="Serilog.Sinks.File" Version="3.2.0" />
-    <ExternalDependency Include="SQLitePCLRaw.bundle_green" Version="1.1.7" />
-    <ExternalDependency Include="SQLitePCLRaw.core" Version="1.1.7" />
-    <ExternalDependency Include="StackExchange.Redis.StrongName" Version="1.2.4" />
-    <ExternalDependency Include="StreamJsonRpc" Version="1.1.92" Private="true" />
-    <ExternalDependency Include="StyleCop.Analyzers" Version="1.0.0" Private="true" />
-    <ExternalDependency Include="System.Buffers" Version="4.4.0" />
-    <ExternalDependency Include="System.Collections.Immutable" Version="1.4.0" />
-    <ExternalDependency Include="System.ComponentModel.Annotations" Version="4.4.0" />
-    <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="4.4.1" />
-    <ExternalDependency Include="System.IdentityModel.Tokens.Jwt" Version="5.2.0" />
-    <ExternalDependency Include="System.Interactive.Async" Version="3.1.1" />
-    <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.4.0" />
-    <ExternalDependency Include="System.Numerics.Vectors" Version="4.4.0" />
-    <ExternalDependency Include="System.Reflection.Metadata" Version="1.5.0" />
-    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" />
-    <ExternalDependency Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
-    <ExternalDependency Include="System.Security.Cryptography.Xml" Version="4.4.0" />
-    <ExternalDependency Include="System.Security.Principal.Windows" Version="4.4.0" />
-    <ExternalDependency Include="System.Text.Encodings.Web" Version="4.4.0" />
-    <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="4.8.0" />
-    <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="4.4.0" />
-    <ExternalDependency Include="System.ValueTuple" Version="4.4.0" />
-    <ExternalDependency Include="WindowsAzure.Storage" Version="8.1.4" />
-    <ExternalDependency Include="xunit.abstractions" Version="2.0.1" Private="true" />
-    <ExternalDependency Include="xunit.assert" Version="2.3.1" Private="true">
-      <!-- EF's benchmarks use a different version of xunit.assert -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>XunitAssertStablePackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="xunit.assert" Version="2.3.1" Private="true">
-      <!-- EF's benchmarks use a different version of xunit.assert -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="xunit.extensibility.core" Version="2.2.0" />
-    <ExternalDependency Include="xunit.runner.visualstudio" Version="2.3.1" Private="true">
-      <VariableName>XunitRunnerVisualStudioPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="xunit" Version="2.2.0">
-      <!-- It is okay to have multiple versions of test-only dependencies. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>XunitStablePackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="xunit" Version="2.3.1" Private="true">
-      <!-- It is okay to have multiple versions of test-only dependencies. -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-  </ItemGroup>
-
-<!--
-**********************************************************
-Packages built in a previous version of ASP.NET Core, but
-not building again in this patch.
-**********************************************************
--->
-
-  <!-- Shipped dependencies from previous builds -->
-
-  <!-- 2.0.6 -->
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Version="0.3.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Antiforgery" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Metapackage="true" RuntimeStore="true" HostingStartup="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Cookies" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Core" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Facebook" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Google" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.JwtBearer" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.OAuth" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.WsFederation" Metapackage="false" RuntimeStore="false" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Twitter" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authorization.Policy" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authorization" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Metapackage="true" RuntimeStore="true" HostingStartup="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Buffering" Version="2.0.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.CertificateGeneration.Task" Version="2.0.1-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Certificates.Configuration.Sources" Version="2.0.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="2.0.3-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.CookiePolicy" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Cors" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Cryptography.Internal" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Extensions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Redis" Version="0.3.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.Elm" Version="0.3.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Html.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Http.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Http.Extensions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Http.Features" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Http" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.HttpOverrides" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Specification.Tests" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Localization.Routing" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Localization" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.MiddlewareAnalysis" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Core" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Cors" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Localization" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.RazorPages" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.TagHelpers" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.0.3-alpha1-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.NodeServices.Sockets" Version="2.0.3-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.NodeServices" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Owin" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Proxy" Version="0.3.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.RangeHelper.Sources" Version="2.0.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Language" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Runtime" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Version="2.0.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCompression" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Rewrite" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Routing.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Version="2.0.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Routing" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.HttpSys" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.IISIntegration" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="0.4.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Core" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Https" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.0.2-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Session" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.SpaServices" Metapackage="true" RuntimeStore="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.AspNetCore.StaticFiles" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.TestHost" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="2.0.1-rtm-10011" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebSockets" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebUtilities" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.AspNetCore" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Razor" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Data.Sqlite.Core" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Data.Sqlite" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.DotNet.Watcher.Tools" LZMATools="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.InMemory" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational.Design.Specification.Tests" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools.DotNet" LZMATools="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlConfig.Tools" LZMATools="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Binder" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.CommandLine" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.DockerSecrets" Version="2.0.1-rtm-10011" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Ini" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Json" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Xml" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.FileSystemGlobbing" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Hosting.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Extensions.Identity.Core" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Extensions.Identity.Stores" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Extensions.Localization" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.EventLog" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.EventSource" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="2.0.1-rtm-10011" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.TraceSource" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.Options" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.SecretManager.Tools" LZMATools="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
-    <ExternalDependency Include="Microsoft.Net.Http.Headers" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.Owin.Security.Interop" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.BrowserLink" Metapackage="true" RuntimeStore="true" Version="2.0.2" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" LZMA="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" LZMATools="true" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Version="2.0.3" />
-    <ExternalDependency Include="Microsoft.Web.Xdt.Extensions" Version="2.0.2" />
-    <ExternalDependency Include="RazorPageGenerator" Version="2.0.2-rtm-10011" />
-  </ItemGroup>
-
-  <!-- 2.0.0 -->
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.JsonPatch" Version="2.0.0" Metapackage="true" RuntimeStore="true" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" Metapackage="true" RuntimeStore="true" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" Metapackage="true" RuntimeStore="true" />
-    <ExternalDependency Include="Microsoft.Extensions.ObjectPool" Version="2.0.0" Metapackage="true" RuntimeStore="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Primitives" Version="2.0.0" Metapackage="true" RuntimeStore="true" />
-  </ItemGroup>
-
-  <!-- 2.0.0 -->
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Process.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.PropertyActivator.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.PropertyHelper.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.RazorViews.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.SecurityHelper.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.StackTrace.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="2.0.0" Private="true" />
-    <ExternalDependency Include="Microsoft.Extensions.WebEncoders.Sources" Version="2.0.0" Private="true" />
-  </ItemGroup>
 </Project>

@@ -17,7 +17,7 @@
     <GeneratedRestoreSourcePropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcePropsPath>
     <GeneratedBrandingPropsPath>$(IntermediateDir)branding.g.props</GeneratedBrandingPropsPath>
 
-    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;PrepareOutputPath</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPath</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
@@ -211,6 +211,14 @@
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMATools='true' must be Category='ship'."
            Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMATools)' == 'true' " />
   </Target>
+
+  <Target Name="VerifyExternalDependencyConfig">
+    <Error Text="Missing Version metadata for the following external dependencies: %0A - @(ExternalDependency->WithMetadataValue('Version', ''), '%0A - '). "
+           Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
+  </Target>
+
+  <Target Name="CheckUniverse"
+    DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig" />
 
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>

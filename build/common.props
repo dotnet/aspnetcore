@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="dependencies.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>

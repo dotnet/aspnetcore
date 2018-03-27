@@ -13,7 +13,8 @@
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
   </ItemGroup>
 
-  <Import Project="artifacts.props" />
+  <Import Project="sources.props" />
+  <Import Project="external-dependencies.props" />
   <Import Project="artifacts.props" />
   <Import Project="submodules.props" />
 </Project>
