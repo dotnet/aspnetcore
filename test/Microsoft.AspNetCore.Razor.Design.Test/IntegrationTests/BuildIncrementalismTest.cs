@@ -29,12 +29,20 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Build");
 
             var directoryPath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath);
-            var filesToIgnore = new[]
+            var filesToIgnore = new List<string>()
             {
                 // These files are generated on every build.
                 Path.Combine(directoryPath, "SimpleMvc.csproj.CopyComplete"),
                 Path.Combine(directoryPath, "SimpleMvc.csproj.FileListAbsolute.txt"),
             };
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // There is some quirkiness with MsBuild in osx high sierra where it regenerates this file
+                // even though it shouldn't. This is tracked here https://github.com/aspnet/Razor/issues/2219.
+                filesToIgnore.Add(Path.Combine(directoryPath, "SimpleMvc.TagHelpers.input.cache"));
+            }
+
             var files = Directory.GetFiles(directoryPath).Where(p => !filesToIgnore.Contains(p));
             foreach (var file in files)
             {
