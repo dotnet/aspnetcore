@@ -81,13 +81,13 @@ if ($count -gt 0) {
     $ConfigVars += "--UpdatedVersions"
     $varString = ""
     foreach ($updatedVar in $updatedVars.GetEnumerator()) {
-        $varString += "$($updatedVar.Name)=$($updatedVar.Value);"
+        $varString += "$($updatedVar.Name)=$($updatedVar.Value)+"
     }
     $ConfigVars += $varString
 
     # Restore and run the app
     Write-Host "Invoking App $ProjectPath..."
-    Invoke-Expression "dotnet run -p `"$ProjectPath`" @ConfigVars"
+    Invoke-Expression "dotnet run -p `"$ProjectPath`" $ConfigVars"
     if ($LASTEXITCODE -ne 0) { throw "Build failed" }
 }
 else {

@@ -19,7 +19,7 @@ namespace Microsoft.Dotnet.Scripts
         {
             get
             {
-                return UpdatedVersions.Split(';',System.StringSplitOptions.RemoveEmptyEntries);
+                return UpdatedVersions.Split('+',System.StringSplitOptions.RemoveEmptyEntries);
             }
         }
     }
