@@ -109,10 +109,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 ? WebSocketMessageType.Binary
                 : WebSocketMessageType.Text;
 
+            var resolvedUrl = ResolveWebSocketsUrl(url);
 
-            Log.StartTransport(_logger, transferFormat);
+            Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
-            await Connect(url);
+            await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
 
             // TODO: Handle TCP connection errors
             // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
@@ -324,7 +325,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                    ws.State == WebSocketState.CloseSent);
         }
 
-        private async Task Connect(Uri url)
+        private static Uri ResolveWebSocketsUrl(Uri url)
         {
             var uriBuilder = new UriBuilder(url);
             if (url.Scheme == "http")
@@ -336,7 +337,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 uriBuilder.Scheme = "wss";
             }
 
-            await _webSocket.ConnectAsync(uriBuilder.Uri, CancellationToken.None);
+            return uriBuilder.Uri;
         }
 
         public async Task StopAsync()

@@ -12,9 +12,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
         }
 
-        // Initialize with capacity 2 for the 2 built in protocols
         private object _lock = new object();
-        private readonly List<SerializedMessage> _serializedMessages = new List<SerializedMessage>(2);
+        private List<SerializedMessage> _serializedMessages;
 
         public byte[] WriteMessage(IHubProtocol protocol)
         {
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
             lock (_lock)
             {
-                for (var i = 0; i < _serializedMessages.Count; i++)
+                for (var i = 0; i < _serializedMessages?.Count; i++)
                 {
                     if (_serializedMessages[i].Protocol.Equals(protocol))
                     {
@@ -34,6 +33,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 }
 
                 var bytes = protocol.WriteToArray(this);
+
+                if (_serializedMessages == null)
+                {
+                    // Initialize with capacity 2 for the 2 built in protocols
+                    _serializedMessages = new List<SerializedMessage>(2);
+                }
 
                 // We don't want to balloon memory if someone writes a poor IHubProtocolResolver
                 // So we cap how many caches we store and worst case just serialize the message for every connection

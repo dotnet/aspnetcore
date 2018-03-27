@@ -544,6 +544,33 @@ describe("hubConnection", () => {
         }
     });
 
+    it("transport falls back from WebSockets to SSE or LongPolling", async (done) => {
+        // Replace Websockets with a function that just
+        // throws to force fallback.
+        const oldWebSocket = (window as any).WebSocket;
+        (window as any).WebSocket = () => {
+            throw new Error("Kick rocks");
+        };
+
+        const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
+            logger: LogLevel.Trace,
+            protocol: new JsonHubProtocol(),
+        });
+
+        try {
+            await hubConnection.start();
+
+            // Make sure that we connect with SSE or LongPolling after Websockets fail
+            const transportName = await hubConnection.invoke("GetActiveTransportName");
+            expect(transportName === "ServerSentEvents" || transportName === "LongPolling").toBe(true);
+        } catch (e) {
+            fail(e);
+        } finally {
+            (window as any).WebSocket = oldWebSocket;
+            done();
+        }
+    });
+
     function getJwtToken(url): Promise<string> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
