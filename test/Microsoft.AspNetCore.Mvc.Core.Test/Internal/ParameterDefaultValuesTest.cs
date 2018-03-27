@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel;
 using Xunit;
 
@@ -23,6 +24,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Equal(expectedValues, actualValues);
+        }
+
+        [Fact]
+        public void GetParameterDefaultValues_ReturnsExpectedValues_ForStructTypes()
+        {
+            // Arrange
+            var methodInfo = typeof(TestObject).GetMethod("DefaultValuesOfStructTypes");
+
+            // Act
+            var actualValues = ParameterDefaultValues.GetParameterDefaultValues(methodInfo);
+
+            // Assert
+            Assert.Equal(
+                new object[] { default(Guid), default(TimeSpan), default(DateTime), default(DateTimeOffset) },
+                actualValues);
         }
 
         private class TestObject
@@ -52,6 +68,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 int input2,
                 bool input3,
                 TestObject input4)
+            {
+            }
+
+            // Note that default value for DateTime currently throws a FormatException
+            // https://github.com/dotnet/corefx/issues/12338
+            public void DefaultValuesOfStructTypes(
+                Guid guid = default(Guid),
+                TimeSpan timeSpan = default(TimeSpan),
+                DateTime dateTime = default(DateTime),
+                DateTimeOffset dateTimeOffset = default(DateTimeOffset))
             {
             }
         }

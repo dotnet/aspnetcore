@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -64,6 +65,36 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var expected = "cool";
             var url = "http://localhost/DefaultValues/EchoValue_DefaultParameterValue?input=cool";
+
+            // Act
+            var response = await Client.GetStringAsync(url);
+
+            // Assert
+            Assert.Equal(expected, response);
+        }
+
+        [Fact]
+        public async Task Controller_WithDefaultParameterValues_ForStructs_ReturnsDefaults()
+        {
+            // Arrange
+            var expected = $"{default(Guid)}, {default(TimeSpan)}";
+            var url = "http://localhost/DefaultValues/EchoValue_DefaultParameterValue_ForStructs";
+
+            // Act
+            var response = await Client.GetStringAsync(url);
+
+            // Assert
+            Assert.Equal(expected, response);
+        }
+
+        [Fact]
+        public async Task Controller_WithDefaultParameterValues_ForStructs_ReturnsBoundValues()
+        {
+            // Arrange
+            Guid guid = Guid.NewGuid();
+            TimeSpan timeSpan = new TimeSpan(10, 10, 10);
+            var expected = $"{guid}, {timeSpan}";
+            var url = $"http://localhost/DefaultValues/EchoValue_DefaultParameterValue_ForStructs?guid={guid}&timespan={timeSpan}";
 
             // Act
             var response = await Client.GetStringAsync(url);

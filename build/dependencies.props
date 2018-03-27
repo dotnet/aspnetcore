@@ -65,6 +65,7 @@
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>2.1.0-preview2-30355</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>
     <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -1249,6 +1251,23 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
 
             // Assert
             Assert.Equal("<p>Hey, it's Mr. totally custom here!</p>", content.Trim());
+        }
+
+        [Fact]
+        public async Task Page_Handler_BindsToDefaultValues()
+        {
+            // Arrange
+            string expected;
+            using (new CultureReplacer(CultureInfo.InvariantCulture, CultureInfo.InvariantCulture))
+            {
+                expected = $"id: 10, guid: {default(Guid)}, boolean: {default(bool)}, dateTime: {default(DateTime)}";
+            }
+
+            // Act
+            var content = await Client.GetStringAsync("http://localhost/ModelHandlerTestPage/DefaultValues");
+
+            // Assert
+            Assert.Equal(expected, content);
         }
 
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
