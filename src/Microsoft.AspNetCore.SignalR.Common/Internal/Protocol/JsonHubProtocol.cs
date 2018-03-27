@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             TextMessageFormatter.WriteRecordSeparator(output);
         }
 
-        private HubMessage ParseMessage(TextReader textReader, IInvocationBinder binder)
+        private HubMessage ParseMessage(Utf8BufferTextReader textReader, IInvocationBinder binder)
         {
             try
             {
@@ -108,11 +108,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 Dictionary<string, string> headers = null;
                 var completed = false;
 
-                using (var reader = new JsonTextReader(textReader))
+                using (var reader = JsonUtils.CreateJsonTextReader(textReader))
                 {
-                    reader.ArrayPool = JsonArrayPool<char>.Shared;
-                    reader.CloseInput = false;
-
                     JsonUtils.CheckRead(reader);
 
                     // We're always parsing a JSON object

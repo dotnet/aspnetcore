@@ -10,6 +10,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public static class JsonUtils
     {
+        internal static JsonTextReader CreateJsonTextReader(Utf8BufferTextReader textReader)
+        {
+            var reader = new JsonTextReader(textReader);
+            reader.ArrayPool = JsonArrayPool<char>.Shared;
+
+            // Don't close the output, Utf8BufferTextReader is resettable
+            reader.CloseInput = false;
+
+            return reader;
+        }
+
         public static JObject GetObject(JToken token)
         {
             if (token == null || token.Type != JTokenType.Object)
