@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DeveloperBuild)'!='true'">$(TargetFrameworks);netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
 
     <DefineConstants>$(DefineConstants);__remove_this_to__GENERATE_BASELINES</DefineConstants>
     <DefineConstants Condition="'$(GenerateBaseLines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
@@ -33,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\testapps\ApplicationUsingPrecompiledViewClassLibrary\ApplicationUsingPrecompiledViewClassLibrary.csproj" />
     <ProjectReference Include="..\..\testapps\ApplicationUsingRelativePaths\ApplicationUsingRelativePaths.csproj" />
     <ProjectReference Include="..\..\testapps\ApplicationWithConfigureMvc\ApplicationWithConfigureMvc.csproj" />
     <ProjectReference Include="..\..\testapps\ApplicationWithCustomInputFiles\ApplicationWithCustomInputFiles.csproj" />
