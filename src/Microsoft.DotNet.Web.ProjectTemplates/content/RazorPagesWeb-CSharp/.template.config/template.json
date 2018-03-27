@@ -37,23 +37,28 @@
           ]
         },
         {
-          "condition": "(!OrganizationalAuth && !IndividualB2CAuth)",
-          "rename": {
-            "Pages/Shared/_LoginPartial.Identity.cshtml": "Pages/Shared/_LoginPartial.cshtml"
-          },
+          "condition": "(!OrganizationalAuth && !IndividualAuth)",
           "exclude": [
-            "Controllers/**",
-            "Pages/Account/**",
+            "Pages/Shared/_LoginPartial.Identity.cshtml",
             "Pages/Shared/_LoginPartial.OrgAuth.cshtml"
           ]
         },
         {
-          "condition": "(!IndividualLocalAuth)",
+          "condition": "(OrganizationalAuth || IndividualB2CAuth)",
           "rename": {
             "Pages/Shared/_LoginPartial.OrgAuth.cshtml": "Pages/Shared/_LoginPartial.cshtml"
           },
           "exclude": [
             "Pages/Shared/_LoginPartial.Identity.cshtml"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "rename": {
+            "Pages/Shared/_LoginPartial.Identity.cshtml": "Pages/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Pages/Shared/_LoginPartial.OrgAuth.cshtml"
           ]
         },
         {
@@ -73,19 +78,6 @@
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
-          ]
-        },
-        {
-          "condition": "(!OrganizationalAuth)",
-          "exclude": [
-            "Extensions/AzureAdAuthenticationBuilderExtensions.cs",
-            "Extensions/AzureAdOptions.cs"
-          ]
-        },
-        {
-          "condition": "(!IndividualB2CAuth)",
-          "exclude": [
-            "Extensions/AzureAdB2C*.cs"
           ]
         },
         {
