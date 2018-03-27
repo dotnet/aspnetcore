@@ -4,8 +4,11 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace CreateDefaultBuilderOfTApp
 {
@@ -15,11 +18,12 @@ namespace CreateDefaultBuilderOfTApp
         {
             app.Run(context =>
             {
-                return context.Response.WriteAsync(GetResponseMessage(webHostBuilderContext));
+                var message = GetResponseMessage(webHostBuilderContext, app.ApplicationServices.GetRequiredService<IOptions<HostFilteringOptions>>());
+                return context.Response.WriteAsync(message);
             });
         }
 
-        private static string GetResponseMessage(WebHostBuilderContext context)
+        private static string GetResponseMessage(WebHostBuilderContext context, IOptions<HostFilteringOptions> hostFilteringOptions)
         {
             // Verify ContentRootPath set
             if (!string.Equals(Directory.GetCurrentDirectory(), context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))
@@ -51,6 +55,13 @@ namespace CreateDefaultBuilderOfTApp
             if (!string.Equals("cliValue", context.Configuration["cliKey"], StringComparison.Ordinal))
             {
                 return $"Command line arguments not loaded into Configuration.";
+            }
+
+            // Verify allowed hosts were loaded
+            var hosts = string.Join(',', hostFilteringOptions.Value.AllowedHosts);
+            if (!string.Equals("example.com,localhost", hosts, StringComparison.Ordinal))
+            {
+                return $"AllowedHosts not loaded into Options.";
             }
 
             // TODO: Verify AddConsole called

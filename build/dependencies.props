@@ -5,6 +5,7 @@
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview3-17001</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHostFilteringPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreHostFilteringPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreRoutingPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreRoutingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>

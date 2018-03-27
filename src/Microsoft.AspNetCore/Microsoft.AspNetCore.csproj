@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(MicrosoftAspNetCoreDiagnosticsPackageVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.HostFiltering" Version="$(MicrosoftAspNetCoreHostFilteringPackageVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(MicrosoftAspNetCoreRoutingPackageVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(MicrosoftAspNetCoreServerIISIntegrationPackageVersion)" PrivateAssets="None" />
