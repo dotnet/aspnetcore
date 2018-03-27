@@ -3,7 +3,6 @@
 
   <ItemGroup>
     <PackagesToPush Include="$(BuildDir)*.nupkg" />
-    <PackagesToPush Include="$(ArtifactsDir)mirror\*.nupkg" />
   </ItemGroup>
 
   <Target Name="_PushNuGet" Condition="@(PackagesToPush->Count()) != 0">

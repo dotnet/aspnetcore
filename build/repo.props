@@ -14,5 +14,6 @@
   </ItemGroup>
 
   <Import Project="artifacts.props" />
+  <Import Project="artifacts.props" />
   <Import Project="submodules.props" />
 </Project>

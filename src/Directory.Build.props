@@ -1,4 +1,5 @@
 <Project>
   <Import Project="..\version.props" />
   <Import Project="..\build\common.props" />
+  <Import Project="..\build\sources.props" />
 </Project>

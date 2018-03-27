@@ -57,7 +57,7 @@
 
     <ItemGroup>
       <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
-      <_FallbackArchiveRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
+      <_FallbackArchiveRestoreSources Include="$(RestoreSources)" />
     </ItemGroup>
 
     <RepoTasks.GenerateRestoreSourcesPropsFile
@@ -71,7 +71,7 @@
     <MSBuild
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />

@@ -13,17 +13,13 @@
 
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Verify</_RepositoryBuildTargets>
-    <!-- For external packages that come from feeds will mirrored to aspnetcore feeds. -->
-    <IntermediateMirrorPackageDir>$(IntermediateDir)mirror\</IntermediateMirrorPackageDir>
-    <!-- For external packages that come from feeds we don't mirror. -->
-    <IntermediateExternalPackageDir>$(IntermediateDir)ext\</IntermediateExternalPackageDir>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.g.props</GeneratedPackageVersionPropsPath>
     <GeneratedRestoreSourcePropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcePropsPath>
     <GeneratedBrandingPropsPath>$(IntermediateDir)branding.g.props</GeneratedBrandingPropsPath>
 
     <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;PrepareOutputPath</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
-    <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreExternalDependencies</RestoreDependsOn>
+    <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
     <PackageDependsOn>$(PackageDependsOn);BuildTemplates;SplitPackages</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
@@ -31,16 +27,6 @@
 
   <Target Name="PrepareOutputPath">
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
-  </Target>
-
-  <Target Name="RestoreExternalDependencies">
-    <DownloadNuGetPackages
-      Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'false'))"
-      DestinationFolder="$(IntermediateExternalPackageDir)" />
-
-    <DownloadNuGetPackages
-      Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))"
-      DestinationFolder="$(IntermediateMirrorPackageDir)" />
   </Target>
 
   <Target Name="GeneratePropsFiles" DependsOnTargets="ResolveRepoInfo">
@@ -52,7 +38,7 @@
       <_LineupSources Include="$(_DependencyPackagesDirectory)" Condition="'$(_DependencyPackagesDirectory)' != '' AND Exists('$(_DependencyPackagesDirectory)')" />
       <_LineupSources Include="$(BuildDir)" />
       <_LineupSources Include="$(IntermediateExternalPackageDir)" />
-      <_LineupSources Include="$(IntermediateMirrorPackageDir)" />
+      <_LineupSources Include="$(RestoreSources)" />
     </ItemGroup>
 
     <RepoTasks.GeneratePackageVersionPropsFile
@@ -203,13 +189,11 @@
   <Target Name="SplitPackages">
     <ItemGroup>
       <PackageArtifactFile Include="$(BuildDir)*.nupkg" />
-      <ExternalDependencyPackage Include="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))" Category="mirror" />
-      <_MirroredPackageFiles Include="$(IntermediateMirrorPackageDir)*.nupkg" />
     </ItemGroup>
 
     <RepoTasks.CopyPackagesToSplitFolders
       Packages="@(PackageArtifact);@(ExternalDependencyPackage)"
-      Files="@(PackageArtifactFile);@(_MirroredPackageFiles)"
+      Files="@(PackageArtifactFile)"
       DestinationFolder="$(ArtifactsDir)"
       Overwrite="true" />
   </Target>
