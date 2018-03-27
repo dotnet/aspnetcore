@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public interface IHubProtocolResolver
     {
-        IHubProtocol GetProtocol(string protocolName, IList<string> supportedProtocols, HubConnectionContext connection);
+        IHubProtocol GetProtocol(string protocolName, IList<string> supportedProtocols);
     }
 }

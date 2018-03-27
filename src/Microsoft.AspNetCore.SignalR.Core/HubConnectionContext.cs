@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.SignalR
                             {
                                 if (HandshakeProtocol.TryParseRequestMessage(buffer, out var handshakeRequestMessage, out consumed, out examined))
                                 {
-                                    Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols, this);
+                                    Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
                                     if (Protocol == null)
                                     {
                                         Log.HandshakeFailed(_logger, null);
