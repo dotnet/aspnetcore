@@ -1,5 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
+    <AspNetCoreModuleVersion>1.0.1990</AspNetCoreModuleVersion>
     <BenchmarkDotNetPackageVersion>0.10.3</BenchmarkDotNetPackageVersion>
     <EntityFrameworkPackageVersion>6.1.3</EntityFrameworkPackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>

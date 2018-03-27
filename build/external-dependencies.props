@@ -21,6 +21,9 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ExternalDependency Include="AspNetCoreModule" Version="$(AspNetCoreModuleVersion)" Private="true">
+      <VariableName>AspNetCoreModuleVersion</VariableName>
+    </ExternalDependency>
     <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" Private="true" />
     <ExternalDependency Include="EntityFramework" Version="$(EntityFrameworkPackageVersion)" Private="true" />
     <ExternalDependency Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" Private="true" />
