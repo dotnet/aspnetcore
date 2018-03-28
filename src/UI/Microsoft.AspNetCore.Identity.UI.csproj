@@ -6,7 +6,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
   </PropertyGroup>
