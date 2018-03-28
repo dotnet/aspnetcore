@@ -19,4 +19,6 @@
     <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
   </ItemGroup>
 
+  <Import Project="EnsureManifestExists.targets" />
+
 </Project>

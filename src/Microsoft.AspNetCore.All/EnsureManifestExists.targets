@@ -1,0 +1,11 @@
+<Project>
+  <Target Name="EnsurePreviousManifestExists" BeforeTargets="Build">
+    <Error Text="Missing expected property: RuntimeStoreInstallerDependencyVersion" Condition="'$(RuntimeStoreInstallerDependencyVersion)' == ''" />
+
+    <PropertyGroup>
+      <PreviousRuntimeStoreManifest>$(MSBuildProjectDirectory)\build\aspnetcore-store-$(RuntimeStoreInstallerDependencyVersion).xml</PreviousRuntimeStoreManifest>
+    </PropertyGroup>
+
+    <Error Text="Expected the runtime store manifest for the previous release to exist in $(PreviousRuntimeStoreManifest)" Condition="! Exists($(PreviousRuntimeStoreManifest))" />
+  </Target>
+</Project>
