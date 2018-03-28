@@ -111,7 +111,6 @@
       <VariableName>DotNetCliTool_MicrosoftNETCoreApp20PackageVersion</VariableName>
       <TargetFramework>netcoreapp2.0</TargetFramework>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.Platforms" Version="$(MicrosoftNETCorePlatformsPackageVersion)" />
     <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security" Version="$(MicrosoftOwinSecurityPackageVersion)" />
