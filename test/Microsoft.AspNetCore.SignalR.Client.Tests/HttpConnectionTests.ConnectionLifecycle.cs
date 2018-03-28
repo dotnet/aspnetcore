@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Connections;
@@ -18,6 +19,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests
     {
+        private static readonly Version Windows8Version = new Version(6, 2);
+
         public class ConnectionLifecycle : LoggedTest
         {
             public ConnectionLifecycle(ITestOutputHelper output) : base(output)
@@ -109,6 +112,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         Assert.Equal(0, startCounter);
                         await connection.StartAsync(TransferFormat.Text);
+                        if (!IsWebSocketsSupported())
+                        {
+                            passThreshold -= 1;
+                        }
+
                         Assert.Equal(passThreshold, startCounter);
                     });
                 }
@@ -120,6 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 using (StartLog(out var loggerFactory))
                 {
                     var startCounter = 0;
+                    var availableTransports = 3;
                     var expected = new Exception("Transport failed to start");
                     Task OnTransportStart()
                     {
@@ -135,7 +144,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         {
                             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text));
                             Assert.Equal("Unable to connect to the server with any of the available transports.", ex.Message);
-                            Assert.Equal(3, startCounter);
+
+                            // If websockets aren't supported then we expect one less attmept to start.
+                            if (!IsWebSocketsSupported())
+                            {
+                                availableTransports -= 1;
+                            }
+
+                            Assert.Equal(availableTransports, startCounter);
                         });
                 }
             }
@@ -342,6 +358,23 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var exception =
                     await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
                 Assert.Equal(nameof(HttpConnection), exception.ObjectName);
+            }
+
+            private static bool IsWebSocketsSupported()
+            {
+#if NETCOREAPP2_1
+                // .NET Core 2.1 and greater has sockets
+                return true;
+#else
+                // Non-Windows platforms have sockets
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return true;
+                }
+
+                // Windows 8 and greater has sockets
+                return Environment.OSVersion.Version >= new Version(6, 2);
+#endif
             }
         }
     }
