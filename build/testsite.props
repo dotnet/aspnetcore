@@ -34,7 +34,29 @@
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
     <AncmPath>$(NativePlatform)\aspnetcore.dll</AncmPath>
+    <AncmRHPath>$(NativePlatform)\aspnetcorerh.dll</AncmRHPath>
     <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <TestTargetsAssembly>$(MSBuildThisFileDirectory)..\test\TestTasks\bin\$(Configuration)\netstandard2.0\TestTasks.dll</TestTargetsAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\test\TestTasks\TestTasks.csproj">
+       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+       <BuildReference Condition="Exists('$(TestTargetsAssembly)')">False</BuildReference>
+    </ProjectReference>
+  </ItemGroup>
+
+  <UsingTask TaskName="InjectRequestHandler" AssemblyFile="$(TestTargetsAssembly)" />
+
+  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile">
+    <InjectRequestHandler DepsFile="$(ProjectDepsFilePath)" Rid="win7-$(NativePlatform)" LibraryLocation="$(AncmRHPath)" />
+  </Target>
+
+  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile">
+    <InjectRequestHandler DepsFile="$(PublishDepsFilePath)" Rid="win7-$(NativePlatform)" LibraryLocation="$(AncmRHPath)" />
+  </Target>
 
 </Project>
