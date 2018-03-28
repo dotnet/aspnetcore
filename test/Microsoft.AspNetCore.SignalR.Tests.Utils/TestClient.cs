@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly IHubProtocol _protocol;
         private readonly IInvocationBinder _invocationBinder;
         private readonly CancellationTokenSource _cts;
-        private readonly Queue<HubMessage> _messages = new Queue<HubMessage>();
 
         public DefaultConnectionContext Connection { get; }
         public Task Connected => ((TaskCompletionSource<bool>)Connection.Items["ConnectedTask"]).Task;
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // note that the handshake response might not immediately be readable
                 // e.g. server is waiting for request, times out after configured duration,
                 // and sends response with timeout error
-                HandshakeResponseMessage = (HandshakeResponseMessage) await ReadAsync(true).OrTimeout();
+                HandshakeResponseMessage = (HandshakeResponseMessage)await ReadAsync(true).OrTimeout();
             }
 
             return connection;
@@ -220,51 +219,35 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public HubMessage TryRead(bool isHandshake = false)
         {
-            if (_messages.Count > 0)
-            {
-                return _messages.Dequeue();
-            }
-
             if (!Connection.Application.Input.TryRead(out var result))
             {
                 return null;
             }
 
             var buffer = result.Buffer;
-            var consumed = buffer.End;
-            var examined = consumed;
 
             try
             {
                 if (!isHandshake)
                 {
-                    var messages = new List<HubMessage>();
-                    if (_protocol.TryParseMessages(result.Buffer.ToArray(), _invocationBinder, messages))
+                    if (_protocol.TryParseMessage(ref buffer, _invocationBinder, out var message))
                     {
-                        foreach (var m in messages)
-                        {
-                            _messages.Enqueue(m);
-                        }
-
-                        return _messages.Dequeue();
+                        return message;
                     }
                 }
                 else
                 {
-                    HandshakeProtocol.TryReadMessageIntoSingleMemory(buffer, out consumed, out examined, out var data);
-
-                    // read first message out of the incoming data
-                    if (!TextMessageParser.TryParseMessage(ref data, out var payload))
+                    // read first message out of the incoming data 
+                    if (!HandshakeProtocol.TryParseResponseMessage(ref buffer, out var responseMessage))
                     {
                         throw new InvalidDataException("Unable to parse payload as a handshake response message.");
                     }
-
-                    return HandshakeProtocol.ParseResponseMessage(payload);
+                    return responseMessage;
                 }
             }
             finally
             {
-                Connection.Application.Input.AdvanceTo(consumed, examined);
+                Connection.Application.Input.AdvanceTo(buffer.Start);
             }
 
             return null;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
@@ -40,8 +41,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleBinaryMessage()
         {
-            ReadOnlyMemory<byte> buffer = _binaryInput;
-            if (!BinaryMessageParser.TryParseMessage(ref buffer, out _))
+            var data = new ReadOnlySequence<byte>(_binaryInput);
+            if (!BinaryMessageParser.TryParseMessage(ref data, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
             }
@@ -50,8 +51,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleTextMessage()
         {
-            ReadOnlyMemory<byte> buffer = _textInput;
-            if (!TextMessageParser.TryParseMessage(ref buffer, out _))
+            var data = new ReadOnlySequence<byte>(_textInput);
+            if (!TextMessageParser.TryParseMessage(ref data, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
             }

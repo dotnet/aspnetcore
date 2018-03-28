@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 CheckDisposed();
                 connectionState = _connectionState;
-                
+
                 // Set the stopping flag so that any invocations after this get a useful error message instead of
                 // silently failing or throwing an error about the pipe being completed.
                 if (connectionState != null)
@@ -374,74 +374,53 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(ReadOnlySequence<byte> buffer, ConnectionState connectionState)
+        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState)
         {
-            Log.ProcessingMessage(_logger, buffer.Length);
-
-            // TODO: Don't ToArray it :)
-            var data = buffer.ToArray();
-
-            var currentData = new ReadOnlyMemory<byte>(data);
-            Log.ParsingMessages(_logger, currentData.Length);
-
-            var messages = new List<HubMessage>();
-            if (_protocol.TryParseMessages(currentData, connectionState, messages))
+            InvocationRequest irq;
+            switch (message)
             {
-                Log.ReceivingMessages(_logger, messages.Count);
-                foreach (var message in messages)
-                {
-                    InvocationRequest irq;
-                    switch (message)
+                case InvocationMessage invocation:
+                    Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target,
+                        invocation.ArgumentBindingException != null ? null : invocation.Arguments);
+                    await DispatchInvocationAsync(invocation);
+                    break;
+                case CompletionMessage completion:
+                    if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
                     {
-                        case InvocationMessage invocation:
-                            Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target,
-                                invocation.ArgumentBindingException != null ? null : invocation.Arguments);
-                            await DispatchInvocationAsync(invocation);
-                            break;
-                        case CompletionMessage completion:
-                            if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
-                            {
-                                Log.DroppedCompletionMessage(_logger, completion.InvocationId);
-                            }
-                            else
-                            {
-                                DispatchInvocationCompletion(completion, irq);
-                                irq.Dispose();
-                            }
-                            break;
-                        case StreamItemMessage streamItem:
-                            // Complete the invocation with an error, we don't support streaming (yet)
-                            if (!connectionState.TryGetInvocation(streamItem.InvocationId, out irq))
-                            {
-                                Log.DroppedStreamMessage(_logger, streamItem.InvocationId);
-                                return (close: false, exception: null);
-                            }
-                            await DispatchInvocationStreamItemAsync(streamItem, irq);
-                            break;
-                        case CloseMessage close:
-                            if (string.IsNullOrEmpty(close.Error))
-                            {
-                                Log.ReceivedClose(_logger);
-                                return (close: true, exception: null);
-                            }
-                            else
-                            {
-                                Log.ReceivedCloseWithError(_logger, close.Error);
-                                return (close: true, exception: new HubException($"The server closed the connection with the following error: {close.Error}"));
-                            }
-                        case PingMessage _:
-                            Log.ReceivedPing(_logger);
-                            // Nothing to do on receipt of a ping.
-                            break;
-                        default:
-                            throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
+                        Log.DroppedCompletionMessage(_logger, completion.InvocationId);
                     }
-                }
-                Log.ProcessedMessages(_logger, messages.Count);
-            }
-            else
-            {
-                Log.FailedParsing(_logger, data.Length);
+                    else
+                    {
+                        DispatchInvocationCompletion(completion, irq);
+                        irq.Dispose();
+                    }
+                    break;
+                case StreamItemMessage streamItem:
+                    // Complete the invocation with an error, we don't support streaming (yet)
+                    if (!connectionState.TryGetInvocation(streamItem.InvocationId, out irq))
+                    {
+                        Log.DroppedStreamMessage(_logger, streamItem.InvocationId);
+                        return (close: false, exception: null);
+                    }
+                    await DispatchInvocationStreamItemAsync(streamItem, irq);
+                    break;
+                case CloseMessage close:
+                    if (string.IsNullOrEmpty(close.Error))
+                    {
+                        Log.ReceivedClose(_logger);
+                        return (close: true, exception: null);
+                    }
+                    else
+                    {
+                        Log.ReceivedCloseWithError(_logger, close.Error);
+                        return (close: true, exception: new HubException($"The server closed the connection with the following error: {close.Error}"));
+                    }
+                case PingMessage _:
+                    Log.ReceivedPing(_logger);
+                    // Nothing to do on receipt of a ping.
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
             }
 
             return (close: false, exception: null);
@@ -536,25 +515,23 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     var result = await _connectionState.Connection.Transport.Input.ReadAsync();
                     var buffer = result.Buffer;
-                    var consumed = buffer.Start;
 
                     try
                     {
                         // Read first message out of the incoming data
-                        if (!buffer.IsEmpty && TextMessageParser.TryParseMessage(ref buffer, out var payload))
+                        if (!buffer.IsEmpty)
                         {
-                            // Buffer was advanced to the end of the message by TryParseMessage
-                            consumed = buffer.Start;
-                            var message = HandshakeProtocol.ParseResponseMessage(payload.ToArray());
-
-                            if (!string.IsNullOrEmpty(message.Error))
+                            if (HandshakeProtocol.TryParseResponseMessage(ref buffer, out var message))
                             {
-                                Log.HandshakeServerError(_logger, message.Error);
-                                throw new HubException(
-                                    $"Unable to complete handshake with the server due to an error: {message.Error}");
-                            }
+                                if (!string.IsNullOrEmpty(message.Error))
+                                {
+                                    Log.HandshakeServerError(_logger, message.Error);
+                                    throw new HubException(
+                                        $"Unable to complete handshake with the server due to an error: {message.Error}");
+                                }
 
-                            break;
+                                break;
+                            }
                         }
                         else if (result.IsCompleted)
                         {
@@ -565,7 +542,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                     finally
                     {
-                        _connectionState.Connection.Transport.Input.AdvanceTo(consumed);
+                        // The buffer was sliced up to where it was consumed, so we can just advance to the start.
+                        // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
+                        // before yielding the read again.
+                        _connectionState.Connection.Transport.Input.AdvanceTo(buffer.Start, buffer.End);
                     }
                 }
             }
@@ -594,8 +574,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     var result = await connectionState.Connection.Transport.Input.ReadAsync();
                     var buffer = result.Buffer;
-                    var consumed = buffer.End; // TODO: Support partial messages
-                    var examined = buffer.End;
 
                     try
                     {
@@ -608,12 +586,27 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         {
                             ResetTimeoutTimer(timeoutTimer);
 
-                            // We have data, process it
-                            var (close, exception) = await ProcessMessagesAsync(buffer, connectionState);
+                            Log.ProcessingMessage(_logger, buffer.Length);
+
+                            var close = false;
+
+                            while (_protocol.TryParseMessage(ref buffer, connectionState, out var message))
+                            {
+                                Exception exception;
+
+                                // We have data, process it
+                                (close, exception) = await ProcessMessagesAsync(message, connectionState);
+                                if (close)
+                                {
+                                    // Closing because we got a close frame, possibly with an error in it.
+                                    connectionState.CloseException = exception;
+                                    break;
+                                }
+                            }
+
+                            // If we're closing stop everything
                             if (close)
                             {
-                                // Closing because we got a close frame, possibly with an error in it.
-                                connectionState.CloseException = exception;
                                 break;
                             }
                         }
@@ -624,7 +617,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                     finally
                     {
-                        connectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
+                        // The buffer was sliced up to where it was consumed, so we can just advance to the start.
+                        // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
+                        // before yielding the read again.
+                        connectionState.Connection.Transport.Input.AdvanceTo(buffer.Start, buffer.End);
                     }
                 }
             }
@@ -633,7 +629,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 Log.ServerDisconnectedWithError(_logger, ex);
                 connectionState.CloseException = ex;
             }
-            
+
             // Clear the connectionState field
             await WaitConnectionLockAsync();
             try

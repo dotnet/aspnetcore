@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
@@ -54,27 +55,26 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return version == Version;
         }
 
-        public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
         {
-            while (TextMessageParser.TryParseMessage(ref input, out var payload))
+            if (!TextMessageParser.TryParseMessage(ref input, out var payload))
             {
-                var textReader = Utf8BufferTextReader.Get(payload);
-
-                try
-                {
-                    var message = ParseMessage(textReader, binder);
-                    if (message != null)
-                    {
-                        messages.Add(message);
-                    }
-                }
-                finally
-                {
-                    Utf8BufferTextReader.Return(textReader);
-                }
+                message = null;
+                return false;
             }
 
-            return messages.Count > 0;
+            var textReader = Utf8BufferTextReader.Get(payload);
+
+            try
+            {
+                message = ParseMessage(textReader, binder);
+            }
+            finally
+            {
+                Utf8BufferTextReader.Return(textReader);
+            }
+
+            return message != null;
         }
 
         public void WriteMessage(HubMessage message, Stream output)

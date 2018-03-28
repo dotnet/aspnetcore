@@ -96,20 +96,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, Exception> _sendingHubHandshake =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(28, "SendingHubHandshake"), "Sending Hub Handshake.");
 
-            private static readonly Action<ILogger, int, Exception> _parsingMessages =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(29, "ParsingMessages"), "Received {Count} bytes. Parsing message(s).");
-
-            private static readonly Action<ILogger, int, Exception> _receivingMessages =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(30, "ReceivingMessages"), "Received {MessageCount} message(s).");
-
             private static readonly Action<ILogger, Exception> _receivedPing =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(31, "ReceivedPing"), "Received a ping message.");
-
-            private static readonly Action<ILogger, int, Exception> _processedMessages =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(32, "ProcessedMessages"), "Finished processing {MessageCount} message(s).");
-
-            private static readonly Action<ILogger, int, Exception> _failedParsing =
-                LoggerMessage.Define<int>(LogLevel.Warning, new EventId(33, "FailedParsing"), "No messages parsed from {Count} byte(s).");
 
             private static readonly Action<ILogger, string, Exception> _errorInvokingClientSideMethod =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(34, "ErrorInvokingClientSideMethod"), "Invoking client side method '{MethodName}' failed.");
@@ -329,29 +317,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _sendingHubHandshake(logger, null);
             }
 
-            public static void ParsingMessages(ILogger logger, int byteCount)
-            {
-                _parsingMessages(logger, byteCount, null);
-            }
-
-            public static void ReceivingMessages(ILogger logger, int messageCount)
-            {
-                _receivingMessages(logger, messageCount, null);
-            }
-
             public static void ReceivedPing(ILogger logger)
             {
                 _receivedPing(logger, null);
-            }
-
-            public static void ProcessedMessages(ILogger logger, int messageCount)
-            {
-                _processedMessages(logger, messageCount, null);
-            }
-
-            public static void FailedParsing(ILogger logger, int byteCount)
-            {
-                _failedParsing(logger, byteCount, null);
             }
 
             public static void ErrorInvokingClientSideMethod(ILogger logger, string methodName, Exception exception)

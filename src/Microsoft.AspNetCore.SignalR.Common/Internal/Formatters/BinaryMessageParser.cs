@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
 {
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
     {
         private const int MaxLengthPrefixSize = 5;
 
-        public static bool TryParseMessage(ref ReadOnlyMemory<byte> buffer, out ReadOnlyMemory<byte> payload)
+        public static bool TryParseMessage(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> payload)
         {
             if (buffer.IsEmpty)
             {
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             var numBytes = 0;
 
             var lengthPrefixBuffer = buffer.Slice(0, Math.Min(MaxLengthPrefixSize, buffer.Length));
-            var span = lengthPrefixBuffer.Span;
+            var span = GetSpan(lengthPrefixBuffer);
 
             byte byteRead;
             do
@@ -69,6 +70,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             // Skip the payload
             buffer = buffer.Slice(numBytes + (int)length);
             return true;
+        }
+
+        private static ReadOnlySpan<byte> GetSpan(in ReadOnlySequence<byte> lengthPrefixBuffer)
+        {
+            if (lengthPrefixBuffer.IsSingleSegment)
+            {
+                return lengthPrefixBuffer.First.Span;
+            }
+            
+            // Should be rare
+            return lengthPrefixBuffer.ToArray();
         }
     }
 }

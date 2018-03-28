@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     internal class Utf8BufferTextReader : TextReader
     {
-        private ReadOnlyMemory<byte> _utf8Buffer;
+        private ReadOnlySequence<byte> _utf8Buffer;
         private Decoder _decoder;
 
         [ThreadStatic]
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             _decoder = Encoding.UTF8.GetDecoder();
         }
 
-        public static Utf8BufferTextReader Get(ReadOnlyMemory<byte> utf8Buffer)
+        public static Utf8BufferTextReader Get(in ReadOnlySequence<byte> utf8Buffer)
         {
             var reader = _cachedInstance;
             if (reader == null)
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 #endif
         }
 
-        public void SetBuffer(ReadOnlyMemory<byte> utf8Buffer)
+        public void SetBuffer(in ReadOnlySequence<byte> utf8Buffer)
         {
             _utf8Buffer = utf8Buffer;
             _decoder.Reset();
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 return 0;
             }
 
-            var source = _utf8Buffer.Span;
+            var source = _utf8Buffer.First.Span;
             var bytesUsed = 0;
             var charsUsed = 0;
 #if NETCOREAPP2_1

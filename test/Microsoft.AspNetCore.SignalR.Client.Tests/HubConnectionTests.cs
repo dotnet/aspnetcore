@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return true;
             }
 
-            public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
+            public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
             {
                 if (_error != null)
                 {
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
                 if (_parsed != null)
                 {
-                    messages.Add(_parsed);
+                    message = _parsed;
                     return true;
                 }
 

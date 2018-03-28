@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [InlineData(new byte[] { 0x0B, 0x41, 0x0A, 0x52, 0x0D, 0x43, 0x0D, 0x0A, 0x3B, 0x44, 0x45, 0x46 }, "A\nR\rC\r\n;DEF")]
         public void ReadMessage(byte[] encoded, string payload)
         {
-            ReadOnlyMemory<byte> span = encoded;
+            var span = new ReadOnlySequence<byte>(encoded);
             Assert.True(BinaryMessageParser.TryParseMessage(ref span, out var message));
             Assert.Equal(0, span.Length);
 
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
             })]
         public void ReadBinaryMessage(byte[] encoded, byte[] payload)
         {
-            ReadOnlyMemory< byte> span = encoded;
+            var span = new ReadOnlySequence<byte>(encoded);
             Assert.True(BinaryMessageParser.TryParseMessage(ref span, out var message));
             Assert.Equal(0, span.Length);
             Assert.Equal(payload, message.ToArray());
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         {
             var ex = Assert.Throws<FormatException>(() =>
             {
-                var buffer = new ReadOnlyMemory<byte>(payload);
+                var buffer = new ReadOnlySequence<byte>(payload);;
                 BinaryMessageParser.TryParseMessage(ref buffer, out var message);
             });
             Assert.Equal("Messages over 2GB in size are not supported.", ex.Message);
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [InlineData(new byte[] { 0x80 })] // size is cut
         public void BinaryMessageParserReturnsFalseForPartialPayloads(byte[] payload)
         {
-            var buffer = new ReadOnlyMemory<byte>(payload);
+            var buffer = new ReadOnlySequence<byte>(payload);
             Assert.False(BinaryMessageParser.TryParseMessage(ref buffer, out var message));
         }
 
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
                     /* body: */ 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x2C, 0x0D, 0x0A, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21,
             };
 
-            ReadOnlyMemory<byte> buffer = encoded;
+            var buffer = new ReadOnlySequence<byte>(encoded);
             var messages = new List<byte[]>();
             while (BinaryMessageParser.TryParseMessage(ref buffer, out var message))
             {
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [InlineData(new byte[] { 0x09, 0x00, 0x00 })] // Not enough data for payload
         public void ReadIncompleteMessages(byte[] encoded)
         {
-            ReadOnlyMemory<byte> buffer = encoded;
+            var buffer = new ReadOnlySequence<byte>(encoded);
             Assert.False(BinaryMessageParser.TryParseMessage(ref buffer, out var message));
             Assert.Equal(encoded.Length, buffer.Length);
         }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -286,11 +287,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             // Parse the input fully now.
             bytes = Frame(bytes);
             var protocol = new MessagePackHubProtocol();
-            var messages = new List<HubMessage>();
-            Assert.True(protocol.TryParseMessages(bytes, new TestBinder(testData.Message), messages));
+            var data = new ReadOnlySequence<byte>(bytes);
+            Assert.True(protocol.TryParseMessage(ref data, new TestBinder(testData.Message), out var message));
 
-            Assert.Single(messages);
-            Assert.Equal(testData.Message, messages[0], TestHubMessageEqualityComparer.Instance);
+            Assert.NotNull(message);
+            Assert.Equal(testData.Message, message, TestHubMessageEqualityComparer.Instance);
         }
 
         [Fact]
@@ -308,11 +309,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             // Parse the input fully now.
             bytes = Frame(bytes);
             var protocol = new MessagePackHubProtocol();
-            var messages = new List<HubMessage>();
-            Assert.True(protocol.TryParseMessages(bytes, new TestBinder(expectedMessage), messages));
+            var data = new ReadOnlySequence<byte>(bytes);
+            Assert.True(protocol.TryParseMessage(ref data, new TestBinder(expectedMessage), out var message));
 
-            Assert.Single(messages);
-            Assert.Equal(expectedMessage, messages[0], TestHubMessageEqualityComparer.Instance);
+            Assert.NotNull(message);
+            Assert.Equal(expectedMessage, message, TestHubMessageEqualityComparer.Instance);
         }
 
         [Theory]
@@ -325,7 +326,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             AssertMessages(testData.Encoded, bytes);
 
             // Unframe the message to check the binary encoding
-            ReadOnlyMemory<byte> byteSpan = bytes;
+            var byteSpan = new ReadOnlySequence<byte>(bytes);
             Assert.True(BinaryMessageParser.TryParseMessage(ref byteSpan, out var unframed));
 
             // Check the baseline binary encoding, use Assert.True in order to configure the error message
@@ -380,8 +381,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var buffer = Frame(Pack(testData.Encoded));
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
-            var messages = new List<HubMessage>();
-            var exception = Assert.Throws<FormatException>(() => _hubProtocol.TryParseMessages(buffer, binder, messages));
+            var data = new ReadOnlySequence<byte>(buffer);
+            var exception = Assert.Throws<FormatException>(() => _hubProtocol.TryParseMessage(ref data, binder, out _));
 
             Assert.Equal(testData.ErrorMessage, exception.Message);
         }
@@ -409,22 +410,21 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var buffer = Frame(Pack(testData.Encoded));
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
-            var messages = new List<HubMessage>();
-            _hubProtocol.TryParseMessages(buffer, binder, messages);
-            var exception = Assert.Throws<FormatException>(() => ((HubMethodInvocationMessage)messages[0]).Arguments);
+            var data = new ReadOnlySequence<byte>(buffer);
+            _hubProtocol.TryParseMessage(ref data, binder, out var message);
+            var exception = Assert.Throws<FormatException>(() => ((HubMethodInvocationMessage)message).Arguments);
 
             Assert.Equal(testData.ErrorMessage, exception.Message);
         }
 
         [Theory]
-        [InlineData(new object[] { new byte[] { 0x05, 0x01 }, 0 })]
-        public void ParserDoesNotConsumePartialData(byte[] payload, int expectedMessagesCount)
+        [InlineData(new byte[] { 0x05, 0x01 })]
+        public void ParserDoesNotConsumePartialData(byte[] payload)
         {
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
-            var messages = new List<HubMessage>();
-            var result = _hubProtocol.TryParseMessages(payload, binder, messages);
-            Assert.True(result || messages.Count == 0);
-            Assert.Equal(expectedMessagesCount, messages.Count);
+            var data = new ReadOnlySequence<byte>(payload);
+            var result = _hubProtocol.TryParseMessage(ref data, binder, out var message);
+            Assert.Null(message);
         }
 
         [Fact]
@@ -434,9 +434,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             AssertMessages(Array(HubProtocolConstants.CompletionMessageType, Map(), "0", 3, Array(42)), result);
         }
 
-        private static void AssertMessages(MessagePackObject expectedOutput, ReadOnlyMemory<byte> bytes)
+        private static void AssertMessages(MessagePackObject expectedOutput, byte[] bytes)
         {
-            Assert.True(BinaryMessageParser.TryParseMessage(ref bytes, out var message));
+            var data = new ReadOnlySequence<byte>(bytes);
+            Assert.True(BinaryMessageParser.TryParseMessage(ref data, out var message));
             var obj = Unpack(message.ToArray());
             Assert.Equal(expectedOutput, obj);
         }

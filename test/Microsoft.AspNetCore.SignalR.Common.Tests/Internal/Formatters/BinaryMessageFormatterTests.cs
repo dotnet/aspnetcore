@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             {
                 BinaryMessageFormatter.WriteLengthPrefix(payload.Length, ms);
                 ms.Write(payload, 0, payload.Length);
-                var buffer = new ReadOnlyMemory<byte>(ms.ToArray());
+                var buffer = new ReadOnlySequence<byte>(ms.ToArray());
                 Assert.True(BinaryMessageParser.TryParseMessage(ref buffer, out var roundtripped));
                 Assert.Equal(payload, roundtripped.ToArray());
             }

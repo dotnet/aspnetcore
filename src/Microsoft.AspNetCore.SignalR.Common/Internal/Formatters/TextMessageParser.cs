@@ -24,22 +24,5 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
 
             return true;
         }
-
-        public static bool TryParseMessage(ref ReadOnlyMemory<byte> buffer, out ReadOnlyMemory<byte> payload)
-        {
-            var index = buffer.Span.IndexOf(TextMessageFormatter.RecordSeparator);
-            if (index == -1)
-            {
-                payload = default;
-                return false;
-            }
-
-            payload = buffer.Slice(0, index);
-
-            // Skip record separator
-            buffer = buffer.Slice(index + 1);
-
-            return true;
-        }
     }
 }

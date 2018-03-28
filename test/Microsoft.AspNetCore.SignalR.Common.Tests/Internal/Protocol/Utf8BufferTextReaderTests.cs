@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ReadingWhenCharBufferBigEnough()
         {
-            var buffer = Encoding.UTF8.GetBytes("Hello World");
+            var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("Hello World"));
             var reader = new Utf8BufferTextReader();
             reader.SetBuffer(buffer);
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ReadingUnicodeWhenCharBufferBigEnough()
         {
-            var buffer = Encoding.UTF8.GetBytes("a\u00E4\u00E4\u00a9o");
+            var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("a\u00E4\u00E4\u00a9o"));
             var reader = new Utf8BufferTextReader();
             reader.SetBuffer(buffer);
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ReadingWhenCharBufferBigEnoughAndNotStartingFromZero()
         {
-            var buffer = Encoding.UTF8.GetBytes("Hello World");
+            var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("Hello World"));
             var reader = new Utf8BufferTextReader();
             reader.SetBuffer(buffer);
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ReadingWhenBufferTooSmall()
         {
-            var buffer = Encoding.UTF8.GetBytes("Hello World");
+            var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("Hello World"));
             var reader = new Utf8BufferTextReader();
             reader.SetBuffer(buffer);
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ReadingUnicodeWhenBufferTooSmall()
         {
-            var buffer = Encoding.UTF8.GetBytes("\u00E4\u00E4\u00E5");
+            var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("\u00E4\u00E4\u00E5"));
             var reader = new Utf8BufferTextReader();
             reader.SetBuffer(buffer);
 

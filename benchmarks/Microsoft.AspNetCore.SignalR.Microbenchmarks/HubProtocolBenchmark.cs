@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using BenchmarkDotNet.Attributes;
@@ -59,8 +60,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void ReadSingleMessage()
         {
-            var messages = new List<HubMessage>();
-            if (!_hubProtocol.TryParseMessages(_binaryInput, _binder, messages))
+            var data = new ReadOnlySequence<byte>(_binaryInput);
+            if (!_hubProtocol.TryParseMessage(ref data, _binder, out _))
             {
                 throw new InvalidOperationException("Failed to read message");
             }

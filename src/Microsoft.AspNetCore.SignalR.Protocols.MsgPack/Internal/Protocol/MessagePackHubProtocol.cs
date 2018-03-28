@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -46,21 +47,33 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return version == Version;
         }
 
-        public bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
         {
-            while (BinaryMessageParser.TryParseMessage(ref input, out var payload))
+            if (!BinaryMessageParser.TryParseMessage(ref input, out var payload))
             {
-                var isArray = MemoryMarshal.TryGetArray(payload, out var arraySegment);
-                // This will never be false unless we started using un-managed buffers
-                Debug.Assert(isArray);
-                var message = ParseMessage(arraySegment.Array, arraySegment.Offset, binder);
-                if (message != null)
-                {
-                    messages.Add(message);
-                }
+                message = null;
+                return false;
             }
 
-            return messages.Count > 0;
+            var arraySegment = GetArraySegment(payload);
+
+            message = ParseMessage(arraySegment.Array, arraySegment.Offset, binder);
+
+            return message != null;
+        }
+
+        private static ArraySegment<byte> GetArraySegment(ReadOnlySequence<byte> input)
+        {
+            if (input.IsSingleSegment)
+            {
+                var isArray = MemoryMarshal.TryGetArray(input.First, out var arraySegment);
+                // This will never be false unless we started using un-managed buffers
+                Debug.Assert(isArray);
+                return arraySegment;
+            }
+
+            // Should be rare
+            return new ArraySegment<byte>(input.ToArray());
         }
 
         private static HubMessage ParseMessage(byte[] input, int startOffset, IInvocationBinder binder)
