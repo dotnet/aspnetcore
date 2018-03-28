@@ -185,9 +185,9 @@
     <RemotionLinqPackageVersion>2.2.0</RemotionLinqPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
-    <SQLitePCLRawBundleGreenPackageVersion>1.1.10-pre20180223200113</SQLitePCLRawBundleGreenPackageVersion>
-    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.10-pre20180223200113</SQLitePCLRawBundleSqlcipherPackageVersion>
-    <SQLitePCLRawCorePackageVersion>1.1.10-pre20180223200113</SQLitePCLRawCorePackageVersion>
+    <SQLitePCLRawBundleGreenPackageVersion>1.1.10</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.10</SQLitePCLRawBundleSqlcipherPackageVersion>
+    <SQLitePCLRawCorePackageVersion>1.1.10</SQLitePCLRawCorePackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
     <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
