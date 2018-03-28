@@ -65,7 +65,7 @@
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
     <MicrosoftOwinSecurityInteropPackageVersion>2.1.0-preview3-32037</MicrosoftOwinSecurityInteropPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview2-26313-01</SystemComponentModelAnnotationsPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview2-26326-04</SystemComponentModelAnnotationsPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
