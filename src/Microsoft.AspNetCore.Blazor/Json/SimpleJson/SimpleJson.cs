@@ -1349,6 +1349,8 @@ namespace SimpleJson
             {
                 if (str.Length != 0) // We know it can't be null now.
                 {
+                    if (type == typeof(TimeSpan) || (ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(TimeSpan)))
+                        return TimeSpan.ParseExact(str, "c", CultureInfo.InvariantCulture);
                     if (type == typeof(DateTime) || (ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(DateTime)))
                         return DateTime.TryParseExact(str, Iso8601Format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var result)
                             ? result : DateTime.Parse(str, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
@@ -1490,6 +1492,8 @@ namespace SimpleJson
                 output = ((Guid)input).ToString("D");
             else if (input is Uri)
                 output = input.ToString();
+            else if (input is TimeSpan)
+                output = ((TimeSpan)input).ToString("c");
             else
             {
                 Enum inputEnum = input as Enum;
