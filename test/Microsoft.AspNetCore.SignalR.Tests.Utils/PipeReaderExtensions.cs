@@ -61,6 +61,7 @@ namespace System.IO.Pipelines
                     pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
                     continue;
                 }
+
                 pipeReader.AdvanceTo(result.Buffer.GetPosition(numBytes));
                 break;
             }
@@ -72,18 +73,13 @@ namespace System.IO.Pipelines
             {
                 var result = await pipeReader.ReadAsync();
 
-                try
+                if (result.IsCompleted)
                 {
-                    if (result.IsCompleted)
-                    {
-                        return result.Buffer.ToArray();
-                    }
+                    return result.Buffer.ToArray();
                 }
-                finally
-                {
-                    // Consume nothing, just wait for everything
-                    pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
-                }
+
+                // Consume nothing, just wait for everything
+                pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
             }
         }
     }

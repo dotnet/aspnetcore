@@ -33,12 +33,25 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public string Url { get; private set; }
 
-        public ServerFixture()
+        public ServerFixture() : this(loggerFactory: null)
+        {
+        }
+
+        public ServerFixture(ILoggerFactory loggerFactory)
         {
             _logSinkProvider = new LogSinkProvider();
 
-            var testLog = AssemblyTestLog.ForAssembly(typeof(TStartup).Assembly);
-            _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}", out _loggerFactory, "ServerFixture");
+            if (loggerFactory == null)
+            {
+                var testLog = AssemblyTestLog.ForAssembly(typeof(TStartup).Assembly);
+                _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}",
+                    out _loggerFactory, "ServerFixture");
+            }
+            else
+            {
+                _loggerFactory = loggerFactory;
+            }
+
             _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
 
             StartServer();
@@ -51,6 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             _host = new WebHostBuilder()
                 .ConfigureLogging(builder => builder
+                    .SetMinimumLevel(LogLevel.Debug)
                     .AddProvider(_logSinkProvider)
                     .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))

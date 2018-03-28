@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -23,22 +27,20 @@ namespace Microsoft.AspNetCore.SignalR.Client
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
 
+        // This lock protects the connection state.
+        private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
+
+        // Persistent across all connections
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
-        private readonly IConnection _connection;
         private readonly IHubProtocol _protocol;
-        private readonly HubBinder _binder;
-
-        private readonly object _pendingCallsLock = new object();
-        private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>();
+        private readonly Func<IConnection> _connectionFactory;
         private readonly ConcurrentDictionary<string, List<InvocationHandler>> _handlers = new ConcurrentDictionary<string, List<InvocationHandler>>();
-        private CancellationTokenSource _connectionActive;
+        private bool _disposed;
 
-        private int _nextId;
-        private volatile bool _startCalled;
-        private readonly Timer _timeoutTimer;
-        private bool _needKeepAlive;
-        private bool _receivedHandshakeResponse;
+        // Transient state to a connection
+        private readonly object _pendingCallsLock = new object();
+        private ConnectionState _connectionState;
 
         public event Action<Exception> Closed;
 
@@ -48,103 +50,46 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
 
-        public HubConnection(IConnection connection, IHubProtocol protocol, ILoggerFactory loggerFactory)
+        public HubConnection(Func<IConnection> connectionFactory, IHubProtocol protocol) : this(connectionFactory, protocol, NullLoggerFactory.Instance)
         {
-            if (connection == null)
-            {
-                throw new ArgumentNullException(nameof(connection));
-            }
+        }
 
-            if (protocol == null)
-            {
-                throw new ArgumentNullException(nameof(protocol));
-            }
+        public HubConnection(Func<IConnection> connectionFactory, IHubProtocol protocol, ILoggerFactory loggerFactory)
+        {
+            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+            _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
 
-            _connection = connection;
-            _binder = new HubBinder(this);
-            _protocol = protocol;
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HubConnection>();
-            _connection.OnReceived((data, state) => ((HubConnection)state).OnDataReceivedAsync(data), this);
-            _connection.Closed += Shutdown;
-
-            // Create the timer for timeout, but disabled by default (we enable it when started).
-            _timeoutTimer = new Timer(state => ((HubConnection)state).TimeoutElapsed(), this, Timeout.Infinite, Timeout.Infinite);
         }
 
         public async Task StartAsync()
         {
-            try
-            {
-                await StartAsyncCore().ForceAsync();
-            }
-            finally
-            {
-                _startCalled = true;
-            }
+            CheckDisposed();
+            await StartAsyncCore().ForceAsync();
         }
 
-        private void TimeoutElapsed()
+        public async Task StopAsync()
         {
-            _connection.AbortAsync(new TimeoutException($"Server timeout ({ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server."));
+            CheckDisposed();
+            await StopAsyncCore(disposing: false).ForceAsync();
         }
 
-        private void ResetTimeoutTimer()
+        public async Task DisposeAsync()
         {
-            if (_needKeepAlive)
+            if (!_disposed)
             {
-                Log.ResettingKeepAliveTimer(_logger);
-
-                // If the connection is disposed while this callback is firing, or if the callback is fired after dispose
-                // (which can happen because of some races), this will throw ObjectDisposedException. That's OK, because
-                // we don't need the timer anyway.
-                try
-                {
-                    _timeoutTimer.Change(ServerTimeout, Timeout.InfiniteTimeSpan);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // This is OK!
-                }
+                await StopAsyncCore(disposing: true).ForceAsync();
             }
         }
 
-        private async Task StartAsyncCore()
-        {
-            await _connection.StartAsync(_protocol.TransferFormat);
-            _needKeepAlive = _connection.Features.Get<IConnectionInherentKeepAliveFeature>() == null;
-            _receivedHandshakeResponse = false;
-
-            Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-
-            _connectionActive = new CancellationTokenSource();
-            using (var memoryStream = new MemoryStream())
-            {
-                Log.SendingHubHandshake(_logger);
-                HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name, _protocol.Version), memoryStream);
-                await _connection.SendAsync(memoryStream.ToArray(), _connectionActive.Token);
-            }
-
-            ResetTimeoutTimer();
-        }
-
-        public async Task StopAsync() => await StopAsyncCore().ForceAsync();
-
-        private Task StopAsyncCore() => _connection.StopAsync();
-
-        public async Task DisposeAsync() => await DisposeAsyncCore().ForceAsync();
-
-        private async Task DisposeAsyncCore()
-        {
-            await _connection.DisposeAsync();
-
-            // Dispose the timer AFTER shutting down the connection.
-            _timeoutTimer.Dispose();
-        }
-
-        // TODO: Client return values/tasks?
         public IDisposable On(string methodName, Type[] parameterTypes, Func<object[], object, Task> handler, object state)
         {
+            Log.RegisteringHandler(_logger, methodName);
+
+            CheckDisposed();
+
+            // It's OK to be disposed while registering a callback, we'll just never call the callback anyway (as with all the callbacks registered before disposal).
             var invocationHandler = new InvocationHandler(parameterTypes, handler, state);
             var invocationList = _handlers.AddOrUpdate(methodName, _ => new List<InvocationHandler> { invocationHandler },
                 (_, invocations) =>
@@ -159,88 +104,215 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return new Subscription(invocationHandler, invocationList);
         }
 
-        public async Task<ChannelReader<object>> StreamAsChannelAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
+        public async Task<ChannelReader<object>> StreamAsChannelAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
+            await StreamAsChannelAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+
+        public async Task<object> InvokeAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
+            await InvokeAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+
+        // REVIEW: We don't generally use cancellation tokens when writing to a pipe because the asynchrony is only the result of backpressure.
+        // However, this would be the only "invocation" method _without_ a cancellation token... which is odd.
+        public async Task SendAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
+            await SendAsyncCore(methodName, args, cancellationToken).ForceAsync();
+
+        private async Task StartAsyncCore()
         {
-            return await StreamAsChannelAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+            await WaitConnectionLockAsync();
+            try
+            {
+                if (_connectionState != null)
+                {
+                    // We're already connected
+                    return;
+                }
+
+                CheckDisposed();
+
+                Log.Starting(_logger);
+
+                // Start the connection
+                var connection = _connectionFactory();
+                await connection.StartAsync(_protocol.TransferFormat);
+                _connectionState = new ConnectionState(connection, this);
+
+                // From here on, if an error occurs we need to shut down the connection because
+                // we still own it.
+                try
+                {
+                    Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
+                    await HandshakeAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorStartingConnection(_logger, ex);
+
+                    // Can't have any invocations to cancel, we're in the lock.
+                    await _connectionState.Connection.DisposeAsync();
+                    throw;
+                }
+
+                _connectionState.ReceiveTask = ReceiveLoop(_connectionState);
+                Log.Started(_logger);
+            }
+            finally
+            {
+                ReleaseConnectionLock();
+            }
+        }
+
+        // This method does both Dispose and Start, the 'disposing' flag indicates which.
+        // The behaviors are nearly identical, except that the _disposed flag is set in the lock
+        // if we're disposing.
+        private async Task StopAsyncCore(bool disposing)
+        {
+            // Block a Start from happening until we've finished capturing the connection state.
+            ConnectionState connectionState;
+            await WaitConnectionLockAsync();
+            try
+            {
+                if (disposing && _disposed)
+                {
+                    // DisposeAsync should be idempotent.
+                    return;
+                }
+
+                CheckDisposed();
+                connectionState = _connectionState;
+                
+                // Set the stopping flag so that any invocations after this get a useful error message instead of
+                // silently failing or throwing an error about the pipe being completed.
+                if (connectionState != null)
+                {
+                    connectionState.Stopping = true;
+                }
+
+                if (disposing)
+                {
+                    _disposed = true;
+                }
+            }
+            finally
+            {
+                ReleaseConnectionLock();
+            }
+
+            // Now stop the connection we captured
+            if (connectionState != null)
+            {
+                await connectionState.StopAsync(ServerTimeout);
+            }
         }
 
         private async Task<ChannelReader<object>> StreamAsChannelAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
-            if (!_startCalled)
+            async Task OnStreamCancelled(InvocationRequest irq)
             {
-                throw new InvalidOperationException($"The '{nameof(StreamAsChannelAsync)}' method cannot be called before the connection has been started.");
-            }
-
-            var invokeCts = new CancellationTokenSource();
-            var irq = InvocationRequest.Stream(invokeCts.Token, returnType, GetNextId(), _loggerFactory, this, out var channel);
-            // After InvokeCore we don't want the irq cancellation token to be triggered.
-            // The stream invocation will be canceled by the CancelInvocationMessage, connection closing, or channel finishing.
-            using (cancellationToken.Register(token => ((CancellationTokenSource)token).Cancel(), invokeCts))
-            {
-                await InvokeStreamCore(methodName, irq, args);
-            }
-
-            if (cancellationToken.CanBeCanceled)
-            {
-                cancellationToken.Register(state =>
+                // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
+                await WaitConnectionLockAsync();
+                try
                 {
-                    var invocationReq = (InvocationRequest)state;
-                    if (!invocationReq.HubConnection._connectionActive.IsCancellationRequested)
+                    if (_connectionState != null)
                     {
+                        Log.SendingCancellation(_logger, irq.InvocationId);
+
                         // Fire and forget, if it fails that means we aren't connected anymore.
-                        _ = invocationReq.HubConnection.SendHubMessage(new CancelInvocationMessage(invocationReq.InvocationId), invocationReq);
-
-                        if (invocationReq.HubConnection.TryRemoveInvocation(invocationReq.InvocationId, out _))
-                        {
-                            invocationReq.Complete(CompletionMessage.Empty(irq.InvocationId));
-                        }
-
-                        invocationReq.Dispose();
+                        _ = SendHubMessage(new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken);
                     }
-                }, irq);
+                    else
+                    {
+                        Log.UnableToSendCancellation(_logger, irq.InvocationId);
+                    }
+                }
+                finally
+                {
+                    ReleaseConnectionLock();
+                }
+
+                // Cancel the invocation
+                irq.Dispose();
+            }
+
+            CheckDisposed();
+            await WaitConnectionLockAsync();
+
+            ChannelReader<object> channel;
+            try
+            {
+                CheckDisposed();
+                CheckConnectionActive(nameof(StreamAsChannelAsync));
+
+                var irq = InvocationRequest.Stream(cancellationToken, returnType, _connectionState.GetNextId(), _loggerFactory, this, out channel);
+                await InvokeStreamCore(methodName, irq, args, cancellationToken);
+
+                if (cancellationToken.CanBeCanceled)
+                {
+                    cancellationToken.Register(state => _ = OnStreamCancelled((InvocationRequest)state), irq);
+                }
+            }
+            finally
+            {
+                ReleaseConnectionLock();
             }
 
             return channel;
         }
 
-        public async Task<object> InvokeAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
-             await InvokeAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
 
         private async Task<object> InvokeAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
-            if (!_startCalled)
+            CheckDisposed();
+            await WaitConnectionLockAsync();
+
+            Task<object> invocationTask;
+            try
             {
-                throw new InvalidOperationException($"The '{nameof(InvokeAsync)}' method cannot be called before the connection has been started.");
+                CheckDisposed();
+                CheckConnectionActive(nameof(InvokeAsync));
+
+                var irq = InvocationRequest.Invoke(cancellationToken, returnType, _connectionState.GetNextId(), _loggerFactory, this, out invocationTask);
+                await InvokeCore(methodName, irq, args, cancellationToken);
+            }
+            finally
+            {
+                ReleaseConnectionLock();
             }
 
-            var irq = InvocationRequest.Invoke(cancellationToken, returnType, GetNextId(), _loggerFactory, this, out var task);
-            await InvokeCore(methodName, irq, args);
-            return await task;
+            // Wait for this outside the lock, because it won't complete until the server responds.
+            return await invocationTask;
         }
 
-        private Task InvokeCore(string methodName, InvocationRequest irq, object[] args)
+        private async Task InvokeCore(string methodName, InvocationRequest irq, object[] args, CancellationToken cancellationToken)
         {
-            ThrowIfConnectionTerminated(irq.InvocationId);
+            AssertConnectionValid();
+
             Log.PreparingBlockingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
             // Client invocations are always blocking
             var invocationMessage = new InvocationMessage(irq.InvocationId, target: methodName,
                 argumentBindingException: null, arguments: args);
 
-            Log.RegisterInvocation(_logger, invocationMessage.InvocationId);
+            Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
 
-            AddInvocation(irq);
+            _connectionState.AddInvocation(irq);
 
             // Trace the full invocation
-            Log.IssueInvocation(_logger, invocationMessage.InvocationId, irq.ResultType.FullName, methodName, args);
+            Log.IssuingInvocation(_logger, invocationMessage.InvocationId, irq.ResultType.FullName, methodName, args);
 
-            // We don't need to wait for this to complete. It will signal back to the invocation request.
-            return SendHubMessage(invocationMessage, irq);
+            try
+            {
+                await SendHubMessage(invocationMessage, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.FailedToSendInvocation(_logger, invocationMessage.InvocationId, ex);
+                _connectionState.TryRemoveInvocation(invocationMessage.InvocationId, out _);
+                irq.Fail(ex);
+            }
         }
 
-        private Task InvokeStreamCore(string methodName, InvocationRequest irq, object[] args)
+        private async Task InvokeStreamCore(string methodName, InvocationRequest irq, object[] args, CancellationToken cancellationToken)
         {
-            ThrowIfConnectionTerminated(irq.InvocationId);
+            AssertConnectionValid();
 
             Log.PreparingStreamingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
@@ -248,92 +320,72 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 argumentBindingException: null, arguments: args);
 
             // I just want an excuse to use 'irq' as a variable name...
-            Log.RegisterInvocation(_logger, invocationMessage.InvocationId);
+            Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
 
-            AddInvocation(irq);
+            _connectionState.AddInvocation(irq);
 
             // Trace the full invocation
-            Log.IssueInvocation(_logger, invocationMessage.InvocationId, irq.ResultType.FullName, methodName, args);
+            Log.IssuingInvocation(_logger, invocationMessage.InvocationId, irq.ResultType.FullName, methodName, args);
 
-            // We don't need to wait for this to complete. It will signal back to the invocation request.
-            return SendHubMessage(invocationMessage, irq);
-        }
-
-        private async Task SendHubMessage(HubInvocationMessage hubMessage, InvocationRequest irq)
-        {
             try
             {
-                var payload = _protocol.WriteToArray(hubMessage);
-                Log.SendInvocation(_logger, hubMessage.InvocationId);
-
-                await _connection.SendAsync(payload, irq.CancellationToken);
-                Log.SendInvocationCompleted(_logger, hubMessage.InvocationId);
+                await SendHubMessage(invocationMessage, cancellationToken);
             }
             catch (Exception ex)
             {
-                Log.SendInvocationFailed(_logger, hubMessage.InvocationId, ex);
+                Log.FailedToSendInvocation(_logger, invocationMessage.InvocationId, ex);
+                _connectionState.TryRemoveInvocation(invocationMessage.InvocationId, out _);
                 irq.Fail(ex);
-                TryRemoveInvocation(hubMessage.InvocationId, out _);
             }
         }
 
-        public async Task SendAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
-            await SendAsyncCore(methodName, args, cancellationToken).ForceAsync();
+        private async Task SendHubMessage(HubInvocationMessage hubMessage, CancellationToken cancellationToken = default)
+        {
+            AssertConnectionValid();
+
+            var payload = _protocol.WriteToArray(hubMessage);
+
+            Log.SendingMessage(_logger, hubMessage);
+            // REVIEW: If a token is passed in and is cancelled during FlushAsync it seems to break .Complete()...
+            await WriteAsync(payload, CancellationToken.None);
+            Log.MessageSent(_logger, hubMessage);
+        }
 
         private async Task SendAsyncCore(string methodName, object[] args, CancellationToken cancellationToken)
         {
-            if (!_startCalled)
-            {
-                throw new InvalidOperationException($"The '{nameof(SendAsync)}' method cannot be called before the connection has been started.");
-            }
+            CheckDisposed();
 
-            var invocationMessage = new InvocationMessage(null, target: methodName,
-                argumentBindingException: null, arguments: args);
-
-            ThrowIfConnectionTerminated(invocationMessage.InvocationId);
-
+            await WaitConnectionLockAsync();
             try
             {
+                CheckDisposed();
+                CheckConnectionActive(nameof(SendAsync));
+
                 Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
 
-                var payload = _protocol.WriteToArray(invocationMessage);
-                Log.SendInvocation(_logger, invocationMessage.InvocationId);
+                var invocationMessage = new InvocationMessage(null, target: methodName,
+                    argumentBindingException: null, arguments: args);
 
-                await _connection.SendAsync(payload, cancellationToken);
-                Log.SendInvocationCompleted(_logger, invocationMessage.InvocationId);
+                await SendHubMessage(invocationMessage, cancellationToken);
             }
-            catch (Exception ex)
+            finally
             {
-                Log.SendInvocationFailed(_logger, invocationMessage.InvocationId, ex);
-                throw;
+                ReleaseConnectionLock();
             }
         }
 
-        private async Task OnDataReceivedAsync(byte[] data)
+        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(ReadOnlySequence<byte> buffer, ConnectionState connectionState)
         {
-            ResetTimeoutTimer();
+            Log.ProcessingMessage(_logger, buffer.Length);
+
+            // TODO: Don't ToArray it :)
+            var data = buffer.ToArray();
 
             var currentData = new ReadOnlyMemory<byte>(data);
             Log.ParsingMessages(_logger, currentData.Length);
 
-            // first message received must be handshake response
-            if (!_receivedHandshakeResponse)
-            {
-                // process handshake and return left over data to parse additional messages
-                if (!ProcessHandshakeResponse(ref currentData))
-                {
-                    return;
-                }
-
-                _receivedHandshakeResponse = true;
-                if (currentData.IsEmpty)
-                {
-                    return;
-                }
-            }
-
             var messages = new List<HubMessage>();
-            if (_protocol.TryParseMessages(currentData, _binder, messages))
+            if (_protocol.TryParseMessages(currentData, connectionState, messages))
             {
                 Log.ReceivingMessages(_logger, messages.Count);
                 foreach (var message in messages)
@@ -344,38 +396,39 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         case InvocationMessage invocation:
                             Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target,
                                 invocation.ArgumentBindingException != null ? null : invocation.Arguments);
-                            await DispatchInvocationAsync(invocation, _connectionActive.Token);
+                            await DispatchInvocationAsync(invocation);
                             break;
                         case CompletionMessage completion:
-                            if (!TryRemoveInvocation(completion.InvocationId, out irq))
+                            if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
                             {
-                                Log.DropCompletionMessage(_logger, completion.InvocationId);
-                                return;
+                                Log.DroppedCompletionMessage(_logger, completion.InvocationId);
                             }
-                            DispatchInvocationCompletion(completion, irq);
-                            irq.Dispose();
+                            else
+                            {
+                                DispatchInvocationCompletion(completion, irq);
+                                irq.Dispose();
+                            }
                             break;
                         case StreamItemMessage streamItem:
                             // Complete the invocation with an error, we don't support streaming (yet)
-                            if (!TryGetInvocation(streamItem.InvocationId, out irq))
+                            if (!connectionState.TryGetInvocation(streamItem.InvocationId, out irq))
                             {
-                                Log.DropStreamMessage(_logger, streamItem.InvocationId);
-                                return;
+                                Log.DroppedStreamMessage(_logger, streamItem.InvocationId);
+                                return (close: false, exception: null);
                             }
-                            DispatchInvocationStreamItemAsync(streamItem, irq);
+                            await DispatchInvocationStreamItemAsync(streamItem, irq);
                             break;
                         case CloseMessage close:
                             if (string.IsNullOrEmpty(close.Error))
                             {
                                 Log.ReceivedClose(_logger);
-                                Shutdown();
+                                return (close: true, exception: null);
                             }
                             else
                             {
                                 Log.ReceivedCloseWithError(_logger, close.Error);
-                                Shutdown(new InvalidOperationException(close.Error));
+                                return (close: true, exception: new HubException($"The server closed the connection with the following error: {close.Error}"));
                             }
-                            break;
                         case PingMessage _:
                             Log.ReceivedPing(_logger);
                             // Nothing to do on receipt of a ping.
@@ -390,85 +443,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 Log.FailedParsing(_logger, data.Length);
             }
+
+            return (close: false, exception: null);
         }
 
-        private bool ProcessHandshakeResponse(ref ReadOnlyMemory<byte> data)
-        {
-            HandshakeResponseMessage message;
-
-            try
-            {
-                // read first message out of the incoming data
-                if (!TextMessageParser.TryParseMessage(ref data, out var payload))
-                {
-                    throw new InvalidDataException("Unable to parse payload as a handshake response message.");
-                }
-
-                message = HandshakeProtocol.ParseResponseMessage(payload);
-            }
-            catch (Exception ex)
-            {
-                // shutdown if we're unable to read handshake
-                Log.ErrorReceivingHandshakeResponse(_logger, ex);
-                Shutdown(ex);
-                return false;
-            }
-
-            if (!string.IsNullOrEmpty(message.Error))
-            {
-                // shutdown if handshake returns an error
-                Log.HandshakeServerError(_logger, message.Error);
-                Shutdown();
-                return false;
-            }
-
-            return true;
-        }
-
-        private void Shutdown(Exception exception = null)
-        {
-            // check if connection has already been shutdown
-            if (_connectionActive.IsCancellationRequested)
-            {
-                return;
-            }
-
-            Log.ShutdownConnection(_logger);
-            if (exception != null)
-            {
-                Log.ShutdownWithError(_logger, exception);
-            }
-
-            lock (_pendingCallsLock)
-            {
-                // We cancel inside the lock to make sure everyone who was part-way through registering an invocation
-                // completes. This also ensures that nobody will add things to _pendingCalls after we leave this block
-                // because everything that adds to _pendingCalls checks _connectionActive first (inside the _pendingCallsLock)
-                _connectionActive.Cancel();
-
-                foreach (var outstandingCall in _pendingCalls.Values)
-                {
-                    Log.RemoveInvocation(_logger, outstandingCall.InvocationId);
-                    if (exception != null)
-                    {
-                        outstandingCall.Fail(exception);
-                    }
-                    outstandingCall.Dispose();
-                }
-                _pendingCalls.Clear();
-            }
-
-            try
-            {
-                Closed?.Invoke(exception);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorDuringClosedEvent(_logger, ex);
-            }
-        }
-
-        private async Task DispatchInvocationAsync(InvocationMessage invocation, CancellationToken cancellationToken)
+        private async Task DispatchInvocationAsync(InvocationMessage invocation)
         {
             // Find the handler
             if (!_handlers.TryGetValue(invocation.Target, out var handlers))
@@ -499,9 +478,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        // This async void is GROSS but we need to dispatch asynchronously because we're writing to a Channel
-        // and there's nobody to actually wait for us to finish.
-        private async void DispatchInvocationStreamItemAsync(StreamItemMessage streamItem, InvocationRequest irq)
+        private async Task DispatchInvocationStreamItemAsync(StreamItemMessage streamItem, InvocationRequest irq)
         {
             Log.ReceivedStreamItem(_logger, streamItem.InvocationId);
 
@@ -529,58 +506,270 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private void ThrowIfConnectionTerminated(string invocationId)
+        private void CheckDisposed()
         {
-            if (_connectionActive.Token.IsCancellationRequested)
+            if (_disposed)
             {
-                Log.InvokeAfterTermination(_logger, invocationId);
-                throw new InvalidOperationException("Connection has been terminated.");
+                throw new ObjectDisposedException(nameof(HubConnection));
             }
         }
 
-        private string GetNextId() => Interlocked.Increment(ref _nextId).ToString();
-
-        private void AddInvocation(InvocationRequest irq)
+        private async Task HandshakeAsync()
         {
-            lock (_pendingCallsLock)
+            // Send the Handshake request
+            using (var memoryStream = new MemoryStream())
             {
-                ThrowIfConnectionTerminated(irq.InvocationId);
-                if (_pendingCalls.ContainsKey(irq.InvocationId))
+                Log.SendingHubHandshake(_logger);
+                HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage(_protocol.Name, _protocol.Version), memoryStream);
+                var result = await WriteAsync(memoryStream.ToArray(), CancellationToken.None);
+
+                if (result.IsCompleted)
                 {
-                    Log.InvocationAlreadyInUse(_logger, irq.InvocationId);
-                    throw new InvalidOperationException($"Invocation ID '{irq.InvocationId}' is already in use.");
+                    // The other side disconnected
+                    throw new InvalidOperationException("The server disconnected before the handshake was completed");
                 }
-                else
+            }
+
+            try
+            {
+                while (true)
                 {
-                    _pendingCalls.Add(irq.InvocationId, irq);
+                    var result = await _connectionState.Connection.Transport.Input.ReadAsync();
+                    var buffer = result.Buffer;
+                    var consumed = buffer.Start;
+
+                    try
+                    {
+                        // Read first message out of the incoming data
+                        if (!buffer.IsEmpty && TextMessageParser.TryParseMessage(ref buffer, out var payload))
+                        {
+                            // Buffer was advanced to the end of the message by TryParseMessage
+                            consumed = buffer.Start;
+                            var message = HandshakeProtocol.ParseResponseMessage(payload.ToArray());
+
+                            if (!string.IsNullOrEmpty(message.Error))
+                            {
+                                Log.HandshakeServerError(_logger, message.Error);
+                                throw new HubException(
+                                    $"Unable to complete handshake with the server due to an error: {message.Error}");
+                            }
+
+                            break;
+                        }
+                        else if (result.IsCompleted)
+                        {
+                            // Not enough data, and we won't be getting any more data.
+                            throw new InvalidOperationException(
+                                "The server disconnected before sending a handshake response");
+                        }
+                    }
+                    finally
+                    {
+                        _connectionState.Connection.Transport.Input.AdvanceTo(consumed);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                // shutdown if we're unable to read handshake
+                Log.ErrorReceivingHandshakeResponse(_logger, ex);
+                throw;
+            }
+
+            Log.HandshakeComplete(_logger);
+        }
+
+        private async Task ReceiveLoop(ConnectionState connectionState)
+        {
+            // We hold a local capture of the connection state because StopAsync may dump out the current one.
+            // We'll be locking any time we want to check back in to the "active" connection state.
+
+            Log.ReceiveLoopStarting(_logger);
+
+            var timeoutTimer = StartTimeoutTimer(connectionState);
+
+            try
+            {
+                while (true)
+                {
+                    var result = await connectionState.Connection.Transport.Input.ReadAsync();
+                    var buffer = result.Buffer;
+                    var consumed = buffer.End; // TODO: Support partial messages
+                    var examined = buffer.End;
+
+                    try
+                    {
+                        if (result.IsCanceled)
+                        {
+                            // We were cancelled. Possibly because we were stopped gracefully
+                            break;
+                        }
+                        else if (!buffer.IsEmpty)
+                        {
+                            ResetTimeoutTimer(timeoutTimer);
+
+                            // We have data, process it
+                            var (close, exception) = await ProcessMessagesAsync(buffer, connectionState);
+                            if (close)
+                            {
+                                // Closing because we got a close frame, possibly with an error in it.
+                                connectionState.CloseException = exception;
+                                break;
+                            }
+                        }
+                        else if (result.IsCompleted)
+                        {
+                            break;
+                        }
+                    }
+                    finally
+                    {
+                        connectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.ServerDisconnectedWithError(_logger, ex);
+                connectionState.CloseException = ex;
+            }
+            
+            // Clear the connectionState field
+            await WaitConnectionLockAsync();
+            try
+            {
+                SafeAssert(ReferenceEquals(_connectionState, connectionState),
+                    "Someone other than ReceiveLoop cleared the connection state!");
+                _connectionState = null;
+            }
+            finally
+            {
+                ReleaseConnectionLock();
+            }
+
+            // Stop the timeout timer.
+            timeoutTimer?.Dispose();
+
+            // Dispose the connection
+            await connectionState.Connection.DisposeAsync();
+
+            // Cancel any outstanding invocations within the connection lock
+            connectionState.CancelOutstandingInvocations(connectionState.CloseException);
+
+            if (connectionState.CloseException != null)
+            {
+                Log.ShutdownWithError(_logger, connectionState.CloseException);
+            }
+            else
+            {
+                Log.ShutdownConnection(_logger);
+            }
+
+            // Fire-and-forget the closed event
+            RunClosedEvent(connectionState.CloseException);
+        }
+
+        private void RunClosedEvent(Exception closeException)
+        {
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    Log.InvokingClosedEventHandler(_logger);
+                    Closed?.Invoke(closeException);
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorDuringClosedEvent(_logger, ex);
+                }
+            });
+        }
+
+        private void ResetTimeoutTimer(Timer timeoutTimer)
+        {
+            if (timeoutTimer != null)
+            {
+                Log.ResettingKeepAliveTimer(_logger);
+                timeoutTimer.Change(ServerTimeout, Timeout.InfiniteTimeSpan);
             }
         }
 
-        private bool TryGetInvocation(string invocationId, out InvocationRequest irq)
+        private Timer StartTimeoutTimer(ConnectionState connectionState)
         {
-            lock (_pendingCallsLock)
+            // Check if we need keep-alive
+            Timer timeoutTimer = null;
+            if (connectionState.Connection.Features.Get<IConnectionInherentKeepAliveFeature>() == null)
             {
-                ThrowIfConnectionTerminated(invocationId);
-                return _pendingCalls.TryGetValue(invocationId, out irq);
+                Log.StartingServerTimeoutTimer(_logger, ServerTimeout);
+                timeoutTimer = new Timer(
+                    state => OnTimeout((ConnectionState)state),
+                    connectionState,
+                    dueTime: ServerTimeout,
+                    period: Timeout.InfiniteTimeSpan);
+            }
+            else
+            {
+                Log.NotUsingServerTimeout(_logger);
+            }
+
+            return timeoutTimer;
+        }
+
+        private void OnTimeout(ConnectionState connectionState)
+        {
+            if (!Debugger.IsAttached)
+            {
+                connectionState.CloseException = new TimeoutException(
+                    $"Server timeout ({ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.");
+                connectionState.Connection.Transport.Input.CancelPendingRead();
             }
         }
 
-        private bool TryRemoveInvocation(string invocationId, out InvocationRequest irq)
+        private ValueTask<FlushResult> WriteAsync(byte[] payload, CancellationToken cancellationToken = default)
         {
-            lock (_pendingCallsLock)
+            AssertConnectionValid();
+            return _connectionState.Connection.Transport.Output.WriteAsync(payload, cancellationToken);
+        }
+
+        private void CheckConnectionActive(string methodName)
+        {
+            if (_connectionState == null || _connectionState.Stopping)
             {
-                ThrowIfConnectionTerminated(invocationId);
-                if (_pendingCalls.TryGetValue(invocationId, out irq))
-                {
-                    _pendingCalls.Remove(invocationId);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
             }
+        }
+
+        // Debug.Assert plays havoc with Unit Tests. But I want something that I can "assert" only in Debug builds.
+        [Conditional("DEBUG")]
+        private static void SafeAssert(bool condition, string message, [CallerMemberName] string memberName = null, [CallerFilePath] string fileName = null, [CallerLineNumber] int lineNumber = 0)
+        {
+            if (!condition)
+            {
+                throw new Exception($"Assertion failed in {memberName}, at {fileName}:{lineNumber}: {message}");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private void AssertInConnectionLock([CallerMemberName] string memberName = null, [CallerFilePath] string fileName = null, [CallerLineNumber] int lineNumber = 0) => SafeAssert(_connectionLock.CurrentCount == 0, "We're not in the Connection Lock!", memberName, fileName, lineNumber);
+
+        [Conditional("DEBUG")]
+        private void AssertConnectionValid([CallerMemberName] string memberName = null, [CallerFilePath] string fileName = null, [CallerLineNumber] int lineNumber = 0)
+        {
+            AssertInConnectionLock(memberName, fileName, lineNumber);
+            SafeAssert(_connectionState != null, "We don't have a connection!", memberName, fileName, lineNumber);
+        }
+
+        private Task WaitConnectionLockAsync([CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
+        {
+            Log.WaitingOnConnectionLock(_logger, memberName, filePath, lineNumber);
+            return _connectionLock.WaitAsync();
+        }
+
+        private void ReleaseConnectionLock([CallerMemberName] string memberName = null,
+            [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
+        {
+            Log.ReleasingConnectionLock(_logger, memberName, filePath, lineNumber);
+            _connectionLock.Release();
         }
 
         private class Subscription : IDisposable
@@ -603,45 +792,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private class HubBinder : IInvocationBinder
-        {
-            private HubConnection _connection;
-
-            public HubBinder(HubConnection connection)
-            {
-                _connection = connection;
-            }
-
-            public Type GetReturnType(string invocationId)
-            {
-                if (!_connection._pendingCalls.TryGetValue(invocationId, out var irq))
-                {
-                    Log.ReceivedUnexpectedResponse(_connection._logger, invocationId);
-                    return null;
-                }
-                return irq.ResultType;
-            }
-
-            public IReadOnlyList<Type> GetParameterTypes(string methodName)
-            {
-                if (!_connection._handlers.TryGetValue(methodName, out var handlers))
-                {
-                    Log.MissingHandler(_connection._logger, methodName);
-                    return Type.EmptyTypes;
-                }
-
-                // We use the parameter types of the first handler
-                lock (handlers)
-                {
-                    if (handlers.Count > 0)
-                    {
-                        return handlers[0].ParameterTypes;
-                    }
-                    throw new InvalidOperationException($"There are no callbacks registered for the method '{methodName}'");
-                }
-            }
-        }
-
         private struct InvocationHandler
         {
             public Type[] ParameterTypes { get; }
@@ -658,6 +808,159 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public Task InvokeAsync(object[] parameters)
             {
                 return _callback(parameters, _state);
+            }
+        }
+
+        // Represents all the transient state about a connection
+        // This includes binding information because return type binding depends upon _pendingCalls
+        private class ConnectionState : IInvocationBinder
+        {
+            private volatile bool _stopping;
+            private readonly HubConnection _hubConnection;
+
+            private TaskCompletionSource<object> _stopTcs;
+            private readonly object _lock = new object();
+            private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>();
+            private int _nextId;
+
+            public IConnection Connection { get; }
+            public Task ReceiveTask { get; set; }
+            public Exception CloseException { get; set; }
+
+            public bool Stopping
+            {
+                get => _stopping;
+                set => _stopping = value;
+            }
+
+            public ConnectionState(IConnection connection, HubConnection hubConnection)
+            {
+                _hubConnection = hubConnection;
+                Connection = connection;
+            }
+
+            public string GetNextId() => Interlocked.Increment(ref _nextId).ToString();
+
+            public void AddInvocation(InvocationRequest irq)
+            {
+                lock (_lock)
+                {
+                    if (_pendingCalls.ContainsKey(irq.InvocationId))
+                    {
+                        Log.InvocationAlreadyInUse(_hubConnection._logger, irq.InvocationId);
+                        throw new InvalidOperationException($"Invocation ID '{irq.InvocationId}' is already in use.");
+                    }
+                    else
+                    {
+                        _pendingCalls.Add(irq.InvocationId, irq);
+                    }
+                }
+            }
+
+            public bool TryGetInvocation(string invocationId, out InvocationRequest irq)
+            {
+                lock (_lock)
+                {
+                    return _pendingCalls.TryGetValue(invocationId, out irq);
+                }
+            }
+
+            public bool TryRemoveInvocation(string invocationId, out InvocationRequest irq)
+            {
+                lock (_lock)
+                {
+                    if (_pendingCalls.TryGetValue(invocationId, out irq))
+                    {
+                        _pendingCalls.Remove(invocationId);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            public void CancelOutstandingInvocations(Exception exception)
+            {
+                Log.CancelingOutstandingInvocations(_hubConnection._logger);
+
+                lock (_lock)
+                {
+                    foreach (var outstandingCall in _pendingCalls.Values)
+                    {
+                        Log.RemovingInvocation(_hubConnection._logger, outstandingCall.InvocationId);
+                        if (exception != null)
+                        {
+                            outstandingCall.Fail(exception);
+                        }
+                        outstandingCall.Dispose();
+                    }
+                    _pendingCalls.Clear();
+                }
+            }
+
+            public Task StopAsync(TimeSpan timeout)
+            {
+                // We want multiple StopAsync calls on the same connection state
+                // to wait for the same "stop" to complete.
+                lock (_lock)
+                {
+                    if (_stopTcs != null)
+                    {
+                        return _stopTcs.Task;
+                    }
+                    else
+                    {
+                        _stopTcs = new TaskCompletionSource<object>();
+                        return StopAsyncCore(timeout);
+                    }
+                }
+            }
+
+            private async Task StopAsyncCore(TimeSpan timeout)
+            {
+                Log.Stopping(_hubConnection._logger);
+
+                // Complete our write pipe, which should cause everything to shut down
+                Log.TerminatingReceiveLoop(_hubConnection._logger);
+                Connection.Transport.Input.CancelPendingRead();
+
+                // Wait ServerTimeout for the server or transport to shut down.
+                Log.WaitingForReceiveLoopToTerminate(_hubConnection._logger);
+                await ReceiveTask;
+
+                Log.Stopped(_hubConnection._logger);
+                _stopTcs.TrySetResult(null);
+            }
+
+            Type IInvocationBinder.GetReturnType(string invocationId)
+            {
+                if (!TryGetInvocation(invocationId, out var irq))
+                {
+                    Log.ReceivedUnexpectedResponse(_hubConnection._logger, invocationId);
+                    return null;
+                }
+                return irq.ResultType;
+            }
+
+            IReadOnlyList<Type> IInvocationBinder.GetParameterTypes(string methodName)
+            {
+                if (!_hubConnection._handlers.TryGetValue(methodName, out var handlers))
+                {
+                    Log.MissingHandler(_hubConnection._logger, methodName);
+                    return Type.EmptyTypes;
+                }
+
+                // We use the parameter types of the first handler
+                lock (handlers)
+                {
+                    if (handlers.Count > 0)
+                    {
+                        return handlers[0].ParameterTypes;
+                    }
+                    throw new InvalidOperationException($"There are no callbacks registered for the method '{methodName}'");
+                }
             }
         }
     }

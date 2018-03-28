@@ -6,7 +6,7 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Sockets.Client
+namespace Microsoft.AspNetCore.Sockets.Client.Internal
 {
     public partial class WebSocketsTransport
     {

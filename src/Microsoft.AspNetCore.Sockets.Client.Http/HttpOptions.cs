@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
 
         /// <summary>
         /// Gets or sets a delegate that will be invoked with the <see cref="ClientWebSocketOptions"/> object used
-        /// by the <see cref="WebSocketsTransport"/> to configure the WebSocket.
+        /// to configure the WebSocket when using the WebSockets transport.
         /// </summary>
         /// <remarks>
         /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenFactory"/>

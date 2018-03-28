@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Sockets.Client
+namespace Microsoft.AspNetCore.Sockets.Client.Internal
 {
     public partial class WebSocketsTransport : ITransport
     {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             using (socket)
             {
-                // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
+                // Begin sending and receiving.
                 var receiving = StartReceiving(socket);
                 var sending = StartSending(socket);
 

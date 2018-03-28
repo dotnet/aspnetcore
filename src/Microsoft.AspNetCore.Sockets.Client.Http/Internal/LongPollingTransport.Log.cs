@@ -1,13 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Sockets.Client
+namespace Microsoft.AspNetCore.Sockets.Client.Internal
 {
-    public partial class ServerSentEventsTransport
+    public partial class LongPollingTransport
     {
         private static class Log
         {
@@ -29,14 +30,19 @@ namespace Microsoft.AspNetCore.Sockets.Client
             private static readonly Action<ILogger, Exception> _transportStopping =
                 LoggerMessage.Define(LogLevel.Information, new EventId(6, "TransportStopping"), "Transport is stopping.");
 
-            private static readonly Action<ILogger, int, Exception> _messageToApp =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(7, "MessageToApp"), "Passing message to application. Payload size: {Count}.");
+            private static readonly Action<ILogger, Exception> _closingConnection =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(7, "ClosingConnection"), "The server is closing the connection.");
 
-            private static readonly Action<ILogger, Exception> _eventStreamEnded =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "EventStreamEnded"), "Server-Sent Event Stream ended.");
+            private static readonly Action<ILogger, Exception> _receivedMessages =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "ReceivedMessages"), "Received messages from the server.");
 
-            private static readonly Action<ILogger, long, Exception> _parsingSSE =
-                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(9, "ParsingSSE"), "Received {Count} bytes. Parsing SSE frame.");
+            private static readonly Action<ILogger, Uri, Exception> _errorPolling =
+                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(9, "ErrorPolling"), "Error while polling '{PollUrl}'.");
+
+            // long? does properly format as "(null)" when null.
+            private static readonly Action<ILogger, int, long?, Exception> _pollResponseReceived =
+                LoggerMessage.Define<int, long?>(LogLevel.Trace, new EventId(10, "PollResponseReceived"),
+                    "Poll response with status code {StatusCode} received from server. Content length: {ContentLength}.");
 
             // EventIds 100 - 106 used in SendUtils
 
@@ -60,11 +66,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 _transportStopping(logger, null);
             }
 
-            public static void MessageToApp(ILogger logger, int count)
-            {
-                _messageToApp(logger, count, null);
-            }
-
             public static void ReceiveCanceled(ILogger logger)
             {
                 _receiveCanceled(logger, null);
@@ -75,14 +76,28 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 _receiveStopped(logger, null);
             }
 
-            public static void EventStreamEnded(ILogger logger)
+            public static void ClosingConnection(ILogger logger)
             {
-                _eventStreamEnded(logger, null);
+                _closingConnection(logger, null);
             }
 
-            public static void ParsingSSE(ILogger logger, long bytes)
+            public static void ReceivedMessages(ILogger logger)
             {
-                _parsingSSE(logger, bytes, null);
+                _receivedMessages(logger, null);
+            }
+
+            public static void ErrorPolling(ILogger logger, Uri pollUrl, Exception exception)
+            {
+                _errorPolling(logger, pollUrl, exception);
+            }
+
+            public static void PollResponseReceived(ILogger logger, HttpResponseMessage response)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _pollResponseReceived(logger, (int)response.StatusCode,
+                        response.Content.Headers.ContentLength ?? -1, null);
+                }
             }
         }
     }

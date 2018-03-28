@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return await _handler(request, cancellationToken);
         }
 
-        public static HttpMessageHandler CreateDefault()
+        public static TestHttpMessageHandler CreateDefault()
         {
             var testHttpMessageHandler = new TestHttpMessageHandler();
 

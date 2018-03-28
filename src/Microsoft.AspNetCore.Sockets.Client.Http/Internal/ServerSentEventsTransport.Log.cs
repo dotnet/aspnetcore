@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Sockets.Client
+namespace Microsoft.AspNetCore.Sockets.Client.Internal
 {
-    public partial class LongPollingTransport
+    public partial class ServerSentEventsTransport
     {
         private static class Log
         {
@@ -29,14 +29,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             private static readonly Action<ILogger, Exception> _transportStopping =
                 LoggerMessage.Define(LogLevel.Information, new EventId(6, "TransportStopping"), "Transport is stopping.");
 
-            private static readonly Action<ILogger, Exception> _closingConnection =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(7, "ClosingConnection"), "The server is closing the connection.");
+            private static readonly Action<ILogger, int, Exception> _messageToApp =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(7, "MessageToApp"), "Passing message to application. Payload size: {Count}.");
 
-            private static readonly Action<ILogger, Exception> _receivedMessages =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "ReceivedMessages"), "Received messages from the server.");
+            private static readonly Action<ILogger, Exception> _eventStreamEnded =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "EventStreamEnded"), "Server-Sent Event Stream ended.");
 
-            private static readonly Action<ILogger, Uri, Exception> _errorPolling =
-                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(9, "ErrorPolling"), "Error while polling '{PollUrl}'.");
+            private static readonly Action<ILogger, long, Exception> _parsingSSE =
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(9, "ParsingSSE"), "Received {Count} bytes. Parsing SSE frame.");
 
             // EventIds 100 - 106 used in SendUtils
 
@@ -60,6 +60,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 _transportStopping(logger, null);
             }
 
+            public static void MessageToApp(ILogger logger, int count)
+            {
+                _messageToApp(logger, count, null);
+            }
+
             public static void ReceiveCanceled(ILogger logger)
             {
                 _receiveCanceled(logger, null);
@@ -70,19 +75,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 _receiveStopped(logger, null);
             }
 
-            public static void ClosingConnection(ILogger logger)
+            public static void EventStreamEnded(ILogger logger)
             {
-                _closingConnection(logger, null);
+                _eventStreamEnded(logger, null);
             }
 
-            public static void ReceivedMessages(ILogger logger)
+            public static void ParsingSSE(ILogger logger, long bytes)
             {
-                _receivedMessages(logger, null);
-            }
-
-            public static void ErrorPolling(ILogger logger, Uri pollUrl, Exception exception)
-            {
-                _errorPolling(logger, pollUrl, exception);
+                _parsingSSE(logger, bytes, null);
             }
         }
     }

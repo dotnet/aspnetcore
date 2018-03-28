@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Client.Http;
+using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,89 +25,55 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task CannotStartRunningConnection()
+            public async Task CanStartStartedConnection()
             {
                 using (StartLog(out var loggerFactory))
                 {
-                    await WithConnectionAsync(CreateConnection(loggerFactory: loggerFactory), async (connection, closed) =>
+                    await WithConnectionAsync(CreateConnection(loggerFactory: loggerFactory), async (connection) =>
                     {
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                        var exception =
-                            await Assert.ThrowsAsync<InvalidOperationException>(
-                                async () => await connection.StartAsync(TransferFormat.Text).OrTimeout());
-                        Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
                     });
                 }
             }
 
+            [Fact]
+            public async Task CanStartStartingConnection()
+            {
+                using (StartLog(out var loggerFactory))
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(loggerFactory: loggerFactory, transport: new TestTransport(onTransportStart: SyncPoint.Create(out var syncPoint))),
+                        async (connection) =>
+                        {
+                            var firstStart = connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await syncPoint.WaitForSyncPoint();
+                            var secondStart = connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            syncPoint.Continue();
+
+                            await firstStart;
+                            await secondStart;
+                        });
+                }
+            }
 
             [Fact]
-            public async Task CannotStartConnectionDisposedAfterStarting()
+            public async Task CannotStartConnectionOnceDisposed()
             {
                 using (StartLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory),
-                        async (connection, closed) =>
+                        async (connection) =>
                         {
                             await connection.StartAsync(TransferFormat.Text).OrTimeout();
                             await connection.DisposeAsync();
                             var exception =
-                                await Assert.ThrowsAsync<InvalidOperationException>(
+                                await Assert.ThrowsAsync<ObjectDisposedException>(
                                     async () => await connection.StartAsync(TransferFormat.Text).OrTimeout());
 
-                            Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
+                            Assert.Equal(nameof(HttpConnection), exception.ObjectName);
                         });
-                }
-            }
-
-            [Fact]
-            public async Task CannotStartDisposedConnection()
-            {
-                using (StartLog(out var loggerFactory))
-                {
-                    await WithConnectionAsync(
-                        CreateConnection(loggerFactory: loggerFactory),
-                        async (connection, closed) =>
-                        {
-                            await connection.DisposeAsync();
-                            var exception =
-                                await Assert.ThrowsAsync<InvalidOperationException>(
-                                    async () => await connection.StartAsync(TransferFormat.Text).OrTimeout());
-
-                            Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
-                        });
-                }
-            }
-
-            [Fact]
-            public async Task CanDisposeStartingConnection()
-            {
-                using (StartLog(out var loggerFactory))
-                {
-                    await WithConnectionAsync(
-                        CreateConnection(
-                            loggerFactory: loggerFactory,
-                            transport: new TestTransport(
-                                onTransportStart: SyncPoint.Create(out var transportStart),
-                                onTransportStop: SyncPoint.Create(out var transportStop))),
-                        async (connection, closed) =>
-                    {
-                        // Start the connection and wait for the transport to start up.
-                        var startTask = connection.StartAsync(TransferFormat.Text);
-                        await transportStart.WaitForSyncPoint().OrTimeout();
-
-                        // While the transport is starting, dispose the connection
-                        var disposeTask = connection.DisposeAsync();
-                        transportStart.Continue(); // We need to release StartAsync, because Dispose waits for it.
-
-                        // Wait for start to finish, as that has to finish before the transport will be stopped.
-                        await startTask.OrTimeout();
-
-                        // Then release DisposeAsync (via the transport StopAsync call)
-                        await transportStop.WaitForSyncPoint().OrTimeout();
-                        transportStop.Continue();
-                    });
                 }
             }
 
@@ -138,7 +105,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(
                             loggerFactory: loggerFactory,
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
-                        async (connection, closed) =>
+                        async (connection) =>
                     {
                         Assert.Equal(0, startCounter);
                         await connection.StartAsync(TransferFormat.Text);
@@ -164,7 +131,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(
                             loggerFactory: loggerFactory,
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
-                        async (connection, closed) =>
+                        async (connection) =>
                         {
                             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text));
                             Assert.Equal("Unable to connect to the server with any of the available transports.", ex.Message);
@@ -174,66 +141,115 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task CanStartStoppedConnection()
+            public async Task CanDisposeUnstartedConnection()
             {
                 using (StartLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory),
-                        async (connection, closed) =>
-                    {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                        await connection.StopAsync().OrTimeout();
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                    });
+                        async (connection) =>
+                        {
+                            await connection.DisposeAsync();
+
+                        });
                 }
             }
 
             [Fact]
-            public async Task CanStopStartingConnection()
+            public async Task CanDisposeStartingConnection()
             {
                 using (StartLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(
                             loggerFactory: loggerFactory,
-                            transport: new TestTransport(onTransportStart: SyncPoint.Create(out var transportStart))),
-                        async (connection, closed) =>
-                    {
-                        // Start and wait for the transport to start up.
-                        var startTask = connection.StartAsync(TransferFormat.Text);
-                        await transportStart.WaitForSyncPoint().OrTimeout();
+                            transport: new TestTransport(
+                                onTransportStart: SyncPoint.Create(out var transportStart),
+                                onTransportStop: SyncPoint.Create(out var transportStop))),
+                        async (connection) =>
+                        {
+                            // Start the connection and wait for the transport to start up.
+                            var startTask = connection.StartAsync(TransferFormat.Text);
+                            await transportStart.WaitForSyncPoint().OrTimeout();
 
-                        // Stop the connection while it's starting
-                        var stopTask = connection.StopAsync();
-                        transportStart.Continue(); // We need to release Start in order for Stop to begin working.
+                            // While the transport is starting, dispose the connection
+                            var disposeTask = connection.DisposeAsync().OrTimeout();
+                            transportStart.Continue(); // We need to release StartAsync, because Dispose waits for it.
 
-                        // Wait for start to finish, which will allow stop to finish and the connection to close.
-                        await startTask.OrTimeout();
-                        await stopTask.OrTimeout();
-                        await closed.OrTimeout();
-                    });
+                            // Wait for start to finish, as that has to finish before the transport will be stopped.
+                            await startTask.OrTimeout();
+
+                            // Then release DisposeAsync (via the transport StopAsync call)
+                            await transportStop.WaitForSyncPoint().OrTimeout();
+                            transportStop.Continue();
+
+                            // Dispose should finish
+                            await disposeTask;
+                        });
                 }
             }
 
             [Fact]
-            public async Task StoppingStoppingConnectionNoOps()
+            public async Task CanDisposeDisposingConnection()
             {
                 using (StartLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
-                        CreateConnection(loggerFactory: loggerFactory),
-                        async (connection, closed) =>
+                        CreateConnection(
+                            loggerFactory: loggerFactory,
+                            transport: new TestTransport(onTransportStop: SyncPoint.Create(out var transportStop))),
+                        async (connection) =>
                     {
+                        // Start the connection
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                        await Task.WhenAll(connection.StopAsync(), connection.StopAsync()).OrTimeout();
-                        await closed.OrTimeout();
+
+                        // Dispose the connection
+                        var stopTask = connection.DisposeAsync().OrTimeout();
+
+                        // Once the transport starts shutting down
+                        await transportStop.WaitForSyncPoint();
+                        Assert.False(stopTask.IsCompleted);
+
+                        // Start disposing again, and then let the first dispose continue
+                        var disposeTask = connection.DisposeAsync().OrTimeout();
+                        transportStop.Continue();
+
+                        // Wait for the tasks to complete
+                        await stopTask.OrTimeout();
+                        await disposeTask.OrTimeout();
+
+                        // We should be disposed and thus unable to restart.
+                        await AssertDisposedAsync(connection);
                     });
                 }
             }
 
             [Fact]
-            public async Task CanStartConnectionAfterConnectionStoppedWithError()
+            public async Task TransportIsStoppedWhenConnectionIsDisposed()
+            {
+                var testHttpHandler = new TestHttpMessageHandler();
+
+                using (var httpClient = new HttpClient(testHttpHandler))
+                {
+                    var testTransport = new TestTransport();
+                    await WithConnectionAsync(
+                        CreateConnection(transport: testTransport),
+                        async (connection) =>
+                        {
+                            // Start the transport
+                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            Assert.NotNull(testTransport.Receiving);
+                            Assert.False(testTransport.Receiving.IsCompleted);
+
+                            // Stop the connection, and we should stop the transport
+                            await connection.DisposeAsync().OrTimeout();
+                            await testTransport.Receiving.OrTimeout();
+                        });
+                }
+            }
+
+            [Fact]
+            public async Task TransportPipeIsCompletedWhenErrorOccursInTransport()
             {
                 using (StartLog(out var loggerFactory))
                 {
@@ -257,117 +273,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory),
-                        async (connection, closed) =>
-                    {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                        await connection.SendAsync(new byte[] { 0x42 }).OrTimeout();
-
-                        // Wait for the connection to close, because the send failed.
-                        await Assert.ThrowsAsync<HttpRequestException>(() => closed.OrTimeout());
-
-                        // Start it up again
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                    });
-                }
-            }
-
-            [Fact]
-            public async Task DisposedStoppingConnectionDisposesConnection()
-            {
-                using (StartLog(out var loggerFactory))
-                {
-                    await WithConnectionAsync(
-                        CreateConnection(
-                            loggerFactory: loggerFactory,
-                            transport: new TestTransport(onTransportStop: SyncPoint.Create(out var transportStop))),
-                        async (connection, closed) =>
-                    {
-                        // Start the connection
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-
-                        // Stop the connection
-                        var stopTask = connection.StopAsync().OrTimeout();
-
-                        // Once the transport starts shutting down
-                        await transportStop.WaitForSyncPoint();
-
-                        // Start disposing and allow it to finish shutting down
-                        var disposeTask = connection.DisposeAsync().OrTimeout();
-                        transportStop.Continue();
-
-                        // Wait for the tasks to complete
-                        await stopTask.OrTimeout();
-                        await closed.OrTimeout();
-                        await disposeTask.OrTimeout();
-
-                        // We should be disposed and thus unable to restart.
-                        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
-                        Assert.Equal("Cannot start a connection that is not in the Disconnected state.", exception.Message);
-                    });
-                }
-            }
-
-            [Fact]
-            public async Task CanDisposeStoppedConnection()
-            {
-                using (StartLog(out var loggerFactory))
-                {
-                    await WithConnectionAsync(
-                        CreateConnection(loggerFactory: loggerFactory),
-                        async (connection, closed) =>
+                        async (connection) =>
                         {
                             await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                            await connection.StopAsync().OrTimeout();
-                            await closed.OrTimeout();
-                            await connection.DisposeAsync().OrTimeout();
+                            await connection.Transport.Output.WriteAsync(new byte[] { 0x42 }).OrTimeout();
+
+                            // We should get the exception in the transport input completion.
+                            await Assert.ThrowsAsync<HttpRequestException>(() => connection.Transport.Input.WaitForWriterToComplete());
                         });
                 }
-            }
-
-            [Fact]
-            public Task ClosedEventRaisedWhenTheClientIsDisposed()
-            {
-                return WithConnectionAsync(
-                    CreateConnection(),
-                    async (connection, closed) =>
-                    {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                        await connection.DisposeAsync().OrTimeout();
-                        await closed.OrTimeout();
-                    });
-            }
-
-            [Fact]
-            public async Task ConnectionClosedWhenTransportFails()
-            {
-                var testTransport = new TestTransport();
-
-                var expected = new Exception("Whoops!");
-
-                await WithConnectionAsync(
-                    CreateConnection(transport: testTransport),
-                async (connection, closed) =>
-                {
-                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                    testTransport.Application.Output.Complete(expected);
-                    var actual = await Assert.ThrowsAsync<Exception>(() => closed.OrTimeout());
-                    Assert.Same(expected, actual);
-
-                    var sendException = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync(new byte[0]).OrTimeout());
-                    Assert.Equal("Cannot send messages when the connection is not in the Connected state.", sendException.Message);
-                });
-            }
-
-            [Fact]
-            public Task ClosedEventNotRaisedWhenTheClientIsStoppedButWasNeverStarted()
-            {
-                return WithConnectionAsync(
-                    CreateConnection(),
-                    async (connection, closed) =>
-                {
-                    await connection.DisposeAsync().OrTimeout();
-                    Assert.False(closed.IsCompleted);
-                });
             }
 
             [Fact]
@@ -386,7 +300,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: loggerFactory, url: null, transport: sse),
-                        async (connection, closed) =>
+                        async (connection) =>
                         {
                             await Assert.ThrowsAsync<InvalidOperationException>(
                                 () => connection.StartAsync(TransferFormat.Text).OrTimeout());
@@ -412,7 +326,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: loggerFactory, url: null, transport: sse),
-                        async (connection, closed) =>
+                        async (connection) =>
                         {
                             var startTask = connection.StartAsync(TransferFormat.Text).OrTimeout();
                             Assert.False(connectResponseTcs.Task.IsCompleted);
@@ -423,30 +337,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
             }
 
-            [Fact]
-            public async Task TransportIsStoppedWhenConnectionIsStopped()
+            private static async Task AssertDisposedAsync(HttpConnection connection)
             {
-                var testHttpHandler = new TestHttpMessageHandler();
-
-                // Just keep returning data when polled
-                testHttpHandler.OnLongPoll(_ => ResponseUtils.CreateResponse(HttpStatusCode.OK));
-
-                using (var httpClient = new HttpClient(testHttpHandler))
-                {
-                    var longPollingTransport = new LongPollingTransport(httpClient);
-                    await WithConnectionAsync(
-                        CreateConnection(transport: longPollingTransport),
-                        async (connection, closed) =>
-                        {
-                            // Start the transport
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                            Assert.False(longPollingTransport.Running.IsCompleted, "Expected that the transport would still be running");
-
-                            // Stop the connection, and we should stop the transport
-                            await connection.StopAsync().OrTimeout();
-                            await longPollingTransport.Running.OrTimeout();
-                        });
-                }
+                var exception =
+                    await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                Assert.Equal(nameof(HttpConnection), exception.ObjectName);
             }
         }
     }
