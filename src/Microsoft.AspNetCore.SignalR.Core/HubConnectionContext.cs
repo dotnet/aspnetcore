@@ -221,15 +221,19 @@ namespace Microsoft.AspNetCore.SignalR
                     {
                         var result = await _connectionContext.Transport.Input.ReadAsync(cts.Token);
                         var buffer = result.Buffer;
-                        var consumed = buffer.End;
+                        var consumed = buffer.Start;
                         var examined = buffer.End;
 
                         try
                         {
                             if (!buffer.IsEmpty)
                             {
-                                if (HandshakeProtocol.TryParseRequestMessage(buffer, out var handshakeRequestMessage, out consumed, out examined))
+                                if (HandshakeProtocol.TryParseRequestMessage(ref buffer, out var handshakeRequestMessage))
                                 {
+                                    // We parsed the handshake
+                                    consumed = buffer.Start;
+                                    examined = consumed;
+
                                     Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
                                     if (Protocol == null)
                                     {
@@ -276,6 +280,10 @@ namespace Microsoft.AspNetCore.SignalR
                                     Log.HandshakeComplete(_logger, Protocol.Name);
                                     await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
                                     return true;
+                                }
+                                else
+                                {
+                                    _logger.LogInformation("Didn't parse the handshake");
                                 }
                             }
                             else if (result.IsCompleted)

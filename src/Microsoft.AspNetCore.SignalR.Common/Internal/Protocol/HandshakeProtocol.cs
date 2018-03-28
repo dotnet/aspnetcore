@@ -56,8 +56,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return new JsonTextWriter(new StreamWriter(output, _utf8NoBom, 1024, leaveOpen: true));
         }
 
-        public static HandshakeResponseMessage ParseResponseMessage(ReadOnlyMemory<byte> payload)
+        public static bool TryParseResponseMessage(ref ReadOnlySequence<byte> buffer, out HandshakeResponseMessage responseMessage)
         {
+            if (!TextMessageParser.TryParseMessage(ref buffer, out var payload))
+            {
+                responseMessage = null;
+                return false;
+            }
+
             var textReader = Utf8BufferTextReader.Get(payload);
 
             try
@@ -76,7 +82,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     }
 
                     var error = JsonUtils.GetOptionalProperty<string>(handshakeJObject, ErrorPropertyName);
-                    return new HandshakeResponseMessage(error);
+                    responseMessage = new HandshakeResponseMessage(error);
+                    return true;
                 }
             }
             finally
@@ -85,17 +92,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        public static bool TryParseRequestMessage(ReadOnlySequence<byte> buffer, out HandshakeRequestMessage requestMessage, out SequencePosition consumed, out SequencePosition examined)
+        public static bool TryParseRequestMessage(ref ReadOnlySequence<byte> buffer, out HandshakeRequestMessage requestMessage)
         {
-            if (!TryReadMessageIntoSingleMemory(buffer, out consumed, out examined, out var memory))
+            if (!TextMessageParser.TryParseMessage(ref buffer, out var payload))
             {
                 requestMessage = null;
                 return false;
-            }
-
-            if (!TextMessageParser.TryParseMessage(ref memory, out var payload))
-            {
-                throw new InvalidDataException("Unable to parse payload as a handshake request message.");
             }
 
             var textReader = Utf8BufferTextReader.Get(payload);
@@ -115,24 +117,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 Utf8BufferTextReader.Return(textReader);
             }
 
-            return true;
-        }
-
-        internal static bool TryReadMessageIntoSingleMemory(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out ReadOnlyMemory<byte> memory)
-        {
-            var separator = buffer.PositionOf(TextMessageFormatter.RecordSeparator);
-            if (separator == null)
-            {
-                // Haven't seen the entire message so bail
-                consumed = buffer.Start;
-                examined = buffer.End;
-                memory = null;
-                return false;
-            }
-
-            consumed = buffer.GetPosition(1, separator.Value);
-            examined = consumed;
-            memory = buffer.IsSingleSegment ? buffer.First : buffer.ToArray();
             return true;
         }
     }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Xunit;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [Fact]
         public void ReadMessage()
         {
-            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC\u001e"));
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("ABC\u001e"));
 
             Assert.True(TextMessageParser.TryParseMessage(ref message, out var payload));
             Assert.Equal("ABC", Encoding.UTF8.GetString(payload.ToArray()));
@@ -23,14 +24,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [Fact]
         public void TryReadingIncompleteMessage()
         {
-            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC"));
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("ABC"));
             Assert.False(TextMessageParser.TryParseMessage(ref message, out var payload));
         }
 
         [Fact]
         public void TryReadingMultipleMessages()
         {
-            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e"));
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e"));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out var payload));
             Assert.Equal("ABC", Encoding.UTF8.GetString(payload.ToArray()));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out payload));
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [Fact]
         public void IncompleteTrailingMessage()
         {
-            var message = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e123"));
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("ABC\u001eXYZ\u001e123"));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out var payload));
             Assert.Equal("ABC", Encoding.UTF8.GetString(payload.ToArray()));
             Assert.True(TextMessageParser.TryParseMessage(ref message, out payload));

@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{\"protocol\":null,\"version\":123}\u001e", null, 123)]
         public void ParsingHandshakeRequestMessageSuccessForValidMessages(string json, string protocol, int version)
         {
-            var message = Encoding.UTF8.GetBytes(json);
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(json));
 
-            Assert.True(HandshakeProtocol.TryParseRequestMessage(new ReadOnlySequence<byte>(message), out var deserializedMessage, out _, out _));
+            Assert.True(HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage));
 
             Assert.Equal(protocol, deserializedMessage.Protocol);
             Assert.Equal(version, deserializedMessage.Version);
@@ -33,19 +33,18 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{}\u001e", null)]
         public void ParsingHandshakeResponseMessageSuccessForValidMessages(string json, string error)
         {
-            var message = Encoding.UTF8.GetBytes(json);
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(json));
 
-            var response = HandshakeProtocol.ParseResponseMessage(message);
-
+            Assert.True(HandshakeProtocol.TryParseResponseMessage(ref message, out var response));
             Assert.Equal(error, response.Error);
         }
 
         [Fact]
         public void ParsingHandshakeRequestNotCompleteReturnsFalse()
         {
-            var message = Encoding.UTF8.GetBytes("42");
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("42"));
 
-            Assert.False(HandshakeProtocol.TryParseRequestMessage(new ReadOnlySequence<byte>(message), out _, out _, out _));
+            Assert.False(HandshakeProtocol.TryParseRequestMessage(ref message, out _));
         }
 
         [Theory]
@@ -59,25 +58,25 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{\"protocol\":null,\"version\":\"123\"}\u001e", "Expected 'version' to be of type Integer.")]
         public void ParsingHandshakeRequestMessageThrowsForInvalidMessages(string payload, string expectedMessage)
         {
-            var message = Encoding.UTF8.GetBytes(payload);
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(payload));
 
             var exception = Assert.Throws<InvalidDataException>(() =>
-                Assert.True(HandshakeProtocol.TryParseRequestMessage(new ReadOnlySequence<byte>(message), out _, out _, out _)));
+                Assert.True(HandshakeProtocol.TryParseRequestMessage(ref message, out _)));
 
             Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Theory]
-        [InlineData("42", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
-        [InlineData("\"42\"", "Unexpected JSON Token Type 'String'. Expected a JSON Object.")]
-        [InlineData("null", "Unexpected JSON Token Type 'Null'. Expected a JSON Object.")]
-        [InlineData("[]", "Unexpected JSON Token Type 'Array'. Expected a JSON Object.")]
+        [InlineData("42\u001e", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
+        [InlineData("\"42\"\u001e", "Unexpected JSON Token Type 'String'. Expected a JSON Object.")]
+        [InlineData("null\u001e", "Unexpected JSON Token Type 'Null'. Expected a JSON Object.")]
+        [InlineData("[]\u001e", "Unexpected JSON Token Type 'Array'. Expected a JSON Object.")]
         public void ParsingHandshakeResponseMessageThrowsForInvalidMessages(string payload, string expectedMessage)
         {
-            var message = Encoding.UTF8.GetBytes(payload);
+            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(payload));
 
             var exception = Assert.Throws<InvalidDataException>(() =>
-                HandshakeProtocol.ParseResponseMessage(message));
+                HandshakeProtocol.TryParseRequestMessage(ref message, out _));
 
             Assert.Equal(expectedMessage, exception.Message);
         }

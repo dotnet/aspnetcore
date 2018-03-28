@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Connections;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         TransferFormat TransferFormat { get; }
 
-        bool TryParseMessages(ReadOnlyMemory<byte> input, IInvocationBinder binder, IList<HubMessage> messages);
+        bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message);
 
         void WriteMessage(HubMessage message, Stream output);
 

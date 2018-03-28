@@ -164,24 +164,16 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     var result = await connection.Input.ReadAsync(connection.ConnectionAborted);
                     var buffer = result.Buffer;
-                    var consumed = buffer.End;
-                    var examined = buffer.End;
 
                     try
                     {
                         if (!buffer.IsEmpty)
                         {
-                            var hubMessages = new List<HubMessage>();
-
-                            // TODO: Make this incremental
-                            if (connection.Protocol.TryParseMessages(buffer.ToArray(), _dispatcher, hubMessages))
+                            while (connection.Protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
                             {
-                                foreach (var hubMessage in hubMessages)
-                                {
-                                    // Don't wait on the result of execution, continue processing other
-                                    // incoming messages on this connection.
-                                    _ = _dispatcher.DispatchMessageAsync(connection, hubMessage);
-                                }
+                                // Don't wait on the result of execution, continue processing other
+                                // incoming messages on this connection.
+                                _ = _dispatcher.DispatchMessageAsync(connection, message);
                             }
                         }
                         else if (result.IsCompleted)
@@ -191,7 +183,10 @@ namespace Microsoft.AspNetCore.SignalR
                     }
                     finally
                     {
-                        connection.Input.AdvanceTo(consumed, examined);
+                        // The buffer was sliced up to where it was consumed, so we can just advance to the start.
+                        // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
+                        // before yielding the read again.
+                        connection.Input.AdvanceTo(buffer.Start, buffer.End);
                     }
                 }
             }
