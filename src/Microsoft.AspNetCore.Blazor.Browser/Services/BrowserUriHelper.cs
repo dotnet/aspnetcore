@@ -30,12 +30,12 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         {
             add
             {
-                EnsureNavigationInteceptionEnabled();
+                EnsureNavigationInterceptionEnabled();
                 _onLocationChanged += value;
             }
             remove
             {
-                // We could consider deactivating the JS-side enableNavigationInteception
+                // We could consider deactivating the JS-side enableNavigationInterception
                 // if there are no remaining listeners, but we don't need that currently.
                 // If we ever do that, will also need to change the logic inside GetAbsoluteUri
                 // so it knows not to continue using the cached URI.
@@ -133,16 +133,16 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
             _onLocationChanged?.Invoke(null, newAbsoluteUri);
         }
 
-        private static void EnsureNavigationInteceptionEnabled()
+        private static void EnsureNavigationInterceptionEnabled()
         {
             // Don't need thread safety because:
             // (1) there's only one UI thread
-            // (2) doesn't matter if we call enableNavigationInteception more than once anyway
+            // (2) doesn't matter if we call enableNavigationInterception more than once anyway
             if (!_hasEnabledNavigationInterception)
             {
                 _hasEnabledNavigationInterception = true;
                 RegisteredFunction.InvokeUnmarshalled<object>(
-                    $"{_functionPrefix}.enableNavigationInteception");
+                    $"{_functionPrefix}.enableNavigationInterception");
             }
         }
 

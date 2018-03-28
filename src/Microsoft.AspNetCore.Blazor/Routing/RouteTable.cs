@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// /Route/With/{parameter} is more specific than /{multiple}/With/{parameters}
         /// /Product/{id:int} is more specific than /Product/{id}
         ///
-        /// Routes can be ambigous if:
+        /// Routes can be ambiguous if:
         /// They are composed of literals and those literals have the same values (case insensitive)
         /// They are composed of a mix of literals and parameters, in the same relative order and the
         /// literals have the same values.
@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// To calculate the precedence we sort the list of routes as follows:
         /// * Shorter routes go first.
         /// * A literal wins over a parameter in precedence.
-        /// * For literals with different values (case insenitive) we choose the lexical order
+        /// * For literals with different values (case insensitive) we choose the lexical order
         /// * For parameters with different numbers of constraints, the one with more wins
-        /// If we get to the end of the comparison routing we've detected an ambigous pair of routes.
+        /// If we get to the end of the comparison routing we've detected an ambiguous pair of routes.
         internal static int RouteComparison(RouteEntry x, RouteEntry y)
         {
             var xTemplate = x.Template;

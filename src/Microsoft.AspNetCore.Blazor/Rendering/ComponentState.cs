@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Constructs an instance of <see cref="ComponentState"/>.
         /// </summary>
         /// <param name="renderer">The <see cref="Renderer"/> with which the new instance should be associated.</param>
-        /// <param name="componentId">The externally visible identifer for the <see cref="IComponent"/>. The identifier must be unique in the context of the <see cref="Renderer"/>.</param>
+        /// <param name="componentId">The externally visible identifier for the <see cref="IComponent"/>. The identifier must be unique in the context of the <see cref="Renderer"/>.</param>
         /// <param name="component">The <see cref="IComponent"/> whose state is being tracked.</param>
         public ComponentState(Renderer renderer, int componentId, IComponent component)
         {

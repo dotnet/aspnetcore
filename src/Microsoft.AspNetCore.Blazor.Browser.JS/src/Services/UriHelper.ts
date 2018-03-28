@@ -11,7 +11,7 @@ registerFunction(`${registeredFunctionPrefix}.getLocationHref`,
 registerFunction(`${registeredFunctionPrefix}.getBaseURI`,
   () => document.baseURI ? platform.toDotNetString(document.baseURI) : null);
 
-registerFunction(`${registeredFunctionPrefix}.enableNavigationInteception`, () => {
+registerFunction(`${registeredFunctionPrefix}.enableNavigationInterception`, () => {
   if (hasRegisteredEventListeners) {
     return;
   }
