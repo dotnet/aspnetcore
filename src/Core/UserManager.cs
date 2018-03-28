@@ -2224,11 +2224,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <returns>The new security secret.</returns>
         public virtual string GenerateNewAuthenticatorKey()
-        {
-            byte[] bytes = new byte[20];
-            _rng.GetBytes(bytes);
-            return Base32.ToBase32(bytes);
-        }
+            => NewSecurityStamp();
 
         /// <summary>
         /// Generates recovery codes for the user, this invalidates any previous recovery codes for the user.
@@ -2419,7 +2415,9 @@ namespace Microsoft.AspNetCore.Identity
 
         private static string NewSecurityStamp()
         {
-            return Guid.NewGuid().ToString();
+            byte[] bytes = new byte[20];
+            _rng.GetBytes(bytes);
+            return Base32.ToBase32(bytes);
         }
 
         // IUserLoginStore methods
