@@ -8,6 +8,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         protected readonly DiagnosticSource _diagnosticSource;
         protected readonly ILogger _logger;
+        protected readonly IActionResultTypeMapper _mapper;
         protected readonly ActionContext _actionContext;
         protected readonly IFilterMetadata[] _filters;
         protected readonly IList<IValueProviderFactory> _valueProviderFactories;
@@ -38,12 +40,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public ResourceInvoker(
             DiagnosticSource diagnosticSource,
             ILogger logger,
+            IActionResultTypeMapper mapper,
             ActionContext actionContext,
             IFilterMetadata[] filters,
             IList<IValueProviderFactory> valueProviderFactories)
         {
             _diagnosticSource = diagnosticSource ?? throw new ArgumentNullException(nameof(diagnosticSource));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _actionContext = actionContext ?? throw new ArgumentNullException(nameof(actionContext));
 
             _filters = filters ?? throw new ArgumentNullException(nameof(filters));

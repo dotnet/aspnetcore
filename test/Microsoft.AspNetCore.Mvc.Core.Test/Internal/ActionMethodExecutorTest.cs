@@ -17,12 +17,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesVoidActions()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.VoidAction));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             Assert.True(controller.Executed);
@@ -33,12 +34,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsReturningIActionResult()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnIActionResult));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             Assert.True(valueTask.IsCompleted);
@@ -49,12 +51,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsReturningSubTypeOfActionResult()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsIActionResultSubType));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             Assert.IsType<PartialViewResult>(valueTask.Result);
@@ -64,12 +67,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsReturningActionResultOfT()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsActionResultOfT));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
@@ -81,12 +85,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsReturningModelAsModel()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsModelAsModel));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
@@ -98,12 +103,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsReturningModelAsObject()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnModelAsObject));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
@@ -115,12 +121,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsReturningActionResultAsObject()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsIActionResultSubType));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             Assert.IsType<PartialViewResult>(valueTask.Result);
@@ -130,12 +137,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsReturnTask()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsTask));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             Assert.True(controller.Executed);
@@ -146,12 +154,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutorExecutesActionsAsynchronouslyReturningIActionResult()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnIActionResultAsync));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             Assert.IsType<ViewResult>(valueTask.Result);
@@ -161,12 +170,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public async Task ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningActionResultSubType()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnIActionResultAsync));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             await valueTask;
@@ -177,12 +187,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningModel()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsModelAsModelAsync));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
@@ -194,12 +205,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningModelAsObject()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsModelAsObjectAsync));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
@@ -211,12 +223,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningIActionResultAsObject()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnIActionResultAsObjectAsync));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             Assert.IsType<OkResult>(valueTask.Result);
@@ -226,12 +239,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningActionResultOfT()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnActionResultOFTAsync));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act
-            var valueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>());
+            var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
@@ -243,13 +257,14 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
         public void ActionMethodExecutor_ThrowsIfIConvertFromIActionResult_ReturnsNull()
         {
             // Arrange
+            var mapper = new ActionResultTypeMapper();
             var controller = new TestController();
             var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsCustomConvertibleFromIActionResult));
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => actionMethodExecutor.Execute(objectMethodExecutor, controller, Array.Empty<object>()));
+                () => actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>()));
 
             Assert.Equal($"Cannot return null from an action method with a return type of '{typeof(CustomConvertibleFromAction)}'.", ex.Message);
         }

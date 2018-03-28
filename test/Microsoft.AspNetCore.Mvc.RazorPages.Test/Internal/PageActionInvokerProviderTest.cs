@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -515,7 +516,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 Mock.Of<IPageHandlerMethodSelector>(),
                 fileSystem,
                 new DiagnosticListener("Microsoft.AspNetCore"),
-                NullLoggerFactory.Instance);
+                NullLoggerFactory.Instance,
+                new ActionResultTypeMapper());
         }
 
         private IActionDescriptorCollectionProvider CreateActionDescriptorCollection(PageActionDescriptor descriptor)

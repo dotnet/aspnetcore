@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
@@ -285,6 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new MockControllerFactory(controller ?? this),
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 diagnosticSource,
+                new ActionResultTypeMapper(),
                 actionContext,
                 new List<IValueProviderFactory>(),
                 maxAllowedErrorsInModelState: 200);
@@ -389,12 +391,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 MockControllerFactory controllerFactory,
                 ILogger logger,
                 DiagnosticSource diagnosticSource,
+                IActionResultTypeMapper mapper,
                 ActionContext actionContext,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 int maxAllowedErrorsInModelState)
                 : base(
                       logger,
                       diagnosticSource,
+                      mapper,
                       CreatControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
                       CreateCacheEntry((ControllerActionDescriptor)actionContext.ActionDescriptor, controllerFactory),
                       filters)

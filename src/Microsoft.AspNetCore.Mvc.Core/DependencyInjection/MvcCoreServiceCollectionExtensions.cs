@@ -202,6 +202,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ControllerActionInvokerCache>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
+            services.TryAddSingleton<IActionResultTypeMapper, ActionResultTypeMapper>();
 
             //
             // Request body limit filters
