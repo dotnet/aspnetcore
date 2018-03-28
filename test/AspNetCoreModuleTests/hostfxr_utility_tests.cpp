@@ -71,7 +71,7 @@ namespace AspNetCoreModuleTests
             Assert::AreEqual(DWORD(3), retVal);
             Assert::AreEqual(exeStr, bstrArray[0]);
             Assert::AreEqual(L"exec", bstrArray[1]);
-            Assert::AreEqual(L"\\\\?\\C:\\test\\test.dll", bstrArray[2]);
+            Assert::AreEqual(L"C:\\test\\test.dll", bstrArray[2]);
         }
 
         TEST_METHOD(ParseHostfxrArguments_ProvideNoArgs_InvalidArgs)

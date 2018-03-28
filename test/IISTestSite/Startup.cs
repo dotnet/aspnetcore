@@ -667,5 +667,10 @@ namespace IISTestSite
                 }
             });
         }
+
+        private void BasePath(IApplicationBuilder app)
+        {
+            app.Run(async ctx => { await ctx.Response.WriteAsync(AppDomain.CurrentDomain.BaseDirectory); });
+        }
     }
 }

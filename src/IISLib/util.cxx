@@ -61,13 +61,17 @@ Return Values:
             return hr;
         }
     }
-    else
+    else if (wcslen(pszName) > MAX_PATH)
     {
         if (FAILED(hr = pstrPath->Copy(L"\\\\?\\")))
         {
             return hr;
         }
     }
+    else
+    {
+        pstrPath->Reset();
+    }  
 
     return pstrPath->Append(pszName);
 }
