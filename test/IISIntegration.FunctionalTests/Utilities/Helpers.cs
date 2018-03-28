@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using System;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
@@ -28,6 +31,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 "..", // obj
                 "..", // projectfolder
                 "TestSites"));
+        }
+
+        public static void ModifyAspNetCoreSectionInWebConfig(DeploymentResult deploymentResult, string key, string value)
+        {
+            // modify the web.config after publish
+            var root = deploymentResult.ContentRoot;
+            var webConfigFile = $"{root}/web.config";
+            var config = XDocument.Load(webConfigFile);
+            var element = config.Descendants("aspNetCore").FirstOrDefault();
+            element.SetAttributeValue(key, value);
+            config.Save(webConfigFile);
         }
     }
 }

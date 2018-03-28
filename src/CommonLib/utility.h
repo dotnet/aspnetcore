@@ -118,7 +118,7 @@ public:
         _In_ WORD    dwEventInfoType,
         _In_ DWORD   dwEventId,
         _In_ LPCWSTR pstrMsg
-   );
+    );
 
 private:
 

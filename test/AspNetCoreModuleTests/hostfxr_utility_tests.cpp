@@ -90,5 +90,63 @@ namespace AspNetCoreModuleTests
 
             Assert::AreEqual(E_INVALIDARG, hr);
         }
+
+        TEST_METHOD(GetAbsolutePathToDotnetFromProgramFiles_BackupWorks)
+        {
+            STRU struAbsolutePathToDotnet;
+            HRESULT hr = S_OK;
+            BOOL fDotnetInProgramFiles;
+            BOOL is64Bit;
+            BOOL fIsWow64 = FALSE;
+            SYSTEM_INFO systemInfo;
+            IsWow64Process(GetCurrentProcess(), &fIsWow64);
+            if (fIsWow64)
+            {
+                is64Bit = FALSE;
+            }
+            else
+            {
+                GetNativeSystemInfo(&systemInfo);
+                is64Bit = systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
+            }
+
+            if (is64Bit)
+            {
+                fDotnetInProgramFiles = UTILITY::CheckIfFileExists(L"C:/Program Files/dotnet/dotnet.exe");
+            }
+            else
+            {
+                fDotnetInProgramFiles = UTILITY::CheckIfFileExists(L"C:/Program Files (x86)/dotnet/dotnet.exe");
+            }
+            
+            hr = HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles(&struAbsolutePathToDotnet);
+            if (fDotnetInProgramFiles)
+            {
+                Assert::AreEqual(hr, S_OK);
+            }
+            else
+            {
+                Assert::AreNotEqual(hr, S_OK);
+                Assert::IsTrue(struAbsolutePathToDotnet.IsEmpty());
+            }
+        }
+
+        TEST_METHOD(GetHostFxrArguments_InvalidParams)
+        {
+            DWORD retVal = 0;
+            BSTR* bstrArray;
+            STRU  struHostFxrDllLocation;
+
+            HRESULT hr = HOSTFXR_UTILITY::GetHostFxrParameters(
+                INVALID_HANDLE_VALUE,
+                L"bogus", // processPath
+                L"",  // application physical path, ignored.
+                L"ignored",  //arguments
+                NULL, // event log
+                &retVal, // arg count
+                &bstrArray); // args array.
+
+            Assert::AreEqual(E_INVALIDARG, hr);
+        }
     };
 }

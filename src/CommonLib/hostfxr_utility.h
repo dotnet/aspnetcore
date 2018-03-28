@@ -21,7 +21,7 @@ public:
         PCWSTR				pcwzProcessPath,
         PCWSTR              pcwzApplicationPhysicalPath,
         PCWSTR              pcwzArguments,
-        _Inout_ STRU*       struHostFxrDllLocation,
+        _Inout_ STRU*       pStruHostFxrDllLocation,
         _Out_ DWORD*        pdwArgCount,
         _Out_ BSTR**       ppwzArgv
 	);
@@ -33,7 +33,7 @@ public:
         PCWSTR				pcwzApplicationPhysicalPath,
         PCWSTR              pcwzArguments,
         HANDLE              hEventLog,
-        _Inout_ STRU*		struHostFxrDllLocation,
+        _Inout_ STRU*		pStruHostFxrDllLocation,
         _Out_ DWORD*		pdwArgCount,
         _Out_ BSTR**		ppwzArgv
     );
@@ -46,13 +46,33 @@ public:
         PCWSTR				pcwzApplicationPhysicalPath,
         HANDLE              hEventLog,
         _Out_ DWORD*        pdwArgCount,
-        _Out_ BSTR**       ppwzArgv
+        _Out_ BSTR**        ppwzArgv
     );
 
     static
     HRESULT
-    FindDotnetExePath(
-        STRU*   struDotnetLocation
+    GetAbsolutePathToDotnet(
+        STRU*   pStruAbsolutePathToDotnet
+    );
+
+    static
+    HRESULT
+    GetAbsolutePathToHostFxr(
+        _In_ STRU* pStruAbsolutePathToDotnet,
+        _In_ HANDLE hEventLog,
+        _Out_ STRU* pStruAbsolutePathToHostfxr
+    );
+
+    static
+    BOOL
+    InvokeWhereToFindDotnet(
+        _Inout_ STRU* pStruAbsolutePathToDotnet
+    );
+
+    static
+    HRESULT
+    GetAbsolutePathToDotnetFromProgramFiles(
+        _Inout_ STRU* pStruAbsolutePathToDotnet
     );
 };
 
