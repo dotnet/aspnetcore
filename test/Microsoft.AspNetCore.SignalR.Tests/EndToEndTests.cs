@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [ConditionalFact]
         [WebSocketsSupportedCondition]
-        public async Task HTTPRequestsNotSentWhenWebSocketsTransportRequested()
+        public async Task HttpRequestsNotSentWhenWebSocketsTransportRequested()
         {
             using (StartLog(out var loggerFactory))
             {
@@ -136,19 +136,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 try
                 {
-                    var receiveTcs = new TaskCompletionSource<byte[]>();
-                    connection.OnReceived((data, state) =>
-                    {
-                        var tcs = (TaskCompletionSource<byte[]>)state;
-                        tcs.TrySetResult(data);
-                        return Task.CompletedTask;
-                    }, receiveTcs);
-
                     var message = new byte[] { 42 };
                     await connection.StartAsync(TransferFormat.Binary).OrTimeout();
-                    await connection.SendAsync(message).OrTimeout();
 
-                    var receivedData = await receiveTcs.Task.OrTimeout();
+                    await connection.Transport.Output.WriteAsync(message).OrTimeout();
+
+                    var receivedData = await connection.Transport.Input.ReadAllAsync();
                     Assert.Equal(message, receivedData);
                 }
                 catch (Exception ex)
@@ -179,28 +172,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
                 try
                 {
-                    var closeTcs = new TaskCompletionSource<object>();
-                    connection.Closed += e =>
-                    {
-                        if (e != null)
-                        {
-                            closeTcs.SetException(e);
-                        }
-                        else
-                        {
-                            closeTcs.SetResult(null);
-                        }
-                    };
-
-                    var receiveTcs = new TaskCompletionSource<string>();
-                    connection.OnReceived((data, state) =>
-                    {
-                        logger.LogInformation("Received {length} byte message", data.Length);
-                        var tcs = (TaskCompletionSource<string>)state;
-                        tcs.TrySetResult(Encoding.UTF8.GetString(data));
-                        return Task.CompletedTask;
-                    }, receiveTcs);
-
                     logger.LogInformation("Starting connection to {url}", url);
                     await connection.StartAsync(requestedTransferFormat).OrTimeout();
                     logger.LogInformation("Started connection to {url}", url);
@@ -210,7 +181,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     logger.LogInformation("Sending {length} byte message", bytes.Length);
                     try
                     {
-                        await connection.SendAsync(bytes).OrTimeout();
+                        await connection.Transport.Output.WriteAsync(bytes).OrTimeout();
                     }
                     catch (OperationCanceledException)
                     {
@@ -220,12 +191,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         // Our solution to this is to just catch OperationCanceledException from the sent message if the race happens
                         // because we know the send went through, and its safe to check the response.
                     }
-                    logger.LogInformation("Sent message", bytes.Length);
+                    logger.LogInformation("Sent message");
 
                     logger.LogInformation("Receiving message");
-                    Assert.Equal(message, await receiveTcs.Task.OrTimeout());
+                    Assert.Equal(message, Encoding.UTF8.GetString(await connection.Transport.Input.ReadAllAsync()));
                     logger.LogInformation("Completed receive");
-                    await closeTcs.Task.OrTimeout();
                 }
                 catch (Exception ex)
                 {
@@ -264,27 +234,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 try
                 {
-                    var receiveTcs = new TaskCompletionSource<byte[]>();
-                    connection.OnReceived((data, state) =>
-                    {
-                        logger.LogInformation("Received {length} byte message", data.Length);
-                        var tcs = (TaskCompletionSource<byte[]>)state;
-                        tcs.TrySetResult(data);
-                        return Task.CompletedTask;
-                    }, receiveTcs);
-
                     logger.LogInformation("Starting connection to {url}", url);
                     await connection.StartAsync(TransferFormat.Binary).OrTimeout();
                     logger.LogInformation("Started connection to {url}", url);
 
                     var bytes = Encoding.UTF8.GetBytes(message);
                     logger.LogInformation("Sending {length} byte message", bytes.Length);
-                    await connection.SendAsync(bytes).OrTimeout();
-                    logger.LogInformation("Sent message", bytes.Length);
+                    await connection.Transport.Output.WriteAsync(bytes).OrTimeout();
+                    logger.LogInformation("Sent message");
 
                     logger.LogInformation("Receiving message");
                     // Big timeout here because it can take a while to receive all the bytes
-                    var receivedData = await receiveTcs.Task.OrTimeout(TimeSpan.FromSeconds(30));
+                    var receivedData = await connection.Transport.Input.ReadAllAsync();
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
                 }
@@ -406,26 +367,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         private class FakeTransport : ITransport
         {
-            public string prevConnectionId = null;
-            private int tries = 0;
+            private int _tries;
+            private string _prevConnectionId = null;
             private IDuplexPipe _application;
 
             public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
             {
                 _application = application;
-                tries++;
-                Assert.True(QueryHelpers.ParseQuery(url.Query.ToString()).TryGetValue("id", out var id));
-                if (prevConnectionId == null)
+                _tries++;
+                Assert.True(QueryHelpers.ParseQuery(url.Query).TryGetValue("id", out var id));
+                if (_prevConnectionId == null)
                 {
-                    prevConnectionId = id;
+                    _prevConnectionId = id;
                 }
                 else
                 {
-                    Assert.True(prevConnectionId != id);
-                    prevConnectionId = id;
+                    Assert.True(_prevConnectionId != id);
+                    _prevConnectionId = id;
                 }
 
-                if (tries < 3)
+                if (_tries < 3)
                 {
                     throw new Exception();
                 }
@@ -462,11 +423,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 foreach (var transport in TransportTypes)
                 {
-                    yield return new object[] { transport[0], TransferFormat.Text };
+                    yield return new[] { transport[0], TransferFormat.Text };
 
                     if ((TransportType)transport[0] != TransportType.ServerSentEvents)
                     {
-                        yield return new object[] { transport[0], TransferFormat.Binary };
+                        yield return new[] { transport[0], TransferFormat.Binary };
                     }
                 }
             }

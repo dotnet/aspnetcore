@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             protected override void Cancel()
             {
-                _channel.Writer.TryComplete(new OperationCanceledException("Invocation terminated"));
+                _channel.Writer.TryComplete(new OperationCanceledException());
             }
         }
 

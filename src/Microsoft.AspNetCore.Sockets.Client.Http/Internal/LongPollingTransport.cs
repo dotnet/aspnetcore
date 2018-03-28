@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.AspNetCore.Connections;
 
-namespace Microsoft.AspNetCore.Sockets.Client
+namespace Microsoft.AspNetCore.Sockets.Client.Internal
 {
     public partial class LongPollingTransport : ITransport
     {
@@ -106,6 +106,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         // just want to start a new poll.
                         continue;
                     }
+
+                    Log.PollResponseReceived(_logger, response);
 
                     response.EnsureSuccessStatusCode();
 

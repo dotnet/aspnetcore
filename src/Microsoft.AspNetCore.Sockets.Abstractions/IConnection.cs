@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -11,16 +12,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface IConnection
     {
-        Task StartAsync(TransferFormat transferFormat);
-        Task SendAsync(byte[] data, CancellationToken cancellationToken);
-        Task StopAsync();
-        Task DisposeAsync();
-        Task AbortAsync(Exception ex);
-
-        IDisposable OnReceived(Func<byte[], object, Task> callback, object state);
-
-        event Action<Exception> Closed;
-
+        IDuplexPipe Transport { get; }
         IFeatureCollection Features { get; }
+
+        Task StartAsync();
+        Task StartAsync(TransferFormat transferFormat);
+        Task DisposeAsync();
     }
 }

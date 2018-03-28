@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 await WithConnectionAsync(
                     CreateConnection(testHttpHandler, url: requestedUrl),
-                    async (connection, closed) =>
+                    async (connection) =>
                     {
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();
                     });
@@ -95,17 +95,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                                 new
                                 {
                                     transport = "QuantumEntanglement",
-                                    transferFormats = new string[] { "Qbits" },
+                                    transferFormats = new[] { "Qbits" },
                                 },
                                 new
                                 {
                                     transport = "CarrierPigeon",
-                                    transferFormats = new string[] { "Text" },
+                                    transferFormats = new[] { "Text" },
                                 },
                                 new
                                 {
                                     transport = "LongPolling",
-                                    transferFormats = new string[] { "Text", "Binary" }
+                                    transferFormats = new[] { "Text", "Binary" }
                                 },
                             }
                         }));
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 await WithConnectionAsync(
                     CreateConnection(testHttpHandler, transportFactory: transportFactory.Object),
-                    async (connection, closed) =>
+                    async (connection) =>
                     {
                         await connection.StartAsync(TransferFormat.Binary).OrTimeout();
                     });
@@ -141,17 +141,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                                 new
                                 {
                                     transport = "WebSockets",
-                                    transferFormats = new string[] { "Qbits" },
+                                    transferFormats = new[] { "Qbits" },
                                 },
                                 new
                                 {
                                     transport = "ServerSentEvents",
-                                    transferFormats = new string[] { "Text" },
+                                    transferFormats = new[] { "Text" },
                                 },
                                 new
                                 {
                                     transport = "LongPolling",
-                                    transferFormats = new string[] { "Text", "Binary" }
+                                    transferFormats = new[] { "Text", "Binary" }
                                 },
                             }
                         }));
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 await WithConnectionAsync(
                     CreateConnection(testHttpHandler, transportFactory: transportFactory.Object),
-                    async (connection, closed) =>
+                    async (connection) =>
                     {
                         await connection.StartAsync(TransferFormat.Binary).OrTimeout();
                     });
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 await WithConnectionAsync(
                     CreateConnection(testHttpHandler),
-                    async (connection, closed) =>
+                    async (connection) =>
                     {
                         var exception = await Assert.ThrowsAsync<TException>(
                             () => connection.StartAsync(TransferFormat.Text).OrTimeout());

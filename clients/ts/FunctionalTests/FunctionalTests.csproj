@@ -6,6 +6,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="selenium\run-ci-tests.ts" />
+    <None Remove="selenium\run-tests.ts" />
+    <None Remove="ts\Common.ts" />
+    <None Remove="ts\ConnectionTests.ts" />
+    <None Remove="ts\HubConnectionTests.ts" />
+    <None Remove="ts\index.ts" />
+    <None Remove="ts\Utils.ts" />
+    <None Remove="ts\WebDriverReporter.ts" />
+    <None Remove="ts\WebSocketTests.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.SignalR.MsgPack\Microsoft.AspNetCore.SignalR.MsgPack.csproj" />
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
   </ItemGroup>
@@ -23,6 +35,18 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\js\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="selenium\run-ci-tests.ts" />
+    <TypeScriptCompile Include="selenium\run-tests.ts" />
+    <TypeScriptCompile Include="ts\Common.ts" />
+    <TypeScriptCompile Include="ts\ConnectionTests.ts" />
+    <TypeScriptCompile Include="ts\HubConnectionTests.ts" />
+    <TypeScriptCompile Include="ts\index.ts" />
+    <TypeScriptCompile Include="ts\Utils.ts" />
+    <TypeScriptCompile Include="ts\WebDriverReporter.ts" />
+    <TypeScriptCompile Include="ts\WebSocketTests.ts" />
   </ItemGroup>
 
   <Target Name="ClientBuild" BeforeTargets="AfterBuild">

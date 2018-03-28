@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client
@@ -17,29 +18,29 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, string, string, string, int, Exception> _preparingBlockingInvocation =
                 LoggerMessage.Define<string, string, string, int>(LogLevel.Trace, new EventId(2, "PreparingBlockingInvocation"), "Preparing blocking invocation '{InvocationId}' of '{Target}', with return type '{ReturnType}' and {ArgumentCount} argument(s).");
 
-            private static readonly Action<ILogger, string, Exception> _registerInvocation =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "RegisterInvocation"), "Registering Invocation ID '{InvocationId}' for tracking.");
+            private static readonly Action<ILogger, string, Exception> _registeringInvocation =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "RegisteringInvocation"), "Registering Invocation ID '{InvocationId}' for tracking.");
 
-            private static readonly Action<ILogger, string, string, string, string, Exception> _issueInvocation =
-                LoggerMessage.Define<string, string, string, string>(LogLevel.Trace, new EventId(4, "IssueInvocation"), "Issuing Invocation '{InvocationId}': {ReturnType} {MethodName}({Args}).");
+            private static readonly Action<ILogger, string, string, string, string, Exception> _issuingInvocation =
+                LoggerMessage.Define<string, string, string, string>(LogLevel.Trace, new EventId(4, "IssuingInvocation"), "Issuing Invocation '{InvocationId}': {ReturnType} {MethodName}({Args}).");
 
-            private static readonly Action<ILogger, string, Exception> _sendInvocation =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "SendInvocation"), "Sending Invocation '{InvocationId}'.");
+            private static readonly Action<ILogger, string, string, Exception> _sendingMessage =
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(5, "SendingMessage"), "Sending {MessageType} message '{InvocationId}'.");
 
-            private static readonly Action<ILogger, string, Exception> _sendInvocationCompleted =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "SendInvocationCompleted"), "Sending Invocation '{InvocationId}' completed.");
+            private static readonly Action<ILogger, string, string, Exception> _messageSent =
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(6, "MessageSent"), "Sending {MessageType} message '{InvocationId}' completed.");
 
-            private static readonly Action<ILogger, string, Exception> _sendInvocationFailed =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(7, "SendInvocationFailed"), "Sending Invocation '{InvocationId}' failed.");
+            private static readonly Action<ILogger, string, Exception> _failedToSendInvocation =
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(7, "FailedToSendInvocation"), "Sending Invocation '{InvocationId}' failed.");
 
             private static readonly Action<ILogger, string, string, string, Exception> _receivedInvocation =
                 LoggerMessage.Define<string, string, string>(LogLevel.Trace, new EventId(8, "ReceivedInvocation"), "Received Invocation '{InvocationId}': {MethodName}({Args}).");
 
-            private static readonly Action<ILogger, string, Exception> _dropCompletionMessage =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(9, "DropCompletionMessage"), "Dropped unsolicited Completion message for invocation '{InvocationId}'.");
+            private static readonly Action<ILogger, string, Exception> _droppedCompletionMessage =
+                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(9, "DroppedCompletionMessage"), "Dropped unsolicited Completion message for invocation '{InvocationId}'.");
 
-            private static readonly Action<ILogger, string, Exception> _dropStreamMessage =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(10, "DropStreamMessage"), "Dropped unsolicited StreamItem message for invocation '{InvocationId}'.");
+            private static readonly Action<ILogger, string, Exception> _droppedStreamMessage =
+                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(10, "DroppedStreamMessage"), "Dropped unsolicited StreamItem message for invocation '{InvocationId}'.");
 
             private static readonly Action<ILogger, Exception> _shutdownConnection =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(11, "ShutdownConnection"), "Shutting down connection.");
@@ -47,8 +48,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, Exception> _shutdownWithError =
                 LoggerMessage.Define(LogLevel.Error, new EventId(12, "ShutdownWithError"), "Connection is shutting down due to an error.");
 
-            private static readonly Action<ILogger, string, Exception> _removeInvocation =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(13, "RemoveInvocation"), "Removing pending invocation {InvocationId}.");
+            private static readonly Action<ILogger, string, Exception> _removingInvocation =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(13, "RemovingInvocation"), "Removing pending invocation {InvocationId}.");
 
             private static readonly Action<ILogger, string, Exception> _missingHandler =
                 LoggerMessage.Define<string>(LogLevel.Warning, new EventId(14, "MissingHandler"), "Failed to find handler for '{Target}' method.");
@@ -68,11 +69,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, string, Exception> _cancelingInvocationCompletion =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(19, "CancelingInvocationCompletion"), "Canceling dispatch of Completion message for Invocation {InvocationId}. The invocation was canceled.");
 
-            private static readonly Action<ILogger, string, Exception> _cancelingCompletion =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(20, "CancelingCompletion"), "Canceling dispatch of Completion message for Invocation {InvocationId}. The invocation was canceled.");
+            private static readonly Action<ILogger, string, string, int, Exception> _releasingConnectionLock =
+                LoggerMessage.Define<string, string, int>(LogLevel.Trace, new EventId(20, "ReleasingConnectionLock"), "Releasing Connection Lock in {MethodName} ({FilePath}:{LineNumber}).");
 
-            private static readonly Action<ILogger, string, Exception> _invokeAfterTermination =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(21, "InvokeAfterTermination"), "Invoke for Invocation '{InvocationId}' was called after the connection was terminated.");
+            private static readonly Action<ILogger, Exception> _stopped =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(21, "Stopped"), "HubConnection stopped.");
 
             private static readonly Action<ILogger, string, Exception> _invocationAlreadyInUse =
                 LoggerMessage.Define<string>(LogLevel.Critical, new EventId(22, "InvocationAlreadyInUse"), "Invocation ID '{InvocationId}' is already in use.");
@@ -125,6 +126,60 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, string, Exception> _receivedCloseWithError =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(38, "ReceivedCloseWithError"), "Received close message with an error: {Error}");
 
+            private static readonly Action<ILogger, Exception> _handshakeComplete =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(39, "HandshakeComplete"), "Handshake with server complete.");
+
+            private static readonly Action<ILogger, string, Exception> _registeringHandler =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(40, "RegisteringHandler"), "Registering handler for client method '{MethodName}'.");
+
+            private static readonly Action<ILogger, Exception> _starting =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(41, "Starting"), "Starting HubConnection.");
+
+            private static readonly Action<ILogger, string, string, int, Exception> _waitingOnConnectionLock =
+                LoggerMessage.Define<string, string, int>(LogLevel.Trace, new EventId(42, "WaitingOnConnectionLock"), "Waiting on Connection Lock in {MethodName} ({FilePath}:{LineNumber}).");
+
+            private static readonly Action<ILogger, Exception> _errorStartingConnection =
+                LoggerMessage.Define(LogLevel.Error, new EventId(43, "ErrorStartingConnection"), "Error starting connection.");
+
+            private static readonly Action<ILogger, Exception> _started =
+                LoggerMessage.Define(LogLevel.Information, new EventId(44, "Started"), "HubConnection started.");
+
+            private static readonly Action<ILogger, string, Exception> _sendingCancellation =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(45, "SendingCancellation"), "Sending Cancellation for Invocation '{InvocationId}'.");
+
+            private static readonly Action<ILogger, Exception> _cancelingOutstandingInvocations =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(46, "CancelingOutstandingInvocations"), "Canceling all outstanding invocations.");
+
+            private static readonly Action<ILogger, Exception> _receiveLoopStarting =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(47, "ReceiveLoopStarting"), "Receive loop starting.");
+
+            private static readonly Action<ILogger, double, Exception> _startingServerTimeoutTimer =
+                LoggerMessage.Define<double>(LogLevel.Debug, new EventId(48, "StartingServerTimeoutTimer"), "Starting server timeout timer. Duration: {ServerTimeout:0.00}ms");
+
+            private static readonly Action<ILogger, Exception> _notUsingServerTimeout =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(49, "NotUsingServerTimeout"), "Not using server timeout because the transport inherently tracks server availability.");
+
+            private static readonly Action<ILogger, Exception> _serverDisconnectedWithError =
+                LoggerMessage.Define(LogLevel.Error, new EventId(50, "ServerDisconnectedWithError"), "The server connection was terminated with an error.");
+
+            private static readonly Action<ILogger, Exception> _invokingClosedEventHandler =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(51, "InvokingClosedEventHandler"), "Invoking the Closed event handler.");
+
+            private static readonly Action<ILogger, Exception> _stopping =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(52, "Stopping"), "Stopping HubConnection.");
+
+            private static readonly Action<ILogger, Exception> _terminatingReceiveLoop =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(53, "TerminatingReceiveLoop"), "Terminating receive loop.");
+
+            private static readonly Action<ILogger, Exception> _waitingForReceiveLoopToTerminate =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(54, "WaitingForReceiveLoopToTerminate"), "Waiting for the receive loop to terminate.");
+
+            private static readonly Action<ILogger, string, Exception> _unableToSendCancellation =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(55, "UnableToSendCancellation"), "Unable to send cancellation for invocation '{InvocationId}'. The connection is inactive.");
+
+            private static readonly Action<ILogger, long, Exception> _processingMessage =
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(56, "ProcessingMessage"), "Processing {MessageLength} byte message from server.");
+
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
                 _preparingNonBlockingInvocation(logger, target, count, null);
@@ -140,33 +195,39 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _preparingStreamingInvocation(logger, invocationId, target, returnType, count, null);
             }
 
-            public static void RegisterInvocation(ILogger logger, string invocationId)
+            public static void RegisteringInvocation(ILogger logger, string invocationId)
             {
-                _registerInvocation(logger, invocationId, null);
+                _registeringInvocation(logger, invocationId, null);
             }
 
-            public static void IssueInvocation(ILogger logger, string invocationId, string returnType, string methodName, object[] args)
+            public static void IssuingInvocation(ILogger logger, string invocationId, string returnType, string methodName, object[] args)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
                     var argsList = args == null ? string.Empty : string.Join(", ", args.Select(a => a?.GetType().FullName ?? "(null)"));
-                    _issueInvocation(logger, invocationId, returnType, methodName, argsList, null);
+                    _issuingInvocation(logger, invocationId, returnType, methodName, argsList, null);
                 }
             }
 
-            public static void SendInvocation(ILogger logger, string invocationId)
+            public static void SendingMessage(ILogger logger, HubInvocationMessage message)
             {
-                _sendInvocation(logger, invocationId, null);
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _sendingMessage(logger, message.GetType().Name, message.InvocationId, null);
+                }
             }
 
-            public static void SendInvocationCompleted(ILogger logger, string invocationId)
+            public static void MessageSent(ILogger logger, HubInvocationMessage message)
             {
-                _sendInvocationCompleted(logger, invocationId, null);
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _messageSent(logger, message.GetType().Name, message.InvocationId, null);
+                }
             }
 
-            public static void SendInvocationFailed(ILogger logger, string invocationId, Exception exception)
+            public static void FailedToSendInvocation(ILogger logger, string invocationId, Exception exception)
             {
-                _sendInvocationFailed(logger, invocationId, exception);
+                _failedToSendInvocation(logger, invocationId, exception);
             }
 
             public static void ReceivedInvocation(ILogger logger, string invocationId, string methodName, object[] args)
@@ -178,14 +239,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            public static void DropCompletionMessage(ILogger logger, string invocationId)
+            public static void DroppedCompletionMessage(ILogger logger, string invocationId)
             {
-                _dropCompletionMessage(logger, invocationId, null);
+                _droppedCompletionMessage(logger, invocationId, null);
             }
 
-            public static void DropStreamMessage(ILogger logger, string invocationId)
+            public static void DroppedStreamMessage(ILogger logger, string invocationId)
             {
-                _dropStreamMessage(logger, invocationId, null);
+                _droppedStreamMessage(logger, invocationId, null);
             }
 
             public static void ShutdownConnection(ILogger logger)
@@ -198,9 +259,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _shutdownWithError(logger, exception);
             }
 
-            public static void RemoveInvocation(ILogger logger, string invocationId)
+            public static void RemovingInvocation(ILogger logger, string invocationId)
             {
-                _removeInvocation(logger, invocationId, null);
+                _removingInvocation(logger, invocationId, null);
             }
 
             public static void MissingHandler(ILogger logger, string target)
@@ -233,14 +294,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _cancelingInvocationCompletion(logger, invocationId, null);
             }
 
-            public static void CancelingCompletion(ILogger logger, string invocationId)
+            public static void Stopped(ILogger logger)
             {
-                _cancelingCompletion(logger, invocationId, null);
-            }
-
-            public static void InvokeAfterTermination(ILogger logger, string invocationId)
-            {
-                _invokeAfterTermination(logger, invocationId, null);
+                _stopped(logger, null);
             }
 
             public static void InvocationAlreadyInUse(ILogger logger, string invocationId)
@@ -322,6 +378,105 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 _receivedCloseWithError(logger, error, null);
             }
+
+            public static void HandshakeComplete(ILogger logger)
+            {
+                _handshakeComplete(logger, null);
+            }
+
+            public static void RegisteringHandler(ILogger logger, string methodName)
+            {
+                _registeringHandler(logger, methodName, null);
+            }
+
+            public static void Starting(ILogger logger)
+            {
+                _starting(logger, null);
+            }
+
+            public static void ErrorStartingConnection(ILogger logger, Exception ex)
+            {
+                _errorStartingConnection(logger, ex);
+            }
+
+            public static void Started(ILogger logger)
+            {
+                _started(logger, null);
+            }
+
+            public static void SendingCancellation(ILogger logger, string invocationId)
+            {
+                _sendingCancellation(logger, invocationId, null);
+            }
+
+            public static void CancelingOutstandingInvocations(ILogger logger)
+            {
+                _cancelingOutstandingInvocations(logger, null);
+            }
+
+            public static void ReceiveLoopStarting(ILogger logger)
+            {
+                _receiveLoopStarting(logger, null);
+            }
+
+            public static void StartingServerTimeoutTimer(ILogger logger, TimeSpan serverTimeout)
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _startingServerTimeoutTimer(logger, serverTimeout.TotalMilliseconds, null);
+                }
+            }
+
+            public static void NotUsingServerTimeout(ILogger logger)
+            {
+                _notUsingServerTimeout(logger, null);
+            }
+
+            public static void ServerDisconnectedWithError(ILogger logger, Exception ex)
+            {
+                _serverDisconnectedWithError(logger, ex);
+            }
+
+            public static void InvokingClosedEventHandler(ILogger logger)
+            {
+                _invokingClosedEventHandler(logger, null);
+            }
+
+            public static void Stopping(ILogger logger)
+            {
+                _stopping(logger, null);
+            }
+
+            public static void TerminatingReceiveLoop(ILogger logger)
+            {
+                _terminatingReceiveLoop(logger, null);
+            }
+
+            public static void WaitingForReceiveLoopToTerminate(ILogger logger)
+            {
+                _waitingForReceiveLoopToTerminate(logger, null);
+            }
+
+            public static void ProcessingMessage(ILogger logger, long length)
+            {
+                _processingMessage(logger, length, null);
+            }
+
+            public static void WaitingOnConnectionLock(ILogger logger, string memberName, string filePath, int lineNumber)
+            {
+                _waitingOnConnectionLock(logger, memberName, filePath, lineNumber, null);
+            }
+
+            public static void ReleasingConnectionLock(ILogger logger, string memberName, string filePath, int lineNumber)
+            {
+                _releasingConnectionLock(logger, memberName, filePath, lineNumber, null);
+            }
+
+            public static void UnableToSendCancellation(ILogger logger, string invocationId)
+            {
+                _unableToSendCancellation(logger, invocationId, null);
+            }
         }
     }
 }
+

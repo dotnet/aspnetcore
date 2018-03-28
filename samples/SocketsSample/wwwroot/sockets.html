@@ -38,7 +38,7 @@
                 event.preventDefault();
             });
 
-            connection.start().then(function () {
+            connection.start(signalR.TransferFormat.Text).then(function () {
                 console.log("Opened");
             }, function () {
                 console.log("Error opening connection");

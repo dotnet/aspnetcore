@@ -35,6 +35,12 @@ namespace System.Threading.Tasks
             await task;
         }
 
+        public static Task<T> OrTimeout<T>(this ValueTask<T> task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null) =>
+            OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
+
+        public static Task<T> OrTimeout<T>(this ValueTask<T> task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null) =>
+            task.AsTask().OrTimeout(timeout, memberName, filePath, lineNumber);
+
         public static Task<T> OrTimeout<T>(this Task<T> task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {
             return OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
@@ -61,7 +67,7 @@ namespace System.Threading.Tasks
         public static async Task OrThrowIfOtherFails(this Task task, Task otherTask)
         {
             var completed = await Task.WhenAny(task, otherTask);
-            if(completed == otherTask && otherTask.IsFaulted)
+            if (completed == otherTask && otherTask.IsFaulted)
             {
                 // Manifest the exception
                 otherTask.GetAwaiter().GetResult();

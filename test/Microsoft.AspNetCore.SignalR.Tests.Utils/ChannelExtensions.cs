@@ -3,24 +3,35 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace System.Threading.Channels
 {
     public static class ChannelExtensions
     {
-        public static async Task<List<T>> ReadAllAsync<T>(this ChannelReader<T> channel)
+        public static async Task<List<T>> ReadAllAsync<T>(this ChannelReader<T> channel, bool suppressExceptions = false)
         {
             var list = new List<T>();
-            while (await channel.WaitToReadAsync())
+            try
             {
-                while (channel.TryRead(out var item))
+                while (await channel.WaitToReadAsync())
                 {
-                    list.Add(item);
+                    while (channel.TryRead(out var item))
+                    {
+                        list.Add(item);
+                    }
+                }
+
+                // Manifest any error from channel.Completion (which should be completed now)
+                if (!suppressExceptions)
+                {
+                    await channel.Completion;
                 }
             }
-
-            // Manifest any error from channel.Completion (which should be completed now)
-            await channel.Completion;
+            catch (Exception) when (suppressExceptions)
+            {
+                // Suppress the exception
+            }
 
             return list;
         }
