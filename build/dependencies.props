@@ -7,21 +7,33 @@
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreMvcTestingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview3-32037</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsLoggingConfigurationPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26314-02</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26325-03</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
+
+
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>

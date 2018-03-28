@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
             }
 
             options.ClientId = azureADOptions.ClientId;
+            options.ClientSecret = azureADOptions.ClientSecret;
             options.Authority = new Uri(new Uri(azureADOptions.Instance), azureADOptions.TenantId).ToString();
             options.CallbackPath = azureADOptions.CallbackPath ?? options.CallbackPath;
             options.SignedOutCallbackPath = azureADOptions.SignedOutCallbackPath ?? options.SignedOutCallbackPath;

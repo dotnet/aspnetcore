@@ -1,3 +1,13 @@
-﻿@{
-    Layout = "_Layout";
+﻿@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Mvc.ViewEngines
+
+@inject IHostingEnvironment Environment
+@inject ICompositeViewEngine Engine
+
+@{
+    var result = Engine.FindView(ViewContext, "_Layout", isMainPage: false);
+    if (result.Success)
+    {
+        Layout = "_Layout";
+    }
 }

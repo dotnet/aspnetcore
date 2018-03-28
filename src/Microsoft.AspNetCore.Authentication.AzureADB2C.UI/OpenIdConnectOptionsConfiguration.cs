@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
             }
 
             options.ClientId = azureADB2COptions.ClientId;
+            options.ClientSecret = azureADB2COptions.ClientSecret;
             options.Authority = BuildAuthority(azureADB2COptions);
             options.CallbackPath = azureADB2COptions.CallbackPath ?? options.CallbackPath;
             options.SignedOutCallbackPath = azureADB2COptions.SignedOutCallbackPath ?? options.SignedOutCallbackPath;

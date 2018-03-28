@@ -35,6 +35,11 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         public string ClientId { get; set; }
 
         /// <summary>
+        /// Gets or sets the client secret.
+        /// </summary>
+        public string ClientSecret { get; set; }
+
+        /// <summary>
         /// Gets or sets the tenant Id.
         /// </summary>
         public string TenantId { get; set; }
