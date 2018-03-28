@@ -15,6 +15,8 @@ The previous versions of Identity for MVC5 and lower, previously available on Co
 
 ## Community Maintained Store Providers
 
+**IMPORTANT: Extensions are built by a variety of sources and not maintained as part of the ASP.NET Identity project. When considering a third party provider, be sure to evaluate quality, licensing, compatibility, support, etc. to ensure they meet your requirements.**
+
  - [ASP.NET Identity MongoDB Provider](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
  - [ASP.NET Identity LinqToDB Provider](https://github.com/ili/LinqToDB.Identity)
  - [ASP.NET Identity DynamoDB Provider](https://github.com/miltador/AspNetCore.Identity.DynamoDB)
