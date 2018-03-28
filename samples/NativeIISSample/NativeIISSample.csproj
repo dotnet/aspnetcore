@@ -17,4 +17,5 @@
   <PropertyGroup>
     <AspNetCoreModuleHostingModel>inprocess</AspNetCoreModuleHostingModel>
   </PropertyGroup>
+
 </Project>
