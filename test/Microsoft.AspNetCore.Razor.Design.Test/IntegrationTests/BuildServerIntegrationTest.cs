@@ -103,5 +103,35 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_ServerConnectionMutexCreationFails_FallsBackToInProcessRzc()
+        {
+            // Use a pipe name longer that 260 characters to make the Mutex constructor throw.
+            var pipeName = new string('P', 261);
+            var result = await DotnetMSBuild(
+                "Build",
+                "/p:_RazorForceBuildServer=true",
+                buildServerPipeName: pipeName);
+
+            // We expect this to fail because we don't allow it to fallback to in process execution.
+            Assert.BuildFailed(result);
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+
+            // Try to build again without forcing it to run on build server.
+            result = await DotnetMSBuild(
+                "Build",
+                "/p:_RazorForceBuildServer=false",
+                buildServerPipeName: pipeName);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+
+            // Note: We don't need to handle server clean up here because it will fail before
+            // it reaches server creation part.
+        }
     }
 }

@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             bool suppressRestore = false,
             bool suppressTimeout = false,
             bool suppressBuildServer = false,
+            string buildServerPipeName = null,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             if (!suppressBuildServer)
             {
-                buildArgumentList.Add($"/p:_RazorBuildServerPipeName={BuildServer.PipeName}");
+                buildArgumentList.Add($"/p:_RazorBuildServerPipeName={buildServerPipeName ?? BuildServer.PipeName}");
             }
 
             buildArgumentList.Add($"/t:{target} /p:Configuration={Configuration} {args}");

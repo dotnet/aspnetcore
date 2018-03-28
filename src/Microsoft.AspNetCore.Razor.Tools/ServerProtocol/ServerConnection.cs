@@ -23,13 +23,21 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         public static bool WasServerMutexOpen(string mutexName)
         {
-            var open = Mutex.TryOpenExisting(mutexName, out var mutex);
-            if (open)
+            Mutex mutex = null;
+            var open = false;
+            try
             {
-                mutex.Dispose();
-                return true;
+                open = Mutex.TryOpenExisting(mutexName, out mutex);
             }
-            return false;
+            catch
+            {
+                // In the case an exception occured trying to open the Mutex then
+                // the assumption is that it's not open.
+            }
+
+            mutex?.Dispose();
+
+            return open;
         }
 
         /// <summary>
@@ -129,44 +137,63 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var timeoutExistingProcess = timeoutOverride ?? TimeOutMsExistingProcess;
             var clientMutexName = MutexName.GetClientMutexName(pipeName);
             Task<Client> pipeTask = null;
-            using (var clientMutex = new Mutex(initiallyOwned: true, name: clientMutexName, createdNew: out var holdsMutex))
+
+            Mutex clientMutex = null;
+            var holdsMutex = false;
+
+            try
             {
                 try
                 {
-                    if (!holdsMutex)
-                    {
-                        try
-                        {
-                            holdsMutex = clientMutex.WaitOne(timeoutNewProcess);
-
-                            if (!holdsMutex)
-                            {
-                                return new RejectedServerResponse();
-                            }
-                        }
-                        catch (AbandonedMutexException)
-                        {
-                            holdsMutex = true;
-                        }
-                    }
-
-                    // Check for an already running server
-                    var serverMutexName = MutexName.GetServerMutexName(pipeName);
-                    var wasServerRunning = WasServerMutexOpen(serverMutexName);
-                    var timeout = wasServerRunning ? timeoutExistingProcess : timeoutNewProcess;
-
-                    if (wasServerRunning || tryCreateServerFunc(clientDir, pipeName, debug))
-                    {
-                        pipeTask = Client.ConnectAsync(pipeName, TimeSpan.FromMilliseconds(timeout), cancellationToken);
-                    }
+                    clientMutex = new Mutex(initiallyOwned: true, name: clientMutexName, createdNew: out holdsMutex);
                 }
-                finally
+                catch (Exception ex)
                 {
-                    if (holdsMutex)
+                    // The Mutex constructor can throw in certain cases. One specific example is docker containers
+                    // where the /tmp directory is restricted. In those cases there is no reliable way to execute
+                    // the server and we need to fall back to the command line.
+                    // Example: https://github.com/dotnet/roslyn/issues/24124
+
+                    ServerLogger.LogException(ex, "Client mutex creation failed.");
+
+                    return new RejectedServerResponse();
+                }
+
+                if (!holdsMutex)
+                {
+                    try
                     {
-                        clientMutex.ReleaseMutex();
+                        holdsMutex = clientMutex.WaitOne(timeoutNewProcess);
+
+                        if (!holdsMutex)
+                        {
+                            return new RejectedServerResponse();
+                        }
+                    }
+                    catch (AbandonedMutexException)
+                    {
+                        holdsMutex = true;
                     }
                 }
+
+                // Check for an already running server
+                var serverMutexName = MutexName.GetServerMutexName(pipeName);
+                var wasServerRunning = WasServerMutexOpen(serverMutexName);
+                var timeout = wasServerRunning ? timeoutExistingProcess : timeoutNewProcess;
+
+                if (wasServerRunning || tryCreateServerFunc(clientDir, pipeName, debug))
+                {
+                    pipeTask = Client.ConnectAsync(pipeName, TimeSpan.FromMilliseconds(timeout), cancellationToken);
+                }
+            }
+            finally
+            {
+                if (holdsMutex)
+                {
+                    clientMutex?.ReleaseMutex();
+                }
+
+                clientMutex?.Dispose();
             }
 
             if (pipeTask != null)
