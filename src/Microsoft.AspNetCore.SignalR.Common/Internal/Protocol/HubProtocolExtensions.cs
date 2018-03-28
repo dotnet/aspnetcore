@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     {
         public static byte[] WriteToArray(this IHubProtocol hubProtocol, HubMessage message)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = new LimitArrayPoolWriteStream())
             {
                 hubProtocol.WriteMessage(message, ms);
                 return ms.ToArray();

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +26,8 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubConnectionContext
     {
-        private static Action<object> _abortedCallback = AbortConnection;
+        private static readonly Action<object> _abortedCallback = AbortConnection;
+        private static readonly byte[] _successHandshakeResponseData;
 
         private readonly ConnectionContext _connectionContext;
         private readonly ILogger _logger;
@@ -36,6 +38,13 @@ namespace Microsoft.AspNetCore.SignalR
 
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
         private byte[] _cachedPingMessage;
+
+        static HubConnectionContext()
+        {
+            var memoryBufferWriter = new MemoryBufferWriter();
+            HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
+            _successHandshakeResponseData = memoryBufferWriter.ToArray();
+        }
 
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
         {
@@ -185,10 +194,17 @@ namespace Microsoft.AspNetCore.SignalR
 
             try
             {
-                var ms = new MemoryStream();
-                HandshakeProtocol.WriteResponseMessage(message, ms);
+                if (message == HandshakeResponseMessage.Empty)
+                {
+                    // success response is always an empty object so send cached data
+                    _connectionContext.Transport.Output.Write(_successHandshakeResponseData);
+                }
+                else
+                {
+                    HandshakeProtocol.WriteResponseMessage(message, _connectionContext.Transport.Output);
+                }
 
-                await _connectionContext.Transport.Output.WriteAsync(ms.ToArray());
+                await _connectionContext.Transport.Output.FlushAsync();
             }
             finally
             {
