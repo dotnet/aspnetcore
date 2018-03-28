@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     internal class Utf8BufferTextReader : TextReader
     {
+        private readonly Decoder _decoder;
         private ReadOnlySequence<byte> _utf8Buffer;
-        private Decoder _decoder;
 
         [ThreadStatic]
         private static Utf8BufferTextReader _cachedInstance;

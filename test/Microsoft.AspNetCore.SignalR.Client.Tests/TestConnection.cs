@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets.Client;
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var s = await ReadSentTextMessageAsync();
 
-            var output = new MemoryStream();
+            var output = new MemoryBufferWriter();
             HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, output);
             await Application.Output.WriteAsync(output.ToArray());
 

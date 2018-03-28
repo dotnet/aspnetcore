@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Sockets
                                          ITransferFormatFeature,
                                          IHttpContextFeature
     {
-        private object _heartbeatLock = new object();
+        private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
-        private TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
 
         /// <summary>
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.

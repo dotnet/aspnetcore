@@ -13,47 +13,67 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public static class HandshakeProtocol
     {
-        private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
         private const string ProtocolPropertyName = "protocol";
         private const string ProtocolVersionName = "version";
         private const string ErrorPropertyName = "error";
         private const string TypePropertyName = "type";
 
-        public static void WriteRequestMessage(HandshakeRequestMessage requestMessage, Stream output)
+        public static void WriteRequestMessage(HandshakeRequestMessage requestMessage, IBufferWriter<byte> output)
         {
-            using (var writer = CreateJsonTextWriter(output))
+            var textWriter = Utf8BufferTextWriter.Get(output);
+            try
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName(ProtocolPropertyName);
-                writer.WriteValue(requestMessage.Protocol);
-                writer.WritePropertyName(ProtocolVersionName);
-                writer.WriteValue(requestMessage.Version);
-                writer.WriteEndObject();
-            }
-
-            TextMessageFormatter.WriteRecordSeparator(output);
-        }
-
-        public static void WriteResponseMessage(HandshakeResponseMessage responseMessage, Stream output)
-        {
-            using (var writer = CreateJsonTextWriter(output))
-            {
-                writer.WriteStartObject();
-                if (!string.IsNullOrEmpty(responseMessage.Error))
+                using (var writer = CreateJsonTextWriter(textWriter))
                 {
-                    writer.WritePropertyName(ErrorPropertyName);
-                    writer.WriteValue(responseMessage.Error);
+                    writer.WriteStartObject();
+                    writer.WritePropertyName(ProtocolPropertyName);
+                    writer.WriteValue(requestMessage.Protocol);
+                    writer.WritePropertyName(ProtocolVersionName);
+                    writer.WriteValue(requestMessage.Version);
+                    writer.WriteEndObject();
+                    writer.Flush();
                 }
-                writer.WriteEndObject();
+            }
+            finally
+            {
+                Utf8BufferTextWriter.Return(textWriter);
             }
 
             TextMessageFormatter.WriteRecordSeparator(output);
         }
 
-        private static JsonTextWriter CreateJsonTextWriter(Stream output)
+        public static void WriteResponseMessage(HandshakeResponseMessage responseMessage, IBufferWriter<byte> output)
         {
-            return new JsonTextWriter(new StreamWriter(output, _utf8NoBom, 1024, leaveOpen: true));
+            var textWriter = Utf8BufferTextWriter.Get(output);
+            try
+            {
+                using (var writer = CreateJsonTextWriter(textWriter))
+                {
+                    writer.WriteStartObject();
+                    if (!string.IsNullOrEmpty(responseMessage.Error))
+                    {
+                        writer.WritePropertyName(ErrorPropertyName);
+                        writer.WriteValue(responseMessage.Error);
+                    }
+
+                    writer.WriteEndObject();
+                    writer.Flush();
+                }
+            }
+            finally
+            {
+                Utf8BufferTextWriter.Return(textWriter);
+            }
+
+            TextMessageFormatter.WriteRecordSeparator(output);
+        }
+
+        private static JsonTextWriter CreateJsonTextWriter(TextWriter textWriter)
+        {
+            var writer = new JsonTextWriter(textWriter);
+            writer.CloseOutput = false;
+
+            return writer;
         }
 
         public static bool TryParseResponseMessage(ref ReadOnlySequence<byte> buffer, out HandshakeResponseMessage responseMessage)
