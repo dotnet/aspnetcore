@@ -223,7 +223,9 @@
 
     <!-- Create layout: Extract archive if given -->
     <MakeDir Directories="$(_WorkRoot)package_root\" />
-    <Exec Command="tar -xzf $(RSArchive) -C $(_WorkRoot)package_root\" Condition="'$(RSArchive)'!=''" />
+    <Exec Command="tar -xzf $(RSArchive) -C $(_WorkRoot)package_root\" Condition="'$(RSArchive)'!=''" StandardOutputImportance="Normal"  />
+    <!-- Ensure expected directories exist in the event we don't have additional files for this patch. -->
+    <MakeDir Directories="$(_WorkRoot)package_root\store;$(_WorkRoot)package_root\additionalDeps" />
 
     <!-- Create layout: Place changelog -->
     <Copy
