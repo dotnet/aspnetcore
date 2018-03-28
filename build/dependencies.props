@@ -5,70 +5,70 @@
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15744</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
-    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreCorsPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreCorsPackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreDiagnosticsPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpFeaturesPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreHttpFeaturesPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreRoutingPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreRoutingPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview2-30484</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreWebSocketsPackageVersion>2.1.0-preview2-30484</MicrosoftAspNetCoreWebSocketsPackageVersion>
-    <MicrosoftCSharpPackageVersion>4.5.0-preview2-26325-02</MicrosoftCSharpPackageVersion>
-    <MicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.0-preview2-30484</MicrosoftEntityFrameworkCoreDesignPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0-preview2-30484</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.0-preview2-30484</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
-    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.0-preview2-30484</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15749</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreCorsPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreCorsPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpFeaturesPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreHttpFeaturesPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreRoutingPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreRoutingPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview2-30478</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreWebSocketsPackageVersion>2.1.0-preview2-30478</MicrosoftAspNetCoreWebSocketsPackageVersion>
+    <MicrosoftCSharpPackageVersion>4.5.0-preview2-26326-04</MicrosoftCSharpPackageVersion>
+    <MicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.0-preview2-30478</MicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0-preview2-30478</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.0-preview2-30478</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26325-03</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26326-03</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <MsgPackCliPackageVersion>1.0.0-rc</MsgPackCliPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
-    <SystemBuffersPackageVersion>4.5.0-preview2-26325-02</SystemBuffersPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26325-02</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.0-preview2-26325-02</SystemMemoryPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.5.0-preview2-26325-02</SystemNumericsVectorsPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview2-26326-04</SystemBuffersPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26326-04</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview2-26326-04</SystemMemoryPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview2-26326-04</SystemNumericsVectorsPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26325-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemThreadingChannelsPackageVersion>4.5.0-preview2-26325-02</SystemThreadingChannelsPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26325-02</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26326-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.5.0-preview2-26326-04</SystemThreadingChannelsPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26326-04</SystemThreadingTasksExtensionsPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
