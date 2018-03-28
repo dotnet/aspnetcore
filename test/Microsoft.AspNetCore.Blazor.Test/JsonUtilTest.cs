@@ -80,6 +80,46 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(new TimeSpan(7665, 1, 30, 0), person.Age);
         }
 
+        [Fact]
+        public void CanSerializeStructToJson()
+        {
+            // Arrange
+            var commandResult = new SimpleError
+            {
+                Message = "Test",
+                ContainsError = true,
+                ErrorId = 1
+            };
+            
+            // Act
+            var result = JsonUtil.Serialize(commandResult);
+            
+            // Assert
+            Assert.Equal("{\"Message\":\"Test\",\"ContainsError\":true,\"ErrorId\":1}", result);
+        }
+
+        [Fact]
+        public void CanDeserializeStructFromJson()
+        {
+            // Arrange
+            var json = "{\"Message\":\"Test\",\"ContainsError\":true,\"ErrorId\":1}";
+
+            //Act
+            var simpleError = JsonUtil.Deserialize<SimpleError>(json);
+
+            // Assert
+            Assert.Equal("Test", simpleError.Message);
+            Assert.True(simpleError.ContainsError);
+            Assert.Equal(1, simpleError.ErrorId);
+        }
+
+        struct SimpleError
+        {
+            public string Message { get; set; }
+            public bool ContainsError { get; set; }
+            public int? ErrorId { get; set; }
+        }
+
         class Person
         {
             public int Id { get; set; }

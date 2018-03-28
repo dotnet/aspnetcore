@@ -1430,7 +1430,7 @@ namespace SimpleJson
                             obj = value;
                         else
                         {
-                            obj = ConstructorCache[type]();
+                            obj = ConstructorCache[type]?.Invoke() ?? Activator.CreateInstance(type);
                             foreach (KeyValuePair<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> setter in SetCache[type])
                             {
                                 object jsonValue;
