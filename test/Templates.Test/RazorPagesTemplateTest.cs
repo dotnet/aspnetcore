@@ -21,7 +21,7 @@ namespace Templates.Test
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_NoAuth_NoHttps_Works_NetFramework()
-            => RazorPagesTemplate_NoAuthImpl("net471", true);
+            => RazorPagesTemplate_NoAuthImpl("net461", true);
 
         [Fact]
         public void RazorPagesTemplate_NoAuth_Works_NetCore()
@@ -71,7 +71,7 @@ namespace Templates.Test
         [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
-            => RazorPagesTemplate_IndividualAuthImpl("net471", false, true);
+            => RazorPagesTemplate_IndividualAuthImpl("net461", false, true);
 
         [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
         public void RazorPagesTemplate_IndividualAuth_Works_NetCore()

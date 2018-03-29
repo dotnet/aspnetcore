@@ -26,12 +26,12 @@ namespace Templates.Test
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void MvcTemplate_NoAuth_NoHttps_Works_NetFramework_ForDefaultTemplate()
-            => MvcTemplate_NoAuthImpl("net471", languageOverride: default, true);
+            => MvcTemplate_NoAuthImpl("net461", languageOverride: default, true);
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void MvcTemplate_NoAuth_NoHttps_Works_NetFramework_ForFSharpTemplate()
-            => MvcTemplate_NoAuthImpl("net471", languageOverride: "F#", true);
+            => MvcTemplate_NoAuthImpl("net461", languageOverride: "F#", true);
 
         [Fact]
         public void MvcTemplate_NoAuth_Works_NetCore_ForDefaultTemplate()
@@ -89,7 +89,7 @@ namespace Templates.Test
         [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void MvcTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
-            => MvcTemplate_IndividualAuthImpl("net471", false, true);
+            => MvcTemplate_IndividualAuthImpl("net461", false, true);
 
         [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
         public void MvcTemplate_IndividualAuth_Works_NetCore()
