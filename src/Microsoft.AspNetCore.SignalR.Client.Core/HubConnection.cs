@@ -132,24 +132,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // Start the connection
                 var connection = _connectionFactory();
                 await connection.StartAsync(_protocol.TransferFormat);
-                _connectionState = new ConnectionState(connection, this);
+                var startingConnectionState = new ConnectionState(connection, this);
 
                 // From here on, if an error occurs we need to shut down the connection because
                 // we still own it.
                 try
                 {
                     Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-                    await HandshakeAsync();
+                    await HandshakeAsync(startingConnectionState);
                 }
                 catch (Exception ex)
                 {
                     Log.ErrorStartingConnection(_logger, ex);
 
                     // Can't have any invocations to cancel, we're in the lock.
-                    await _connectionState.Connection.DisposeAsync();
+                    await startingConnectionState.Connection.DisposeAsync();
                     throw;
                 }
 
+                // Set this at the end to avoid setting internal state until the connection is real
+                _connectionState = startingConnectionState;
                 _connectionState.ReceiveTask = ReceiveLoop(_connectionState);
                 Log.Started(_logger);
             }
@@ -494,15 +496,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task HandshakeAsync()
+        private async Task HandshakeAsync(ConnectionState startingConnectionState)
         {
             // Send the Handshake request
             Log.SendingHubHandshake(_logger);
 
             var handshakeRequest = new HandshakeRequestMessage(_protocol.Name, _protocol.Version);
-            HandshakeProtocol.WriteRequestMessage(handshakeRequest, _connectionState.Connection.Transport.Output);
+            HandshakeProtocol.WriteRequestMessage(handshakeRequest, startingConnectionState.Connection.Transport.Output);
 
-            var sendHandshakeResult = await _connectionState.Connection.Transport.Output.FlushAsync(CancellationToken.None);
+            var sendHandshakeResult = await startingConnectionState.Connection.Transport.Output.FlushAsync(CancellationToken.None);
 
             if (sendHandshakeResult.IsCompleted)
             {
@@ -514,7 +516,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 while (true)
                 {
-                    var result = await _connectionState.Connection.Transport.Input.ReadAsync();
+                    var result = await startingConnectionState.Connection.Transport.Input.ReadAsync();
                     var buffer = result.Buffer;
                     var consumed = buffer.Start;
                     var examined = buffer.End;
@@ -551,7 +553,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                     finally
                     {
-                        _connectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
+                        startingConnectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
                     }
                 }
             }
