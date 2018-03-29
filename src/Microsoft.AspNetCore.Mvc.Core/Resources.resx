@@ -400,7 +400,7 @@
     <value>'{0}' and '{1}' are out of bounds for the string.</value>
     <comment>'{0}' and '{1}' are the parameters which combine to be out of bounds.</comment>
   </data>
-  <data name="ComplexTypeModelBinder_NoParameterlessConstructor_TopLevelObject" xml:space="preserve">
+  <data name="ComplexTypeModelBinder_NoParameterlessConstructor_ForType" xml:space="preserve">
     <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor.</value>
   </data>
   <data name="ComplexTypeModelBinder_NoParameterlessConstructor_ForProperty" xml:space="preserve">
@@ -435,5 +435,8 @@
   </data>
   <data name="ApplicationAssembliesProvider_RelatedAssemblyCannotDefineAdditional" xml:space="preserve">
     <value>Assembly '{0}' declared as a related assembly by assembly '{1}' cannot define additional related assemblies.</value>
+  </data>
+  <data name="ComplexTypeModelBinder_NoParameterlessConstructor_ForParameter" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Alternatively, give the '{1}' parameter a non-null default value.</value>
   </data>
 </root>

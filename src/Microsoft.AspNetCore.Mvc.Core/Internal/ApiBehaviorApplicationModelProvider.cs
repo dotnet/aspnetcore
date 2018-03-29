@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Internal for unit testing.
         internal BindingSource InferBindingSourceForParameter(ParameterModel parameter)
         {
-            if (ParameterExistsInAllRoutes(parameter.Action, parameter.ParameterName))
+            if (ParameterExistsInAnyRoute(parameter.Action, parameter.ParameterName))
             {
                 return BindingSource.Path;
             }
@@ -242,9 +242,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return bindingSource;
         }
 
-        private bool ParameterExistsInAllRoutes(ActionModel actionModel, string parameterName)
+        private bool ParameterExistsInAnyRoute(ActionModel actionModel, string parameterName)
         {
-            var parameterExistsInSomeRoute = false;
             foreach (var (route, _, _) in ActionAttributeRouteModel.GetAttributeRoutes(actionModel))
             {
                 if (route == null)
@@ -253,16 +252,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
 
                 var parsedTemplate = TemplateParser.Parse(route.Template);
-                if (parsedTemplate.GetParameter(parameterName) == null)
+                if (parsedTemplate.GetParameter(parameterName) != null)
                 {
-                    return false;
+                    return true;
                 }
-
-                // Ensure at least one route exists.
-                parameterExistsInSomeRoute = true;
             }
 
-            return parameterExistsInSomeRoute;
+            return false;
         }
 
         private bool IsComplexTypeParameter(ParameterModel parameter)

@@ -112,6 +112,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return builder;
         }
 
+        public IMetadataBuilder ForParameter(ParameterInfo parameter)
+        {
+            var key = ModelMetadataIdentity.ForParameter(parameter);
+            var builder = new MetadataBuilder(key);
+            _detailsProvider.Builders.Add(builder);
+
+            return builder;
+        }
+
         public IMetadataBuilder ForProperty<TContainer>(string propertyName)
         {
             return ForProperty(typeof(TContainer), propertyName);

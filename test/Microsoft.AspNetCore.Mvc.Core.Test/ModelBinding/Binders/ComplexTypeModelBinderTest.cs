@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -369,6 +368,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     "value types and must have a parameterless constructor.",
                     typeof(PointStruct).FullName),
                 exception.Message);
+        }
+
+        [Fact]
+        public void CreateModel_ForClassWithNoParameterlessConstructor_AsElement_ThrowsException()
+        {
+            // Arrange
+            var expectedMessage = "Could not create an instance of type " +
+                $"'{typeof(ClassWithNoParameterlessConstructor)}'. Model bound complex types must not be abstract " +
+                "or value types and must have a parameterless constructor.";
+            var metadata = GetMetadataForType(typeof(ClassWithNoParameterlessConstructor));
+            var bindingContext = new DefaultModelBindingContext
+            {
+                ModelMetadata = metadata,
+            };
+            var binder = CreateBinder(metadata);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => binder.CreateModelPublic(bindingContext));
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -1094,6 +1112,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
             public double X { get; }
             public double Y { get; }
+        }
+
+        private class ClassWithNoParameterlessConstructor
+        {
+            public ClassWithNoParameterlessConstructor(string name)
+            {
+                Name = name;
+            }
+
+            public string Name { get; set; }
         }
 
         private class BindingOptionalProperty

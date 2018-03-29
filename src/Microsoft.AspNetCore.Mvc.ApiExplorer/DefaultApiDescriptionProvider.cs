@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     ModelMetadata = metadata,
                     BinderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName,
                     BindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource,
-                    PropertyName = propertyName ?? metadata.PropertyName
+                    PropertyName = propertyName ?? metadata.Name,
                 };
             }
         }

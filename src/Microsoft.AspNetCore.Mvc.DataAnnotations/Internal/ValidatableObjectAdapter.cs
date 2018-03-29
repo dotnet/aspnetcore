@@ -19,8 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 return Enumerable.Empty<ModelValidationResult>();
             }
 
-            var validatable = model as IValidatableObject;
-            if (validatable == null)
+            if (!(model is IValidatableObject validatable))
             {
                 var message = Resources.FormatValidatableObjectAdapter_IncompatibleType(
                     typeof(IValidatableObject).Name,
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 items: null)
             {
                 DisplayName = context.ModelMetadata.GetDisplayName(),
-                MemberName = context.ModelMetadata.PropertyName,
+                MemberName = context.ModelMetadata.Name,
             };
 
             return ConvertResults(validatable.Validate(validationContext));

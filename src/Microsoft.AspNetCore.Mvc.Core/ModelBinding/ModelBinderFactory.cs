@@ -79,8 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     typeof(IModelBinderProvider).FullName));
             }
 
-            IModelBinder binder;
-            if (TryGetCachedBinder(context.Metadata, context.CacheToken, out binder))
+            if (TryGetCachedBinder(context.Metadata, context.CacheToken, out var binder))
             {
                 return binder;
             }
@@ -106,8 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         // so that all intermediate results can be cached.
         private IModelBinder CreateBinderCoreCached(DefaultModelBinderProviderContext providerContext, object token)
         {
-            IModelBinder binder;
-            if (TryGetCachedBinder(providerContext.Metadata, token, out binder))
+            if (TryGetCachedBinder(providerContext.Metadata, token, out var binder))
             {
                 return binder;
             }
@@ -145,8 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // PlaceholderBinder because that would result in lots of unnecessary indirection and allocations.
             var visited = providerContext.Visited;
 
-            IModelBinder binder;
-            if (visited.TryGetValue(key, out binder))
+            if (visited.TryGetValue(key, out var binder))
             {
                 if (binder != null)
                 {
@@ -178,8 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             // If the PlaceholderBinder was created, then it means we recursed. Hook it up to the 'real' binder.
-            var placeholderBinder = visited[key] as PlaceholderBinder;
-            if (placeholderBinder != null)
+            if (visited[key] is PlaceholderBinder placeholderBinder)
             {
                 // It's also possible that user code called into `CreateBinder` but then returned null, we don't
                 // want to create something that will null-ref later so just hook this up to the no-op binder.
@@ -347,13 +343,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override string ToString()
             {
-                if (_metadata.MetadataKind == ModelMetadataKind.Type)
+                switch (_metadata.MetadataKind)
                 {
-                    return $"{_token} (Type: '{_metadata.ModelType.Name}')";
-                }
-                else
-                {
-                    return $"{_token} (Property: '{_metadata.ContainerType.Name}.{_metadata.PropertyName}' Type: '{_metadata.ModelType.Name}')";
+                    case ModelMetadataKind.Parameter:
+                        return $"{_token} (Parameter: '{_metadata.ParameterName}' Type: '{_metadata.ModelType.Name}')";
+                    case ModelMetadataKind.Property:
+                        return $"{_token} (Property: '{_metadata.ContainerType.Name}.{_metadata.PropertyName}' " +
+                            $"Type: '{_metadata.ModelType.Name}')";
+                    case ModelMetadataKind.Type:
+                        return $"{_token} (Type: '{_metadata.ModelType.Name}')";
+                    default:
+                        return $"Unsupported MetadataKind '{_metadata.MetadataKind}'.";
                 }
             }
         }

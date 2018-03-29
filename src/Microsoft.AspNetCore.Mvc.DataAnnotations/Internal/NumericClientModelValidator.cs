@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             }
 
             var messageProvider = modelMetadata.ModelBindingMessageProvider;
-            var name = modelMetadata.DisplayName ?? modelMetadata.PropertyName;
+            var name = modelMetadata.DisplayName ?? modelMetadata.Name;
             if (name == null)
             {
                 return messageProvider.NonPropertyValueMustBeANumberAccessor();
