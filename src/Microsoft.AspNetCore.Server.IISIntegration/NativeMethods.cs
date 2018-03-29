@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
-        public static bool is_ancm_loaded()
+        public static bool IsAspNetCoreModuleLoaded()
         {
             return GetModuleHandle(AspNetCoreModuleDll) != IntPtr.Zero;
         }

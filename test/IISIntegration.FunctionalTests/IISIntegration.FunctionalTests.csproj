@@ -10,7 +10,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
-    <ProjectReference Include="..\IISTestSite\IISTestSite.csproj" />
+    <ProjectReference Include="..\WebSites\**\*.csproj" >
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

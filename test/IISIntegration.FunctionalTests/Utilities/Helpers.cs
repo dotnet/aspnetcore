@@ -11,27 +11,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class Helpers
     {
-        public static string GetInProcessTestSitesPath()
-        {
+        public static string GetTestWebSitePath(string name)
+        {   
             return Path.GetFullPath(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                "..", // tfm
-                "..", // debug
-                "..", // obj
-                "..", // projectfolder
-                "IISTestSite"));
+                    "..", // tfm
+                    "..", // debug
+                    "..", // obj
+                    "..", // projectfolder
+                    "WebSites",
+                    name));
         }
 
-        public static string GetOutOfProcessTestSitesPath()
-        {
-            return Path.GetFullPath(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                "..", // tfm
-                "..", // debug
-                "..", // obj
-                "..", // projectfolder
-                "TestSites"));
-        }
+        public static string GetInProcessTestSitesPath() => GetTestWebSitePath("InProcessWebSite");
+
+        public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
 
         public static void ModifyAspNetCoreSectionInWebConfig(DeploymentResult deploymentResult, string key, string value)
         {

@@ -1,36 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace TestTasks
 {
-    public class InjectRequestHandler : Task
+    public class InjectRequestHandler
     {
-        [Required]
-        public string DepsFile { get; set; }
-
-        [Required]
-        public string Rid { get; set; }
-
-        [Required]
-        public string LibraryLocation { get; set; }
-
-        public override bool Execute()
+        private static void Main(string[] args)
         {
-            InjectNativeLibrary(DepsFile);
+            var depsFile = args[2];
+            var rid = args[0];
+            var libraryLocation = args[1];
 
-            // Parse input
-            return true;
-        }
-
-        private void InjectNativeLibrary(string depsFile)
-        {
             JToken deps;
             using (var file = File.OpenText(depsFile))
             using (JsonTextReader reader = new JsonTextReader(file))
@@ -40,15 +27,16 @@ namespace TestTasks
 
             var libraryName = "ANCMRH/1.0";
             var libraries = (JObject)deps["libraries"];
+            var targetName = (JValue)deps["runtimeTarget"]["name"];
 
-            var target = (JObject)((JObject)deps["targets"]).Properties().First().Value;
+            var target = (JObject)deps["targets"][targetName.Value];
             var targetLibrary = target.Properties().FirstOrDefault(p => p.Name == libraryName);
             targetLibrary?.Remove();
             targetLibrary =
                 new JProperty(libraryName, new JObject(
                     new JProperty("runtimeTargets", new JObject(
-                        new JProperty(LibraryLocation.Replace('\\', '/'), new JObject(
-                            new JProperty("rid", Rid),
+                        new JProperty(libraryLocation.Replace('\\', '/'), new JObject(
+                            new JProperty("rid", rid),
                             new JProperty("assetType", "native")
                         ))))));
             target.AddFirst(targetLibrary);
