@@ -48,7 +48,7 @@ namespace Templates.Test
             throw new NotImplementedException();
         }
 
-        protected void RunDotNetNew(string templateName, string targetFrameworkOverride, string auth = null, string language = null, bool useLocalDB = false)
+        protected void RunDotNetNew(string templateName, string targetFrameworkOverride, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
         {
             var args = $"new {templateName}";
 
@@ -70,6 +70,11 @@ namespace Templates.Test
             if (useLocalDB)
             {
                 args += $" -uld";
+            }
+
+            if (noHttps)
+            {
+                args += $" --no-https";
             }
 
             // Only run one instance of 'dotnet new' at once, as a workaround for

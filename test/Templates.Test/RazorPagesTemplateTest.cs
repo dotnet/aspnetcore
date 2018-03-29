@@ -14,18 +14,22 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_NoAuth_Works_NetFramework()
             => RazorPagesTemplate_NoAuthImpl("net461");
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void RazorPagesTemplate_NoAuth_NoHttps_Works_NetFramework()
+            => RazorPagesTemplate_NoAuthImpl("net471", true);
 
         [Fact]
         public void RazorPagesTemplate_NoAuth_Works_NetCore()
             => RazorPagesTemplate_NoAuthImpl(null);
 
-        private void RazorPagesTemplate_NoAuthImpl(string targetFrameworkOverride)
+        private void RazorPagesTemplate_NoAuthImpl(string targetFrameworkOverride, bool noHttps = false)
         {
-            RunDotNetNew("razor", targetFrameworkOverride);
+            RunDotNetNew("razor", targetFrameworkOverride, noHttps: noHttps);
 
             AssertFileExists("Pages/Shared/_LoginPartial.cshtml", false);
 
@@ -35,6 +39,18 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
+
+            if (targetFrameworkOverride != null)
+            {
+                if (noHttps)
+                {
+                    Assert.DoesNotContain("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
+                }
+                else
+                {
+                    Assert.Contains("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
+                }
+            }
 
             foreach (var publish in new[] { false, true })
             {
@@ -48,10 +64,14 @@ namespace Templates.Test
         }
 
         [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_IndividualAuth_Works_NetFramework()
             => RazorPagesTemplate_IndividualAuthImpl("net461");
+
+        [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void RazorPagesTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
+            => RazorPagesTemplate_IndividualAuthImpl("net471", false, true);
 
         [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
         public void RazorPagesTemplate_IndividualAuth_Works_NetCore()
@@ -61,7 +81,7 @@ namespace Templates.Test
         public void RazorPagesTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
             => RazorPagesTemplate_IndividualAuthImpl(null, true);
 
-        private void RazorPagesTemplate_IndividualAuthImpl(string targetFrameworkOverride, bool useLocalDB = false)
+        private void RazorPagesTemplate_IndividualAuthImpl(string targetFrameworkOverride, bool useLocalDB = false, bool noHttps = false)
         {
             RunDotNetNew("razor", targetFrameworkOverride, auth: "Individual", useLocalDB: useLocalDB);
 
@@ -73,6 +93,11 @@ namespace Templates.Test
                 Assert.Contains(".db", projectFileContents);
             }
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
+
+            if (targetFrameworkOverride != null)
+            {
+                Assert.Contains("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
+            }
 
             RunDotNetEfCreateMigration("razorpages");
 
