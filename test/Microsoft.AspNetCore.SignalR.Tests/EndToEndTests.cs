@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var bytes = Encoding.UTF8.GetBytes(message);
                     logger.LogInformation("Sending {length} byte frame", bytes.Length);
-                    await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, true, CancellationToken.None).OrTimeout();
+                    await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, endOfMessage: true, CancellationToken.None).OrTimeout();
 
                     logger.LogInformation("Receiving frame");
                     var buffer = new ArraySegment<byte>(new byte[1024]);
@@ -107,11 +107,49 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, result.Count).ToArray());
 
+                    logger.LogInformation("Closing socket");
+                    await ws.CloseOutputAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
                     logger.LogInformation("Waiting for close");
                     result = await ws.ReceiveAsync(buffer, CancellationToken.None).OrTimeout();
                     Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+                    logger.LogInformation("Closed socket");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [WebSocketsSupportedCondition]
+        public async Task WebSocketsReceivesAndSendsPartialFramesTest()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
+
+                const string message = "Hello, World!";
+                using (var ws = new ClientWebSocket())
+                {
+                    var socketUrl = _serverFixture.WebSocketsUrl + "/echo";
+
+                    logger.LogInformation("Connecting WebSocket to {socketUrl}", socketUrl);
+                    await ws.ConnectAsync(new Uri(socketUrl), CancellationToken.None).OrTimeout();
+
+                    var bytes = Encoding.UTF8.GetBytes(message);
+                    logger.LogInformation("Sending {length} byte frame", bytes.Length);
+                    // We're sending a partial frame, we should still get the data
+                    await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, endOfMessage: false, CancellationToken.None).OrTimeout();
+
+                    logger.LogInformation("Receiving frame");
+                    var buffer = new ArraySegment<byte>(new byte[1024]);
+                    var result = await ws.ReceiveAsync(buffer, CancellationToken.None).OrTimeout();
+                    logger.LogInformation("Received {length} byte frame", result.Count);
+
+                    Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, result.Count).ToArray());
+
                     logger.LogInformation("Closing socket");
-                    await ws.CloseAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
+                    await ws.CloseOutputAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
+                    logger.LogInformation("Waiting for close");
+                    result = await ws.ReceiveAsync(buffer, CancellationToken.None).OrTimeout();
+                    Assert.Equal(WebSocketMessageType.Close, result.MessageType);
                     logger.LogInformation("Closed socket");
                 }
             }
@@ -141,7 +179,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await connection.Transport.Output.WriteAsync(message).OrTimeout();
 
-                    var receivedData = await connection.Transport.Input.ReadAllAsync();
+                    var receivedData = await connection.Transport.Input.ReadAsync(1);
                     Assert.Equal(message, receivedData);
                 }
                 catch (Exception ex)
@@ -194,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     logger.LogInformation("Sent message");
 
                     logger.LogInformation("Receiving message");
-                    Assert.Equal(message, Encoding.UTF8.GetString(await connection.Transport.Input.ReadAllAsync()));
+                    Assert.Equal(message, Encoding.UTF8.GetString(await connection.Transport.Input.ReadAsync(bytes.Length)));
                     logger.LogInformation("Completed receive");
                 }
                 catch (Exception ex)
@@ -245,7 +283,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     logger.LogInformation("Receiving message");
                     // Big timeout here because it can take a while to receive all the bytes
-                    var receivedData = await connection.Transport.Input.ReadAllAsync();
+                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length);
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
                 }

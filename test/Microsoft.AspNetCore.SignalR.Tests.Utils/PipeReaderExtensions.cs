@@ -82,5 +82,26 @@ namespace System.IO.Pipelines
                 pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
             }
         }
+
+        public static async Task<byte[]> ReadAsync(this PipeReader pipeReader, int numBytes)
+        {
+            while (true)
+            {
+                var result = await pipeReader.ReadAsync();
+                if (result.Buffer.Length < numBytes)
+                {
+                    pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
+                    continue;
+                }
+
+                var buffer = result.Buffer.Slice(0, numBytes);
+
+                var bytes = buffer.ToArray();
+
+                pipeReader.AdvanceTo(buffer.End);
+
+                return bytes;
+            }
+        }
     }
 }

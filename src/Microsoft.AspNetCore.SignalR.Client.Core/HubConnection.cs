@@ -516,6 +516,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     var result = await _connectionState.Connection.Transport.Input.ReadAsync();
                     var buffer = result.Buffer;
+                    var consumed = buffer.Start;
+                    var examined = buffer.End;
 
                     try
                     {
@@ -524,6 +526,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         {
                             if (HandshakeProtocol.TryParseResponseMessage(ref buffer, out var message))
                             {
+                                // Adjust consumed and examined to point to the end of the handshake
+                                // response, this handles the case where invocations are sent in the same payload
+                                // as the the negotiate response.
+                                consumed = buffer.Start;
+                                examined = consumed;
+
                                 if (message.Error != null)
                                 {
                                     Log.HandshakeServerError(_logger, message.Error);
@@ -543,10 +551,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                     finally
                     {
-                        // The buffer was sliced up to where it was consumed, so we can just advance to the start.
-                        // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
-                        // before yielding the read again.
-                        _connectionState.Connection.Transport.Input.AdvanceTo(buffer.Start, buffer.End);
+                        _connectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
                     }
                 }
             }

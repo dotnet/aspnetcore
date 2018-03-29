@@ -57,17 +57,28 @@ namespace System.IO.Pipelines
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            Write(buffer, offset, count);
-            return Task.CompletedTask;
+            return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         }
 
 #if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            _pipeWriter.Write(source.Span);
-            _length += source.Length;
-            return default;
+            return WriteCoreAsync(source, cancellationToken);
         }
 #endif
+
+        private ValueTask WriteCoreAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            _length += source.Length;
+            var task = _pipeWriter.WriteAsync(source);
+            if (!task.IsCompletedSuccessfully)
+            {
+                return WriteSlowAsync(task);
+            }
+
+            return default;
+
+            async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask) => await flushTask;
+        }
     }
 }

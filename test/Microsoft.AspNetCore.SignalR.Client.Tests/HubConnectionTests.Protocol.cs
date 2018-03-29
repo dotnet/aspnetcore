@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await hubConnection.StartAsync().OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {type = 7}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { type = 7 }).OrTimeout();
 
                     Exception closeException = await closedTcs.Task.OrTimeout();
                     Assert.Null(closeException);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await hubConnection.StartAsync().OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {type = 7, error = "Error!"}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { type = 7, error = "Error!" }).OrTimeout();
 
                     Exception closeException = await closedTcs.Task.OrTimeout();
                     Assert.NotNull(closeException);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.Equal("{\"type\":4,\"invocationId\":\"1\",\"target\":\"Foo\",\"arguments\":[]}", invokeMessage);
 
                     // Complete the channel
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
                     await channel.Completion;
                 }
                 finally
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var invokeTask = hubConnection.InvokeAsync("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
                     await invokeTask.OrTimeout();
                 }
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var channel = await hubConnection.StreamAsChannelAsync<int>("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
                     Assert.Empty(await channel.ReadAllAsync());
                 }
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var invokeTask = hubConnection.InvokeAsync<int>("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3, result = 42}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, result = 42 }).OrTimeout();
 
                     Assert.Equal(42, await invokeTask.OrTimeout());
                 }
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var invokeTask = hubConnection.InvokeAsync<int>("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3, error = "An error occurred"}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, error = "An error occurred" }).OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => invokeTask).OrTimeout();
                     Assert.Equal("An error occurred", ex.Message);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var channel = await hubConnection.StreamAsChannelAsync<string>("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3, result = "Oops"}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, result = "Oops" }).OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await channel.ReadAllAsync().OrTimeout());
                     Assert.Equal("Server provided a result in a completion response to a streamed invocation.", ex.Message);
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var channel = await hubConnection.StreamAsChannelAsync<int>("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3, error = "An error occurred"}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, error = "An error occurred" }).OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(async () => await channel.ReadAllAsync().OrTimeout());
                     Assert.Equal("An error occurred", ex.Message);
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var invokeTask = hubConnection.InvokeAsync<int>("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 2, item = 42}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = 42 }).OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => invokeTask).OrTimeout();
                     Assert.Equal("Streaming hub methods must be invoked with the 'HubConnection.StreamAsChannelAsync' method.", ex.Message);
@@ -335,14 +335,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var channel = await hubConnection.StreamAsChannelAsync<string>("Foo").OrTimeout();
 
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 2, item = "1"}).OrTimeout();
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 2, item = "2"}).OrTimeout();
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 2, item = "3"}).OrTimeout();
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "1" }).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "2" }).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "3" }).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
                     var notifications = await channel.ReadAllAsync().OrTimeout();
 
-                    Assert.Equal(new[] {"1", "2", "3",}, notifications.ToArray());
+                    Assert.Equal(new[] { "1", "2", "3", }, notifications.ToArray());
                 }
                 finally
                 {
@@ -361,10 +361,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await hubConnection.StartAsync().OrTimeout();
 
-                    hubConnection.On<int, string, float>("Foo", (r1, r2, r3) => handlerCalled.TrySetResult(new object[] {r1, r2, r3}));
+                    hubConnection.On<int, string, float>("Foo", (r1, r2, r3) => handlerCalled.TrySetResult(new object[] { r1, r2, r3 }));
 
-                    var args = new object[] {1, "Foo", 2.0f};
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 1, target = "Foo", arguments = args}).OrTimeout();
+                    var args = new object[] { 1, "Foo", 2.0f };
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 1, target = "Foo", arguments = args }).OrTimeout();
 
                     Assert.Equal(args, await handlerCalled.Task.OrTimeout());
                 }
@@ -389,13 +389,107 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var invokeTask = hubConnection.InvokeAsync("Foo").OrTimeout();
 
                     // Receive the ping mid-invocation so we can see that the rest of the flow works fine
-                    await connection.ReceiveJsonMessage(new {type = 6}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { type = 6 }).OrTimeout();
 
                     // Receive a completion
-                    await connection.ReceiveJsonMessage(new {invocationId = "1", type = 3}).OrTimeout();
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
                     // Ensure the invokeTask completes properly
                     await invokeTask.OrTimeout();
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
+            public async Task PartialHandshakeResponseWorks()
+            {
+                var connection = new TestConnection(synchronousCallbacks: true, autoNegotiate: false);
+                var hubConnection = CreateHubConnection(connection);
+                try
+                {
+                    var task = hubConnection.StartAsync();
+
+                    await connection.ReceiveTextAsync("{");
+
+                    Assert.False(task.IsCompleted);
+
+                    await connection.ReceiveTextAsync("}");
+
+                    Assert.False(task.IsCompleted);
+
+                    await connection.ReceiveTextAsync("\u001e");
+
+                    await task.OrTimeout();
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
+            public async Task HandshakeAndInvocationInSameBufferWorks()
+            {
+                var payload = "{}\u001e{\"type\":1, \"target\": \"Echo\", \"arguments\":[\"hello\"]}\u001e";
+                var connection = new TestConnection(synchronousCallbacks: true, autoNegotiate: false);
+                var hubConnection = CreateHubConnection(connection);
+                try
+                {
+                    var tcs = new TaskCompletionSource<string>();
+                    hubConnection.On<string>("Echo", data =>
+                    {
+                        tcs.TrySetResult(data);
+                    });
+
+                    await connection.ReceiveTextAsync(payload);
+
+                    await hubConnection.StartAsync();
+
+                    var response = await tcs.Task.OrTimeout();
+                    Assert.Equal("hello", response);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
+            public async Task PartialInvocationWorks()
+            {                
+                var connection = new TestConnection(synchronousCallbacks: true);
+                var hubConnection = CreateHubConnection(connection);
+                try
+                {
+                    var tcs = new TaskCompletionSource<string>();
+                    hubConnection.On<string>("Echo", data =>
+                    {
+                        tcs.TrySetResult(data);
+                    });
+
+                    await hubConnection.StartAsync().OrTimeout();
+
+                    await connection.ReceiveTextAsync("{\"type\":1, ");
+
+                    Assert.False(tcs.Task.IsCompleted);
+
+                    await connection.ReceiveTextAsync("\"target\": \"Echo\", \"arguments\"");
+
+                    Assert.False(tcs.Task.IsCompleted);
+
+                    await connection.ReceiveTextAsync(":[\"hello\"]}\u001e");
+
+                    Assert.True(tcs.Task.IsCompleted);
+
+                    var response = await tcs.Task;
+
+                    Assert.Equal("hello", response);
                 }
                 finally
                 {

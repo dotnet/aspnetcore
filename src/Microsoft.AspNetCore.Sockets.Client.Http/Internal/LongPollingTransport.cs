@@ -124,7 +124,6 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
                         var stream = new PipeWriterStream(_application.Output);
                         await response.Content.CopyToAsync(stream);
-                        await _application.Output.FlushAsync();
                     }
                 }
             }
