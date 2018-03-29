@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 Log.LogMessage(StandardOutputLoggingImportance, $"ServerResponseFile = '{responseFileCommands}'");
 
                 // The server contains the tools for discovering tag helpers and generating Razor code.
-                var clientDir = Path.GetDirectoryName(ToolAssembly);
+                var clientDir = Path.GetFullPath(Path.GetDirectoryName(ToolAssembly));
                 var workingDir = CurrentDirectoryToUse();
                 var tempDir = ServerConnection.GetTempPath(workingDir);
                 var serverPaths = new ServerPaths(

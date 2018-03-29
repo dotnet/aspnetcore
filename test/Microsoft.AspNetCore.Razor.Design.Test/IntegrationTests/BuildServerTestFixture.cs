@@ -39,11 +39,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     throw new TimeoutException($"Shutting down the build server at pipe {PipeName} took longer than expected.{Environment.NewLine}Output: {output}.");
                 });
 
-                var application = new Application(cts.Token, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>())
-                {
-                    Out = writer,
-                    Error = writer,
-                };
+                var application = new Application(cts.Token, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>(), writer, writer);
+
                 var exitCode = application.Execute("shutdown", "-w", "-p", PipeName);
                 if (exitCode != 0)
                 {

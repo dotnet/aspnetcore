@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.CodeAnalysis;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -132,6 +136,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Note: We don't need to handle server clean up here because it will fail before
             // it reaches server creation part.
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task ManualServerShutdown_NoPipeName_ShutsDownServer()
+        {
+            var toolAssembly = typeof(Application).Assembly.Location;
+            var result = await DotnetMSBuild(
+                "Build",
+                $"/p:_RazorForceBuildServer=true /p:_RazorToolAssembly={toolAssembly}",
+                suppressBuildServer: true); // We don't want to specify a pipe name
+
+            Assert.BuildPassed(result);
+
+            // Shutdown the server
+            var output = new StringWriter();
+            var error = new StringWriter();
+            var application = new Application(CancellationToken.None, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>(), output, error);
+            var exitCode = application.Execute("shutdown", "-w");
+
+            Assert.Equal(0, exitCode);
+            Assert.Contains("shut down completed", output.ToString());
         }
     }
 }
