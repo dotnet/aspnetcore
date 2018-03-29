@@ -28,11 +28,12 @@ namespace RepoTasks
             OutputPath = OutputPath.Replace('\\', '/');
             Directory.CreateDirectory(Path.GetDirectoryName(OutputPath));
 
-            var props = new XElement("PropertyGroup");
-            var root = new XElement("Project", props);
+            XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
+            var props = new XElement(ns + "PropertyGroup");
+            var root = new XElement(ns + "Project", props);
             var doc = new XDocument(root);
 
-            props.Add(new XElement("MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"));
+            props.Add(new XElement(ns + "MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"));
 
             var varNames = new HashSet<string>();
             var versionElements = new List<XElement>();
@@ -70,7 +71,7 @@ namespace RepoTasks
                     continue;
                 }
                 varNames.Add(key);
-                var elem = new XElement(packageVarName, packageVersion);
+                var elem = new XElement(ns + packageVarName, packageVersion);
                 if (!string.IsNullOrEmpty(packageTfm))
                 {
                     elem.Add(new XAttribute("Condition", $" '$(TargetFramework)' == '{packageTfm}' "));
