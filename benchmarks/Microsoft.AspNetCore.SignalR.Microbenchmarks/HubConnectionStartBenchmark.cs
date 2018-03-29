@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
-    public class HubConnectionBenchmark
+    public class HubConnectionStartBenchmark
     {
         private HubConnection _hubConnection;
         private TestDuplexPipe _pipe;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
         private void AddHandshakeResponse()
         {
-            _pipe.AddReadResult(_handshakeResponseResult);
+            _pipe.AddReadResult(new ValueTask<ReadResult>(_handshakeResponseResult));
         }
 
         [Benchmark]
