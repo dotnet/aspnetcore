@@ -2,6 +2,10 @@
 import { getAssemblyNameFromUrl } from '../DotNet';
 import { getRegisteredFunction } from '../../Interop/RegisteredFunction';
 
+const registeredAssemblies: { [identifier: string]: number } = {}; 
+const registeredClasses:    { [identifier: string]: number } = {}; 
+const registeredMethods:    { [identifier: string]: MethodHandle } = {};
+
 let assembly_load: (assemblyName: string) => number;
 let find_class: (assemblyHandle: number, namespace: string, className: string) => number;
 let find_method: (typeHandle: number, methodName: string, unknownArg: number) => MethodHandle;
@@ -17,7 +21,6 @@ export const monoPlatform: Platform = {
         init: () => { },
         asyncLoad: asyncLoad
       };
-
       // Emscripten works by expecting the module config to be a global
       window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
 
@@ -26,22 +29,31 @@ export const monoPlatform: Platform = {
   },
 
   findMethod: function findMethod(assemblyName: string, namespace: string, className: string, methodName: string): MethodHandle {
-    // TODO: Cache the assembly_load outputs?
-    const assemblyHandle = assembly_load(assemblyName);
+
+    let assemblyHandle: number | undefined = registeredAssemblies[`[${assemblyName}]`];
     if (!assemblyHandle) {
-      throw new Error(`Could not find assembly "${assemblyName}"`);
+      assemblyHandle = assembly_load(assemblyName);
+      if (!assemblyHandle) {
+        throw new Error(`Could not find assembly "${assemblyName}"`);
+      }
+      registeredAssemblies[`[${assemblyName}]`] = assemblyHandle;
     }
-
-    const typeHandle = find_class(assemblyHandle, namespace, className);
+    let typeHandle: number | undefined = registeredClasses[`[${assemblyName}]${namespace}.${className}`];
     if (!typeHandle) {
-      throw new Error(`Could not find type "${className}" in namespace "${namespace}" in assembly "${assemblyName}"`);
+      typeHandle = find_class(assemblyHandle as number, namespace, className);
+      if (!typeHandle) {
+        throw new Error(`Could not find type "${className}" in namespace "${namespace}" in assembly "${assemblyName}"`);
+      }
+      registeredClasses[`[${assemblyName}]${namespace}.${className}`] = typeHandle;
     }
-
-    const methodHandle = find_method(typeHandle, methodName, -1);
+    let methodHandle = registeredMethods[`[${assemblyName}]${namespace}.${className}.${methodName}`]
     if (!methodHandle) {
-      throw new Error(`Could not find method "${methodName}" on type "${namespace}.${className}"`);
+      methodHandle = find_method(typeHandle as number, methodName, -1);
+      if (!methodHandle) {
+        throw new Error(`Could not find method "${methodName}" on type "${namespace}.${className}"`);
+      }
+      registeredMethods[`[${assemblyName}]${namespace}.${className}.${methodName}`] = methodHandle;
     }
-
     return methodHandle;
   },
 
