@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAllRoutes()
+        public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAnyRoutes_MulitpleRoutes()
         {
             // Arrange
             var actionName = nameof(ParameterBindingController.ParameterInMultipleRoutes);
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void InferBindingSourceForParameter_DoesNotReturnPath_IfParameterDoesNotAppearInAllRoutes()
+        public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAnyRoute()
         {
             // Arrange
             var actionName = nameof(ParameterBindingController.ParameterNotInAllRoutes);
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var result = provider.InferBindingSourceForParameter(parameter);
 
             // Assert
-            Assert.Same(BindingSource.Query, result);
+            Assert.Same(BindingSource.Path, result);
         }
 
         [Fact]
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void InferBindingSourceForParameter_DoesNotReturnPath_IfOneActionRouteOverridesControllerRoute()
+        public void InferBindingSourceForParameter_ReturnsPath_IfParameterPresentInNonOverriddenControllerRoute()
         {
             // Arrange
             var actionName = nameof(ParameterInController.MultipleRouteWithOverride);
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var result = provider.InferBindingSourceForParameter(parameter);
 
             // Assert
-            Assert.Same(BindingSource.Query, result);
+            Assert.Same(BindingSource.Path, result);
         }
 
         [Fact]
