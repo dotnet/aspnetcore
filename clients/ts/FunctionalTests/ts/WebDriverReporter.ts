@@ -1,3 +1,5 @@
+import { LogLevel } from "@aspnet/signalr";
+import { TestLogger } from "./TestLogger";
 import { getParameterByName } from "./Utils";
 
 function formatValue(v: any): string {
@@ -16,6 +18,7 @@ class WebDriverReporter implements jasmine.CustomReporter {
     private element: HTMLDivElement;
     private specCounter: number = 1; // TAP number start at 1
     private recordCounter: number = 0;
+    private concurrentSpecCount: number = 0;
 
     constructor(private document: Document, show: boolean = false) {
         // We write to the DOM because it's the most compatible way for WebDriver to read.
@@ -36,7 +39,16 @@ class WebDriverReporter implements jasmine.CustomReporter {
         this.taplog(`1..${suiteInfo.totalSpecsDefined}`);
     }
 
+    public specStarted(result: jasmine.CustomReporterResult): void {
+        this.concurrentSpecCount += 1;
+        if (this.concurrentSpecCount > 1) {
+            throw new Error("Unexpected concurrent tests!");
+        }
+    }
+
     public specDone(result: jasmine.CustomReporterResult): void {
+        this.concurrentSpecCount -= 1;
+        const messages = TestLogger.getMessagesAndReset();
         if (result.status === "disabled") {
             return;
         } else if (result.status === "failed") {
@@ -44,17 +56,29 @@ class WebDriverReporter implements jasmine.CustomReporter {
 
             // Just report the first failure
             this.taplog("  ---");
-            for (const expectation of result.failedExpectations) {
-                // Include YAML block with failed expectations
-                this.taplog(`    - message: ${expectation.message}`);
-                if (expectation.matcherName) {
-                    this.taplog(`      operator: ${expectation.matcherName}`);
+            if (result.failedExpectations.length > 0) {
+                this.taplog("    - messages:");
+                for (const expectation of result.failedExpectations) {
+                    // Include YAML block with failed expectations
+                    this.taplog(`      - message: ${expectation.message}`);
+                    if (expectation.matcherName) {
+                        this.taplog(`        operator: ${expectation.matcherName}`);
+                    }
+                    if (expectation.expected) {
+                        this.taplog(`        expected: ${formatValue(expectation.expected)}`);
+                    }
+                    if (expectation.actual) {
+                        this.taplog(`        actual: ${formatValue(expectation.actual)}`);
+                    }
                 }
-                if (expectation.expected) {
-                    this.taplog(`      expected: ${formatValue(expectation.expected)}`);
-                }
-                if (expectation.actual) {
-                    this.taplog(`      actual: ${formatValue(expectation.actual)}`);
+            }
+
+            // Report log messages
+            if (messages.length > 0) {
+                this.taplog("    - logs: ");
+                for (const [level, message] of messages) {
+                    this.taplog(`      - level: ${LogLevel[level]}`);
+                    this.taplog(`        message: ${message}`);
                 }
             }
             this.taplog("  ...");
