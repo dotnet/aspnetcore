@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Throws<ArgumentException>(() => Process.GetProcessById(pid));
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/DotNetTools/issues/407")]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();
