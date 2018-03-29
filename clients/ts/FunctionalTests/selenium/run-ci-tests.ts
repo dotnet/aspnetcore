@@ -2,9 +2,6 @@ import { ChildProcess, spawn, spawnSync } from "child_process";
 import { existsSync } from "fs";
 import * as path from "path";
 
-import * as tapTeamCity from "tap-teamcity";
-import * as tee from "tee";
-
 const teamcity = !!process.env.TEAMCITY_VERSION;
 
 let force = process.env.ASPNETCORE_SIGNALR_FORCE_BROWSER_TESTS === "true";
@@ -56,7 +53,11 @@ function getChromeBinaryPath(): string {
         switch (process.platform) {
             case "win32":
                 // tslint:disable-next-line:no-string-literal
-                return path.resolve(process.env.LOCALAPPDATA, "Google", "Chrome", "Application", "chrome.exe");
+                let candidatePath = path.resolve(process.env["ProgramFiles(x86)"], "Google", "Chrome", "Application", "chrome.exe");
+                if (!existsSync(candidatePath)) {
+                    candidatePath = path.resolve(process.env.LOCALAPPDATA, "Google", "Chrome", "Application", "chrome.exe");
+                }
+                return candidatePath;
             case "darwin":
                 return path.resolve("/", "Applications", "Google Chrome.app", "Contents", "MacOS", "Google Chrome");
             case "linux":
@@ -83,11 +84,22 @@ if (verbose) {
     args.push("--verbose");
 }
 
-const testProcess = spawn("npm", args, { cwd: path.resolve(__dirname, "..") });
-testProcess.stderr.pipe(process.stderr);
-if (teamcity) {
-    testProcess.stdout.pipe(tapTeamCity()).pipe(process.stdout);
+let command = "npm";
+
+if (process.platform === "win32") {
+    // NPM is a cmd file, and it's tricky to "spawn". Instead, we'll find the NPM js file and use process.execPath to locate node.exe and run it directly
+    const npmPath = path.resolve(process.execPath, "..", "node_modules", "npm", "bin", "npm-cli.js");
+    if (!existsSync(npmPath)) {
+        failPrereq(`Unable to locate npm command line at '${npmPath}'`);
+    }
+
+    args.unshift(npmPath);
+    command = process.execPath;
 }
 
+console.log(`running: ${command} ${args.join(" ")}`);
+
+const testProcess = spawn(command, args, { cwd: path.resolve(__dirname, "..") });
+testProcess.stderr.pipe(process.stderr);
 testProcess.stdout.pipe(process.stdout);
 testProcess.on("close", (code) => process.exit(code));

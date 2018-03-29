@@ -4,8 +4,6 @@ import { EOL } from "os";
 import * as path from "path";
 import { PassThrough, Readable } from "stream";
 
-import * as tapSpec from "tap-spec";
-
 import { run } from "../../webdriver-tap-runner/lib";
 
 import * as _debug from "debug";
@@ -71,16 +69,12 @@ function waitForMatch(command: string, process: ChildProcess, regex: RegExp): Pr
     });
 }
 
-let raw = false;
 let configuration = "Debug";
 let chromePath: string;
 let spec: string;
 
 for (let i = 2; i < process.argv.length; i += 1) {
     switch (process.argv[i]) {
-        case "--raw":
-            raw = true;
-            break;
         case "--configuration":
             i += 1;
             configuration = process.argv[i];
@@ -102,16 +96,6 @@ for (let i = 2; i < process.argv.length; i += 1) {
 
 if (chromePath) {
     debug(`Using Google Chrome at: '${chromePath}'`);
-}
-
-function createOutput() {
-    if (raw) {
-        return process.stdout;
-    } else {
-        const output = tapSpec();
-        output.pipe(process.stdout);
-        return output;
-    }
 }
 
 (async () => {
@@ -150,7 +134,7 @@ function createOutput() {
         const failureCount = await run("SignalR Browser Functional Tests", {
             browser: "chrome",
             chromeBinaryPath: chromePath,
-            output: createOutput(),
+            output: process.stdout,
             url,
             webdriverPort: 9515,
         });

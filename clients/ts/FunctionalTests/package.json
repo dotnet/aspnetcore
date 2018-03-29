@@ -10,8 +10,7 @@
     "@types/node": "^9.4.6",
     "debug": "^3.1.0",
     "es6-promise": "^4.2.2",
-    "tap-spec": "^4.1.1",
-    "tap-teamcity": "^3.0.2",
+    "tap-parser": "^7.0.0",
     "tee": "^0.2.0",
     "ts-node": "^4.1.0"
   },
