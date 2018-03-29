@@ -84,40 +84,40 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void CanSerializeStructToJson()
         {
             // Arrange
-            var commandResult = new SimpleError
+            var commandResult = new SimpleStruct
             {
-                Message = "Test",
-                ContainsError = true,
-                ErrorId = 1
+                StringProperty = "Test",
+                BoolProperty = true,
+                NullableIntProperty = 1
             };
             
             // Act
             var result = JsonUtil.Serialize(commandResult);
             
             // Assert
-            Assert.Equal("{\"Message\":\"Test\",\"ContainsError\":true,\"ErrorId\":1}", result);
+            Assert.Equal("{\"StringProperty\":\"Test\",\"BoolProperty\":true,\"NullableIntProperty\":1}", result);
         }
 
         [Fact]
         public void CanDeserializeStructFromJson()
         {
             // Arrange
-            var json = "{\"Message\":\"Test\",\"ContainsError\":true,\"ErrorId\":1}";
+            var json = "{\"StringProperty\":\"Test\",\"BoolProperty\":true,\"NullableIntProperty\":1}";
 
             //Act
-            var simpleError = JsonUtil.Deserialize<SimpleError>(json);
+            var simpleError = JsonUtil.Deserialize<SimpleStruct>(json);
 
             // Assert
-            Assert.Equal("Test", simpleError.Message);
-            Assert.True(simpleError.ContainsError);
-            Assert.Equal(1, simpleError.ErrorId);
+            Assert.Equal("Test", simpleError.StringProperty);
+            Assert.True(simpleError.BoolProperty);
+            Assert.Equal(1, simpleError.NullableIntProperty);
         }
 
-        struct SimpleError
+        struct SimpleStruct
         {
-            public string Message { get; set; }
-            public bool ContainsError { get; set; }
-            public int? ErrorId { get; set; }
+            public string StringProperty { get; set; }
+            public bool BoolProperty { get; set; }
+            public int? NullableIntProperty { get; set; }
         }
 
         class Person

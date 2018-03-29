@@ -1430,7 +1430,7 @@ namespace SimpleJson
                             obj = value;
                         else
                         {
-                            obj = ConstructorCache[type]?.Invoke() ?? Activator.CreateInstance(type);
+                            obj = ConstructorCache[type]();
                             foreach (KeyValuePair<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> setter in SetCache[type])
                             {
                                 object jsonValue;
@@ -1851,6 +1851,14 @@ namespace SimpleJson
             public static ConstructorDelegate GetConstructorByReflection(Type type, params Type[] argsType)
             {
                 ConstructorInfo constructorInfo = GetConstructorInfo(type, argsType);
+
+                if (constructorInfo == null && argsType.Length == 0 && type.IsValueType)
+                {
+                    // If it's a struct, then parameterless constructors are implicit
+                    // We can always call Activator.CreateInstance in lieu of a zero-arg constructor
+                    return args => Activator.CreateInstance(type);
+                }
+
                 return constructorInfo == null ? null : GetConstructorByReflection(constructorInfo);
             }
 
