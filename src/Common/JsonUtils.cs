@@ -2,23 +2,38 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public static class JsonUtils
+    internal static class JsonUtils
     {
-        internal static JsonTextReader CreateJsonTextReader(Utf8BufferTextReader textReader)
+        internal static JsonTextReader CreateJsonTextReader(TextReader textReader)
         {
             var reader = new JsonTextReader(textReader);
             reader.ArrayPool = JsonArrayPool<char>.Shared;
 
-            // Don't close the output, Utf8BufferTextReader is resettable
+            // Don't close the input, leave closing to the caller
             reader.CloseInput = false;
 
             return reader;
+        }
+
+        internal static JsonTextWriter CreateJsonTextWriter(TextWriter textWriter)
+        {
+            var writer = new JsonTextWriter(textWriter);
+
+            // Don't close the output, leave closing to the caller
+            writer.CloseOutput = false;
+
+            // SignalR will always write a complete JSON response
+            // This setting will prevent an error during writing be hidden by another error writing on dispose
+            writer.AutoCompleteOnClose = false;
+
+            return writer;
         }
 
         public static JObject GetObject(JToken token)
@@ -82,6 +97,22 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return tokenType.ToString();
         }
 
+        public static void EnsureObjectStart(JsonTextReader reader)
+        {
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Object.");
+            }
+        }
+
+        public static void EnsureArrayStart(JsonTextReader reader)
+        {
+            if (reader.TokenType != JsonToken.StartArray)
+            {
+                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Array.");
+            }
+        }
+
         public static int? ReadAsInt32(JsonTextReader reader, string propertyName)
         {
             reader.Read();
@@ -115,10 +146,32 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             if (!reader.Read())
             {
-                throw new JsonReaderException("Unexpected end when reading JSON");
+                throw new InvalidDataException("Unexpected end when reading JSON.");
             }
 
             return true;
+        }
+
+        private class JsonArrayPool<T> : IArrayPool<T>
+        {
+            private readonly ArrayPool<T> _inner;
+
+            internal static readonly JsonArrayPool<T> Shared = new JsonArrayPool<T>(ArrayPool<T>.Shared);
+
+            public JsonArrayPool(ArrayPool<T> inner)
+            {
+                _inner = inner;
+            }
+
+            public T[] Rent(int minimumLength)
+            {
+                return _inner.Rent(minimumLength);
+            }
+
+            public void Return(T[] array)
+            {
+                _inner.Return(array);
+            }
         }
     }
 }

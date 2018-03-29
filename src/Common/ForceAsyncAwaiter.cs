@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Sockets.Internal
 {
-    public static class ForceAsyncTaskExtensions
+    internal static class ForceAsyncTaskExtensions
     {
         /// <summary>
         /// Returns an awaitable/awaiter that will ensure the continuation is executed
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         }
     }
 
-    public struct ForceAsyncAwaiter : ICriticalNotifyCompletion
+    internal struct ForceAsyncAwaiter : ICriticalNotifyCompletion
     {
         private readonly Task _task;
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         }
     }
 
-    public struct ForceAsyncAwaiter<T> : ICriticalNotifyCompletion
+    internal struct ForceAsyncAwaiter<T> : ICriticalNotifyCompletion
     {
         private readonly Task<T> _task;
 

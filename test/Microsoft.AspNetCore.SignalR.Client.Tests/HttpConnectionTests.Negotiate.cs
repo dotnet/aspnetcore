@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
@@ -25,13 +26,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [InlineData("Not Json")]
             public Task StartThrowsFormatExceptionIfNegotiationResponseIsInvalid(string negotiatePayload)
             {
-                return RunInvalidNegotiateResponseTest<FormatException>(negotiatePayload, "Invalid negotiation response received.");
+                return RunInvalidNegotiateResponseTest<InvalidDataException>(negotiatePayload, "Invalid negotiation response received.");
             }
 
             [Fact]
             public Task StartThrowsFormatExceptionIfNegotiationResponseHasNoConnectionId()
             {
-                return RunInvalidNegotiateResponseTest<FormatException>(ResponseUtils.CreateNegotiationContent(connectionId: null), "Invalid connection id.");
+                return RunInvalidNegotiateResponseTest<FormatException>(ResponseUtils.CreateNegotiationContent(connectionId: string.Empty), "Invalid connection id.");
             }
 
             [Fact]

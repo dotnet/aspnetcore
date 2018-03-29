@@ -24,6 +24,27 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public partial class HttpConnectionDispatcher
     {
+        private static readonly AvailableTransport _webSocketAvailableTransport =
+            new AvailableTransport
+            {
+                Transport = nameof(TransportType.WebSockets),
+                TransferFormats = new List<string> { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
+            };
+
+        private static readonly AvailableTransport _serverSentEventsAvailableTransport =
+            new AvailableTransport
+            {
+                Transport = nameof(TransportType.ServerSentEvents),
+                TransferFormats = new List<string> { nameof(TransferFormat.Text) }
+            };
+
+        private static readonly AvailableTransport _longPollingAvailableTransport =
+            new AvailableTransport
+            {
+                Transport = nameof(TransportType.LongPolling),
+                TransferFormats = new List<string> { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
+            };
+
         private readonly HttpConnectionManager _manager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -368,7 +389,7 @@ namespace Microsoft.AspNetCore.Sockets
             logScope.ConnectionId = connection.ConnectionId;
 
             // Get the bytes for the connection id
-            var negotiateResponseBuffer = Encoding.UTF8.GetBytes(GetNegotiatePayload(connection.ConnectionId, context, options));
+            var negotiateResponseBuffer = GetNegotiatePayload(connection.ConnectionId, context, options);
 
             Log.NegotiationRequest(_logger);
 
@@ -377,66 +398,36 @@ namespace Microsoft.AspNetCore.Sockets
             return context.Response.Body.WriteAsync(negotiateResponseBuffer, 0, negotiateResponseBuffer.Length);
         }
 
-        private static string GetNegotiatePayload(string connectionId, HttpContext context, HttpConnectionOptions options)
+        private static byte[] GetNegotiatePayload(string connectionId, HttpContext context, HttpConnectionOptions options)
         {
-            var sb = new StringBuilder();
-            using (var jsonWriter = new JsonTextWriter(new StringWriter(sb)))
+            NegotiationResponse response = new NegotiationResponse();
+            response.ConnectionId = connectionId;
+            response.AvailableTransports = new List<AvailableTransport>();
+
+            if ((options.Transports & TransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
             {
-                jsonWriter.WriteStartObject();
-                jsonWriter.WritePropertyName("connectionId");
-                jsonWriter.WriteValue(connectionId);
-                jsonWriter.WritePropertyName("availableTransports");
-                jsonWriter.WriteStartArray();
-
-                if (ServerHasWebSockets(context.Features))
-                {
-                    if ((options.Transports & TransportType.WebSockets) != 0)
-                    {
-                        WriteTransport(jsonWriter, nameof(TransportType.WebSockets), TransferFormat.Text | TransferFormat.Binary);
-                    }
-                }
-
-                if ((options.Transports & TransportType.ServerSentEvents) != 0)
-                {
-                    WriteTransport(jsonWriter, nameof(TransportType.ServerSentEvents), TransferFormat.Text);
-                }
-
-                if ((options.Transports & TransportType.LongPolling) != 0)
-                {
-                    WriteTransport(jsonWriter, nameof(TransportType.LongPolling), TransferFormat.Text | TransferFormat.Binary);
-                }
-
-                jsonWriter.WriteEndArray();
-                jsonWriter.WriteEndObject();
+                response.AvailableTransports.Add(_webSocketAvailableTransport);
             }
 
-            return sb.ToString();
+            if ((options.Transports & TransportType.ServerSentEvents) != 0)
+            {
+                response.AvailableTransports.Add(_serverSentEventsAvailableTransport);
+            }
+
+            if ((options.Transports & TransportType.LongPolling) != 0)
+            {
+                response.AvailableTransports.Add(_longPollingAvailableTransport);
+            }
+
+            MemoryStream ms = new MemoryStream();
+            NegotiateProtocol.WriteResponse(response, ms);
+
+            return ms.ToArray();
         }
 
         private static bool ServerHasWebSockets(IFeatureCollection features)
         {
             return features.Get<IHttpWebSocketFeature>() != null;
-        }
-
-        private static void WriteTransport(JsonWriter writer, string transportName, TransferFormat supportedTransferFormats)
-        {
-            writer.WriteStartObject();
-            writer.WritePropertyName("transport");
-            writer.WriteValue(transportName);
-            writer.WritePropertyName("transferFormats");
-            writer.WriteStartArray();
-            if ((supportedTransferFormats & TransferFormat.Binary) != 0)
-            {
-                writer.WriteValue(nameof(TransferFormat.Binary));
-            }
-
-            if ((supportedTransferFormats & TransferFormat.Text) != 0)
-            {
-                writer.WriteValue(nameof(TransferFormat.Text));
-            }
-
-            writer.WriteEndArray();
-            writer.WriteEndObject();
         }
 
         private static string GetConnectionId(HttpContext context) => context.Request.Query["id"];

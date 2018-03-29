@@ -523,7 +523,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         {
                             if (HandshakeProtocol.TryParseResponseMessage(ref buffer, out var message))
                             {
-                                if (!string.IsNullOrEmpty(message.Error))
+                                if (message.Error != null)
                                 {
                                     Log.HandshakeServerError(_logger, message.Error);
                                     throw new HubException(
