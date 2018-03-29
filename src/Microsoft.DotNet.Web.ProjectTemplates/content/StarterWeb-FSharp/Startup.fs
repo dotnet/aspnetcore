@@ -6,7 +6,9 @@ open System.Linq
 open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.HttpsPolicy
+#if (!NoHttps)
+open Microsoft.AspNetCore.HttpsPolicy;
+#endif
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -28,9 +30,13 @@ type Startup private () =
             app.UseDeveloperExceptionPage() |> ignore
         else
             app.UseExceptionHandler("/Home/Error") |> ignore
+#if (!NoHttps)
             app.UseHsts() |> ignore
 
         app.UseHttpsRedirection() |> ignore
+#else
+
+#endif
         app.UseStaticFiles() |> ignore
 
         app.UseMvc(fun routes ->

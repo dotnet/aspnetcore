@@ -22,6 +22,10 @@
     "skipRestore": {
       "longName": "no-restore",
       "shortName": ""
+    },
+    "NoHttps": {
+      "longName": "no-https",
+      "shortName": ""
     }
   }
 }

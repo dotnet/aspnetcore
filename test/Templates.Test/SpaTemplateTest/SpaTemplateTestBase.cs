@@ -19,9 +19,9 @@ namespace Templates.Test.SpaTemplateTest
         // Rather than using [Theory] to pass each of the different values for 'template',
         // it's important to distribute the SPA template tests over different test classes
         // so they can be run in parallel. Xunit doesn't parallelize within a test class.
-        protected void SpaTemplateImpl(string targetFrameworkOverride, string template)
+        protected void SpaTemplateImpl(string targetFrameworkOverride, string template, bool noHttps = false)
         {
-            RunDotNetNew(template, targetFrameworkOverride);
+            RunDotNetNew(template, targetFrameworkOverride, noHttps: noHttps);
 
             // For some SPA templates, the NPM root directory is './ClientApp'. In other
             // templates it's at the project root. Strictly speaking we shouldn't have

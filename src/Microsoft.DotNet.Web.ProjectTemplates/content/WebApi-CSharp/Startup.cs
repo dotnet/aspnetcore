@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+#if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
+#endif
 using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
@@ -51,11 +53,16 @@ namespace Company.WebApplication1
             {
                 app.UseDeveloperExceptionPage();
             }
+#if (RequiresHttps)
             else
             {
                 app.UseHsts();
             }
 
+            app.UseHttpsRedirection();
+#else
+
+#endif
             app.UseHttpsRedirection();
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();

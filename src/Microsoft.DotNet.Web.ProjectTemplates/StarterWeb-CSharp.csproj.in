@@ -8,9 +8,9 @@
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
   </PropertyGroup>
-<!--#if (IndividualLocalAuth && UseLocalDB) -->
+  <!--#if (IndividualLocalAuth && UseLocalDB) -->
 
-<!--#endif -->
+  <!--#endif -->
   <ItemGroup Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True' ">
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="${MicrosoftAspNetCoreAuthenticationCookiesPackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.CookiePolicy" Version="${MicrosoftAspNetCoreCookiePolicyPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
-    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="${MicrosoftAspNetCoreHttpsPolicyPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="${MicrosoftAspNetCoreHttpsPolicyPackageVersion}" Condition="'$(RequiresHttps)' == 'True'"/>
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="${MicrosoftAspNetCoreMvcPackageVersion}" />

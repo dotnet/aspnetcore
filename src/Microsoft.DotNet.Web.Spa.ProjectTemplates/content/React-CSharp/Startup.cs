@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+#if (!NoHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
+#endif
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
@@ -39,10 +41,15 @@ namespace Company.WebApplication1
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+#if (!NoHttps)
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
+#else
+            }
+
+#endif
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 

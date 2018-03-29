@@ -72,6 +72,10 @@
     "UseBrowserLink": {
       "longName": "use-browserlink",
       "shortName": ""
+    },
+    "NoHttps": {
+      "longName": "no-https",
+      "shortName": ""
     }
   },
   "usageExamples": [

@@ -6,7 +6,9 @@ open System.Linq
 open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.HttpsPolicy
+#if (!NoHttps)
+open Microsoft.AspNetCore.HttpsPolicy;
+#endif
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -25,10 +27,14 @@ type Startup private () =
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
         if (env.IsDevelopment()) then
             app.UseDeveloperExceptionPage() |> ignore
+#if (!NoHttps)
         else
             app.UseHsts() |> ignore
 
         app.UseHttpsRedirection() |> ignore
+#else
+
+#endif
         app.UseMvc() |> ignore
 
     member val Configuration : IConfiguration = null with get, set
