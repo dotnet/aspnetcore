@@ -66,7 +66,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             {
                 "/Identity/Account/Manage/ChangePassword",
                 "/Identity/Account/Manage/DeletePersonalData",
-                "/Identity/Account/Manage/DownloadPersonalData",
                 "/Identity/Account/Manage/EnableAuthenticator",
                 "/Identity/Account/Manage/ExternalLogins",
                 "/Identity/Account/Manage/Index",

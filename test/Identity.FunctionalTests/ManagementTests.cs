@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Identity.DefaultUI.WebSite;
@@ -217,6 +218,23 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 Assert.Contains($"\"PhoneNumber\":\"null\"", jsonData);
                 Assert.Contains($"\"PhoneNumberConfirmed\":\"False\"", jsonData);
                 Assert.Contains($"\"TwoFactorEnabled\":\"False\"", jsonData);
+            }
+        }
+
+        [Fact]
+        public async Task GetOnDownloadPersonalData_ReturnsNotFound()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                // Arrange
+                var client = ServerFactory.CreateDefaultClient(loggerFactory);
+                await UserStories.RegisterNewUserAsync(client);
+
+                // Act
+                var response = await client.GetAsync("/Identity/Account/Manage/DownloadPersonalData");
+
+                // Assert
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             }
         }
 
