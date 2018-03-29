@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)Version.props" />
+  <PropertyGroup>
+    <SolutionDir Condition="$(SolutionDir) == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+    <Platform Condition="'$(Platform)'==''">Win32</Platform>
+    <PlatformToolset Condition=" '$(PlatformToolset)' == '' And '$(VisualStudioVersion)' == '12.0'">v120</PlatformToolset>
+    <PlatformToolset Condition=" '$(PlatformToolset)' == '' And '$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
+    <PlatformToolset Condition=" '$(PlatformToolset)' == ''">v140</PlatformToolset>
+    <SubSystem Condition="'$(SubSystem)' != 'UWP'">Desktop</SubSystem>
+    <OutDir Condition="'$(OutDir)' == ''">$(SolutionDir)bin\$(SubSystem)\$(Platform)\$(Configuration)\</OutDir>
+    <SignalrClientTargetName>signalrclient</SignalrClientTargetName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+  </PropertyGroup>
+</Project>

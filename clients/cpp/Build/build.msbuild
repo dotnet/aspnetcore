@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\Common.tasks" />
+  <Import Project="$(MSBuildThisFileDirectory)\Common.Build.Settings" />
+
+  <ItemGroup>
+    <Projects Include="$(SolutionDir)src\signalrclientdll\Build\VS\signalrclientdll.vcxproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TestProjects Include="$(SolutionDir)src\signalrclient\Build\VS\signalrclient.vcxproj" />
+    <TestProjects Include="$(SolutionDir)test\signalrclienttests\Build\VS\signalrclienttests.vcxproj" />
+    <TestProjects Include="$(SolutionDir)test\signalrclient-e2e-tests\Build\VS\signalrclient-e2e-tests.vcxproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ManagedProjects Include="$(SolutionDir)test\signalrclient-testhost\signalrclient-testhost.csproj" />
+    <!--
+    <ManagedProjects Include="$(SolutionDir)\samples\SignalRServer\SignalRServer.csproj" />
+    -->
+  </ItemGroup>
+
+  <ItemGroup>
+  <!--
+    <SampleProjects Include="$(SolutionDir)\samples\PersistentConnectionSample\PersistentConnectionSample.vcxproj" />
+    <SampleProjects Include="$(SolutionDir)\samples\HubConnectionSample\HubConnectionSample.vcxproj" />
+  -->
+  </ItemGroup>
+
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+
+  <Target Name="Build">
+    <MSBuild Targets="RestorePackages" Projects="@(Projects)" />
+    <MSBuild Targets="RestorePackages" Projects="@(SampleProjects)" />
+    <MSBuild Targets="RestorePackages" Projects="@(ManagedProjects)" />
+
+    <MSBuild Targets="$(BuildTargets)"
+      Projects="@(Projects)"
+      Properties="Configuration=$(Configuration);Platform=$(Platform);PlatformToolset=$(PlatformToolset);SubSystem=$(SubSystem)" />
+
+    <MSBuild Targets="$(BuildTargets)"
+      Projects="@(TestProjects)"
+      Properties="Configuration=$(Configuration);Platform=$(Platform);PlatformToolset=$(PlatformToolset)" Condition="'$(SubSystem)' == 'Desktop'"/>
+
+    <MSBuild Targets="$(BuildTargets)"
+      Projects="@(SampleProjects)"
+      Properties="Configuration=$(Configuration);Platform=$(Platform);PlatformToolset=$(PlatformToolset)" Condition="'$(SubSystem)' == 'Desktop'"/>
+
+    <MSBuild Targets="$(BuildTargets)"
+      Projects="@(ManagedProjects)"
+      Properties="Configuration=$(Configuration)" Condition="'$(SubSystem)' == 'Desktop'"/>
+  </Target>
+
+  <Target Name="Clean">
+    <MSBuild Targets="Clean"
+      Projects="@(Projects)" />
+    <MSBuild Targets="Clean"
+      Projects="@(TestProjects)" />
+    <MSBuild Targets="Clean"
+      Projects="@(SampleProjects)" />
+    <MSBuild Targets="Clean"
+      Projects="@(ManagedProjects)" />
+  </Target>
+
+  <Target Name="Rebuild">
+    <MSBuild Targets="Clean;Build"
+      Projects="$(MSBuildProjectFile)"
+      Properties="BuildTargets=Rebuild;Configuration=$(Configuration);Platform=$(Platform);PlatformToolset=$(PlatformToolset);SubSystem=$(SubSystem)"/>
+  </Target>
+
+  <Target Name="Test" DependsOnTargets="Build" Condition="'$(SubSystem)' == 'Desktop'">
+    <Exec Command="$(OutDir)\signalrclienttests.exe --gtest_output=xml:$(OutDir)test_results.xml" />
+    <ExecAsync Executable="$(SolutionDir)test\signalrclient-testhost\bin\$(Configuration)\signalrclient-testhost.exe" Arguments="60000" />
+    <!-- give the host some time to open the port otherwise the first tests may fail on slow machines-->
+    <Sleep TimeoutMs="3000" />
+    <Exec Command="$(OutDir)\signalrclient-e2e-tests.exe --gtest_output=xml:$(OutDir)e2e_test_results.xml" />
+    <Exec Command="taskkill /IM signalrclient-testhost.exe /F" ContinueOnError="true" />
+  </Target>
+
+  <Import Project="Config.Definitions.Props" />
+
+  <Target Name="CreatePackage">
+    <PropertyGroup>
+      <PlatformToolset Condition="'$(PlatformToolset)' == ''">v140</PlatformToolset>
+      <SubSystem Condition="'$(SubSystem)' != 'UWP'">Desktop</SubSystem>
+      <PackageSource>$(SolutionDir)bin\Package\$(SubSystem)\$(PlatformToolset)\</PackageSource>
+      <PackageSourceNative>$(PackageSource)build\native\</PackageSourceNative>
+      <NuGetArtifactsPath>$(MSBuildThisFileDirectory)..\NuGet\</NuGetArtifactsPath>
+      <NuSpecTemplatePath>$(NuGetArtifactsPath)signalrclientcpp.nuspec.template</NuSpecTemplatePath>
+      <PackageOutputDir>$(SolutionDir)artifacts\build</PackageOutputDir>
+      <PrivateSymbols>$(SolutionDir)bin\Symbols\$(SubSystem)\$(PlatformToolset)\</PrivateSymbols>
+    </PropertyGroup>
+
+    <Error Text="UWP not supported with v120 toolset" Condition="'$(SubSystem)' == 'UWP' And '$(PlatformToolset)' != 'v140'" />
+
+    <ItemGroup>
+        <Include Include="$(SolutionDir)include\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Include)" DestinationFolder="$(PackageSourceNative)include\%(RecursiveDir)" />
+    <MakeDir Directories="$(PackageSource)" />
+
+    <RegexReplaceInFile InputFileName="$(NuSpecTemplatePath)" OutputFileName="$(PackageSource)signalrclientcpp.nuspec" Pattern="#Toolset#" Replacement="$(PlatformToolset)" />
+    <RegexReplaceInFile InputFileName="$(PackageSource)signalrclientcpp.nuspec" OutputFileName="$(PackageSource)signalrclientcpp.nuspec" Pattern="#casablanca-subsystem#" Replacement="windesktop" Condition="'$(SubSystem)' == 'Desktop'" />
+    <RegexReplaceInFile InputFileName="$(PackageSource)signalrclientcpp.nuspec" OutputFileName="$(PackageSource)signalrclientcpp.nuspec" Pattern="#SubSystem#" Replacement="WinDesktop" Condition="'$(SubSystem)' == 'Desktop'" />
+    <RegexReplaceInFile InputFileName="$(PackageSource)signalrclientcpp.nuspec" OutputFileName="$(PackageSource)signalrclientcpp.nuspec" Pattern="#casablanca-subsystem#" Replacement="winapp" Condition="'$(SubSystem)' == 'UWP'" />
+    <RegexReplaceInFile InputFileName="$(PackageSource)signalrclientcpp.nuspec" OutputFileName="$(PackageSource)signalrclientcpp.nuspec" Pattern="#SubSystem#" Replacement="UWP" Condition="'$(SubSystem)' == 'UWP'" />
+
+    <RegexReplaceInFile InputFileName="$(NuGetArtifactsPath)\Microsoft.AspNet.SignalR.Client.Cpp.WinDesktop.targets.template"
+      OutputFileName="$(PackageSourceNative)Microsoft.AspNet.SignalR.Client.Cpp.$(PlatformToolset).WinDesktop.targets" Pattern="#Toolset#" Replacement="$(PlatformToolset)" Condition="'$(SubSystem)' == 'Desktop'" />
+    <RegexReplaceInFile InputFileName="$(NuGetArtifactsPath)\Microsoft.AspNet.SignalR.Client.Cpp.UWP.targets.template"
+      OutputFileName="$(PackageSourceNative)Microsoft.AspNet.SignalR.Client.Cpp.$(PlatformToolset).UWP.targets" Pattern="#Toolset#" Replacement="$(PlatformToolset)" Condition="'$(SubSystem)' == 'UWP'" />
+
+    <MSBuild Targets="RestorePackages" Projects="@(Projects)" />
+
+    <MSBuild Targets="BuildForNuget"
+      Projects="$(MSBuildThisFile)" Properties="PackageSourceNative=$(PackageSourceNative);PrivateSymbols=$(PrivateSymbols);Configuration=%(ProjectConfiguration.Configuration);Platform=%(ProjectConfiguration.Platform);PlatformToolset=$(PlatformToolset);SubSystem=$(SubSystem);SignalrClientTargetName=$(SignalrClientTargetName)" />
+
+    <MakeDir Directories="$(PackageOutputDir)" />
+    <Exec Command="$(NuGetCommand) pack $(PackageSource)signalrclientcpp.nuspec -BasePath $(PackageSource) -OutputDirectory $(PackageOutputDir) -Version $(SignalRClientCppVersionString)" LogStandardErrorAsError="true" />
+
+    <ZipDir InputDir="$(PrivateSymbols)" OutputFileName="$(PackageOutputDir)\Symbols_$(PlatformToolset)_$(SubSystem).zip" IncludeBaseDir="false"/>
+  </Target>
+
+  <Target Name="BuildForNuget">
+    <MSBuild Targets="$(BuildTargets)"
+      Projects="@(Projects)"
+      Properties="Configuration=$(Configuration);Platform=$(Platform);PlatformToolset=$(PlatformToolset);SubSystem=$(SubSystem)" />
+
+    <Copy SourceFiles="$(OutDir)dll\$(SignalrClientTargetName).lib" DestinationFolder="$(PackageSourceNative)lib\$(Platform)\$(PlatformToolset)\$(Configuration)" />
+
+    <Copy SourceFiles="$(OutDir)dll\$(SignalrClientTargetName).dll" DestinationFolder="$(PackageSourceNative)dll\$(Platform)\$(PlatformToolset)\$(Configuration)" />
+    <Copy SourceFiles="$(OutDir)dll\$(SignalrClientTargetName).pub.pdb" DestinationFiles="$(PackageSourceNative)dll\$(Platform)\$(PlatformToolset)\$(Configuration)\$(SignalrClientTargetName).pdb" />
+    <Copy SourceFiles="$(OutDir)dll\$(SignalrClientTargetName).pdb" DestinationFiles="$(PrivateSymbols)$(Platform)\$(PlatformToolset)\$(Configuration)\$(SignalrClientTargetName).pdb" />
+  </Target>
+
+  <Target Name="NuGetPush">
+    <PropertyGroup>
+      <NuGetExePath Condition="'$(NuGetExePath)' == ''">$(PUSH_NUGET_EXE)</NuGetExePath>
+      <NuGetExePath Condition="'$(NuGetExePath)' == ''">$(MSBuildThisFileDirectory)..\.nuget\NuGet.exe</NuGetExePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <Package Include="$(SolutionDir)artifacts\build\*.nupkg" />
+      <Package Include="$(SolutionDir)artifacts\build\*.symbols.nupkg" />
+    </ItemGroup>
+    <Exec Command="$(NuGetExePath) push -nosymbols %(Package.Identity) -Source $(NUGET_PUBLISH_FEED) -ApiKey $(APIKEY)" />
+  </Target>
+</Project>
