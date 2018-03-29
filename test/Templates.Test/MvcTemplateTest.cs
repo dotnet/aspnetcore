@@ -13,19 +13,23 @@ namespace Templates.Test
         {
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(null)]
-        [InlineData("F#", Skip = "https://github.com/aspnet/templating/issues/365")]
-        public void MvcTemplate_NoAuth_Works_NetFramework(string languageOverride)
-            => MvcTemplate_NoAuthImpl("net461", languageOverride);
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void MvcTemplate_NoAuth_Works_NetFramework_ForDefaultTemplate()
+            => MvcTemplate_NoAuthImpl("net461", languageOverride: default);
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("F#")]
-        public void MvcTemplate_NoAuth_Works_NetCore(string languageOverride)
-            => MvcTemplate_NoAuthImpl(null, languageOverride: languageOverride);
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void MvcTemplate_NoAuth_Works_NetFramework_ForFSharpTemplate()
+            => MvcTemplate_NoAuthImpl("net461", languageOverride: "F#");
+
+        [Fact]
+        public void MvcTemplate_NoAuth_Works_NetCore_ForDefaultTemplate()
+            => MvcTemplate_NoAuthImpl(null, languageOverride: default);
+
+        [Fact]
+        public void MvcTemplate_NoAuth_Works_NetCore_ForFSharpTemplate()
+            => MvcTemplate_NoAuthImpl(null, languageOverride: "F#");
 
         private void MvcTemplate_NoAuthImpl(string targetFrameworkOverride, string languageOverride)
         {
