@@ -146,13 +146,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                         var result = results[i];
                         var key = ModelNames.CreatePropertyModelName(Key, result.MemberName);
 
-                        // If this is a top-level parameter/property, the key would be empty.
-                        // So, use the name of the top-level property/property.
-                        if (string.IsNullOrEmpty(key) && Metadata.Name != null)
-                        {
-                            key = Metadata.Name;
-                        }
-
+                        // It's OK for key to be the empty string here. This can happen when a top
+                        // level object implements IValidatableObject.
                         ModelState.TryAddModelError(key, result.Message);
                     }
                 }

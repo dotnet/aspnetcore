@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelMetadata metadata)
         {
             // Arrange
-            var expectedKey = metadata.Name ?? string.Empty;
+            var expectedKey = string.Empty;
             var expectedFieldName = metadata.Name ?? nameof(Person);
 
             var actionContext = GetControllerContext();
