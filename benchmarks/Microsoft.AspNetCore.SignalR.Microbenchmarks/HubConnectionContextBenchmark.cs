@@ -31,14 +31,14 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         private TestUserIdProvider _userIdProvider;
         private List<string> _supportedProtocols;
         private TestDuplexPipe _pipe;
-        private ReadResult _handshakeResponseResult;
+        private ReadResult _handshakeRequestResult;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
             var memoryBufferWriter = new MemoryBufferWriter();
             HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage("json", 1), memoryBufferWriter);
-            _handshakeResponseResult = new ReadResult(new ReadOnlySequence<byte>(memoryBufferWriter.ToArray()), false, false);
+            _handshakeRequestResult = new ReadResult(new ReadOnlySequence<byte>(memoryBufferWriter.ToArray()), false, false);
 
             _pipe = new TestDuplexPipe();
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public async Task SuccessHandshakeAsync()
         {
-            _pipe.AddReadResult(_handshakeResponseResult);
+            _pipe.AddReadResult(_handshakeRequestResult);
 
             await _hubConnectionContext.HandshakeAsync(TimeSpan.FromSeconds(5), _supportedProtocols, _successHubProtocolResolver, _userIdProvider);
         }
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public async Task ErrorHandshakeAsync()
         {
-            _pipe.AddReadResult(_handshakeResponseResult);
+            _pipe.AddReadResult(_handshakeRequestResult);
 
             await _hubConnectionContext.HandshakeAsync(TimeSpan.FromSeconds(5), _supportedProtocols, _failureHubProtocolResolver, _userIdProvider);
         }

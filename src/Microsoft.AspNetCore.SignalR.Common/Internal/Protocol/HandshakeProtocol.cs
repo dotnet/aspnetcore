@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     public static class HandshakeProtocol
     {
         private const string ProtocolPropertyName = "protocol";
-        private const string ProtocolVersionName = "version";
+        private const string ProtocolVersionPropertyName = "version";
         private const string ErrorPropertyName = "error";
         private const string TypePropertyName = "type";
 
@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var textWriter = Utf8BufferTextWriter.Get(output);
             try
             {
-                using (var writer = CreateJsonTextWriter(textWriter))
+                using (var writer = JsonUtils.CreateJsonTextWriter(textWriter))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(ProtocolPropertyName);
                     writer.WriteValue(requestMessage.Protocol);
-                    writer.WritePropertyName(ProtocolVersionName);
+                    writer.WritePropertyName(ProtocolVersionPropertyName);
                     writer.WriteValue(requestMessage.Version);
                     writer.WriteEndObject();
                     writer.Flush();
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var textWriter = Utf8BufferTextWriter.Get(output);
             try
             {
-                using (var writer = CreateJsonTextWriter(textWriter))
+                using (var writer = JsonUtils.CreateJsonTextWriter(textWriter))
                 {
                     writer.WriteStartObject();
                     if (!string.IsNullOrEmpty(responseMessage.Error))
@@ -68,14 +68,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             TextMessageFormatter.WriteRecordSeparator(output);
         }
 
-        private static JsonTextWriter CreateJsonTextWriter(TextWriter textWriter)
-        {
-            var writer = new JsonTextWriter(textWriter);
-            writer.CloseOutput = false;
-
-            return writer;
-        }
-
         public static bool TryParseResponseMessage(ref ReadOnlySequence<byte> buffer, out HandshakeResponseMessage responseMessage)
         {
             if (!TextMessageParser.TryParseMessage(ref buffer, out var payload))
@@ -90,19 +82,42 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             {
                 using (var reader = JsonUtils.CreateJsonTextReader(textReader))
                 {
-                    var token = JToken.ReadFrom(reader);
-                    var handshakeJObject = JsonUtils.GetObject(token);
+                    JsonUtils.CheckRead(reader);
+                    JsonUtils.EnsureObjectStart(reader);
 
-                    // a handshake response does not have a type
-                    // check the incoming message was not any other type of message
-                    var type = JsonUtils.GetOptionalProperty<string>(handshakeJObject, TypePropertyName);
-                    if (!string.IsNullOrEmpty(type))
+                    string error = null;
+
+                    var completed = false;
+                    while (!completed && JsonUtils.CheckRead(reader))
                     {
-                        throw new InvalidOperationException("Handshake response should not have a 'type' value.");
-                    }
+                        switch (reader.TokenType)
+                        {
+                            case JsonToken.PropertyName:
+                                string memberName = reader.Value.ToString();
 
-                    var error = JsonUtils.GetOptionalProperty<string>(handshakeJObject, ErrorPropertyName);
-                    responseMessage = new HandshakeResponseMessage(error);
+                                switch (memberName)
+                                {
+                                    case TypePropertyName:
+                                        // a handshake response does not have a type
+                                        // check the incoming message was not any other type of message
+                                        throw new InvalidDataException("Handshake response should not have a 'type' value.");
+                                    case ErrorPropertyName:
+                                        error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
+                                        break;
+                                    default:
+                                        reader.Skip();
+                                        break;
+                                }
+                                break;
+                            case JsonToken.EndObject:
+                                completed = true;
+                                break;
+                            default:
+                                throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake response JSON.");
+                        }
+                    };
+
+                    responseMessage = (error != null) ? new HandshakeResponseMessage(error) : HandshakeResponseMessage.Empty;
                     return true;
                 }
             }
@@ -125,11 +140,51 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             {
                 using (var reader = JsonUtils.CreateJsonTextReader(textReader))
                 {
-                    var token = JToken.ReadFrom(reader);
-                    var handshakeJObject = JsonUtils.GetObject(token);
-                    var protocol = JsonUtils.GetRequiredProperty<string>(handshakeJObject, ProtocolPropertyName);
-                    var protocolVersion = JsonUtils.GetRequiredProperty<int>(handshakeJObject, ProtocolVersionName, JTokenType.Integer);
-                    requestMessage = new HandshakeRequestMessage(protocol, protocolVersion);
+                    JsonUtils.CheckRead(reader);
+                    JsonUtils.EnsureObjectStart(reader);
+
+                    string protocol = null;
+                    int? protocolVersion = null;
+
+                    var completed = false;
+                    while (!completed && JsonUtils.CheckRead(reader))
+                    {
+                        switch (reader.TokenType)
+                        {
+                            case JsonToken.PropertyName:
+                                string memberName = reader.Value.ToString();
+
+                                switch (memberName)
+                                {
+                                    case ProtocolPropertyName:
+                                        protocol = JsonUtils.ReadAsString(reader, ProtocolPropertyName);
+                                        break;
+                                    case ProtocolVersionPropertyName:
+                                        protocolVersion = JsonUtils.ReadAsInt32(reader, ProtocolVersionPropertyName);
+                                        break;
+                                    default:
+                                        reader.Skip();
+                                        break;
+                                }
+                                break;
+                            case JsonToken.EndObject:
+                                completed = true;
+                                break;
+                            default:
+                                throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake request JSON.");
+                        }
+                    }
+
+                    if (protocol == null)
+                    {
+                        throw new InvalidDataException($"Missing required property '{ProtocolPropertyName}'.");
+                    }
+                    if (protocolVersion == null)
+                    {
+                        throw new InvalidDataException($"Missing required property '{ProtocolVersionPropertyName}'.");
+                    }
+
+                    requestMessage = new HandshakeRequestMessage(protocol, protocolVersion.Value);
                 }
             }
             finally

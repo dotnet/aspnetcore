@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [Theory]
-        [InlineData("", "Error reading JSON.")]
+        [InlineData("", "Unexpected end when reading JSON.")]
         [InlineData("null", "Unexpected JSON Token Type 'Null'. Expected a JSON Object.")]
         [InlineData("42", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
         [InlineData("'foo'", "Unexpected JSON Token Type 'String'. Expected a JSON Object.")]
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{'type':'foo'}", "Expected 'type' to be of type Integer.")]
 
         [InlineData("{'type':3,'invocationId':'42','error':'foo','result':true}", "The 'error' and 'result' properties are mutually exclusive.")]
-        [InlineData("{'type':3,'invocationId':'42','result':true", "Error reading JSON.")]
+        [InlineData("{'type':3,'invocationId':'42','result':true", "Unexpected end when reading JSON.")]
         public void InvalidMessages(string input, string expectedMessage)
         {
             input = Frame(input);

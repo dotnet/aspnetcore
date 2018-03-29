@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public HandshakeResponseMessage(string error)
         {
+            // Note that a response with an empty string for error in the JSON is considered an errored response
             Error = error;
         }
     }

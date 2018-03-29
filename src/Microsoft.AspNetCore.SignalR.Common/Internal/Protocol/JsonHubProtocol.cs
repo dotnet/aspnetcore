@@ -113,10 +113,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     JsonUtils.CheckRead(reader);
 
                     // We're always parsing a JSON object
-                    if (reader.TokenType != JsonToken.StartObject)
-                    {
-                        throw new InvalidDataException($"Unexpected JSON Token Type '{JsonUtils.GetTokenString(reader.TokenType)}'. Expected a JSON Object.");
-                    }
+                    JsonUtils.EnsureObjectStart(reader);
 
                     do
                     {
@@ -344,7 +341,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private void WriteMessageCore(HubMessage message, Stream stream)
         {
-            using (var writer = new JsonTextWriter(new StreamWriter(stream, _utf8NoBom, 1024, leaveOpen: true)))
+            using (var writer = JsonUtils.CreateJsonTextWriter(new StreamWriter(stream, _utf8NoBom, 1024, leaveOpen: true)))
             {
                 writer.WriteStartObject();
                 switch (message)
@@ -385,6 +382,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
                 }
                 writer.WriteEndObject();
+                writer.Flush();
             }
         }
 

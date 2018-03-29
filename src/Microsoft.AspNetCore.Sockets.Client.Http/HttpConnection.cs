@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
                     using (var response = await httpClient.SendAsync(request))
                     {
                         response.EnsureSuccessStatusCode();
-                        var negotiateResponse = await ParseNegotiateResponse(response);
+                        var negotiateResponse = NegotiateProtocol.ParseResponse(await response.Content.ReadAsStreamAsync());
                         Log.ConnectionEstablished(_logger, negotiateResponse.ConnectionId);
                         return negotiateResponse;
                     }
@@ -310,29 +310,6 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
                 Log.ErrorWithNegotiation(logger, url, ex);
                 throw;
             }
-        }
-
-        private static async Task<NegotiationResponse> ParseNegotiateResponse(HttpResponseMessage response)
-        {
-            NegotiationResponse negotiationResponse;
-            using (var reader = new JsonTextReader(new StreamReader(await response.Content.ReadAsStreamAsync())))
-            {
-                try
-                {
-                    negotiationResponse = new JsonSerializer().Deserialize<NegotiationResponse>(reader);
-                }
-                catch (Exception ex)
-                {
-                    throw new FormatException("Invalid negotiation response received.", ex);
-                }
-            }
-
-            if (negotiationResponse == null)
-            {
-                throw new FormatException("Invalid negotiation response received.");
-            }
-
-            return negotiationResponse;
         }
 
         private static Uri CreateConnectUrl(Uri url, string connectionId)
@@ -453,18 +430,6 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
             _connectionId = negotiationResponse.ConnectionId;
             _logScope.ConnectionId = _connectionId;
             return negotiationResponse;
-        }
-
-        private class NegotiationResponse
-        {
-            public string ConnectionId { get; set; }
-            public AvailableTransport[] AvailableTransports { get; set; }
-        }
-
-        private class AvailableTransport
-        {
-            public string Transport { get; set; }
-            public string[] TransferFormats { get; set; }
         }
     }
 }
