@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                             Error.Write(ex);
                         }
 
-                        Out.Write("Server pid:{0} shut down", response.ServerProcessId);
+                        Out.Write("Server pid:{0} shut down completed.", response.ServerProcessId);
                     }
                 }
             }
