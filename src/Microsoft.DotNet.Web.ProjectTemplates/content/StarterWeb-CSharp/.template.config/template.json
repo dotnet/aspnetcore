@@ -239,7 +239,7 @@
     "HttpsPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
     },
     "HttpsPortGenerated": {
       "type": "generated",
@@ -292,7 +292,13 @@
     },
     "RequiresHttps": {
       "type": "computed",
-      "value": "(OrganizationalAuth || IndividualAuth)"
+      "value": "(OrganizationalAuth || IndividualAuth || !NoHttps)"
+    },
+    "NoHttps": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to turn off HTTPS. This option only applies if IndividualAuth or OrganizationalAuth are not being used."
     },
     "UseLocalDB": {
       "type": "parameter",

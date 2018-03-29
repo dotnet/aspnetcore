@@ -21,7 +21,9 @@ using Microsoft.AspNetCore.Identity;
 #endif
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+#if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
+#endif
 using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -143,10 +145,15 @@ namespace Company.WebApplication1
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+#if (RequiresHttps)
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
+#else
+            }
+
+#endif
             app.UseStaticFiles();
             app.UseCookiePolicy();
 

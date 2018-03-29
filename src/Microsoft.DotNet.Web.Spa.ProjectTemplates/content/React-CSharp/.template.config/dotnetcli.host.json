@@ -22,6 +22,10 @@
     "ExcludeLaunchSettings": {
       "longName": "exclude-launch-settings",
       "shortName": ""
+    },
+    "NoHttps": {
+      "longName": "no-https",
+      "shortName": ""
     }
   }
 }

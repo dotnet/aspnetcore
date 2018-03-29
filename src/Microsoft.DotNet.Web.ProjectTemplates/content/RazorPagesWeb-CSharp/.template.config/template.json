@@ -307,6 +307,12 @@
       "defaultValue": "false",
       "description": "Whether to turn off HTTPS. This option only applies if IndividualAuth or OrganizationalAuth are not being used."
     },
+    "NoHttps": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to turn off HTTPS. This option only applies if IndividualAuth or OrganizationalAuth are not being used."
+    },
     "UseLocalDB": {
       "type": "parameter",
       "datatype": "bool",
