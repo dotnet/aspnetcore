@@ -208,16 +208,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
                     _application.Output.Advance(receiveResult.Count);
 
-                    if (receiveResult.EndOfMessage)
-                    {
-                        var flushResult = await _application.Output.FlushAsync();
+                    var flushResult = await _application.Output.FlushAsync();
 
-                        // We canceled in the middle of applying back pressure
-                        // or if the consumer is done
-                        if (flushResult.IsCanceled || flushResult.IsCompleted)
-                        {
-                            break;
-                        }
+                    // We canceled in the middle of applying back pressure
+                    // or if the consumer is done
+                    if (flushResult.IsCanceled || flushResult.IsCompleted)
+                    {
+                        break;
                     }
                 }
             }
