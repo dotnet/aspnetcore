@@ -138,11 +138,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application, transferFormat, connection: Mock.Of<IConnection>());
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echoAndClose"), pair.Application, transferFormat, connection: Mock.Of<IConnection>());
 
                 await pair.Transport.Output.WriteAsync(new byte[] { 0x42 });
 
-                // The echo endpoint closes the connection immediately after sending response which should stop the transport
+                // The echoAndClose endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
 
                 Assert.True(pair.Transport.Input.TryRead(out var result));

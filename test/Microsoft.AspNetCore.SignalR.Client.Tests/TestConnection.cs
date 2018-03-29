@@ -38,13 +38,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public IFeatureCollection Features { get; } = new FeatureCollection();
         public int DisposeCount => _disposeCount;
 
-        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoNegotiate = true)
+        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoNegotiate = true, bool synchronousCallbacks = false)
         {
             _autoNegotiate = autoNegotiate;
             _onStart = onStart ?? (() => Task.CompletedTask);
             _onDispose = onDispose ?? (() => Task.CompletedTask);
 
-            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var scheduler = synchronousCallbacks ? PipeScheduler.Inline : null;
+            var options = new PipeOptions(readerScheduler: scheduler, writerScheduler: scheduler, useSynchronizationContext: false);
+
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
             Application = pair.Application;
             Transport = pair.Transport;
 
@@ -85,6 +88,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var json = JsonConvert.SerializeObject(jsonObject, Formatting.None);
             var bytes = FormatMessageToArray(Encoding.UTF8.GetBytes(json));
 
+            return Application.Output.WriteAsync(bytes).AsTask();
+        }
+
+        public Task ReceiveTextAsync(string rawText)
+        {
+            return ReceiveBytesAsync(Encoding.UTF8.GetBytes(rawText));
+        }
+
+        public Task ReceiveBytesAsync(byte[] bytes)
+        {
             return Application.Output.WriteAsync(bytes).AsTask();
         }
 

@@ -452,14 +452,10 @@ namespace Microsoft.AspNetCore.Sockets
                 return;
             }
 
-            // Until the parsers are incremental, we buffer the entire request body before
-            // flushing the buffer. Using CopyToAsync allows us to avoid allocating a single giant
-            // buffer before writing.
             var pipeWriterStream = new PipeWriterStream(connection.Application.Output);
             await context.Request.Body.CopyToAsync(pipeWriterStream);
 
             Log.ReceivedBytes(_logger, pipeWriterStream.Length);
-            await connection.Application.Output.FlushAsync();
         }
 
         private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)

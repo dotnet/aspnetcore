@@ -353,6 +353,121 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task SendingHandshakeRequestInChunksWorks()
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT));
+            var part1 = Encoding.UTF8.GetBytes("{\"protocol\": \"json\"");
+            var part2 = Encoding.UTF8.GetBytes(",\"version\": 1}");
+            var part3 = Encoding.UTF8.GetBytes("\u001e");
+
+            using (var client = new TestClient(synchronousCallbacks: true))
+            {
+                client.SupportedFormats = TransferFormat.Text;
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler, 
+                                                        sendHandshakeRequestMessage: false, 
+                                                        expectedHandshakeResponseMessage: false);
+
+                // Wait for the handshake response
+                var task = client.ReadAsync(isHandshake: true);
+
+                await client.Connection.Application.Output.WriteAsync(part1);
+
+                Assert.False(task.IsCompleted);
+
+                await client.Connection.Application.Output.WriteAsync(part2);
+
+                Assert.False(task.IsCompleted);
+
+                await client.Connection.Application.Output.WriteAsync(part3);
+
+                Assert.True(task.IsCompleted);
+
+                var response = (await task) as HandshakeResponseMessage;
+                Assert.NotNull(response);
+
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task SendingInvocatonInChunksWorks()
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT));
+            var part1 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"1\", ");
+            var part2 = Encoding.UTF8.GetBytes("\"target\": \"Echo\", \"arguments\"");
+            var part3 = Encoding.UTF8.GetBytes(":[\"hello\"]}\u001e");
+
+            using (var client = new TestClient(synchronousCallbacks: true))
+            {
+                client.SupportedFormats = TransferFormat.Text;
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for the hub completion
+                var task = client.ReadAsync();
+
+                await client.Connection.Application.Output.WriteAsync(part1);
+
+                Assert.False(task.IsCompleted);
+
+                await client.Connection.Application.Output.WriteAsync(part2);
+
+                Assert.False(task.IsCompleted);
+
+                await client.Connection.Application.Output.WriteAsync(part3);
+
+                Assert.True(task.IsCompleted);
+
+                var completionMessage = await task as CompletionMessage;
+                Assert.NotNull(completionMessage);
+                Assert.Equal("hello", completionMessage.Result);
+                Assert.Equal("1", completionMessage.InvocationId);
+
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task SendingHandshakeRequestAndInvocationInSamePayloadParsesHandshakeAndInvocation()
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT));
+            var payload = Encoding.UTF8.GetBytes("{\"protocol\": \"json\",\"version\": 1}\u001e{\"type\":1, \"invocationId\":\"1\", \"target\": \"Echo\", \"arguments\":[\"hello\"]}\u001e");
+
+            using (var client = new TestClient(synchronousCallbacks: true))
+            {
+                client.SupportedFormats = TransferFormat.Text;
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler, 
+                                                        sendHandshakeRequestMessage: false, 
+                                                        expectedHandshakeResponseMessage: false);
+
+                // Wait for the handshake response
+                var task = client.ReadAsync(isHandshake: true);
+
+                await client.Connection.Application.Output.WriteAsync(payload);
+
+                Assert.True(task.IsCompleted);
+
+                var response = await task as HandshakeResponseMessage;
+                Assert.NotNull(response);
+
+                var completionMessage = await client.ReadAsync() as CompletionMessage;
+                Assert.NotNull(completionMessage);
+                Assert.Equal("hello", completionMessage.Result);
+                Assert.Equal("1", completionMessage.InvocationId);
+
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task HandshakeSuccessSendsResponseWithoutError()
         {
             var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT));

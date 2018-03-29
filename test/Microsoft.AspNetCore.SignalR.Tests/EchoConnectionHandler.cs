@@ -13,18 +13,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
-            var result = await connection.Transport.Input.ReadAsync();
-            var buffer = result.Buffer;
-
-            try
+            while (true)
             {
+                var result = await connection.Transport.Input.ReadAsync();
+                var buffer = result.Buffer;
+
                 if (!buffer.IsEmpty)
                 {
                     await connection.Transport.Output.WriteAsync(buffer.ToArray());
                 }
-            }
-            finally
-            {
+                else if (result.IsCompleted)
+                {
+                    break;
+                }
+
                 connection.Transport.Input.AdvanceTo(buffer.End);
             }
         }

@@ -13,15 +13,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             services.AddConnections();
             services.AddSignalR();
-            services.AddSingleton<EchoConnectionHandler>();
-            services.AddSingleton<HttpHeaderConnectionHandler>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseConnections(options => options.MapConnectionHandler<EchoConnectionHandler>("/echo"));
-            app.UseConnections(options => options.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader"));
-            app.UseSignalR(options => options.MapHub<UncreatableHub>("/uncreatable"));
+            app.UseConnections(routes =>
+            {
+                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
+                routes.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");
+                routes.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader");
+            });
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<UncreatableHub>("/uncreatable");
+            });
         }
     }
 }

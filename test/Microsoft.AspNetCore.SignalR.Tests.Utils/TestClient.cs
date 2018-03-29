@@ -38,7 +38,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
-            var options = new PipeOptions(readerScheduler: synchronousCallbacks ? PipeScheduler.Inline : null);
+            var scheduler = synchronousCallbacks ? PipeScheduler.Inline : null;
+            var options = new PipeOptions(readerScheduler: scheduler, writerScheduler: scheduler, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Transport, pair.Application);
 
@@ -236,11 +237,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 else
                 {
                     // read first message out of the incoming data 
-                    if (!HandshakeProtocol.TryParseResponseMessage(ref buffer, out var responseMessage))
+                    if (HandshakeProtocol.TryParseResponseMessage(ref buffer, out var responseMessage))
                     {
-                        throw new InvalidDataException("Unable to parse payload as a handshake response message.");
+                        return responseMessage;
                     }
-                    return responseMessage;
                 }
             }
             finally
