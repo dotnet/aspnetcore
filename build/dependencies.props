@@ -42,8 +42,8 @@
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.1</NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview2-26313-01</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemValueTuplePackageVersion>4.5.0-preview2-26313-01</SystemValueTuplePackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview2-26326-04</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0-preview2-26326-04</SystemValueTuplePackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>

@@ -34,37 +34,51 @@ namespace Microsoft.AspNetCore.Razor.Tools
         protected override Task<int> ExecuteCoreAsync()
         {
             // Make sure there's only one server with the same identity at a time.
-            using (var mutex = new Mutex(initiallyOwned: true, name: MutexName.GetServerMutexName(Pipe.Value()), createdNew: out var holdsMutex))
+            var serverMutexName = MutexName.GetServerMutexName(Pipe.Value());
+            Mutex serverMutex = null;
+            var holdsMutex = false;
+
+            try
             {
-                if (!holdsMutex)
+                serverMutex = new Mutex(initiallyOwned: true, name: serverMutexName, createdNew: out holdsMutex);
+            }
+            catch (Exception ex)
+            {
+                // The Mutex constructor can throw in certain cases. One specific example is docker containers
+                // where the /tmp directory is restricted. In those cases there is no reliable way to execute
+                // the server and we need to fall back to the command line.
+                // Example: https://github.com/dotnet/roslyn/issues/24124
+
+                Error.Write($"Server mutex creation failed. {ex.Message}");
+
+                return Task.FromResult(-1);
+            }
+
+            if (!holdsMutex)
+            {
+                // Another server is running, just exit.
+                Error.Write("Another server already running...");
+                return Task.FromResult(1);
+            }
+
+            try
+            {
+                TimeSpan? keepAlive = null;
+                if (KeepAlive.HasValue() && int.TryParse(KeepAlive.Value(), out var result))
                 {
-                    // Another server is running, just exit.
-                    Error.Write("Another server already running...");
-                    return Task.FromResult(1);
+                    // Keep alive times are specified in seconds
+                    keepAlive = TimeSpan.FromSeconds(result);
                 }
 
-                try
-                {
-                    TimeSpan? keepAlive = null;
-                    if (KeepAlive.HasValue())
-                    {
-                        var value = KeepAlive.Value();
-                        if (int.TryParse(value, out var result))
-                        {
-                            // Keep alive times are specified in seconds
-                            keepAlive = TimeSpan.FromSeconds(result);
-                        }
-                    }
+                var host = ConnectionHost.Create(Pipe.Value());
 
-                    var host = ConnectionHost.Create(Pipe.Value());
-
-                    var compilerHost = CompilerHost.Create();
-                    ExecuteServerCore(host, compilerHost, Cancelled, eventBus: null, keepAlive: keepAlive);
-                }
-                finally
-                {
-                    mutex.ReleaseMutex();
-                }
+                var compilerHost = CompilerHost.Create();
+                ExecuteServerCore(host, compilerHost, Cancelled, eventBus: null, keepAlive: keepAlive);
+            }
+            finally
+            {
+                serverMutex.ReleaseMutex();
+                serverMutex.Dispose();
             }
 
             return Task.FromResult(0);
