@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 $"Hello from @MyService1 and @MyService2").GetType();
 
             // Assert 1: Compiled type has correct properties
-            var propertyFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.NonPublic;
+            var propertyFlags = BindingFlags.Instance | BindingFlags.NonPublic;
             var injectableProperties = componentType.GetProperties(propertyFlags)
                 .Where(p => p.GetCustomAttribute<InjectAttribute>() != null);
             Assert.Collection(injectableProperties.OrderBy(p => p.Name),

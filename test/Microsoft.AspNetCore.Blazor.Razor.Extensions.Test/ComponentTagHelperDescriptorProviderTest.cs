@@ -85,13 +85,13 @@ namespace Test
             // No documentation in this test
             Assert.Null(component.Documentation);
 
-            // These are all trivally derived from the assembly/namespace/type name
+            // These are all trivially derived from the assembly/namespace/type name
             Assert.Equal("TestAssembly", component.AssemblyName);
             Assert.Equal("Test.MyComponent", component.Name);
             Assert.Equal("Test.MyComponent", component.DisplayName);
             Assert.Equal("Test.MyComponent", component.GetTypeName());
 
-            // Our use of matching rules is also very simple, and derived from the name. Veriying
+            // Our use of matching rules is also very simple, and derived from the name. Verifying
             // it once in detail here and then ignoring it.
             var rule = Assert.Single(component.TagMatchingRules);
             Assert.Empty(rule.Attributes);
@@ -329,7 +329,7 @@ namespace Test
             Assert.True(attribute.IsDelegateProperty());
         }
 
-        // For simplicity in testing, exlude the built-in components. We'll add more and we
+        // For simplicity in testing, exclude the built-in components. We'll add more and we
         // don't want to update the tests when that happens.
         private TagHelperDescriptor[] ExcludeBuiltInComponents(TagHelperDescriptorProviderContext context)
         {

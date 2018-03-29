@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var nestedComponent = (MessageComponent)nestedComponentFrame.Component;
             var nestedComponentId = nestedComponentFrame.ComponentId;
 
-            // Assert: inital render
+            // Assert: initial render
             nestedComponent.Message = "Render 1";
             nestedComponent.TriggerRender();
             var batch = renderer.Batches[1];

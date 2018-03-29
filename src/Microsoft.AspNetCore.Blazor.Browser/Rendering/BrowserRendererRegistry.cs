@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
     /// <summary>
     /// Provides mechanisms for locating <see cref="BrowserRenderer"/> instances
     /// by ID. This is used when receiving incoming events from the browser. It
-    /// implictly ensures that the <see cref="BrowserRenderer"/> instances and
+    /// implicitly ensures that the <see cref="BrowserRenderer"/> instances and
     /// their associated component instances aren't GCed when events may still
     /// be received for them.
     /// </summary>

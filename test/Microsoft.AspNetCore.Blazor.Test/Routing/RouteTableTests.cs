@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Blazor.Test.Routing
         [InlineData("/{parameter}", "/{parameter}/")]
         [InlineData("/literal/{parameter}", "/Literal/{something}")]
         [InlineData("/{parameter}/literal/{something}", "{param}/Literal/{else}")]
-        public void DetectsAmbigousRoutes(string left, string right)
+        public void DetectsAmbiguousRoutes(string left, string right)
         {
             // Arrange
             var expectedMessage = $@"The following routes are ambiguous:
