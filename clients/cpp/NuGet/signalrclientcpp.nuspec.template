@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.AspNet.SignalR.Client.Cpp.#Toolset#.#SubSystem#</id>
+    <title>Microsoft ASP.NET SignalR C++ Client</title>
+    <version>0.0.0</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</licenseUrl>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <projectUrl>http://www.asp.net/signalr</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>C++ client for ASP.NET SignalR.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet SignalR AspNetSignalR Client C++ native</tags>
+    <releaseNotes>https://github.com/aspnet/SignalR-Client-Cpp/releases</releaseNotes>
+    <dependencies>
+      <dependency id="cpprestsdk.#Toolset#.#casablanca-subsystem#.msvcstl.dyn.rt-dyn" version="2.9.1" />
+    </dependencies>
+  </metadata>
+</package>
