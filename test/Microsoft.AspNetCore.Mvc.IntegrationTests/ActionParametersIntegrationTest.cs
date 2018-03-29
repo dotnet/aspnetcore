@@ -578,7 +578,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [InlineData("displayNameStringLengthParam", "abc", true)]
         [InlineData("displayNameStringLengthParam", "abcTooLong", false, "My Display Name")]
         public async Task ActionParameter_EnforcesDataAnnotationsAttributes(
-            string paramName, string input, bool isValid, string displayName = null)
+            string paramName,
+            string input,
+            bool isValid,
+            string displayName = null)
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -614,8 +617,111 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(isValid, modelState.IsValid);
             if (!isValid)
             {
-                var message = modelState[paramName].Errors.Single().ErrorMessage;
+                var entry = modelState[paramName];
+                Assert.NotNull(entry);
+
+                var message = entry.Errors.Single().ErrorMessage;
                 Assert.Contains(displayName ?? parameter.Name, message);
+            }
+        }
+
+        [Fact]
+        public async Task ActionParameter_CanRunIValidatableObject_EmptyPrefix()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameterInfo = BindingAndValidationController.ValidatableObjectParameterInfo;
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create(nameof(ModelWithIValidatableObject.FirstName), "Billy");
+            });
+
+            var modelState = testContext.ModelState;
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider
+                .GetMetadataForParameter(parameterInfo);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                parameter,
+                testContext,
+                modelMetadataProvider,
+                modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet, "model is set");
+            Assert.False(modelState.IsValid, "model is valid");
+
+            var entry = modelState[string.Empty];
+            Assert.NotNull(entry);
+            var message = entry.Errors.Single().ErrorMessage;
+            Assert.Equal("Not valid.", message);
+
+            entry = modelState[nameof(ModelWithIValidatableObject.FirstName)];
+            Assert.NotNull(entry);
+            message = entry.Errors.Single().ErrorMessage;
+            Assert.Equal("FirstName Not valid.", message);
+        }
+
+        [Fact]
+        public async Task ActionParameter_CanRunIValidatableObject_WithPrefix()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameterInfo = BindingAndValidationController.ValidatableObjectParameterInfo;
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                var key = ModelNames.CreatePropertyModelName(parameter.Name, nameof(ModelWithIValidatableObject.FirstName));
+                request.QueryString = QueryString.Create(key, "Billy");
+            });
+
+            var modelState = testContext.ModelState;
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider
+                .GetMetadataForParameter(parameterInfo);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                parameter,
+                testContext,
+                modelMetadataProvider,
+                modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet, "model is set");
+            Assert.False(modelState.IsValid, "model is valid");
+
+            var entry = modelState[parameter.Name];
+            Assert.NotNull(entry);
+            var message = entry.Errors.Single().ErrorMessage;
+            Assert.Equal("Not valid.", message);
+
+            entry = modelState[ModelNames.CreatePropertyModelName(parameter.Name, nameof(ModelWithIValidatableObject.FirstName))];
+            Assert.NotNull(entry);
+            message = entry.Errors.Single().ErrorMessage;
+            Assert.Equal("FirstName Not valid.", message);
+        }
+
+        private class ModelWithIValidatableObject : IValidatableObject
+        {
+            public string FirstName { get; set; }
+
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            {
+                yield return new ValidationResult("Not valid.");
+                yield return new ValidationResult("FirstName Not valid.", new string[] { nameof(FirstName) });
             }
         }
 
@@ -669,7 +775,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 [BindNever] int bindNeverParam,
                 [BindRequired] int bindRequiredParam,
                 [Required, StringLength(3)] string requiredAndStringLengthParam,
-                [Display(Name = "My Display Name"), StringLength(3)] string displayNameStringLengthParam)
+                [Display(Name = "My Display Name"), StringLength(3)] string displayNameStringLengthParam,
+                ModelWithIValidatableObject validatableObject)
             {
             }
 
@@ -681,6 +788,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             public static ParameterInfo BindRequiredParamInfo
                 => MyActionMethodInfo.GetParameters()[1];
+
+            public static ParameterInfo ValidatableObjectParameterInfo => MyActionMethodInfo.GetParameters()[4];
 
             public static ParameterInfo GetParameterInfo(string parameterName)
             {
