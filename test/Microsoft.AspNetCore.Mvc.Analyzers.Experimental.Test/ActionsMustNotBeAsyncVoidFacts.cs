@@ -59,7 +59,7 @@ public class UserViewModel
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC2001",
+                Id = "MVC7003",
                 Message = "Controller actions must not have async void signature.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 7, 18) }
@@ -103,7 +103,7 @@ public class HomeController : Controller
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC2001",
+                Id = "MVC7003",
                 Message = "Controller actions must not have async void signature.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 7, 18) }
@@ -141,7 +141,7 @@ public class HomeController : Controller
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC2001",
+                Id = "MVC7003",
                 Message = "Controller actions must not have async void signature.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 6, 18) }

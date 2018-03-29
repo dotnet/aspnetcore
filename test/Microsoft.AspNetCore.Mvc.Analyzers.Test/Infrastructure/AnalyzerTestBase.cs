@@ -4,9 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -26,6 +29,51 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
         protected abstract DiagnosticAnalyzer DiagnosticAnalyzer { get; }
 
         protected virtual CodeFixProvider CodeFixProvider { get; }
+
+        public IDictionary<string, DiagnosticResultLocation> MarkerLocations { get; } = new Dictionary<string, DiagnosticResultLocation>();
+
+        public DiagnosticResultLocation? DefaultMarkerLocation { get; private set; }
+
+        protected Project CreateProjectFromFile([CallerMemberName] string fileName = "")
+        {
+            var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Mvc");
+            var projectDirectory = Path.Combine(solutionDirectory, "test", GetType().Assembly.GetName().Name);
+
+            var filePath = Path.Combine(projectDirectory, "TestFiles", fileName + ".cs");
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"TestFile {fileName} could not be found at {filePath}.", filePath);
+            }
+
+            const string MarkerStart = "/*MM";
+            const string MarkerEnd = "*/";
+
+            var lines = File.ReadAllLines(filePath);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var markerStartIndex = line.IndexOf(MarkerStart, StringComparison.Ordinal);
+                if (markerStartIndex != -1)
+                {
+                    var markerEndIndex = line.IndexOf(MarkerEnd, markerStartIndex, StringComparison.Ordinal);
+                    var markerName = line.Substring(markerStartIndex + 2, markerEndIndex - markerStartIndex - 2);
+                    var resultLocation = new DiagnosticResultLocation(i + 1, markerStartIndex + 1); ;
+
+                    if (DefaultMarkerLocation == null)
+                    {
+                        DefaultMarkerLocation = resultLocation;
+                    }
+
+                    MarkerLocations[markerName] = resultLocation;
+                    line = line.Substring(0, markerStartIndex) + line.Substring(markerEndIndex + MarkerEnd.Length);
+                }
+
+                lines[i] = line;
+            }
+
+            var inputSource = string.Join(Environment.NewLine, lines);
+            return CreateProject(inputSource);
+        }
 
         protected Project CreateProject(string source)
         {

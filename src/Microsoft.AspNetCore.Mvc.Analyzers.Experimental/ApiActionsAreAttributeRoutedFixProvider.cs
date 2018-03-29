@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         };
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
-            ImmutableArray.Create(DiagnosticDescriptors.MVC1000_ApiActionsMustBeAttributeRouted.Id);
+            ImmutableArray.Create(DiagnosticDescriptors.MVC7000_ApiActionsMustBeAttributeRouted.Id);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 

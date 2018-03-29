@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     public class ApiActionsDoNotRequireExplicitModelValidationCheckCodeFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
-            ImmutableArray.Create(DiagnosticDescriptors.MVC1001_ApiActionsHaveBadModelStateFilter.Id);
+            ImmutableArray.Create(DiagnosticDescriptors.MVC7001_ApiActionsHaveBadModelStateFilter.Id);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 

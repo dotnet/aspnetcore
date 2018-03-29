@@ -1,6 +1,7 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26831.3000
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -153,15 +154,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{FDC66952-A3EA-4074-899E-C29816BF7C1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorBuildWebSite", "test\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj", "{BF8A3392-C3D2-4813-855A-E906564600E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite", "test\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj", "{BF8A3392-C3D2-4813-855A-E906564600E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorBuildWebSite.PrecompiledViews", "test\WebSites\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj", "{856D7E25-E033-477D-9ABD-0B50CF428C80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite.PrecompiledViews", "test\WebSites\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj", "{856D7E25-E033-477D-9ABD-0B50CF428C80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorBuildWebSite.Views", "test\WebSites\RazorBuildWebSite.Views\RazorBuildWebSite.Views.csproj", "{8916DDCA-EC2A-4193-B9F3-78CAA1A96D5A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite.Views", "test\WebSites\RazorBuildWebSite.Views\RazorBuildWebSite.Views.csproj", "{8916DDCA-EC2A-4193-B9F3-78CAA1A96D5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Analyzers", "src\Microsoft.AspNetCore.Mvc.Analyzers\Microsoft.AspNetCore.Mvc.Analyzers.csproj", "{87A3E227-C45E-4141-A59F-402908E651FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers", "src\Microsoft.AspNetCore.Mvc.Analyzers\Microsoft.AspNetCore.Mvc.Analyzers.csproj", "{87A3E227-C45E-4141-A59F-402908E651FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Analyzers.Test", "test\Microsoft.AspNetCore.Mvc.Analyzers.Test\Microsoft.AspNetCore.Mvc.Analyzers.Test.csproj", "{E3E09D2F-1FCF-4396-9B09-5A62CA8CC831}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers.Test", "test\Microsoft.AspNetCore.Mvc.Analyzers.Test\Microsoft.AspNetCore.Mvc.Analyzers.Test.csproj", "{E3E09D2F-1FCF-4396-9B09-5A62CA8CC831}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers.Experimental", "src\Microsoft.AspNetCore.Mvc.Analyzers.Experimental\Microsoft.AspNetCore.Mvc.Analyzers.Experimental.csproj", "{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers.Experimental.Test", "test\Microsoft.AspNetCore.Mvc.Analyzers.Experimental.Test\Microsoft.AspNetCore.Mvc.Analyzers.Experimental.Test.csproj", "{E83D3745-9BCF-40E8-8D34-AFBA604C2439}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -849,6 +854,30 @@ Global
 		{E3E09D2F-1FCF-4396-9B09-5A62CA8CC831}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E3E09D2F-1FCF-4396-9B09-5A62CA8CC831}.Release|x86.ActiveCfg = Release|Any CPU
 		{E3E09D2F-1FCF-4396-9B09-5A62CA8CC831}.Release|x86.Build.0 = Release|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Debug|x86.Build.0 = Debug|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Release|x86.ActiveCfg = Release|Any CPU
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61}.Release|x86.Build.0 = Release|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Debug|x86.Build.0 = Debug|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Release|x86.ActiveCfg = Release|Any CPU
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -915,6 +944,8 @@ Global
 		{8916DDCA-EC2A-4193-B9F3-78CAA1A96D5A} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{87A3E227-C45E-4141-A59F-402908E651FD} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{E3E09D2F-1FCF-4396-9B09-5A62CA8CC831} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
+		{E83D3745-9BCF-40E8-8D34-AFBA604C2439} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {63D344F6-F86D-40E6-85B9-0AABBE338C4A}

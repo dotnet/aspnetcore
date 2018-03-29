@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
     /// </summary>
     public struct DiagnosticResultLocation
     {
+        public DiagnosticResultLocation(int line, int column)
+            : this("Test.cs", line, column)
+        {
+        }
+
         public DiagnosticResultLocation(string path, int line, int column)
         {
             if (line < -1)
