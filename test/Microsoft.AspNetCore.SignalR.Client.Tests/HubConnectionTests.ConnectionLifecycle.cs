@@ -115,6 +115,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
             }
 
+            [Fact]
+            public async Task StartAsyncWithFailedHandshakeCanBeStopped()
+            {
+                var testConnection = new TestConnection(autoHandshake: false);
+                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                {
+                    testConnection.Transport.Input.Complete();
+                    try
+                    {
+                        await connection.StartAsync();
+                    }
+                    catch
+                    { }
+
+                    await connection.StopAsync();
+                    Assert.True(testConnection.Started.IsCompleted);
+                });
+            }
+
             [Theory]
             [MemberData(nameof(MethodsNamesThatRequireActiveConnection))]
             public async Task MethodsThatRequireStartedConnectionFailIfConnectionNotYetStarted(string name)

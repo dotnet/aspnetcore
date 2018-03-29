@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     internal class TestConnection : IConnection
     {
-        private readonly bool _autoNegotiate;
+        private readonly bool _autoHandshake;
         private readonly TaskCompletionSource<object> _started = new TaskCompletionSource<object>();
         private readonly TaskCompletionSource<object> _disposed = new TaskCompletionSource<object>();
 
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public IFeatureCollection Features { get; } = new FeatureCollection();
         public int DisposeCount => _disposeCount;
 
-        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoNegotiate = true, bool synchronousCallbacks = false)
+        public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoHandshake = true, bool synchronousCallbacks = false)
         {
-            _autoNegotiate = autoNegotiate;
+            _autoHandshake = autoHandshake;
             _onStart = onStart ?? (() => Task.CompletedTask);
             _onDispose = onDispose ?? (() => Task.CompletedTask);
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             await _onStart();
 
-            if (_autoNegotiate)
+            if (_autoHandshake)
             {
                 // We can't await this as it will block StartAsync which will block
                 // HubConnection.StartAsync which sends the Handshake in the first place!
