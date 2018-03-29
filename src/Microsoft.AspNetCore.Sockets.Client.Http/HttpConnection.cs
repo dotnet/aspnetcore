@@ -296,10 +296,18 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
                     request.Version = new Version(1, 1);
                     SendUtils.PrepareHttpRequest(request, _httpOptions);
 
-                    using (var response = await httpClient.SendAsync(request))
+                    // ResponseHeadersRead instructs SendAsync to return once headers are read
+                    // rather than buffer the entire response. This gives a small perf boost.
+                    // Note that it is important to dispose of the response when doing this to
+                    // avoid leaving the connection open.
+                    using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                     {
                         response.EnsureSuccessStatusCode();
-                        var negotiateResponse = NegotiateProtocol.ParseResponse(await response.Content.ReadAsStreamAsync());
+                        NegotiationResponse negotiateResponse;
+                        using (var responseStream = await response.Content.ReadAsStreamAsync())
+                        {
+                            negotiateResponse = NegotiateProtocol.ParseResponse(responseStream);
+                        }
                         Log.ConnectionEstablished(_logger, negotiateResponse.ConnectionId);
                         return negotiateResponse;
                     }

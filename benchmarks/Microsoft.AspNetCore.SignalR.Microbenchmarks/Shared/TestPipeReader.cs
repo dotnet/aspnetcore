@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared
 {
     public class TestPipeReader : PipeReader
     {
-        public List<ReadResult> ReadResults { get; }
+        public List<ValueTask<ReadResult>> ReadResults { get; }
 
         public TestPipeReader()
         {
-            ReadResults = new List<ReadResult>();
+            ReadResults = new List<ValueTask<ReadResult>>();
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared
             var result = ReadResults[0];
             ReadResults.RemoveAt(0);
 
-            return new ValueTask<ReadResult>(result);
+            return result;
         }
 
         public override bool TryRead(out ReadResult result)

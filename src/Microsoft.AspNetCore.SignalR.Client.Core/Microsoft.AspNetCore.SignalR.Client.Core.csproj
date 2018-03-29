@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="..\Common\ForceAsyncAwaiter.cs" Link="ForceAsyncAwaiter.cs" />
+    <Compile Include="..\Common\PipeWriterStream.cs" Link="PipeWriterStream.cs" />
   </ItemGroup>
 
   <ItemGroup>

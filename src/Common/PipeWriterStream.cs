@@ -32,7 +32,6 @@ namespace System.IO.Pipelines
 
         public override void Flush()
         {
-            throw new NotSupportedException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
