@@ -200,7 +200,17 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
             _application.Input.CancelPendingRead();
 
-            await Running;
+            try
+            {
+                await Running;
+            }
+            catch (Exception ex)
+            {
+                Log.TransportStopped(_logger, ex);
+                throw;
+            }
+
+            Log.TransportStopped(_logger, null);
         }
     }
 }

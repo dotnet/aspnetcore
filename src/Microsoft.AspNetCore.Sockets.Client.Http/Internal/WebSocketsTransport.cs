@@ -348,10 +348,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             {
                 await Running;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.TransportStopped(_logger, ex);
                 // exceptions have been handled in the Running task continuation by closing the channel with the exception
+                return;
             }
+
+            Log.TransportStopped(_logger, null);
         }
     }
 }
