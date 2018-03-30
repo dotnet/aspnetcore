@@ -48,6 +48,8 @@ export class WebSocketTransport implements ITransport {
             throw new Error("'WebSocket' is not supported in your environment.");
         }
 
+        this.logger.log(LogLevel.Trace, "(WebSockets transport) Connecting");
+
         return new Promise<void>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
             const token = this.accessTokenFactory();
@@ -71,7 +73,7 @@ export class WebSocketTransport implements ITransport {
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
-                this.logger.log(LogLevel.Trace, `(WebSockets transport) data received. Length ${getDataLength(message.data)}.`);
+                this.logger.log(LogLevel.Trace, `(WebSockets transport) data received. ${getDataDetail(message.data)}.`);
                 if (this.onreceive) {
                     this.onreceive(message.data);
                 }
@@ -92,6 +94,7 @@ export class WebSocketTransport implements ITransport {
 
     public send(data: any): Promise<void> {
         if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
+            this.logger.log(LogLevel.Trace, `(WebSockets transport) sending data. ${getDataDetail(data)}.`);
             this.webSocket.send(data);
             return Promise.resolve();
         }
@@ -134,6 +137,8 @@ export class ServerSentEventsTransport implements ITransport {
             throw new Error("'EventSource' is not supported in your environment.");
         }
 
+        this.logger.log(LogLevel.Trace, "(SSE transport) Connecting");
+
         this.url = url;
         return new Promise<void>((resolve, reject) => {
             if (transferFormat !== TransferFormat.Text) {
@@ -151,7 +156,7 @@ export class ServerSentEventsTransport implements ITransport {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onreceive) {
                         try {
-                            this.logger.log(LogLevel.Trace, `(SSE transport) data received. Length ${getDataLength(e.data)}.`);
+                            this.logger.log(LogLevel.Trace, `(SSE transport) data received. ${getDataDetail(e.data)}.`);
                             this.onreceive(e.data);
                         } catch (error) {
                             if (this.onclose) {
@@ -184,7 +189,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     public async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, this.accessTokenFactory, data);
+        return send(this.logger, "SSE", this.httpClient, this.url, this.accessTokenFactory, data);
     }
 
     public stop(): Promise<void> {
@@ -222,6 +227,8 @@ export class LongPollingTransport implements ITransport {
         Arg.isRequired(connection, "connection");
 
         this.url = url;
+
+        this.logger.log(LogLevel.Trace, "(LongPolling transport) Connecting");
 
         // Set a flag indicating we have inherent keep-alive in this transport.
         connection.features.inherentKeepAlive = true;
@@ -276,7 +283,7 @@ export class LongPollingTransport implements ITransport {
                 } else {
                     // Process the response
                     if (response.content) {
-                        this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. Length ${getDataLength(response.content)}.`);
+                        this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content)}.`);
                         if (this.onreceive) {
                             this.onreceive(response.content);
                         }
@@ -301,7 +308,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     public async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, this.accessTokenFactory, data);
+        return send(this.logger, "LongPolling", this.httpClient, this.url, this.accessTokenFactory, data);
     }
 
     public stop(): Promise<void> {
@@ -313,17 +320,17 @@ export class LongPollingTransport implements ITransport {
     public onclose: TransportClosed;
 }
 
-function getDataLength(data: any): number {
-    let length: number = null;
+function getDataDetail(data: any): string {
+    let length: string = null;
     if (data instanceof ArrayBuffer) {
-        length = data.byteLength;
-    } else if (data instanceof String) {
-        length = data.length;
+        length = `Binary data of length ${data.byteLength}`;
+    } else if (typeof data === "string") {
+        length = `String data of length ${data.length}`;
     }
     return length;
 }
 
-async function send(httpClient: HttpClient, url: string, accessTokenFactory: () => string, content: string | ArrayBuffer): Promise<void> {
+async function send(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: () => string, content: string | ArrayBuffer): Promise<void> {
     let headers;
     const token = accessTokenFactory();
     if (token) {
@@ -332,8 +339,12 @@ async function send(httpClient: HttpClient, url: string, accessTokenFactory: () 
         };
     }
 
-    await httpClient.post(url, {
+    logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content)}.`);
+
+    const response = await httpClient.post(url, {
         content,
         headers,
     });
+
+    logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
 }

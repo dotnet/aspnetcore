@@ -3,6 +3,7 @@
 
 import { AbortSignal } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
+import { ILogger, LogLevel } from "./ILogger";
 
 export interface HttpRequest {
     method?: string;
@@ -49,6 +50,13 @@ export abstract class HttpClient {
 }
 
 export class DefaultHttpClient extends HttpClient {
+    private readonly logger: ILogger;
+
+    constructor(logger: ILogger) {
+        super();
+        this.logger = logger;
+    }
+
     public send(request: HttpRequest): Promise<HttpResponse> {
         return new Promise<HttpResponse>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -89,10 +97,12 @@ export class DefaultHttpClient extends HttpClient {
             };
 
             xhr.onerror = () => {
+                this.logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}`);
                 reject(new HttpError(xhr.statusText, xhr.status));
             };
 
             xhr.ontimeout = () => {
+                this.logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
                 reject(new TimeoutError());
             };
 

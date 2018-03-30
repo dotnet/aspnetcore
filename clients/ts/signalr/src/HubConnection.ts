@@ -204,10 +204,13 @@ export class HubConnection {
     }
 
     public async start(): Promise<void> {
+        this.logger.log(LogLevel.Trace, "Starting HubConnection.");
+
         this.receivedHandshakeResponse = false;
 
         await this.connection.start(this.protocol.transferFormat);
 
+        this.logger.log(LogLevel.Trace, "Sending handshake request.");
         // Handshake request is always JSON
         await this.connection.send(
             TextMessageFormat.write(
@@ -221,6 +224,8 @@ export class HubConnection {
     }
 
     public stop(): Promise<void> {
+        this.logger.log(LogLevel.Trace, "Stopping HubConnection.");
+
         this.cleanupTimeout();
         return this.connection.stop();
     }
