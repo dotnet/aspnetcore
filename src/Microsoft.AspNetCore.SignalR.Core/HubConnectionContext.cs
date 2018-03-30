@@ -225,7 +225,8 @@ namespace Microsoft.AspNetCore.SignalR
             Task.Factory.StartNew(_abortedCallback, this);
         }
 
-        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IList<string> supportedProtocols, IHubProtocolResolver protocolResolver, IUserIdProvider userIdProvider)
+        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
+            IUserIdProvider userIdProvider, bool enableDetailedErrors)
         {
             try
             {
@@ -329,7 +330,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.HandshakeFailed(_logger, ex);
-                await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"An unexpected error occurred during connection handshake. {ex.GetType().Name}: {ex.Message}"));
+                var errorMessage = ErrorMessageHelper.BuildErrorMessage("An unexpected error occurred during connection handshake.", ex, enableDetailedErrors);
+                await WriteHandshakeResponseAsync(new HandshakeResponseMessage(errorMessage));
                 return false;
             }
         }
