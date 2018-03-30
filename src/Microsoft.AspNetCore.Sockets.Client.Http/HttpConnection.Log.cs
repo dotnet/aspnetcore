@@ -62,6 +62,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
             private static readonly Action<ILogger, Exception> _transportThrewExceptionOnStop =
                 LoggerMessage.Define(LogLevel.Error, new EventId(17, "TransportThrewExceptionOnStop"), "The transport threw an exception while stopping.");
 
+            private static readonly Action<ILogger, string, Exception> _transportStarted =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(18, "TransportStarted"), "Transport '{Transport}' started.");
+
             public static void Starting(ILogger logger)
             {
                 _starting(logger, null);
@@ -160,6 +163,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
             public static void TransportThrewExceptionOnStop(ILogger logger, Exception ex)
             {
                 _transportThrewExceptionOnStop(logger, ex);
+            }
+
+            public static void TransportStarted(ILogger logger, ITransport transport)
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _transportStarted(logger, transport.GetType().Name, null);
+                }
             }
         }
     }

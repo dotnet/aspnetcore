@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
             }
             catch (Exception ex)
             {
-                Log.ErrorStartingTransport(_logger, _transport, ex);
+                Log.ErrorStartingTransport(_logger, transport, ex);
                 _transport = null;
                 throw;
             }
@@ -356,6 +356,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
             // We successfully started, set the transport properties (we don't want to set these until the transport is definitely running).
             _transport = transport;
             _transportPipe = pair.Transport;
+
+            Log.TransportStarted(_logger, _transport);
         }
 
         private HttpClient CreateHttpClient()

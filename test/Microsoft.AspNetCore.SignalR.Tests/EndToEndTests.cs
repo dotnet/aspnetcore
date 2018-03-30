@@ -197,11 +197,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1485")]
+        [Theory]
         [MemberData(nameof(TransportTypesAndTransferFormats))]
         public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType, TransferFormat requestedTransferFormat)
         {
-            using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
+            using (StartLog(out var loggerFactory, minLogLevel: LogLevel.Trace, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}_{requestedTransferFormat.ToString()}"))
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
@@ -230,10 +230,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         // Our solution to this is to just catch OperationCanceledException from the sent message if the race happens
                         // because we know the send went through, and its safe to check the response.
                     }
+
                     logger.LogInformation("Sent message");
 
                     logger.LogInformation("Receiving message");
-                    Assert.Equal(message, Encoding.UTF8.GetString(await connection.Transport.Input.ReadAsync(bytes.Length)));
+                    Assert.Equal(message, Encoding.UTF8.GetString(await connection.Transport.Input.ReadAsync(bytes.Length).OrTimeout()));
                     logger.LogInformation("Completed receive");
                 }
                 catch (Exception ex)
