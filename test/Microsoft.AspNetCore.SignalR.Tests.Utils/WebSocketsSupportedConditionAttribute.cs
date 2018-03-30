@@ -16,19 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             get
             {
-#if NETCOREAPP2_1
-                // .NET Core 2.1 and greater has sockets
-                return true;
-#else
-                // Non-Windows platforms have Websockets
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return true;
-                }
-
-                // Windows 8 and greater has Websockets
-                return Environment.OSVersion.Version >= new Version(6, 2);
-#endif
+                return TestHelpers.IsWebSocketsSupported();
             }
         }
 
