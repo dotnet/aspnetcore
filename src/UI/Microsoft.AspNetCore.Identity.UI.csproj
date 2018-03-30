@@ -16,6 +16,7 @@
     <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
     <None Remove="wwwroot/**/.bower.json" />
     <None Remove="wwwroot/**/LICENSE*" />
+    <None Include="THIRD-PARTY-NOTICES" Pack="true" />
   </ItemGroup>
     
   <ItemGroup>
