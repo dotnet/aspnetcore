@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             bool fCompletionExpected;
 
             // For websocket calls, we can directly provide a callback function to be called once the websocket operation completes.
-            hr = NativeMethods.http_websockets_read_bytes(
+            hr = NativeMethods.HttpWebsocketsReadBytes(
                                         _pInProcessHandler,
                                         (byte*)_inputHandle.Pointer,
                                         length,
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
                     chunk.fromMemory.pBuffer = (IntPtr)pBuffer;
                     chunk.fromMemory.BufferLength = (uint)buffer.Length;
-                    hr = NativeMethods.http_websockets_write_bytes(_pInProcessHandler, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
+                    hr = NativeMethods.HttpWebsocketsWriteBytes(_pInProcessHandler, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
                 }
             }
             else
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     currentChunk++;
                 }
 
-                hr = NativeMethods.http_websockets_write_bytes(_pInProcessHandler, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
+                hr = NativeMethods.HttpWebsocketsWriteBytes(_pInProcessHandler, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
 
                 foreach (var handle in handles)
                 {

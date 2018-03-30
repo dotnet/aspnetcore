@@ -30,7 +30,6 @@ SERVER_PROCESS::Initialize(
 )
 {
     HRESULT                                 hr = S_OK;
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION    jobInfo = { 0 };
 
     m_pProcessManager = pProcessManager;
     m_dwStartupTimeLimitInMS = dwStartupTimeLimitInMS;
@@ -47,10 +46,23 @@ SERVER_PROCESS::Initialize(
         FAILED(hr = m_struPhysicalPath.Copy(*pszAppPhysicalPath))||
         FAILED(hr = m_struAppFullPath.Copy(*pszAppPath))||
         FAILED(hr = m_struAppVirtualPath.Copy(*pszAppVirtualPath))||
-        FAILED(hr = m_Arguments.Copy(*pszArguments)))
+        FAILED(hr = m_Arguments.Copy(*pszArguments)) ||
+        FAILED(hr = SetupJobObject()))
     {
         goto Finished;
     }
+
+    m_pEnvironmentVarTable = pEnvironmentVariables;
+
+Finished:
+    return hr;
+}
+
+HRESULT
+SERVER_PROCESS::SetupJobObject(VOID)
+{
+    HRESULT                                 hr = S_OK;
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION    jobInfo = { 0 };
 
     if (m_hJobObject == NULL)
     {
@@ -75,14 +87,10 @@ SERVER_PROCESS::Initialize(
                 sizeof jobInfo))
             {
                 hr = HRESULT_FROM_WIN32(GetLastError());
-                goto Finished;
             }
         }
-
-        m_pEnvironmentVarTable = pEnvironmentVariables;
     }
 
-Finished:
     return hr;
 }
 
@@ -130,23 +138,25 @@ SERVER_PROCESS::GetRandomPort
 
 HRESULT
 SERVER_PROCESS::SetupListenPort(
-    ENVIRONMENT_VAR_HASH    *pEnvironmentVarTable
+    ENVIRONMENT_VAR_HASH    *pEnvironmentVarTable,
+    BOOL*                    pfCriticalError
 )
 {
     HRESULT hr = S_OK;
     ENVIRONMENT_VAR_ENTRY *pEntry = NULL;
     STACK_STRU(strEventMsg, 256);
+    *pfCriticalError = FALSE;
 
     pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
     if (pEntry != NULL)
     {
-        pEntry->Dereference();
         if (pEntry->QueryValue() != NULL || pEntry->QueryValue()[0] != L'\0')
         {
             m_dwPort = (DWORD)_wtoi(pEntry->QueryValue());
             if (m_dwPort >MAX_PORT || m_dwPort < MIN_PORT)
             {
                 hr = E_INVALIDARG;
+                *pfCriticalError = TRUE;
                 goto Finished;
                 // need add log for this one
             }
@@ -160,6 +170,8 @@ SERVER_PROCESS::SetupListenPort(
             // 
             pEnvironmentVarTable->DeleteKey(ASPNETCORE_PORT_ENV_STR);
         }
+        pEntry->Dereference();
+        pEntry = NULL;
     }
 
     WCHAR buffer[15];
@@ -207,7 +219,7 @@ Finished:
             hr)))
         {
             UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_INFORMATION_TYPE,
+                EVENTLOG_ERROR_TYPE,
                 ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
                 strEventMsg.QueryStr());
         }
@@ -736,7 +748,7 @@ SERVER_PROCESS::StartProcess(
     MULTISZ                 mszNewEnvironment;
     ENVIRONMENT_VAR_HASH    *pHashTable = NULL;
     PWSTR                   pStrStage = NULL;
-
+    BOOL                    fCriticalError = FALSE;
     GetStartupInfoW(&startupInfo);
 
     //
@@ -782,7 +794,7 @@ SERVER_PROCESS::StartProcess(
         //
         // setup the the port that the backend process will listen on
         //
-        if (FAILED(hr = SetupListenPort(pHashTable)))
+        if (FAILED(hr = SetupListenPort(pHashTable, &fCriticalError)))
         {
             pStrStage = L"SetupListenPort";
             goto Failure;
@@ -840,6 +852,12 @@ SERVER_PROCESS::StartProcess(
         m_hProcessHandle = processInformation.hProcess;
         m_dwProcessId = processInformation.dwProcessId;
 
+        if (FAILED(hr = SetupJobObject()))
+        {
+            pStrStage = L"SetupJobObject";
+            goto Failure;
+        }
+
         if (m_hJobObject != NULL)
         {
             if (!AssignProcessToJobObject(m_hJobObject, m_hProcessHandle))
@@ -887,6 +905,12 @@ SERVER_PROCESS::StartProcess(
         goto Finished;
 
     Failure:
+        if (fCriticalError)
+        {
+            // Critical error, no retry need to avoid wasting resource and polluting log
+            dwRetryCount = 0;
+        }
+
         if (SUCCEEDED(strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
                 m_struAppFullPath.QueryStr(),
@@ -917,7 +941,6 @@ SERVER_PROCESS::StartProcess(
         }
 
         CleanUp();
-
     }
 
 Finished:

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var context = (IISHttpContext)GCHandle.FromIntPtr(pvCompletionContext).Target;
 
-            NativeMethods.http_get_completion_info(pCompletionInfo, out int cbBytes, out int hr);
+            NativeMethods.HttpGetCompletionInfo(pCompletionInfo, out int cbBytes, out int hr);
 
             context.CompleteReadWebSockets(hr, cbBytes);
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var context = (IISHttpContext)GCHandle.FromIntPtr(pvCompletionContext).Target;
 
-            NativeMethods.http_get_completion_info(pCompletionInfo, out int cbBytes, out int hr);
+            NativeMethods.HttpGetCompletionInfo(pCompletionInfo, out int cbBytes, out int hr);
 
             context.CompleteWriteWebSockets(hr, cbBytes);
 

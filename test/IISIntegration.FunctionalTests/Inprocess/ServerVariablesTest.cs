@@ -28,8 +28,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ReturnsNullForUndefinedServerVariable()
         {
-            var port = _fixture.Client.BaseAddress.Port;
             Assert.Equal("THIS_VAR_IS_UNDEFINED: (null)", await _fixture.Client.GetStringAsync("/ServerVariable?q=THIS_VAR_IS_UNDEFINED"));
+        }
+
+        [ConditionalFact]
+        public async Task BasePathIsNotPrefixedBySlashSlashQuestionMark()
+        {
+            Assert.DoesNotContain(@"\\?\", await _fixture.Client.GetStringAsync("/BasePath"));
         }
     }
 }

@@ -41,34 +41,10 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             // Check if in process
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.is_ancm_loaded())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.IsAspNetCoreModuleLoaded())
             {
-                hostBuilder.UseSetting(nameof(UseIISIntegration), "true");
-                hostBuilder.CaptureStartupErrors(true);
 
-                // TODO consider adding a configuration load where all variables needed are loaded from ANCM in one call.
-                var iisConfigData = new IISConfigurationData();
-                var hResult = NativeMethods.http_get_application_properties(ref iisConfigData);
-
-                var exception = Marshal.GetExceptionForHR(hResult);
-                if (exception != null)
-                {
-                    throw exception;
-                }
-
-                hostBuilder.UseContentRoot(iisConfigData.pwzFullApplicationPath);
-                return hostBuilder.ConfigureServices(services =>
-                {
-                    services.AddSingleton<IServer, IISHttpServer>();
-                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
-                    services.AddAuthenticationCore();
-                    services.Configure<IISOptions>(
-                        options =>
-                        {
-                            options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
-                        }
-                    );
-                });
+                return SetupInProcessServer(hostBuilder);
             }
 
             var port = hostBuilder.GetSetting(ServerPort) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPort}");
@@ -130,6 +106,24 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             return hostBuilder;
+        }
+
+        private static IWebHostBuilder SetupInProcessServer(IWebHostBuilder hostBuilder)
+        {
+            hostBuilder.UseSetting(nameof(UseIISIntegration), "true");
+            hostBuilder.CaptureStartupErrors(true);
+
+            var iisConfigData = NativeMethods.HttpGetApplicationProperties();
+            hostBuilder.UseContentRoot(iisConfigData.pwzFullApplicationPath);
+            return hostBuilder.ConfigureServices(
+                services => {
+                    services.AddSingleton<IServer, IISHttpServer>();
+                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
+                    services.AddAuthenticationCore();
+                    services.Configure<IISOptions>(
+                        options => { options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled; }
+                    );
+                });
         }
     }
 }
