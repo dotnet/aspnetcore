@@ -39,32 +39,5 @@ namespace FunctionalTests
                 TestEmbeddedResource.AssertContent("SimpleAppTest.Home.Index.txt", response);
             }
         }
-
-        [Fact(Skip = "Unblocking the build - https://github.com/aspnet/MvcPrecompilation/issues/224")]
-        public async Task Precompilation_PreventsRefAssembliesFromBeingPublished()
-        {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
-
-                // Act & Assert
-                Assert.False(Directory.Exists(Path.Combine(deployment.ContentRoot, "refs")));
-            }
-        }
-
-        [Fact(Skip = "Unblocking the build - https://github.com/aspnet/MvcPrecompilation/issues/224")]
-        public async Task Precompilation_PublishesPdbsToOutputDirectory()
-        {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
-                var pdbPath = Path.Combine(deployment.ContentRoot, Fixture.ApplicationName + ".PrecompiledViews.pdb");
-
-                // Act & Assert
-                Assert.True(File.Exists(pdbPath), $"PDB at {pdbPath} was not found.");
-            }
-        }
     }
 }
