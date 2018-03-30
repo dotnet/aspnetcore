@@ -11,35 +11,27 @@ namespace FunctionalTests
     {
         public async override Task OnConnectedAsync(ConnectionContext connection)
         {
-            var result = await connection.Transport.Input.ReadAsync();
-            var buffer = result.Buffer;
-
-            try
+            while (true)
             {
-                if (!buffer.IsEmpty)
+                var result = await connection.Transport.Input.ReadAsync();
+                var buffer = result.Buffer;
+
+                try
                 {
-                    await connection.Transport.Output.WriteAsync(buffer.ToArray());
+                    if (!buffer.IsEmpty)
+                    {
+                        await connection.Transport.Output.WriteAsync(buffer.ToArray());
+                    }
+                    else if (result.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
                 }
             }
-            finally
-            {
-                connection.Transport.Input.AdvanceTo(result.Buffer.End);
-            }
-
-            // Wait for the user to close
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            connection.Transport.Input.OnWriterCompleted((ex, state) => 
-            {
-                if (ex != null) 
-                {
-                    ((TaskCompletionSource<object>)state).TrySetException(ex);
-                }
-                else
-                {
-                    ((TaskCompletionSource<object>)state).TrySetResult(null);
-                }
-            }, tcs);
-            await tcs.Task;
         }
     }
 }
