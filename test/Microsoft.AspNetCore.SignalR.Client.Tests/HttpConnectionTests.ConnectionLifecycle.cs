@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging.Testing;
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // with WebSockets available and not. If Websockets aren't available and 
                     // we can't to test the fallback once scenario we don't decrement the passthreshold
                     // because we still try to start twice (SSE and LP).
-                    if (!IsWebSocketsSupported() && passThreshold > 2)
+                    if (!TestHelpers.IsWebSocketsSupported() && passThreshold > 2)
                     {
                         passThreshold -= 1;
                     }
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             Assert.Equal("Unable to connect to the server with any of the available transports.", ex.Message);
 
                             // If websockets aren't supported then we expect one less attmept to start.
-                            if (!IsWebSocketsSupported())
+                            if (!TestHelpers.IsWebSocketsSupported())
                             {
                                 availableTransports -= 1;
                             }
@@ -362,23 +363,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var exception =
                     await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
                 Assert.Equal(nameof(HttpConnection), exception.ObjectName);
-            }
-
-            private static bool IsWebSocketsSupported()
-            {
-#if NETCOREAPP2_1
-                // .NET Core 2.1 and greater has sockets
-                return true;
-#else
-                // Non-Windows platforms have sockets
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return true;
-                }
-
-                // Windows 8 and greater has sockets
-                return Environment.OSVersion.Version >= new Version(6, 2);
-#endif
             }
         }
     }
