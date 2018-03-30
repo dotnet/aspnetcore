@@ -233,7 +233,6 @@ describe("HubConnection", () => {
 
             connection.receive({
                 arguments: ["test"],
-                invocationId: "0",
                 nonblocking: true,
                 target: "message",
                 type: MessageType.Invocation,
@@ -273,7 +272,7 @@ describe("HubConnection", () => {
 
         it("all handlers can be unregistered with just the method name", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection);
+            const hubConnection = new HubConnection(connection, commonOptions);
 
             connection.receiveHandshakeResponse();
 
@@ -306,7 +305,7 @@ describe("HubConnection", () => {
 
         it("a single handler can be unregistered with the method name and handler", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection);
+            const hubConnection = new HubConnection(connection, commonOptions);
 
             connection.receiveHandshakeResponse();
 
@@ -339,7 +338,7 @@ describe("HubConnection", () => {
 
         it("can't register the same handler multiple times", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection);
+            const hubConnection = new HubConnection(connection, commonOptions);
 
             connection.receiveHandshakeResponse();
 

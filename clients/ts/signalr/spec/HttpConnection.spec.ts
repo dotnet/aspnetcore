@@ -136,6 +136,7 @@ describe("HttpConnection", () => {
 
     it("start throws after all transports fail", async (done) => {
         const options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", (r) => ({ connectionId: "42", availableTransports: [] }))
                 .on("GET", (r) => { throw new Error("fail"); }),
@@ -343,14 +344,14 @@ describe("HttpConnection", () => {
     describe("startAsync", () => {
         it("throws if no TransferFormat is provided", async () => {
             // Force TypeScript to let us call start incorrectly
-            const connection: any = new HttpConnection("http://tempuri.org");
+            const connection: any = new HttpConnection("http://tempuri.org", commonOptions);
 
             expect(() => connection.start()).toThrowError("The 'transferFormat' argument is required.");
         });
 
         it("throws if an unsupported TransferFormat is provided", async () => {
             // Force TypeScript to let us call start incorrectly
-            const connection: any = new HttpConnection("http://tempuri.org");
+            const connection: any = new HttpConnection("http://tempuri.org", commonOptions);
 
             expect(() => connection.start(42)).toThrowError("Unknown transferFormat value: 42.");
         });
