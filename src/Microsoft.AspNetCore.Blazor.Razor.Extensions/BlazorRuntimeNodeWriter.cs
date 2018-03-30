@@ -594,7 +594,21 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                 writer.Write(" + ");
                             }
 
+                            // If it's a C# expression, we have to wrap it in parens, otherwise
+                            // things like ternary expressions don't compose with concatenation
+                            var isCSharp = concatenatedValue is IntermediateToken intermediateToken
+                                && intermediateToken.Kind == TokenKind.CSharp;
+                            if (isCSharp)
+                            {
+                                writer.Write("(");
+                            }
+
                             WriteAttributeValue(writer, concatenatedValue);
+
+                            if (isCSharp)
+                            {
+                                writer.Write(")");
+                            }
                         }
                         break;
                     }

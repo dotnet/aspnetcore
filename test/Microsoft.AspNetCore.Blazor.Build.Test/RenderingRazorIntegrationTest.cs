@@ -181,6 +181,20 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
+        public void SupportsAttributesWithInterpolatedTernaryExpressionValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = \"world\"; }"
+                + "<elem attr=\"Hello, @(true ? myValue : \"nothing\")!\" />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "attr", "Hello, world!", 1));
+        }
+
+        [Fact]
         public void SupportsHyphenedAttributesWithCSharpExpressionValues()
         {
             // Arrange/Act
