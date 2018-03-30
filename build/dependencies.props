@@ -3,7 +3,9 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
+    <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15704</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview3-32064</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />

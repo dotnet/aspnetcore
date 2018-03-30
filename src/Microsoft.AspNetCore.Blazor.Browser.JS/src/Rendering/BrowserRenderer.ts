@@ -230,7 +230,7 @@ export class BrowserRenderer {
       case 'SELECT':
       case 'TEXTAREA':
         if (isCheckbox(element)) {
-          (element as HTMLInputElement).checked = value === 'True';
+          (element as HTMLInputElement).checked = value === '';
         } else {
           (element as any).value = value;
 

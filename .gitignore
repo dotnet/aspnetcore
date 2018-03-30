@@ -6,3 +6,4 @@ launchSettings.json
 artifacts/
 msbuild.binlog
 .vscode/
+BenchmarkDotNet.Artifacts/

@@ -2,7 +2,7 @@
   <Import Project="dependencies.props" />
 
   <PropertyGroup>
-    <EnableBenchmarkValidation>false</EnableBenchmarkValidation>
+    <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
   </PropertyGroup>
 
   <PropertyGroup>

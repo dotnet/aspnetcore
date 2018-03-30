@@ -379,9 +379,8 @@ namespace Test
             // Assert
             Assert.Collection(
                 frames,
-                frame => AssertFrame.Element(frame, "input", 4, 0),
+                frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
-                frame => AssertFrame.Attribute(frame, "value", "False", 2),
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
                 frame => AssertFrame.Whitespace(frame, 4));
         }

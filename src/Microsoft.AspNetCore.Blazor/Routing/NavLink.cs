@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             builder.AddAttribute(0, "class", CombineWithSpace(_cssClass, _isActive ? "active" : null));
 
             // Pass through all other attributes unchanged
-            foreach (var kvp in _allAttributes.Where(kvp => kvp.Key != "class"))
+            foreach (var kvp in _allAttributes.Where(kvp => kvp.Key != "class" && kvp.Key != nameof(RenderTreeBuilder.ChildContent)))
             {
                 builder.AddAttribute(0, kvp.Key, kvp.Value);
             }
