@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
     [IdentityDefaultUI(typeof(DownloadPersonalDataModel<>))]
     public abstract class DownloadPersonalDataModel : PageModel
     {
+        public virtual IActionResult OnGet() => throw new NotImplementedException();
+
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
@@ -30,6 +32,11 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         {
             _userManager = userManager;
             _logger = logger;
+        }
+
+        public override IActionResult OnGet()
+        {
+            return NotFound();
         }
 
         public override async Task<IActionResult> OnPostAsync()
