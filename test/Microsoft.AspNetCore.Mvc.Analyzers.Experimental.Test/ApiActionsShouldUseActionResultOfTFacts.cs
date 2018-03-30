@@ -158,7 +158,7 @@ public class PetController:  ControllerBase
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC1002",
+                Id = "MVC7002",
                 Message = "Actions on types annotated with ApiControllerAttribute should return ActionResult<T>.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 9, 12) }
@@ -207,7 +207,7 @@ public class PetController:  ControllerBase
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC1002",
+                Id = "MVC7002",
                 Message = "Actions on types annotated with ApiControllerAttribute should return ActionResult<T>.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 8, 18) }

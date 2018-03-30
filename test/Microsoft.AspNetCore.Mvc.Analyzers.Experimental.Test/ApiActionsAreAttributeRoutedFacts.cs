@@ -130,7 +130,7 @@ public class PetController : Controller
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC1000",
+                Id = "MVC7000",
                 Message = "Actions on types annotated with ApiControllerAttribute must be attribute routed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 8, 16) }

@@ -204,7 +204,7 @@ public class PetController : ControllerBase
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC1001",
+                Id = "MVC7001",
                 Message = "Actions on types annotated with ApiControllerAttribute do not require explicit ModelState validity check.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 9, 9) }
@@ -236,7 +236,7 @@ public class PetController : ControllerBase
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC1001",
+                Id = "MVC7001",
                 Message = "Actions on types annotated with ApiControllerAttribute do not require explicit ModelState validity check.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 13, 9) }
@@ -295,7 +295,7 @@ public class PetController : ControllerBase
             // Arrange
             var expectedDiagnostic = new DiagnosticResult
             {
-                Id = "MVC1001",
+                Id = "MVC7001",
                 Message = "Actions on types annotated with ApiControllerAttribute do not require explicit ModelState validity check.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test.cs", 15, 13) }

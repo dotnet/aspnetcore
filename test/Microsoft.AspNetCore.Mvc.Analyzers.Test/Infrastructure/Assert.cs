@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 }
                 else
                 {
-                    VerifyDiagnosticLocation(expectedItem, actualItem);
+                    VerifyLocation(expectedItem, actualItem);
                 }
 
                 if (actualItem.Id != expectedItem.Id)
@@ -71,9 +71,21 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
         }
 
-        private static void VerifyDiagnosticLocation(DiagnosticResult expected, Diagnostic actual)
+        private static void VerifyLocation(DiagnosticResult expected, Diagnostic actual)
         {
-            var actualSpan = actual.Location.GetLineSpan();
+            if (expected.Locations.Length == 0)
+            {
+                return;
+            }
+
+            var expectedLocation = expected.Locations[0];
+            Assert.DiagnosticLocation(expectedLocation, actual.Location);
+
+        }
+
+        public static void DiagnosticLocation(DiagnosticResultLocation expected, Location actual)
+        {
+            var actualSpan = actual.GetLineSpan();
             var actualLinePosition = actualSpan.StartLinePosition;
 
             // Only check line position if there is an actual line in the real diagnostic
@@ -81,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             {
                 if (actualLinePosition.Line + 1 != expected.Line)
                 {
-                    throw new DiagnosticAssertException(
+                    throw new DiagnosticLocationAssertException(
                         expected,
                         actual,
                         $"Expected diagnostic to be on line \"{expected.Line}\" was actually on line \"{actualLinePosition.Line + 1}\"");
@@ -93,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             {
                 if (actualLinePosition.Character + 1 != expected.Column)
                 {
-                    throw new DiagnosticAssertException(
+                    throw new DiagnosticLocationAssertException(
                         expected,
                         actual,
                         $"Expected diagnostic to start at column \"{expected.Column}\" was actually on line \"{actualLinePosition.Character + 1}\"");
@@ -159,6 +171,20 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 : base(expected, actual)
             {
                 Message = message + Environment.NewLine + FormatDiagnostic(actual);
+            }
+
+            public override string Message { get; }
+        }
+
+        private class DiagnosticLocationAssertException : Xunit.Sdk.EqualException
+        {
+            public DiagnosticLocationAssertException(
+                DiagnosticResultLocation expected,
+                Location actual,
+                string message)
+                : base(expected, actual)
+            {
+                Message = message;
             }
 
             public override string Message { get; }

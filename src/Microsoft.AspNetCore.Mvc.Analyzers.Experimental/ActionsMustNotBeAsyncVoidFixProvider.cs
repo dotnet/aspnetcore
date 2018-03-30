@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     public class ActionsMustNotBeAsyncVoidFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
-            ImmutableArray.Create(DiagnosticDescriptors.MVC1003_ActionsMustNotBeAsyncVoid.Id);
+            ImmutableArray.Create(DiagnosticDescriptors.MVC7003_ActionsMustNotBeAsyncVoid.Id);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
