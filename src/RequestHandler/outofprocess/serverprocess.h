@@ -127,6 +127,11 @@ private:
     VOID
     CleanUp();
 
+    HRESULT
+    SetupJobObject(
+       VOID
+    );
+
     BOOL 
     IsDebuggerIsAttached(
         VOID
@@ -162,7 +167,8 @@ private:
 
     HRESULT
     SetupListenPort(
-        ENVIRONMENT_VAR_HASH    *pEnvironmentVarTable
+        ENVIRONMENT_VAR_HASH    *pEnvironmentVarTable,
+        BOOL                    *pfCriticalError
     );
 
     HRESULT
