@@ -84,11 +84,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(null, new byte[0])]
         public void EncodesAsAscii(string input, byte[] expected)
         {
-            var writerBuffer = _pipe.Writer;
-            var writer = new BufferWriter<PipeWriter>(writerBuffer);
+            var pipeWriter = _pipe.Writer;
+            var writer = new BufferWriter<PipeWriter>(pipeWriter);
             writer.WriteAsciiNoValidation(input);
             writer.Commit();
-            writerBuffer.FlushAsync().GetAwaiter().GetResult();
+            pipeWriter.FlushAsync().GetAwaiter().GetResult();
+            pipeWriter.Complete();
+
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
 
             if (expected.Length > 0)
