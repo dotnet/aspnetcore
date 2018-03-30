@@ -1,12 +1,22 @@
-/*!
-** Unobtrusive validation support library for jQuery and jQuery Validate
-** Copyright (C) Microsoft Corporation. All rights reserved.
-*/
+// Unobtrusive validation support library for jQuery and jQuery Validate
+// Copyright (C) Microsoft Corporation. All rights reserved.
+// @version v3.2.9
 
 /*jslint white: true, browser: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false */
 /*global document: false, jQuery: false */
 
-(function ($) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define("jquery.validate.unobtrusive", ['jquery.validation'], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        // CommonJS-like environments that support module.exports     
+        module.exports = factory(require('jquery-validation'));
+    } else {
+        // Browser global
+        jQuery.validator.unobtrusive = factory(jQuery);
+    }
+}(function ($) {
     var $jQval = $.validator,
         adapters,
         data_validation = "unobtrusiveValidation";
@@ -118,7 +128,7 @@
             execInContext = function (name, args) {
                 var func = defaultOptions[name];
                 func && $.isFunction(func) && func.apply(form, args);
-            }
+            };
 
         if (!result) {
             result = {
@@ -409,8 +419,13 @@
             setValidationValues(options, "regex", options.params.regex);
         }
     });
+    adapters.add("fileextensions", ["extensions"], function (options) {
+        setValidationValues(options, "extension", options.params.extensions);
+    });
 
     $(function () {
         $jQval.unobtrusive.parse(document);
     });
-}(jQuery));
+
+    return $jQval.unobtrusive;
+}));
