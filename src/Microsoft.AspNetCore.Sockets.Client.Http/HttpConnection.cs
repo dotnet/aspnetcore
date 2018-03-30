@@ -190,6 +190,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Http
                 {
                     Log.SkippingDispose(_logger);
                 }
+
+                _httpClient?.Dispose();
             }
             finally
             {

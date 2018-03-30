@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private readonly HttpOptions _httpOptions;
         private readonly ILogger _logger;
         private IDuplexPipe _application;
-        private Task _sender;
-        private Task _poller;
+        // Volatile so that the poll loop sees the updated value set from a different thread
+        private volatile Exception _error;
 
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
@@ -52,40 +52,54 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
             Log.StartTransport(_logger, transferFormat);
 
-            // Start sending and polling (ask for binary if the server supports it)
-            _poller = Poll(url, _transportCts.Token);
-            _sender = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _transportCts, _logger);
-
-            Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
-            {
-                Log.TransportStopped(_logger, t.Exception?.InnerException);
-                _application.Output.Complete(t.Exception?.InnerException);
-                _application.Input.Complete();
-                return t;
-            }).Unwrap();
+            Running = ProcessAsync(url);
 
             return Task.CompletedTask;
+        }
+
+        private async Task ProcessAsync(Uri url)
+        {
+            // Start sending and polling (ask for binary if the server supports it)
+            var receiving = Poll(url, _transportCts.Token);
+            var sending = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _logger);
+
+            // Wait for send or receive to complete
+            var trigger = await Task.WhenAny(receiving, sending);
+
+            if (trigger == receiving)
+            {
+                // We're waiting for the application to finish and there are 2 things it could be doing
+                // 1. Waiting for application data
+                // 2. Waiting for an outgoing send (this should be instantaneous)
+
+                // Cancel the application so that ReadAsync yields
+                _application.Input.CancelPendingRead();
+            }
+            else
+            {
+                // Set the sending error so we communicate that to the application
+                _error = sending.IsFaulted ? sending.Exception.InnerException : null;
+
+                _transportCts.Cancel();
+
+                // Cancel any pending flush so that we can quit
+                _application.Output.CancelPendingFlush();
+            }
         }
 
         public async Task StopAsync()
         {
             Log.TransportStopping(_logger);
 
-            _transportCts.Cancel();
+            _application.Input.CancelPendingRead();
 
-            try
-            {
-                await Running;
-            }
-            catch
-            {
-                // exceptions have been handled in the Running task continuation by closing the channel with the exception
-            }
+            await Running;
         }
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)
         {
             Log.StartReceive(_logger);
+
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -124,6 +138,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
                         var stream = new PipeWriterStream(_application.Output);
                         await response.Content.CopyToAsync(stream);
+                        var flushResult = await _application.Output.FlushAsync();
+
+                        // We canceled in the middle of applying back pressure
+                        // or if the consumer is done
+                        if (flushResult.IsCanceled || flushResult.IsCompleted)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -135,12 +157,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             catch (Exception ex)
             {
                 Log.ErrorPolling(_logger, pollUrl, ex);
-                throw;
+
+                _error = ex;
             }
             finally
             {
-                // Make sure the send loop is terminated
-                _transportCts.Cancel();
+                _application.Output.Complete(_error);
+
                 Log.ReceiveStopped(_logger);
             }
         }
