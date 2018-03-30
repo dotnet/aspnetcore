@@ -243,8 +243,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     return null;
                 }
 
-                int hr = NativeMethods.http_get_server_variable(_pInProcessHandler, variableName, out var value);
-                return hr == 0 ? value : null;
+                return NativeMethods.HttpTryGetServerVariable(_pInProcessHandler, variableName, out var value) ? value : null;
             }
         }
 
@@ -296,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
             _readWebSocketsOperation = new IISAwaitable();
             _writeWebSocketsOperation = new IISAwaitable();
-            NativeMethods.http_enable_websockets(_pInProcessHandler);
+            NativeMethods.HttpEnableWebsockets(_pInProcessHandler);
 
             // Upgrade async will cause the stream processing to go into duplex mode
             await UpgradeAsync();
