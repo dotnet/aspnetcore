@@ -6,10 +6,6 @@
       <AppMetapackage>false</AppMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
       <AllMetapackage>false</AllMetapackage>
-      <!-- When true, this dependency will be included in the runtime.win.Microsoft.AspNetCore.App metapackage. -->
-      <WinAppMetapackage>false</WinAppMetapackage>
-      <!-- When true, this dependency will be included in the runtime.win.Microsoft.AspNetCore.All metapackage. -->
-      <WinAllMetapackage>false</WinAllMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.Analyzers metapackage. -->
       <Analyzer>false</Analyzer>
       <!-- When true, this dependency will be included in the LZMA. -->
@@ -309,8 +305,6 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
-    <PackageArtifact Include="runtime.win.Microsoft.AspNetCore.App" Category="ship" />
-    <PackageArtifact Include="runtime.win.Microsoft.AspNetCore.All" Category="ship" />
 
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" PackageType="Lineup" />
   </ItemGroup>
