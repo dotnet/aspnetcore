@@ -143,21 +143,21 @@ namespace Microsoft.AspNetCore.Http.Connections
                     // If the application task is faulted, propagate the error to the transport
                     if (ApplicationTask?.IsFaulted == true)
                     {
-                        Transport.Output.Complete(ApplicationTask.Exception.InnerException);
+                        Transport?.Output.Complete(ApplicationTask.Exception.InnerException);
                     }
                     else
                     {
-                        Transport.Output.Complete();
+                        Transport?.Output.Complete();
                     }
 
                     // If the transport task is faulted, propagate the error to the application
                     if (TransportTask?.IsFaulted == true)
                     {
-                        Application.Output.Complete(TransportTask.Exception.InnerException);
+                        Application?.Output.Complete(TransportTask.Exception.InnerException);
                     }
                     else
                     {
-                        Application.Output.Complete();
+                        Application?.Output.Complete();
                     }
 
                     var applicationTask = ApplicationTask ?? Task.CompletedTask;
@@ -180,8 +180,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                 // REVIEW: Should we move this to the read loops?
 
                 // Complete the reading side of the pipes
-                Application.Input.Complete();
-                Transport.Input.Complete();
+                Application?.Input.Complete();
+                Transport?.Input.Complete();
             }
         }
 

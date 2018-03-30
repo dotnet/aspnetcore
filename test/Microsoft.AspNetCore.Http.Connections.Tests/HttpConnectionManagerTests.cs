@@ -191,6 +191,20 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
+        public async Task DisposeInactiveConnectionWithNoPipes()
+        {
+            var connectionManager = CreateConnectionManager();
+            var connection = connectionManager.CreateConnection();
+
+            Assert.NotNull(connection.ConnectionId);
+            Assert.Null(connection.Transport);
+            Assert.Null(connection.Application);
+
+            await connection.DisposeAsync();
+            Assert.Equal(HttpConnectionContext.ConnectionStatus.Disposed, connection.Status);
+        }
+
+        [Fact]
         public void ScanAfterDisposeNoops()
         {
             var connectionManager = CreateConnectionManager();
