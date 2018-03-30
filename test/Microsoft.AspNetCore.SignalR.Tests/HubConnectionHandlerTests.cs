@@ -4,17 +4,15 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -364,8 +362,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 client.SupportedFormats = TransferFormat.Text;
 
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler, 
-                                                        sendHandshakeRequestMessage: false, 
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler,
+                                                        sendHandshakeRequestMessage: false,
                                                         expectedHandshakeResponseMessage: false);
 
                 // Wait for the handshake response
@@ -442,8 +440,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 client.SupportedFormats = TransferFormat.Text;
 
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler, 
-                                                        sendHandshakeRequestMessage: false, 
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler,
+                                                        sendHandshakeRequestMessage: false,
                                                         expectedHandshakeResponseMessage: false);
 
                 // Wait for the handshake response

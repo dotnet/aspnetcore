@@ -9,14 +9,10 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Client.Http;
-using Microsoft.AspNetCore.Sockets.Client.Internal;
+using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -329,7 +325,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             Assert.NotNull(userAgentHeaderCollection);
             var userAgentHeader = Assert.Single(userAgentHeaderCollection);
-            Assert.Equal("Microsoft.AspNetCore.Sockets.Client.Http", userAgentHeader.Product.Name);
+            Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client", userAgentHeader.Product.Name);
 
             // user agent version should come from version embedded in assembly metadata
             var assemblyVersion = typeof(Constants)

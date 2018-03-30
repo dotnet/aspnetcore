@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Sockets;
 using Newtonsoft.Json;
-using SocketsTransportType = Microsoft.AspNetCore.Sockets.TransportType;
 
-namespace Microsoft.AspNetCore.Client.Tests
+using TransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
+
+namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     internal static class ResponseUtils
     {
@@ -38,31 +38,31 @@ namespace Microsoft.AspNetCore.Client.Tests
         }
 
         public static string CreateNegotiationContent(string connectionId = "00000000-0000-0000-0000-000000000000",
-            SocketsTransportType transportTypes = SocketsTransportType.All)
+            TransportType transportTypes = TransportType.All)
         {
             var availableTransports = new List<object>();
 
-            if ((transportTypes & SocketsTransportType.WebSockets) != 0)
+            if ((transportTypes & TransportType.WebSockets) != 0)
             {
                 availableTransports.Add(new
                 {
-                    transport = nameof(SocketsTransportType.WebSockets),
+                    transport = nameof(TransportType.WebSockets),
                     transferFormats = new[] { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
                 });
             }
-            if ((transportTypes & SocketsTransportType.ServerSentEvents) != 0)
+            if ((transportTypes & TransportType.ServerSentEvents) != 0)
             {
                 availableTransports.Add(new
                 {
-                    transport = nameof(SocketsTransportType.ServerSentEvents),
+                    transport = nameof(TransportType.ServerSentEvents),
                     transferFormats = new[] { nameof(TransferFormat.Text) }
                 });
             }
-            if ((transportTypes & SocketsTransportType.LongPolling) != 0)
+            if ((transportTypes & TransportType.LongPolling) != 0)
             {
                 availableTransports.Add(new
                 {
-                    transport = nameof(SocketsTransportType.LongPolling),
+                    transport = nameof(TransportType.LongPolling),
                     transferFormats = new[] { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
                 });
             }

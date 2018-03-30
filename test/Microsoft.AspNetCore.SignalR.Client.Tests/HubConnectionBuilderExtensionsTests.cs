@@ -7,12 +7,11 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Moq;
 using Xunit;
-using TransportType = Microsoft.AspNetCore.Sockets.TransportType;
+using TransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {

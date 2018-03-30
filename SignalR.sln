@@ -20,14 +20,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C4BC9889-B49F-41B6-806B-F84941B2549B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocketsSample", "samples\SocketsSample\SocketsSample.csproj", "{C4AEAB04-F341-4539-B6C0-52368FB4BF9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSamples", "samples\SignalRSamples\SignalRSamples.csproj", "{C4AEAB04-F341-4539-B6C0-52368FB4BF9E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6A35B453-52EC-48AF-89CA-D4A69800F131}"
 	ProjectSection(SolutionItems) = preProject
 		test\Directory.Build.props = test\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Tests", "test\Microsoft.AspNetCore.Sockets.Tests\Microsoft.AspNetCore.Sockets.Tests.csproj", "{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections.Tests", "test\Microsoft.AspNetCore.Http.Connections.Tests\Microsoft.AspNetCore.Http.Connections.Tests.csproj", "{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Core", "src\Microsoft.AspNetCore.SignalR.Core\Microsoft.AspNetCore.SignalR.Core.csproj", "{42E76F87-92B6-45AB-BF07-6B811C0F2CAC}"
 EndProject
@@ -57,15 +57,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Common.Tests", "test\Microsoft.AspNetCore.SignalR.Common.Tests\Microsoft.AspNetCore.SignalR.Common.Tests.csproj", "{75E342F6-5445-4E7E-9143-6D9AE62C2B1E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Abstractions", "src\Microsoft.AspNetCore.Sockets.Abstractions\Microsoft.AspNetCore.Sockets.Abstractions.csproj", "{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR", "src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj", "{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Http", "src\Microsoft.AspNetCore.Sockets.Http\Microsoft.AspNetCore.Sockets.Http.csproj", "{9E403E93-3284-486F-9A5F-1E15FCE426A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections", "src\Microsoft.AspNetCore.Http.Connections\Microsoft.AspNetCore.Http.Connections.csproj", "{9E403E93-3284-486F-9A5F-1E15FCE426A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Client.Http", "src\Microsoft.AspNetCore.Sockets.Client.Http\Microsoft.AspNetCore.Sockets.Client.Http.csproj", "{B0243F99-2D3F-4CC6-AD71-E3F891B64724}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections.Client", "src\Microsoft.AspNetCore.Http.Connections.Client\Microsoft.AspNetCore.Http.Connections.Client.csproj", "{B0243F99-2D3F-4CC6-AD71-E3F891B64724}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Common.Http", "src\Microsoft.AspNetCore.Sockets.Common.Http\Microsoft.AspNetCore.Sockets.Common.Http.csproj", "{E081EE41-D95F-4AD2-BC0B-4B562C0A2A47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections.Common", "src\Microsoft.AspNetCore.Http.Connections.Common\Microsoft.AspNetCore.Http.Connections.Common.csproj", "{E081EE41-D95F-4AD2-BC0B-4B562C0A2A47}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{8A4582C8-DC59-4B61-BCE7-119FBAA99EFB}"
 EndProject
@@ -87,7 +85,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "clients\ts\FunctionalTests\FunctionalTests.csproj", "{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkServer", "benchmarks\BenchmarkServer\BenchmarkServer.csproj", "{B5286020-C218-443C-91A9-B65751FB9B29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkServer", "benchmarks\BenchmarkServer\BenchmarkServer.csproj", "{B5286020-C218-443C-91A9-B65751FB9B29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,10 +153,6 @@ Global
 		{75E342F6-5445-4E7E-9143-6D9AE62C2B1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75E342F6-5445-4E7E-9143-6D9AE62C2B1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75E342F6-5445-4E7E-9143-6D9AE62C2B1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -235,7 +229,6 @@ Global
 		{455B68D2-C5B6-4BF4-A685-964B07AFAAF8} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{96771B3F-4D18-41A7-A75B-FF38E76AAC89} = {8A4582C8-DC59-4B61-BCE7-119FBAA99EFB}
 		{75E342F6-5445-4E7E-9143-6D9AE62C2B1E} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
-		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{9E403E93-3284-486F-9A5F-1E15FCE426A5} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{B0243F99-2D3F-4CC6-AD71-E3F891B64724} = {DA69F624-5398-4884-87E4-B816698CDE65}

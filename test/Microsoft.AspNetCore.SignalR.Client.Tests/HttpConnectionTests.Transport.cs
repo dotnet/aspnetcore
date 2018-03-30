@@ -7,10 +7,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client.Http;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests

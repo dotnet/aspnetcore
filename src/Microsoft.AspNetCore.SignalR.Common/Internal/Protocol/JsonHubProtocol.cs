@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;

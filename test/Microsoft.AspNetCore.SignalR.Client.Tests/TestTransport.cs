@@ -2,8 +2,7 @@ using System;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Http.Connections.Client;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {

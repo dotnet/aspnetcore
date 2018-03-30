@@ -3,7 +3,6 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Sockets.Client;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared
 {

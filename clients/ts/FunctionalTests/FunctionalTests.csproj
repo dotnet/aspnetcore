@@ -12,6 +12,7 @@
     <None Remove="ts\ConnectionTests.ts" />
     <None Remove="ts\HubConnectionTests.ts" />
     <None Remove="ts\index.ts" />
+    <None Remove="ts\TestLogger.ts" />
     <None Remove="ts\Utils.ts" />
     <None Remove="ts\WebDriverReporter.ts" />
     <None Remove="ts\WebSocketTests.ts" />
@@ -44,6 +45,7 @@
     <TypeScriptCompile Include="ts\ConnectionTests.ts" />
     <TypeScriptCompile Include="ts\HubConnectionTests.ts" />
     <TypeScriptCompile Include="ts\index.ts" />
+    <TypeScriptCompile Include="ts\TestLogger.ts" />
     <TypeScriptCompile Include="ts\Utils.ts" />
     <TypeScriptCompile Include="ts\WebDriverReporter.ts" />
     <TypeScriptCompile Include="ts\WebSocketTests.ts" />

@@ -3,25 +3,19 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Client.Http;
-using Microsoft.AspNetCore.Sockets.Client.Internal;
+using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -109,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Assembly
                     .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                Assert.Equal("Microsoft.AspNetCore.Sockets.Client.Http/" + assemblyVersion.InformationalVersion, userAgent);
+                Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client/" + assemblyVersion.InformationalVersion, userAgent);
             }
         }
 
