@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnPostAsync(string returnUrl = null) => throw new NotImplementedException();
     }
 
-    internal class LoginModel<TUser> : LoginModel where TUser : IdentityUser
+    internal class LoginModel<TUser> : LoginModel where TUser : class
     {
         private readonly SignInManager<TUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         public virtual Task<IActionResult> OnGet() => throw new NotImplementedException();
     }
 
-    internal class PersonalDataModel<TUser> : PersonalDataModel where TUser : IdentityUser
+    internal class PersonalDataModel<TUser> : PersonalDataModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly ILogger<PersonalDataModel> _logger;

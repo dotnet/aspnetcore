@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
-    internal class ResetPasswordModel<TUser> : ResetPasswordModel where TUser : IdentityUser
+    internal class ResetPasswordModel<TUser> : ResetPasswordModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
 

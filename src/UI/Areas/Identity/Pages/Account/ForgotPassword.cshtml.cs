@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
-    internal class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : IdentityUser
+    internal class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly IEmailSender _emailSender;

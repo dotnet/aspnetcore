@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
-    internal class EnableAuthenticatorModel<TUser> : EnableAuthenticatorModel where TUser : IdentityUser
+    internal class EnableAuthenticatorModel<TUser> : EnableAuthenticatorModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly ILogger<EnableAuthenticatorModel> _logger;
@@ -102,7 +102,8 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             }
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
-            _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", user.Id);
+            var userId = await _userManager.GetUserIdAsync(user);
+            _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
 
             StatusMessage = "Your authenticator app has been verified.";
 
@@ -129,7 +130,9 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             }
 
             SharedKey = FormatKey(unformattedKey);
-            AuthenticatorUri = GenerateQrCodeUri(user.Email, unformattedKey);
+
+            var email = await _userManager.GetEmailAsync(user);
+            AuthenticatorUri = GenerateQrCodeUri(email, unformattedKey);
         }
 
         private string FormatKey(string unformattedKey)

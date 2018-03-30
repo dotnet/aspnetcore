@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNetCore.Identity.UI
 {
-    internal class IdentityPageModelConvention<TUser> : IPageApplicationModelConvention where TUser : IdentityUser
+    internal class IdentityPageModelConvention<TUser> : IPageApplicationModelConvention where TUser : class
     {
         public void Apply(PageApplicationModel model)
         {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity.UI
 
         private void ValidateTemplate(Type template)
         {
-            if(template.IsAbstract || !template.IsGenericTypeDefinition)
+            if (template.IsAbstract || !template.IsGenericTypeDefinition)
             {
                 throw new InvalidOperationException("Implementation type can't be abstract or non generic.");
             }
@@ -33,11 +33,6 @@ namespace Microsoft.AspNetCore.Identity.UI
             {
                 throw new InvalidOperationException("Implementation type contains wrong generic arity.");
             }
-            var argument = genericArguments[0];
-            if (!typeof(IdentityUser).IsAssignableFrom(typeof(TUser)))
-            {
-                throw new InvalidOperationException("Generic implementation type is not compatible.");
-            };
         }
     }
 }

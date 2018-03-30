@@ -39,14 +39,19 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnPostAsync(bool rememberMe, string returnUrl = null) => throw new NotImplementedException();
     }
 
-    internal class LoginWith2faModel<TUser> : LoginWith2faModel where TUser : IdentityUser
+    internal class LoginWith2faModel<TUser> : LoginWith2faModel where TUser : class
     {
         private readonly SignInManager<TUser> _signInManager;
+        private readonly UserManager<TUser> _userManager;
         private readonly ILogger<LoginWith2faModel> _logger;
 
-        public LoginWith2faModel(SignInManager<TUser> signInManager, ILogger<LoginWith2faModel> logger)
+        public LoginWith2faModel(
+            SignInManager<TUser> signInManager,
+            UserManager<TUser> userManager,
+            ILogger<LoginWith2faModel> logger)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -85,19 +90,21 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 
             var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, Input.RememberMachine);
 
+            var userId = await _userManager.GetUserIdAsync(user);
+
             if (result.Succeeded)
             {
-                _logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", user.Id);
+                _logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
                 return LocalRedirect(returnUrl);
             }
             else if (result.IsLockedOut)
             {
-                _logger.LogWarning("User with ID '{UserId}' account locked out.", user.Id);
+                _logger.LogWarning("User with ID '{UserId}' account locked out.", userId);
                 return RedirectToPage("./Lockout");
             }
             else
             {
-                _logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", user.Id);
+                _logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", userId);
                 ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
                 return Page();
             }

@@ -46,9 +46,10 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public virtual Task<IActionResult> OnPostAsync(string returnUrl = null) => throw new NotImplementedException();
     }
 
-    internal class RegisterModel<TUser> : RegisterModel where TUser : IdentityUser, new()
+    internal class RegisterModel<TUser> : RegisterModel where TUser : class
     {
         private readonly SignInManager<TUser> _signInManager;
+        private readonly IUserFactory<TUser> _userFactory;
         private readonly UserManager<TUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly IEmailSender _emailSender;
@@ -56,11 +57,13 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
         public RegisterModel(
             UserManager<TUser> userManager,
             SignInManager<TUser> signInManager,
+            IUserFactory<TUser> userFactory,
             ILogger<LoginModel> logger,
             IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userFactory = userFactory;
             _logger = logger;
             _emailSender = emailSender;
         }
@@ -75,17 +78,18 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
             returnUrl = returnUrl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
-                var user = new TUser { UserName = Input.Email, Email = Input.Email };
+                var user = _userFactory.CreateUser(email: Input.Email, userName: Input.Email);
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
+                    var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
-                        values: new { userId = user.Id, code = code },
+                        values: new { userId = userId, code = code },
                         protocol: Request.Scheme);
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",

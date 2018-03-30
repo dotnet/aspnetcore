@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -36,6 +37,13 @@ namespace Microsoft.AspNetCore.Identity
                     .MakeGenericType(builder.UserType));
             builder.Services.TryAddTransient<IEmailSender, EmailSender>();
 
+            if (TryGetIdentityUserType(builder.UserType, out var primaryKeyType))
+            {
+                var userFactoryType = typeof(IUserFactory<>).MakeGenericType(builder.UserType);
+                var defaultUserFactoryType = typeof(UserFactory<,>).MakeGenericType(builder.UserType, primaryKeyType);
+                builder.Services.TryAddSingleton(userFactoryType, defaultUserFactoryType);
+            }
+
             return builder;
         }
 
@@ -62,6 +70,25 @@ namespace Microsoft.AspNetCore.Identity
                         partManager.ApplicationParts.Add(part);
                     }
                 });
+        }
+
+        private static bool TryGetIdentityUserType(Type userType, out Type primaryKeyType)
+        {
+            primaryKeyType = null;
+
+            var baseType = userType.BaseType;
+            while (baseType != null)
+            {
+                if (baseType.IsGenericType &&
+                    baseType.GetGenericTypeDefinition() == typeof(IdentityUser<>))
+                {
+                    primaryKeyType = baseType.GetGenericArguments()[0];
+                    return true;
+                }
+                baseType = baseType.BaseType;
+            }
+
+            return false;
         }
     }
 }

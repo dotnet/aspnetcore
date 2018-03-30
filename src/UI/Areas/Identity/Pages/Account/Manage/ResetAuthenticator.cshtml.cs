@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
-    internal class ResetAuthenticatorModel<TUser> : ResetAuthenticatorModel where TUser : IdentityUser
+    internal class ResetAuthenticatorModel<TUser> : ResetAuthenticatorModel where TUser : class
     {
         UserManager<TUser> _userManager;
         private readonly SignInManager<TUser> _signInManager;
@@ -57,7 +57,8 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
-            _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", user.Id);
+            var userId = await _userManager.GetUserIdAsync(user);
+            _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", userId);
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.";
