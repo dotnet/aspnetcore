@@ -228,5 +228,29 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             externalComponentButton.Click();
             Assert.Equal("It works", externalComponentButton.Text);
         }
+
+        [Fact]
+        public void CanRenderSvgWithCorrectNamespace()
+        {
+            var appElement = MountTestComponent<SvgComponent>();
+            
+            var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
+            Assert.NotNull(svgElement);
+
+            var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
+            Assert.NotNull(svgCircleElement);
+        }
+
+        [Fact]
+        public void CanRenderSvgChildComponentWithCorrectNamespace()
+        {
+            var appElement = MountTestComponent<SvgWithChildComponent>();
+            
+            var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
+            Assert.NotNull(svgElement);
+
+            var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
+            Assert.NotNull(svgCircleElement);
+        }
     }
 }

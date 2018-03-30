@@ -115,7 +115,9 @@ export class BrowserRenderer {
 
   insertElement(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number) {
     const tagName = renderTreeFrame.elementName(frame)!;
-    const newDomElement = document.createElement(tagName);
+    const newDomElement = tagName === 'svg' || parent.namespaceURI === 'http://www.w3.org/2000/svg' ?
+      document.createElementNS('http://www.w3.org/2000/svg', tagName) :
+      document.createElement(tagName);
     insertNodeIntoDOM(newDomElement, parent, childIndex);
 
     // Apply attributes
@@ -149,7 +151,9 @@ export class BrowserRenderer {
     //   (counting child components as a single item), so N will rarely if ever be large.
     //   We could even keep track of whether all the child components happen to have exactly 1
     //   top level frames, and in that case, there's no need to sum as we can do direct lookups.
-    const containerElement = document.createElement('blazor-component');
+    const containerElement = parent.namespaceURI === 'http://www.w3.org/2000/svg' ?
+      document.createElementNS('http://www.w3.org/2000/svg', 'g') :
+      document.createElement('blazor-component');
     insertNodeIntoDOM(containerElement, parent, childIndex);
 
     // All we have to do is associate the child component ID with its location. We don't actually
