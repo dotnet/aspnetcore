@@ -19,8 +19,8 @@ build_script:
   - build.cmd /p:SkipTests=true /p:BlazorOutputStatistics=true
 before_test:
   - choco install googlechrome --ignore-checksum
-  - npm install -g selenium-standalone
-  - selenium-standalone install --singleDriverInstall=chrome
+  - npm install -g selenium-standalone@latest
+  - selenium-standalone install
   - ps: $SeleniumProcess = Start-Process "selenium-standalone" -ArgumentList "start" -PassThru
 test_script:
   - build.cmd /t:Test /p:BlazorAllTests=true /p:BlazorOutputStatistics=true
