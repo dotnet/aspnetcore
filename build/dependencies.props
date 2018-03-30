@@ -19,7 +19,7 @@
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview2-30500</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftExtensionsBuffersSourcesPackageVersion>2.1.0-preview2-30500</MicrosoftExtensionsBuffersSourcesPackageVersion>
+    <MicrosoftExtensionsBuffersSourcesPackageVersion>2.1.0-preview2-t000</MicrosoftExtensionsBuffersSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.0-preview2-30500</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview2-30500</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview2-30500</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
@@ -35,14 +35,14 @@
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview2-30500</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
-    <SystemBuffersPackageVersion>4.5.0-preview2-26326-04</SystemBuffersPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26326-04</SystemIOPipelinesPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview3-26330-0</SystemBuffersPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.0-preview3-26330-0</SystemIOPipelinesPackageVersion>
     <SystemManagementAutomationPackageVersion>6.1.7601.17515</SystemManagementAutomationPackageVersion>
-    <SystemMemoryPackageVersion>4.5.0-preview2-26326-04</SystemMemoryPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview2-26326-04</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.5.0-preview2-26326-04</SystemNumericsVectorsPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26326-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview2-26326-04</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview3-26330-0</SystemMemoryPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview3-26330-0</SystemNetWebSocketsWebSocketProtocolPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview3-26330-0</SystemNumericsVectorsPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview3-26330-0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview3-26330-0</SystemSecurityPrincipalWindowsPackageVersion>
     <Tooling_NewtonsoftJsonPackageVersion>9.0.1</Tooling_NewtonsoftJsonPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
