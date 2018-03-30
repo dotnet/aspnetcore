@@ -125,7 +125,7 @@ describe("hubConnection", () => {
             });
 
             it("rethrows an exception from the server when invoking", (done) => {
-                const errorMessage = "An unexpected error occurred invoking 'ThrowException' on the server. InvalidOperationException: An error occurred.";
+                const errorMessage = "An unexpected error occurred invoking 'ThrowException' on the server.";
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
                     logger: TestLogger.instance,
                     protocol,
@@ -198,7 +198,7 @@ describe("hubConnection", () => {
             });
 
             it("rethrows an exception from the server when streaming", (done) => {
-                const errorMessage = "An unexpected error occurred invoking 'StreamThrowException' on the server. InvalidOperationException: An error occurred.";
+                const errorMessage = "An unexpected error occurred invoking 'StreamThrowException' on the server.";
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
                     logger: TestLogger.instance,
                     protocol,
@@ -353,7 +353,7 @@ describe("hubConnection", () => {
                 });
 
                 hubConnection.onclose((error) => {
-                    expect(error.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
+                    expect(error.message).toEqual("Server returned an error on close: Connection closed with an error.");
                     done();
                 });
                 hubConnection.start();

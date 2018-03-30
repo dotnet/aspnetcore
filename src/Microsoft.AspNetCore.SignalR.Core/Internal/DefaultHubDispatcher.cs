@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
@@ -24,11 +25,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IHubContext<THub> _hubContext;
         private readonly ILogger<HubDispatcher<THub>> _logger;
+        private readonly bool _enableDetailedErrors;
 
-        public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, ILogger<DefaultHubDispatcher<THub>> logger)
+        public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, IOptions<HubOptions<THub>> hubOptions,
+            IOptions<HubOptions> globalHubOptions, ILogger<DefaultHubDispatcher<THub>> logger)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _hubContext = hubContext;
+            _enableDetailedErrors = hubOptions.Value.EnableDetailedErrors ?? globalHubOptions.Value.EnableDetailedErrors ?? false;
             _logger = logger;
             DiscoverHubMethods();
         }
@@ -172,7 +176,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 if (hubMethodInvocationMessage.ArgumentBindingException != null)
                 {
                     Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.ArgumentBindingException);
-                    await SendInvocationError(hubMethodInvocationMessage, connection, $"Failed to invoke '{hubMethodInvocationMessage.Target}'. {hubMethodInvocationMessage.ArgumentBindingException.Message}");
+                    var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{hubMethodInvocationMessage.Target}' due to an error on the server.",
+                        hubMethodInvocationMessage.ArgumentBindingException, _enableDetailedErrors);
+                    await SendInvocationError(hubMethodInvocationMessage, connection, errorMessage);
                     return;
                 }
 
@@ -209,23 +215,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 catch (TargetInvocationException ex)
                 {
                     Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                    await SendInvocationError(hubMethodInvocationMessage, connection, BuildUnexpectedErrorMessage(hubMethodInvocationMessage.Target, ex.InnerException));
+                    await SendInvocationError(hubMethodInvocationMessage, connection,
+                        ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex.InnerException, _enableDetailedErrors));
                 }
                 catch (Exception ex)
                 {
                     Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                    await SendInvocationError(hubMethodInvocationMessage, connection, BuildUnexpectedErrorMessage(hubMethodInvocationMessage.Target, ex));
+                    await SendInvocationError(hubMethodInvocationMessage, connection,
+                        ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
                 }
                 finally
                 {
                     hubActivator.Release(hub);
                 }
             }
-        }
-
-        private string BuildUnexpectedErrorMessage(string methodName, Exception exception)
-        {
-            return $"An unexpected error occurred invoking '{methodName}' on the server. {exception.GetType().Name}: {exception.Message}";
         }
 
         private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator)
@@ -243,7 +246,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             catch (ChannelClosedException ex)
             {
                 // If the channel closes from an exception in the streaming method, grab the innerException for the error from the streaming method
-                error = ex.InnerException == null ? ex.Message : ex.InnerException.Message;
+                error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex.InnerException ?? ex, _enableDetailedErrors);
             }
             catch (Exception ex)
             {
@@ -251,7 +254,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 if (!(ex is OperationCanceledException && connection.ActiveRequestCancellationSources.TryGetValue(invocationId, out var cts)
                     && cts.IsCancellationRequested))
                 {
-                    error = ex.Message;
+                    error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex, _enableDetailedErrors);
                 }
             }
             finally

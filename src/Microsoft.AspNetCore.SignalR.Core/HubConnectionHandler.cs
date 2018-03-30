@@ -2,14 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -25,6 +22,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly HubOptions _globalHubOptions;
         private readonly IUserIdProvider _userIdProvider;
         private readonly HubDispatcher<THub> _dispatcher;
+        private readonly bool _enableDetailedErrors;
 
         public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager,
                                     IHubProtocolResolver protocolResolver,
@@ -42,6 +40,8 @@ namespace Microsoft.AspNetCore.SignalR
             _logger = loggerFactory.CreateLogger<HubConnectionHandler<THub>>();
             _userIdProvider = userIdProvider;
             _dispatcher = dispatcher;
+
+            _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
         }
 
         public override async Task OnConnectedAsync(ConnectionContext connection)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory);
 
-            if (!await connectionContext.HandshakeAsync(handshakeTimeout, supportedProtocols, _protocolResolver, _userIdProvider))
+            if (!await connectionContext.HandshakeAsync(handshakeTimeout, supportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
             {
                 return;
             }
@@ -139,9 +139,13 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task SendCloseAsync(HubConnectionContext connection, Exception exception)
         {
-            CloseMessage closeMessage = exception == null
-                ? CloseMessage.Empty
-                : new CloseMessage($"Connection closed with an error. {exception.GetType().Name}: {exception.Message}");
+            var closeMessage = CloseMessage.Empty;
+
+            if (exception != null)
+            {
+                var errorMessage = ErrorMessageHelper.BuildErrorMessage("Connection closed with an error.", exception, _enableDetailedErrors);
+                closeMessage = new CloseMessage(errorMessage);
+            }
 
             try
             {
