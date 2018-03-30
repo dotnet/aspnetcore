@@ -182,6 +182,7 @@
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
     <PollySignedPackageVersion>5.8.0</PollySignedPackageVersion>
+    <PollyExtensionsHttpSignedPackageVersion>1.0.0-preview2</PollyExtensionsHttpSignedPackageVersion>
     <RemotionLinqPackageVersion>2.2.0</RemotionLinqPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
