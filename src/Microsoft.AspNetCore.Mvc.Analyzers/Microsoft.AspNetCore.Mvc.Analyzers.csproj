@@ -3,7 +3,7 @@
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
 
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableApiCheck>false</EnableApiCheck>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
