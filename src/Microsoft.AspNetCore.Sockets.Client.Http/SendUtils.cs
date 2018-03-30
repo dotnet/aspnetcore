@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     internal static class SendUtils
     {
         public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient,
-            HttpOptions httpOptions, CancellationTokenSource transportCts, ILogger logger)
+            HttpOptions httpOptions, ILogger logger)
         {
             Log.SendStarted(logger);
 
@@ -25,14 +25,17 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 while (true)
                 {
-                    var result = await application.Input.ReadAsync(transportCts.Token);
+                    var result = await application.Input.ReadAsync();
                     var buffer = result.Buffer;
 
                     try
                     {
-                        // Grab as many messages as we can from the pipe
+                        if (result.IsCanceled)
+                        {
+                            Log.SendCanceled(logger);
+                            break;
+                        }
 
-                        transportCts.Token.ThrowIfCancellationRequested();
                         if (!buffer.IsEmpty)
                         {
                             Log.SendingMessages(logger, buffer.Length, sendUrl);
@@ -45,8 +48,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                             request.Content = new ReadOnlySequenceContent(buffer);
 
-                            var response = await httpClient.SendAsync(request, transportCts.Token);
-                            response.EnsureSuccessStatusCode();
+                            // ResponseHeadersRead instructs SendAsync to return once headers are read
+                            // rather than buffer the entire response. This gives a small perf boost.
+                            // Note that it is important to dispose of the response when doing this to
+                            // avoid leaving the connection open.
+                            using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                            {
+                                response.EnsureSuccessStatusCode();
+                            }
 
                             Log.SentSuccessfully(logger);
                         }
@@ -76,8 +85,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             finally
             {
-                // Make sure the poll loop is terminated
-                transportCts.Cancel();
+                application.Input.Complete();
             }
 
             Log.SendStopped(logger);

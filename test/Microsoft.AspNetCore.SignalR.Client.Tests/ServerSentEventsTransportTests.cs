@@ -154,7 +154,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await sseTransport.StartAsync(
                     new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
 
-                var exception = await Assert.ThrowsAsync<FormatException>(() => sseTransport.Running.OrTimeout());
+                var exception = await Assert.ThrowsAsync<FormatException>(() => pair.Transport.Input.ReadAllAsync());
+
+                await sseTransport.Running.OrTimeout();
+
                 Assert.Equal("Incomplete message.", exception.Message);
             }
         }
@@ -204,7 +207,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var exception = await Assert.ThrowsAsync<HttpRequestException>(() => pair.Transport.Input.ReadAllAsync().OrTimeout());
                 Assert.Contains("500", exception.Message);
 
-                Assert.Same(exception, await Assert.ThrowsAsync<HttpRequestException>(() => sseTransport.Running.OrTimeout()));
+                // Errors are only communicated through the pipe
+                await sseTransport.Running.OrTimeout();
             }
         }
 

@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
 
-                    await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running.OrTimeout());
+                    await longPollingTransport.Running.OrTimeout();
 
                     var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await pair.Transport.Input.ReadAllAsync().OrTimeout());
                     Assert.Contains(" 500 ", exception.Message);

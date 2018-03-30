@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private readonly HttpClient _httpClient;
         private readonly HttpOptions _httpOptions;
         private readonly ILogger _logger;
+
+        // Volatile so that the SSE loop sees the updated value set from a different thread
+        private volatile Exception _error;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
 
@@ -55,19 +58,40 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             Log.StartTransport(_logger, transferFormat);
 
             var startTcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
-            var sendTask = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _transportCts, _logger);
-            var receiveTask = OpenConnection(_application, url, startTcs, _transportCts.Token);
 
-            Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
-            {
-                Log.TransportStopped(_logger, t.Exception?.InnerException);
-                _application.Output.Complete(t.Exception?.InnerException);
-                _application.Input.Complete();
-
-                return t;
-            }).Unwrap();
+            Running = ProcessAsync(url, startTcs);
 
             return startTcs.Task;
+        }
+
+        private async Task ProcessAsync(Uri url, TaskCompletionSource<object> startTcs)
+        {
+            // Start sending and polling (ask for binary if the server supports it)
+            var receiving = OpenConnection(_application, url, startTcs, _transportCts.Token);
+            var sending = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _logger);
+
+            // Wait for send or receive to complete
+            var trigger = await Task.WhenAny(receiving, sending);
+
+            if (trigger == receiving)
+            {
+                // We're waiting for the application to finish and there are 2 things it could be doing
+                // 1. Waiting for application data
+                // 2. Waiting for an outgoing send (this should be instantaneous)
+
+                // Cancel the application so that ReadAsync yields
+                _application.Input.CancelPendingRead();
+            }
+            else
+            {
+                // Set the sending error so we communicate that to the application
+                _error = sending.IsFaulted ? sending.Exception.InnerException : null;
+
+                _transportCts.Cancel();
+
+                // Cancel any pending flush so that we can quit
+                _application.Output.CancelPendingFlush();
+            }
         }
 
         private async Task OpenConnection(IDuplexPipe application, Uri url, TaskCompletionSource<object> startTcs, CancellationToken cancellationToken)
@@ -78,7 +102,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             SendUtils.PrepareHttpRequest(request, _httpOptions);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
-            HttpResponseMessage response;
+            HttpResponseMessage response = null;
+
             try
             {
                 response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
@@ -87,11 +112,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             }
             catch (Exception ex)
             {
+                response?.Dispose();
                 Log.TransportStopping(_logger);
                 startTcs.TrySetException(ex);
                 return;
             }
 
+            using (response)
             using (var stream = await response.Content.ReadAsStreamAsync())
             {
                 var pipeOptions = new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0);
@@ -116,12 +143,15 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
                         {
                             Log.ParsingSSE(_logger, input.Length);
                             var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var buffer);
+                            FlushResult flushResult = default;
 
                             switch (parseResult)
                             {
                                 case ServerSentEventsMessageParser.ParseResult.Completed:
                                     Log.MessageToApp(_logger, buffer.Length);
-                                    await _application.Output.WriteAsync(buffer);
+
+                                    flushResult = await _application.Output.WriteAsync(buffer);
+
                                     _parser.Reset();
                                     break;
                                 case ServerSentEventsMessageParser.ParseResult.Incomplete:
@@ -130,6 +160,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
                                         throw new FormatException("Incomplete message.");
                                     }
                                     break;
+                            }
+
+                            // We canceled in the middle of applying back pressure
+                            // or if the consumer is done
+                            if (flushResult.IsCanceled || flushResult.IsCompleted)
+                            {
+                                break;
                             }
                         }
                         finally
@@ -142,10 +179,16 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
                 {
                     Log.ReceiveCanceled(_logger);
                 }
+                catch (Exception ex)
+                {
+                    _error = ex;
+                }
                 finally
                 {
+                    _application.Output.Complete(_error);
+
                     readCancellationRegistration.Dispose();
-                    _transportCts.Cancel();
+
                     Log.ReceiveStopped(_logger);
                 }
             }
@@ -154,16 +197,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         public async Task StopAsync()
         {
             Log.TransportStopping(_logger);
-            _transportCts.Cancel();
 
-            try
-            {
-                await Running;
-            }
-            catch
-            {
-                // exceptions have been handled in the Running task continuation by closing the channel with the exception
-            }
+            _application.Input.CancelPendingRead();
+
+            await Running;
         }
     }
 }
