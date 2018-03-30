@@ -54,7 +54,7 @@ export class HttpConnection implements IConnection {
         options = options || {};
         options.accessTokenFactory = options.accessTokenFactory || (() => null);
 
-        this.httpClient = options.httpClient || new DefaultHttpClient();
+        this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
         this.connectionState = ConnectionState.Disconnected;
         this.options = options;
     }
@@ -62,6 +62,8 @@ export class HttpConnection implements IConnection {
     public start(transferFormat: TransferFormat): Promise<void> {
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
+
+        this.logger.log(LogLevel.Trace, `Starting connection with transfer format '${TransferFormat[transferFormat]}'.`);
 
         if (this.connectionState !== ConnectionState.Disconnected) {
             return Promise.reject(new Error("Cannot start a connection that is not in the 'Disconnected' state."));
@@ -114,11 +116,18 @@ export class HttpConnection implements IConnection {
     }
 
     private async getNegotiationResponse(headers: any): Promise<INegotiateResponse> {
-        const response =  await this.httpClient.post(this.resolveNegotiateUrl(this.baseUrl), {
-            content: "",
-            headers,
-        });
-        return JSON.parse(response.content as string);
+        const negotiateUrl = this.resolveNegotiateUrl(this.baseUrl);
+        this.logger.log(LogLevel.Trace, `Sending negotiation request: ${negotiateUrl}`);
+        try {
+            const response =  await this.httpClient.post(negotiateUrl, {
+                content: "",
+                headers,
+            });
+            return JSON.parse(response.content as string);
+        } catch (e) {
+            this.logger.log(LogLevel.Error, "Failed to complete negotiation with the server: " + e);
+            throw e;
+        }
     }
 
     private updateConnectionId(negotiateResponse: INegotiateResponse) {
@@ -154,7 +163,7 @@ export class HttpConnection implements IConnection {
                     this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
                     return;
                 } catch (ex) {
-                    this.logger.log(LogLevel.Error, `Failed to start the transport' ${TransportType[transport]}:' transport'${ex}'`);
+                    this.logger.log(LogLevel.Error, `Failed to start the transport '${TransportType[transport]}': ${ex}`);
                     this.connectionState = ConnectionState.Disconnected;
                     negotiateResponse.connectionId = null;
                 }
