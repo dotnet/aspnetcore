@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Client.Core\Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Sockets.Client.Http\Microsoft.AspNetCore.Sockets.Client.Http.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Http.Connections.Client\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

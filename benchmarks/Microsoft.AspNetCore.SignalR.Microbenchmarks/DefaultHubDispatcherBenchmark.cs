@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Reactive.Linq;
@@ -13,7 +12,6 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

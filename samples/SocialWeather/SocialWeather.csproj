@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Sockets.Http\Microsoft.AspNetCore.Sockets.Http.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Http.Connections\Microsoft.AspNetCore.Http.Connections.csproj" />
   </ItemGroup>
 
   <ItemGroup>

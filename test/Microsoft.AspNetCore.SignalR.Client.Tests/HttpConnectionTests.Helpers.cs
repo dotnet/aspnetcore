@@ -4,9 +4,8 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Client.Http;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 

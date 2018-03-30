@@ -5,15 +5,13 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
-using TransportType = Microsoft.AspNetCore.Sockets.TransportType;
+using TransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {

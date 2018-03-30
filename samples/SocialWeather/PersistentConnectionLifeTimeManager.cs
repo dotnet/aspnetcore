@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace SocialWeather
 {

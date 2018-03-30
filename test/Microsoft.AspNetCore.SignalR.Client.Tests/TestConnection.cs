@@ -8,12 +8,11 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets.Client;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests

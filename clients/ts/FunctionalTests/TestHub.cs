@@ -4,8 +4,8 @@
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Sockets;
 
 namespace FunctionalTests
 {

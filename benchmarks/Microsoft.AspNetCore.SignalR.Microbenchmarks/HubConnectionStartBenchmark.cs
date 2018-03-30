@@ -3,10 +3,7 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
@@ -16,7 +13,6 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
-using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks

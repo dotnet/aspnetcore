@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Client for ASP.NET Core Connection Handlers</Description>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\ForceAsyncAwaiter.cs" Link="ForceAsyncAwaiter.cs" />
+    <Compile Include="..\Common\PipeWriterStream.cs" Link="PipeWriterStream.cs" />
+    <Compile Include="..\Common\WebSocketExtensions.cs" Link="WebSocketExtensions.cs" />
+    <Compile Include="..\Common\StreamExtensions.cs" Link="StreamExtensions.cs" />
+    <Compile Include="..\Common\DuplexPipe.cs" Link="DuplexPipe.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Http.Connections.Common\Microsoft.AspNetCore.Http.Connections.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+  </ItemGroup>
+
+</Project>

@@ -3,9 +3,9 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Client.Internal;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;

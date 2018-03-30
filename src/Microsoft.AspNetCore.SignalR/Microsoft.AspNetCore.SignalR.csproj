@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Core\Microsoft.AspNetCore.SignalR.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Sockets.Http\Microsoft.AspNetCore.Sockets.Http.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Http.Connections\Microsoft.AspNetCore.Http.Connections.csproj" />
   </ItemGroup>
 
 </Project>

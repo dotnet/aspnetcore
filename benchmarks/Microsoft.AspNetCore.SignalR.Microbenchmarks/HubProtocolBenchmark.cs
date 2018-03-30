@@ -3,10 +3,7 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
