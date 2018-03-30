@@ -228,6 +228,7 @@ export class BrowserRenderer {
     switch (element.tagName) {
       case 'INPUT':
       case 'SELECT':
+      case 'TEXTAREA':
         if (isCheckbox(element)) {
           (element as HTMLInputElement).checked = value === 'True';
         } else {

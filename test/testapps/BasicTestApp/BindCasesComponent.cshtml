@@ -10,6 +10,18 @@
     <span id="textbox-initially-populated-value">@textboxInitiallyPopulatedValue</span>
 </p>
 
+<h2>Text Area</h2>
+<p>
+    Initially blank:
+    <textarea id="textarea-initially-blank" @bind(textAreaIntiallyBlankValue)></textarea>
+    <span id="textarea-initially-blank-value">@textAreaIntiallyBlankValue</span>
+</p>
+<p>
+    Initially populated:
+    <textarea id="textarea-initially-populated" @bind(textAreaIntiallyPopulatedValue)></textarea>
+    <span id="textarea-initially-populated-value">@textAreaIntiallyPopulatedValue</span>
+</p>
+
 <h2>Checkbox</h2>
 <p>
     Initially unchecked:
@@ -40,6 +52,9 @@
 @functions {
     string textboxInitiallyBlankValue = null;
     string textboxInitiallyPopulatedValue = "Hello";
+
+    string textAreaIntiallyBlankValue = null;
+    string textAreaIntiallyPopulatedValue = "Hello";
 
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
