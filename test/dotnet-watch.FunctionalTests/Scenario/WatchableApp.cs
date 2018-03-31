@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         private const string StartedMessage = "Started";
         private const string ExitingMessage = "Exiting";
+        private const string WatchExitedMessage = "watch : Exited";
 
         private readonly ITestOutputHelper _logger;
         private string _appName;
@@ -42,8 +43,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public Task HasRestarted()
             => Process.GetOutputLineAsync(StartedMessage, DefaultMessageTimeOut);
 
-        public Task HasExited()
-            => Process.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
+        public async Task HasExited()
+        {
+            await Process.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
+            await Process.GetOutputLineAsync(WatchExitedMessage, DefaultMessageTimeOut);
+        }
 
         public bool UsePollingWatcher { get; set; }
 

@@ -116,6 +116,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         private void OnExit(object sender, EventArgs args)
         {
+            // Wait to ensure the process has exited and all output consumed
+            _process.WaitForExit();
             _source.Complete();
         }
 

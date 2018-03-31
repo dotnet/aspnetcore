@@ -105,9 +105,23 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 _process = process;
                 _process.Exited += OnExited;
+                Task = _tcs.Task.ContinueWith(_ =>
+                {
+                    // We need to use two WaitForExit calls to ensure that all of the output/events are processed. Previously
+                    // this code used Process.Exited, which could result in us missing some output due to the ordering of
+                    // events.
+                    //
+                    // See the remarks here: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit#System_Diagnostics_Process_WaitForExit_System_Int32_
+                    if (!process.WaitForExit(Int32.MaxValue))
+                    {
+                        throw new TimeoutException();
+                    }
+
+                    process.WaitForExit();
+                });
             }
 
-            public Task Task => _tcs.Task;
+            public Task Task { get; }
 
             public void TryKill()
             {
