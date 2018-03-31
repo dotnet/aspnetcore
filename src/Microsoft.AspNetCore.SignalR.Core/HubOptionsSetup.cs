@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubOptionsSetup : IConfigureOptions<HubOptions>
     {
-        internal static TimeSpan DefaultHandshakeTimeout => TimeSpan.FromSeconds(5);
+        internal static TimeSpan DefaultHandshakeTimeout => TimeSpan.FromSeconds(15);
 
         internal static TimeSpan DefaultKeepAliveInterval => TimeSpan.FromSeconds(15);
 
