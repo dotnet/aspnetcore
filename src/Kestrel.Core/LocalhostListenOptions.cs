@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         // used for cloning to two IPEndpoints
-        private ListenOptions Clone(IPAddress address)
+        internal ListenOptions Clone(IPAddress address)
         {
             var options = new ListenOptions(new IPEndPoint(address, IPEndPoint.Port))
             {
@@ -81,6 +81,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 NoDelay = NoDelay,
                 Protocols = Protocols,
             };
+
+            options._middleware.AddRange(_middleware);
             options.ConnectionAdapters.AddRange(ConnectionAdapters);
             return options;
         }

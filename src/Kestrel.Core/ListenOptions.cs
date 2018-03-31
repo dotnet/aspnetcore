@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private FileHandleType _handleType;
         private HttpProtocols _protocols = HttpProtocols.Http1;
         internal bool _isHttp2Supported;
-        private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _components = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+        internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
 
         internal ListenOptions(IPEndPoint endPoint)
         {
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         public IConnectionBuilder Use(Func<ConnectionDelegate, ConnectionDelegate> middleware)
         {
-            _components.Add(middleware);
+            _middleware.Add(middleware);
             return this;
         }
 
@@ -192,9 +192,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 return Task.CompletedTask;
             };
 
-            for (int i = _components.Count - 1; i >= 0; i--)
+            for (int i = _middleware.Count - 1; i >= 0; i--)
             {
-                var component = _components[i];
+                var component = _middleware[i];
                 app = component(app);
             }
 
