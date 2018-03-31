@@ -2,22 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Buffers;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
 {
     public static class BinaryMessageFormatter
     {
-        public static void WriteLengthPrefix(long length, Stream output)
+        public static void WriteLengthPrefix(long length, IBufferWriter<byte> output)
         {
             // This code writes length prefix of the message as a VarInt. Read the comment in
             // the BinaryMessageParser.TryParseMessage for details.
 
-#if NETCOREAPP2_1
             Span<byte> lenBuffer = stackalloc byte[5];
-#else
-            var lenBuffer = new byte[5];
-#endif
+
             var lenNumBytes = 0;
             do
             {
@@ -32,11 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             }
             while (length > 0);
 
-#if NETCOREAPP2_1
             output.Write(lenBuffer.Slice(0, lenNumBytes));
-#else
-            output.Write(lenBuffer, 0, lenNumBytes);
-#endif
         }
     }
 }

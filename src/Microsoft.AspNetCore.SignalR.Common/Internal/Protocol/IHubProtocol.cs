@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message);
 
-        void WriteMessage(HubMessage message, Stream output);
+        void WriteMessage(HubMessage message, IBufferWriter<byte> output);
 
         bool IsVersionSupported(int version);
     }

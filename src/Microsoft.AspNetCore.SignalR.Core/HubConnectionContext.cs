@@ -41,9 +41,11 @@ namespace Microsoft.AspNetCore.SignalR
 
         static HubConnectionContext()
         {
-            var memoryBufferWriter = new MemoryBufferWriter();
-            HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
-            _successHandshakeResponseData = memoryBufferWriter.ToArray();
+            using (var memoryBufferWriter = new MemoryBufferWriter())
+            {
+                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
+                _successHandshakeResponseData = memoryBufferWriter.ToArray();
+            }
         }
 
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)

@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 {
+    using Microsoft.AspNetCore.SignalR.Internal;
     using static HubMessageHelpers;
 
     public class JsonHubProtocolTests
@@ -108,10 +109,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
 
-            using (var ms = new MemoryStream())
+            using (var writer = new MemoryBufferWriter())
             {
-                protocol.WriteMessage(message, ms);
-                var json = Encoding.UTF8.GetString(ms.ToArray());
+                protocol.WriteMessage(message, writer);
+                var json = Encoding.UTF8.GetString(writer.ToArray());
 
                 Assert.Equal(expectedOutput, json);
             }

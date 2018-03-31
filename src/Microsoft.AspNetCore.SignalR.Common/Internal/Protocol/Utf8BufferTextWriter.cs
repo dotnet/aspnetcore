@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -77,12 +76,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public override void Write(char[] buffer, int index, int count)
         {
-            WriteInternal(buffer, index, count);
+            WriteInternal(buffer.AsSpan(index, count));
         }
 
         public override void Write(char[] buffer)
         {
-            WriteInternal(buffer, 0, buffer.Length);
+            WriteInternal(buffer);
         }
 
         public override void Write(char value)
@@ -120,6 +119,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
+        public override void Write(string value)
+        {
+            WriteInternal(value.AsSpan());
+        }
+
         private Span<byte> GetBuffer()
         {
             EnsureBuffer();
@@ -142,11 +146,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        private void WriteInternal(char[] buffer, int index, int count)
+        private void WriteInternal(ReadOnlySpan<char> buffer)
         {
-            var currentIndex = index;
-            var charsRemaining = count;
-            while (charsRemaining > 0)
+            while (buffer.Length > 0)
             {
                 // The destination byte array might not be large enough so multiple writes are sometimes required
                 var destination = GetBuffer();
@@ -154,20 +156,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 var bytesUsed = 0;
                 var charsUsed = 0;
 #if NETCOREAPP2_1
-                _encoder.Convert(buffer.AsSpan(currentIndex, charsRemaining), destination, false, out charsUsed, out bytesUsed, out _);
+                _encoder.Convert(buffer, destination, false, out charsUsed, out bytesUsed, out _);
 #else
                 unsafe
                 {
-                    fixed (char* sourceChars = &buffer[currentIndex])
+                    fixed (char* sourceChars = &MemoryMarshal.GetReference(buffer))
                     fixed (byte* destinationBytes = &MemoryMarshal.GetReference(destination))
                     {
-                        _encoder.Convert(sourceChars, charsRemaining, destinationBytes, destination.Length, false, out charsUsed, out bytesUsed, out _);
+                        _encoder.Convert(sourceChars, buffer.Length, destinationBytes, destination.Length, false, out charsUsed, out bytesUsed, out _);
                     }
                 }
 #endif
 
-                charsRemaining -= charsUsed;
-                currentIndex += charsUsed;
+                buffer = buffer.Slice(charsUsed);
                 _memoryUsed += bytesUsed;
             }
         }

@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return message != null;
         }
 
-        public void WriteMessage(HubMessage message, Stream output)
+        public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
             WriteMessageCore(message, output);
             TextMessageFormatter.WriteRecordSeparator(output);
@@ -340,50 +340,58 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             throw new JsonReaderException("Unexpected end when reading message headers");
         }
 
-        private void WriteMessageCore(HubMessage message, Stream stream)
+        private void WriteMessageCore(HubMessage message, IBufferWriter<byte> stream)
         {
-            using (var writer = JsonUtils.CreateJsonTextWriter(new StreamWriter(stream, _utf8NoBom, 1024, leaveOpen: true)))
+            var textWriter = Utf8BufferTextWriter.Get(stream);
+            try
             {
-                writer.WriteStartObject();
-                switch (message)
+                using (var writer = JsonUtils.CreateJsonTextWriter(textWriter))
                 {
-                    case InvocationMessage m:
-                        WriteMessageType(writer, HubProtocolConstants.InvocationMessageType);
-                        WriteHeaders(writer, m);
-                        WriteInvocationMessage(m, writer);
-                        break;
-                    case StreamInvocationMessage m:
-                        WriteMessageType(writer, HubProtocolConstants.StreamInvocationMessageType);
-                        WriteHeaders(writer, m);
-                        WriteStreamInvocationMessage(m, writer);
-                        break;
-                    case StreamItemMessage m:
-                        WriteMessageType(writer, HubProtocolConstants.StreamItemMessageType);
-                        WriteHeaders(writer, m);
-                        WriteStreamItemMessage(m, writer);
-                        break;
-                    case CompletionMessage m:
-                        WriteMessageType(writer, HubProtocolConstants.CompletionMessageType);
-                        WriteHeaders(writer, m);
-                        WriteCompletionMessage(m, writer);
-                        break;
-                    case CancelInvocationMessage m:
-                        WriteMessageType(writer, HubProtocolConstants.CancelInvocationMessageType);
-                        WriteHeaders(writer, m);
-                        WriteCancelInvocationMessage(m, writer);
-                        break;
-                    case PingMessage _:
-                        WriteMessageType(writer, HubProtocolConstants.PingMessageType);
-                        break;
-                    case CloseMessage m:
-                        WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
-                        WriteCloseMessage(m, writer);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
+                    writer.WriteStartObject();
+                    switch (message)
+                    {
+                        case InvocationMessage m:
+                            WriteMessageType(writer, HubProtocolConstants.InvocationMessageType);
+                            WriteHeaders(writer, m);
+                            WriteInvocationMessage(m, writer);
+                            break;
+                        case StreamInvocationMessage m:
+                            WriteMessageType(writer, HubProtocolConstants.StreamInvocationMessageType);
+                            WriteHeaders(writer, m);
+                            WriteStreamInvocationMessage(m, writer);
+                            break;
+                        case StreamItemMessage m:
+                            WriteMessageType(writer, HubProtocolConstants.StreamItemMessageType);
+                            WriteHeaders(writer, m);
+                            WriteStreamItemMessage(m, writer);
+                            break;
+                        case CompletionMessage m:
+                            WriteMessageType(writer, HubProtocolConstants.CompletionMessageType);
+                            WriteHeaders(writer, m);
+                            WriteCompletionMessage(m, writer);
+                            break;
+                        case CancelInvocationMessage m:
+                            WriteMessageType(writer, HubProtocolConstants.CancelInvocationMessageType);
+                            WriteHeaders(writer, m);
+                            WriteCancelInvocationMessage(m, writer);
+                            break;
+                        case PingMessage _:
+                            WriteMessageType(writer, HubProtocolConstants.PingMessageType);
+                            break;
+                        case CloseMessage m:
+                            WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
+                            WriteCloseMessage(m, writer);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
+                    }
+                    writer.WriteEndObject();
+                    writer.Flush();
                 }
-                writer.WriteEndObject();
-                writer.Flush();
+            }
+            finally
+            {
+                Utf8BufferTextWriter.Return(textWriter);
             }
         }
 
