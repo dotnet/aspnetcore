@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(500);
 
             await hubConnection.StartAsync().OrTimeout();
-            
+
             // Start an invocation (but we won't complete it)
             var invokeTask = hubConnection.InvokeAsync("Method").OrTimeout();
 
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 throw new InvalidOperationException("No Parsed Message provided");
             }
 
-            public void WriteMessage(HubMessage message, Stream output)
+            public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             {
                 if (_error != null)
                 {

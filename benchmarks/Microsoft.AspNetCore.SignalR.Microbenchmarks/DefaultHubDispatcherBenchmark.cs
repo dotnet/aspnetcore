@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 return false;
             }
 
-            public void WriteMessage(HubMessage message, Stream output)
+            public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             {
             }
         }

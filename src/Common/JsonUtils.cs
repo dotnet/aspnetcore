@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Internal
         internal static JsonTextWriter CreateJsonTextWriter(TextWriter textWriter)
         {
             var writer = new JsonTextWriter(textWriter);
-
+            writer.ArrayPool = JsonArrayPool<char>.Shared;
             // Don't close the output, leave closing to the caller
             writer.CloseOutput = false;
 

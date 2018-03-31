@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             AssertConnectionValid();
 
-            _protocol.WriteMessage(hubMessage, _connectionState.OutputStream);
+            _protocol.WriteMessage(hubMessage, _connectionState.Connection.Transport.Output);
 
             Log.SendingMessage(_logger, hubMessage);
 
@@ -826,7 +826,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public IConnection Connection { get; }
             public Task ReceiveTask { get; set; }
             public Exception CloseException { get; set; }
-            public PipeWriterStream OutputStream { get; }
 
             public bool Stopping
             {
@@ -838,7 +837,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 _hubConnection = hubConnection;
                 Connection = connection;
-                OutputStream = new PipeWriterStream(Connection.Transport.Output);
             }
 
             public string GetNextId() => Interlocked.Increment(ref _nextId).ToString();

@@ -4,24 +4,26 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public sealed class MemoryBufferWriter : IBufferWriter<byte>
+    public sealed class MemoryBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private readonly int _segmentSize;
+        private int _bytesWritten;
 
-        internal List<Memory<byte>> Segments { get; }
+        internal List<byte[]> Segments { get; }
         internal int Position { get; private set; }
 
         public MemoryBufferWriter(int segmentSize = 2048)
         {
             _segmentSize = segmentSize;
 
-            Segments = new List<Memory<byte>>();
+            Segments = new List<byte[]>();
         }
 
         public Memory<byte> CurrentSegment => Segments.Count > 0 ? Segments[Segments.Count - 1] : null;
 
         public void Advance(int count)
         {
+            _bytesWritten += count;
             Position += count;
         }
 
@@ -31,8 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             if (Segments.Count == 0 || Position == _segmentSize)
             {
-                // TODO: Rent memory from a pool
-                Segments.Add(new Memory<byte>(new byte[_segmentSize]));
+                Segments.Add(ArrayPool<byte>.Shared.Rent(_segmentSize));
                 Position = 0;
             }
 
@@ -51,17 +52,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return Array.Empty<byte>();
             }
 
-            var totalLength = (Segments.Count - 1) * _segmentSize;
-            totalLength += Position;
-
-            var result = new byte[totalLength];
+            var result = new byte[_bytesWritten];
 
             var totalWritten = 0;
 
             // Copy full segments
             for (int i = 0; i < Segments.Count - 1; i++)
             {
-                Segments[i].CopyTo(result.AsMemory(totalWritten, _segmentSize));
+                Segments[i].AsMemory().CopyTo(result.AsMemory(totalWritten, _segmentSize));
 
                 totalWritten += _segmentSize;
             }
@@ -70,6 +68,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             CurrentSegment.Slice(0, Position).CopyTo(result.AsMemory(totalWritten, Position));
 
             return result;
+        }
+
+        public void Dispose()
+        {
+            for (int i = 0; i < Segments.Count; i++)
+            {
+                ArrayPool<byte>.Shared.Return(Segments[i]);
+            }
+            Segments.Clear();
         }
     }
 }

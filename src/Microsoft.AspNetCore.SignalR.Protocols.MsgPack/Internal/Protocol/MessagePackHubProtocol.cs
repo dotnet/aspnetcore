@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return destination;
         }
 
-        public void WriteMessage(HubMessage message, Stream output)
+        public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
             using (var stream = new LimitArrayPoolWriteStream())
             {
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
                 // Write length then message to output
                 BinaryMessageFormatter.WriteLengthPrefix(buffer.Count, output);
-                output.Write(buffer.Array, buffer.Offset, buffer.Count);
+                output.Write(buffer);
             }
         }
 

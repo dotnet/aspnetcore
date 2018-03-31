@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Xunit;
 
@@ -31,20 +32,21 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
                 Encoding.UTF8.GetBytes("Hello,\r\nWorld!")
             };
 
-            var output = new MemoryStream(); // Use small chunks to test Advance/Enlarge and partial payload writing
-            foreach (var message in messages)
+            using (var writer = new MemoryBufferWriter()) // Use small chunks to test Advance/Enlarge and partial payload writing
             {
-                BinaryMessageFormatter.WriteLengthPrefix(message.Length, output);
-                output.Write(message, 0, message.Length);
-            }
+                foreach (var message in messages)
+                {
+                    BinaryMessageFormatter.WriteLengthPrefix(message.Length, writer);
+                    writer.Write(message);
+                }
 
-            Assert.Equal(expectedEncoding, output.ToArray());
+                Assert.Equal(expectedEncoding, writer.ToArray());
+            }
         }
 
         [Theory]
-        [InlineData(0, new byte[] { 0x00 }, new byte[0])]
-        [InlineData(0, new byte[] { 0x04, 0xAB, 0xCD, 0xEF, 0x12 }, new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
-        [InlineData(0, new byte[]
+        [InlineData(new byte[] { 0x00 }, new byte[0])]
+        [InlineData(new byte[]
             {
                 0x80, 0x01, // Size - 128
                 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -68,53 +70,45 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
                 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f
             })]
 
-        [InlineData(4, new byte[] { 0x00 }, new byte[0])]
-        [InlineData(4, new byte[] { 0x04, 0xAB, 0xCD, 0xEF, 0x12 }, new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
-        public void WriteBinaryMessage(int offset, byte[] encoded, byte[] payload)
+        [InlineData(new byte[] { 0x04, 0xAB, 0xCD, 0xEF, 0x12 }, new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
+        public void WriteBinaryMessage(byte[] encoded, byte[] payload)
         {
-            var output = new MemoryStream();
-
-            if (offset > 0)
+            using (var writer = new MemoryBufferWriter())
             {
-                output.Seek(offset, SeekOrigin.Begin);
+
+                BinaryMessageFormatter.WriteLengthPrefix(payload.Length, writer);
+                writer.Write(payload);
+
+                Assert.Equal(encoded, writer.ToArray());
             }
-
-            BinaryMessageFormatter.WriteLengthPrefix(payload.Length, output);
-            output.Write(payload, 0, payload.Length);
-
-            Assert.Equal(encoded, output.ToArray().Skip(offset));
         }
 
         [Theory]
-        [InlineData(0, new byte[] { 0x00 }, "")]
-        [InlineData(0, new byte[] { 0x03, 0x41, 0x42, 0x43 }, "ABC")]
-        [InlineData(0, new byte[] { 0x0B, 0x41, 0x0A, 0x52, 0x0D, 0x43, 0x0D, 0x0A, 0x3B, 0x44, 0x45, 0x46 }, "A\nR\rC\r\n;DEF")]
-        [InlineData(4, new byte[] { 0x00 }, "")]
-        public void WriteTextMessage(int offset, byte[] encoded, string payload)
+        [InlineData(new byte[] { 0x00 }, "")]
+        [InlineData(new byte[] { 0x03, 0x41, 0x42, 0x43 }, "ABC")]
+        [InlineData(new byte[] { 0x0B, 0x41, 0x0A, 0x52, 0x0D, 0x43, 0x0D, 0x0A, 0x3B, 0x44, 0x45, 0x46 }, "A\nR\rC\r\n;DEF")]
+        public void WriteTextMessage(byte[] encoded, string payload)
         {
             var message = Encoding.UTF8.GetBytes(payload);
-            var output = new MemoryStream();
-
-            if (offset > 0)
+            using (var writer = new MemoryBufferWriter())
             {
-                output.Seek(offset, SeekOrigin.Begin);
+
+                BinaryMessageFormatter.WriteLengthPrefix(message.Length, writer);
+                writer.Write(message);
+
+                Assert.Equal(encoded, writer.ToArray());
             }
-
-            BinaryMessageFormatter.WriteLengthPrefix(message.Length, output);
-            output.Write(message, 0, message.Length);
-
-            Assert.Equal(encoded, output.ToArray().Skip(offset));
         }
 
         [Theory]
         [MemberData(nameof(RandomPayloads))]
         public void RoundTrippingTest(byte[] payload)
         {
-            using (var ms = new MemoryStream())
+            using (var writer = new MemoryBufferWriter())
             {
-                BinaryMessageFormatter.WriteLengthPrefix(payload.Length, ms);
-                ms.Write(payload, 0, payload.Length);
-                var buffer = new ReadOnlySequence<byte>(ms.ToArray());
+                BinaryMessageFormatter.WriteLengthPrefix(payload.Length, writer);
+                writer.Write(payload);
+                var buffer = new ReadOnlySequence<byte>(writer.ToArray());
                 Assert.True(BinaryMessageParser.TryParseMessage(ref buffer, out var roundtripped));
                 Assert.Equal(payload, roundtripped.ToArray());
             }

@@ -75,9 +75,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var s = await ReadSentTextMessageAsync();
 
-            var output = new MemoryBufferWriter();
-            HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, output);
-            await Application.Output.WriteAsync(output.ToArray());
+            using (var output = new MemoryBufferWriter())
+            {
+                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, output);
+                await Application.Output.WriteAsync(output.ToArray());
+            }
 
             return s;
         }
