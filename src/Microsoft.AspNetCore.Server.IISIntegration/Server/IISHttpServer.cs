@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this);
 
             // Start the server by registering the callback
-            NativeMethods.register_callbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            NativeMethods.HttpRegisterCallbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
 
             return Task.CompletedTask;
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 cancellationToken.Register(() =>
                 {
-                    NativeMethods.http_stop_calls_into_managed();
+                    NativeMethods.HttpStopCallsIntoManaged();
                     _shutdownSignal.TrySetResult(null);
                 });
             }
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
 
             // First call back into native saying "DON'T SEND ME ANY MORE REQUESTS"
-            NativeMethods.http_stop_incoming_requests();
+            NativeMethods.HttpStopIncomingRequests();
 
             try
             {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 else
                 {
                     // We have drained all requests. Block any callbacks into managed at this point.
-                    NativeMethods.http_stop_calls_into_managed();
+                    NativeMethods.HttpStopCallsIntoManaged();
                     _shutdownSignal.TrySetResult(null);
                 }
             }
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _stopping = 1;
 
             // Block any more calls into managed from native as we are unloading.
-            NativeMethods.http_stop_calls_into_managed();
+            NativeMethods.HttpStopCallsIntoManaged();
             _shutdownSignal.TrySetResult(null);
 
             if (_httpServerHandle.IsAllocated)
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             if (Interlocked.Decrement(ref context.Server._outstandingRequests) == 0 && context.Server.Stopping)
             {
                 // All requests have been drained.
-                NativeMethods.http_stop_calls_into_managed();
+                NativeMethods.HttpStopCallsIntoManaged();
                 context.Server._shutdownSignal.TrySetResult(null);
             }
 
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         ~IISHttpServer()
         {
             // If this finalize is invoked, try our best to block all calls into managed.
-            NativeMethods.http_stop_calls_into_managed();
+            NativeMethods.HttpStopCallsIntoManaged();
         }
     }
 

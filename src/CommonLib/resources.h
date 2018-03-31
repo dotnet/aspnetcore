@@ -41,3 +41,4 @@
 #define ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND_MSG           L"Could not find hostfxr.dll in '%s'. ErrorCode = '0x%x'."
 #define ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND_MSG       L"Could not find application executable in '%s'. ErrorCode = '0x%x'."
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_MSG      L"Application '%s' with physical root '%s' hit unexpected managed exception, ErrorCode = '0x%x. Please check the stderr logs for more information."
+#define ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG            L"Invalid or unknown processPath provided in web.config: processPath = %s, ErrorCode = '0x%x'."

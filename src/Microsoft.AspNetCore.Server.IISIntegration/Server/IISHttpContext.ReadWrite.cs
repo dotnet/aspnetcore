@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
                 else
                 {
-                    var hr = NativeMethods.http_read_request_bytes(
+                    var hr = NativeMethods.HttpReadRequestBytes(
                            _pInProcessHandler,
                            (byte*)_inputHandle.Pointer,
                            length,
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
                     chunk.fromMemory.pBuffer = (IntPtr)pBuffer;
                     chunk.fromMemory.BufferLength = (uint)buffer.Length;
-                    hr = NativeMethods.http_write_response_bytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
+                    hr = NativeMethods.HttpWriteResponseBytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
                 }
             }
             else if (nChunks < HttpDataChunkStackLimit)
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 currentChunk++;
             }
 
-            hr = NativeMethods.http_write_response_bytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
+            hr = NativeMethods.HttpWriteResponseBytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
 
             // Free the handles
             foreach (var handle in handles)
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             // Calls flush 
             var hr = 0;
-            hr = NativeMethods.http_flush_response_bytes(_pInProcessHandler, out var fCompletionExpected);
+            hr = NativeMethods.HttpFlushResponseBytes(_pInProcessHandler, out var fCompletionExpected);
             if (!fCompletionExpected)
             {
                 _operation.Complete(hr, 0);
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 _reading = false;
                 // Calls IHttpContext->CancelIo(), which will cause the OnAsyncCompletion handler to fire.
-                NativeMethods.http_cancel_io(_pInProcessHandler);
+                NativeMethods.HttpTryCancelIO(_pInProcessHandler);
             }
         }
     }

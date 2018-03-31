@@ -167,6 +167,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="hostfxr_utility_tests.cpp" />
+    <ClCompile Include="utility_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\CommonLib\CommonLib.vcxproj">

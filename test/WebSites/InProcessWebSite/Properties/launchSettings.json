@@ -12,6 +12,7 @@
       "commandName": "Executable",
       "executablePath": "$(IISExpressPath)",
       "commandLineArgs": "$(IISExpressArguments)",
+      "nativeDebugging": true,
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
         "ANCM_PATH": "$(TargetDir)$(AncmPath)",

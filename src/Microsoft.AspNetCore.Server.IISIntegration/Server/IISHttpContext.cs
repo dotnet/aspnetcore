@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
         internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
-            : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pInProcessHandler))
+            : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
         {
             _thisHandle = GCHandle.Alloc(this);
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _pInProcessHandler = pInProcessHandler;
             _server = server;
 
-            NativeMethods.http_set_managed_context(pInProcessHandler, (IntPtr)_thisHandle);
+            NativeMethods.HttpSetManagedContext(pInProcessHandler, (IntPtr)_thisHandle);
             unsafe
             {
                 Method = GetVerb();
@@ -145,8 +145,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 // server variables a few extra times if a bunch of requests hit the server at the same time.
                 if (_websocketAvailability == WebsocketAvailabilityStatus.Uninitialized)
                 {
-                    NativeMethods.http_get_server_variable(pInProcessHandler, WebSocketVersionString, out var webSocketsSupported);
-                    var webSocketsAvailable = !string.IsNullOrEmpty(webSocketsSupported);
+                    var webSocketsAvailable =  NativeMethods.HttpTryGetServerVariable(pInProcessHandler, WebSocketVersionString, out var webSocketsSupported)
+                                               && !string.IsNullOrEmpty(webSocketsSupported);
+
                     _websocketAvailability = webSocketsAvailable ?
                         WebsocketAvailabilityStatus.Available :
                         WebsocketAvailabilityStatus.NotAvailable;
@@ -335,7 +336,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var reasonPhrase = string.IsNullOrEmpty(ReasonPhrase) ? ReasonPhrases.GetReasonPhrase(StatusCode) : ReasonPhrase;
 
             // This copies data into the underlying buffer
-            NativeMethods.http_set_response_status_code(_pInProcessHandler, (ushort)StatusCode, reasonPhrase);
+            NativeMethods.HttpSetResponseStatusCode(_pInProcessHandler, (ushort)StatusCode, reasonPhrase);
 
             HttpResponseHeaders.IsReadOnly = true;
             foreach (var headerPair in HttpResponseHeaders)
@@ -352,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                         {
                             fixed (byte* pHeaderValue = headerValueBytes)
                             {
-                                NativeMethods.http_response_set_unknown_header(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                                NativeMethods.HttpResponseSetUnknownHeader(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
                             }
                         }
                     }
@@ -364,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                         var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
                         fixed (byte* pHeaderValue = headerValueBytes)
                         {
-                            NativeMethods.http_response_set_known_header(_pInProcessHandler, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                            NativeMethods.HttpResponseSetKnownHeader(_pInProcessHandler, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
                         }
                     }
                 }
@@ -475,22 +476,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             Debug.Assert(!_operation.HasContinuation, "Pending async operation!");
 
-            var hr = NativeMethods.http_set_completion_status(_pInProcessHandler, requestNotificationStatus);
-            if (hr != NativeMethods.S_OK)
-            {
-                throw Marshal.GetExceptionForHR(hr);
-            }
-
-            hr = NativeMethods.http_post_completion(_pInProcessHandler, 0);
-            if (hr != NativeMethods.S_OK)
-            {
-                throw Marshal.GetExceptionForHR(hr);
-            }
+            NativeMethods.HttpSetCompletionStatus(_pInProcessHandler, requestNotificationStatus);
+            NativeMethods.HttpPostCompletion(_pInProcessHandler, 0);
         }
 
         public void IndicateCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS notificationStatus)
         {
-            NativeMethods.http_indicate_completion(_pInProcessHandler, notificationStatus);
+            NativeMethods.HttpIndicateCompletion(_pInProcessHandler, notificationStatus);
         }
 
         internal void OnAsyncCompletion(int hr, int cbBytes)
@@ -540,9 +532,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private WindowsPrincipal GetWindowsPrincipal()
         {
-            var hr = NativeMethods.http_get_authentication_information(_pInProcessHandler, out var authenticationType, out var token);
+            NativeMethods.HttpGetAuthenticationInformation(_pInProcessHandler, out var authenticationType, out var token);
 
-            if (hr == 0 && token != IntPtr.Zero && authenticationType != null)
+            if (token != IntPtr.Zero && authenticationType != null)
             {
                 if ((authenticationType.Equals(NtlmString, StringComparison.OrdinalIgnoreCase)
                     || authenticationType.Equals(NegotiateString, StringComparison.OrdinalIgnoreCase)
