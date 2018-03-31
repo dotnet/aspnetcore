@@ -12,7 +12,7 @@
     <MicrosoftAspNetCoreAuthorizationPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>2.1.0-a-preview3-signalr-multiverse-17634</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>
     <MicrosoftAspNetCoreCorsPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreCorsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreDiagnosticsPackageVersion>
@@ -26,7 +26,7 @@
     <MicrosoftAspNetCoreRoutingPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreRoutingPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview2-32094</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-a-preview3-signalr-multiverse-17634</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview3-32094</MicrosoftAspNetCoreTestingPackageVersion>
