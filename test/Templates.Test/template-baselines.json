@@ -66,11 +66,8 @@
         "wwwroot/lib/jquery-validation/.bower.json",
         "wwwroot/lib/jquery-validation/LICENSE.md",
         "wwwroot/lib/jquery-validation/dist/additional-methods.js",
-        "wwwroot/lib/jquery-validation/dist/additional-methods.min.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
-        "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -135,11 +132,8 @@
         "wwwroot/lib/jquery-validation/.bower.json",
         "wwwroot/lib/jquery-validation/LICENSE.md",
         "wwwroot/lib/jquery-validation/dist/additional-methods.js",
-        "wwwroot/lib/jquery-validation/dist/additional-methods.min.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
-        "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -205,11 +199,8 @@
         "wwwroot/lib/jquery-validation/.bower.json",
         "wwwroot/lib/jquery-validation/LICENSE.md",
         "wwwroot/lib/jquery-validation/dist/additional-methods.js",
-        "wwwroot/lib/jquery-validation/dist/additional-methods.min.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
-        "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -275,11 +266,8 @@
         "wwwroot/lib/jquery-validation/.bower.json",
         "wwwroot/lib/jquery-validation/LICENSE.md",
         "wwwroot/lib/jquery-validation/dist/additional-methods.js",
-        "wwwroot/lib/jquery-validation/dist/additional-methods.min.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
-        "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -344,11 +332,8 @@
         "wwwroot/lib/jquery-validation/.bower.json",
         "wwwroot/lib/jquery-validation/LICENSE.md",
         "wwwroot/lib/jquery-validation/dist/additional-methods.js",
-        "wwwroot/lib/jquery-validation/dist/additional-methods.min.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
-        "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -414,11 +399,8 @@
         "wwwroot/lib/jquery-validation/.bower.json",
         "wwwroot/lib/jquery-validation/LICENSE.md",
         "wwwroot/lib/jquery-validation/dist/additional-methods.js",
-        "wwwroot/lib/jquery-validation/dist/additional-methods.min.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
-        "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -446,6 +428,7 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
+
         "Startup.cs",
         "Controllers/ValuesController.cs",
         "Properties/launchSettings.json"
@@ -473,6 +456,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
+
         "Controllers/ValuesController.cs",
         "Properties/launchSettings.json"
       ],
@@ -547,7 +531,6 @@
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -613,7 +596,6 @@
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -680,7 +662,6 @@
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -747,7 +728,6 @@
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -813,7 +793,6 @@
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
@@ -880,7 +859,6 @@
         "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
         "wwwroot/lib/jquery-validation/dist/jquery.validate.min.js",
         "wwwroot/lib/jquery-validation-unobtrusive/.bower.json",
-        "wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
       ],
