@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
-    // Metadata used for Blazor's interations with the tag helper system
+    // Metadata used for Blazor's interactions with the tag helper system
     internal static class BlazorMetadata
     {
         // There's a bug in the 15.7 preview 1 Razor that prevents 'Kind' from being serialized

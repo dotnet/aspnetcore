@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 base.VisitTagHelper(node);
 
-                // Use a post-order traversal because we're going to rewite tag helper nodes, and thus
+                // Use a post-order traversal because we're going to rewrite tag helper nodes, and thus
                 // change the parent nodes.
                 //
                 // This ensures that we operate the leaf nodes first.

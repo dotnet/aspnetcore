@@ -52,13 +52,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             //
             //      We don't do any transformation or inference for this case, because the developer has
             //      told us exactly what to do. This is the *full* form of bind, and should support any
-            //      combination of elemement, component, and attributes.
+            //      combination of element, component, and attributes.
             //
             //      This is the most general case, and is implemented with a built-in tag helper that applies
             //      to everything, and binds to a dictionary of attributes that start with bind-.
             //
             //  2.  We also support cases like 'bind-value="@FirstName"' where we will generate the 'value'
-            //      attribute and and another attribute based for a changed handler based on the metadata.
+            //      attribute and another attribute based for a changed handler based on the metadata.
             //
             //     These mappings are provided by attributes that tell us what attributes, suffixes, and
             //      elements to map.

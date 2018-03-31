@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 return;
             }
 
-            // For each bind *usage* we need to rewrite the tag helper node to map to basic contstructs.
+            // For each bind *usage* we need to rewrite the tag helper node to map to basic constructs.
             var nodes = documentNode.FindDescendantNodes<TagHelperIntermediateNode>();
             for (var i = 0; i < nodes.Count; i++)
             {
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 return false;
             }
 
-            // The the tag helper specifies attribute names, they should win.
+            // The tag helper specifies attribute names, they should win.
             //
             // This handles cases like <input type="text" bind="@Foo" /> where the tag helper is 
             // generated to match a specific tag and has metadata that identify the attributes.

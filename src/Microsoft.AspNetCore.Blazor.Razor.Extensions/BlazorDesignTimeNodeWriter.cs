@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // We also limit component attributes to simple cases. However there is still a lot of complexity
             // to handle here, since there are a few different cases for how an attribute might be structured.
             //
-            // This rougly follows the design of the runtime writer for simplicity.
+            // This roughly follows the design of the runtime writer for simplicity.
             if (node.AttributeStructure == AttributeStructure.Minimized)
             {
                 // Do nothing
