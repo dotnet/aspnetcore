@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     public partial class LongPollingTransport : ITransport
     {
         private readonly HttpClient _httpClient;
-        private readonly HttpOptions _httpOptions;
         private readonly ILogger _logger;
         private IDuplexPipe _application;
         // Volatile so that the poll loop sees the updated value set from a different thread
@@ -29,13 +28,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public Task Running { get; private set; } = Task.CompletedTask;
 
         public LongPollingTransport(HttpClient httpClient)
-            : this(httpClient, null, null)
+            : this(httpClient, null)
         { }
 
-        public LongPollingTransport(HttpClient httpClient, HttpOptions httpOptions, ILoggerFactory loggerFactory)
+        public LongPollingTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
-            _httpOptions = httpOptions;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
@@ -61,7 +59,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             // Start sending and polling (ask for binary if the server supports it)
             var receiving = Poll(url, _transportCts.Token);
-            var sending = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _logger);
+            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending);
@@ -115,7 +113,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
-                    SendUtils.PrepareHttpRequest(request, _httpOptions);
 
                     HttpResponseMessage response;
 

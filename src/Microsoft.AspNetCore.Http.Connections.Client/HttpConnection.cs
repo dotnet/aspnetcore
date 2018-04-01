@@ -293,7 +293,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 {
                     // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
                     request.Version = new Version(1, 1);
-                    SendUtils.PrepareHttpRequest(request, _httpOptions);
 
                     // ResponseHeadersRead instructs SendAsync to return once headers are read
                     // rather than buffer the entire response. This gives a small perf boost.
@@ -401,6 +400,27 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
             var httpClient = new HttpClient(httpMessageHandler);
             httpClient.Timeout = HttpClientTimeout;
+
+            // Start with the user agent header
+            httpClient.DefaultRequestHeaders.UserAgent.Add(Constants.UserAgentHeader);
+
+            if (_httpOptions != null)
+            {
+                // Apply any headers configured on the HttpOptions
+                if (_httpOptions.Headers != null)
+                {
+                    foreach (var header in _httpOptions.Headers)
+                    {
+                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
+                }
+
+                // Apply the authorization header
+                if (_httpOptions.AccessTokenFactory != null)
+                {
+                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_httpOptions.AccessTokenFactory()}");
+                }
+            }
 
             return httpClient;
         }

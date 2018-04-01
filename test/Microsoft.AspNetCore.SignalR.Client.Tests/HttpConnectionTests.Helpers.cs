@@ -9,21 +9,23 @@ using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using HttpTransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
+
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests
     {
-        private static HttpConnection CreateConnection(HttpMessageHandler httpHandler = null, ILoggerFactory loggerFactory = null, string url = null, ITransport transport = null, ITransportFactory transportFactory = null)
+        private static HttpConnection CreateConnection(HttpMessageHandler httpHandler = null, ILoggerFactory loggerFactory = null, string url = null, ITransport transport = null, ITransportFactory transportFactory = null, HttpTransportType transportType = HttpTransportType.LongPolling)
         {
             var httpOptions = new HttpOptions()
             {
                 HttpMessageHandler = (httpMessageHandler) => httpHandler ?? TestHttpMessageHandler.CreateDefault(),
             };
 
-            return CreateConnection(httpOptions, loggerFactory, url, transport, transportFactory);
+            return CreateConnection(httpOptions, loggerFactory, url, transport, transportFactory, transportType);
         }
 
-        private static HttpConnection CreateConnection(HttpOptions httpOptions, ILoggerFactory loggerFactory = null, string url = null, ITransport transport = null, ITransportFactory transportFactory = null)
+        private static HttpConnection CreateConnection(HttpOptions httpOptions, ILoggerFactory loggerFactory = null, string url = null, ITransport transport = null, ITransportFactory transportFactory = null, HttpTransportType transportType = HttpTransportType.LongPolling)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             var uri = new Uri(url ?? "http://fakeuri.org/");
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
             else
             {
-                return new HttpConnection(uri, TransportType.LongPolling, loggerFactory, httpOptions);
+                return new HttpConnection(uri, transportType, loggerFactory, httpOptions);
             }
         }
 

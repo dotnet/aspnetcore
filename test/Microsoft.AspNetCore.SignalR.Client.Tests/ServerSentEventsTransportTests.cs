@@ -299,42 +299,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        [Fact]
-        public async Task SSETransportSetsUserAgent()
-        {
-            HttpHeaderValueCollection<ProductInfoHeaderValue> userAgentHeaderCollection = null;
-
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    userAgentHeaderCollection = request.Headers.UserAgent;
-                    await Task.Yield();
-                    return new HttpResponseMessage { Content = new StringContent(string.Empty) };
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            {
-                var sseTransport = new ServerSentEventsTransport(httpClient);
-
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                await sseTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Text, connection: Mock.Of<IConnection>()).OrTimeout();
-                await sseTransport.StopAsync().OrTimeout();
-            }
-
-            Assert.NotNull(userAgentHeaderCollection);
-            var userAgentHeader = Assert.Single(userAgentHeaderCollection);
-            Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client", userAgentHeader.Product.Name);
-
-            // user agent version should come from version embedded in assembly metadata
-            var assemblyVersion = typeof(Constants)
-                .Assembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-
-            Assert.Equal(assemblyVersion.InformationalVersion, userAgentHeader.Product.Version);
-        }
-
         [Theory]
         [InlineData(TransferFormat.Binary)] // Binary not supported
         [InlineData(TransferFormat.Text | TransferFormat.Binary)] // Multiple values not allowed

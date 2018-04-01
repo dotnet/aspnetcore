@@ -52,12 +52,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
             if ((availableServerTransports & TransportType.ServerSentEvents & _requestedTransportType) == TransportType.ServerSentEvents)
             {
-                return new ServerSentEventsTransport(_httpClient, _httpOptions, _loggerFactory);
+                return new ServerSentEventsTransport(_httpClient, _loggerFactory);
             }
 
             if ((availableServerTransports & TransportType.LongPolling & _requestedTransportType) == TransportType.LongPolling)
             {
-                return new LongPollingTransport(_httpClient, _httpOptions, _loggerFactory);
+                return new LongPollingTransport(_httpClient, _loggerFactory);
             }
 
             throw new InvalidOperationException("No requested transports available on the server.");

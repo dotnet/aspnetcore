@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     public partial class ServerSentEventsTransport : ITransport
     {
         private readonly HttpClient _httpClient;
-        private readonly HttpOptions _httpOptions;
         private readonly ILogger _logger;
 
         // Volatile so that the SSE loop sees the updated value set from a different thread
@@ -29,10 +28,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public Task Running { get; private set; } = Task.CompletedTask;
 
         public ServerSentEventsTransport(HttpClient httpClient)
-            : this(httpClient, null, null)
+            : this(httpClient, null)
         { }
 
-        public ServerSentEventsTransport(HttpClient httpClient, HttpOptions httpOptions, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
         {
             if (httpClient == null)
             {
@@ -40,7 +39,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
 
             _httpClient = httpClient;
-            _httpOptions = httpOptions;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
@@ -66,7 +64,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             // Start sending and polling (ask for binary if the server supports it)
             var receiving = OpenConnection(_application, url, startTcs, _transportCts.Token);
-            var sending = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _logger);
+            var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending);
@@ -97,7 +95,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             Log.StartReceive(_logger);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            SendUtils.PrepareHttpRequest(request, _httpOptions);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
             HttpResponseMessage response = null;

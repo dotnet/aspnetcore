@@ -15,8 +15,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 {
     internal static class SendUtils
     {
-        public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient,
-            HttpOptions httpOptions, ILogger logger)
+        public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger)
         {
             Log.SendStarted(logger);
 
@@ -43,7 +42,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
                             // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
                             request.Version = new Version(1, 1);
-                            PrepareHttpRequest(request, httpOptions);
 
                             request.Content = new ReadOnlySequenceContent(buffer);
 
@@ -88,23 +86,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
 
             Log.SendStopped(logger);
-        }
-
-        public static void PrepareHttpRequest(HttpRequestMessage request, HttpOptions httpOptions)
-        {
-            if (httpOptions?.Headers != null)
-            {
-                foreach (var header in httpOptions.Headers)
-                {
-                    request.Headers.Add(header.Key, header.Value);
-                }
-            }
-            request.Headers.UserAgent.Add(Constants.UserAgentHeader);
-
-            if (httpOptions?.AccessTokenFactory != null)
-            {
-                request.Headers.Add("Authorization", $"Bearer {httpOptions.AccessTokenFactory()}");
-            }
         }
 
         private class ReadOnlySequenceContent : HttpContent

@@ -5,11 +5,15 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Xunit;
+
+using HttpTransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -17,6 +21,53 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         public class Transport
         {
+            [Theory]
+            [InlineData(HttpTransportType.LongPolling)]
+            [InlineData(HttpTransportType.ServerSentEvents)]
+            public async Task HttpConnectionSetsUserAgentOnAllRequests(HttpTransportType transportType)
+            {
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                var requestsExecuted = false;
+
+                testHttpHandler.OnRequest((request, next, token) =>
+                {
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                });
+
+                testHttpHandler.OnNegotiate((_, cancellationToken) =>
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+                });
+
+                testHttpHandler.OnRequest(async (request, next, token) =>
+                {
+                    var userAgentHeaderCollection = request.Headers.UserAgent;
+                    var userAgentHeader = Assert.Single(userAgentHeaderCollection);
+                    Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client", userAgentHeader.Product.Name);
+
+                    // user agent version should come from version embedded in assembly metadata
+                    var assemblyVersion = typeof(Constants)
+                            .Assembly
+                            .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+                    Assert.Equal(assemblyVersion.InformationalVersion, userAgentHeader.Product.Version);
+
+                    requestsExecuted = true;
+
+                    return await next();
+                });
+
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, transportType: transportType),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+                    });
+                // Fail safe in case the code is modified and some requests don't execute as a result
+                Assert.True(requestsExecuted);
+            }
+
             [Fact]
             public async Task CanReceiveData()
             {
@@ -24,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 // Set the long poll up to return a single message over a few polls.
                 var requestCount = 0;
-                var messageFragments = new[] {"This ", "is ", "a ", "test"};
+                var messageFragments = new[] { "This ", "is ", "a ", "test" };
                 testHttpHandler.OnLongPoll(cancellationToken =>
                 {
                     if (requestCount >= messageFragments.Length)
