@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public class JsonHubProtocol : IHubProtocol
     {
-        private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
         private const string ResultPropertyName = "result";
         private const string ItemPropertyName = "item";
         private const string InvocationIdPropertyName = "invocationId";
@@ -111,6 +109,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
                 using (var reader = JsonUtils.CreateJsonTextReader(textReader))
                 {
+                    reader.DateParseHandling = DateParseHandling.None;
+
                     JsonUtils.CheckRead(reader);
 
                     // We're always parsing a JSON object

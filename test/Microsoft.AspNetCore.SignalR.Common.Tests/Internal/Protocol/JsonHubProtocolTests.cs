@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IEnumerable<object[]> ProtocolTestData => new[]
         {
+            new object[] { new InvocationMessage("Method", null, "2016-05-10T13:51:20+12:34"), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}" },
+            new object[] { new InvocationMessage("Method", null, DateTimeOffset.Parse("2016-05-10T13:51:20+12:34")), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}" },
+
             new object[] { new InvocationMessage("123", "Target", null, 1, "Foo", 2.0f), true, NullValueHandling.Ignore, "{\"type\":1,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}" },
             new object[] { new InvocationMessage(null, "Target", null, 1, "Foo", 2.0f), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}" },
             new object[] { new InvocationMessage(null, "Target", null, true), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Target\",\"arguments\":[true]}" },
@@ -86,6 +89,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IEnumerable<object[]> OutOfOrderJsonTestData => new[]
         {
+            new object[] { "{ \"arguments\": [\"2016-05-10T13:51:20+12:34\"], \"type\":1, \"target\": \"Method\" }", new InvocationMessage("Method", argumentBindingException: null, "2016-05-10T13:51:20+12:34") },
+            new object[] { "{ \"arguments\": [\"2016-05-10T13:51:20+12:34\"], \"type\":1, \"target\": \"Method\" }", new InvocationMessage("Method", argumentBindingException: null, DateTimeOffset.Parse("2016-05-10T13:51:20+12:34")) },
             new object[] { "{ \"arguments\": [1,2], \"type\":1, \"target\": \"Method\" }", new InvocationMessage("Method", argumentBindingException: null, 1, 2) },
             new object[] { "{ \"type\":4, \"arguments\": [1,2], \"target\": \"Method\", \"invocationId\": \"3\" }", new StreamInvocationMessage("3", "Method", argumentBindingException: null, 1, 2) },
             new object[] { "{ \"type\":3, \"result\": 10, \"invocationId\": \"15\" }", new CompletionMessage("15", null, 10, hasResult: true) },
