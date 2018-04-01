@@ -213,6 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var index = reader.CurrentSegmentIndex;
                             int ch1;
                             int ch2;
+                            var readAhead = false;
 
                             // Fast path, we're still looking at the same span
                             if (remaining >= 2)
@@ -229,6 +230,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 // Possibly split across spans
                                 ch1 = reader.Read();
                                 ch2 = reader.Read();
+
+                                readAhead = true;
                             }
 
                             if (ch1 == ByteCR)
@@ -244,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 {
                                     // If we got 2 bytes from the span directly so skip ahead 2 so that
                                     // the reader's state matches what we expect
-                                    if (index == reader.CurrentSegmentIndex)
+                                    if (!readAhead)
                                     {
                                         reader.Advance(2);
                                     }
@@ -259,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                             // We moved the reader so look ahead 2 bytes so reset both the reader
                             // and the index
-                            if (index != reader.CurrentSegmentIndex)
+                            if (readAhead)
                             {
                                 reader = start;
                                 index = reader.CurrentSegmentIndex;
