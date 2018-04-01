@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -86,37 +87,41 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public override void Write(char value)
         {
-            var destination = GetBuffer();
-
             if (value <= 127)
             {
-                destination[0] = (byte)value;
+                EnsureBuffer();
+
+                // Only need to set one byte
+                // Avoid Memory<T>.Slice overhead for perf
+                _memory.Span[_memoryUsed] = (byte)value;
                 _memoryUsed++;
             }
             else
             {
-                // Json.NET only writes ASCII characters by themselves, e.g. {}[], etc
-                // this should be an exceptional case
-                var bytesUsed = 0;
-                var charsUsed = 0;
-                unsafe
-                {
-#if NETCOREAPP2_1
-                    _encoder.Convert(new Span<char>(&value, 1), destination, false, out charsUsed, out bytesUsed, out _);
-#else
-                    fixed (byte* destinationBytes = &MemoryMarshal.GetReference(destination))
-                    {
-                        _encoder.Convert(&value, 1, destinationBytes, destination.Length, false, out charsUsed, out bytesUsed, out _);
-                    }
-#endif
-                }
-                Debug.Assert(charsUsed == 1);
-
-                if (bytesUsed > 0)
-                {
-                    _memoryUsed += bytesUsed;
-                }
+                WriteMultiByteChar(value);
             }
+        }
+
+        private unsafe void WriteMultiByteChar(char value)
+        {
+            var destination = GetBuffer();
+
+            // Json.NET only writes ASCII characters by themselves, e.g. {}[], etc
+            // this should be an exceptional case
+            var bytesUsed = 0;
+            var charsUsed = 0;
+#if NETCOREAPP2_1
+            _encoder.Convert(new Span<char>(&value, 1), destination, false, out charsUsed, out bytesUsed, out _);
+#else
+            fixed (byte* destinationBytes = &MemoryMarshal.GetReference(destination))
+            {
+                _encoder.Convert(&value, 1, destinationBytes, destination.Length, false, out charsUsed, out bytesUsed, out _);
+            }
+#endif
+
+            Debug.Assert(charsUsed == 1);
+
+            _memoryUsed += bytesUsed;
         }
 
         public override void Write(string value)
@@ -124,6 +129,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             WriteInternal(value.AsSpan());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Span<byte> GetBuffer()
         {
             EnsureBuffer();
