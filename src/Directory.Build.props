@@ -6,4 +6,8 @@
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
+  <PropertyGroup>
+    <!-- https://github.com/aspnet/KestrelHttpServer/issues/2350 -->
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
 </Project>
