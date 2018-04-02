@@ -33,6 +33,7 @@
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26326-03</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.1.0-preview2-30504</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.1.0-preview2-30504</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.1.0-preview2-30504</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>

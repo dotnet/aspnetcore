@@ -3,5 +3,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RestoreSources>${RestoreSources}</RestoreSources>
     <RuntimeFrameworkVersion>${RuntimeFrameworkVersion}</RuntimeFrameworkVersion>
+    <MicrosoftNETSdkRazorPackageVersion>${MicrosoftNETSdkRazorPackageVersion}</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
 </Project>
