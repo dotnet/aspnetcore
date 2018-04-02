@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -67,7 +68,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private static ApplicationModelProviderContext GetContext(Type type)
         {
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+            var defaultProvider = new DefaultApplicationModelProvider(
+                Options.Create(new MvcOptions()),
+                new EmptyModelMetadataProvider());
 
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
