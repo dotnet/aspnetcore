@@ -62,12 +62,11 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                     using (var tester = new AutobahnTester(loggerFactory, spec))
                     {
                         await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
+                        await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
 
-                        // Windows-only WebListener tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
+                        // Windows-only WebListener tests
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
-
                             if (IsWindows8OrHigher())
                             {
                                 // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?

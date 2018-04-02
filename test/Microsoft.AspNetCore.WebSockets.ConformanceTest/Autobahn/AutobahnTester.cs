@@ -165,13 +165,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             // Mac HttpClient on NetCoreApp2.0 doesn't alow you to set some combinations.
             // https://github.com/dotnet/corefx/blob/586cffcdfdf23ad6c193a4bf37fce88a1bf69508/src/System.Net.Http/src/System/Net/Http/CurlHandler/CurlHandler.SslProvider.OSX.cs#L104-L106
             handler.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls;
-            if (ssl)
-            {
-                // Don't take this out of the "if(ssl)". If we set it on some platforms, it crashes
-                // So we avoid running SSL tests on those platforms (for now).
-                // See https://github.com/dotnet/corefx/issues/9728
-                handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
-            }
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             var client = result.CreateHttpClient(handler);
 
             // Make sure the server works
