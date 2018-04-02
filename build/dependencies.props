@@ -11,7 +11,7 @@
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26330-03</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview2-26330-05</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0-preview2-26330-05</MicrosoftWin32RegistryPackageVersion>
-    <NuGetFrameworksPackageVersion>4.7.0-netcore.2.1.preview2.5137</NuGetFrameworksPackageVersion>
+    <NuGetFrameworksPackageVersion>4.7.0-preview3.5039</NuGetFrameworksPackageVersion>
     <RuntimeAlpine36X64MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26330-03</RuntimeAlpine36X64MicrosoftNETCoreAppPackageVersion>
     <RuntimeAlpine36X64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26330-03</RuntimeAlpine36X64MicrosoftNETCoreDotNetAppHostPackageVersion>
     <RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26330-03</RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPackageVersion>
