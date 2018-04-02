@@ -160,9 +160,8 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Common" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Common.Http" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Http" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
 
     <!-- SignalR Redis support is not part of the .App meta-package -->
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="ship" AllMetapackage="true" />
@@ -170,7 +169,7 @@
     <!-- SignalR Client and MsgPack Protocol support are not part of any meta-packages -->
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Client.Http" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.MsgPack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MsgPack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.MsgPack" Category="ship" />
