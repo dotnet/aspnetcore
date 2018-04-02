@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     // Send a frame, then close
                     await feature.Client.SendAsync(
                         buffer: new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello")),
-                        messageType: Enum.Parse<WebSocketMessageType>(webSocketMessageType),
+                        messageType: (WebSocketMessageType)Enum.Parse(typeof(WebSocketMessageType), webSocketMessageType),
                         endOfMessage: true,
                         cancellationToken: CancellationToken.None);
                     await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     Assert.Equal(1, clientSummary.Received.Count);
                     Assert.True(clientSummary.Received[0].EndOfMessage);
-                    Assert.Equal(Enum.Parse<WebSocketMessageType>(expectedMessageType), clientSummary.Received[0].MessageType);
+                    Assert.Equal((WebSocketMessageType)Enum.Parse(typeof(WebSocketMessageType), expectedMessageType), clientSummary.Received[0].MessageType);
                     Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Buffer));
                 }
             }
