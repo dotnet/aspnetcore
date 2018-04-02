@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
@@ -31,9 +32,8 @@ namespace SignalRSamples
                     options.ListenLocalhost(5000);
 
                     // Hub bound to TCP end point
-                    options.ListenLocalhost(9001, builder =>
+                    options.Listen(IPAddress.Any, 9001, builder =>
                     {
-                        // Run the hub on this port (this won't work properly until streaming parsing is implemented)
                         builder.UseHub<Chat>();
                     });
                 })

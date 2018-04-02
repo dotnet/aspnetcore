@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -27,12 +28,11 @@ namespace ClientSample
 
         public static async Task<int> ExecuteAsync(string baseUrl)
         {
-            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/default" : baseUrl;
-
-            Console.WriteLine("Connecting to {0}", baseUrl);
+            var endpoint = new IPEndPoint(IPAddress.Loopback, 9001);
+            Console.WriteLine("Connecting to {0}", endpoint);
             var connection = new HubConnectionBuilder()
-                .WithUrl(baseUrl)
-                .WithConsoleLogger(LogLevel.Trace)
+                .WithEndPoint(endpoint)
+                .WithConsoleLogger(LogLevel.Information)
                 .Build();
 
             try
@@ -44,7 +44,7 @@ namespace ClientSample
 
                 await ConnectAsync(connection);
 
-                Console.WriteLine("Connected to {0}", baseUrl);
+                Console.WriteLine("Connected to {0}", endpoint);
 
                 var sendCts = new CancellationTokenSource();
 
