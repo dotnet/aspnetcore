@@ -7,6 +7,9 @@
   <Import Project="SharedFxInstaller.targets" />
   <Import Project="Publish.targets" />
 
+  <!-- Workaround for #1014 -->
+  <Import Project="buildorder.props" Condition="$([MSBuild]::IsOSUnixLike())" />
+
   <PropertyGroup>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.g.props</GeneratedPackageVersionPropsPath>
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcesPropsPath>
@@ -154,7 +157,8 @@
     <Error Text="Undeclared package artifacts. Add these to artifacts.props:%0A  - @(_UndeclaredPackageArtifact, '%0A  - ')"
       Condition=" @(_UndeclaredPackageArtifact->Count()) != 0 " />
 
-    <RepoTasks.AnalyzeBuildGraph
+    <!-- Skipped to workaround #1014. The order is hardcoded in buildorder.props -->
+    <RepoTasks.AnalyzeBuildGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
       Dependencies="@(ExternalDependency)"
@@ -162,6 +166,9 @@
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
+
+    <Message Text="Repository build order:" Importance="high" />
+    <Message Text="%(RepositoryBuildOrder.Order). @(RepositoryBuildOrder, ', ')" Importance="high" />
   </Target>
 
   <Target Name="VerifyPackageArtifactConfig">

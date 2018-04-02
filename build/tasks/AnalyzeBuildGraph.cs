@@ -247,13 +247,6 @@ namespace RepoTasks
                 repositoriesWithOrder.Add((repositoryTaskItem, order));
             }
 
-            Log.LogMessage(MessageImportance.High, "Repository build order:");
-            foreach (var buildGroup in repositoriesWithOrder.GroupBy(r => r.order).OrderBy(g => g.Key))
-            {
-                var buildGroupRepos = buildGroup.Select(b => b.repository.ItemSpec);
-                Log.LogMessage(MessageImportance.High, $"{buildGroup.Key.ToString().PadLeft(2, ' ')}: {string.Join(", ", buildGroupRepos)}");
-            }
-
             return repositoriesWithOrder
                 .OrderBy(r => r.order)
                 .Select(r => r.repository)
