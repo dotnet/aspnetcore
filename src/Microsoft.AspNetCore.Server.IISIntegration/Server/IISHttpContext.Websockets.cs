@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     ref var handle = ref handles[currentChunk];
                     ref var chunk = ref pDataChunks[currentChunk];
 
-                    handle = b.Retain(true);
+                    handle = b.Pin();
 
                     chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
                     chunk.fromMemory.BufferLength = (uint)b.Length;
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 while (true)
                 {
                     var memory = Input.Writer.GetMemory();
-                    _inputHandle = memory.Retain(true);
+                    _inputHandle = memory.Pin();
 
                     try
                     {
