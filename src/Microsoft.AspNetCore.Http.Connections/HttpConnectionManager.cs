@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
-    public class HttpConnectionManager
+    public partial class HttpConnectionManager
     {
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         {
             var id = MakeNewConnectionId();
 
-            _logger.CreatedNewConnection(id);
+            Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
 
             var connection = new HttpConnectionContext(id);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 // Remove the connection completely
                 HttpConnectionsEventSource.Log.ConnectionStop(id, pair.Timer);
-                _logger.RemovedConnection(id);
+                Log.RemovedConnection(_logger, id);
             }
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 // Time the scan so we know if it gets slower than 1sec
                 var timer = ValueStopwatch.StartNew();
                 HttpConnectionsEventSource.Log.ScanningConnections();
-                _logger.ScanningConnections();
+                Log.ScanningConnections(_logger);
 
                 // Scan the registered connections looking for ones that have timed out
                 foreach (var c in _connections)
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     // But don't clean up connections while the debugger is attached.
                     if (!Debugger.IsAttached && status == HttpConnectionContext.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
                     {
-                        _logger.ConnectionTimedOut(connection.ConnectionId);
+                        Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                         HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
                         var ignore = DisposeAndRemoveAsync(connection);
                     }
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 // TODO: We could use this timer to determine if the connection scanner is too slow, but we need an idea of what "too slow" is.
                 var elapsed = timer.GetElapsedTime();
                 HttpConnectionsEventSource.Log.ScannedConnections(elapsed);
-                _logger.ScannedConnections(elapsed);
+                Log.ScannedConnections(_logger, elapsed);
 
                 // Resume once we finished processing all connections
                 _timer.Change(_heartbeatTickRate, _heartbeatTickRate);
@@ -229,15 +229,15 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
             catch (IOException ex)
             {
-                _logger.ConnectionReset(connection.ConnectionId, ex);
+                Log.ConnectionReset(_logger, connection.ConnectionId, ex);
             }
             catch (WebSocketException ex) when (ex.InnerException is IOException)
             {
-                _logger.ConnectionReset(connection.ConnectionId, ex);
+                Log.ConnectionReset(_logger, connection.ConnectionId, ex);
             }
             catch (Exception ex)
             {
-                _logger.FailedDispose(connection.ConnectionId, ex);
+                Log.FailedDispose(_logger, connection.ConnectionId, ex);
             }
             finally
             {
