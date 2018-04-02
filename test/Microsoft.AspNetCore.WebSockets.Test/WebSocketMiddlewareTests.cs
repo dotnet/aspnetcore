@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 #elif NETCOREAPP2_1
     // ClientWebSocket has added support for WebSockets on Win7.
 #else
-    Unknown TFM
+#error Unknown TFM
 #endif
     public class WebSocketMiddlewareTests : LoggedTest
     {
