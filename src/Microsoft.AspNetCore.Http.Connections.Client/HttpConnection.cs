@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private async Task StartTransport(Uri connectUrl, TransportType transportType, TransferFormat transferFormat)
         {
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-            var options = new PipeOptions(writerScheduler: PipeScheduler.ThreadPool, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
+            var options = new PipeOptions(writerScheduler: PipeScheduler.ThreadPool, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false, pauseWriterThreshold: 0, resumeWriterThreshold: 0);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
             // Construct the transport
