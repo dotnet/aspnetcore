@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var buffer = Frame(Pack(testData.Encoded));
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
             var data = new ReadOnlySequence<byte>(buffer);
-            var exception = Assert.Throws<FormatException>(() => _hubProtocol.TryParseMessage(ref data, binder, out _));
+            var exception = Assert.Throws<InvalidDataException>(() => _hubProtocol.TryParseMessage(ref data, binder, out _));
 
             Assert.Equal(testData.ErrorMessage, exception.Message);
         }
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
             var data = new ReadOnlySequence<byte>(buffer);
             _hubProtocol.TryParseMessage(ref data, binder, out var message);
-            var exception = Assert.Throws<FormatException>(() => ((HubMethodInvocationMessage)message).Arguments);
+            var exception = Assert.Throws<InvalidDataException>(() => ((HubMethodInvocationMessage)message).Arguments);
 
             Assert.Equal(testData.ErrorMessage, exception.Message);
         }

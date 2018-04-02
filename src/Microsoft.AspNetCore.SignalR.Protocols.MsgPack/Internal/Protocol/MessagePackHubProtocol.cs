@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     hasResult = false;
                     break;
                 default:
-                    throw new FormatException("Invalid invocation result kind.");
+                    throw new InvalidDataException("Invalid invocation result kind.");
             }
 
             return ApplyHeaders(headers, new CompletionMessage(invocationId, error, result, hasResult));
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
             if (parameterTypes.Count != argumentCount)
             {
-                throw new FormatException(
+                throw new InvalidDataException(
                     $"Invocation provides {argumentCount} argument(s) but target expects {parameterTypes.Count}.");
             }
 
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
             catch (Exception ex)
             {
-                throw new FormatException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+                throw new InvalidDataException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
             }
         }
 
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     WriteCloseMessage(closeMessage, packer);
                     break;
                 default:
-                    throw new FormatException($"Unexpected message type: {message.GetType().Name}");
+                    throw new InvalidDataException($"Unexpected message type: {message.GetType().Name}");
             }
         }
 
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 msgPackException = e;
             }
 
-            throw new FormatException($"Reading '{field}' as Int32 failed.", msgPackException);
+            throw new InvalidDataException($"Reading '{field}' as Int32 failed.", msgPackException);
         }
 
         private static string ReadString(Unpacker unpacker, string field)
@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 msgPackException = e;
             }
 
-            throw new FormatException($"Reading '{field}' as String failed.", msgPackException);
+            throw new InvalidDataException($"Reading '{field}' as String failed.", msgPackException);
         }
 
         private static bool ReadBoolean(Unpacker unpacker, string field)
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 msgPackException = e;
             }
 
-            throw new FormatException($"Reading '{field}' as Boolean failed.", msgPackException);
+            throw new InvalidDataException($"Reading '{field}' as Boolean failed.", msgPackException);
         }
 
         private static long ReadMapLength(Unpacker unpacker, string field)
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 msgPackException = e;
             }
 
-            throw new FormatException($"Reading map length for '{field}' failed.", msgPackException);
+            throw new InvalidDataException($"Reading map length for '{field}' failed.", msgPackException);
         }
 
         private static long ReadArrayLength(Unpacker unpacker, string field)
@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 msgPackException = e;
             }
 
-            throw new FormatException($"Reading array length for '{field}' failed.", msgPackException);
+            throw new InvalidDataException($"Reading array length for '{field}' failed.", msgPackException);
         }
 
         private static object DeserializeObject(Unpacker unpacker, Type type, string field)
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 msgPackException = ex;
             }
 
-            throw new FormatException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", msgPackException);
+            throw new InvalidDataException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", msgPackException);
         }
 
         internal static SerializationContext CreateDefaultSerializationContext()

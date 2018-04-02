@@ -20,7 +20,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR()
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            })
                 .AddMessagePackProtocol();
             services.AddAuthorization(options =>
             {

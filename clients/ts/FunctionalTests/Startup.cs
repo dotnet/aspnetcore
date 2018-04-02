@@ -24,7 +24,10 @@ namespace FunctionalTests
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddConnections();
-            services.AddSignalR()
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            })
                 .AddJsonProtocol(options =>
                 {
                     // we are running the same tests with JSON and MsgPack protocols and having

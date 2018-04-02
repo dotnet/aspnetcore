@@ -12,7 +12,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddConnections();
-            services.AddSignalR();
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

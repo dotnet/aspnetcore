@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var channel = await connection.StreamAsChannelAsync<int>("StreamException").OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
-                    Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server.", ex.Message);
+                    Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server. InvalidOperationException: Error occurred while streaming.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("Echo", "p1", 42)).OrTimeout();
-                    Assert.Equal("Failed to invoke 'Echo' due to an error on the server.", ex.Message);
+                    Assert.Equal("Failed to invoke 'Echo' due to an error on the server. InvalidDataException: Invocation provides 2 argument(s) but target expects 1.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", 42, 42);
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
-                    Assert.Equal("Failed to invoke 'Stream' due to an error on the server.", ex.Message);
+                    Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Invocation provides 2 argument(s) but target expects 1.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -581,7 +581,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", "xyz");
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
-                    Assert.Equal("Failed to invoke 'Stream' due to an error on the server.", ex.Message);
+                    Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
                 }
                 catch (Exception ex)
                 {
