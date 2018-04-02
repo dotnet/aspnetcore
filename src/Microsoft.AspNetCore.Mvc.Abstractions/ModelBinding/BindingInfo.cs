@@ -65,6 +65,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         /// <summary>
         /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
+        /// <para>
+        /// This overload does not account for <see cref="BindingInfo"/> specified via <see cref="ModelMetadata"/>. Consider using
+        /// <see cref="GetBindingInfo(IEnumerable{object}, ModelMetadata)"/> overload, or <see cref="TryApplyBindingInfo(ModelMetadata)"/>
+        /// on the result of this method to to get a more accurate <see cref="BindingInfo"/> instance.
+        /// </para>
         /// </summary>
         /// <param name="attributes">A collection of attributes which are used to construct <see cref="BindingInfo"/>
         /// </param>
@@ -132,6 +137,81 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             return isBindingInfoPresent ? bindingInfo : null;
+        }
+
+        /// <summary>
+        /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/> and <paramref name="modelMetadata"/>.
+        /// </summary>
+        /// <param name="attributes">A collection of attributes which are used to construct <see cref="BindingInfo"/>.</param>
+        /// <param name="modelMetadata">The <see cref="ModelMetadata"/>.</param>
+        /// <returns>A new instance of <see cref="BindingInfo"/> if any binding metadata was discovered; otherwise or <see langword="null"/>.</returns>
+        public static BindingInfo GetBindingInfo(IEnumerable<object> attributes, ModelMetadata modelMetadata)
+        {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
+            if (modelMetadata == null)
+            {
+                throw new ArgumentNullException(nameof(modelMetadata));
+            }
+
+            var bindingInfo = GetBindingInfo(attributes);
+            var isBindingInfoPresent = bindingInfo != null;
+
+            if (bindingInfo == null)
+            {
+                bindingInfo = new BindingInfo();
+            }
+
+            isBindingInfoPresent |= bindingInfo.TryApplyBindingInfo(modelMetadata);
+
+            return isBindingInfoPresent ? bindingInfo : null;
+        }
+
+        /// <summary>
+        /// Applies binding metadata from the specified <paramref name="modelMetadata"/>.
+        /// <para>
+        /// Uses values from <paramref name="modelMetadata"/> if no value is already available.
+        /// </para>
+        /// </summary>
+        /// <param name="modelMetadata">The <see cref="ModelMetadata"/>.</param>
+        /// <returns><see langword="true"/> if any binding metadata from <paramref name="modelMetadata"/> was applied;
+        /// <see langword="false"/> otherwise.</returns>
+        public bool TryApplyBindingInfo(ModelMetadata modelMetadata)
+        {
+            if (modelMetadata == null)
+            {
+                throw new ArgumentNullException(nameof(modelMetadata));
+            }
+
+            var isBindingInfoPresent = false;
+            if (BinderModelName == null && modelMetadata.BinderModelName != null)
+            {
+                isBindingInfoPresent = true;
+                BinderModelName = modelMetadata.BinderModelName;
+            }
+
+            if (BinderType == null && modelMetadata.BinderType != null)
+            {
+                isBindingInfoPresent = true;
+                BinderType = modelMetadata.BinderType;
+            }
+
+            if (BindingSource == null && modelMetadata.BindingSource != null)
+            {
+                isBindingInfoPresent = true;
+                BindingSource = modelMetadata.BindingSource;
+            }
+
+            if (PropertyFilterProvider == null && modelMetadata.PropertyFilterProvider != null)
+            {
+                isBindingInfoPresent = true;
+                PropertyFilterProvider = modelMetadata.PropertyFilterProvider;
+            }
+
+            return isBindingInfoPresent;
         }
 
         private class CompositePropertyFilterProvider : IPropertyFilterProvider

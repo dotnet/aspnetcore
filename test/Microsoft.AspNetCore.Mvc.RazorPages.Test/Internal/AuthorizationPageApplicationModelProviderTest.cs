@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -160,7 +161,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private static PageApplicationModelProviderContext GetApplicationProviderContext(TypeInfo typeInfo)
         {
-            var defaultProvider = new DefaultPageApplicationModelProvider();
+            var defaultProvider = new DefaultPageApplicationModelProvider(
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }));
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);
             return context;

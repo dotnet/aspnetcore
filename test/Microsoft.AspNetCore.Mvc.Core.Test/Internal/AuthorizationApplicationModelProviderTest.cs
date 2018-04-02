@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -22,10 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())));
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
-
-            var context = new ApplicationModelProviderContext(new[] { typeof(AccountController).GetTypeInfo() });
-            defaultProvider.OnProvidersExecuting(context);
+            var controllerType = typeof(AccountController);
+            var context = CreateProviderContext(controllerType);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -44,10 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.Value.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
 
             var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(options));
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
-
-            var context = new ApplicationModelProviderContext(new[] { typeof(DerivedController).GetTypeInfo() });
-            defaultProvider.OnProvidersExecuting(context);
+            var context = CreateProviderContext(typeof(DerivedController));
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -71,10 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())));
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
-
-            var context = new ApplicationModelProviderContext(new[] { typeof(AnonymousController).GetTypeInfo() });
-            defaultProvider.OnProvidersExecuting(context);
+            var context = CreateProviderContext(typeof(AnonymousController));
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -100,10 +93,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var policyProvider = new DefaultAuthorizationPolicyProvider(authOptions);
 
             var provider = new AuthorizationApplicationModelProvider(policyProvider);
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+            var context = CreateProviderContext(typeof(BaseController));
 
             // Act
-            var action = GetBaseControllerActionModel(provider, defaultProvider);
+            var action = GetBaseControllerActionModel(provider);
 
             // Assert
             var authorizationFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(action.Filters));
@@ -128,10 +121,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Verifiable();
 
             var provider = new AuthorizationApplicationModelProvider(authorizationPolicyProviderMock.Object);
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             // Act
-            var action = GetBaseControllerActionModel(provider, defaultProvider);
+            var action = GetBaseControllerActionModel(provider);
 
             // Assert
             var actionFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(action.Filters));
@@ -148,10 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new DefaultAuthorizationPolicyProvider(
                     Options.Create(new AuthorizationOptions())
                 ));
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
-
-            var context = new ApplicationModelProviderContext(new[] { typeof(NoAuthController).GetTypeInfo() });
-            defaultProvider.OnProvidersExecuting(context);
+            var context = CreateProviderContext(typeof(NoAuthController));
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -163,16 +152,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(action.Filters);
         }
 
-        private ActionModel GetBaseControllerActionModel(
-            IApplicationModelProvider authorizationApplicationModelProvider,
-            IApplicationModelProvider applicationModelProvider)
+        private ActionModel GetBaseControllerActionModel(AuthorizationApplicationModelProvider authorizationApplicationModelProvider)
         {
-            var context = new ApplicationModelProviderContext(new[] { typeof(BaseController).GetTypeInfo() });
-            applicationModelProvider.OnProvidersExecuting(context);
-            var authorizeData = new List<IAuthorizeData>
-            {
-                new AuthorizeAttribute("POLICY")
-            };
+            var context = CreateProviderContext(typeof(BaseController));
 
             authorizationApplicationModelProvider.OnProvidersExecuting(context);
 
@@ -181,6 +163,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var action = Assert.Single(controller.Actions);
 
             return action;
+        }
+
+        private static ApplicationModelProviderContext CreateProviderContext(Type controllerType)
+        {
+            var defaultProvider = new DefaultApplicationModelProvider(
+                Options.Create(new MvcOptions()),
+                TestModelMetadataProvider.CreateDefaultProvider());
+
+            var context = new ApplicationModelProviderContext(new[] { controllerType.GetTypeInfo() });
+            defaultProvider.OnProvidersExecuting(context);
+            return context;
         }
 
         private class BaseController

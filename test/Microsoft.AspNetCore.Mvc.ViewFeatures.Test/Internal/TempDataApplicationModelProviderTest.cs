@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -20,7 +21,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var type = typeof(TestController_NoTempDataProperties);
             var options = Options.Create(new MvcViewOptions());
             var provider = new TempDataApplicationModelProvider(options);
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+            var defaultProvider = new DefaultApplicationModelProvider(
+                Options.Create(new MvcOptions()),
+                TestModelMetadataProvider.CreateDefaultProvider());
 
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -41,7 +44,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var options = Options.Create(new MvcViewOptions());
             var provider = new TempDataApplicationModelProvider(options);
             var expected = $"The '{type.FullName}.Test' property with TempDataAttribute is invalid. A property using TempDataAttribute must have a public getter and setter.";
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+            var defaultProvider = new DefaultApplicationModelProvider(
+                Options.Create(new MvcOptions()),
+                TestModelMetadataProvider.CreateDefaultProvider());
 
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -58,7 +63,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var type = typeof(TestController_NullableNonPrimitiveTempDataProperty);
             var options = Options.Create(new MvcViewOptions());
             var provider = new TempDataApplicationModelProvider(options);
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+            var defaultProvider = new DefaultApplicationModelProvider(
+                Options.Create(new MvcOptions()),
+                TestModelMetadataProvider.CreateDefaultProvider());
 
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -78,7 +85,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
             var options = Options.Create(new MvcViewOptions());
             var provider = new TempDataApplicationModelProvider(options);
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+            var defaultProvider = new DefaultApplicationModelProvider(
+                Options.Create(new MvcOptions()),
+                TestModelMetadataProvider.CreateDefaultProvider());
 
             var context = new ApplicationModelProviderContext(new[] { typeof(TestController_OneTempDataProperty).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -102,7 +111,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
             var options = Options.Create(new MvcViewOptions { SuppressTempDataAttributePrefix = true });
             var provider = new TempDataApplicationModelProvider(options);
-            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
+            var defaultProvider = new DefaultApplicationModelProvider(
+                Options.Create(new MvcOptions()),
+                TestModelMetadataProvider.CreateDefaultProvider());
 
             var context = new ApplicationModelProviderContext(new[] { typeof(TestController_OneTempDataProperty).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);

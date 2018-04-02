@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -136,7 +137,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private static PageApplicationModelProviderContext GetApplicationProviderContext(TypeInfo typeInfo)
         {
-            var defaultProvider = new DefaultPageApplicationModelProvider();
+            var defaultProvider = new DefaultPageApplicationModelProvider(
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                Options.Create(new MvcOptions()));
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);
             return context;

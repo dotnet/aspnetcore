@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -790,7 +791,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var manager = GetApplicationManager(controllerTypes);
 
-            var modelProvider = new DefaultApplicationModelProvider(options);
+            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
@@ -964,8 +965,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 foreach (var item in context.Results)
                 {
-                    var marker = item.Metadata as BooleanConstraintMarker;
-                    if (marker != null)
+                    if (item.Metadata is BooleanConstraintMarker marker)
                     {
                         Assert.Null(item.Constraint);
                         item.Constraint = new BooleanConstraint() { Pass = marker.Pass };

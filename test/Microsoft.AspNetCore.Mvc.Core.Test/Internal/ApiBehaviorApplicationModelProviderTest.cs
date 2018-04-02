@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -384,6 +385,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void InferParameterBindingSources_SetsCorrectBindingSourceForComplexTypesWithCancellationToken()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.ComplexTypeModelWithCancellationToken);
+
+            // Use the default set of ModelMetadataProviders so we get metadata details for CancellationToken. 
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var actionModel = Assert.Single(controllerModel.Actions, m => m.ActionName == actionName);
+
+            var provider = GetProvider();
+
+            // Act
+            provider.InferParameterBindingSources(actionModel);
+
+            // Assert
+            var model = GetParameterModel<TestModel>(actionModel);
+            Assert.Same(BindingSource.Body, model.BindingInfo.BindingSource);
+
+            var cancellationToken = GetParameterModel<CancellationToken>(actionModel);
+            Assert.Same(BindingSource.Special, cancellationToken.BindingInfo.BindingSource);
+        }
+
+        [Fact]
         public void InferBindingSourceForParameter_ReturnsBodyForSimpleTypes()
         {
             // Arrange
@@ -503,16 +529,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             };
             var optionsAccessor = Options.Create(options);
 
-            modelMetadataProvider = modelMetadataProvider ?? new TestModelMetadataProvider();
             var loggerFactory = NullLoggerFactory.Instance;
-
+            modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
             return new ApiBehaviorApplicationModelProvider(optionsAccessor, modelMetadataProvider, loggerFactory);
         }
 
-        private static ApplicationModelProviderContext GetContext(Type type)
+        private static ApplicationModelProviderContext GetContext(
+            Type type,
+            IModelMetadataProvider modelMetadataProvider = null)
         {
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
-            new DefaultApplicationModelProvider(Options.Create(new MvcOptions())).OnProvidersExecuting(context);
+            var mvcOptions = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true });
+            modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
+            var provider = new DefaultApplicationModelProvider(mvcOptions, modelMetadataProvider);
+            provider.OnProvidersExecuting(context);
+
             return context;
         }
 
@@ -533,6 +564,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var action = GetActionModel(controllerType, actionName);
             return Assert.Single(action.Parameters);
+        }
+
+        private static ParameterModel GetParameterModel<T>(ActionModel action)
+        {
+            return Assert.Single(action.Parameters.Where(x => typeof(T).IsAssignableFrom(x.ParameterType)));
         }
 
         [ApiController]
@@ -612,6 +648,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             [HttpPost]
             [Consumes("application/json")]
             public IActionResult ActionWithConsumesAttribute([FromForm] string parameter) => null;
+
+            [HttpPut("cancellation")]
+            public IActionResult ComplexTypeModelWithCancellationToken(TestModel model, CancellationToken cancellationToken) => null;
         }
 
         [ApiController]

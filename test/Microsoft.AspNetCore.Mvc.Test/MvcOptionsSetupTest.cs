@@ -184,6 +184,12 @@ namespace Microsoft.AspNetCore.Mvc
                 },
                 provider =>
                 {
+                    var formFileParameter = Assert.IsType<BindingSourceMetadataProvider>(provider);
+                    Assert.Equal(typeof(IFormFileCollection), formFileParameter.Type);
+                    Assert.Equal(BindingSource.FormFile, formFileParameter.BindingSource);
+                },
+                provider =>
+                {
                     var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(Type), excludeFilter.Type);
                 },
@@ -206,6 +212,11 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(IFormCollection), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
+                    Assert.Equal(typeof(IFormFileCollection), excludeFilter.Type);
                 },
                 provider =>
                 {
