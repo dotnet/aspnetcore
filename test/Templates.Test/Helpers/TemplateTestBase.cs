@@ -21,6 +21,7 @@ namespace Templates.Test
         protected string ProjectGuid { get; set; }
         protected string TemplateOutputDir { get; set; }
         protected ITestOutputHelper Output { get; private set; }
+        protected bool UseRazorSdkPackage { get; set; } = true;
 
         public TemplateTestBase(ITestOutputHelper output)
         {
@@ -39,7 +40,15 @@ namespace Templates.Test
             // We don't want any of the host repo's build config interfering with
             // how the test project is built, so disconnect it from the
             // Directory.Build.props/targets context
-            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), "<Project><Import Project=\"../../TemplateTests.props\" /></Project>");
+
+            var templatesTestsPropsFilePath = Path.Combine(basePath, "TemplateTests.props");
+            var directoryBuildPropsContent =
+$@"<Project>
+    <Import Project=""{templatesTestsPropsFilePath}"" />
+    <Import Project=""Directory.Build.After.props"" Condition=""Exists('Directory.Build.After.props')"" />
+</Project>";
+
+            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), directoryBuildPropsContent);
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), "<Project />");
         }
 
@@ -50,6 +59,8 @@ namespace Templates.Test
 
         protected void RunDotNetNew(string templateName, string targetFrameworkOverride, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
         {
+            SetAfterDirectoryBuildPropsContents();
+
             var args = $"new {templateName}";
 
             if (!string.IsNullOrEmpty(targetFrameworkOverride))
@@ -83,6 +94,32 @@ namespace Templates.Test
             {
                 ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
             }
+        }
+
+        protected void SetAfterDirectoryBuildPropsContents()
+        {
+            var content = GetAfterDirectoryBuildPropsContent();
+            if (!string.IsNullOrEmpty(content))
+            {
+                content = "<Project>" + Environment.NewLine + content + Environment.NewLine + "</Project>";
+                File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.After.props"), content);
+            }
+        }
+
+        protected virtual string GetAfterDirectoryBuildPropsContent()
+        {
+            var content = string.Empty;
+            if (UseRazorSdkPackage)
+            {
+                content +=
+@"
+<ItemGroup>
+    <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""$(MicrosoftNETSdkRazorPackageVersion)"" />
+</ItemGroup>
+";
+            }
+
+            return content;
         }
 
         protected void RunDotNet(string arguments)

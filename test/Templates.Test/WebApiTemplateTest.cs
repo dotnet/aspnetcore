@@ -19,7 +19,7 @@ namespace Templates.Test
         public void WebApiTemplate_Works_NetFramework()
             => WebApiTemplateImpl("net461");
 
-        [Fact(Skip = "https://github.com/aspnet/templating/issues/400")]
+        [Fact]
         public void WebApiTemplate_Works_NetCore()
             => WebApiTemplateImpl(null);
 

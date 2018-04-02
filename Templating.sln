@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Test", "test\Templates.Test\Templates.Test.csproj", "{D43A4D24-D514-44C2-9438-54F6EDF58680}"
 EndProject
@@ -19,6 +19,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F34CD7D7
 		build\dependencies.props = build\dependencies.props
 		build\repo.props = build\repo.props
 		build\sources.props = build\sources.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{342602FC-9FF3-448D-B12D-F0E91B23DBBF}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.targets = test\Directory.Build.targets
+		test\GenerateTestProps.targets = test\GenerateTestProps.targets
+		test\TemplateTests.props.in = test\TemplateTests.props.in
 	EndProjectSection
 EndProject
 Global
@@ -52,6 +59,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{D43A4D24-D514-44C2-9438-54F6EDF58680} = {342602FC-9FF3-448D-B12D-F0E91B23DBBF}
 		{ABC9D95C-7FBD-4F8D-827A-00942EA3D0C0} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{402E62D1-7FD0-4E07-812C-0E385D98D6D9} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
