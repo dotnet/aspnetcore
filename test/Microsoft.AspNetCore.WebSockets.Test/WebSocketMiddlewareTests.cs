@@ -13,6 +13,14 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
+#if NET461 || NETCOREAPP2_0
+    // ClientWebSocket does not support WebSockets on these platforms and OS. Kestrel does support it.
+    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
+#elif NETCOREAPP2_1
+    // ClientWebSocket has added support for WebSockets on Win7.
+#else
+    Unknown TFM
+#endif
     public class WebSocketMiddlewareTests : LoggedTest
     {
         private static string ClientAddress = "ws://localhost:54321/";
@@ -22,7 +30,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task Connect_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -42,7 +49,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task NegotiateSubProtocol_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -74,7 +80,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task SendEmptyData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -102,7 +107,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task SendShortData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -131,7 +135,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task SendMediumData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -160,7 +163,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task SendLongData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -201,7 +203,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task SendFragmentedData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -248,7 +249,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task ReceiveShortData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -277,7 +277,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task ReceiveMediumData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -306,7 +305,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task ReceiveLongData()
         {
             using (StartLog(out var loggerFactory))
@@ -343,7 +341,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task ReceiveFragmentedData_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -390,7 +387,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task SendClose_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -422,7 +418,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task ReceiveClose_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -454,7 +449,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task CloseFromOpen_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -488,7 +482,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task CloseFromCloseSent_Success()
         {
             using (StartLog(out var loggerFactory))
@@ -524,7 +517,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
         public async Task CloseFromCloseReceived_Success()
         {
             using (StartLog(out var loggerFactory))
