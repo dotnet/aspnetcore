@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
     public static class KestrelMemoryPool
     {
         public static MemoryPool<byte> Create() => new SlabMemoryPool();
+
+        public static readonly int MinimumSegmentSize = 4096;
     }
 }

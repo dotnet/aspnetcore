@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     public partial class LibuvConnection : LibuvConnectionContext
     {
-        private const int MinAllocBufferSize = 2048;
+        private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 
         private static readonly Action<UvStreamHandle, int, object> _readCallback =
             (handle, status, state) => ReadCallback(handle, status, state);

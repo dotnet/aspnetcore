@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     internal sealed class SocketConnection : TransportConnection
     {
-        private const int MinAllocBufferSize = 2048;
-        public readonly static bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
+        private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly Socket _socket;
         private readonly PipeScheduler _scheduler;

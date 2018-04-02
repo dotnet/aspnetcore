@@ -3,15 +3,16 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     public class AdaptedPipeline : IDuplexPipe
     {
-        private const int MinAllocBufferSize = 2048;
+        private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 
         private readonly IDuplexPipe _transport;
         private readonly IDuplexPipe _application;
