@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 case PingMessage pingMessage:
                     // If the types are equal (above), then we're done.
                     return true;
+                case CloseMessage closeMessage:
+                    return string.Equals(closeMessage.Error, ((CloseMessage) y).Error);
                 default:
                     throw new InvalidOperationException($"Unknown message type: {x.GetType().FullName}");
             }

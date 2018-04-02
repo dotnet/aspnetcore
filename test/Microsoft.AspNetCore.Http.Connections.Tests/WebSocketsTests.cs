@@ -24,10 +24,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
         }
 
+        // Using nameof with WebSocketMessageType because it is a GACed type and xunit can't serialize it
         [Theory]
-        [InlineData(WebSocketMessageType.Text)]
-        [InlineData(WebSocketMessageType.Binary)]
-        public async Task ReceivedFramesAreWrittenToChannel(WebSocketMessageType webSocketMessageType)
+        [InlineData(nameof(WebSocketMessageType.Text))]
+        [InlineData(nameof(WebSocketMessageType.Binary))]
+        public async Task ReceivedFramesAreWrittenToChannel(string webSocketMessageType)
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     // Send a frame, then close
                     await feature.Client.SendAsync(
                         buffer: new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello")),
-                        messageType: webSocketMessageType,
+                        messageType: Enum.Parse<WebSocketMessageType>(webSocketMessageType),
                         endOfMessage: true,
                         cancellationToken: CancellationToken.None);
                     await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
@@ -71,10 +72,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        // Using nameof with WebSocketMessageType because it is a GACed type and xunit can't serialize it
         [Theory]
-        [InlineData(TransferFormat.Text, WebSocketMessageType.Text)]
-        [InlineData(TransferFormat.Binary, WebSocketMessageType.Binary)]
-        public async Task WebSocketTransportSetsMessageTypeBasedOnTransferFormatFeature(TransferFormat transferFormat, WebSocketMessageType expectedMessageType)
+        [InlineData(TransferFormat.Text, nameof(WebSocketMessageType.Text))]
+        [InlineData(TransferFormat.Binary, nameof(WebSocketMessageType.Binary))]
+        public async Task WebSocketTransportSetsMessageTypeBasedOnTransferFormatFeature(TransferFormat transferFormat, string expectedMessageType)
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
@@ -104,7 +106,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     Assert.Equal(1, clientSummary.Received.Count);
                     Assert.True(clientSummary.Received[0].EndOfMessage);
-                    Assert.Equal(expectedMessageType, clientSummary.Received[0].MessageType);
+                    Assert.Equal(Enum.Parse<WebSocketMessageType>(expectedMessageType), clientSummary.Received[0].MessageType);
                     Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Buffer));
                 }
             }

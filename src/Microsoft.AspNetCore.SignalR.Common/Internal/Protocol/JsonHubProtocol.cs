@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private void WriteCloseMessage(CloseMessage message, JsonTextWriter writer)
         {
-            if (!string.IsNullOrEmpty(message.Error))
+            if (message.Error != null)
             {
                 writer.WritePropertyName(ErrorPropertyName);
                 writer.WriteValue(message.Error);
@@ -615,7 +615,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private CloseMessage BindCloseMessage(string error)
         {
-            if (string.IsNullOrEmpty(error))
+            // An empty string is still an error
+            if (error == null)
             {
                 return CloseMessage.Empty;
             }

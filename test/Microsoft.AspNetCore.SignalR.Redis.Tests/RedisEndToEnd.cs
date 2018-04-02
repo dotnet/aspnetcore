@@ -40,11 +40,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [ConditionalTheory()]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
-        public async Task HubConnectionCanSendAndReceiveMessages(TransportType transportType, IHubProtocol protocol)
+        public async Task HubConnectionCanSendAndReceiveMessages(TransportType transportType, string protocolName)
         {
             using (StartLog(out var loggerFactory, testName:
-                $"{nameof(HubConnectionCanSendAndReceiveMessages)}_{transportType.ToString()}_{protocol.Name}"))
+                $"{nameof(HubConnectionCanSendAndReceiveMessages)}_{transportType.ToString()}_{protocolName}"))
             {
+                var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
+
                 var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory);
 
                 await connection.StartAsync().OrTimeout();
@@ -59,11 +61,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [ConditionalTheory()]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
-        public async Task HubConnectionCanSendAndReceiveGroupMessages(TransportType transportType, IHubProtocol protocol)
+        public async Task HubConnectionCanSendAndReceiveGroupMessages(TransportType transportType, string protocolName)
         {
             using (StartLog(out var loggerFactory, testName:
-                $"{nameof(HubConnectionCanSendAndReceiveGroupMessages)}_{transportType.ToString()}_{protocol.Name}"))
+                $"{nameof(HubConnectionCanSendAndReceiveGroupMessages)}_{transportType.ToString()}_{protocolName}"))
             {
+                var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
+
                 var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory);
                 var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, loggerFactory);
 
@@ -111,11 +115,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             {
                 foreach (var transport in TransportTypes())
                 {
-                    yield return new object[] { transport, new JsonHubProtocol() };
+                    yield return new object[] { transport, JsonHubProtocol.ProtocolName };
 
                     if (transport != TransportType.ServerSentEvents)
                     {
-                        yield return new object[] { transport, new MessagePackHubProtocol() };
+                        yield return new object[] { transport, MessagePackHubProtocol.ProtocolName };
                     }
                 }
             }
