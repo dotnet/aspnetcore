@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.IO;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
@@ -14,6 +13,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private object _lock = new object();
         private List<SerializedMessage> _serializedMessages;
+        private SerializedMessage _message1;
+        private SerializedMessage _message2;
 
         public byte[] WriteMessage(IHubProtocol protocol)
         {
@@ -24,9 +25,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
             lock (_lock)
             {
+                if (ReferenceEquals(_message1.Protocol, protocol))
+                {
+                    return _message1.Message;
+                }
+
+                if (ReferenceEquals(_message2.Protocol, protocol))
+                {
+                    return _message2.Message;
+                }
+
                 for (var i = 0; i < _serializedMessages?.Count; i++)
                 {
-                    if (_serializedMessages[i].Protocol.Equals(protocol))
+                    if (ReferenceEquals(_serializedMessages[i].Protocol, protocol))
                     {
                         return _serializedMessages[i].Message;
                     }
@@ -34,17 +45,27 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
                 var bytes = protocol.WriteToArray(this);
 
-                if (_serializedMessages == null)
+                if (_message1.Protocol == null)
                 {
-                    // Initialize with capacity 2 for the 2 built in protocols
-                    _serializedMessages = new List<SerializedMessage>(2);
+                    _message1 = new SerializedMessage(protocol, bytes);
                 }
-
-                // We don't want to balloon memory if someone writes a poor IHubProtocolResolver
-                // So we cap how many caches we store and worst case just serialize the message for every connection
-                if (_serializedMessages.Count < 10)
+                else if (_message2.Protocol == null)
                 {
-                    _serializedMessages.Add(new SerializedMessage(protocol, bytes));
+                    _message2 = new SerializedMessage(protocol, bytes);
+                }
+                else
+                {
+                    if (_serializedMessages == null)
+                    {
+                        _serializedMessages = new List<SerializedMessage>();
+                    }
+
+                    // We don't want to balloon memory if someone writes a poor IHubProtocolResolver
+                    // So we cap how many caches we store and worst case just serialize the message for every connection
+                    if (_serializedMessages.Count < 10)
+                    {
+                        _serializedMessages.Add(new SerializedMessage(protocol, bytes));
+                    }
                 }
 
                 return bytes;

@@ -114,12 +114,17 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
 
-            using (var writer = new MemoryBufferWriter())
+            var writer = MemoryBufferWriter.Get();
+            try
             {
                 protocol.WriteMessage(message, writer);
                 var json = Encoding.UTF8.GetString(writer.ToArray());
 
                 Assert.Equal(expectedOutput, json);
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 

@@ -30,10 +30,15 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            using (var memoryBufferWriter = new MemoryBufferWriter())
+            var memoryBufferWriter = MemoryBufferWriter.Get();
+            try
             {
                 HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage("json", 1), memoryBufferWriter);
                 _handshakeRequestResult = new ReadResult(new ReadOnlySequence<byte>(memoryBufferWriter.ToArray()), false, false);
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(memoryBufferWriter);
             }
 
             _pipe = new TestDuplexPipe();

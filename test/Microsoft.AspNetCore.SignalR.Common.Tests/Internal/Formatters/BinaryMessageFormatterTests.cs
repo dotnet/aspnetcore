@@ -32,7 +32,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
                 Encoding.UTF8.GetBytes("Hello,\r\nWorld!")
             };
 
-            using (var writer = new MemoryBufferWriter()) // Use small chunks to test Advance/Enlarge and partial payload writing
+            var writer = MemoryBufferWriter.Get(); // Use small chunks to test Advance/Enlarge and partial payload writing
+            try
             {
                 foreach (var message in messages)
                 {
@@ -41,6 +42,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
                 }
 
                 Assert.Equal(expectedEncoding, writer.ToArray());
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 
@@ -73,13 +78,18 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         [InlineData(new byte[] { 0x04, 0xAB, 0xCD, 0xEF, 0x12 }, new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
         public void WriteBinaryMessage(byte[] encoded, byte[] payload)
         {
-            using (var writer = new MemoryBufferWriter())
+            var writer = MemoryBufferWriter.Get();
+            try
             {
 
                 BinaryMessageFormatter.WriteLengthPrefix(payload.Length, writer);
                 writer.Write(payload);
 
                 Assert.Equal(encoded, writer.ToArray());
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 
@@ -90,7 +100,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         public void WriteTextMessage(byte[] encoded, string payload)
         {
             var message = Encoding.UTF8.GetBytes(payload);
-            using (var writer = new MemoryBufferWriter())
+            var writer = MemoryBufferWriter.Get();
+            try
             {
 
                 BinaryMessageFormatter.WriteLengthPrefix(message.Length, writer);
@@ -98,19 +109,28 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
 
                 Assert.Equal(encoded, writer.ToArray());
             }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
+            }
         }
 
         [Theory]
         [MemberData(nameof(RandomPayloads))]
         public void RoundTrippingTest(byte[] payload)
         {
-            using (var writer = new MemoryBufferWriter())
+            var writer = MemoryBufferWriter.Get();
+            try
             {
                 BinaryMessageFormatter.WriteLengthPrefix(payload.Length, writer);
                 writer.Write(payload);
                 var buffer = new ReadOnlySequence<byte>(writer.ToArray());
                 Assert.True(BinaryMessageParser.TryParseMessage(ref buffer, out var roundtripped));
                 Assert.Equal(payload, roundtripped.ToArray());
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 

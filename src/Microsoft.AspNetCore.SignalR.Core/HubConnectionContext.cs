@@ -41,10 +41,15 @@ namespace Microsoft.AspNetCore.SignalR
 
         static HubConnectionContext()
         {
-            using (var memoryBufferWriter = new MemoryBufferWriter())
+            var memoryBufferWriter = MemoryBufferWriter.Get();
+            try
             {
                 HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
                 _successHandshakeResponseData = memoryBufferWriter.ToArray();
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(memoryBufferWriter);
             }
         }
 
@@ -108,9 +113,10 @@ namespace Microsoft.AspNetCore.SignalR
                 // So that we don't serialize the HubMessage for every single connection
                 var buffer = message.WriteMessage(Protocol);
 
-                _connectionContext.Transport.Output.Write(buffer);
+                var output = _connectionContext.Transport.Output;
+                output.Write(buffer);
 
-                return _connectionContext.Transport.Output.FlushAsync();
+                return output.FlushAsync();
             }
             catch (Exception ex)
             {

@@ -445,11 +445,16 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         private static byte[] Frame(byte[] input)
         {
-            using (var stream = new MemoryBufferWriter())
+            var stream = MemoryBufferWriter.Get();
+            try
             {
                 BinaryMessageFormatter.WriteLengthPrefix(input.Length, stream);
                 stream.Write(input);
                 return stream.ToArray();
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(stream);
             }
         }
 
@@ -487,10 +492,15 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         private static byte[] Write(HubMessage message)
         {
             var protocol = new MessagePackHubProtocol();
-            using (var writer = new MemoryBufferWriter())
+            var writer = MemoryBufferWriter.Get();
+            try
             {
                 protocol.WriteMessage(message, writer);
                 return writer.ToArray();
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 
