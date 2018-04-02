@@ -2,9 +2,9 @@
 import { getAssemblyNameFromUrl } from '../DotNet';
 import { getRegisteredFunction } from '../../Interop/RegisteredFunction';
 
-const registeredAssemblies: { [identifier: string]: number } = {}; 
-const registeredClasses:    { [identifier: string]: number } = {}; 
-const registeredMethods:    { [identifier: string]: MethodHandle } = {};
+const assemblyHandleCache: { [assemblyName: string]: number } = {};
+const typeHandleCache: { [fullyQualifiedTypeName: string]: number } = {};
+const methodHandleCache: { [fullyQualifiedMethodName: string]: MethodHandle } = {};
 
 let assembly_load: (assemblyName: string) => number;
 let find_class: (assemblyHandle: number, namespace: string, className: string) => number;
@@ -28,34 +28,7 @@ export const monoPlatform: Platform = {
     });
   },
 
-  findMethod: function findMethod(assemblyName: string, namespace: string, className: string, methodName: string): MethodHandle {
-
-    let assemblyHandle: number | undefined = registeredAssemblies[`[${assemblyName}]`];
-    if (!assemblyHandle) {
-      assemblyHandle = assembly_load(assemblyName);
-      if (!assemblyHandle) {
-        throw new Error(`Could not find assembly "${assemblyName}"`);
-      }
-      registeredAssemblies[`[${assemblyName}]`] = assemblyHandle;
-    }
-    let typeHandle: number | undefined = registeredClasses[`[${assemblyName}]${namespace}.${className}`];
-    if (!typeHandle) {
-      typeHandle = find_class(assemblyHandle as number, namespace, className);
-      if (!typeHandle) {
-        throw new Error(`Could not find type "${className}" in namespace "${namespace}" in assembly "${assemblyName}"`);
-      }
-      registeredClasses[`[${assemblyName}]${namespace}.${className}`] = typeHandle;
-    }
-    let methodHandle = registeredMethods[`[${assemblyName}]${namespace}.${className}.${methodName}`]
-    if (!methodHandle) {
-      methodHandle = find_method(typeHandle as number, methodName, -1);
-      if (!methodHandle) {
-        throw new Error(`Could not find method "${methodName}" on type "${namespace}.${className}"`);
-      }
-      registeredMethods[`[${assemblyName}]${namespace}.${className}.${methodName}`] = methodHandle;
-    }
-    return methodHandle;
-  },
+  findMethod: findMethod,
 
   callEntryPoint: function callEntryPoint(assemblyName: string, entrypointMethod: string, args: System_Object[]): void {
     // Parse the entrypointMethod, which is of the form MyApp.MyNamespace.MyTypeName::MyMethodName
@@ -154,6 +127,44 @@ export const monoPlatform: Platform = {
 // Bypass normal type checking to add this extra function. It's only intended to be called from
 // the JS code in Mono's driver.c. It's never intended to be called from TypeScript.
 (monoPlatform as any).monoGetRegisteredFunction = getRegisteredFunction;
+
+function findAssembly(assemblyName: string): number {
+  let assemblyHandle = assemblyHandleCache[assemblyName];
+  if (!assemblyHandle) {
+    assemblyHandle = assembly_load(assemblyName);
+    if (!assemblyHandle) {
+      throw new Error(`Could not find assembly "${assemblyName}"`);
+    }
+    assemblyHandleCache[assemblyName] = assemblyHandle;
+  }
+  return assemblyHandle;
+}
+
+function findType(assemblyName: string, namespace: string, className: string): number {
+  const fullyQualifiedTypeName = `[${assemblyName}]${namespace}.${className}`;
+  let typeHandle = typeHandleCache[fullyQualifiedTypeName];
+  if (!typeHandle) {
+    typeHandle = find_class(findAssembly(assemblyName), namespace, className);
+    if (!typeHandle) {
+      throw new Error(`Could not find type "${className}" in namespace "${namespace}" in assembly "${assemblyName}"`);
+    }
+    typeHandleCache[fullyQualifiedTypeName] = typeHandle;
+  }
+  return typeHandle;
+}
+
+function findMethod(assemblyName: string, namespace: string, className: string, methodName: string): MethodHandle {
+  const fullyQualifiedMethodName = `[${assemblyName}]${namespace}.${className}::${methodName}`;
+  let methodHandle = methodHandleCache[fullyQualifiedMethodName];
+  if (!methodHandle) {
+    methodHandle = find_method(findType(assemblyName, namespace, className), methodName, -1);
+    if (!methodHandle) {
+      throw new Error(`Could not find method "${methodName}" on type "${namespace}.${className}"`);
+    }
+    methodHandleCache[fullyQualifiedMethodName] = methodHandle;
+  }
+  return methodHandle;
+}
 
 function addScriptTagsToDocument() {
   // Load either the wasm or asm.js version of the Mono runtime
