@@ -66,7 +66,7 @@
 
       <FileExclusions Include="
         $(PoliCheckPath)**\jquery\dist\jquery.js;
-        $(PoliCheckPath)**\jquery-validation\dist\additional-methods.js">
+        $(PoliCheckPath)**\jquery-validation\dist\additional-methods*.js">
         <Justification>Third party code shipping in our packages</Justification>
       </FileExclusions>
     </ItemGroup>
