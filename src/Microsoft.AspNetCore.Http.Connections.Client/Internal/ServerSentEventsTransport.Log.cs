@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             private static readonly Action<ILogger, Exception> _transportStopping =
                 LoggerMessage.Define(LogLevel.Information, new EventId(6, "TransportStopping"), "Transport is stopping.");
 
-            private static readonly Action<ILogger, int, Exception> _messageToApp =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(7, "MessageToApp"), "Passing message to application. Payload size: {Count}.");
+            private static readonly Action<ILogger, int, Exception> _messageToApplication =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(7, "MessageToApplication"), "Passing message to application. Payload size: {Count}.");
 
             private static readonly Action<ILogger, Exception> _eventStreamEnded =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(8, "EventStreamEnded"), "Server-Sent Event Stream ended.");
@@ -60,9 +60,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _transportStopping(logger, null);
             }
 
-            public static void MessageToApp(ILogger logger, int count)
+            public static void MessageToApplication(ILogger logger, int count)
             {
-                _messageToApp(logger, count, null);
+                _messageToApplication(logger, count, null);
             }
 
             public static void ReceiveCanceled(ILogger logger)

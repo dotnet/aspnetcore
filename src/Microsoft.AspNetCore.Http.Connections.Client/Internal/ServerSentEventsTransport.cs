@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
+        public async Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
         {
             if (transferFormat != TransferFormat.Text)
             {
@@ -53,17 +53,32 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Log.StartTransport(_logger, transferFormat);
 
-            var startTcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
-            Running = ProcessAsync(url, startTcs);
+            HttpResponseMessage response = null;
 
-            return startTcs.Task;
+            try
+            {
+                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+            }
+            catch
+            {
+                response?.Dispose();
+
+                Log.TransportStopping(_logger);
+
+                throw;
+            }
+
+            Running = ProcessAsync(url, response);
         }
 
-        private async Task ProcessAsync(Uri url, TaskCompletionSource<object> startTcs)
+        private async Task ProcessAsync(Uri url, HttpResponseMessage response)
         {
             // Start sending and polling (ask for binary if the server supports it)
-            var receiving = OpenConnection(_application, url, startTcs, _transportCts.Token);
+            var receiving = ProcessEventStream(_application, response, _transportCts.Token);
             var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
 
             // Wait for send or receive to complete
@@ -90,89 +105,74 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
         }
 
-        private async Task OpenConnection(IDuplexPipe application, Uri url, TaskCompletionSource<object> startTcs, CancellationToken cancellationToken)
+        private async Task ProcessEventStream(IDuplexPipe application, HttpResponseMessage response, CancellationToken cancellationToken)
         {
             Log.StartReceive(_logger);
-
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
-
-            HttpResponseMessage response = null;
-
-            try
-            {
-                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                response.EnsureSuccessStatusCode();
-                startTcs.TrySetResult(null);
-            }
-            catch (Exception ex)
-            {
-                response?.Dispose();
-                Log.TransportStopping(_logger);
-                startTcs.TrySetException(ex);
-                return;
-            }
 
             using (response)
             using (var stream = await response.Content.ReadAsStreamAsync())
             {
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0);
-                var pipelineReader = StreamPipeConnection.CreateReader(pipeOptions, stream);
-                var readCancellationRegistration = cancellationToken.Register(
-                    reader => ((PipeReader)reader).CancelPendingRead(), pipelineReader);
+                var options = new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0);
+                var reader = PipeReaderFactory.CreateFromStream(options, stream, cancellationToken);
+
                 try
                 {
                     while (true)
                     {
-                        var result = await pipelineReader.ReadAsync();
-                        var input = result.Buffer;
-                        if (result.IsCanceled || (input.IsEmpty && result.IsCompleted))
-                        {
-                            Log.EventStreamEnded(_logger);
-                            break;
-                        }
+                        var result = await reader.ReadAsync();
+                        var buffer = result.Buffer;
+                        var consumed = buffer.Start;
+                        var examined = buffer.End;
 
-                        var consumed = input.Start;
-                        var examined = input.End;
                         try
                         {
-                            Log.ParsingSSE(_logger, input.Length);
-                            var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var buffer);
-                            FlushResult flushResult = default;
-
-                            switch (parseResult)
+                            if (result.IsCanceled)
                             {
-                                case ServerSentEventsMessageParser.ParseResult.Completed:
-                                    Log.MessageToApp(_logger, buffer.Length);
-
-                                    flushResult = await _application.Output.WriteAsync(buffer);
-
-                                    _parser.Reset();
-                                    break;
-                                case ServerSentEventsMessageParser.ParseResult.Incomplete:
-                                    if (result.IsCompleted)
-                                    {
-                                        throw new FormatException("Incomplete message.");
-                                    }
-                                    break;
+                                Log.ReceiveCanceled(_logger);
+                                break;
                             }
 
-                            // We canceled in the middle of applying back pressure
-                            // or if the consumer is done
-                            if (flushResult.IsCanceled || flushResult.IsCompleted)
+                            if (!buffer.IsEmpty)
+                            {
+                                Log.ParsingSSE(_logger, buffer.Length);
+
+                                var parseResult = _parser.ParseMessage(buffer, out consumed, out examined, out var message);
+                                FlushResult flushResult = default;
+
+                                switch (parseResult)
+                                {
+                                    case ServerSentEventsMessageParser.ParseResult.Completed:
+                                        Log.MessageToApplication(_logger, message.Length);
+
+                                        flushResult = await _application.Output.WriteAsync(message);
+
+                                        _parser.Reset();
+                                        break;
+                                    case ServerSentEventsMessageParser.ParseResult.Incomplete:
+                                        if (result.IsCompleted)
+                                        {
+                                            throw new FormatException("Incomplete message.");
+                                        }
+                                        break;
+                                }
+
+                                // We canceled in the middle of applying back pressure
+                                // or if the consumer is done
+                                if (flushResult.IsCanceled || flushResult.IsCompleted)
+                                {
+                                    break;
+                                }
+                            }
+                            else if (result.IsCompleted)
                             {
                                 break;
                             }
                         }
                         finally
                         {
-                            pipelineReader.AdvanceTo(consumed, examined);
+                            reader.AdvanceTo(consumed, examined);
                         }
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                    Log.ReceiveCanceled(_logger);
                 }
                 catch (Exception ex)
                 {
@@ -182,9 +182,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 {
                     _application.Output.Complete(_error);
 
-                    readCancellationRegistration.Dispose();
-
                     Log.ReceiveStopped(_logger);
+
+                    reader.Complete();
                 }
             }
         }
