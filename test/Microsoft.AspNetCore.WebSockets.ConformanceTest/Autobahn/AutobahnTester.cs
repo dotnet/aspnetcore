@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -160,6 +161,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             cancellationToken.ThrowIfCancellationRequested();
 
             var handler = new HttpClientHandler();
+            // Win7 HttpClient on NetCoreApp2.1 defaults to TLS 1.0 and won't connect to Kestrel. https://github.com/dotnet/corefx/issues/28733
+            handler.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
             if (ssl)
             {
                 // Don't take this out of the "if(ssl)". If we set it on some platforms, it crashes
