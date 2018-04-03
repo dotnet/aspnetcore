@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
   
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
-    <ViewAssemblyDescription>Compiled Razor views assembly for the ASP.NET Core Identity UI package.</ViewAssemblyDescription>
+    <RazorAssemblyDescription>Compiled Razor views assembly for the ASP.NET Core Identity UI package.</RazorAssemblyDescription>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,15 +37,9 @@
       <_parameter2>$(RazorTargetName).dll,false</_parameter2>
     </AssemblyAttribute>
 
-    <RazorAssemblyAttribute Include="System.Reflection.AssemblyDescriptionAttribute">
-      <_Parameter1>$(ViewAssemblyDescription)</_Parameter1>
-    </RazorAssemblyAttribute>
     <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
       <_Parameter1>BuildNumber</_Parameter1>
       <_Parameter2>$(BuildNumber)</_Parameter2>
-    </RazorAssemblyAttribute>
-    <RazorAssemblyAttribute Include="System.Resources.NeutralResourcesLanguageAttribute" Condition="'$(NeutralLanguage)' != '' and '$(GenerateNeutralResourcesLanguageAttribute)' == 'true'">
-      <_Parameter1>$(NeutralLanguage)</_Parameter1>
     </RazorAssemblyAttribute>
   </ItemGroup>
 
