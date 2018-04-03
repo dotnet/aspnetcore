@@ -86,6 +86,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 // Dispose the socket(should noop if already called)
                 _socket.Dispose();
+                _receiver.Dispose();
+                _sender.Dispose();
             }
             catch (Exception ex)
             {

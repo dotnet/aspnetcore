@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class SocketSender
+    public class SocketSender : IDisposable
     {
         private readonly Socket _socket;
         private readonly SocketAsyncEventArgs _eventArgs = new SocketAsyncEventArgs();
@@ -97,6 +97,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
 
             return _bufferList;
+        }
+
+        public void Dispose()
+        {
+            _eventArgs.Dispose();
         }
     }
 }
