@@ -29,6 +29,11 @@ namespace Microsoft.AspNetCore.Blazor.Server
             var configLines = File.ReadLines(configFilePath).ToList();
             SourceMSBuildPath = configLines[0];
 
+            if (SourceMSBuildPath == ".")
+            {
+                SourceMSBuildPath = assemblyPath;
+            }
+
             var sourceMsBuildDir = Path.GetDirectoryName(SourceMSBuildPath);
             SourceOutputAssemblyPath = Path.Combine(sourceMsBuildDir, configLines[1]);
 
