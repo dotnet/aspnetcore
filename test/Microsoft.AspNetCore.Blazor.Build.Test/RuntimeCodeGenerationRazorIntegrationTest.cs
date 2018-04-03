@@ -49,6 +49,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.CloseComponent();
         }
@@ -110,6 +111,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, ""IntProperty"", 123);
             builder.AddAttribute(2, ""BoolProperty"", true);
@@ -164,6 +166,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, ""StringProperty"", 42.ToString());
             builder.CloseComponent();
@@ -214,6 +217,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, ""some-attribute"", ""foo"");
             builder.AddAttribute(2, ""another-attribute"", 43.ToString());
@@ -276,20 +280,26 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, ""OnClick"", new Microsoft.AspNetCore.Blazor.UIEventHandler(e => { Increment(); }));
             builder.CloseComponent();
             builder.AddContent(2, ""\n\n"");
         }
         #pragma warning restore 1998
-        
+#line 4 ""x:\dir\subdir\Test\TestComponent.cshtml""
+            
     private int counter;
     private void Increment() {
         counter++;
     }
+
+#line default
+#line hidden
     }
 }
 #pragma warning restore 1591
+
 ", generated);
         }
 
@@ -344,20 +354,26 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, ""OnClick"", new Microsoft.AspNetCore.Blazor.UIEventHandler(Increment));
             builder.CloseComponent();
             builder.AddContent(2, ""\n\n"");
         }
         #pragma warning restore 1998
-        
+#line 5 ""x:\dir\subdir\Test\TestComponent.cshtml""
+            
     private int counter;
     private void Increment(UIEventArgs e) {
         counter++;
     }
+
+#line default
+#line hidden
     }
 }
 #pragma warning restore 1591
+
 ", generated);
         }
 
@@ -404,6 +420,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, ""MyAttr"", ""abc"");
             builder.AddAttribute(2, ""ChildContent"", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
@@ -466,6 +483,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+
             builder.OpenComponent<Test.MyComponent>(0);
             builder.CloseComponent();
         }

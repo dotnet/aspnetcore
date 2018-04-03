@@ -50,6 +50,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
             var isWhitespaceStatement = true;
             for (var i = 0; i < node.Children.Count; i++)
             {
@@ -63,7 +73,17 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             if (isWhitespaceStatement)
             {
+                // The runtime and design time code differ in their handling of whitespace-only
+                // statements. At runtime we can discard them completely. At design time we need
+                // to keep them for the editor.
                 return;
+            }
+
+            IDisposable linePragmaScope = null;
+            if (node.Source != null)
+            {
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
+                context.CodeWriter.WritePadding(0, node.Source.Value, context);
             }
 
             for (var i = 0; i < node.Children.Count; i++)
@@ -71,6 +91,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
                     _scopeStack.IncrementCurrentScopeChildCount(context);
+                    context.AddSourceMappingFor(token);
                     context.CodeWriter.Write(token.Content);
                 }
                 else
@@ -78,6 +99,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     // There may be something else inside the statement like an extension node.
                     context.RenderNode(node.Children[i]);
                 }
+            }
+
+            if (linePragmaScope != null)
+            {
+                linePragmaScope.Dispose();
+            }
+            else
+            {
+                context.CodeWriter.WriteLine();
             }
         }
 

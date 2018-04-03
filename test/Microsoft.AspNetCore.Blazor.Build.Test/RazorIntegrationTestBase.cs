@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             return CompileToAssembly(cSharpResult);
         }
 
-        protected CompileToAssemblyResult CompileToAssembly(CompileToCSharpResult cSharpResult)
+        protected CompileToAssemblyResult CompileToAssembly(CompileToCSharpResult cSharpResult, bool throwOnFailure = true)
         {
             if (cSharpResult.Diagnostics.Any())
             {
@@ -227,9 +227,17 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 .GetDiagnostics()
                 .Where(d => d.Severity != DiagnosticSeverity.Hidden);
 
-            if (diagnostics.Any())
+            if (diagnostics.Any() && throwOnFailure)
             {
                 throw new CompilationFailedException(compilation);
+            }
+            else if (diagnostics.Any())
+            {
+                return new CompileToAssemblyResult
+                {
+                    Compilation = compilation,
+                    Diagnostics = diagnostics,
+                };
             }
 
             using (var peStream = new MemoryStream())
