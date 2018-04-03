@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 _post.Reference();
                 _post.Dispose();
 
-                // We need this walk because we call ReadStop on on accepted connections when there's back pressure
+                // We need this walk because we call ReadStop on accepted connections when there's back pressure
                 // Calling ReadStop makes the handle as in-active which means the loop can
                 // end while there's still valid handles around. This makes loop.Dispose throw
                 // with an EBUSY. To avoid that, we walk all of the handles and dispose them.

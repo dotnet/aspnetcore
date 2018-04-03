@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public static unsafe bool TryGetAsciiStringVectorWiden(byte* input, char* output, int count)
         {
-            // Calcuate end position
+            // Calculate end position
             var end = input + count;
             // Start as valid
             var isValid = true;
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public static unsafe bool TryGetAsciiStringVectorCheck(byte* input, char* output, int count)
         {
-            // Calcuate end position
+            // Calculate end position
             var end = input + count;
             // Start as valid
             var isValid = true;

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
         {
-            // Calcuate end position
+            // Calculate end position
             var end = input + count;
             // Start as valid
             var isValid = true;

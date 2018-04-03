@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         }
                         catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
                         {
-                            // REVIEW: Should there be a seperate log message for a connection reset this early?
+                            // REVIEW: Should there be a separate log message for a connection reset this early?
                             _trace.ConnectionReset(connectionId: "(null)");
                         }
                         catch (SocketException ex) when (!_unbinding)
