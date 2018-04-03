@@ -7,7 +7,7 @@ using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class SocketReceiver
+    public class SocketReceiver : IDisposable
     {
         private readonly Socket _socket;
         private readonly SocketAsyncEventArgs _eventArgs = new SocketAsyncEventArgs();
@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
 
             return _awaitable;
+        }
+
+        public void Dispose()
+        {
+            _eventArgs.Dispose();
         }
     }
 }

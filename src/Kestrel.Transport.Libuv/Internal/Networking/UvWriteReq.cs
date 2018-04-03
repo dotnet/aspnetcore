@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                 if (nBuffers == 1)
                 {
                     var memory = buffer.First;
-                    var memoryHandle = memory.Retain(true);
+                    var memoryHandle = memory.Pin();
                     _handles.Add(memoryHandle);
 
                     // Fast path for single buffer
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                     foreach (var memory in buffer)
                     {
                         // This won't actually pin the buffer since we're already using pinned memory
-                        var memoryHandle = memory.Retain(true);
+                        var memoryHandle = memory.Pin();
                         _handles.Add(memoryHandle);
 
                         // create and pin each segment being written
