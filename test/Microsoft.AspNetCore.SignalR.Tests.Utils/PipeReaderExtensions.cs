@@ -28,8 +28,8 @@ namespace System.IO.Pipelines
                 }
                 finally
                 {
-                    // Consume nothing, just wait for everything
-                    pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
+                    // Don't consume or advance
+                    pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.Start);
                 }
             }
         }
