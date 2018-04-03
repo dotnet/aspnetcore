@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 routes.MapHub<DynamicTestHub>("/dynamic");
                 routes.MapHub<TestHubT>("/hubT");
                 routes.MapHub<HubWithAuthorization>("/authorizedhub");
-                routes.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = TransportType.LongPolling | TransportType.ServerSentEvents);
+                routes.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
             });
 
             app.Run(async (context) =>

@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Http.Connections
 {
     [Flags]
-    public enum TransportType
+    public enum HttpTransportType
     {
         WebSockets = 1,
         ServerSentEvents = 2,

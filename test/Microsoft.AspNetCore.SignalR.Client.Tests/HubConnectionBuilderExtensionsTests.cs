@@ -6,12 +6,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Moq;
 using Xunit;
-using TransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -117,11 +117,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Theory]
-        [InlineData(TransportType.All)]
-        [InlineData(TransportType.WebSockets)]
-        [InlineData(TransportType.ServerSentEvents)]
-        [InlineData(TransportType.LongPolling)]
-        public void WithTransportRegistersGivenTransportType(TransportType transportType)
+        [InlineData(HttpTransportType.All)]
+        [InlineData(HttpTransportType.WebSockets)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.LongPolling)]
+        public void WithTransportRegistersGivenTransportType(HttpTransportType transportType)
         {
             var connectionBuilder = new HubConnectionBuilder();
             connectionBuilder.WithTransport(transportType);

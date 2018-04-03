@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             _transport = transport;
         }
 
-        public ITransport CreateTransport(TransportType availableServerTransports)
+        public ITransport CreateTransport(HttpTransportType availableServerTransports)
         {
             return _transport;
         }

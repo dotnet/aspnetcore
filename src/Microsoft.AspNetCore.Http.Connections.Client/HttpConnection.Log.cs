@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _disposed(logger, null);
             }
 
-            public static void StartingTransport(ILogger logger, TransportType transportType, Uri url)
+            public static void StartingTransport(ILogger logger, HttpTransportType transportType, Uri url)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _transportNotSupported(logger, transport, null);
             }
 
-            public static void TransportDoesNotSupportTransferFormat(ILogger logger, TransportType transport, TransferFormat transferFormat)
+            public static void TransportDoesNotSupportTransferFormat(ILogger logger, HttpTransportType transport, TransferFormat transferFormat)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
             }
 
-            public static void TransportDisabledByClient(ILogger logger, TransportType transport)
+            public static void TransportDisabledByClient(ILogger logger, HttpTransportType transport)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
             }
 
-            public static void TransportFailed(ILogger logger, TransportType transport, Exception ex)
+            public static void TransportFailed(ILogger logger, HttpTransportType transport, Exception ex)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {

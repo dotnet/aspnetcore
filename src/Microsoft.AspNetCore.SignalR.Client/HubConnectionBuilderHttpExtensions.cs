@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        public static IHubConnectionBuilder WithTransport(this IHubConnectionBuilder hubConnectionBuilder, TransportType transportType)
+        public static IHubConnectionBuilder WithTransport(this IHubConnectionBuilder hubConnectionBuilder, HttpTransportType transportType)
         {
             hubConnectionBuilder.AddSetting(TransportTypeKey, transportType);
             return hubConnectionBuilder;
@@ -184,14 +184,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        public static TransportType GetTransport(this IHubConnectionBuilder hubConnectionBuilder)
+        public static HttpTransportType GetTransport(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            if (hubConnectionBuilder.TryGetSetting<TransportType>(TransportTypeKey, out var transportType))
+            if (hubConnectionBuilder.TryGetSetting<HttpTransportType>(TransportTypeKey, out var transportType))
             {
                 return transportType;
             }
 
-            return TransportType.All;
+            return HttpTransportType.All;
         }
 
         /// <summary>

@@ -24,21 +24,21 @@ namespace Microsoft.AspNetCore.Http.Connections
         private static readonly AvailableTransport _webSocketAvailableTransport =
             new AvailableTransport
             {
-                Transport = nameof(TransportType.WebSockets),
+                Transport = nameof(HttpTransportType.WebSockets),
                 TransferFormats = new List<string> { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
             };
 
         private static readonly AvailableTransport _serverSentEventsAvailableTransport =
             new AvailableTransport
             {
-                Transport = nameof(TransportType.ServerSentEvents),
+                Transport = nameof(HttpTransportType.ServerSentEvents),
                 TransferFormats = new List<string> { nameof(TransferFormat.Text) }
             };
 
         private static readonly AvailableTransport _longPollingAvailableTransport =
             new AvailableTransport
             {
-                Transport = nameof(TransportType.LongPolling),
+                Transport = nameof(HttpTransportType.LongPolling),
                 TransferFormats = new List<string> { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
             };
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     return;
                 }
 
-                if (!await EnsureConnectionStateAsync(connection, context, TransportType.ServerSentEvents, supportedTransports, logScope, options))
+                if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.ServerSentEvents, supportedTransports, logScope, options))
                 {
                     // Bad connection state. It's already set the response status code.
                     return;
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     return;
                 }
 
-                if (!await EnsureConnectionStateAsync(connection, context, TransportType.WebSockets, supportedTransports, logScope, options))
+                if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope, options))
                 {
                     // Bad connection state. It's already set the response status code.
                     return;
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     return;
                 }
 
-                if (!await EnsureConnectionStateAsync(connection, context, TransportType.LongPolling, supportedTransports, logScope, options))
+                if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.LongPolling, supportedTransports, logScope, options))
                 {
                     // Bad connection state. It's already set the response status code.
                     return;
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     {
                         Log.EstablishedConnection(_logger);
 
-                        connection.Items[ConnectionMetadataNames.Transport] = TransportType.LongPolling;
+                        connection.Items[ConnectionMetadataNames.Transport] = HttpTransportType.LongPolling;
 
                         connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
                     }
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Verify some initialization invariants
             // We want to be positive that the IConnectionInherentKeepAliveFeature is initialized before invoking the application, if the long polling transport is in use.
             Debug.Assert(connection.Items[ConnectionMetadataNames.Transport] != null, "Transport has not been initialized yet");
-            Debug.Assert((TransportType?)connection.Items[ConnectionMetadataNames.Transport] != TransportType.LongPolling ||
+            Debug.Assert((HttpTransportType?)connection.Items[ConnectionMetadataNames.Transport] != HttpTransportType.LongPolling ||
                 connection.Features.Get<IConnectionInherentKeepAliveFeature>() != null, "Long-polling transport is in use but IConnectionInherentKeepAliveFeature as not configured");
 
             // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
@@ -401,17 +401,17 @@ namespace Microsoft.AspNetCore.Http.Connections
             response.ConnectionId = connectionId;
             response.AvailableTransports = new List<AvailableTransport>();
 
-            if ((options.Transports & TransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
+            if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
             {
                 response.AvailableTransports.Add(_webSocketAvailableTransport);
             }
 
-            if ((options.Transports & TransportType.ServerSentEvents) != 0)
+            if ((options.Transports & HttpTransportType.ServerSentEvents) != 0)
             {
                 response.AvailableTransports.Add(_serverSentEventsAvailableTransport);
             }
 
-            if ((options.Transports & TransportType.LongPolling) != 0)
+            if ((options.Transports & HttpTransportType.LongPolling) != 0)
             {
                 response.AvailableTransports.Add(_longPollingAvailableTransport);
             }
@@ -440,8 +440,8 @@ namespace Microsoft.AspNetCore.Http.Connections
 
             context.Response.ContentType = "text/plain";
 
-            var transport = (TransportType?)connection.Items[ConnectionMetadataNames.Transport];
-            if (transport == TransportType.WebSockets)
+            var transport = (HttpTransportType?)connection.Items[ConnectionMetadataNames.Transport];
+            if (transport == HttpTransportType.WebSockets)
             {
                 Log.PostNotAllowedForWebSockets(_logger);
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             Log.ReceivedBytes(_logger, pipeWriterStream.Length);
         }
 
-        private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)
+        private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)
         {
             if ((supportedTransports & transportType) == 0)
             {
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Set the IHttpConnectionFeature now that we can access it.
             connection.Features.Set(context.Features.Get<IHttpConnectionFeature>());
 
-            var transport = (TransportType?)connection.Items[ConnectionMetadataNames.Transport];
+            var transport = (HttpTransportType?)connection.Items[ConnectionMetadataNames.Transport];
 
             if (transport == null)
             {
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             connection.User = context.User;
 
             // Configure transport-specific features.
-            if (transportType == TransportType.LongPolling)
+            if (transportType == HttpTransportType.LongPolling)
             {
                 connection.Features.Set<IConnectionInherentKeepAliveFeature>(new ConnectionInherentKeepAliveFeature(options.LongPolling.PollTimeout));
 

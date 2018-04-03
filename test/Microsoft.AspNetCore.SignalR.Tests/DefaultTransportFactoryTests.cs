@@ -15,21 +15,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class DefaultTransportFactoryTests
     {
         [Theory]
-        [InlineData((TransportType)0)]
-        [InlineData(TransportType.All + 1)]
-        public void DefaultTransportFactoryCannotBeCreatedWithInvalidTransportType(TransportType transportType)
+        [InlineData((HttpTransportType)0)]
+        [InlineData(HttpTransportType.All + 1)]
+        public void DefaultTransportFactoryCannotBeCreatedWithInvalidTransportType(HttpTransportType transportType)
         {
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => new DefaultTransportFactory(transportType, new LoggerFactory(), new HttpClient(), httpOptions: null));
         }
 
         [Theory]
-        [InlineData(TransportType.All)]
-        [InlineData(TransportType.LongPolling)]
-        [InlineData(TransportType.ServerSentEvents)]
-        [InlineData(TransportType.LongPolling | TransportType.WebSockets)]
-        [InlineData(TransportType.ServerSentEvents | TransportType.WebSockets)]
-        public void DefaultTransportFactoryCannotBeCreatedWithoutHttpClient(TransportType transportType)
+        [InlineData(HttpTransportType.All)]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.LongPolling | HttpTransportType.WebSockets)]
+        [InlineData(HttpTransportType.ServerSentEvents | HttpTransportType.WebSockets)]
+        public void DefaultTransportFactoryCannotBeCreatedWithoutHttpClient(HttpTransportType transportType)
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new DefaultTransportFactory(transportType, new LoggerFactory(), httpClient: null, httpOptions: null));
@@ -40,27 +40,27 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void DefaultTransportFactoryCanBeCreatedWithoutHttpClientIfWebSocketsTransportRequestedExplicitly()
         {
-            new DefaultTransportFactory(TransportType.WebSockets, new LoggerFactory(), httpClient: null, httpOptions: null);
+            new DefaultTransportFactory(HttpTransportType.WebSockets, new LoggerFactory(), httpClient: null, httpOptions: null);
         }
 
         [ConditionalTheory]
-        [InlineData(TransportType.WebSockets, typeof(WebSocketsTransport))]
-        [InlineData(TransportType.ServerSentEvents, typeof(ServerSentEventsTransport))]
-        [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
+        [InlineData(HttpTransportType.WebSockets, typeof(WebSocketsTransport))]
+        [InlineData(HttpTransportType.ServerSentEvents, typeof(ServerSentEventsTransport))]
+        [InlineData(HttpTransportType.LongPolling, typeof(LongPollingTransport))]
         [WebSocketsSupportedCondition]
-        public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable(TransportType requestedTransport, Type expectedTransportType)
+        public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable(HttpTransportType requestedTransport, Type expectedTransportType)
         {
             var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
             Assert.IsType(expectedTransportType,
-                transportFactory.CreateTransport(TransportType.All));
+                transportFactory.CreateTransport(HttpTransportType.All));
         }
 
         [Theory]
-        [InlineData(TransportType.WebSockets)]
-        [InlineData(TransportType.ServerSentEvents)]
-        [InlineData(TransportType.LongPolling)]
-        [InlineData(TransportType.All)]
-        public void DefaultTransportFactoryThrowsIfItCannotCreateRequestedTransport(TransportType requestedTransport)
+        [InlineData(HttpTransportType.WebSockets)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.All)]
+        public void DefaultTransportFactoryThrowsIfItCannotCreateRequestedTransport(HttpTransportType requestedTransport)
         {
             var transportFactory =
                 new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
@@ -75,34 +75,34 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void DefaultTransportFactoryCreatesWebSocketsTransportIfAvailable()
         {
             Assert.IsType<WebSocketsTransport>(
-                new DefaultTransportFactory(TransportType.All, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null)
-                    .CreateTransport(TransportType.All));
+                new DefaultTransportFactory(HttpTransportType.All, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null)
+                    .CreateTransport(HttpTransportType.All));
         }
 
         [Theory]
-        [InlineData(TransportType.All, typeof(ServerSentEventsTransport))]
-        [InlineData(TransportType.ServerSentEvents, typeof(ServerSentEventsTransport))]
-        [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
-        public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable_Win7(TransportType requestedTransport, Type expectedTransportType)
+        [InlineData(HttpTransportType.All, typeof(ServerSentEventsTransport))]
+        [InlineData(HttpTransportType.ServerSentEvents, typeof(ServerSentEventsTransport))]
+        [InlineData(HttpTransportType.LongPolling, typeof(LongPollingTransport))]
+        public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable_Win7(HttpTransportType requestedTransport, Type expectedTransportType)
         {
             if (!TestHelpers.IsWebSocketsSupported())
             {
                 var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
                 Assert.IsType(expectedTransportType,
-                    transportFactory.CreateTransport(TransportType.All));
+                    transportFactory.CreateTransport(HttpTransportType.All));
             }
         }
 
         [Theory]
-        [InlineData(TransportType.WebSockets)]
-        public void DefaultTransportFactoryThrowsIfItCannotCreateRequestedTransport_Win7(TransportType requestedTransport)
+        [InlineData(HttpTransportType.WebSockets)]
+        public void DefaultTransportFactoryThrowsIfItCannotCreateRequestedTransport_Win7(HttpTransportType requestedTransport)
         {
             if (!TestHelpers.IsWebSocketsSupported())
             {
                 var transportFactory =
                     new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
                 var ex = Assert.Throws<InvalidOperationException>(
-                    () => transportFactory.CreateTransport(TransportType.All));
+                    () => transportFactory.CreateTransport(HttpTransportType.All));
 
                 Assert.Equal("No requested transports available on the server.", ex.Message);
             }

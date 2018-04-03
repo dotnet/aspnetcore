@@ -14,18 +14,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
     {
         private readonly HttpClient _httpClient;
         private readonly HttpOptions _httpOptions;
-        private readonly TransportType _requestedTransportType;
+        private readonly HttpTransportType _requestedTransportType;
         private readonly ILoggerFactory _loggerFactory;
         private static volatile bool _websocketsSupported = true;
 
-        public DefaultTransportFactory(TransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient, HttpOptions httpOptions)
+        public DefaultTransportFactory(HttpTransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient, HttpOptions httpOptions)
         {
-            if (requestedTransportType <= 0 || requestedTransportType > TransportType.All)
+            if (requestedTransportType <= 0 || requestedTransportType > HttpTransportType.All)
             {
                 throw new ArgumentOutOfRangeException(nameof(requestedTransportType));
             }
 
-            if (httpClient == null && requestedTransportType != TransportType.WebSockets)
+            if (httpClient == null && requestedTransportType != HttpTransportType.WebSockets)
             {
                 throw new ArgumentNullException(nameof(httpClient));
             }
@@ -36,9 +36,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _httpOptions = httpOptions;
         }
 
-        public ITransport CreateTransport(TransportType availableServerTransports)
+        public ITransport CreateTransport(HttpTransportType availableServerTransports)
         {
-            if (_websocketsSupported && (availableServerTransports & TransportType.WebSockets & _requestedTransportType) == TransportType.WebSockets)
+            if (_websocketsSupported && (availableServerTransports & HttpTransportType.WebSockets & _requestedTransportType) == HttpTransportType.WebSockets)
             {
                 try
                 {
@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
             }
 
-            if ((availableServerTransports & TransportType.ServerSentEvents & _requestedTransportType) == TransportType.ServerSentEvents)
+            if ((availableServerTransports & HttpTransportType.ServerSentEvents & _requestedTransportType) == HttpTransportType.ServerSentEvents)
             {
                 return new ServerSentEventsTransport(_httpClient, _loggerFactory);
             }
 
-            if ((availableServerTransports & TransportType.LongPolling & _requestedTransportType) == TransportType.LongPolling)
+            if ((availableServerTransports & HttpTransportType.LongPolling & _requestedTransportType) == HttpTransportType.LongPolling)
             {
                 return new LongPollingTransport(_httpClient, _loggerFactory);
             }

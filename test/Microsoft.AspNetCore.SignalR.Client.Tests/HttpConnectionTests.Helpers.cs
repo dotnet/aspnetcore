@@ -9,8 +9,6 @@ using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-using HttpTransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
-
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         public IList<IAuthorizeData> AuthorizationData { get; } = new List<IAuthorizeData>();
 
-        public TransportType Transports { get; set; } = TransportType.All;
+        public HttpTransportType Transports { get; set; } = HttpTransportType.All;
 
         public WebSocketOptions WebSockets { get; } = new WebSocketOptions();
 

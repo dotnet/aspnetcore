@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private ITransport _transport;
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
-        private readonly TransportType _requestedTransportType = TransportType.All;
+        private readonly HttpTransportType _requestedTransportType = HttpTransportType.All;
         private readonly ConnectionLogScope _logScope;
         private readonly IDisposable _scopeDisposable;
         private readonly ILoggerFactory _loggerFactory;
@@ -60,25 +60,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
         public HttpConnection(Uri url)
-            : this(url, TransportType.All)
+            : this(url, HttpTransportType.All)
         { }
 
-        public HttpConnection(Uri url, TransportType transportType)
+        public HttpConnection(Uri url, HttpTransportType transportType)
             : this(url, transportType, loggerFactory: null)
         {
         }
 
         public HttpConnection(Uri url, ILoggerFactory loggerFactory)
-            : this(url, TransportType.All, loggerFactory, httpOptions: null)
+            : this(url, HttpTransportType.All, loggerFactory, httpOptions: null)
         {
         }
 
-        public HttpConnection(Uri url, TransportType transportType, ILoggerFactory loggerFactory)
+        public HttpConnection(Uri url, HttpTransportType transportType, ILoggerFactory loggerFactory)
             : this(url, transportType, loggerFactory, httpOptions: null)
         {
         }
 
-        public HttpConnection(Uri url, TransportType transportType, ILoggerFactory loggerFactory, HttpOptions httpOptions)
+        public HttpConnection(Uri url, HttpTransportType transportType, ILoggerFactory loggerFactory, HttpOptions httpOptions)
         {
             Url = url ?? throw new ArgumentNullException(nameof(url));
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _httpOptions = httpOptions;
 
             _requestedTransportType = transportType;
-            if (_requestedTransportType != TransportType.WebSockets)
+            if (_requestedTransportType != HttpTransportType.WebSockets)
             {
                 _httpClient = CreateHttpClient();
             }
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task SelectAndStartTransport(TransferFormat transferFormat)
         {
-            if (_requestedTransportType == TransportType.WebSockets)
+            if (_requestedTransportType == HttpTransportType.WebSockets)
             {
                 Log.StartingTransport(_logger, _requestedTransportType, Url);
                 await StartTransport(Url, _requestedTransportType, transferFormat);
@@ -224,13 +224,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 foreach (var transport in negotiationResponse.AvailableTransports)
                 {
-                    if (!Enum.TryParse<TransportType>(transport.Transport, out var transportType))
+                    if (!Enum.TryParse<HttpTransportType>(transport.Transport, out var transportType))
                     {
                         Log.TransportNotSupported(_logger, transport.Transport);
                         continue;
                     }
 
-                    if (transportType == TransportType.WebSockets && !IsWebSocketsSupported())
+                    if (transportType == HttpTransportType.WebSockets && !IsWebSocketsSupported())
                     {
                         Log.WebSocketsNotSupportedByOperatingSystem(_logger);
                         continue;
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             return Utils.AppendQueryString(url, "id=" + connectionId);
         }
 
-        private async Task StartTransport(Uri connectUrl, TransportType transportType, TransferFormat transferFormat)
+        private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat)
         {
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
             var options = new PipeOptions(writerScheduler: PipeScheduler.ThreadPool, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false, pauseWriterThreshold: 0, resumeWriterThreshold: 0);

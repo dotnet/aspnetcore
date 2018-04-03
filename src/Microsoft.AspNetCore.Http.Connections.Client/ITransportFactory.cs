@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 {
     public interface ITransportFactory
     {
-        ITransport CreateTransport(TransportType availableServerTransports);
+        ITransport CreateTransport(HttpTransportType availableServerTransports);
     }
 }

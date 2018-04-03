@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -14,9 +15,6 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
-
-// This is needed because there's a System.Net.TransportType in net461 (it's internal in netcoreapp).
-using TransportType = Microsoft.AspNetCore.Http.Connections.TransportType;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -41,9 +39,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Theory]
-        [InlineData((TransportType)0)]
-        [InlineData(TransportType.All + 1)]
-        public void CannotStartConnectionWithInvalidTransportType(TransportType requestedTransportType)
+        [InlineData((HttpTransportType)0)]
+        [InlineData(HttpTransportType.All + 1)]
+        public void CannotStartConnectionWithInvalidTransportType(HttpTransportType requestedTransportType)
         {
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => new HttpConnection(new Uri("http://fakeuri.org/"), requestedTransportType));
