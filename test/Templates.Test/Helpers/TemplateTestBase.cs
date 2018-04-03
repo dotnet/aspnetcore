@@ -132,7 +132,13 @@ $@"<Project>
 
         protected void RunDotNetEfCreateMigration(string migrationName)
         {
-            var args = $"ef migrations add {migrationName}";
+            var assembly = typeof(TemplateTestBase).Assembly;
+
+            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "DotNetEfFullPath")
+                .Value;
+
+            var args = $"\"{dotNetEfFullPath}\" migrations add {migrationName}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63

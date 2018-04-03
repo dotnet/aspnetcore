@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
@@ -24,6 +23,17 @@
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DotNetEfFullPath</_Parameter1>
+      <_Parameter2>$(NuGetPackageRoot)dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp2.0/any/dotnet-ef.dll</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

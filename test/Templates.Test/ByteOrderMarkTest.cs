@@ -19,7 +19,7 @@ namespace Templates.Test
         [Theory]
         [InlineData("Microsoft.DotNet.Web.ProjectTemplates")]
         [InlineData("Microsoft.DotNet.Web.Spa.ProjectTemplates")]
-        public void CheckForByteOrderMarkSpaTemplates(string projectType)
+        public void CheckForByteOrderMark_InJsonFiles_ForAllTemplates(string projectType)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
             var repositoryPath = Directory.GetParent(currentDirectory).Parent.Parent.Parent.Parent.FullName;

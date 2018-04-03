@@ -81,21 +81,21 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void MvcTemplate_IndividualAuth_Works_NetFramework()
             => MvcTemplate_IndividualAuthImpl("net461");
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void MvcTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
             => MvcTemplate_IndividualAuthImpl("net461", false, true);
 
-        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [Fact]
         public void MvcTemplate_IndividualAuth_Works_NetCore()
             => MvcTemplate_IndividualAuthImpl(null);
 
-        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [Fact]
         public void MvcTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
             => MvcTemplate_IndividualAuthImpl(null, true);
 

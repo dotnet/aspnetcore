@@ -63,21 +63,21 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_IndividualAuth_Works_NetFramework()
             => RazorPagesTemplate_IndividualAuthImpl("net461");
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
             => RazorPagesTemplate_IndividualAuthImpl("net461", false, true);
 
-        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [Fact]
         public void RazorPagesTemplate_IndividualAuth_Works_NetCore()
             => RazorPagesTemplate_IndividualAuthImpl(null);
 
-        [Fact(Skip = "https://github.com/aspnet/templating/issues/378")]
+        [Fact]
         public void RazorPagesTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
             => RazorPagesTemplate_IndividualAuthImpl(null, true);
 
