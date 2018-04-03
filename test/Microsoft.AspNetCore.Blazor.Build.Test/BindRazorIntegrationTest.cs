@@ -307,7 +307,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
-                frame => AssertFrame.Attribute(frame, "value", "01/01/2018", 2),
+                frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd/yyyy"), 2),
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
                 frame => AssertFrame.Whitespace(frame, 4));
         }
@@ -333,7 +333,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
-                frame => AssertFrame.Attribute(frame, "value", "01/01/2018", 2),
+                frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd/yyyy"), 2),
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
                 frame => AssertFrame.Whitespace(frame, 4));
         }
@@ -429,7 +429,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
-                frame => AssertFrame.Attribute(frame, "value", "01/01", 2),
+                frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd"), 2),
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
                 frame => AssertFrame.Whitespace(frame, 4));
         }
