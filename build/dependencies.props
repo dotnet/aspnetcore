@@ -10,10 +10,10 @@
     <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
     <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.0-preview2-30478</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26326-03</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26331-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.5.0-preview2-26326-04</SystemDataSqlClientPackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview2-26326-04</SystemSecurityCryptographyCngPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.5.0-preview3-26331-02</SystemDataSqlClientPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview3-26331-02</SystemSecurityCryptographyCngPackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>

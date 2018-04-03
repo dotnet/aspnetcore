@@ -20,6 +20,8 @@
     <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll" />
     <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" PackagePath="$(PackageBasePath)runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" />
     <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
   </ItemGroup>
 
   <ItemGroup>
