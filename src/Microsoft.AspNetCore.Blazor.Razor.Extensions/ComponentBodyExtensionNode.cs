@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
-    public sealed class ComponentBodyExtensionNode : ExtensionIntermediateNode
+    internal sealed class ComponentBodyExtensionNode : ExtensionIntermediateNode
     {
         public ComponentBodyExtensionNode()
         {

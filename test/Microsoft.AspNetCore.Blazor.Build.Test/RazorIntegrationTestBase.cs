@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Helpers;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
@@ -60,11 +61,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             Configuration = BlazorExtensionInitializer.DefaultConfiguration;
             FileSystem = new VirtualRazorProjectFileSystem();
+            PathSeparator = Path.DirectorySeparatorChar.ToString();
             WorkingDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
 
             DefaultBaseNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
-
         }
 
         internal List<RazorProjectItem> AdditionalRazorItems { get; }
@@ -81,6 +82,16 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         
         internal virtual VirtualRazorProjectFileSystem FileSystem { get; }
 
+        // Used to force a specific style of line-endings for testing. This matters
+        // for the baseline tests that exercise line mappings. Even though we normalize
+        // newlines for testing, the difference between platforms affects the data through
+        // the *count* of characters written.
+        internal virtual string LineEnding { get; }
+
+        internal virtual string PathSeparator { get; }
+
+        internal virtual bool NormalizeSourceLineEndings { get; }
+
         internal virtual bool UseTwoPhaseCompilation { get; }
 
         internal virtual string WorkingDirectory { get; }
@@ -92,6 +103,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
 
+                if (LineEnding != null)
+                {
+                    b.Phases.Insert(0, new ForceLineEndingPhase(LineEnding));
+                }
+
                 BlazorExtensionInitializer.Register(b);
 
                 b.Features.Add(new CompilationTagHelperFeature());
@@ -102,20 +118,27 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             });
         }
 
-        internal RazorProjectItem CreateProjectItem(string chtmlRelativePath, string cshtmlContent)
+        internal RazorProjectItem CreateProjectItem(string cshtmlRelativePath, string cshtmlContent)
         {
+            var fullPath = WorkingDirectory + PathSeparator + cshtmlRelativePath;
+
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
-            var filePath = chtmlRelativePath.Replace('\\', '/');
+            var filePath = cshtmlRelativePath.Replace('\\', '/');
             if (!filePath.StartsWith('/'))
             {
                 filePath = '/' + filePath;
             }
 
+            if (NormalizeSourceLineEndings)
+            {
+                cshtmlContent = cshtmlContent.Replace("\r", "").Replace("\n", LineEnding);
+            }
+
             return new VirtualProjectItem(
                 WorkingDirectory, 
                 filePath, 
-                Path.Combine(WorkingDirectory, chtmlRelativePath),
-                chtmlRelativePath,
+                fullPath,
+                cshtmlRelativePath,
                 Encoding.UTF8.GetBytes(cshtmlContent.TrimStart()));
         }
 
@@ -398,6 +421,23 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {
                 options.SuppressChecksum = true;
+            }
+        }
+
+        private class ForceLineEndingPhase : RazorEnginePhaseBase
+        {
+            public ForceLineEndingPhase(string lineEnding)
+            {
+                LineEnding = lineEnding;
+            }
+
+            public string LineEnding { get; }
+
+            protected override void ExecuteCore(RazorCodeDocument codeDocument)
+            {
+                var field = typeof(CodeRenderingContext).GetField("NewLineString", BindingFlags.Static | BindingFlags.NonPublic);
+                var key = field.GetValue(null);
+                codeDocument.Items[key] = LineEnding;
             }
         }
     }

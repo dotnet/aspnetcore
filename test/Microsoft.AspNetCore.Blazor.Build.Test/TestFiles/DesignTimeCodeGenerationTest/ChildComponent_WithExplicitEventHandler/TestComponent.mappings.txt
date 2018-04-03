@@ -1,0 +1,30 @@
+Source Location: (32:1,1 [33] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Blazor|
+Generated Location: (257:10,0 [33] )
+|using Microsoft.AspNetCore.Blazor|
+
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (586:19,38 [15] )
+|*, TestAssembly|
+
+Source Location: (90:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+|Increment|
+Generated Location: (1154:33,23 [9] )
+|Increment|
+
+Source Location: (118:4,12 [100] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private int counter;
+    private void Increment(UIEventArgs e) {
+        counter++;
+    }
+|
+Generated Location: (1471:44,12 [100] )
+|
+    private int counter;
+    private void Increment(UIEventArgs e) {
+        counter++;
+    }
+|
+

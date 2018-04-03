@@ -78,30 +78,5 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
             }
         }
-
-        private class RouteAttributeExtensionNode : ExtensionIntermediateNode
-        {
-            public RouteAttributeExtensionNode(string template)
-            {
-                Template = template;
-            }
-
-            public string Template { get; }
-
-            public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
-
-            public override void Accept(IntermediateNodeVisitor visitor) => AcceptExtensionNode(this, visitor);
-
-            public override void WriteNode(CodeTarget target, CodeRenderingContext context)
-            {
-                context.CodeWriter.Write("[");
-                context.CodeWriter.Write(BlazorApi.RouteAttribute.FullTypeName);
-                context.CodeWriter.Write("(\"");
-                context.CodeWriter.Write(Template);
-                context.CodeWriter.Write("\")");
-                context.CodeWriter.Write("]");
-                context.CodeWriter.WriteLine();
-            }
-        }
     }
 }

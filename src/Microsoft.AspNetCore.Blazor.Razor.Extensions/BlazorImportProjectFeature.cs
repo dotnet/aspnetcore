@@ -14,12 +14,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     {
         private const string ImportsFileName = "_ViewImports.cshtml";
 
-        private const string DefaultUsingImportContent = @"
-@using System
-@using System.Collections.Generic
-@using System.Linq
-@using System.Threading.Tasks
-";
+        private static readonly char[] PathSeparators = new char[]{ '/', '\\' };
+
+        // Using explicit newlines here to avoid fooling our baseline tests
+        private const string DefaultUsingImportContent =
+            "\r\n" +
+            "@using System\r\n" +
+            "@using System.Collections.Generic\r\n" +
+            "@using System.Linq\r\n" +
+            "@using System.Threading.Tasks\r\n";
 
         public RazorProjectEngine ProjectEngine { get; set; }
 
@@ -40,9 +43,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // the namespace through from the project.
             if (projectItem.PhysicalPath != null && projectItem.FilePath != null)
             {
+                // Avoiding the path-specific APIs here, we want to handle all styles of paths
+                // on all platforms
                 var trimLength = projectItem.FilePath.Length + (projectItem.FilePath.StartsWith("/") ? 0 : 1);
                 var baseDirectory = projectItem.PhysicalPath.Substring(0, projectItem.PhysicalPath.Length - trimLength);
-                var baseNamespace = Path.GetFileName(baseDirectory);
+                
+                var lastSlash = baseDirectory.LastIndexOfAny(PathSeparators);
+                var baseNamespace = lastSlash == -1 ? baseDirectory : baseDirectory.Substring(lastSlash + 1);
                 if (!string.IsNullOrEmpty(baseNamespace))
                 {
                     imports.Add(new VirtualProjectItem($@"@addTagHelper ""*, {baseNamespace}"""));

@@ -4,6 +4,18 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <!-- Exclude the TestFiles directory from default wildcards -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Embed test files so they can be referenced in tests -->
+    <EmbeddedResource Include="TestFiles\**" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(GenerateBaselines)'=='true'">
+    <DefineConstants>GENERATE_BASELINES;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

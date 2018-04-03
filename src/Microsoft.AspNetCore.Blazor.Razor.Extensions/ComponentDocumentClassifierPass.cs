@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             callBase.Children.Add(new IntermediateToken
             {
                 Kind = TokenKind.CSharp,
-                Content = $"base.{BlazorApi.BlazorComponent.BuildRenderTree}(builder);" + Environment.NewLine
+                Content = $"base.{BlazorApi.BlazorComponent.BuildRenderTree}(builder);"
             });
             method.Children.Insert(0, callBase);
         }
@@ -108,7 +108,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // the namespace through from the project.
             var trimLength = relativePath.Length + (relativePath.StartsWith("/") ? 0 : 1);
             var baseDirectory = filePath.Substring(0, filePath.Length - trimLength);
-            var baseNamespace = Path.GetFileName(baseDirectory);
+
+            var lastSlash = baseDirectory.LastIndexOfAny(PathSeparators);
+            var baseNamespace = lastSlash == -1 ? baseDirectory : baseDirectory.Substring(lastSlash + 1);
             if (string.IsNullOrEmpty(baseNamespace))
             {
                 @namespace = null;
