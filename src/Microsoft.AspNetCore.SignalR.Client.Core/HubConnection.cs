@@ -553,7 +553,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                 }
             }
-            catch (Exception ex)
+            // Ignore HubException because we throw it when we receive a handshake response with an error
+            // And we don't need to log that the handshake failed
+            catch (Exception ex) when (!(ex is HubException))
             {
                 // shutdown if we're unable to read handshake
                 Log.ErrorReceivingHandshakeResponse(_logger, ex);

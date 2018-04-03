@@ -160,6 +160,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                                 // or if the consumer is done
                                 if (flushResult.IsCanceled || flushResult.IsCompleted)
                                 {
+                                    Log.EventStreamEnded(_logger);
                                     break;
                                 }
                             }
