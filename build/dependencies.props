@@ -39,6 +39,7 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview3-26331-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview3-26331-02</SystemSecurityCryptographyCngPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview3-26331-02</SystemThreadingTasksExtensionsPackageVersion>
+    <NewtonsoftJsonPackageVersion>11.0.1</NewtonsoftJsonPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
