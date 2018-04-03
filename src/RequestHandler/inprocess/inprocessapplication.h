@@ -110,6 +110,8 @@ private:
         VOID
     );
 
+    IHttpServer* const      m_pHttpServer;
+
     // Thread executing the .NET Core process
     HANDLE                          m_hThread;
 

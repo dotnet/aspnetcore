@@ -21,6 +21,7 @@
 #include "..\IISLib\dbgutil.h"
 #include "..\IISLib\ahutil.h"
 #include "..\IISLib\hashfn.h"
+#include "SRWLockWrapper.h"
 #include "environmentvariablehash.h"
 #include "utility.h"
 #include "aspnetcoreconfig.h"

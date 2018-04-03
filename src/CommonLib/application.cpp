@@ -7,10 +7,10 @@ APPLICATION::APPLICATION(
     _In_ IHttpServer* pHttpServer,
     _In_ ASPNETCORE_CONFIG* pConfig) :
     m_cRefs(1),
-    m_pHttpServer(pHttpServer),
     m_pConfig(pConfig),
     m_status(APPLICATION_STATUS::UNKNOWN)
 {
+    UNREFERENCED_PARAMETER(pHttpServer);
 }
 
 APPLICATION::~APPLICATION()
