@@ -63,7 +63,6 @@ namespace Company.WebApplication1
 #else
 
 #endif
-            app.UseHttpsRedirection();
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
