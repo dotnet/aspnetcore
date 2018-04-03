@@ -162,7 +162,9 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
             var handler = new HttpClientHandler();
             // Win7 HttpClient on NetCoreApp2.1 defaults to TLS 1.0 and won't connect to Kestrel. https://github.com/dotnet/corefx/issues/28733
-            handler.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
+            // Mac HttpClient on NetCoreApp2.0 doesn't alow you to set some combinations.
+            // https://github.com/dotnet/corefx/blob/586cffcdfdf23ad6c193a4bf37fce88a1bf69508/src/System.Net.Http/src/System/Net/Http/CurlHandler/CurlHandler.SslProvider.OSX.cs#L104-L106
+            handler.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls;
             if (ssl)
             {
                 // Don't take this out of the "if(ssl)". If we set it on some platforms, it crashes
