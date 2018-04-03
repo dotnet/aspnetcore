@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         internal Task WriteAsync(ReadOnlyMemory<byte> memory, CancellationToken cancellationToken = default(CancellationToken))
         {
 
-            // Want to keep exceptions consistent, 
+            // Want to keep exceptions consistent,
             if (!_hasResponseStarted)
             {
                 return WriteAsyncAwaited(memory, cancellationToken);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             await writeTask;
         }
 
-        // ConsumeAsync is called when either the first read or first write is done. 
+        // ConsumeAsync is called when either the first read or first write is done.
         // There are two modes for reading and writing to the request/response bodies without upgrade.
         // 1. Await all reads and try to read from the Output pipe
         // 2. Done reading and await all writes.
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 ref var handle = ref handles[currentChunk];
                 ref var chunk = ref pDataChunks[currentChunk];
-                handle = b.Retain(true);
+                handle = b.Pin();
 
                 chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
                 chunk.fromMemory.BufferLength = (uint)b.Length;
@@ -281,13 +281,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 handle.Dispose();
             }
-           
+
             return hr;
         }
 
         private unsafe IISAwaitable FlushToIISAsync()
         {
-            // Calls flush 
+            // Calls flush
             var hr = 0;
             hr = NativeMethods.HttpFlushResponseBytes(_pInProcessHandler, out var fCompletionExpected);
             if (!fCompletionExpected)
@@ -356,9 +356,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                         return;
                     }
 
-                    // Now we handle the read. 
+                    // Now we handle the read.
                     var memory = Input.Writer.GetMemory();
-                    _inputHandle = memory.Retain(true);
+                    _inputHandle = memory.Pin();
 
                     try
                     {
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
                         // read value of 0 == done reading
                         // read value of -1 == read cancelled, still allowed to read but we
-                        // need a write to occur first. 
+                        // need a write to occur first.
                         if (read == 0)
                         {
                             break;
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     // Flush the read data for the Input Pipe writer
                     var flushResult = await Input.Writer.FlushAsync();
 
-                    // If the pipe was closed, we are done reading, 
+                    // If the pipe was closed, we are done reading,
                     if (flushResult.IsCompleted || flushResult.IsCanceled)
                     {
                         break;
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                         }
                         else
                         {
-                            // Flush of zero bytes will 
+                            // Flush of zero bytes will
                             await FlushToIISAsync();
                         }
                     }
