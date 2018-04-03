@@ -20,7 +20,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="ship" />
+    <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="noship" />
     <PackageArtifact Include="dotnet-dev-certs" Category="shipoob" />
     <PackageArtifact Include="dotnet-ef" Category="shipoob" />
     <PackageArtifact Include="dotnet-sql-cache" Category="shipoob" />
