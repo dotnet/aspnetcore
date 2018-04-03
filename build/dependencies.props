@@ -5,7 +5,7 @@
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview3-17001</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview3-17002</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
     <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
