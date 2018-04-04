@@ -3,12 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -75,9 +80,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private Action<HttpsConnectionAdapterOptions> HttpsDefaults { get; set; } = _ => { };
 
         /// <summary>
-        /// The default server certificate for https endpoints. This is applied before HttpsDefaults.
+        /// The default server certificate for https endpoints. This is applied lazily after HttpsDefaults and user options.
         /// </summary>
         internal X509Certificate2 DefaultCertificate { get; set; }
+
+        /// <summary>
+        /// Has the default dev certificate load been attempted?
+        /// </summary>
+        internal bool IsDevCertLoaded { get; set; }
 
         /// <summary>
         /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
@@ -105,8 +115,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal void ApplyHttpsDefaults(HttpsConnectionAdapterOptions httpsOptions)
         {
-            httpsOptions.ServerCertificate = DefaultCertificate;
             HttpsDefaults(httpsOptions);
+        }
+
+        internal void ApplyDefaultCert(HttpsConnectionAdapterOptions httpsOptions)
+        {
+            if (httpsOptions.ServerCertificate != null || httpsOptions.ServerCertificateSelector != null)
+            {
+                return;
+            }
+
+            EnsureDefaultCert();
+
+            httpsOptions.ServerCertificate = DefaultCertificate;
+        }
+
+        private void EnsureDefaultCert()
+        {
+            if (DefaultCertificate == null && !IsDevCertLoaded)
+            {
+                IsDevCertLoaded = true; // Only try once
+                var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+                try
+                {
+                    var certificateManager = new CertificateManager();
+                    DefaultCertificate = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true)
+                        .FirstOrDefault();
+
+                    if (DefaultCertificate != null)
+                    {
+                        logger.LocatedDevelopmentCertificate(DefaultCertificate);
+                    }
+                    else
+                    {
+                        logger.UnableToLocateDevelopmentCertificate();
+                    }
+                }
+                catch
+                {
+                    logger.UnableToLocateDevelopmentCertificate();
+                }
+            }
         }
 
         /// <summary>

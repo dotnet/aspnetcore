@@ -47,25 +47,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 options.UseHttps();
             });
 
+            Assert.False(serverOptions.IsDevCertLoaded);
+
             serverOptions.ListenLocalhost(5001, options =>
             {
                 options.UseHttps(opt =>
                 {
-                    Assert.Equal(defaultCert, opt.ServerCertificate);
+                    // The default cert is applied after UseHttps.
+                    Assert.Null(opt.ServerCertificate);
                 });
             });
+            Assert.False(serverOptions.IsDevCertLoaded);
         }
 
         [Fact]
-        public void ConfigureHttpsDefaultsOverridesDefaultCert()
+        public void ConfigureHttpsDefaultsNeverLoadsDefaultCert()
         {
             var serverOptions = CreateServerOptions();
-            var defaultCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
-            serverOptions.DefaultCertificate = defaultCert;
+            var testCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
             serverOptions.ConfigureHttpsDefaults(options =>
             {
-                Assert.Equal(defaultCert, options.ServerCertificate);
-                options.ServerCertificate = null;
+                Assert.Null(options.ServerCertificate);
+                options.ServerCertificate = testCert;
+                options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+            });
+            serverOptions.ListenLocalhost(5000, options =>
+            {
+                options.UseHttps(opt =>
+                {
+                    Assert.Equal(testCert, opt.ServerCertificate);
+                    Assert.Equal(ClientCertificateMode.RequireCertificate, opt.ClientCertificateMode);
+                });
+            });
+            // Never lazy loaded
+            Assert.False(serverOptions.IsDevCertLoaded);
+            Assert.Null(serverOptions.DefaultCertificate);
+        }
+
+        [Fact]
+        public void ConfigureCertSelectorNeverLoadsDefaultCert()
+        {
+            var serverOptions = CreateServerOptions();
+            var testCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+            serverOptions.ConfigureHttpsDefaults(options =>
+            {
+                Assert.Null(options.ServerCertificate);
+                Assert.Null(options.ServerCertificateSelector);
+                options.ServerCertificateSelector = (features, name) =>
+                {
+                    return testCert;
+                };
                 options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
             });
             serverOptions.ListenLocalhost(5000, options =>
@@ -73,12 +104,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 options.UseHttps(opt =>
                 {
                     Assert.Null(opt.ServerCertificate);
+                    Assert.NotNull(opt.ServerCertificateSelector);
                     Assert.Equal(ClientCertificateMode.RequireCertificate, opt.ClientCertificateMode);
-
-                    // So UseHttps won't throw
-                    opt.ServerCertificate = defaultCert;
                 });
             });
+            // Never lazy loaded
+            Assert.False(serverOptions.IsDevCertLoaded);
+            Assert.Null(serverOptions.DefaultCertificate);
         }
 
         [Fact]

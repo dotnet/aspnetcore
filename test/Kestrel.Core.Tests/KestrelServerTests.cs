@@ -65,7 +65,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void KestrelServerThrowsUsefulExceptionIfDefaultHttpsProviderNotAdded()
         {
-            using (var server = CreateServer(CreateServerOptions(), throwOnCriticalErrors: false))
+            var options = CreateServerOptions();
+            options.IsDevCertLoaded = true; // Prevent the system default from being loaded
+            using (var server = CreateServer(options, throwOnCriticalErrors: false))
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
 

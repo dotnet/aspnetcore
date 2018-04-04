@@ -225,6 +225,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     // Specified
                     httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
                         ?? httpsOptions.ServerCertificate;
+
+                    // Fallback
+                    Options.ApplyDefaultCert(httpsOptions);
                 }
 
                 if (EndpointConfigurations.TryGetValue(endpoint.Name, out var configureEndpoint))
