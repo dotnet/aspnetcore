@@ -94,10 +94,12 @@ namespace Microsoft.VisualStudio.BlazorExtension
                         var project = await access.GetProjectAsync(configuredProject);
 
                         // Now we can evaluate MSBuild properties
+                        var useLiveReloading = project.GetPropertyValue("UseBlazorLiveReloading");
                         var projectDir = project.GetPropertyValue("ProjectDir");
                         var outputPath = project.GetPropertyValue("OutputPath");
                         var signalFilePath = project.GetPropertyValue("BlazorBuildCompletedSignalPath");
-                        if (!string.IsNullOrEmpty(projectDir)
+                        if (string.Equals(useLiveReloading, "true", StringComparison.Ordinal)
+                            && !string.IsNullOrEmpty(projectDir)
                             && !string.IsNullOrEmpty(outputPath)
                             && !string.IsNullOrEmpty(signalFilePath))
                         {
