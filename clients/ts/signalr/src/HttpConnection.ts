@@ -14,6 +14,7 @@ export interface IHttpConnectionOptions {
     transport?: TransportType | ITransport;
     logger?: ILogger | LogLevel;
     accessTokenFactory?: () => string;
+    logMessageContent?: boolean;
 }
 
 const enum ConnectionState {
@@ -53,6 +54,7 @@ export class HttpConnection implements IConnection {
 
         options = options || {};
         options.accessTokenFactory = options.accessTokenFactory || (() => null);
+        options.logMessageContent = options.logMessageContent || false;
 
         this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
         this.connectionState = ConnectionState.Disconnected;
@@ -176,11 +178,11 @@ export class HttpConnection implements IConnection {
     private constructTransport(transport: TransportType) {
         switch (transport) {
             case TransportType.WebSockets:
-                return new WebSocketTransport(this.options.accessTokenFactory, this.logger);
+                return new WebSocketTransport(this.options.accessTokenFactory, this.logger, this.options.logMessageContent);
             case TransportType.ServerSentEvents:
-                return new ServerSentEventsTransport(this.httpClient, this.options.accessTokenFactory, this.logger);
+                return new ServerSentEventsTransport(this.httpClient, this.options.accessTokenFactory, this.logger, this.options.logMessageContent);
             case TransportType.LongPolling:
-                return new LongPollingTransport(this.httpClient, this.options.accessTokenFactory, this.logger);
+                return new LongPollingTransport(this.httpClient, this.options.accessTokenFactory, this.logger, this.options.logMessageContent);
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }

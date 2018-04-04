@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HubConnection, JsonHubProtocol, LogLevel, TransportType } from "@aspnet/signalr";
+import { HubConnection, IHubConnectionOptions, JsonHubProtocol, LogLevel, TransportType } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol } from "./Common";
@@ -10,6 +10,11 @@ import { TestLogger } from "./TestLogger";
 const TESTHUBENDPOINT_URL = "/testhub";
 const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = "/testhub-nowebsockets";
 
+const commonOptions: IHubConnectionOptions = {
+    logMessageContent: true,
+    logger: TestLogger.instance,
+};
+
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
         describe("using " + protocol.name + " over " + TransportType[transportType] + " transport", () => {
@@ -17,7 +22,7 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -44,7 +49,7 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -67,7 +72,7 @@ describe("hubConnection", () => {
 
             it("can invoke server method structural object and receive structural result", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -93,7 +98,7 @@ describe("hubConnection", () => {
 
             it("can stream server method and receive result", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -127,7 +132,7 @@ describe("hubConnection", () => {
             it("rethrows an exception from the server when invoking", (done) => {
                 const errorMessage = "An unexpected error occurred invoking 'ThrowException' on the server. InvalidOperationException: An error occurred.";
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -151,7 +156,7 @@ describe("hubConnection", () => {
 
             it("throws an exception when invoking streaming method with invoke", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -175,7 +180,7 @@ describe("hubConnection", () => {
 
             it("throws an exception when receiving a streaming result for method called with invoke", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -200,7 +205,7 @@ describe("hubConnection", () => {
             it("rethrows an exception from the server when streaming", (done) => {
                 const errorMessage = "An unexpected error occurred invoking 'StreamThrowException' on the server. InvalidOperationException: An error occurred.";
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -229,7 +234,7 @@ describe("hubConnection", () => {
 
             it("throws an exception when invoking hub method with stream", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -258,7 +263,7 @@ describe("hubConnection", () => {
 
             it("can receive server calls", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -290,7 +295,7 @@ describe("hubConnection", () => {
 
             it("can receive server calls without rebinding handler when restarted", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -347,7 +352,7 @@ describe("hubConnection", () => {
 
             it("closed with error if hub cannot be created", (done) => {
                 const hubConnection = new HubConnection("http://" + document.location.host + "/uncreatable", {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -361,7 +366,7 @@ describe("hubConnection", () => {
 
             it("can handle different types", (done) => {
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -409,7 +414,7 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    logger: TestLogger.instance,
+                    ...commonOptions,
                     protocol,
                     transport: transportType,
                 });
@@ -464,7 +469,7 @@ describe("hubConnection", () => {
                     const jwtToken = await getJwtToken("http://" + document.location.host + "/generateJwtToken");
                     const hubConnection = new HubConnection("/authorizedhub", {
                         accessTokenFactory: () => jwtToken,
-                        logger: TestLogger.instance,
+                        ...commonOptions,
                         transport: transportType,
                     });
                     hubConnection.onclose((error) => {
@@ -488,7 +493,7 @@ describe("hubConnection", () => {
             if (transportType !== TransportType.LongPolling) {
                 it("terminates if no messages received within timeout interval", (done) => {
                     const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                        logger: TestLogger.instance,
+                        ...commonOptions,
                         timeoutInMilliseconds: 100,
                         transport: transportType,
                     });
@@ -512,7 +517,7 @@ describe("hubConnection", () => {
     if (typeof EventSource !== "undefined") {
         it("allows Server-Sent Events when negotiating for JSON protocol", async (done) => {
             const hubConnection = new HubConnection(TESTHUB_NOWEBSOCKETS_ENDPOINT_URL, {
-                logger: TestLogger.instance,
+                ...commonOptions,
                 protocol: new JsonHubProtocol(),
             });
 
@@ -530,7 +535,7 @@ describe("hubConnection", () => {
 
     it("skips Server-Sent Events when negotiating for MsgPack protocol", async (done) => {
         const hubConnection = new HubConnection(TESTHUB_NOWEBSOCKETS_ENDPOINT_URL, {
-            logger: TestLogger.instance,
+            ...commonOptions,
             protocol: new MessagePackHubProtocol(),
         });
 

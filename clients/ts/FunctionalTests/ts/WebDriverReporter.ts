@@ -48,7 +48,7 @@ class WebDriverReporter implements jasmine.CustomReporter {
 
     public specDone(result: jasmine.CustomReporterResult): void {
         this.concurrentSpecCount -= 1;
-        const messages = TestLogger.getMessagesAndReset();
+        const testLog = TestLogger.saveLogsAndReset(result.fullName);
         if (result.status === "disabled") {
             return;
         } else if (result.status === "failed") {
@@ -74,9 +74,9 @@ class WebDriverReporter implements jasmine.CustomReporter {
             }
 
             // Report log messages
-            if (messages.length > 0) {
+            if (testLog.messages.length > 0) {
                 this.taplog("    - logs: ");
-                for (const [level, message] of messages) {
+                for (const [level, message] of testLog.messages) {
                     this.taplog(`      - level: ${LogLevel[level]}`);
                     this.taplog(`        message: ${message}`);
                 }

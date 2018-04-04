@@ -31,11 +31,13 @@ export interface ITransport {
 export class WebSocketTransport implements ITransport {
     private readonly logger: ILogger;
     private readonly accessTokenFactory: () => string;
+    private readonly logMessageContent: boolean;
     private webSocket: WebSocket;
 
-    constructor(accessTokenFactory: () => string, logger: ILogger) {
+    constructor(accessTokenFactory: () => string, logger: ILogger, logMessageContent: boolean) {
         this.logger = logger;
         this.accessTokenFactory = accessTokenFactory || (() => null);
+        this.logMessageContent = logMessageContent;
     }
 
     public connect(url: string, transferFormat: TransferFormat, connection: IConnection): Promise<void> {
@@ -73,7 +75,7 @@ export class WebSocketTransport implements ITransport {
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
-                this.logger.log(LogLevel.Trace, `(WebSockets transport) data received. ${getDataDetail(message.data)}.`);
+                this.logger.log(LogLevel.Trace, `(WebSockets transport) data received. ${getDataDetail(message.data, this.logMessageContent)}.`);
                 if (this.onreceive) {
                     this.onreceive(message.data);
                 }
@@ -94,7 +96,7 @@ export class WebSocketTransport implements ITransport {
 
     public send(data: any): Promise<void> {
         if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
-            this.logger.log(LogLevel.Trace, `(WebSockets transport) sending data. ${getDataDetail(data)}.`);
+            this.logger.log(LogLevel.Trace, `(WebSockets transport) sending data. ${getDataDetail(data, this.logMessageContent)}.`);
             this.webSocket.send(data);
             return Promise.resolve();
         }
@@ -118,13 +120,15 @@ export class ServerSentEventsTransport implements ITransport {
     private readonly httpClient: HttpClient;
     private readonly accessTokenFactory: () => string;
     private readonly logger: ILogger;
+    private readonly logMessageContent: boolean;
     private eventSource: EventSource;
     private url: string;
 
-    constructor(httpClient: HttpClient, accessTokenFactory: () => string, logger: ILogger) {
+    constructor(httpClient: HttpClient, accessTokenFactory: () => string, logger: ILogger, logMessageContent: boolean) {
         this.httpClient = httpClient;
         this.accessTokenFactory = accessTokenFactory || (() => null);
         this.logger = logger;
+        this.logMessageContent = logMessageContent;
     }
 
     public connect(url: string, transferFormat: TransferFormat, connection: IConnection): Promise<void> {
@@ -156,7 +160,7 @@ export class ServerSentEventsTransport implements ITransport {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onreceive) {
                         try {
-                            this.logger.log(LogLevel.Trace, `(SSE transport) data received. ${getDataDetail(e.data)}.`);
+                            this.logger.log(LogLevel.Trace, `(SSE transport) data received. ${getDataDetail(e.data, this.logMessageContent)}.`);
                             this.onreceive(e.data);
                         } catch (error) {
                             if (this.onclose) {
@@ -189,7 +193,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     public async send(data: any): Promise<void> {
-        return send(this.logger, "SSE", this.httpClient, this.url, this.accessTokenFactory, data);
+        return send(this.logger, "SSE", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public stop(): Promise<void> {
@@ -208,16 +212,18 @@ export class LongPollingTransport implements ITransport {
     private readonly httpClient: HttpClient;
     private readonly accessTokenFactory: () => string;
     private readonly logger: ILogger;
+    private readonly logMessageContent: boolean;
 
     private url: string;
     private pollXhr: XMLHttpRequest;
     private pollAbort: AbortController;
 
-    constructor(httpClient: HttpClient, accessTokenFactory: () => string, logger: ILogger) {
+    constructor(httpClient: HttpClient, accessTokenFactory: () => string, logger: ILogger, logMessageContent: boolean) {
         this.httpClient = httpClient;
         this.accessTokenFactory = accessTokenFactory || (() => null);
         this.logger = logger;
         this.pollAbort = new AbortController();
+        this.logMessageContent = logMessageContent;
     }
 
     public connect(url: string, transferFormat: TransferFormat, connection: IConnection): Promise<void> {
@@ -283,7 +289,7 @@ export class LongPollingTransport implements ITransport {
                 } else {
                     // Process the response
                     if (response.content) {
-                        this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content)}.`);
+                        this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this.logMessageContent)}`);
                         if (this.onreceive) {
                             this.onreceive(response.content);
                         }
@@ -308,7 +314,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     public async send(data: any): Promise<void> {
-        return send(this.logger, "LongPolling", this.httpClient, this.url, this.accessTokenFactory, data);
+        return send(this.logger, "LongPolling", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public stop(): Promise<void> {
@@ -320,17 +326,37 @@ export class LongPollingTransport implements ITransport {
     public onclose: TransportClosed;
 }
 
-function getDataDetail(data: any): string {
+function getDataDetail(data: any, includeContent: boolean): string {
     let length: string = null;
     if (data instanceof ArrayBuffer) {
-        length = `Binary data of length ${data.byteLength}`;
+        length = `Binary data of length ${data.byteLength}.`;
+        if (includeContent) {
+            length += ` Content: '${formatArrayBuffer(data)}'.`;
+        }
     } else if (typeof data === "string") {
-        length = `String data of length ${data.length}`;
+        length = `String data of length ${data.length}.`;
+        if (includeContent) {
+            length += ` Content: '${data}'.`;
+        }
     }
     return length;
 }
 
-async function send(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: () => string, content: string | ArrayBuffer): Promise<void> {
+function formatArrayBuffer(data: ArrayBuffer): string {
+    const view = new Uint8Array(data);
+
+    // Uint8Array.map only supports returning another Uint8Array?
+    let str = "";
+    view.forEach((num) => {
+        const pad = num < 16 ? "0" : "";
+        str += `0x${pad}${num.toString(16)} `;
+    });
+
+    // Trim of trailing space.
+    return str.substr(0, str.length - 1);
+}
+
+async function send(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: () => string, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
     let headers;
     const token = accessTokenFactory();
     if (token) {
@@ -339,7 +365,7 @@ async function send(logger: ILogger, transportName: string, httpClient: HttpClie
         };
     }
 
-    logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content)}.`);
+    logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
     const response = await httpClient.post(url, {
         content,
