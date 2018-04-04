@@ -2,72 +2,75 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
     public class HubConnectionBuilder : IHubConnectionBuilder
     {
-        private readonly Dictionary<KeyValuePair<string, Type>, object> _settings = new Dictionary<KeyValuePair<string, Type>, object>();
-        private Func<IConnection> _connectionFactoryDelegate;
+        private bool _hubConnectionBuilt;
 
-        public void ConfigureConnectionFactory(Func<IConnection> connectionFactoryDelegate) =>
-            _connectionFactoryDelegate = connectionFactoryDelegate;
+        public IServiceCollection Services { get; }
 
-        public void AddSetting<T>(string name, T value)
+        public HubConnectionBuilder()
         {
-            _settings[new KeyValuePair<string, Type>(name, typeof(T))] = value;
-        }
-
-        public bool TryGetSetting<T>(string name, out T value)
-        {
-            value = default;
-            if (!_settings.TryGetValue(new KeyValuePair<string, Type>(name, typeof(T)), out var setting))
-            {
-                return false;
-            }
-
-            value = (T)setting;
-            return true;
+            Services = new ServiceCollection();
+            Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            Services.AddSingleton<IHubProtocol, JsonHubProtocol>();
+            Services.AddSingleton<HubConnection>();
         }
 
         public HubConnection Build()
         {
-            if (_connectionFactoryDelegate == null)
+            // Build can only be used once
+            if (_hubConnectionBuilt)
             {
-                throw new InvalidOperationException("Cannot create IConnection instance. The connection factory was not configured.");
+                throw new InvalidOperationException("HubConnectionBuilder allows creation only of a single instance of HubConnection.");
             }
 
-            IHubConnectionBuilder builder = this;
+            _hubConnectionBuilt = true;
 
-            var loggerFactory = builder.GetLoggerFactory();
-            var hubProtocol = builder.GetHubProtocol();
+            // The service provider is disposed by the HubConnection
+            var serviceProvider = Services.BuildServiceProvider();
 
-            return new HubConnection(_connectionFactoryDelegate, hubProtocol ?? new JsonHubProtocol(), loggerFactory);
+            var connectionFactory = serviceProvider.GetService<Func<IConnection>>();
+            if (connectionFactory == null)
+            {
+                throw new InvalidOperationException("Cannot create HubConnection instance. A connection was not configured.");
+            }
+
+            return serviceProvider.GetService<HubConnection>();
         }
 
+        // Prevents from being displayed in intellisense
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
 
+        // Prevents from being displayed in intellisense
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override bool Equals(object obj)
         {
             return base.Equals(obj);
         }
 
+        // Prevents from being displayed in intellisense
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override string ToString()
         {
             return base.ToString();
         }
 
+        // Prevents from being displayed in intellisense
         [EditorBrowsable(EditorBrowsableState.Never)]
         public new Type GetType()
         {

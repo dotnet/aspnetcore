@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class HubOptionsDependencyInjectionExtensions
     {
-        public static ISignalRBuilder AddHubOptions<THub>(this ISignalRBuilder signalrBuilder, Action<HubOptions<THub>> options) where THub : Hub
+        public static ISignalRServerBuilder AddHubOptions<THub>(this ISignalRServerBuilder signalrBuilder, Action<HubOptions<THub>> options) where THub : Hub
         {
             signalrBuilder.Services.AddSingleton<IConfigureOptions<HubOptions<THub>>, HubOptionsSetup<THub>>();
             signalrBuilder.Services.Configure(options);

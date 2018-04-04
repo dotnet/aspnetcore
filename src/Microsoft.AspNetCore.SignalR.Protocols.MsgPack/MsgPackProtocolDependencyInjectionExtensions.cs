@@ -16,7 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         /// <param name="builder">The <see cref="ISignalRBuilder"/> representing the SignalR server to add MsgPack protocol support to.</param>
         /// <returns>The value of <paramref name="builder"/></returns>
-        public static ISignalRBuilder AddMessagePackProtocol(this ISignalRBuilder builder) => AddMessagePackProtocol(builder, _ => { });
+        public static TBuilder AddMessagePackProtocol<TBuilder>(this TBuilder builder) where TBuilder : ISignalRBuilder
+            => AddMessagePackProtocol(builder, _ => { });
 
         /// <summary>
         /// Enables the MsgPack protocol for SignalR and allows options for the MsgPack protocol to be configured.
@@ -27,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The <see cref="ISignalRBuilder"/> representing the SignalR server to add MsgPack protocol support to.</param>
         /// <param name="configure">A delegate that can be used to configure the <see cref="MessagePackHubProtocolOptions"/></param>
         /// <returns>The value of <paramref name="builder"/></returns>
-        public static ISignalRBuilder AddMessagePackProtocol(this ISignalRBuilder builder, Action<MessagePackHubProtocolOptions> configure)
+        public static TBuilder AddMessagePackProtocol<TBuilder>(this TBuilder builder, Action<MessagePackHubProtocolOptions> configure) where TBuilder : ISignalRBuilder
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, MessagePackHubProtocol>());
             builder.Services.Configure(configure);

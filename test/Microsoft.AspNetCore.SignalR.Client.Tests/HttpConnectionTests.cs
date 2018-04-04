@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             HttpClientHandler httpClientHandler = null;
 
             var httpOptions = new HttpOptions();
-            httpOptions.HttpMessageHandler = inner =>
+            httpOptions.HttpMessageHandlerFactory = inner =>
             {
                 httpClientHandler = (HttpClientHandler)inner;
                 return testHttpHandler;
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.BadGateway));
 
             var httpOptions = new HttpOptions();
-            httpOptions.HttpMessageHandler = inner => testHttpHandler;
+            httpOptions.HttpMessageHandlerFactory = inner => testHttpHandler;
 
             const string loggerName = "Microsoft.AspNetCore.Http.Connections.Client.Internal.LoggingHttpMessageHandler";
             var testSink = new TestSink();

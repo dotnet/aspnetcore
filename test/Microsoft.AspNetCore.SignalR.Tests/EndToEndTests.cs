@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Returns<HttpRequestMessage, CancellationToken>(
                         (request, cancellationToken) => Task.FromException<HttpResponseMessage>(new InvalidOperationException("HTTP requests should not be sent.")));
 
-                var connection = new HttpConnection(new Uri(url), HttpTransportType.WebSockets, loggerFactory, new HttpOptions { HttpMessageHandler = (httpMessageHandler) => mockHttpHandler.Object });
+                var connection = new HttpConnection(new Uri(url), HttpTransportType.WebSockets, loggerFactory, new HttpOptions { HttpMessageHandlerFactory = (httpMessageHandler) => mockHttpHandler.Object });
 
                 try
                 {
@@ -339,9 +339,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var url = _serverFixture.Url + "/uncreatable";
                 var connection = new HubConnectionBuilder()
-                        .WithUrl(new Uri(url))
-                        .WithTransport(transportType)
                         .WithLoggerFactory(loggerFactory)
+                        .WithUrl(url, transportType)
                         .Build();
                 try
                 {

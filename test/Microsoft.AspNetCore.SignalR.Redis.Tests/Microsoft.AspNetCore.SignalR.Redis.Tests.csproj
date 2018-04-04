@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.MsgPack\Microsoft.AspNetCore.SignalR.MsgPack.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Protocols.MsgPack\Microsoft.AspNetCore.SignalR.Protocols.MsgPack.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />

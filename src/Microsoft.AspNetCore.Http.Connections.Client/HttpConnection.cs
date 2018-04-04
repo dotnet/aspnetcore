@@ -391,12 +391,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
 
                 httpMessageHandler = httpClientHandler;
-                if (_httpOptions.HttpMessageHandler != null)
+                if (_httpOptions.HttpMessageHandlerFactory != null)
                 {
-                    httpMessageHandler = _httpOptions.HttpMessageHandler(httpClientHandler);
+                    httpMessageHandler = _httpOptions.HttpMessageHandlerFactory(httpClientHandler);
                     if (httpMessageHandler == null)
                     {
-                        throw new InvalidOperationException("Configured HttpMessageHandler did not return a value.");
+                        throw new InvalidOperationException("Configured HttpMessageHandlerFactory did not return a value.");
                     }
                 }
             }

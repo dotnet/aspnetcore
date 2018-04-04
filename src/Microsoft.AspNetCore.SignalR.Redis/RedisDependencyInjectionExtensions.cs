@@ -10,12 +10,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class RedisDependencyInjectionExtensions
     {
-        public static ISignalRBuilder AddRedis(this ISignalRBuilder builder)
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder)
         {
             return AddRedis(builder, o => { });
         }
 
-        public static ISignalRBuilder AddRedis(this ISignalRBuilder builder, string redisConnectionString)
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, string redisConnectionString)
         {
             return AddRedis(builder, o =>
             {
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
         }
 
-        public static ISignalRBuilder AddRedis(this ISignalRBuilder builder, Action<RedisOptions> configure)
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, Action<RedisOptions> configure)
         {
             builder.Services.Configure(configure);
             builder.Services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisHubLifetimeManager<>));

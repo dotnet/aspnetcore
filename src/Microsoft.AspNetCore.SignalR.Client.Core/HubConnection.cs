@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
         private readonly IHubProtocol _protocol;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Func<IConnection> _connectionFactory;
         private readonly ConcurrentDictionary<string, List<InvocationHandler>> _handlers = new ConcurrentDictionary<string, List<InvocationHandler>>();
         private bool _disposed;
@@ -45,14 +47,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
 
-        public HubConnection(Func<IConnection> connectionFactory, IHubProtocol protocol) : this(connectionFactory, protocol, NullLoggerFactory.Instance)
-        {
-        }
-
-        public HubConnection(Func<IConnection> connectionFactory, IHubProtocol protocol, ILoggerFactory loggerFactory)
+        public HubConnection(Func<IConnection> connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HubConnection>();
@@ -185,6 +184,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 if (disposing)
                 {
+                    (_serviceProvider as IDisposable)?.Dispose();
                     _disposed = true;
                 }
             }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -23,11 +24,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public static IEnumerable<object[]> MethodsNamesThatRequireActiveConnection => MethodsThatRequireActiveConnection.Keys.Select(k => new object[] { k });
 
+            private HubConnection CreateHubConnection(Func<IConnection> connectionFactory)
+            {
+                var builder = new HubConnectionBuilder();
+                builder.WithConnectionFactory(connectionFactory);
+                return builder.Build();
+            }
+
             [Fact]
             public async Task StartAsyncStartsTheUnderlyingConnection()
             {
                 var testConnection = new TestConnection();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     await connection.StartAsync();
                     Assert.True(testConnection.Started.IsCompleted);
@@ -39,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 // Set up StartAsync to wait on the syncPoint when starting
                 var testConnection = new TestConnection(onStart: SyncPoint.Create(out var syncPoint));
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     var firstStart = connection.StartAsync().OrTimeout();
                     Assert.False(firstStart.IsCompleted);
@@ -71,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return new TestConnection();
                 }
 
-                await AsyncUsing(new HubConnection(ConnectionFactory, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(ConnectionFactory), async connection =>
                 {
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(1, createCount);
@@ -94,7 +102,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return new TestConnection(onDispose: createCount == 1 ? onDisposeForFirstConnection : null);
                 }
 
-                await AsyncUsing(new HubConnection(ConnectionFactory, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(ConnectionFactory), async connection =>
                 {
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(1, createCount);
@@ -119,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public async Task StartAsyncWithFailedHandshakeCanBeStopped()
             {
                 var testConnection = new TestConnection(autoHandshake: false);
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     testConnection.Transport.Input.Complete();
                     try
@@ -141,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var method = MethodsThatRequireActiveConnection[name];
 
                 var testConnection = new TestConnection();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => method(connection));
                     Assert.Equal($"The '{name}' method cannot be called if the connection is not active", ex.Message);
@@ -156,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 // Set up StartAsync to wait on the syncPoint when starting
                 var testConnection = new TestConnection(onStart: SyncPoint.Create(out var syncPoint));
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     // Start, and wait for the sync point to be hit
                     var startTask = connection.StartAsync().OrTimeout();
@@ -187,7 +195,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public async Task StopAsyncStopsConnection()
             {
                 var testConnection = new TestConnection();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
@@ -201,7 +209,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public async Task StopAsyncNoOpsIfConnectionNotYetStarted()
             {
                 var testConnection = new TestConnection();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     await connection.StopAsync().OrTimeout();
                     Assert.False(testConnection.Disposed.IsCompleted);
@@ -212,7 +220,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public async Task StopAsyncNoOpsIfConnectionAlreadyStopped()
             {
                 var testConnection = new TestConnection();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
@@ -229,7 +237,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var testConnection = new TestConnection();
                 var closed = new TaskCompletionSource<object>();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     connection.Closed += (e) => closed.TrySetResult(null);
                     await connection.StartAsync().OrTimeout();
@@ -251,7 +259,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 var testConnectionClosed = new TaskCompletionSource<object>();
                 var connectionClosed = new TaskCompletionSource<object>();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     // We're hooking the TestConnection shutting down here because the HubConnection one will be blocked on the lock
                     testConnection.Transport.Input.OnWriterCompleted((_, __) => testConnectionClosed.TrySetResult(null), null);
@@ -286,7 +294,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var testConnection = new TestConnection();
                 var connectionClosed = new TaskCompletionSource<object>();
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     connection.Closed += (e) => connectionClosed.TrySetResult(null);
 
@@ -319,7 +327,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 // Set up StartAsync to wait on the syncPoint when starting
                 var testConnection = new TestConnection(onDispose: SyncPoint.Create(out var syncPoint));
-                await AsyncUsing(new HubConnection(() => testConnection, new JsonHubProtocol()), async connection =>
+                await AsyncUsing(CreateHubConnection(() => testConnection), async connection =>
                 {
                     await connection.StartAsync().OrTimeout();
 

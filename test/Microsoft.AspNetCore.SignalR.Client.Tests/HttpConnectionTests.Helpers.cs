@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var httpOptions = new HttpOptions()
             {
-                HttpMessageHandler = (httpMessageHandler) => httpHandler ?? TestHttpMessageHandler.CreateDefault(),
+                HttpMessageHandlerFactory = (httpMessageHandler) => httpHandler ?? TestHttpMessageHandler.CreateDefault(),
             };
 
             return CreateConnection(httpOptions, loggerFactory, url, transport, transportFactory, transportType);

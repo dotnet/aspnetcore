@@ -92,10 +92,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         private static HubConnection CreateConnection(string url, HttpTransportType transportType, IHubProtocol protocol, ILoggerFactory loggerFactory)
         {
             return new HubConnectionBuilder()
-                .WithUrl(url)
-                .WithTransport(transportType)
                 .WithHubProtocol(protocol)
                 .WithLoggerFactory(loggerFactory)
+                .WithUrl(url, transportType)
                 .Build();
         }
 

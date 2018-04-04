@@ -28,13 +28,15 @@ namespace JwtClientSample
 
         private async Task RunConnection(HttpTransportType transportType)
         {
-            var userId = "C#" + transportType.ToString();
+            var userId = "C#" + transportType;
             _tokens[userId] = await GetJwtToken(userId);
 
             var hubConnection = new HubConnectionBuilder()
-                .WithUrl(ServerUrl + "/broadcast")
-                .WithTransport(transportType)
-                .WithAccessToken(() => _tokens[userId])
+                .WithUrl(ServerUrl + "/broadcast", options =>
+                {
+                    options.Transport = transportType;
+                    options.AccessTokenFactory = () => _tokens[userId];
+                })
                 .Build();
 
             var closedTcs = new TaskCompletionSource<object>();

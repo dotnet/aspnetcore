@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SignalRDependencyInjectionExtensions
     {
-        public static ISignalRBuilder AddSignalR(this IServiceCollection services)
+        public static ISignalRServerBuilder AddSignalR(this IServiceCollection services)
         {
             services.AddConnections();
             services.AddSingleton<SignalRMarkerService>();
@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddJsonProtocol();
         }
 
-        public static ISignalRBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> options)
+        public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> options)
         {
             return services.Configure(options)
                 .AddSignalR();

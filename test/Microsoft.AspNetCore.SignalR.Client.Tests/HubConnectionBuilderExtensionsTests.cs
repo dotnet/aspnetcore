@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -18,114 +16,100 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class HubConnectionBuilderExtensionsTests
     {
         [Fact]
-        public void WithProxyRegistersGivenProxy()
+        public void WithHttpConnectionSetsUrl()
         {
             var connectionBuilder = new HubConnectionBuilder();
+            connectionBuilder.WithUrl("http://tempuri.org");
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var value = serviceProvider.GetService<IOptions<HttpConnectionOptions>>().Value;
+
+            Assert.Equal(new Uri("http://tempuri.org"), value.Url);
+        }
+
+        [Fact]
+        public void WithHttpConnectionSetsTransport()
+        {
+            var connectionBuilder = new HubConnectionBuilder();
+            connectionBuilder.WithUrl("http://tempuri.org", HttpTransportType.LongPolling);
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var value = serviceProvider.GetService<IOptions<HttpConnectionOptions>>().Value;
+
+            Assert.Equal(HttpTransportType.LongPolling, value.Transport);
+        }
+
+        [Fact]
+        public void WithHttpConnectionCallsConfigure()
+        {
             var proxy = Mock.Of<IWebProxy>();
-            connectionBuilder.WithProxy(proxy);
-            Assert.Same(proxy, connectionBuilder.GetProxy());
+
+            var connectionBuilder = new HubConnectionBuilder();
+            connectionBuilder.WithUrl("http://tempuri.org", options => { options.Proxy = proxy; });
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var value = serviceProvider.GetService<IOptions<HttpConnectionOptions>>().Value;
+
+            Assert.Same(proxy, value.Proxy);
         }
 
         [Fact]
-        public void WithCredentialsRegistersGivenCredentials()
+        public void WithConsoleLoggerAddsLogger()
         {
+            var loggingFactory = Mock.Of<ILoggerFactory>();
+
             var connectionBuilder = new HubConnectionBuilder();
-            var credentials = Mock.Of<ICredentials>();
-            connectionBuilder.WithCredentials(credentials);
-            Assert.Same(credentials, connectionBuilder.GetCredentials());
+            connectionBuilder.WithLoggerFactory(loggingFactory);
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var resolvedLoggingFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            Assert.Same(resolvedLoggingFactory, loggingFactory);
         }
 
         [Fact]
-        public void WithUseDefaultCredentialsRegistersGivenUseDefaultCredentials()
+        public void WithHubProtocolAddsProtocol()
         {
-            var connectionBuilder = new HubConnectionBuilder();
-            var useDefaultCredentials = true;
-            connectionBuilder.WithUseDefaultCredentials(useDefaultCredentials);
-            Assert.Equal(useDefaultCredentials, connectionBuilder.GetUseDefaultCredentials());
-        }
-
-        [Fact]
-        public void WithClientCertificateRegistersGivenClientCertificate()
-        {
-            var connectionBuilder = new HubConnectionBuilder();
-            var certificate = new X509Certificate();
-            connectionBuilder.WithClientCertificate(certificate);
-            Assert.Contains(certificate, connectionBuilder.GetClientCertificates().Cast<X509Certificate>());
-        }
-
-        [Fact]
-        public void WithCookieRegistersGivenCookie()
-        {
-            var connectionBuilder = new HubConnectionBuilder();
-            var cookie = new Cookie("Name!", "Value!", string.Empty, "www.contoso.com");
-            connectionBuilder.WithCookie(cookie);
-            Assert.Equal(1, connectionBuilder.GetCookies().Count);
-        }
-
-        [Fact]
-        public void WithHubProtocolRegistersGivenProtocol()
-        {
-            var connectionBuilder = new HubConnectionBuilder();
             var hubProtocol = Mock.Of<IHubProtocol>();
+
+            var connectionBuilder = new HubConnectionBuilder();
             connectionBuilder.WithHubProtocol(hubProtocol);
-            Assert.Same(hubProtocol, connectionBuilder.GetHubProtocol());
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var resolvedHubProtocol = serviceProvider.GetService<IHubProtocol>();
+
+            Assert.Same(hubProtocol, resolvedHubProtocol);
         }
 
         [Fact]
-        public void WithJsonProtocolRegistersJsonProtocol()
+        public void AddJsonProtocolAddsProtocol()
         {
             var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.WithJsonProtocol();
-            Assert.IsType<JsonHubProtocol>(connectionBuilder.GetHubProtocol());
+            connectionBuilder.AddJsonProtocol();
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var resolvedHubProtocol = serviceProvider.GetService<IHubProtocol>();
+
+            Assert.IsType<JsonHubProtocol>(resolvedHubProtocol);
         }
 
         [Fact]
-        public void WithMessagePackProtocolRegistersMessagePackProtocol()
+        public void AddMessagePackProtocolAddsProtocol()
         {
             var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.WithMessagePackProtocol();
-            Assert.IsType<MessagePackHubProtocol>(connectionBuilder.GetHubProtocol());
-        }
+            connectionBuilder.AddMessagePackProtocol();
 
-        [Fact]
-        public void WithLoggerRegistersGivenLogger()
-        {
-            var connectionBuilder = new HubConnectionBuilder();
-            var loggerFactory = Mock.Of<ILoggerFactory>();
-            connectionBuilder.WithLoggerFactory(loggerFactory);
-            Assert.Same(loggerFactory, connectionBuilder.GetLoggerFactory());
-        }
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
 
-        [Fact]
-        public void WithConsoleLoggerRegistersConsoleLogger()
-        {
-            var connectionBuilder = new HubConnectionBuilder();
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            connectionBuilder.WithLoggerFactory(mockLoggerFactory.Object);
-            connectionBuilder.WithConsoleLogger();
-            mockLoggerFactory.Verify(f => f.AddProvider(It.IsAny<ConsoleLoggerProvider>()), Times.Once);
-        }
+            var resolvedHubProtocol = serviceProvider.GetService<IHubProtocol>();
 
-        [Fact]
-        public void WithMsgHandlerRegistersGivenMessageHandler()
-        {
-            var messageHandler = new Func<HttpMessageHandler, HttpMessageHandler>(httpMessageHandler => default);
-
-            var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.WithMessageHandler(messageHandler);
-            Assert.Same(messageHandler, connectionBuilder.GetMessageHandler());
-        }
-
-        [Theory]
-        [InlineData(HttpTransportType.All)]
-        [InlineData(HttpTransportType.WebSockets)]
-        [InlineData(HttpTransportType.ServerSentEvents)]
-        [InlineData(HttpTransportType.LongPolling)]
-        public void WithTransportRegistersGivenTransportType(HttpTransportType transportType)
-        {
-            var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.WithTransport(transportType);
-            Assert.Equal(transportType, connectionBuilder.GetTransport());
+            Assert.IsType<MessagePackHubProtocol>(resolvedHubProtocol);
         }
     }
 }

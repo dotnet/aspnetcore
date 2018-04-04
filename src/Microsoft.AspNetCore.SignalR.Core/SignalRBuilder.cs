@@ -9,9 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class SignalRBuilder : ISignalRBuilder
+    public class SignalRServerBuilder : ISignalRServerBuilder
     {
-        public SignalRBuilder(IServiceCollection services)
+        public SignalRServerBuilder(IServiceCollection services)
         {
             Services = services;
         }

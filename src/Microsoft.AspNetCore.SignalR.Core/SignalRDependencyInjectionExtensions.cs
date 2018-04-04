@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SignalRDependencyInjectionExtensions
     {
-        public static ISignalRBuilder AddSignalRCore(this IServiceCollection services)
+        public static ISignalRServerBuilder AddSignalRCore(this IServiceCollection services)
         {
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
             services.AddSingleton(typeof(IHubProtocolResolver), typeof(DefaultHubProtocolResolver));
@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddAuthorization();
 
-            return new SignalRBuilder(services);
+            return new SignalRServerBuilder(services);
         }
     }
 }

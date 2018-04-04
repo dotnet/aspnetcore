@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
     public class HttpOptions
     {
         /// <summary>
-        /// Gets or sets a delegate for wrapping or replacing the <see cref="HttpMessageHandler"/>
+        /// Gets or sets a delegate for wrapping or replacing the <see cref="HttpMessageHandlerFactory"/>
         /// that will make HTTP requests the server.
         /// </summary>
-        public Func<HttpMessageHandler, HttpMessageHandler> HttpMessageHandler { get; set; }
+        public Func<HttpMessageHandler, HttpMessageHandler> HttpMessageHandlerFactory { get; set; }
 
         public IReadOnlyCollection<KeyValuePair<string, string>> Headers { get; set; }
         public Func<string> AccessTokenFactory { get; set; }

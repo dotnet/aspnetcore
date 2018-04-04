@@ -1,15 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
@@ -47,7 +50,12 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             connection.Transport = _pipe;
 
             var protocol = Protocol == "json" ? (IHubProtocol)new JsonHubProtocol() : new MessagePackHubProtocol();
-            _hubConnection = new HubConnection(() => connection, protocol, new NullLoggerFactory());
+
+            var hubConnectionBuilder = new HubConnectionBuilder();
+            hubConnectionBuilder.WithHubProtocol(protocol);
+            hubConnectionBuilder.WithConnectionFactory(() => connection);
+
+            _hubConnection = hubConnectionBuilder.Build();
             _hubConnection.StartAsync().GetAwaiter().GetResult();
 
             _arguments = new object[ArgumentCount];
