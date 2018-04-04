@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Blazor.Server
         public string SourceMSBuildPath { get; }
         public string SourceOutputAssemblyPath { get; }
         public string WebRootPath { get; }
-        public string ReloadUri { get; }
         public string DistPath
             => Path.Combine(Path.GetDirectoryName(SourceOutputAssemblyPath), "dist");
 
@@ -41,16 +40,6 @@ namespace Microsoft.AspNetCore.Blazor.Server
             if (Directory.Exists(webRootPath))
             {
                 WebRootPath = webRootPath;
-            }
-
-            const string reloadMarker = "reload:";
-            var reloadUri = configLines
-                .Where(line => line.StartsWith(reloadMarker, StringComparison.Ordinal))
-                .Select(line => line.Substring(reloadMarker.Length))
-                .FirstOrDefault();
-            if (!string.IsNullOrEmpty(reloadUri))
-            {
-                ReloadUri = reloadUri;
             }
         }
     }

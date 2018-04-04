@@ -1,6 +1,5 @@
 ﻿import { platform } from './Environment';
 import { getAssemblyNameFromUrl } from './Platform/DotNet';
-import { enableLiveReloading } from './LiveReloading';
 import './Rendering/Renderer';
 import './Services/Http';
 import './Services/UriHelper';
@@ -37,13 +36,6 @@ async function boot() {
 
   // Start up the application
   platform.callEntryPoint(entryPointAssemblyName, entryPointMethod, []);
-
-  // Enable live reloading only if there's a "reload" attribute on the <script> tag.
-  // In production, this should not be the case.
-  const reloadUri = thisScriptElem.getAttribute('reload');
-  if (reloadUri) {
-    enableLiveReloading(reloadUri);
-  }
 }
 
 function getRequiredBootScriptAttribute(elem: HTMLScriptElement, attributeName: string): string {

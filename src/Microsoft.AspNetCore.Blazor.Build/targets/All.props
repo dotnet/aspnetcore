@@ -4,16 +4,7 @@
   <PropertyGroup>
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
 
-    <!-- By default, live reloading is on for debug builds -->
-    <UseBlazorLiveReloading Condition="'$(Configuration)' == 'Debug'">true</UseBlazorLiveReloading>
-    <BlazorLiveReloadUri>/_reload</BlazorLiveReloadUri>
-
     <!-- We can remove this after updating to newer Razor tooling, where it's enabled by default -->
     <UseRazorBuildServer>true</UseRazorBuildServer>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!-- In case you're using 'dotnet watch', enable reloading when editing .cshtml files -->
-    <Watch Include="$(ProjectDir)**\*.cshtml" />
-  </ItemGroup>
 </Project>
