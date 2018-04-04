@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Assert.Null(connection.TransportTask);
             Assert.Null(connection.Cancellation);
             Assert.NotEqual(default, connection.LastSeenUtc);
-            Assert.Null(connection.Transport);
+            Assert.NotNull(connection.Transport);
+            Assert.NotNull(connection.Application);
         }
 
         [Fact]
@@ -197,8 +198,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var connection = connectionManager.CreateConnection();
 
             Assert.NotNull(connection.ConnectionId);
-            Assert.Null(connection.Transport);
-            Assert.Null(connection.Application);
+            Assert.NotNull(connection.Transport);
+            Assert.NotNull(connection.Application);
 
             await connection.DisposeAsync();
             Assert.Equal(HttpConnectionContext.ConnectionStatus.Disposed, connection.Status);

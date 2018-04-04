@@ -67,30 +67,27 @@ namespace Microsoft.AspNetCore.Http.Connections
             return false;
         }
 
+        public HttpConnectionContext CreateConnection()
+        {
+            return CreateConnection(PipeOptions.Default, PipeOptions.Default);
+        }
+
         /// <summary>
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        public HttpConnectionContext CreateConnection()
+        public HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
         {
             var id = MakeNewConnectionId();
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-
             var connection = new HttpConnectionContext(id);
+            var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
+            connection.Transport = pair.Application;
+            connection.Application = pair.Transport;
 
             _connections.TryAdd(id, (connection, connectionTimer));
-            return connection;
-        }
-
-        public HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
-        {
-            var connection = CreateConnection();
-            var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
-            connection.Application = pair.Transport;
-            connection.Transport = pair.Application;
-
             return connection;
         }
 
