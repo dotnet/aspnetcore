@@ -59,16 +59,10 @@
   -->
   <Target Name="_BlazorIssueLiveReloadNotification"
           AfterTargets="Build"
-          Condition="'$(UseBlazorLiveReloading)'=='true' AND '$(_BlazorDidCopyFilesToOutputDirectory)'=='true'">
-    <PropertyGroup>
-      <_BlazorBuildCompletedSignalFullPath>$(ProjectDir)$(OutputPath)$(BlazorBuildCompletedSignalPath)</_BlazorBuildCompletedSignalFullPath>
-    </PropertyGroup>
-    <!--
-      If this is a command-line build, touch the signal file to trigger a reload.
-      If it's a VS build, then the VS extension will write the signal file instead.
-    -->
-    <WriteLinesToFile Condition="'$(BuildingInsideVisualStudio)'!='true'" File="$(_BlazorBuildCompletedSignalFullPath)" Lines="_" />
-    <Delete Condition="'$(BuildingInsideVisualStudio)'!='true'" Files="$(_BlazorBuildCompletedSignalFullPath)" />
+          Condition="'$(UseBlazorLiveReloading)'=='true' AND '$(_BlazorDidCopyFilesToOutputDirectory)'=='true' AND '$(BuildingInsideVisualStudio)'!='true'">
+    <!-- Touch the signal file to trigger a reload -->
+    <WriteLinesToFile File="$(ProjectDir)$(OutputPath)$(BlazorBuildCompletedSignalPath)" Lines="_" />
+    <Delete Files="$(ProjectDir)$(OutputPath)$(BlazorBuildCompletedSignalPath)" />
   </Target>
 
   <!-- Preparing blazor files for output:
