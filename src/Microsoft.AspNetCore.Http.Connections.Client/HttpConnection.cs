@@ -345,6 +345,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             catch (Exception ex)
             {
                 Log.ErrorStartingTransport(_logger, transport, ex);
+
+                // Clean up pipes and null out transport when we fail to start.
+                pair.Transport.Input.Complete();
+                pair.Transport.Output.Complete();
+                pair.Application.Input.Complete();
+                pair.Application.Output.Complete();
                 _transport = null;
                 throw;
             }
