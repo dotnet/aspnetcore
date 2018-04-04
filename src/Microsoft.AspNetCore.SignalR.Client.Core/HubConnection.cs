@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -23,6 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public partial class HubConnection
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
+        public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
 
         // This lock protects the connection state.
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// will not be applied until the Keep Alive timer is next reset.
         /// </summary>
         public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
+        public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
 
         public HubConnection(Func<IConnection> connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
@@ -57,10 +58,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger = _loggerFactory.CreateLogger<HubConnection>();
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
-            await StartAsyncCore().ForceAsync();
+            await StartAsyncCore(cancellationToken).ForceAsync();
         }
 
         public async Task StopAsync()
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public async Task SendAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
             await SendAsyncCore(methodName, args, cancellationToken).ForceAsync();
 
-        private async Task StartAsyncCore()
+        private async Task StartAsyncCore(CancellationToken cancellationToken)
         {
             await WaitConnectionLockAsync();
             try
@@ -119,6 +120,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     // We're already connected
                     return;
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 CheckDisposed();
 
@@ -134,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 try
                 {
                     Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-                    await HandshakeAsync(startingConnectionState);
+                    await HandshakeAsync(startingConnectionState, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -492,7 +495,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task HandshakeAsync(ConnectionState startingConnectionState)
+        private async Task HandshakeAsync(ConnectionState startingConnectionState, CancellationToken cancellationToken)
         {
             // Send the Handshake request
             Log.SendingHubHandshake(_logger);
@@ -510,46 +513,51 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             try
             {
-                while (true)
+                using (var handshakeCts = new CancellationTokenSource(HandshakeTimeout))
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token))
                 {
-                    var result = await startingConnectionState.Connection.Transport.Input.ReadAsync();
-                    var buffer = result.Buffer;
-                    var consumed = buffer.Start;
-                    var examined = buffer.End;
-
-                    try
+                    while (true)
                     {
-                        // Read first message out of the incoming data
-                        if (!buffer.IsEmpty)
+                        var result = await startingConnectionState.Connection.Transport.Input.ReadAsync(cts.Token);
+
+                        var buffer = result.Buffer;
+                        var consumed = buffer.Start;
+                        var examined = buffer.End;
+
+                        try
                         {
-                            if (HandshakeProtocol.TryParseResponseMessage(ref buffer, out var message))
+                            // Read first message out of the incoming data
+                            if (!buffer.IsEmpty)
                             {
-                                // Adjust consumed and examined to point to the end of the handshake
-                                // response, this handles the case where invocations are sent in the same payload
-                                // as the the negotiate response.
-                                consumed = buffer.Start;
-                                examined = consumed;
-
-                                if (message.Error != null)
+                                if (HandshakeProtocol.TryParseResponseMessage(ref buffer, out var message))
                                 {
-                                    Log.HandshakeServerError(_logger, message.Error);
-                                    throw new HubException(
-                                        $"Unable to complete handshake with the server due to an error: {message.Error}");
-                                }
+                                    // Adjust consumed and examined to point to the end of the handshake
+                                    // response, this handles the case where invocations are sent in the same payload
+                                    // as the the negotiate response.
+                                    consumed = buffer.Start;
+                                    examined = consumed;
 
-                                break;
+                                    if (message.Error != null)
+                                    {
+                                        Log.HandshakeServerError(_logger, message.Error);
+                                        throw new HubException(
+                                            $"Unable to complete handshake with the server due to an error: {message.Error}");
+                                    }
+
+                                    break;
+                                }
+                            }
+                            else if (result.IsCompleted)
+                            {
+                                // Not enough data, and we won't be getting any more data.
+                                throw new InvalidOperationException(
+                                    "The server disconnected before sending a handshake response");
                             }
                         }
-                        else if (result.IsCompleted)
+                        finally
                         {
-                            // Not enough data, and we won't be getting any more data.
-                            throw new InvalidOperationException(
-                                "The server disconnected before sending a handshake response");
+                            startingConnectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
                         }
-                    }
-                    finally
-                    {
-                        startingConnectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
                     }
                 }
             }

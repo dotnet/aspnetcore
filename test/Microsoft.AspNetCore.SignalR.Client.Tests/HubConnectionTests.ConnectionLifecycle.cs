@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -345,6 +346,71 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await disposeTask;
                 });
+            }
+
+            [Fact]
+            public async Task ClientTimesoutWhenHandshakeResponseTakesTooLong()
+            {
+                var connection = new TestConnection(autoHandshake: false);
+                var hubConnection = CreateHubConnection(() => connection);
+                try
+                {
+                    hubConnection.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
+
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync().OrTimeout());
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
+            public async Task StartAsyncWithTriggeredCancellationTokenIsCanceled()
+            {
+                var onStartCalled = false;
+                var connection = new TestConnection(onStart: () =>
+                {
+                    onStartCalled = true;
+                    return Task.CompletedTask;
+                });
+                var hubConnection = CreateHubConnection(() => connection);
+                try
+                {
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true)).OrTimeout());
+                    Assert.False(onStartCalled);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
+            public async Task StartAsyncCanTriggerCancellationTokenToCancelHandshake()
+            {
+                var cts = new CancellationTokenSource();
+                var connection = new TestConnection(onStart: () =>
+                {
+                    cts.Cancel();
+                    return Task.CompletedTask;
+                }, autoHandshake: false);
+                var hubConnection = CreateHubConnection(() => connection);
+                // We want to make sure the cancellation is because of the token passed to StartAsync
+                hubConnection.HandshakeTimeout = Timeout.InfiniteTimeSpan;
+                try
+                {
+                    var startTask = hubConnection.StartAsync(cts.Token);
+                    var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
+                    Assert.Equal("The operation was canceled.", exception.Message);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
             }
 
             private static async Task ForceLastInvocationToComplete(TestConnection testConnection)
