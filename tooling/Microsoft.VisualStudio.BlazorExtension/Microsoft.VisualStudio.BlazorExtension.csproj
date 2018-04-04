@@ -275,6 +275,7 @@
   <ItemGroup>
     <Compile Include="AboutDialogInfoAttribute.cs" />
     <Compile Include="BlazorPackage.cs" />
+    <Compile Include="LiveReloadBuildWatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
