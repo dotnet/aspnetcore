@@ -17,5 +17,10 @@ namespace Microsoft.AspNetCore.Testing
         {
             return new X509Certificate2(TestCertificatePath, "testPassword");
         }
+
+        public static X509Certificate2 GetTestCertificate(string certName)
+        {
+            return new X509Certificate2(GetCertPath(certName), "testPassword");
+        }
     }
 }

@@ -1693,16 +1693,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// The server certificate parameter is required.
         /// </summary>
-        internal static string ServiceCertificateRequired
+        internal static string ServerCertificateRequired
         {
-            get => GetString("ServiceCertificateRequired");
+            get => GetString("ServerCertificateRequired");
         }
 
         /// <summary>
         /// The server certificate parameter is required.
         /// </summary>
-        internal static string FormatServiceCertificateRequired()
-            => GetString("ServiceCertificateRequired");
+        internal static string FormatServerCertificateRequired()
+            => GetString("ServerCertificateRequired");
 
         /// <summary>
         /// No listening endpoints were configured. Binding to {address0} and {address1} by default.

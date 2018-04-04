@@ -477,7 +477,7 @@
   <data name="PositiveTimeSpanRequired1" xml:space="preserve">
     <value>Value must be a positive TimeSpan.</value>
   </data>
-  <data name="ServiceCertificateRequired" xml:space="preserve">
+  <data name="ServerCertificateRequired" xml:space="preserve">
     <value>The server certificate parameter is required.</value>
   </data>
   <data name="BindingToDefaultAddresses" xml:space="preserve">
