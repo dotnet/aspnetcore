@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Blazor.Routing
     /// </summary>
     public class NavLink : IComponent, IDisposable
     {
+        private const string DefaultActiveClass = "active";
+
         private RenderHandle _renderHandle;
         private bool _isActive;
 
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             parameters.TryGetValue(RenderTreeBuilder.ChildContent, out _childContent);
             parameters.TryGetValue("class", out _cssClass);
             parameters.TryGetValue("href", out string href);
-            ActiveClass = parameters.GetValueOrDefault(nameof(ActiveClass), "active");
+            ActiveClass = parameters.GetValueOrDefault(nameof(ActiveClass), DefaultActiveClass);
             Match = parameters.GetValueOrDefault(nameof(Match), NavLinkMatch.Prefix);
             _allAttributes = parameters.ToDictionary();
 
@@ -110,8 +112,8 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             builder.OpenElement(0, "a");
 
             // Set class attribute
-            string classAttrValue = CombineWithSpace(_cssClass, _isActive ? ActiveClass : null);
-            builder.AddAttribute(0, "class", classAttrValue);
+            builder.AddAttribute(0, "class",
+                CombineWithSpace(_cssClass, _isActive ? ActiveClass : null));
 
             // Pass through all other attributes unchanged
             foreach (var kvp in _allAttributes.Where(kvp => kvp.Key != "class" && kvp.Key != nameof(RenderTreeBuilder.ChildContent)))
@@ -126,7 +128,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         }
 
         private string CombineWithSpace(string str1, string str2)
-            => str1 == null ? (str2 ?? string.Empty) // Return an empty string if both str1 and str2 are null
+            => str1 == null ? str2
             : (str2 == null ? str1 : $"{str1} {str2}");
 
         private static bool StartsWithAndHasSeparator(string value, string prefix)
