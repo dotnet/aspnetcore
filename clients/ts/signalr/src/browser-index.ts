@@ -5,4 +5,20 @@
 
 import "es6-promise/dist/es6-promise.auto.js";
 
+// Copy from Array.prototype into Uint8Array to polyfill on IE. It's OK because the implementations of indexOf and slice use properties
+// that exist on Uint8Array with the same name, and JavaScript is magic.
+// We make them 'writable' because the Buffer polyfill messes with it as well.
+if (!Uint8Array.prototype.indexOf) {
+    Object.defineProperty(Uint8Array.prototype, "indexOf", {
+        value: Array.prototype.indexOf,
+        writable: true,
+    });
+}
+if (!Uint8Array.prototype.slice) {
+    Object.defineProperty(Uint8Array.prototype, "slice", {
+        value: Array.prototype.slice,
+        writable: true,
+    });
+}
+
 export * from "./index";
