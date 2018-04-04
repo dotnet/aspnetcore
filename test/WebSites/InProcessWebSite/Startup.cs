@@ -652,7 +652,15 @@ namespace IISTestSite
             app.Run(async ctx =>
             {
                 var tempFile = Path.GetTempFileName();
-                File.WriteAllText(tempFile, new string('a', 200000000));
+                var fileContent = new string('a', 200000);
+                var fileStream = File.OpenWrite(tempFile);
+
+                for (var i = 0; i < 1000; i++)
+                {
+                    await fileStream.WriteAsync(Encoding.UTF8.GetBytes(fileContent), 0, fileContent.Length);
+                }
+                fileStream.Close();
+
                 await ctx.Response.SendFileAsync(tempFile, 0, null);
 
                 // Try to delete the file from the temp directory. If it fails, don't report an error
