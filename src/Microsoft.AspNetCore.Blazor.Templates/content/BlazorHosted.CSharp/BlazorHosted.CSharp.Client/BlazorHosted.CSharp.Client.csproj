@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0-preview2-30230" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.2.0-preview1-10165" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.2.0-preview1-10165" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.2.0-preview1-10168" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.2.0-preview1-10168" />
   </ItemGroup>
 
   <ItemGroup>
