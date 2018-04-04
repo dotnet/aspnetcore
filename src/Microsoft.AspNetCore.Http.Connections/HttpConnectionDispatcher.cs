@@ -381,6 +381,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Establish the connection
             var connection = _manager.CreateConnection();
 
+            EnsureConnectionStateInternal(connection, options);
+
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
@@ -602,8 +604,6 @@ namespace Microsoft.AspNetCore.Http.Connections
                 return null;
             }
 
-            EnsureConnectionStateInternal(connection, options);
-
             return connection;
         }
 
@@ -630,6 +630,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             if (StringValues.IsNullOrEmpty(connectionId))
             {
                 connection = _manager.CreateConnection();
+                EnsureConnectionStateInternal(connection, options);
             }
             else if (!_manager.TryGetConnection(connectionId, out connection))
             {
@@ -638,8 +639,6 @@ namespace Microsoft.AspNetCore.Http.Connections
                 await context.Response.WriteAsync("No Connection with that ID");
                 return null;
             }
-
-            EnsureConnectionStateInternal(connection, options);
 
             return connection;
         }
