@@ -27,8 +27,8 @@ namespace ServerComparison.TestSites
                 .UseIISIntegration()
                 .UseStartup("ServerComparison.TestSites");
 
-            // Switch between Kestrel and WebListener for different tests. Default to Kestrel for normal app execution.
-            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
+            // Switch between Kestrel, IIS, and HttpSys for different tests. Default to Kestrel for normal app execution.
+            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", StringComparison.Ordinal))
             {
                 if (string.Equals(builder.GetSetting("environment") ??
                     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
@@ -49,8 +49,9 @@ namespace ServerComparison.TestSites
                     builder.UseHttpSys();
                 }
             }
-            else
+            else if (!string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.IIS", StringComparison.Ordinal))
             {
+                // Check that we are not using IIS inproc before we add Kestrel.
                 builder.UseKestrel();
             }
 

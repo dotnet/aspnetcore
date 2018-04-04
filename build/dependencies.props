@@ -16,6 +16,7 @@
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIISPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreServerIISPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26331-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview3-32110</MicrosoftNetHttpHeadersPackageVersion>

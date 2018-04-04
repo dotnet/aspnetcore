@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <TargetFrameworks Condition="">$(StandardTestTfms)</TargetFrameworks>
     <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
   </ItemGroup>
-  
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(TargetFramework)' == 'netcoreapp2.1'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(MicrosoftAspNetCoreServerIISPackageVersion)" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="$(MicrosoftAspNetCoreResponseCompressionPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(MicrosoftAspNetCoreServerHttpSysPackageVersion)" />

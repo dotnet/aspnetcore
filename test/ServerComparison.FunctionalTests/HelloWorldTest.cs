@@ -21,7 +21,6 @@ namespace ServerComparison.FunctionalTests
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "https://github.com/aspnet/ServerTests/issues/96")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         public Task HelloWorld_Windows_CLR(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
@@ -32,12 +31,25 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task HelloWorld_Windows(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        public Task HelloWorld_HttpSys(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)] 
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.InProcess)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.InProcess)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        public Task HelloWorld_IISExpress(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType, HostingModel hostingModel)
+        {
+            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType, hostingModel: hostingModel);
         }
 
         [Theory]
@@ -58,7 +70,13 @@ namespace ServerComparison.FunctionalTests
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
         }
 
-        private async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType, [CallerMemberName] string testName = null)
+
+        private async Task HelloWorld(ServerType serverType, 
+            RuntimeFlavor runtimeFlavor, 
+            RuntimeArchitecture architecture, 
+            ApplicationType applicationType, 
+            [CallerMemberName] string testName = null, 
+            HostingModel hostingModel = HostingModel.OutOfProcess)
         {
             testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -71,7 +89,8 @@ namespace ServerComparison.FunctionalTests
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    ApplicationType = applicationType
+                    ApplicationType = applicationType,
+                    HostingModel = hostingModel
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
