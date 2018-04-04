@@ -322,7 +322,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 packer.PackString(message.InvocationId);
             }
             packer.PackString(message.Target);
-            packer.PackObject(message.Arguments, SerializationContext);
+            packer.PackArrayHeader(message.Arguments.Length);
+            foreach (var arg in message.Arguments)
+            {
+                packer.PackObject(arg, SerializationContext);
+            }
         }
 
         private void WriteStreamInvocationMessage(StreamInvocationMessage message, Packer packer)
@@ -332,7 +336,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             PackHeaders(packer, message.Headers);
             packer.PackString(message.InvocationId);
             packer.PackString(message.Target);
-            packer.PackObject(message.Arguments, SerializationContext);
+            packer.PackArrayHeader(message.Arguments.Length);
+            foreach (var arg in message.Arguments)
+            {
+                packer.PackObject(arg, SerializationContext);
+            }
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage message, Packer packer)
