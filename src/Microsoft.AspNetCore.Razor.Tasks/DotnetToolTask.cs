@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.Build.Framework;
@@ -15,6 +16,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public abstract class DotNetToolTask : ToolTask
     {
+        // From https://github.com/dotnet/corefx/blob/29cd6a0b0ac2993cee23ebaf36ca3d4bce6dd75f/src/System.IO.Pipes/ref/System.IO.Pipes.cs#L93.
+        // Using the enum value directly as this option is not available in netstandard.
+        private const PipeOptions PipeOptionCurrentUserOnly = (PipeOptions)536870912;
+
         private CancellationTokenSource _razorServerCts;
 
         public bool Debug { get; set; }
@@ -28,6 +33,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         // Specifies whether we should fallback to in-process execution if server execution fails.
         public bool ForceServer { get; set; }
+
+        // Specifies whether server execution is allowed when PipeOptions.CurrentUserOnly is not available.
+        // For testing purposes only.
+        public bool SuppressCurrentUserOnlyPipeOptions { get; set; }
 
         public string PipeName { get; set; }
 
@@ -115,6 +124,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             string commandLineCommands,
             out int result)
         {
+            if (!SuppressCurrentUserOnlyPipeOptions && !Enum.IsDefined(typeof(PipeOptions), PipeOptionCurrentUserOnly))
+            {
+                // For security reasons, we don't want to spin up a server that doesn't
+                // restrict requests only to the current user.
+                result = -1;
+
+                return false;
+            }
+
             Log.LogMessage(StandardOutputLoggingImportance, "Server execution started.");
             using (_razorServerCts = new CancellationTokenSource())
             {

@@ -13,6 +13,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
     {
         private static int counter;
 
+        // From https://github.com/dotnet/corefx/blob/29cd6a0b0ac2993cee23ebaf36ca3d4bce6dd75f/src/System.IO.Pipes/ref/System.IO.Pipes.cs#L93.
+        // Using the enum value directly as this option is not available in netstandard.
+        private const PipeOptions PipeOptionCurrentUserOnly = (PipeOptions)536870912;
+
+        private static readonly PipeOptions _pipeOptions = GetPipeOptions();
+
         public abstract Stream Stream { get; }
 
         public abstract string Identifier { get; }
@@ -40,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // The NamedPipeClientStream class handles the "\\.\pipe\" part for us.
                 ServerLogger.Log("Attempt to open named pipe '{0}'", pipeName);
 
-                var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+                var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, _pipeOptions);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 ServerLogger.Log("Attempt to connect named pipe '{0}'", pipeName);
@@ -72,6 +78,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 ServerLogger.LogException(e, "Exception while connecting to process");
                 return null;
             }
+        }
+
+        private static PipeOptions GetPipeOptions()
+        {
+            var options = PipeOptions.Asynchronous;
+
+            if (Enum.IsDefined(typeof(PipeOptions), PipeOptionCurrentUserOnly))
+            {
+                return options | PipeOptionCurrentUserOnly;
+            }
+
+            return options;
         }
 
         private static string GetNextIdentifier()
