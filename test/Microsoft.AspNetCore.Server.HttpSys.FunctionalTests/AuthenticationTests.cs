@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
-
+#if !NETCOREAPP2_0
+        // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -61,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -84,7 +83,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;
@@ -109,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal("Negotiate, NTLM, basic", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
         }
-
+#endif
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
@@ -240,9 +238,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
-
+#if !NETCOREAPP2_0
+        // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -266,7 +264,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -290,7 +287,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         public async Task AuthTypes_OneChallengeSent()
         {
             var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
@@ -309,7 +305,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -334,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(authTypeList.Count(), response.Headers.WwwAuthenticate.Count);
             }
         }
-
+#endif
         [ConditionalFact]
         public async Task AuthTypes_Forbid_Forbidden()
         {
@@ -353,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/HttpSysServer/issues/439")]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // Not implemented

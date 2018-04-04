@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
-
+#if !NETCOREAPP2_0
+        // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationType.Digest)] // TODO: Not implemented
@@ -62,7 +62,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -88,7 +87,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;
@@ -113,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal("Negotiate, NTLM, basic", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
         }
-
+#endif
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
