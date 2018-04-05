@@ -27,7 +27,6 @@ namespace RepoTasks.ProjectModel
         {
             var project = GetProject(path, projectCollection);
             var instance = project.CreateProjectInstance(ProjectInstanceSettings.ImmutableWithFastItemLookup);
-            var projExtPath = instance.GetPropertyValue("MSBuildProjectExtensionsPath");
 
             var targetFrameworks = instance.GetPropertyValue("TargetFrameworks");
             var targetFramework = instance.GetPropertyValue("TargetFramework");
@@ -63,7 +62,6 @@ namespace RepoTasks.ProjectModel
             var packageVersion = instance.GetPropertyValue("PackageVersion");
 
             return new ProjectInfo(path,
-                projExtPath,
                 frameworks,
                 tools,
                 isPackable,
