@@ -16,6 +16,13 @@
   "uiFilters": [
     "oneaspnet"
   ],
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    }
+  ],
   "ports": [
     {
       "name": "HttpPort",

@@ -16,6 +16,13 @@
   "uiFilters": [ "oneaspnet" ],
   "supportsDocker": true,
   "isApi": true,
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    }
+  ],
   "ports": [
     {
       "name": "HttpPort",
