@@ -16,6 +16,13 @@
   "uiFilters": [ "oneaspnet" ],
   "supportsDocker": true,
   "legacyTemplateIdentity": "Microsoft.NetCore.CSharp.EmptyWeb",
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    }
+  ],
   "ports": [
     {
       "name": "HttpPort",

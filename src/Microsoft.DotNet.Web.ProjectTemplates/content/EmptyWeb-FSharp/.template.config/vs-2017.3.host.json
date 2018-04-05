@@ -14,6 +14,13 @@
   "icon": "vs-2017.3/Empty.png",
   "learnMoreLink": "https://go.microsoft.com/fwlink/?LinkID=784883",
   "uiFilters": [ "oneaspnet" ],
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    }
+  ],
   "supportsDocker": true,
   "ports": [
     {
