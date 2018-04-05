@@ -29,11 +29,9 @@ project.lock.json
 .build/
 /.vs/
 .vscode/
-testWorkDir/
 *.nuget.props
 *.nuget.targets
 .idea/
 .dotnet/
 global.json
 *.binlog
-test/dotnet-watch.FunctionalTests/TestProjects/NuGet.config

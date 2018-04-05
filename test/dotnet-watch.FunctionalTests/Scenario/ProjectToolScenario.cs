@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Tools.Internal;
@@ -17,7 +19,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class ProjectToolScenario : IDisposable
     {
-        private const string NugetConfigFileName = "NuGet.config";
         private static readonly string TestProjectSourceRoot = Path.Combine(AppContext.BaseDirectory, "TestProjects");
         private readonly ITestOutputHelper _logger;
 
@@ -28,21 +29,18 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public ProjectToolScenario(ITestOutputHelper logger)
         {
+            WorkFolder = Path.Combine(AppContext.BaseDirectory, "tmp", Path.GetRandomFileName());
+            DotNetWatchPath = Path.Combine(AppContext.BaseDirectory, "tool", "dotnet-watch.dll");
+
             _logger = logger;
-            _logger?.WriteLine($"The temporary test folder is {TempFolder}");
-            WorkFolder = Path.Combine(TempFolder, "work");
+            _logger?.WriteLine($"The temporary test folder is {WorkFolder}");
 
             CreateTestDirectory();
         }
 
-
-        public static string TestWorkFolder { get; } = Path.Combine(AppContext.BaseDirectory, "testWorkDir");
-
-        public string TempFolder { get; } = Path.Combine(TestWorkFolder, Guid.NewGuid().ToString("N"));
-
         public string WorkFolder { get; }
 
-        public string DotNetWatchPath { get; } = Path.Combine(AppContext.BaseDirectory, "tool", "dotnet-watch.dll");
+        public string DotNetWatchPath { get; }
 
         public void AddTestProjectFolder(string projectName)
         {
@@ -149,42 +147,39 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             Directory.CreateDirectory(WorkFolder);
 
-            var nugetConfigFilePath = FindNugetConfig();
+            File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.props"), "<Project />");
 
-            var tempNugetConfigFile = Path.Combine(WorkFolder, NugetConfigFileName);
-            File.Copy(nugetConfigFilePath, tempNugetConfigFile);
+            var restoreSources = GetMetadata("TestSettings:RestoreSources");
+            var frameworkVersion = GetMetadata("TestSettings:RuntimeFrameworkVersion");
+
+            var dbTargets = new XDocument(
+                new XElement("Project",
+                    new XElement("PropertyGroup",
+                        new XElement("RuntimeFrameworkVersion", frameworkVersion),
+                        new XElement("RestoreSources", restoreSources))));
+            dbTargets.Save(Path.Combine(WorkFolder, "Directory.Build.targets"));
         }
 
-        private static string FindNugetConfig()
+        private string GetMetadata(string key)
         {
-            var currentDirPath = TestWorkFolder;
-
-            string nugetConfigFile;
-            while (true)
-            {
-                nugetConfigFile = Path.Combine(currentDirPath, NugetConfigFileName);
-                if (File.Exists(nugetConfigFile))
-                {
-                    break;
-                }
-
-                currentDirPath = Path.GetDirectoryName(currentDirPath);
-            }
-
-            return nugetConfigFile;
+            return typeof(ProjectToolScenario)
+                .Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(a => string.Equals(a.Key, key, StringComparison.Ordinal))
+                .Value;
         }
 
         public void Dispose()
         {
             try
             {
-                Directory.Delete(TempFolder, recursive: true);
+                Directory.Delete(WorkFolder, recursive: true);
             }
             catch
             {
-                Console.WriteLine($"Failed to delete {TempFolder}. Retrying...");
+                Console.WriteLine($"Failed to delete {WorkFolder}. Retrying...");
                 Thread.Sleep(TimeSpan.FromSeconds(5));
-                Directory.Delete(TempFolder, recursive: true);
+                Directory.Delete(WorkFolder, recursive: true);
             }
         }
     }
