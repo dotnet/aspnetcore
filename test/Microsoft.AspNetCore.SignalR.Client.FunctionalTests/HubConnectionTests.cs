@@ -169,13 +169,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var restartTcs = new TaskCompletionSource<object>();
                 connection.Closed += async e =>
                 {
-                    logger.LogInformation("Closed event triggered");
-                    if (!restartTcs.Task.IsCompleted)
+                    try
                     {
-                        logger.LogInformation("Restarting connection");
-                        await connection.StartAsync().OrTimeout();
-                        logger.LogInformation("Restarted connection");
-                        restartTcs.SetResult(null);
+                        logger.LogInformation("Closed event triggered");
+                        if (!restartTcs.Task.IsCompleted)
+                        {
+                            logger.LogInformation("Restarting connection");
+                            await connection.StartAsync().OrTimeout();
+                            logger.LogInformation("Restarted connection");
+                            restartTcs.SetResult(null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // It's important to try catch here since this happens
+                        // on a thread pool thread
+                        restartTcs.TrySetException(ex);
                     }
                 };
 
