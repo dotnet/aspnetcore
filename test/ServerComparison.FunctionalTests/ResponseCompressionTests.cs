@@ -31,7 +31,8 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
@@ -41,7 +42,8 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         public Task ResponseCompression_Windows_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
@@ -74,7 +76,6 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalFact(Skip ="Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ResponseCompression_IISExpress_HostCompression_CLR()
@@ -92,7 +93,8 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ResponseCompression_Windows_AppCompression_CLR()
         {
             return ResponseCompression(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, CheckAppCompressionAsync, ApplicationType.Portable, hostCompression: false);
@@ -132,7 +134,6 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalFact(Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ResponseCompression_Windows_AppAndHostCompression_CLR()

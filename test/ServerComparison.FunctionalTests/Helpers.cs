@@ -50,12 +50,7 @@ namespace ServerComparison.FunctionalTests
         {
             if (runtimeFlavor == RuntimeFlavor.Clr)
             {
-#if NET461
                 return "net461";
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
-#else
-#error Tests targeting CLR must be compiled only on desktop.
-#endif
             }
             else if (runtimeFlavor == RuntimeFlavor.CoreClr)
             {
@@ -68,7 +63,7 @@ namespace ServerComparison.FunctionalTests
 #endif
             }
 
-            throw new ArgumentException($"Unknown RuntimeFlavor '{runtimeFlavor}");
+            throw new ArgumentException($"Unknown RuntimeFlavor '{runtimeFlavor}'");
         }
     }
 }

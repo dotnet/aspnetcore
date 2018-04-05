@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-#if NET461 // https://github.com/aspnet/ServerTests/issues/82
 
 using System.Net;
 using System.Net.Http;
@@ -22,7 +21,6 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalTheory]
-        [Trait("ServerComparison.FunctionalTests", "ServerComparison.FunctionalTests")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601")]
@@ -118,7 +116,3 @@ namespace ServerComparison.FunctionalTests
         }
     }
 }
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
-#else
-#error target frameworks need to be updated
-#endif
