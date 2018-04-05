@@ -32,23 +32,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal RazorSyntaxTree ParseBlock(string document, bool designTime)
         {
-            return ParseBlock(document, null, designTime);
+            return ParseBlock(RazorLanguageVersion.Latest, document, designTime);
         }
 
-        internal abstract RazorSyntaxTree ParseBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime);
-
-        internal virtual RazorSyntaxTree ParseDocument(string document, bool designTime = false)
+        internal RazorSyntaxTree ParseBlock(RazorLanguageVersion version, string document, bool designTime)
         {
-            return ParseDocument(document, null, designTime);
+            return ParseBlock(version, document, null, designTime);
         }
 
-        internal virtual RazorSyntaxTree ParseDocument(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
+        internal RazorSyntaxTree ParseBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        {
+            return ParseBlock(RazorLanguageVersion.Latest, document, directives, designTime);
+        }
+
+        internal abstract RazorSyntaxTree ParseBlock(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime);
+
+        internal RazorSyntaxTree ParseDocument(string document, bool designTime = false)
+        {
+            return ParseDocument(RazorLanguageVersion.Latest, document, designTime);
+        }
+
+        internal RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, bool designTime = false)
+        {
+            return ParseDocument(version, document, null, designTime);
+        }
+
+        internal RazorSyntaxTree ParseDocument(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
+        {
+            return ParseDocument(RazorLanguageVersion.Latest, document, directives, designTime);
+        }
+
+        internal virtual RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, filePath: null);
 
-            var options = CreateParserOptions(directives, designTime);
+            var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
             var codeParser = new CSharpCodeParser(directives, context);
@@ -73,12 +93,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return syntaxTree;
         }
 
-        internal virtual RazorSyntaxTree ParseHtmlBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
+        internal virtual RazorSyntaxTree ParseHtmlBlock(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, filePath: null);
-            var options = CreateParserOptions(directives, designTime);
+            var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
             var parser = new HtmlMarkupParser(context);
@@ -95,12 +115,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return RazorSyntaxTree.Create(root, source, diagnostics, options);
         }
 
-        internal virtual RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
+        internal RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
         {
-            return ParseCodeBlock(document, Enumerable.Empty<DirectiveDescriptor>(), designTime);
+            return ParseCodeBlock(RazorLanguageVersion.Latest, document, Enumerable.Empty<DirectiveDescriptor>(), designTime);
         }
 
         internal virtual RazorSyntaxTree ParseCodeBlock(
+            RazorLanguageVersion version,
             string document,
             IEnumerable<DirectiveDescriptor> directives,
             bool designTime)
@@ -108,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, filePath: null);
-            var options = CreateParserOptions(directives, designTime);
+            var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
             var parser = new CSharpCodeParser(directives, context);
@@ -152,6 +173,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(document, null, designTime, expectedErrors);
         }
 
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, Block expectedRoot)
+        {
+            ParseBlockTest(version, document, expectedRoot, false, null);
+        }
+
         internal virtual void ParseBlockTest(string document, Block expectedRoot)
         {
             ParseBlockTest(document, expectedRoot, false, null);
@@ -182,9 +208,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(document, null, expected, designTime, expectedErrors);
         }
 
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
+        {
+            ParseBlockTest(version, document, null, expected, designTime, expectedErrors);
+        }
+
         internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
-            var result = ParseBlock(document, directives, designTime);
+            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, expected, designTime, expectedErrors);
+        }
+
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
+        {
+            var result = ParseBlock(version, document, directives, designTime);
 
             if (FixupSpans)
             {
@@ -604,24 +640,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return block.Build();
         }
 
-        private static RazorParserOptions CreateParserOptions(IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        private static RazorParserOptions CreateParserOptions(
+            RazorLanguageVersion version, 
+            IEnumerable<DirectiveDescriptor> directives, 
+            bool designTime)
         {
-            if (designTime)
-            {
-                return RazorParserOptions.CreateDesignTime(ConfigureOptions);
-            }
-            else
-            {
-                return RazorParserOptions.Create(ConfigureOptions);
-            }
-
-            void ConfigureOptions(RazorParserOptionsBuilder builder)
-            {
-                foreach (var directive in directives)
-                {
-                    builder.Directives.Add(directive);
-                }
-            }
+            return new DefaultRazorParserOptions(
+                directives.ToArray(),
+                designTime,
+                parseLeadingDirectives: false,
+                version: version);
         }
 
         private class IgnoreOutputBlock : Block

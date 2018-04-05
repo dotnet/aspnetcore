@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             Source = new SeekableTextReader(chars, source.FilePath);
             DesignTimeMode = options.DesignTime;
+            FeatureFlags = options.FeatureFlags;
             ParseLeadingDirectives = options.ParseLeadingDirectives;
             Builder = new SyntaxTreeBuilder();
             ErrorSink = new ErrorSink();
@@ -32,6 +33,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public SyntaxTreeBuilder Builder { get; }
 
         public ErrorSink ErrorSink { get; set; }
+
+        public RazorParserFeatureFlags FeatureFlags { get; }
 
         public HashSet<string> SeenDirectives { get; }
 
