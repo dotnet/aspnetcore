@@ -227,8 +227,11 @@
 
       <!-- Index.html related paths and markers -->
 
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/ -->
+      <BlazorIndexHtmlOutputDir>$(BlazorIntermediateOutputPath)</BlazorIndexHtmlOutputDir>
+
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/index.html -->
-      <BlazorIndexHtmlOutputPath>$(BlazorIntermediateOutputPath)$(BlazorOutputIndexHtmlName)</BlazorIndexHtmlOutputPath>
+      <BlazorIndexHtmlOutputPath>$(BlazorIndexHtmlOutputDir)$(BlazorOutputIndexHtmlName)</BlazorIndexHtmlOutputPath>
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.index.cache -->
       <BlazorBuildIndexInputsCache>$(BlazorIntermediateOutputPath)inputs.index.cache</BlazorBuildIndexInputsCache>
@@ -568,8 +571,6 @@
     <ItemGroup>
       <BlazorIndexHtmlInput Include="$(BlazorIndexHtml)" />
       <BlazorIndexHtmlInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FullPath)')" />
-      <BlazorIndexHtmlInput Include="@(BlazorPackageJsRef->'%(FullPath)')" />
-      <BlazorIndexHtmlInput Include="@(BlazorPackageCssRef->'%(FullPath)')" />
       <BlazorIndexHtmlInput Include="@(_BlazorLinkingOption)" />
     </ItemGroup>
 
@@ -588,26 +589,30 @@
   <Target
     Name="_GenerateBlazorIndexHtml"
     DependsOnTargets="_ResolveBlazorIndexHtmlInputs"
-    Inputs="$(BlazorBuildIndexInputsCache);$(BlazorIndexHtml)"
+    Inputs="$(BlazorBuildIndexInputsCache);$(BlazorIndexHtml);@(_BlazorDependencyInput)"
     Outputs="$(BlazorIndexHtmlOutputPath)">
     <ItemGroup>
+      <_UnlinkedAppReferencesPaths Include="@(_BlazorDependencyInput)" />
       <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->WithMetadataValue('PrimaryOutput','')->'%(FileName)%(Extension)')" />
-      <_JsReferences Include="@(BlazorPackageJsRef->'_content/%(SourcePackage)/%(RecursiveDir)%(FileName)%(Extension)')" />
-      <_CssReferences Include="@(BlazorPackageCssRef->'_content/%(SourcePackage)/%(RecursiveDir)%(FileName)%(Extension)')" />
     </ItemGroup>
     <PropertyGroup>
       <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
     </PropertyGroup>
 
-    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') @(_JsReferences->'--js &quot;%(Identity)&quot;', ' ') @(_CssReferences->'--css &quot;%(Identity)&quot;', ' ') $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
+    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') @(_UnlinkedAppReferencesPaths->'--embedded-resources-source &quot;%(Identity)&quot;', ' ') $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
 
     <ItemGroup Condition="Exists('$(BlazorIndexHtmlOutputPath)')">
       <_BlazorIndex Include="$(BlazorIndexHtmlOutputPath)" />
+      <_BlazorIndexEmbeddedContentFile Include="$(BlazorIndexHtmlOutputDir)_content\**\*.*" />
       <BlazorItemOutput Include="@(_BlazorIndex)">
         <TargetOutputPath>$(ProjectDir)$(OutputPath)dist/%(FileName)%(Extension)</TargetOutputPath>
         <Type>EntryPoint</Type>
       </BlazorItemOutput>
+      <BlazorItemOutput Include="@(_BlazorIndexEmbeddedContentFile)">
+        <TargetOutputPath>$(ProjectDir)$(OutputPath)dist/_content/%(RecursiveDir)%(FileName)%(Extension)</TargetOutputPath>
+      </BlazorItemOutput>
       <FileWrites Include="$(BlazorIndexHtmlOutputPath)" />
+      <FileWrites Include="@(_BlazorIndexEmbeddedContentFile)" />
     </ItemGroup>
 
   </Target>

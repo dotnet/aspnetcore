@@ -1,0 +1,70 @@
+{
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "Content"
+  ],
+  "groupIdentity": "Microsoft.Web.Blazor.Content",
+  "identity": "Microsoft.Web.Blazor.Content.CSharp",
+  "name": "Blazor (content)",
+  "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "path": "BlazorContent.CSharp.csproj"
+    }
+  ],
+  "shortName": "blazorcontent",
+  "sourceName": "BlazorContent.CSharp",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ]
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp2.0",
+          "description": "Target netcoreapp2.0"
+        }
+      ],
+      "replaces": "netcoreapp2.0",
+      "defaultValue": "netcoreapp2.0"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

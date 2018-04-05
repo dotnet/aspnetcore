@@ -93,6 +93,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Performance", "benchmarks\Microsoft.AspNetCore.Blazor.Performance\Microsoft.AspNetCore.Blazor.Performance.csproj", "{50F6820F-D058-4E68-9E15-801F893F514E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorContent.CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorContent.CSharp\BlazorContent.CSharp.csproj", "{3A457B14-D91B-4FFF-A81A-8F350BDB911F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -324,6 +326,10 @@ Global
 		{50F6820F-D058-4E68-9E15-801F893F514E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{50F6820F-D058-4E68-9E15-801F893F514E}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{50F6820F-D058-4E68-9E15-801F893F514E}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{3A457B14-D91B-4FFF-A81A-8F350BDB911F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A457B14-D91B-4FFF-A81A-8F350BDB911F}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A457B14-D91B-4FFF-A81A-8F350BDB911F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A457B14-D91B-4FFF-A81A-8F350BDB911F}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -365,6 +371,7 @@ Global
 		{9088E4E4-B855-457F-AE9E-D86709A5E1F4} = {F563ABB6-85FB-4CFC-B0D2-1D5130E8246D}
 		{C57382BC-EE93-49D5-BC40-5C98AF8AA048} = {4AE0D35B-D97A-44D0-8392-C9240377DCCE}
 		{50F6820F-D058-4E68-9E15-801F893F514E} = {36A7DEB7-5F88-4BFB-B57E-79EEC9950E25}
+		{3A457B14-D91B-4FFF-A81A-8F350BDB911F} = {E8EBA72C-D555-43AE-BC98-F0B2D05F6A07}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

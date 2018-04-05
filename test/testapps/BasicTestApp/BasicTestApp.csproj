@@ -13,11 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Blazor.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj" />
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj" />
-  </ItemGroup>
-
-  <!-- Local alternative to <PackageReference> to the content package -->
-  <Import Project="..\TestContentPackage\build\TestContentPackage.props" />
-  <ItemGroup>
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
   </ItemGroup>
   

@@ -15,15 +15,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                 CommandOptionType.SingleValue);
 
             var references = command.Option("--reference",
-                "The path from the _bin folder to a given referenced dll file (Typically just the dll name)",
+                "The path from the _bin folder to a given referenced dll file (typically just the dll name)",
                 CommandOptionType.MultipleValue);
 
-            var jsReferences = command.Option("--js",
-                "Adds a <script> tag with the specified 'src' value",
-                CommandOptionType.MultipleValue);
-
-            var cssReferences = command.Option("--css",
-                "Adds a <link rel=stylesheet> tag with the specified 'href' value",
+            var embeddedResourcesSources = command.Option("--embedded-resources-source",
+                "The path to an assembly that may contain embedded resources (typically a referenced assembly in its pre-linked state)",
                 CommandOptionType.MultipleValue);
 
             var outputPath = command.Option("--output",
@@ -52,8 +48,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                         clientPage.Value(),
                         mainAssemblyPath.Value,
                         references.Values.ToArray(),
-                        jsReferences.Values.ToArray(),
-                        cssReferences.Values.ToArray(),
+                        embeddedResourcesSources.Values.ToArray(),
                         linkerEnabledFlag.HasValue(),
                         outputPath.Value());
                     return 0;
