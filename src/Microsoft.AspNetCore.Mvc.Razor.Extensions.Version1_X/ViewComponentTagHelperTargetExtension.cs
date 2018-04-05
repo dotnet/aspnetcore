@@ -60,7 +60,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             WriteTargetElementString(context.CodeWriter, node.TagHelper);
 
             // Initialize declaration.
-            using (context.CodeWriter.BuildClassDeclaration(PublicModifiers, node.ClassName, TagHelperTypeName, interfaces: null))
+            using (context.CodeWriter.BuildClassDeclaration(
+                PublicModifiers,
+                node.ClassName,
+                TagHelperTypeName,
+                interfaces: null,
+                typeParameters: null))
             {
                 // Add view component helper.
                 context.CodeWriter.WriteVariableDeclaration(

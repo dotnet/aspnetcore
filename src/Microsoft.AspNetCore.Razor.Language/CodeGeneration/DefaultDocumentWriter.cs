@@ -78,8 +78,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     {
                         algorithmId = "{8829d00f-11b8-4213-878b-770e8597ac16}";
                     }
-                    else if (string.Equals(algorithm, HashAlgorithmName.SHA1.Name, StringComparison.Ordinal) || 
-                        
+                    else if (string.Equals(algorithm, HashAlgorithmName.SHA1.Name, StringComparison.Ordinal) ||
+
                         // In 2.0, we didn't actually expose the name of the algorithm, so it's possible we could get null here.
                         // If that's the case, we just assume SHA1 since that's the only thing we supported in 2.0.
                         algorithm == null)
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     }
                     else
                     {
-                        var supportedAlgorithms = string.Join(" ", new string[] 
+                        var supportedAlgorithms = string.Join(" ", new string[]
                         {
                             HashAlgorithmName.SHA1.Name,
                             HashAlgorithmName.SHA256.Name
@@ -143,7 +143,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
-                using (Context.CodeWriter.BuildClassDeclaration(node.Modifiers, node.ClassName, node.BaseType, node.Interfaces))
+                using (Context.CodeWriter.BuildClassDeclaration(
+                    node.Modifiers,
+                    node.ClassName,
+                    node.BaseType,
+                    node.Interfaces,
+                    node.TypeParameters.Select(p => p.ParameterName).ToArray()))
                 {
                     VisitDefault(node);
                 }
