@@ -18,9 +18,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var subscription = observable.Subscribe(new ChannelObserver<T>(channel.Writer, cancellationToken));
 
-            // Dispose the subscription when the token is cancelled
-            cancellationToken.Register(state => ((IDisposable)state).Dispose(), subscription);
-
             // Make sure the subscription is disposed when enumeration is completed.
             return new AsyncEnumerator<object>(channel.Reader, cancellationToken, subscription);
         }
