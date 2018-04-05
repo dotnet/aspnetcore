@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var channel = Channel.CreateUnbounded<string>();
 
-            var task = Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 for (int i = 0; i < count; i++)
                 {
