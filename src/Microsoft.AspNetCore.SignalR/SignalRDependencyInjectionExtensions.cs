@@ -14,8 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddConnections();
             services.AddSingleton<SignalRMarkerService>();
             services.AddSingleton<IConfigureOptions<HubOptions>, HubOptionsSetup>();
-            return services.AddSignalRCore()
-                .AddJsonProtocol();
+            return services.AddSignalRCore();
         }
 
         public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> options)

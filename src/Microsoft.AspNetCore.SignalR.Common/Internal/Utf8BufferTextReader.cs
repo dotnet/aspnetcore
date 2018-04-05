@@ -7,9 +7,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    internal class Utf8BufferTextReader : TextReader
+    public class Utf8BufferTextReader : TextReader
     {
         private readonly Decoder _decoder;
         private ReadOnlySequence<byte> _utf8Buffer;

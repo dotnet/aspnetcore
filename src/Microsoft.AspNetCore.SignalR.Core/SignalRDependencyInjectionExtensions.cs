@@ -19,10 +19,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(typeof(IUserIdProvider), typeof(DefaultUserIdProvider));
             services.AddSingleton(typeof(HubDispatcher<>), typeof(DefaultHubDispatcher<>));
             services.AddScoped(typeof(IHubActivator<>), typeof(DefaultHubActivator<>));
-
             services.AddAuthorization();
 
-            return new SignalRServerBuilder(services);
+            var builder = new SignalRServerBuilder(services);
+            builder.AddJsonProtocol();
+            return builder;
         }
     }
 }
