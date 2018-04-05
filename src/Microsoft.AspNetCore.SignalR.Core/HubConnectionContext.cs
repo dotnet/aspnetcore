@@ -6,19 +6,16 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipelines;
-using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 
@@ -73,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual PipeReader Input => _connectionContext.Transport.Input;
 
-        public string UserIdentifier { get; private set; }
+        public string UserIdentifier { get; set; }
 
         internal virtual IHubProtocol Protocol { get; set; }
 
@@ -84,7 +81,36 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual ValueTask WriteAsync(HubMessage message)
         {
-            // We were unable to get the lock so take the slow async path of waiting for the semaphore
+            // Try to grab the lock synchronously, if we fail, go to the slower path
+            if (!_writeLock.Wait(0))
+            {
+                return new ValueTask(WriteSlowAsync(message));
+            }
+
+            // This method should never throw synchronously
+            var task = WriteCore(message);
+
+            // The write didn't complete synchronously so await completion
+            if (!task.IsCompletedSuccessfully)
+            {
+                return new ValueTask(CompleteWriteAsync(task));
+            }
+
+            // Otherwise, release the lock acquired when entering WriteAsync
+            _writeLock.Release();
+
+            return default;
+        }
+
+        /// <summary>
+        /// This method is designed to support the framework and is not intended to be used by application code. Writes a pre-serialized message to the
+        /// connection.
+        /// </summary>
+        /// <param name="message">The serialization cache to use.</param>
+        /// <returns></returns>
+        public virtual ValueTask WriteAsync(SerializedHubMessage message)
+        {
+            // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
                 return new ValueTask(WriteSlowAsync(message));
@@ -109,14 +135,28 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
-                // This will internally cache the buffer for each unique HubProtocol
-                // So that we don't serialize the HubMessage for every single connection
-                var buffer = message.WriteMessage(Protocol);
+                // We know that we are only writing this message to one receiver, so we can
+                // write it without caching.
+                Protocol.WriteMessage(message, _connectionContext.Transport.Output);
 
-                var output = _connectionContext.Transport.Output;
-                output.Write(buffer);
+                return _connectionContext.Transport.Output.FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.FailedWritingMessage(_logger, ex);
 
-                return output.FlushAsync();
+                return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
+            }
+        }
+
+        private ValueTask<FlushResult> WriteCore(SerializedHubMessage message)
+        {
+            try
+            {
+                // Grab a preserialized buffer for this protocol.
+                var buffer = message.GetSerializedMessage(Protocol);
+
+                return _connectionContext.Transport.Output.WriteAsync(buffer);
             }
             catch (Exception ex)
             {
@@ -144,6 +184,25 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         private async Task WriteSlowAsync(HubMessage message)
+        {
+            try
+            {
+                // Failed to get the lock immediately when entering WriteAsync so await until it is available
+                await _writeLock.WaitAsync();
+
+                await WriteCore(message);
+            }
+            catch (Exception ex)
+            {
+                Log.FailedWritingMessage(_logger, ex);
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
+        }
+
+        private async Task WriteSlowAsync(SerializedHubMessage message)
         {
             try
             {

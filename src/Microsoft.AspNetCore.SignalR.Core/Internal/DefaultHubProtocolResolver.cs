@@ -7,21 +7,25 @@ using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public class DefaultHubProtocolResolver : IHubProtocolResolver
     {
         private readonly ILogger<DefaultHubProtocolResolver> _logger;
+        private readonly List<IHubProtocol> _hubProtocols;
         private readonly Dictionary<string, IHubProtocol> _availableProtocols;
+
+        public IReadOnlyList<IHubProtocol> AllProtocols => _hubProtocols;
 
         public DefaultHubProtocolResolver(IEnumerable<IHubProtocol> availableProtocols, ILogger<DefaultHubProtocolResolver> logger)
         {
             _logger = logger ?? NullLogger<DefaultHubProtocolResolver>.Instance;
             _availableProtocols = new Dictionary<string, IHubProtocol>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var protocol in availableProtocols)
+            // We might get duplicates in _hubProtocols, but we're going to check it and throw in just a sec.
+            _hubProtocols = availableProtocols.ToList();
+            foreach (var protocol in _hubProtocols)
             {
                 if (_availableProtocols.ContainsKey(protocol.Name))
                 {

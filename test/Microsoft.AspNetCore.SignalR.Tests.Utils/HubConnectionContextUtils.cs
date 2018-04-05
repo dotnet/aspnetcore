@@ -11,11 +11,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public static class HubConnectionContextUtils
     {
-        public static HubConnectionContext Create(ConnectionContext connection)
+        public static HubConnectionContext Create(ConnectionContext connection, IHubProtocol protocol = null, string userIdentifier = null)
         {
             return new HubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance)
             {
-                Protocol = new JsonHubProtocol()
+                Protocol = protocol ?? new JsonHubProtocol(),
+                UserIdentifier = userIdentifier,
             };
         }
 

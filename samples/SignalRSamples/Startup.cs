@@ -28,7 +28,7 @@ namespace SignalRSamples
             {
                 options.SerializationContext.DictionarySerlaizationOptions.KeyTransformer = DictionaryKeyTransformers.LowerCamel;
             });
-            // .AddRedis();
+            //.AddRedis();
 
             services.AddCors(o =>
             {

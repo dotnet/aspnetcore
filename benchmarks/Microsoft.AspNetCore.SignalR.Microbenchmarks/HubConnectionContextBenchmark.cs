@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _successHubProtocolResolver = new TestHubProtocolResolver(new JsonHubProtocol());
             _failureHubProtocolResolver = new TestHubProtocolResolver(null);
             _userIdProvider = new TestUserIdProvider();
-            _supportedProtocols = new List<string> {"json"};
+            _supportedProtocols = new List<string> { "json" };
         }
 
         [Benchmark]
@@ -83,8 +83,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     {
         private readonly IHubProtocol _instance;
 
+        public IReadOnlyList<IHubProtocol> AllProtocols { get; }
+
         public TestHubProtocolResolver(IHubProtocol instance)
         {
+            AllProtocols = new[] { instance };
             _instance = instance;
         }
 

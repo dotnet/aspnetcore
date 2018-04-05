@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace Microsoft.AspNetCore.SignalR.Redis.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class TestConnectionMultiplexer : IConnectionMultiplexer
     {
@@ -70,7 +70,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             remove { }
         }
 
-        private ISubscriber _subscriber = new TestSubscriber();
+        private ISubscriber _subscriber;
+
+        public TestConnectionMultiplexer(TestRedisServer server)
+        {
+            _subscriber = new TestSubscriber(server);
+        }
 
         public void BeginProfiling(object forContext)
         {
@@ -203,18 +208,51 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         }
     }
 
-    public class TestSubscriber : ISubscriber
+    public class TestRedisServer
     {
-        // _globalSubscriptions represents the Redis Server you are connected to.
-        // So when publishing from a TestSubscriber you fake sending through the server by grabbing the callbacks
-        // from the _globalSubscriptions and inoking them inplace.
-        private static ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>> _globalSubscriptions =
+        private ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>> _subscriptions =
             new ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>>();
 
-        private ConcurrentDictionary<RedisChannel, Action<RedisChannel, RedisValue>> _subscriptions =
-            new ConcurrentDictionary<RedisChannel, Action<RedisChannel, RedisValue>>();
+        public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
+        {
+            if (_subscriptions.TryGetValue(channel, out var handlers))
+            {
+                foreach (var handler in handlers)
+                {
+                    handler(channel, message);
+                }
+            }
 
+            return handlers != null ? handlers.Count : 0;
+        }
+
+        public void Subscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
+        {
+            _subscriptions.AddOrUpdate(channel, _ => new List<Action<RedisChannel, RedisValue>> { handler }, (_, list) =>
+            {
+                list.Add(handler);
+                return list;
+            });
+        }
+
+        public void Unsubscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
+        {
+            if (_subscriptions.TryGetValue(channel, out var list))
+            {
+                list.Remove(handler);
+            }
+        }
+    }
+
+    public class TestSubscriber : ISubscriber
+    {
+        private readonly TestRedisServer _server;
         public ConnectionMultiplexer Multiplexer => throw new NotImplementedException();
+
+        public TestSubscriber(TestRedisServer server)
+        {
+            _server = server;
+        }
 
         public EndPoint IdentifyEndpoint(RedisChannel channel, CommandFlags flags = CommandFlags.None)
         {
@@ -243,15 +281,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
         {
-            if (_globalSubscriptions.TryGetValue(channel, out var handlers))
-            {
-                foreach (var handler in handlers)
-                {
-                    handler(channel, message);
-                }
-            }
-
-            return handlers != null ? handlers.Count : 0;
+            return _server.Publish(channel, message, flags);
         }
 
         public async Task<long> PublishAsync(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
@@ -262,12 +292,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         public void Subscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
         {
-            _globalSubscriptions.AddOrUpdate(channel, _ => new List<Action<RedisChannel, RedisValue>> { handler }, (_, list) =>
-            {
-                list.Add(handler);
-                return list;
-            });
-            _subscriptions.AddOrUpdate(channel, handler, (_, __) => handler);
+            _server.Subscribe(channel, handler, flags);
         }
 
         public Task SubscribeAsync(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
@@ -288,11 +313,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         public void Unsubscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
         {
-            _subscriptions.TryRemove(channel, out var handle);
-            if (_globalSubscriptions.TryGetValue(channel, out var list))
-            {
-                list.Remove(handle);
-            }
+            _server.Unsubscribe(channel, handler, flags);
         }
 
         public void UnsubscribeAll(CommandFlags flags = CommandFlags.None)
