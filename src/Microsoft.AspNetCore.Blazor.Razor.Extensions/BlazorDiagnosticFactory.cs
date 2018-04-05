@@ -105,5 +105,37 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 Environment.NewLine + string.Join(Environment.NewLine, attributes.Select(p => p.TagHelper.DisplayName)));
             return diagnostic;
         }
+
+        public static readonly RazorDiagnosticDescriptor EventHandler_Duplicates =
+            new RazorDiagnosticDescriptor(
+            "BL9990",
+            () => "The attribute '{0}' was matched by multiple event handlers attributes. Duplicates:{1}",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreateEventHandler_Duplicates(SourceSpan? source, string attribute, ComponentAttributeExtensionNode[] attributes)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                EventHandler_Duplicates,
+                source ?? SourceSpan.Undefined,
+                attribute,
+                Environment.NewLine + string.Join(Environment.NewLine, attributes.Select(p => p.TagHelper.DisplayName)));
+            return diagnostic;
+        }
+
+        public static readonly RazorDiagnosticDescriptor BindAttribute_InvalidSyntax =
+            new RazorDiagnosticDescriptor(
+            "BL9991",
+            () => "The attribute names could not be inferred from bind attibute '{0}'. Bind attributes should be of the form" +
+                    "'bind', 'bind-value' or 'bind-value-change'",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreateBindAttribute_InvalidSyntax(SourceSpan? source, string attribute)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                BindAttribute_InvalidSyntax,
+                source ?? SourceSpan.Undefined,
+                attribute);
+            return diagnostic;
+        }
     }
 }

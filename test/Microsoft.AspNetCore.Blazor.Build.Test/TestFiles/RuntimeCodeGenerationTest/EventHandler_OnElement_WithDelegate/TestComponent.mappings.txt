@@ -1,0 +1,11 @@
+Source Location: (78:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    void OnClick(UIMouseEventArgs e) {
+    }
+|
+Generated Location: (964:23,12 [49] )
+|
+    void OnClick(UIMouseEventArgs e) {
+    }
+|
+

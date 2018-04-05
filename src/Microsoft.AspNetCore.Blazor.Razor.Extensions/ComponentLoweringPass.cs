@@ -81,33 +81,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 if (node.Children[i] is TagHelperPropertyIntermediateNode propertyNode &&
                     propertyNode.TagHelper == tagHelper)
                 {
-                    // We don't support 'complex' content for components (mixed C# and markup) right now.
-                    // It's not clear yet if Blazor will have a good scenario to use these constructs.
-                    //
-                    // This is where a lot of the complexity in the Razor/TagHelpers model creeps in and we
-                    // might be able to avoid it if these features aren't needed.
-                    if (HasComplexChildContent(propertyNode))
-                    {
-                        node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
-                            propertyNode,
-                            propertyNode.AttributeName));
-                        node.Children.RemoveAt(i);
-                        continue;
-                    }
-
                     node.Children[i] = new ComponentAttributeExtensionNode(propertyNode);
                 }
                 else if (node.Children[i] is TagHelperHtmlAttributeIntermediateNode htmlNode)
                 {
-                    if (HasComplexChildContent(htmlNode))
-                    {
-                        node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
-                            htmlNode,
-                            htmlNode.AttributeName));
-                        node.Children.RemoveAt(i);
-                        continue;
-                    }
-
                     // For any nodes that don't map to a component property we won't have type information
                     // but these should follow the same path through the runtime.
                     var attributeNode = new ComponentAttributeExtensionNode(htmlNode);
@@ -153,32 +130,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     }
                 }
             }
-        }
-
-        private static bool HasComplexChildContent(IntermediateNode node)
-        {
-            if (node.Children.Count == 1 &&
-                node.Children[0] is HtmlAttributeIntermediateNode htmlNode &&
-                htmlNode.Children.Count > 1)
-            {
-                // This case can be hit for a 'string' attribute
-                return true;
-            }
-            else if (node.Children.Count == 1 &&
-                node.Children[0] is CSharpExpressionIntermediateNode cSharpNode &&
-                cSharpNode.Children.Count > 1)
-            {
-                // This case can be hit when the attribute has an explicit @ inside, which
-                // 'escapes' any special sugar we provide for codegen.
-                return true;
-            }
-            else if (node.Children.Count > 1)
-            {
-                // This is the common case for 'mixed' content
-                return true;
-            }
-
-            return false;
         }
     }
 }

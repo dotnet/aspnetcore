@@ -132,6 +132,9 @@
   <data name="BindTagHelper_Fallback_Format_Documentation" xml:space="preserve">
     <value>Specifies a format to convert the value specified by the corresponding bind attribute. For example: &lt;code&gt;format-value="..."&lt;/code&gt; will apply a format string to the value specified in &lt;code&gt;bind-value-...&lt;/code&gt;. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;.</value>
   </data>
+  <data name="EventHandlerTagHelper_Documentation" xml:space="preserve">
+    <value>Sets the '{0}' attribute to the provided string or delegate value. A delegate value should be of type '{1}'.</value>
+  </data>
   <data name="ImplementsDirective_Description" xml:space="preserve">
     <value>Declares an interface implementation for the current document.</value>
   </data>

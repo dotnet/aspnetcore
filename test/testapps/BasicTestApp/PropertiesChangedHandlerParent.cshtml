@@ -1,6 +1,6 @@
 ﻿@addTagHelper "*, BasicTestApp"
 <PropertiesChangedHandlerChild SuppliedValue=@valueToSupply />
-<button onclick=@{ valueToSupply++; }>Increment</button>
+<button onclick=@(x => valueToSupply++)>Increment</button>
 
 @functions {
     private int valueToSupply = 100;

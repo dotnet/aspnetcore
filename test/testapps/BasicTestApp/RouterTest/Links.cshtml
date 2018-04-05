@@ -13,6 +13,6 @@
     <li><NavLink href="/subdir/RouterTest/WithParameters/Name/Steve/LastName/Sanderson">With parameters</NavLink></li>
 </ul>
 
-<button onclick=@{ uriHelper.NavigateTo("RouterTest/Other"); }>
+<button onclick=@(x => uriHelper.NavigateTo("RouterTest/Other"))>
     Programmatic navigation
 </button>

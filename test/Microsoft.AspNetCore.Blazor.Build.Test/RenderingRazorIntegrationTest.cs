@@ -180,6 +180,22 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Attribute(frame, "attr", "Hello, WORLD    with number 246!", 1));
         }
 
+        // This test exercises the case where two IntermediateTokens are part of the same expression.
+        // In these case they are split by a comment.
+        [Fact]
+        public void SupportsAttributesWithInterpolatedStringExpressionValues_SplitByComment()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = \"world\"; var myNum=123; }"
+                + "<elem attr=\"Hello, @myValue.ToUpperInvariant()    with number @(myN@* Blazor is Blawesome! *@um*2)!\" />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "attr", "Hello, WORLD    with number 246!", 1));
+        }
+
         [Fact]
         public void SupportsAttributesWithInterpolatedTernaryExpressionValues()
         {
@@ -220,7 +236,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "data-abc", "Hello", 1));
         }
-        
+
         [Fact(Skip = "Currently broken due to #219. TODO: Once the issue is fixed, re-enable this test, remove the test below, and remove the implementation of its workaround.")]
         public void SupportsDataDashAttributesWithCSharpExpressionValues()
         {
@@ -463,6 +479,86 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     Assert.Equal(new DateTime(2018, 3, 5), myDateProperty.GetValue(component));
                 },
                 frame => AssertFrame.Text(frame, "\n", 3));
+        }
+
+        [Fact] // In this case, onclick is just a normal HTML attribute
+        public void SupportsEventHandlerWithString()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+<button onclick=""function(){console.log('hello');};"" />");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "button", 2, 0),
+                frame => AssertFrame.Attribute(frame, "onclick", "function(){console.log('hello');};", 1));
+        }
+
+        [Fact]
+        public void SupportsEventHandlerWithLambda()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+<button onclick=""@(x => Clicked = true)"" />
+@functions {
+    public bool Clicked { get; set; }
+}");
+
+            var clicked = component.GetType().GetProperty("Clicked");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "button", 2, 0),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onclick", 1);
+
+                    var func = Assert.IsType<UIEventHandler>(frame.AttributeValue);
+                    Assert.False((bool)clicked.GetValue(component));
+
+                    func(new UIMouseEventArgs());
+                    Assert.True((bool)clicked.GetValue(component));
+                },
+                frame => AssertFrame.Whitespace(frame, 2));
+        }
+
+        [Fact]
+        public void SupportsEventHandlerWithMethodGroup()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Blazor
+<button onclick=""@OnClick"" @onclick(OnClick)/>
+@functions {
+    public void OnClick(UIMouseEventArgs e) { Clicked = true; }
+    public bool Clicked { get; set; }
+}");
+
+            var clicked = component.GetType().GetProperty("Clicked");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "button", 2, 0),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onclick", 1);
+
+                    var func = Assert.IsType<UIEventHandler>(frame.AttributeValue);
+                    Assert.False((bool)clicked.GetValue(component));
+
+                    func(new UIMouseEventArgs());
+                    Assert.True((bool)clicked.GetValue(component));
+                },
+                frame => AssertFrame.Whitespace(frame, 2));
         }
 
         [Fact]

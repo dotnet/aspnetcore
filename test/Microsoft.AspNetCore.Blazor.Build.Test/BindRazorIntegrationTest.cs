@@ -488,24 +488,35 @@ namespace Test
         }
 
         [Fact]
-        public void Render_Bind_With_IncorrectAttributeNames()
+        public void Render_BindFallback_InvalidSyntax_TooManyParts()
         {
-            //more than 3 parts
-            Assert.Throws<InvalidOperationException>(() => CompileToComponent(@"
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
 @addTagHelper *, TestAssembly
 <input type=""text"" bind-first-second-third=""Text"" />
 @functions {
     public string Text { get; set; } = ""text"";
-}"));
+}");
 
-            //ends with '-'
-            Assert.Throws<InvalidOperationException>(() => CompileToComponent(@"
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("BL9991", diagnostic.Id);
+        }
+
+        [Fact]
+        public void Render_BindFallback_InvalidSyntax_TrailingDash()
+        {
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
 @addTagHelper *, TestAssembly
 <input type=""text"" bind-first-=""Text"" />
 @functions {
     public string Text { get; set; } = ""text"";
-}"));
+}");
 
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("BL9991", diagnostic.Id);
         }
     }
 }

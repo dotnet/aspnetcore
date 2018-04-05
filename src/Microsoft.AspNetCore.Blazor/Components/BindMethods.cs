@@ -26,6 +26,24 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
+        public static string GetEventHandlerValue<T>(string value)
+            where T : UIEventArgs
+        {
+            return value;
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static UIEventHandler GetEventHandlerValue<T>(Action<T> value)
+            where T : UIEventArgs
+        {
+            return e => value((T)e);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
         public static UIEventHandler SetValueHandler(Action<string> setter, string existingValue)
         {
             return _ => setter((string)((UIChangeEventArgs)_).Value);

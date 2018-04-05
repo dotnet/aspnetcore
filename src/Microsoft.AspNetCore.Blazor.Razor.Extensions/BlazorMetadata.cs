@@ -33,7 +33,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public static readonly string RuntimeName = "Blazor.IComponent";
 
             public readonly static string TagHelperKind = "Blazor.Component-0.1";
+        }
 
+        public static class EventHandler
+        {
+            public static readonly string EventArgsType = "Blazor.EventHandler.EventArgs";
+
+            public static readonly string RuntimeName = "Blazor.None";
+
+            public readonly static string TagHelperKind = "Blazor.EventHandler-0.1";
         }
     }
 }

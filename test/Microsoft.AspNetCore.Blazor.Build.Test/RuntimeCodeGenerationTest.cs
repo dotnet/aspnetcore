@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
@@ -252,6 +253,57 @@ namespace Test
 @page ""/MyPage""
 @page ""/AnotherRoute/{id}""
 <MyComponent />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_OnElement_WithString()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input onclick=""foo"" />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_OnElement_WithLambdaDelegate()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""@(x => { })"" />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_OnElement_WithDelegate()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""@OnClick"" />
+@functions {
+    void OnClick(UIMouseEventArgs e) {
+    }
+}");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);

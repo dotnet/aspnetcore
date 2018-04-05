@@ -33,14 +33,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private readonly ScopeStack _scopeStack = new ScopeStack();
         private string _unconsumedHtml;
-        private IList<object> _currentAttributeValues;
+        private List<IntermediateToken> _currentAttributeValues;
         private IDictionary<string, PendingAttribute> _currentElementAttributes = new Dictionary<string, PendingAttribute>();
         private IList<PendingAttributeToken> _currentElementAttributeTokens = new List<PendingAttributeToken>();
         private int _sourceSequence = 0;
 
         private struct PendingAttribute
         {
-            public object AttributeValue;
+            public List<IntermediateToken> Values { get; set; }
         }
 
         private struct PendingAttributeToken
@@ -180,19 +180,22 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // ... so to avoid losing whitespace, convert the prefix to a further token in the list
             if (!string.IsNullOrEmpty(node.Prefix))
             {
-                _currentAttributeValues.Add(node.Prefix);
+                _currentAttributeValues.Add(new IntermediateToken() { Kind = TokenKind.Html, Content = node.Prefix });
             }
 
-            _currentAttributeValues.Add((IntermediateToken)node.Children.Single());
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                _currentAttributeValues.Add((IntermediateToken)node.Children[i]);
+            }
         }
 
         public override void WriteHtmlAttribute(CodeRenderingContext context, HtmlAttributeIntermediateNode node)
         {
-            _currentAttributeValues = new List<object>();
+            _currentAttributeValues = new List<IntermediateToken>();
             context.RenderChildren(node);
             _currentElementAttributes[node.AttributeName] = new PendingAttribute
             {
-                AttributeValue = _currentAttributeValues
+                Values = _currentAttributeValues,
             };
             _currentAttributeValues = null;
         }
@@ -205,7 +208,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             var stringContent = ((IntermediateToken)node.Children.Single()).Content;
-            _currentAttributeValues.Add(node.Prefix + stringContent);
+            _currentAttributeValues.Add(new IntermediateToken() { Kind = TokenKind.Html, Content = node.Prefix + stringContent, });
         }
 
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
@@ -263,14 +266,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
  
                                 foreach (var attribute in nextTag.Attributes)
                                 {
-                                    WriteAttribute(codeWriter, attribute.Key, attribute.Value);
+                                    var token = new IntermediateToken() { Kind = TokenKind.Html, Content = attribute.Value };
+                                    WriteAttribute(codeWriter, attribute.Key, new[] { token });
                                 }
 
                                 if (_currentElementAttributes.Count > 0)
                                 {
                                     foreach (var pair in _currentElementAttributes)
                                     {
-                                        WriteAttribute(codeWriter, pair.Key, pair.Value.AttributeValue);
+                                        WriteAttribute(codeWriter, pair.Key, pair.Value.Values);
                                     }
                                     _currentElementAttributes.Clear();
                                 }
@@ -331,10 +335,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // The @bind(X, Y, Z, ...) syntax is special. We convert it to a pair of attributes:
                 // [1] value=@BindMethods.GetValue(X, Y, Z, ...)
                 var valueParams = bindMatch.Groups[1].Value;
-                WriteAttribute(context.CodeWriter, "value", new IntermediateToken
+                WriteAttribute(context.CodeWriter, "value", new[]
                 {
-                    Kind = TokenKind.CSharp,
-                    Content = $"{BlazorApi.BindMethods.GetValue}({valueParams})"
+                    new IntermediateToken
+                    {
+                        Kind = TokenKind.CSharp,
+                        Content = $"{BlazorApi.BindMethods.GetValue}({valueParams})"
+                    }
                 });
 
                 // [2] @onchange(BindSetValue(parsed => { X = parsed; }, X, Y, Z, ...))
@@ -467,22 +474,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // Minimized attributes always map to 'true'
                 context.CodeWriter.Write("true");
             }
-            else if (
-                node.Children.Count != 1 ||
-                node.Children[0] is HtmlContentIntermediateNode htmlNode && htmlNode.Children.Count != 1 ||
-                node.Children[0] is CSharpExpressionIntermediateNode cSharpNode && cSharpNode.Children.Count != 1)
-            {
-                // We don't expect this to happen, we just want to know if it can.
-                throw new InvalidOperationException("Attribute nodes should either be minimized or a single content node.");
-            }
             else if (node.BoundAttribute?.IsDelegateProperty() ?? false)
             {
                 // We always surround the expression with the delegate constructor. This makes type
                 // inference inside lambdas, and method group conversion do the right thing.
                 IntermediateToken token = null;
-                if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
+                if ((node.Children[0] as CSharpExpressionIntermediateNode) != null)
                 {
-                    token = cSharpNode.Children[0] as IntermediateToken;
+                    token = node.Children[0].Children[0] as IntermediateToken;
                 }
                 else
                 {
@@ -498,11 +497,24 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     context.CodeWriter.Write(")");
                 }
             }
-            else if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
+            else if (node.Children[0] is CSharpExpressionIntermediateNode cSharpNode)
             {
-                context.CodeWriter.Write(((IntermediateToken)cSharpNode.Children[0]).Content);
+                // We don't allow mixed content in component attributes. If this happens, then
+                // we should make sure that all of the tokens are the same kind. We report an
+                // error if user code tries to do this, so this check is to catch bugs in the
+                // compiler.
+                for (var i = 0; i < cSharpNode.Children.Count; i++)
+                {
+                    var token = (IntermediateToken)cSharpNode.Children[i];
+                    if (!token.IsCSharp)
+                    {
+                        throw new InvalidOperationException("Unexpected mixed content in a component.");
+                    }
+
+                    context.CodeWriter.Write(token.Content);
+                }
             }
-            else if ((htmlNode = node.Children[0] as HtmlContentIntermediateNode) != null)
+            else if (node.Children[0] is HtmlContentIntermediateNode htmlNode)
             {
                 // This is how string attributes are lowered by default, a single HTML node with a single HTML token.
                 context.CodeWriter.WriteStringLiteral(((IntermediateToken)htmlNode.Children[0]).Content);
@@ -549,7 +561,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return document.Substring(tagToken.Position.Position + offset, tagToken.Name.Length);
         }
 
-        private void WriteAttribute(CodeWriter codeWriter, string key, object value)
+        private void WriteAttribute(CodeWriter codeWriter, string key, IList<IntermediateToken> value)
         {
             BeginWriteAttribute(codeWriter, key);
             WriteAttributeValue(codeWriter, value);
@@ -586,64 +598,89 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return builder.ToString();
         }
 
-        private static void WriteAttributeValue(CodeWriter writer, object value)
+        // There are a few cases here, we need to handle:
+        // - Pure HTML
+        // - Pure CSharp
+        // - Mixed HTML and CSharp
+        //
+        // Only the mixed case is complicated, we want to turn it into code that will concatenate
+        // the values into a string at runtime.
+
+        private static void WriteAttributeValue(CodeWriter writer, IList<IntermediateToken> tokens)
         {
-            if (value == null)
+            if (tokens == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                throw new ArgumentNullException(nameof(tokens));
             }
 
-            switch (value)
+            var hasHtml = false;
+            var hasCSharp = false;
+            for (var i = 0; i < tokens.Count; i++)
             {
-                case string valueString:
-                    writer.WriteStringLiteral(valueString);
-                    break;
-                case IntermediateToken token:
+                if (tokens[i].IsCSharp)
+                {
+                    hasCSharp |= true;
+                }
+                else
+                {
+                    hasHtml |= true;
+                }
+            }
+
+            if (hasHtml && hasCSharp)
+            {
+                // If it's a C# expression, we have to wrap it in parens, otherwise things like ternary 
+                // expressions don't compose with concatenation. However, this is a little complicated
+                // because C# tokens themselves aren't guaranteed to be distinct expressions. We want
+                // to treat all contiguous C# tokens as a single expression.
+                var insideCSharp = false;
+                for (var i = 0; i < tokens.Count; i++)
+                {
+                    var token = tokens[i];
+                    if (token.IsCSharp)
                     {
-                        if (token.IsCSharp)
+                        if (!insideCSharp)
                         {
-                            writer.Write(token.Content);
-                        }
-                        else
-                        {
-                            writer.WriteStringLiteral(token.Content);
-                        }
-                        break;
-                    }
-                case IEnumerable<object> concatenatedValues:
-                    {
-                        var first = true;
-                        foreach (var concatenatedValue in concatenatedValues)
-                        {
-                            if (first)
-                            {
-                                first = false;
-                            }
-                            else
+                            if (i != 0)
                             {
                                 writer.Write(" + ");
                             }
 
-                            // If it's a C# expression, we have to wrap it in parens, otherwise
-                            // things like ternary expressions don't compose with concatenation
-                            var isCSharp = concatenatedValue is IntermediateToken intermediateToken
-                                && intermediateToken.Kind == TokenKind.CSharp;
-                            if (isCSharp)
-                            {
-                                writer.Write("(");
-                            }
-
-                            WriteAttributeValue(writer, concatenatedValue);
-
-                            if (isCSharp)
-                            {
-                                writer.Write(")");
-                            }
+                            writer.Write("(");
+                            insideCSharp = true;
                         }
-                        break;
+
+                        writer.Write(token.Content);
                     }
-                default:
-                    throw new ArgumentException($"Unsupported attribute value type: {value.GetType().FullName}");
+                    else
+                    {
+                        if (insideCSharp)
+                        {
+                            writer.Write(")");
+                            insideCSharp = false;
+                        }
+
+                        if (i != 0)
+                        {
+                            writer.Write(" + ");
+                        }
+
+                        writer.WriteStringLiteral(token.Content);
+                    }
+                }
+
+                if (insideCSharp)
+                {
+                    writer.Write(")");
+                }
+            }
+            else if (hasCSharp)
+            {
+                writer.Write(string.Join("", tokens.Select(t => t.Content)));
+            }
+            else if (hasHtml)
+            {
+                writer.WriteStringLiteral(string.Join("", tokens.Select(t => t.Content)));
             }
         }
     }

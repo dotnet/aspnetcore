@@ -1,17 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class BindLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
+        // Run after event handler pass
+        public override int Order => base.Order + 50;
+
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var @namespace = documentNode.FindPrimaryNamespace();
@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     var attributeNode = node.Children[j] as ComponentAttributeExtensionNode;
                     if (attributeNode != null &&
                         attributeNode.TagHelper != null &&
-                        attributeNode.TagHelper.IsBindTagHelper())
+                        attributeNode.TagHelper.IsBindTagHelper() &&
+                        attributeNode.AttributeName.StartsWith("bind"))
                     {
                         RewriteUsage(node, j, attributeNode);
                     }
@@ -153,11 +154,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 // Skip anything we can't understand. It's important that we don't crash, that will bring down
                 // the build.
+                node.Diagnostics.Add(BlazorDiagnosticFactory.CreateBindAttribute_InvalidSyntax(
+                    attributeNode.Source, 
+                    attributeNode.AttributeName));
                 return;
             }
 
-            var originalContent = GetAttributeContent(attributeNode);
-            if (string.IsNullOrEmpty(originalContent))
+            var original = GetAttributeContent(attributeNode);
+            if (string.IsNullOrEmpty(original.Content))
             {
                 // This can happen in error cases, the parser will already have flagged this
                 // as an error, so ignore it.
@@ -166,13 +170,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // Look for a matching format node. If we find one then we need to pass the format into the
             // two nodes we generate.
-            string format = null;
+            IntermediateToken format = null;
             if (TryGetFormatNode(node,
                 attributeNode,
                 valueAttributeName,
                 out var formatNode))
             {
-                // Don't write the format out as its own attribute;
+                // Don't write the format out as its own attribute, just capture it as a string
+                // or expression.
                 node.Children.Remove(formatNode);
                 format = GetAttributeContent(formatNode);
             }
@@ -190,23 +195,32 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             //
             // BindMethods.GetValue(<code>) OR
             // BindMethods.GetValue(<code>, <format>)
-            //
-            // For now, the way this is done isn't debuggable. But since the expression
-            // passed here must be an LValue, it's probably not important.
-            var valueNodeContent = format == null ?
-                $"{BlazorApi.BindMethods.GetValue}({originalContent})" :
-                $"{BlazorApi.BindMethods.GetValue}({originalContent}, {format})";
             valueAttributeNode.Children.Clear();
-            valueAttributeNode.Children.Add(new CSharpExpressionIntermediateNode()
+
+            var expression = new CSharpExpressionIntermediateNode();
+            valueAttributeNode.Children.Add(expression);
+
+            expression.Children.Add(new IntermediateToken()
             {
-                Children =
+                Content = $"{BlazorApi.BindMethods.GetValue}(",
+                Kind = TokenKind.CSharp
+            });
+            expression.Children.Add(original);
+
+            if (!string.IsNullOrEmpty(format?.Content))
+            {
+                expression.Children.Add(new IntermediateToken()
                 {
-                    new IntermediateToken()
-                    {
-                        Content = valueNodeContent,
-                        Kind = TokenKind.CSharp
-                    },
-                },
+                    Content = ", ",
+                    Kind = TokenKind.CSharp,
+                });
+                expression.Children.Add(format);
+            }
+
+            expression.Children.Add(new IntermediateToken()
+            {
+                Content = ")",
+                Kind = TokenKind.CSharp,
             });
 
             var changeAttributeNode = new ComponentAttributeExtensionNode(attributeNode)
@@ -230,20 +244,19 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // BindMethods.SetValueHandler(__value => <code> = __value, <code>) OR
             // BindMethods.SetValueHandler(__value => <code> = __value, <code>, <format>)
             //
-            // For now, the way this is done isn't debuggable. But since the expression
-            // passed here must be an LValue, it's probably not important.
+            // Note that the linemappings here are applied to the value attribute, not the change attribute.
             string changeAttributeContent = null;
             if (changeAttributeNode.BoundAttribute == null && format == null)
             {
-                changeAttributeContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {originalContent} = __value, {originalContent})";
+                changeAttributeContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content})";
             }
             else if (changeAttributeNode.BoundAttribute == null && format != null)
             {
-                changeAttributeContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {originalContent} = __value, {originalContent}, {format})";
+                changeAttributeContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content}, {format.Content})";
             }
             else
             {
-                changeAttributeContent = $"__value => {originalContent} = __value";
+                changeAttributeContent = $"__value => {original.Content} = __value";
             }
 
             changeAttributeNode.Children.Clear();
@@ -394,24 +407,25 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return false;
         }
 
-        private static string GetAttributeContent(ComponentAttributeExtensionNode node)
+        private static IntermediateToken GetAttributeContent(ComponentAttributeExtensionNode node)
         {
             if (node.Children[0] is HtmlContentIntermediateNode htmlContentNode)
             {
                 // This case can be hit for a 'string' attribute. We want to turn it into
                 // an expression.
-                return "\"" + ((IntermediateToken)htmlContentNode.Children.Single()).Content + "\"";
+                var content = "\"" + ((IntermediateToken)htmlContentNode.Children.Single()).Content + "\"";
+                return new IntermediateToken() { Kind = TokenKind.CSharp, Content = content };
             }
             else if (node.Children[0] is CSharpExpressionIntermediateNode cSharpNode)
             {
                 // This case can be hit when the attribute has an explicit @ inside, which
                 // 'escapes' any special sugar we provide for codegen.
-                return ((IntermediateToken)cSharpNode.Children.Single()).Content;
+                return ((IntermediateToken)cSharpNode.Children.Single());
             }
             else
             {
                 // This is the common case for 'mixed' content
-                return ((IntermediateToken)node.Children.Single()).Content;
+                return ((IntermediateToken)node.Children.Single());
             }
         }
     }

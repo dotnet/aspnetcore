@@ -89,6 +89,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                 return true;
             }
+            else if (node.Children.Count == 1 &&
+                node.Children[0] is CSharpCodeIntermediateNode cSharpCodeNode)
+            {
+                // This is the case when an attribute contains a code block @{ ... }
+                // We don't support this.
+                return true;
+            }
             else if (node.Children.Count > 1)
             {
                 // This is the common case for 'mixed' content
