@@ -23,13 +23,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public void WithLoggerFactoryThrowsForNullLoggerFactory()
-        {
-            Assert.Equal("loggerFactory",
-                Assert.Throws<ArgumentNullException>(() => new HubConnectionBuilder().WithLoggerFactory(null)).ParamName);
-        }
-
-        [Fact]
         public void AddJsonProtocolSetsHubProtocolToJsonWithDefaultOptions()
         {
             var serviceProvider = new HubConnectionBuilder().AddJsonProtocol().Services.BuildServiceProvider();

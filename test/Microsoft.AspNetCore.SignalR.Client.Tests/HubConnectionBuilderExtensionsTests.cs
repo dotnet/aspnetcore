@@ -57,18 +57,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public void WithConsoleLoggerAddsLogger()
+        public void DefaultLoggerFactoryExists()
         {
-            var loggingFactory = Mock.Of<ILoggerFactory>();
-
             var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.WithLoggerFactory(loggingFactory);
-
             var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
 
-            var resolvedLoggingFactory = serviceProvider.GetService<ILoggerFactory>();
-
-            Assert.Same(resolvedLoggingFactory, loggingFactory);
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            Assert.NotNull(loggerFactory);
         }
 
         [Fact]

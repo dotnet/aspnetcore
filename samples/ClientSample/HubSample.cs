@@ -32,7 +32,11 @@ namespace ClientSample
             Console.WriteLine("Connecting to {0}", endpoint);
             var connection = new HubConnectionBuilder()
                 .WithEndPoint(endpoint)
-                .WithConsoleLogger(LogLevel.Information)
+                .WithLogging(logging =>
+                {
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                })
                 .Build();
 
             try

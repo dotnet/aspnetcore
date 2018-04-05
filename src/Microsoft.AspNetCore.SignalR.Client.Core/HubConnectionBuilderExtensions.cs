@@ -24,22 +24,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        public static IHubConnectionBuilder WithLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)
+        public static IHubConnectionBuilder WithLogging(this IHubConnectionBuilder hubConnectionBuilder, Action<ILoggingBuilder> configureLogging)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            hubConnectionBuilder.Services.AddSingleton(loggerFactory);
+            hubConnectionBuilder.Services.AddLogging(configureLogging);
             return hubConnectionBuilder;
-        }
-
-        public static IHubConnectionBuilder WithLogger(this IHubConnectionBuilder hubConnectionBuilder, Action<ILoggerFactory> configureLogging)
-        {
-            var loggerFactory = new LoggerFactory();
-            configureLogging(loggerFactory);
-            return hubConnectionBuilder.WithLoggerFactory(loggerFactory);
         }
     }
 }
