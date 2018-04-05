@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
@@ -23,7 +21,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             // Dispose the subscription when the token is cancelled
             cancellationToken.Register(state => ((IDisposable)state).Dispose(), subscription);
 
-            return GetAsyncEnumerator(channel.Reader, cancellationToken);
+            // Make sure the subscription is disposed when enumeration is completed.
+            return new AsyncEnumerator<object>(channel.Reader, cancellationToken, subscription);
         }
 
         private class ChannelObserver<T> : IObserver<T>
@@ -75,11 +74,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public static IAsyncEnumerator<object> GetAsyncEnumerator<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return new AsyncEnumerator<T>(channel, cancellationToken);
+            // Nothing to dispose when we finish enumerating in this case.
+            return new AsyncEnumerator<T>(channel, cancellationToken, disposable: null);
         }
 
         /// <summary>Provides an async enumerator for the data in a channel.</summary>
-        internal class AsyncEnumerator<T> : IAsyncEnumerator<object>
+        internal class AsyncEnumerator<T> : IAsyncEnumerator<object>, IDisposable
         {
             /// <summary>The channel being enumerated.</summary>
             private readonly ChannelReader<T> _channel;
@@ -88,10 +88,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             /// <summary>The current element of the enumeration.</summary>
             private object _current;
 
-            internal AsyncEnumerator(ChannelReader<T> channel, CancellationToken cancellationToken)
+            private readonly IDisposable _disposable;
+
+            internal AsyncEnumerator(ChannelReader<T> channel, CancellationToken cancellationToken, IDisposable disposable)
             {
                 _channel = channel;
                 _cancellationToken = cancellationToken;
+                _disposable = disposable;
             }
 
             public object Current => _current;
@@ -116,6 +119,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     thisRef._current = t.GetAwaiter().GetResult();
                     return true;
                 }, this, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnCanceled, TaskScheduler.Default);
+            }
+
+            public void Dispose()
+            {
+                _disposable?.Dispose();
             }
         }
     }

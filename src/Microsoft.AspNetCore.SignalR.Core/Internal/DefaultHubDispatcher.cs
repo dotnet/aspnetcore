@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamedInvocation)
                     {
-                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator))
+                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator, out var streamCts))
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         }
 
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
-                        await StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator);
+                        await StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, streamCts);
                     }
                     // Non-empty/null InvocationId ==> Blocking invocation that needs a response
                     else if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator)
+        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator, CancellationTokenSource streamCts)
         {
             string error = null;
 
@@ -259,7 +259,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             finally
             {
-                await connection.WriteAsync(new CompletionMessage(invocationId, error: error, result: null, hasResult: false));
+                (enumerator as IDisposable)?.Dispose();
+
+                // Dispose the linked CTS for the stream.
+                streamCts.Dispose();
+
+                await connection.WriteAsync(CompletionMessage.WithError(invocationId, error));
 
                 if (connection.ActiveRequestCancellationSources.TryRemove(invocationId, out var cts))
                 {
@@ -337,7 +342,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     Log.StreamingMethodCalledWithInvoke(_logger, hubMethodInvocationMessage);
                     await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,
-                        $"The client attempted to invoke the streaming '{hubMethodInvocationMessage.Target}' method in a non-streaming fashion."));
+                        $"The client attempted to invoke the streaming '{hubMethodInvocationMessage.Target}' method with a non-streaming invocation."));
                 }
 
                 return false;
@@ -347,7 +352,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 Log.NonStreamingMethodCalledWithStream(_logger, hubMethodInvocationMessage);
                 await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,
-                    $"The client attempted to invoke the non-streaming '{hubMethodInvocationMessage.Target}' method in a streaming fashion."));
+                    $"The client attempted to invoke the non-streaming '{hubMethodInvocationMessage.Target}' method with a streaming invocation."));
 
                 return false;
             }
@@ -355,31 +360,35 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return true;
         }
 
-        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator)
+        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator, out CancellationTokenSource streamCts)
         {
             if (result != null)
             {
                 if (hubMethodDescriptor.IsObservable)
                 {
-                    enumerator = hubMethodDescriptor.FromObservable(result, CreateCancellation());
+                    streamCts = CreateCancellation();
+                    enumerator = hubMethodDescriptor.FromObservable(result, streamCts.Token);
                     return true;
                 }
 
                 if (hubMethodDescriptor.IsChannel)
                 {
-                    enumerator = hubMethodDescriptor.FromChannel(result, CreateCancellation());
+                    streamCts = CreateCancellation();
+                    enumerator = hubMethodDescriptor.FromChannel(result, streamCts.Token);
                     return true;
                 }
             }
 
+            streamCts = null;
             enumerator = null;
             return false;
 
-            CancellationToken CreateCancellation()
+            CancellationTokenSource CreateCancellation()
             {
-                var streamCts = new CancellationTokenSource();
-                connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
-                return CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, streamCts.Token).Token;
+                var userCts = new CancellationTokenSource();
+                connection.ActiveRequestCancellationSources.TryAdd(invocationId, userCts);
+
+                return CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, userCts.Token);
             }
         }
 
