@@ -439,4 +439,7 @@
   <data name="ComplexTypeModelBinder_NoParameterlessConstructor_ForParameter" xml:space="preserve">
     <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Alternatively, give the '{1}' parameter a non-null default value.</value>
   </data>
+  <data name="ApiController_MultipleBodyParametersFound" xml:space="preserve">
+    <value>Action '{0}' has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify bound from query, '{2}' to specify bound from route, and '{3}' for parameters to be bound from body:</value>
+  </data>
 </root>

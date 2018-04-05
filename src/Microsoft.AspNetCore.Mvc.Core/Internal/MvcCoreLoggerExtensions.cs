@@ -102,7 +102,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, Exception> _modelStateInvalidFilterExecuting;
 
         private static readonly Action<ILogger, MethodInfo, string, string, Exception> _inferredParameterSource;
-        private static readonly Action<ILogger, MethodInfo, Exception> _unableToInferParameterSources;
         private static readonly Action<ILogger, IModelBinderProvider[], Exception> _registeredModelBinderProviders;
         private static readonly Action<ILogger, string, Type, string, Type, Exception> _foundNoValueForPropertyInRequest;
         private static readonly Action<ILogger, string, string, Type, Exception> _foundNoValueForParameterInRequest;
@@ -393,11 +392,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Debug,
                 1,
                 "Inferred binding source for '{ParameterName}` on `{ActionName}` as {BindingSource}.");
-
-            _unableToInferParameterSources = LoggerMessage.Define<MethodInfo>(
-                LogLevel.Warning,
-                2,
-                "Unable to unambiguously infer binding sources for parameters on '{ActionName}'. More than one parameter may be inferred to bound from body.");
 
             _unsupportedFormatFilterContentType = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -1121,16 +1115,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (logger.IsEnabled(LogLevel.Debug))
             {
                 _inferredParameterSource(logger, parameterModel.Action.ActionMethod, parameterModel.ParameterName, bindingSource.DisplayName, null);
-            }
-        }
-
-        public static void UnableToInferBindingSource(
-            this ILogger logger,
-            ActionModel actionModel)
-        {
-            if (logger.IsEnabled(LogLevel.Warning))
-            {
-                _unableToInferParameterSources(logger, actionModel.ActionMethod, null);
             }
         }
 

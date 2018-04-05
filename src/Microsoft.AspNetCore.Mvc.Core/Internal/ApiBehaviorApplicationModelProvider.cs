@@ -147,43 +147,33 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return;
             }
             var inferredBindingSources = new BindingSource[actionModel.Parameters.Count];
-            var foundFromBodyParameter = false;
 
-            for (var i = 0; i < inferredBindingSources.Length; i++)
+            for (var i = 0; i < actionModel.Parameters.Count; i++)
             {
                 var parameter = actionModel.Parameters[i];
                 var bindingSource = parameter.BindingInfo?.BindingSource;
                 if (bindingSource == null)
                 {
                     bindingSource = InferBindingSourceForParameter(parameter);
-                }
-
-                if (bindingSource == BindingSource.Body)
-                {
-                    if (foundFromBodyParameter)
-                    {
-                        // More than one parameter is inferred as FromBody. Log a warning and skip this action.
-                        _logger.UnableToInferBindingSource(actionModel);
-                    }
-                    else
-                    {
-                        foundFromBodyParameter = true;
-                    }
-                }
-
-                inferredBindingSources[i] = bindingSource;
-            }
-
-            for (var i = 0; i < inferredBindingSources.Length; i++)
-            {
-                var bindingSource = inferredBindingSources[i];
-                if (bindingSource != null)
-                {
-                    actionModel.Parameters[i].BindingInfo = new BindingInfo
+                    parameter.BindingInfo = new BindingInfo
                     {
                         BindingSource = bindingSource,
                     };
                 }
+            }
+
+            var fromBodyParameters = actionModel.Parameters.Where(p => p.BindingInfo.BindingSource == BindingSource.Body).ToList();
+            if (fromBodyParameters.Count > 1)
+            {
+                var parameters = string.Join(Environment.NewLine, fromBodyParameters.Select(p => p.DisplayName));
+                var message = Resources.FormatApiController_MultipleBodyParametersFound(
+                    actionModel.DisplayName,
+                    nameof(FromQueryAttribute),
+                    nameof(FromRouteAttribute),
+                    nameof(FromBodyAttribute));
+
+                message += Environment.NewLine + parameters;
+                throw new InvalidOperationException(message);
             }
         }
 

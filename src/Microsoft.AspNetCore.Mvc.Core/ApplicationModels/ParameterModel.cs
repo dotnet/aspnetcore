@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
@@ -45,6 +46,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             get => Name;
             set => Name = value;
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                var parameterTypeName = TypeNameHelper.GetTypeDisplayName(ParameterInfo.ParameterType, fullName: false);
+                return $"{parameterTypeName} {ParameterName}";
+            }
         }
     }
 }

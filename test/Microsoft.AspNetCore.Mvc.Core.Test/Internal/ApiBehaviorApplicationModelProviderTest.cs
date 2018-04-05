@@ -385,6 +385,101 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_DoesNotInferBindingSourceForParametersWithBindingInfo()
+        {
+            // Arrange
+            var actionName = nameof(ParameterWithBindingInfo.Action);
+            var provider = GetProvider();
+            var context = GetContext(typeof(ParameterWithBindingInfo));
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var actionModel = Assert.Single(controllerModel.Actions, a => a.ActionName == actionName);
+            var parameterModel = Assert.Single(actionModel.Parameters);
+            Assert.NotNull(parameterModel.BindingInfo);
+            Assert.Same(BindingSource.Custom, parameterModel.BindingInfo.BindingSource);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_Throws_IfMultipleParametersAreInferredAsBodyBound()
+        {
+            // Arrange
+            var expected =
+$@"Action '{typeof(ControllerWithMultipleInferredFromBodyParameters).FullName}.{nameof(ControllerWithMultipleInferredFromBodyParameters.Action)} ({typeof(ControllerWithMultipleInferredFromBodyParameters).Assembly.GetName().Name})' " +
+"has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use 'FromQueryAttribute' to specify bound from query, 'FromRouteAttribute' to specify bound from route, and 'FromBodyAttribute' for parameters to be bound from body:" +
+Environment.NewLine + "TestModel a" +
+Environment.NewLine + "Car b";
+
+            var context = GetContext(typeof(ControllerWithMultipleInferredFromBodyParameters));
+            var provider = GetProvider();
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_Throws_IfMultipleParametersAreInferredOrSpecifiedAsBodyBound()
+        {
+            // Arrange
+            var expected =
+$@"Action '{typeof(ControllerWithMultipleInferredOrSpecifiedFromBodyParameters).FullName}.{nameof(ControllerWithMultipleInferredOrSpecifiedFromBodyParameters.Action)} ({typeof(ControllerWithMultipleInferredOrSpecifiedFromBodyParameters).Assembly.GetName().Name})' " +
+"has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use 'FromQueryAttribute' to specify bound from query, 'FromRouteAttribute' to specify bound from route, and 'FromBodyAttribute' for parameters to be bound from body:" +
+Environment.NewLine + "TestModel a" +
+Environment.NewLine + "int b";
+
+            var context = GetContext(typeof(ControllerWithMultipleInferredOrSpecifiedFromBodyParameters));
+            var provider = GetProvider();
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_Throws_IfMultipleParametersAreFromBody()
+        {
+            // Arrange
+            var expected =
+$@"Action '{typeof(ControllerWithMultipleFromBodyParameters).FullName}.{nameof(ControllerWithMultipleFromBodyParameters.Action)} ({typeof(ControllerWithMultipleFromBodyParameters).Assembly.GetName().Name})' " +
+"has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use 'FromQueryAttribute' to specify bound from query, 'FromRouteAttribute' to specify bound from route, and 'FromBodyAttribute' for parameters to be bound from body:" +
+Environment.NewLine + "decimal a" +
+Environment.NewLine + "int b";
+
+            var context = GetContext(typeof(ControllerWithMultipleFromBodyParameters));
+            var provider = GetProvider();
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/7609")]
+        public void OnProvidersExecuting_PreservesBindingInfo_WhenInferringBindingSource()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.ModelBinderAttribute);
+            var context = GetContext(typeof(ParameterBindingController));
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Equal("top", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
         public void InferParameterBindingSources_SetsCorrectBindingSourceForComplexTypesWithCancellationToken()
         {
             // Arrange
@@ -651,6 +746,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             [HttpPut("cancellation")]
             public IActionResult ComplexTypeModelWithCancellationToken(TestModel model, CancellationToken cancellationToken) => null;
+
+            [HttpGet("parameter-with-model-binder-attribute")]
+            public IActionResult ModelBinderAttribute([ModelBinder(Name = "top")] int value) => null;
         }
 
         [ApiController]
@@ -708,6 +806,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public TestModel TestProperty { get; set; }
 
             public IActionResult SomeAction([FromQuery] TestModel test) => null;
+        }
+
+        private class Car { }
+
+        [ApiController]
+        private class ControllerWithMultipleInferredFromBodyParameters
+        {
+            [HttpGet("test")]
+            public IActionResult Action(TestModel a, Car b) => null;
+        }
+
+        [ApiController]
+        private class ControllerWithMultipleInferredOrSpecifiedFromBodyParameters
+        {
+            [HttpGet("test")]
+            public IActionResult Action(TestModel a, [FromBody] int b) => null;
+        }
+
+        [ApiController]
+        private class ControllerWithMultipleFromBodyParameters
+        {
+            [HttpGet("test")]
+            public IActionResult Action([FromBody] decimal a, [FromBody] int b) => null;
+        }
+
+        [ApiController]
+        private class ParameterWithBindingInfo
+        {
+            [HttpGet("test")]
+            public IActionResult Action([ModelBinder(typeof(object))] Car car) => null;
         }
     }
 }
