@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             Debug.Assert(value > _buffer.Length);
 
             // Extract the current buffer to be replaced.
-            byte[] currentBuffer = _buffer;
+            var currentBuffer = _buffer;
             _buffer = null;
 
             // Determine the capacity to request for the new buffer.  It should be
@@ -83,14 +83,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             // value is more than that.  If the new value would put it longer than the max
             // allowed byte array, than shrink to that (and if the required length is actually
             // longer than that, we'll let the runtime throw).
-            uint twiceLength = 2 * (uint)currentBuffer.Length;
-            int newCapacity = twiceLength > MaxByteArrayLength ?
+            var twiceLength = 2 * (uint)currentBuffer.Length;
+            var newCapacity = twiceLength > MaxByteArrayLength ?
                 (value > MaxByteArrayLength ? value : MaxByteArrayLength) :
                 Math.Max(value, (int)twiceLength);
 
             // Get a new buffer, copy the current one to it, return the current one, and
             // set the new buffer as current.
-            byte[] newBuffer = ArrayPool<byte>.Shared.Rent(newCapacity);
+            var newBuffer = ArrayPool<byte>.Shared.Rent(newCapacity);
             Buffer.BlockCopy(currentBuffer, 0, newBuffer, 0, _length);
             ArrayPool<byte>.Shared.Return(currentBuffer);
             _buffer = newBuffer;
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public override void WriteByte(byte value)
         {
-            int newLength = _length + 1;
+            var newLength = _length + 1;
             EnsureCapacity(newLength);
             _buffer[_length] = value;
             _length = newLength;

@@ -60,8 +60,8 @@ namespace ClientSample
             try
             {
                 // Spawn send and receive logic
-                Task receiveTask = DoReceive();
-                Task<Exception> sendTask = DoSend();
+                var receiveTask = DoReceive();
+                var sendTask = DoSend();
 
                 // If the sending task completes then close the receive
                 // We don't need to do this in the other direction because the kestrel

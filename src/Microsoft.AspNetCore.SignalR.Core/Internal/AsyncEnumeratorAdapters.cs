@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             public Task<bool> MoveNextAsync()
             {
-                ValueTask<T> result = _channel.ReadAsync(_cancellationToken);
+                var result = _channel.ReadAsync(_cancellationToken);
 
                 if (result.IsCompletedSuccessfully)
                 {

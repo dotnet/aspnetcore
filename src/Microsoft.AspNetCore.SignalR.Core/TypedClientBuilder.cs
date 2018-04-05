@@ -109,8 +109,8 @@ namespace Microsoft.AspNetCore.SignalR
                 | MethodAttributes.HideBySig
                 | MethodAttributes.NewSlot;
 
-            ParameterInfo[] parameters = interfaceMethodInfo.GetParameters();
-            Type[] paramTypes = parameters.Select(param => param.ParameterType).ToArray();
+            var parameters = interfaceMethodInfo.GetParameters();
+            var paramTypes = parameters.Select(param => param.ParameterType).ToArray();
 
             var methodBuilder = type.DefineMethod(interfaceMethodInfo.Name, methodAttributes);
 
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR
             generator.Emit(OpCodes.Stloc_0);
 
             // Store each parameter in the object array
-            for (int i = 0; i < paramTypes.Length; i++)
+            for (var i = 0; i < paramTypes.Length; i++)
             {
                 generator.Emit(OpCodes.Ldloc_0); // Object array loaded
                 generator.Emit(OpCodes.Ldc_I4, i); 

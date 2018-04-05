@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 #if DEBUG
             writer._inUse = false;
 #endif
-            for (int i = 0; i < writer._segments.Count; i++)
+            for (var i = 0; i < writer._segments.Count; i++)
             {
                 ArrayPool<byte>.Shared.Return(writer._segments[i]);
             }
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var totalWritten = 0;
 
             // Copy full segments
-            for (int i = 0; i < _segments.Count - 1; i++)
+            for (var i = 0; i < _segments.Count - 1; i++)
             {
                 _segments[i].AsMemory().CopyTo(result.AsMemory(totalWritten, _segmentSize));
 

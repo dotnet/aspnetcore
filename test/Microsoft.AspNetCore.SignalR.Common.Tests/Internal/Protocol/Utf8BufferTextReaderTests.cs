@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             reader.SetBuffer(buffer);
 
             var chars = new char[1024];
-            int read = reader.Read(chars, 0, chars.Length);
+            var read = reader.Read(chars, 0, chars.Length);
 
             Assert.Equal("Hello World", new string(chars, 0, read));
         }
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             reader.SetBuffer(buffer);
 
             var chars = new char[1024];
-            int read = reader.Read(chars, 0, chars.Length);
+            var read = reader.Read(chars, 0, chars.Length);
 
             Assert.Equal(5, read);
             Assert.Equal("a\u00E4\u00E4\u00a9o", new string(chars, 0, read));
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             reader.SetBuffer(buffer);
 
             var chars = new char[1024];
-            int read = reader.Read(chars, 10, chars.Length - 10);
+            var read = reader.Read(chars, 10, chars.Length - 10);
 
             Assert.Equal(11, read);
             Assert.Equal("Hello World", new string(chars, 10, read));
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             reader.SetBuffer(buffer);
 
             var chars = new char[5];
-            int read = reader.Read(chars, 0, chars.Length);
+            var read = reader.Read(chars, 0, chars.Length);
 
             Assert.Equal(5, read);
             Assert.Equal("Hello", new string(chars, 0, read));
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             reader.SetBuffer(buffer);
 
             var chars = new char[2];
-            int read = reader.Read(chars, 0, chars.Length);
+            var read = reader.Read(chars, 0, chars.Length);
 
             Assert.Equal(2, read);
             Assert.Equal("\u00E4\u00E4", new string(chars, 0, read));

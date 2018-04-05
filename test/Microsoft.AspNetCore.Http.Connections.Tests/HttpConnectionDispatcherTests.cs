@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
                 Assert.False(exists);
             }
         }
@@ -585,7 +585,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
                 Assert.False(exists);
             }
         }
@@ -611,7 +611,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
 
-                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
                 Assert.False(exists);
             }
         }
@@ -839,7 +839,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await task;
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
                 Assert.False(exists);
             }
         }
@@ -872,7 +872,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await task;
 
                 Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
-                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
                 Assert.False(exists);
             }
         }

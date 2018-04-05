@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         public int Create()
         {
             var hub = _activator.Create();
-            int result = hub.Addition();
+            var result = hub.Addition();
             return result;
         }
 

@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         private static byte[] GetNegotiatePayload(string connectionId, HttpContext context, HttpConnectionOptions options)
         {
-            NegotiationResponse response = new NegotiationResponse();
+            var response = new NegotiationResponse();
             response.ConnectionId = connectionId;
             response.AvailableTransports = new List<AvailableTransport>();
 
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 response.AvailableTransports.Add(_longPollingAvailableTransport);
             }
 
-            MemoryStream ms = new MemoryStream();
+            var ms = new MemoryStream();
             NegotiateProtocol.WriteResponse(response, ms);
 
             return ms.ToArray();

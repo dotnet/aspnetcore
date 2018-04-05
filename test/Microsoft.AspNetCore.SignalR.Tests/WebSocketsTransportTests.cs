@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             ClientWebSocketOptions webSocketsOptions = null;
 
-            HttpOptions httpOptions = new HttpOptions();
+            var httpOptions = new HttpOptions();
             httpOptions.Cookies.Add(new Cookie("Name", "Value", string.Empty, "fakeuri.org"));
             var clientCertificate = new X509Certificate();
             httpOptions.ClientCertificates.Add(clientCertificate);
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 Assert.True(pair.Transport.Input.TryRead(out var result));
 
-                string userAgent = Encoding.UTF8.GetString(result.Buffer.ToArray());
+                var userAgent = Encoding.UTF8.GetString(result.Buffer.ToArray());
 
                 // user agent version should come from version embedded in assembly metadata
                 var assemblyVersion = typeof(Constants)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 Assert.True(pair.Transport.Input.TryRead(out var result));
 
-                string headerValue = Encoding.UTF8.GetString(result.Buffer.ToArray());
+                var headerValue = Encoding.UTF8.GetString(result.Buffer.ToArray());
 
                 Assert.Equal("XMLHttpRequest", headerValue);
             }

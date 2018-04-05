@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         public async Task DisposeAsync()
         {
-            Task disposeTask = Task.CompletedTask;
+            var disposeTask = Task.CompletedTask;
 
             try
             {

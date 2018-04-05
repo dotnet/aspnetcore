@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 switch (reader.TokenType)
                 {
                     case JsonToken.PropertyName:
-                        string memberName = reader.Value.ToString();
+                        var memberName = reader.Value.ToString();
 
                         switch (memberName)
                         {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                 JsonUtils.CheckRead(reader);
                                 JsonUtils.EnsureArrayStart(reader);
 
-                                bool completed = false;
+                                var completed = false;
                                 availableTransport.TransferFormats = new List<string>();
                                 while (!completed && JsonUtils.CheckRead(reader))
                                 {

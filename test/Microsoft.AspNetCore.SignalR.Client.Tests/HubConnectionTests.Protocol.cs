@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task ReceiveCloseMessageWithoutErrorWillCloseHubConnection()
             {
-                TaskCompletionSource<Exception> closedTcs = new TaskCompletionSource<Exception>();
+                var closedTcs = new TaskCompletionSource<Exception>();
 
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await connection.ReceiveJsonMessage(new { type = 7 }).OrTimeout();
 
-                    Exception closeException = await closedTcs.Task.OrTimeout();
+                    var closeException = await closedTcs.Task.OrTimeout();
                     Assert.Null(closeException);
                 }
                 finally
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task ReceiveCloseMessageWithErrorWillCloseHubConnection()
             {
-                TaskCompletionSource<Exception> closedTcs = new TaskCompletionSource<Exception>();
+                var closedTcs = new TaskCompletionSource<Exception>();
 
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await connection.ReceiveJsonMessage(new { type = 7, error = "Error!" }).OrTimeout();
 
-                    Exception closeException = await closedTcs.Task.OrTimeout();
+                    var closeException = await closedTcs.Task.OrTimeout();
                     Assert.NotNull(closeException);
                     Assert.Equal("The server closed the connection with the following error: Error!", closeException.Message);
                 }

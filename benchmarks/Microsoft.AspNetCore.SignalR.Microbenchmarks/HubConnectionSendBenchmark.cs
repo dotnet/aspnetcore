@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _hubConnection.StartAsync().GetAwaiter().GetResult();
 
             _arguments = new object[ArgumentCount];
-            for (int i = 0; i < _arguments.Length; i++)
+            for (var i = 0; i < _arguments.Length; i++)
             {
                 _arguments[i] = "Hello world!";
             }

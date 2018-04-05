@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 async Task Produce()
                 {
-                    int i = 0;
+                    var i = 0;
                     while (true)
                     {
                         observable.OnNext(i++);
@@ -985,8 +985,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1020,8 +1020,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1055,8 +1055,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1095,8 +1095,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1131,9 +1131,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var secondClient = new TestClient())
             using (var thirdClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
-                Task thirdConnectionHandlerTask = await thirdClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var thirdConnectionHandlerTask = await thirdClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected, thirdClient.Connected).OrTimeout();
 
@@ -1174,9 +1174,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var secondClient = new TestClient())
             using (var thirdClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
-                Task thirdConnectionHandlerTask = await thirdClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var thirdConnectionHandlerTask = await thirdClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected, thirdClient.Connected).OrTimeout();
 
@@ -1219,9 +1219,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var secondClient = new TestClient(addClaimId: true))
             using (var thirdClient = new TestClient(addClaimId: true))
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
-                Task thirdConnectionHandlerTask = await thirdClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var thirdConnectionHandlerTask = await thirdClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected, thirdClient.Connected).OrTimeout();
 
@@ -1263,8 +1263,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1304,8 +1304,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1354,8 +1354,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1402,8 +1402,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1462,8 +1462,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient(addClaimId: true))
             using (var secondClient = new TestClient(addClaimId: true))
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1493,8 +1493,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1523,8 +1523,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
             {
-                Task firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
@@ -1656,8 +1656,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client1 = new TestClient(protocol: new JsonHubProtocol()))
             using (var client2 = new TestClient(protocol: new MessagePackHubProtocol()))
             {
-                Task firstConnectionHandlerTask = await client1.ConnectAsync(connectionHandler);
-                Task secondConnectionHandlerTask = await client2.ConnectAsync(connectionHandler);
+                var firstConnectionHandlerTask = await client1.ConnectAsync(connectionHandler);
+                var secondConnectionHandlerTask = await client2.ConnectAsync(connectionHandler);
 
                 await client1.Connected.OrTimeout();
                 await client2.Connected.OrTimeout();
@@ -1957,7 +1957,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await client.Connected.OrTimeout();
 
                 // Echo a bunch of stuff, waiting 10ms between each, until 500ms have elapsed
-                DateTime start = DateTime.UtcNow;
+                var start = DateTime.UtcNow;
                 while ((DateTime.UtcNow - start).TotalMilliseconds <= 500.0)
                 {
                     await client.SendInvocationAsync("Echo", "foo").OrTimeout();

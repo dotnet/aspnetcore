@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 var hasResult = false;
                 object result = null;
                 JToken resultToken = null;
-                bool hasArguments = false;
+                var hasArguments = false;
                 object[] arguments = null;
                 JArray argumentsToken = null;
                 ExceptionDispatchInfo argumentBindingException = null;
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         switch (reader.TokenType)
                         {
                             case JsonToken.PropertyName:
-                                string memberName = reader.Value.ToString();
+                                var memberName = reader.Value.ToString();
 
                                 switch (memberName)
                                 {
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 switch (reader.TokenType)
                 {
                     case JsonToken.PropertyName:
-                        string propertyName = reader.Value.ToString();
+                        var propertyName = reader.Value.ToString();
 
                         JsonUtils.CheckRead(reader);
 

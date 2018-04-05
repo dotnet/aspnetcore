@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         switch (reader.TokenType)
                         {
                             case JsonToken.PropertyName:
-                                string memberName = reader.Value.ToString();
+                                var memberName = reader.Value.ToString();
 
                                 switch (memberName)
                                 {
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         switch (reader.TokenType)
                         {
                             case JsonToken.PropertyName:
-                                string memberName = reader.Value.ToString();
+                                var memberName = reader.Value.ToString();
 
                                 switch (memberName)
                                 {

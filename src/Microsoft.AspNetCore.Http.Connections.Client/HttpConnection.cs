@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else
-            bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!isWindows)
             {
                 // Assume other OSes have websockets

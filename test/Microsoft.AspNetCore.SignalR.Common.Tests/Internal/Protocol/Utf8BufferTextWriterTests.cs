@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(2, bufferWriter.Position);
             Assert.Equal((byte)'"', bufferWriter.CurrentSegment.Span[1]);
 
-            for (int i = 0; i < 2000; i++)
+            for (var i = 0; i < 2000; i++)
             {
                 textWriter.Write('\u00A3');
             }
@@ -100,13 +100,13 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             textWriter.Flush();
             Assert.Equal(4004, bufferWriter.Position);
 
-            string result = Encoding.UTF8.GetString(bufferWriter.CurrentSegment.Slice(0, bufferWriter.Position).ToArray());
+            var result = Encoding.UTF8.GetString(bufferWriter.CurrentSegment.Slice(0, bufferWriter.Position).ToArray());
             Assert.Equal(2004, result.Length);
 
             Assert.Equal('[', result[0]);
             Assert.Equal('"', result[1]);
 
-            for (int i = 0; i < 2000; i++)
+            for (var i = 0; i < 2000; i++)
             {
                 Assert.Equal('\u00A3', result[i + 2]);
             }
@@ -118,9 +118,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void WriteCharArray_SurrogatePairInMultipleCalls()
         {
-            string fourCircles = char.ConvertFromUtf32(0x1F01C);
+            var fourCircles = char.ConvertFromUtf32(0x1F01C);
 
-            char[] chars = fourCircles.ToCharArray();
+            var chars = fourCircles.ToCharArray();
 
             var bufferWriter = new TestMemoryBufferWriter(4096);
             var textWriter = new Utf8BufferTextWriter();
@@ -137,9 +137,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             Assert.Equal(4, bufferWriter.Position);
 
-            byte[] expectedData = Encoding.UTF8.GetBytes(fourCircles);
+            var expectedData = Encoding.UTF8.GetBytes(fourCircles);
 
-            byte[] actualData = bufferWriter.CurrentSegment.Slice(0, 4).ToArray();
+            var actualData = bufferWriter.CurrentSegment.Slice(0, 4).ToArray();
 
             Assert.Equal(expectedData, actualData);
         }
@@ -147,9 +147,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void WriteChar_SurrogatePairInMultipleCalls()
         {
-            string fourCircles = char.ConvertFromUtf32(0x1F01C);
+            var fourCircles = char.ConvertFromUtf32(0x1F01C);
 
-            char[] chars = fourCircles.ToCharArray();
+            var chars = fourCircles.ToCharArray();
 
             var bufferWriter = new TestMemoryBufferWriter(4096);
             var textWriter = new Utf8BufferTextWriter();
@@ -166,9 +166,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             Assert.Equal(4, bufferWriter.Position);
 
-            byte[] expectedData = Encoding.UTF8.GetBytes(fourCircles);
+            var expectedData = Encoding.UTF8.GetBytes(fourCircles);
 
-            byte[] actualData = bufferWriter.CurrentSegment.Slice(0, 4).ToArray();
+            var actualData = bufferWriter.CurrentSegment.Slice(0, 4).ToArray();
 
             Assert.Equal(expectedData, actualData);
         }
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var textWriter = new Utf8BufferTextWriter();
             textWriter.SetWriter(bufferWriter);
 
-            char[] chars = "Hello world".ToCharArray();
+            var chars = "Hello world".ToCharArray();
 
             textWriter.Write(chars, 6, 1);
             textWriter.Flush();
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var textWriter = new Utf8BufferTextWriter();
             textWriter.SetWriter(bufferWriter);
 
-            char[] chars = "Hello world".ToCharArray();
+            var chars = "Hello world".ToCharArray();
 
             textWriter.Write(chars);
             textWriter.Flush();
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             Assert.Equal("Hello", Encoding.UTF8.GetString(bufferWriter1.ToArray()));
 
-            TestMemoryBufferWriter bufferWriter2 = new TestMemoryBufferWriter();
+            var bufferWriter2 = new TestMemoryBufferWriter();
 
             var textWriter2 = Utf8BufferTextWriter.Get(bufferWriter2);
             textWriter2.Write("World");
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 var totalWritten = 0;
 
                 // Copy full segments
-                for (int i = 0; i < Segments.Count - 1; i++)
+                for (var i = 0; i < Segments.Count - 1; i++)
                 {
                     Segments[i].CopyTo(result.AsMemory(totalWritten, _segmentSize));
 
