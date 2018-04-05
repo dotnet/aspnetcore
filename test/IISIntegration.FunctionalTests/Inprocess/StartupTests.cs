@@ -107,6 +107,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
+                    deploymentParameters.ApplicationType = ApplicationType.Standalone;
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>

@@ -21,13 +21,19 @@
     <NativeFolder>x64</NativeFolder>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- For standalone publish, all dlls are flattened to the same folder. 
+         Set the base path to the request handler 
+    -->
+    <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
+  </PropertyGroup>
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <None Include="$(MSBuildThisFileDirectory)..\src\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
   </ItemGroup>
-
+   
   <PropertyGroup>
     <IISExpressArguments>/config:"$(IISExpressAppHostConfig)"</IISExpressArguments>
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>

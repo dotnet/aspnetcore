@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     EnvironmentName = "UpgradeFeatureDetection", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.1",
                     ApplicationType = applicationType,
                     Configuration =
 #if DEBUG

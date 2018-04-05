@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Http.config"),
                 SiteName = "HttpTestSite",
-                TargetFramework = "netcoreapp2.0",
+                TargetFramework = "netcoreapp2.1",
                 ApplicationType = ApplicationType.Portable,
                 Configuration =
 #if DEBUG

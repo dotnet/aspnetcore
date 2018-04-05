@@ -264,12 +264,37 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
             goto Finished;
         }
 
-        if (FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
+        if (m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
-            // TODO eventually make this fail for in process loading.
-            hr = FindNativeAssemblyFromGlobalLocation(&struFileName);
-            if (FAILED(hr))
+            if (FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
             {
+                STACK_STRU(strEventMsg, 256);
+                if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                    ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG)))
+                {
+                    UTILITY::LogEvent(g_hEventLog,
+                        EVENTLOG_INFORMATION_TYPE,
+                        ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
+                        strEventMsg.QueryStr());
+                }
+
+                goto Finished;
+            }
+        }
+        else
+        {
+            if (FAILED(hr = FindNativeAssemblyFromGlobalLocation(&struFileName)))
+            {
+                STACK_STRU(strEventMsg, 256);
+                if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                    ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG)))
+                {
+                    UTILITY::LogEvent(g_hEventLog,
+                        EVENTLOG_INFORMATION_TYPE,
+                        ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
+                        strEventMsg.QueryStr());
+                }
+
                 goto Finished;
             }
         }
@@ -380,7 +405,6 @@ Finished:
 // Calls into hostfxr.dll to find it.
 // Will leave hostfxr.dll loaded as it will be used again to call hostfxr_main.
 // 
-
 HRESULT
 APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     STRU* struFilename
