@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var segments = attributeName.Split('-');
             for (var i = 0; i < segments.Length; i++)
             {
-                if (string.IsNullOrEmpty(segments[0]))
+                if (string.IsNullOrEmpty(segments[i]))
                 {
                     return false;
                 }

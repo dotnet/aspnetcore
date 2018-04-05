@@ -486,5 +486,26 @@ namespace Test
                 frame => AssertFrame.Whitespace(frame, 6),
                 frame => AssertFrame.Whitespace(frame, 7));
         }
+
+        [Fact]
+        public void Render_Bind_With_IncorrectAttributeNames()
+        {
+            //more than 3 parts
+            Assert.Throws<InvalidOperationException>(() => CompileToComponent(@"
+@addTagHelper *, TestAssembly
+<input type=""text"" bind-first-second-third=""Text"" />
+@functions {
+    public string Text { get; set; } = ""text"";
+}"));
+
+            //ends with '-'
+            Assert.Throws<InvalidOperationException>(() => CompileToComponent(@"
+@addTagHelper *, TestAssembly
+<input type=""text"" bind-first-=""Text"" />
+@functions {
+    public string Text { get; set; } = ""text"";
+}"));
+
+        }
     }
 }
