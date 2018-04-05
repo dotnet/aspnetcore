@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
     public class BroadcastBenchmark
     {
+        private const string TestGroupName = "TestGroup";
         private DefaultHubLifetimeManager<Hub> _hubLifetimeManager;
         private HubContext<Hub> _hubContext;
 
@@ -47,11 +48,18 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 var hubConnection = new HubConnectionContext(connection, Timeout.InfiniteTimeSpan, NullLoggerFactory.Instance);
                 hubConnection.Protocol = protocol;
                 _hubLifetimeManager.OnConnectedAsync(hubConnection).GetAwaiter().GetResult();
+                _hubLifetimeManager.AddGroupAsync(connection.ConnectionId, TestGroupName).GetAwaiter().GetResult();
 
                 _ = ConsumeAsync(connection.Application);
             }
 
             _hubContext = new HubContext<Hub>(_hubLifetimeManager);
+        }
+
+        [Benchmark]
+        public Task SendAsyncGroup()
+        {
+            return _hubContext.Clients.Group(TestGroupName).SendAsync("Method");
         }
 
         [Benchmark]
