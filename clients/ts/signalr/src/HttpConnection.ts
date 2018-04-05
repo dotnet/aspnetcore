@@ -274,20 +274,16 @@ export class HttpConnection implements IConnection {
             throw new Error(`Cannot resolve '${url}'.`);
         }
 
-        const parser = window.document.createElement("a");
-        parser.href = url;
+        // Setting the url to the href propery of an anchor tag handles normalization
+        // for us. There are 3 main cases.
+        // 1. Relative  path normalization e.g "b" -> "http://localhost:5000/a/b"
+        // 2. Absolute path normalization e.g "/a/b" -> "http://localhost:5000/a/b"
+        // 3. Networkpath reference normalization e.g "//localhost:5000/a/b" -> "http://localhost:5000/a/b"
+        const aTag = window.document.createElement("a");
+        aTag.href = url;
 
-        const baseUrl = (!parser.protocol || parser.protocol === ":")
-            ? `${window.document.location.protocol}//${(parser.host || window.document.location.host)}`
-            : `${parser.protocol}//${parser.host}`;
-
-        if (!url || url[0] !== "/") {
-            url = "/" + url;
-        }
-
-        const normalizedUrl = baseUrl + url;
-        this.logger.log(LogLevel.Information, `Normalizing '${url}' to '${normalizedUrl}'.`);
-        return normalizedUrl;
+        this.logger.log(LogLevel.Information, `Normalizing '${url}' to '${aTag.href}'.`);
+        return aTag.href;
     }
 
     private resolveNegotiateUrl(url: string): string {
