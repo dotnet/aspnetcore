@@ -304,6 +304,69 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [ConditionalFact]
         [WebSocketsSupportedCondition]
+        public async Task UnauthorizedWebSocketsConnectionDoesNotConnect()
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
+
+                var url = _serverFixture.Url + "/auth";
+                var connection = new HttpConnection(new Uri(url), HttpTransportType.WebSockets, loggerFactory);
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                    Assert.True(false);
+                }
+                catch (WebSocketException) { }
+                catch (Exception ex)
+                {
+                    logger.LogInformation(ex, "Test threw exception");
+                    throw;
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        public async Task UnauthorizedConnectionDoesNotConnect(HttpTransportType transportType)
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Trace, testName: $"{nameof(UnauthorizedConnectionDoesNotConnect)}_{transportType}"))
+            {
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
+
+                var url = _serverFixture.Url + "/auth";
+                var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                    Assert.True(false);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [WebSocketsSupportedCondition]
         public async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated_WebSocket()
         {
             try

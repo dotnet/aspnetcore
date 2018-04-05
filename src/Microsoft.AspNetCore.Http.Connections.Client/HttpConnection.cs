@@ -428,6 +428,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
             }
 
+            httpClient.DefaultRequestHeaders.Remove("X-Requested-With");
+            // Tell auth middleware to 401 instead of redirecting
+            httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+
             return httpClient;
         }
 

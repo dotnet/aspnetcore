@@ -82,6 +82,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _closeTimeout = httpOptions.CloseTimeout;
             }
 
+            _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
+
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         }
 

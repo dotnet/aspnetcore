@@ -66,6 +66,46 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.True(requestsExecuted);
             }
 
+            [Theory]
+            [InlineData(HttpTransportType.LongPolling)]
+            [InlineData(HttpTransportType.ServerSentEvents)]
+            public async Task HttpConnectionSetsRequestedWithOnAllRequests(HttpTransportType transportType)
+            {
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                var requestsExecuted = false;
+
+                testHttpHandler.OnRequest((request, next, token) =>
+                {
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                });
+
+                testHttpHandler.OnNegotiate((_, cancellationToken) =>
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+                });
+
+                testHttpHandler.OnRequest(async (request, next, token) =>
+                {
+                    var requestedWithHeader = request.Headers.GetValues("X-Requested-With");
+                    var requestedWithValue = Assert.Single(requestedWithHeader);
+                    Assert.Equal("XMLHttpRequest", requestedWithValue);
+
+                    requestsExecuted = true;
+
+                    return await next();
+                });
+
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, transportType: transportType),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+                    });
+                // Fail safe in case the code is modified and some requests don't execute as a result
+                Assert.True(requestsExecuted);
+            }
+
             [Fact]
             public async Task CanReceiveData()
             {

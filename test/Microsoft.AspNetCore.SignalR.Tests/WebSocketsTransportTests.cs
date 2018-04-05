@@ -109,6 +109,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [ConditionalFact]
         [WebSocketsSupportedCondition]
+        public async Task WebSocketsTransportSendsXRequestedWithHeader()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/httpheader"), pair.Application,
+                    TransferFormat.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
+
+                await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("X-Requested-With"));
+
+                // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
+                await webSocketsTransport.Running.OrTimeout();
+
+                Assert.True(pair.Transport.Input.TryRead(out var result));
+
+                string headerValue = Encoding.UTF8.GetString(result.Buffer.ToArray());
+
+                Assert.Equal("XMLHttpRequest", headerValue);
+            }
+        }
+
+        [ConditionalFact]
+        [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportStopsWhenConnectionChannelClosed()
         {
             using (StartLog(out var loggerFactory))

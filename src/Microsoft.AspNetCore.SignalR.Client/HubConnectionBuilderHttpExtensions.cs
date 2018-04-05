@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 o.Url = url;
                 o.Transport = transportType;
             });
-            
+
             if (configureHttpConnection != null)
             {
                 hubConnectionBuilder.Services.Configure(configureHttpConnection);
