@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+
+    <!-- This custom package feed is required only when using nightly builds of Blazor -->
+    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/f/blazor-dev/api/v3/index.json</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
