@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -66,6 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 engine.ConfigureClass((document, @class) =>
                 {
+                    @class.TypeParameters = new[] { new TypeParameter() { ParameterName = "TValue", }, };
                     @class.Interfaces = new[] { "global::System.IDisposable" };
                     @class.BaseType = "CustomBaseType";
                 });

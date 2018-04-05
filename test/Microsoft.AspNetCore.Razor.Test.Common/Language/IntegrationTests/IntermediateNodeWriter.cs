@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     // Serializes single IR nodes (shallow).
-    public class IntermediateNodeWriter : 
+    public class IntermediateNodeWriter :
         IntermediateNodeVisitor,
         IExtensionIntermediateNodeVisitor<SectionIntermediateNode>
     {
@@ -32,7 +33,21 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
         {
-            WriteContentNode(node, string.Join(" ", node.Modifiers), node.ClassName, node.BaseType, string.Join(", ", node.Interfaces ?? new List<string>()));
+            var entries = new List<string>()
+            {
+                string.Join(" ", node.Modifiers),
+                node.ClassName,
+                node.BaseType,
+                string.Join(", ", node.Interfaces ?? Array.Empty<string>())
+            };
+
+            // Avoid adding the type parameters to the baseline if they aren't present.
+            if (node.TypeParameters != null && node.TypeParameters.Count > 0)
+            {
+                entries.Add(string.Join(", ", node.TypeParameters));
+            }
+
+            WriteContentNode(node, entries.ToArray());
         }
 
         public override void VisitCSharpExpressionAttributeValue(CSharpExpressionAttributeValueIntermediateNode node)

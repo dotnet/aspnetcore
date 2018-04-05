@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string BaseType { get; set; }
 
-        public IList<string> Interfaces { get; set; }
+        public IList<string> Interfaces { get; set; } = new List<string>();
+
+        public IList<TypeParameter> TypeParameters { get; set; } = new List<TypeParameter>();
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

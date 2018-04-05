@@ -931,7 +931,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
             var name = string.Concat(nameSymbols.Select(s => s.Content));
-            var attributeCanBeConditional = !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
+            var attributeCanBeConditional = 
+                Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
+                !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
             // Accept the whitespace and name
             Accept(whitespace);

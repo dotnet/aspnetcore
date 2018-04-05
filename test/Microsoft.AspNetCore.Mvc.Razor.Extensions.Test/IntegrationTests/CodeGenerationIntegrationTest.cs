@@ -290,6 +290,14 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             
             RunRuntimeTest(compilation);
         }
+
+        [Fact]
+        public void RazorPageWithNoLeadingPageDirective_Runtime()
+        {
+            var compilation = BaseCompilation;
+
+            RunRuntimeTest(compilation);
+        }
         #endregion
 
         #region DesignTime
@@ -575,6 +583,14 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
             var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
             
+            RunDesignTimeTest(compilation);
+        }
+
+        [Fact]
+        public void RazorPageWithNoLeadingPageDirective_DesignTime()
+        {
+            var compilation = BaseCompilation;
+
             RunDesignTimeTest(compilation);
         }
         #endregion

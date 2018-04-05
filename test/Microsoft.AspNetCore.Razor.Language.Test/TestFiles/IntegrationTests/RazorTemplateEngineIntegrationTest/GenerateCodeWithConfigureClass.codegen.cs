@@ -5,7 +5,7 @@ namespace Razor
 {
     #line hidden
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"38aa8e26c5d2a85c61d8e93fe69dd326fe82671b", @"/TestFiles/IntegrationTests/RazorTemplateEngineIntegrationTest/GenerateCodeWithConfigureClass.cshtml")]
-    protected internal class MyClass : CustomBaseType, global::System.IDisposable
+    protected internal class MyClass<TValue> : CustomBaseType, global::System.IDisposable
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()

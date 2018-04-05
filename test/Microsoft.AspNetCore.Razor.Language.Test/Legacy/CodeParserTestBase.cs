@@ -9,9 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         internal abstract ISet<string> KeywordSet { get; }
 
-        internal override RazorSyntaxTree ParseBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        internal override RazorSyntaxTree ParseBlock(
+            RazorLanguageVersion version, 
+            string document, 
+            IEnumerable<DirectiveDescriptor> directives, 
+            bool designTime)
         {
-            return ParseCodeBlock(document, directives, designTime);
+            return ParseCodeBlock(version, document, directives, designTime);
         }
 
         internal void ImplicitExpressionTest(string input, params RazorDiagnostic[] errors)

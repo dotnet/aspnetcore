@@ -112,11 +112,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 var leadingDirectiveCodeDocument = RazorCodeDocument.Create(codeDocument.Source);
                 LeadingDirectiveParsingEngine.Engine.Process(leadingDirectiveCodeDocument);
 
-                var documentIRNode = leadingDirectiveCodeDocument.GetDocumentIntermediateNode();
-                if (!PageDirective.TryGetPageDirective(documentIRNode, out var _))
+                var leadingDirectiveDocumentNode = leadingDirectiveCodeDocument.GetDocumentIntermediateNode();
+                if (!PageDirective.TryGetPageDirective(leadingDirectiveDocumentNode, out var _))
                 {
                     // The page directive is not the leading directive. Add an error.
-                    pageDirective.DirectiveNode.Diagnostics.Add(
+                    // Note: Adding the error to the top-level document node because the directive node will be removed by a later optimization pass.
+                    var originalDocumentNode = codeDocument.GetDocumentIntermediateNode();
+                    originalDocumentNode.Diagnostics.Add(
                         RazorExtensionsDiagnosticFactory.CreatePageDirective_MustExistAtTheTopOfFile(pageDirective.DirectiveNode.Source.Value));
                 }
             }

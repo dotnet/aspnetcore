@@ -1957,7 +1957,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Block expected,
             params RazorDiagnostic[] expectedErrors)
         {
-            var result = ParseCodeBlock(document, descriptors, designTime: false);
+            var result = ParseCodeBlock(RazorLanguageVersion.Latest, document, descriptors, designTime: false);
 
             EvaluateResults(result, expected, expectedErrors);
         }

@@ -560,6 +560,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void ConditionalAttributesAreEnabledForDataAttributesWithExperimentalFlag()
+        {
+            ParseBlockTest(
+                RazorLanguageVersion.Experimental,
+                "<span data-foo='@foo'></span>",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<span"),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator("data-foo", new LocationTagged<string>(" data-foo='", 5, 0, 5), new LocationTagged<string>("'", 20, 0, 20)),
+                            Factory.Markup(" data-foo='").With(SpanChunkGenerator.Null),
+                            new MarkupBlock(new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), 16, 0, 16),
+                                new ExpressionBlock(
+                                    Factory.CodeTransition(),
+                                    Factory.Code("foo")
+                                           .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                           .Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        Factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
+                    new MarkupTagBlock(
+                        Factory.Markup("</span>").Accepts(AcceptedCharactersInternal.None))));
+        }
+
+        [Fact]
         public void ConditionalAttributesAreDisabledForDataAttributesInBlock()
         {
             ParseBlockTest("<span data-foo='@foo'></span>",

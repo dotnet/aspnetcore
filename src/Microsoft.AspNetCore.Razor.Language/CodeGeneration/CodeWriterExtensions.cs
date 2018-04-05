@@ -374,7 +374,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             IList<string> modifiers,
             string name,
             string baseType,
-            IEnumerable<string> interfaces)
+            IList<string> interfaces,
+            IList<string> typeParameters)
         {
             for (var i = 0; i < modifiers.Count; i++)
             {
@@ -385,8 +386,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.Write("class ");
             writer.Write(name);
 
+            if (typeParameters != null && typeParameters.Count > 0)
+            {
+                writer.Write("<");
+                writer.Write(string.Join(", ", typeParameters));
+                writer.Write(">");
+            }
+
             var hasBaseType = !string.IsNullOrEmpty(baseType);
-            var hasInterfaces = interfaces != null && interfaces.Count() > 0;
+            var hasInterfaces = interfaces != null && interfaces.Count > 0;
 
             if (hasBaseType || hasInterfaces)
             {
