@@ -17,30 +17,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         static BlazorExtensionInitializer()
         {
-            // RazorConfiguration is changing between 15.7 and preview2 builds of Razor, this is a reflection-based
-            // workaround.
-            DeclarationConfiguration = Create("BlazorDeclaration-0.1");
-            DefaultConfiguration = Create("Blazor-0.1");
+            DeclarationConfiguration = RazorConfiguration.Create(
+                RazorLanguageVersion.Version_2_1, // Cannot use experimental until 15.7p4
+                "BlazorDeclaration-0.1",
+                Array.Empty<RazorExtension>());
 
-            RazorConfiguration Create(string configurationName)
-            {
-                var args = new object[] { RazorLanguageVersion.Version_2_1, configurationName, Array.Empty<RazorExtension>(), };
-
-                MethodInfo method;
-                ConstructorInfo constructor;
-                if ((method = typeof(RazorConfiguration).GetMethod("Create", BindingFlags.Public | BindingFlags.Static)) != null)
-                {
-                    return (RazorConfiguration)method.Invoke(null, args);
-                }
-                else if ((constructor = typeof(RazorConfiguration).GetConstructors().FirstOrDefault()) != null)
-                {
-                    return (RazorConfiguration)constructor.Invoke(args);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Can't create a configuration. This is bad.");
-                }
-            }
+            DefaultConfiguration = RazorConfiguration.Create(
+                RazorLanguageVersion.Version_2_1,
+                "Blazor-0.1",
+                Array.Empty<RazorExtension>());
         }
 
         public static void Register(RazorProjectEngineBuilder builder)
