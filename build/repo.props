@@ -22,6 +22,7 @@
     <IntermediateInstaller Include="win-x64" FileExt=".wixlib" />
     <IntermediateInstaller Include="osx-x64" FileExt=".tar.gz" />
     <IntermediateInstaller Include="linux-x64" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="linux-arm" FileExt=".tar.gz" Condition="'$(IsLinuxArmSupported)' == 'true'" />
     <IntermediateInstaller Include="alpine.3.6-x64" FileExt=".tar.gz" />
 
     <NativeInstaller Include="win-x86" FileExt=".exe" />
@@ -30,6 +31,7 @@
     <NativeInstaller Include="win-x64" FileExt=".zip" />
     <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
+    <NativeInstaller Include="linux-arm" FileExt=".tar.gz" Condition="'$(IsLinuxArmSupported)' == 'true'" />
     <NativeInstaller Include="alpine.3.6-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="x64" FileExt=".deb" />
     <NativeInstaller Include="x64" FileExt=".rpm" />

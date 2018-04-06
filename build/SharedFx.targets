@@ -25,7 +25,7 @@
 
     <ItemGroup>
       <!-- Cartesian products in MSBuild are fun :) -->
-      <_SharedFrameworkSymbolsPackage Include="@(SharedFrameworkName)" Condition="'%(AllSharedFxRIDs.CrossgenSymbolsSupported)' != 'false'">
+      <_SharedFrameworkSymbolsPackage Include="@(SharedFrameworkName)" Condition="'%(AllSharedFxRIDs.CrossgenSymbols)' != 'false' AND '%(AllSharedFxRIDs.Crossgen)' != 'false'">
         <Rid>%(AllSharedFxRIDs.Identity)</Rid>
       </_SharedFrameworkSymbolsPackage>
       <_SharedFrameworkSymbolsPackage Update="@(_SharedFrameworkSymbolsPackage)" PackageId="runtime.%(Rid).%(Identity)" />
@@ -117,6 +117,8 @@
   <Target Name="DefineSharedFxPrerequisites">
     <PropertyGroup>
       <RIDIsAcceptable Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
+      <CrossGenSharedFx>false</CrossGenSharedFx>
+      <CrossGenSharedFx Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)' AND '%(AllSharedFxRIDs.Crossgen)' != 'false' ">true</CrossGenSharedFx>
     </PropertyGroup>
 
     <Error Text="&quot;$(SharedFxRID)&quot; not acceptable as a SharedFxRID, please specify an acceptable value: {@(AllSharedFxRIDs)}." Condition="'$(RIDIsAcceptable)' != 'true'"/>
@@ -366,7 +368,12 @@
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('%(AssembliesToCrossgen.Destination)'))" />
     <WriteLinesToFile File="%(AssembliesToCrossgen.Rsp)" Lines="@(CrossGenArgs)" Overwrite="true" />
 
-    <Exec Command="$(SharedFxCrossGenToolDirectory)$(CrossGenTool) @%(AssembliesToCrossgen.Rsp)" EnvironmentVariables="COMPlus_PartialNGen=0" />
+    <Copy Condition="'$(CrossGenSharedFx)' == 'false'"
+          SourceFiles="%(AssembliesToCrossgen.Source)"
+          DestinationFiles="%(AssembliesToCrossgen.Destination)" />
+    <Exec Condition="'$(CrossGenSharedFx)' != 'false'"
+          Command="$(SharedFxCrossGenToolDirectory)$(CrossGenTool) @%(AssembliesToCrossgen.Rsp)"
+          EnvironmentVariables="COMPlus_PartialNGen=0" />
   </Target>
 
   <Target Name="CrossGenSymbols"
