@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public CSharpCodeWritingScope(CodeWriter writer, int tabSize = 4, bool autoSpace = true)
             {
                 _writer = writer;
-                _autoSpace = true;
+                _autoSpace = autoSpace;
                 _tabSize = tabSize;
                 _startIndent = -1; // Set in WriteStartScope
 
