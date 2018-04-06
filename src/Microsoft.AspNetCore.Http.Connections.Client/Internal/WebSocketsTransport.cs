@@ -183,9 +183,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-                    var memory = _application.Output.GetMemory();
-
 #if NETCOREAPP2_1
+                    // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
+                    var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        Log.WebSocketClosed(_logger, _webSocket.CloseStatus);
+
+                        if (_webSocket.CloseStatus != WebSocketCloseStatus.NormalClosure)
+                        {
+                            throw new InvalidOperationException($"Websocket closed with error: {_webSocket.CloseStatus}.");
+                        }
+
+                        return;
+                    }
+#endif
+                    var memory = _application.Output.GetMemory();
+#if NETCOREAPP2_1
+                    // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
 #else
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
@@ -193,7 +209,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
-#endif
+
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         Log.WebSocketClosed(_logger, _webSocket.CloseStatus);
@@ -205,7 +221,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                         return;
                     }
-
+#endif
                     Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
                     _application.Output.Advance(receiveResult.Count);
