@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
-using System.IO;
-using System.Net.Mime;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Net.Http.Headers;
+using System.Net.Mime;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 FileProvider = new PhysicalFileProvider(config.DistPath),
                 ContentTypeProvider = CreateContentTypeProvider(),
+                OnPrepareResponse = SetCacheHeaders
             };
 
             // First, match the request against files in the client app dist directory
@@ -60,7 +61,8 @@ namespace Microsoft.AspNetCore.Builder
                 // to null so that it only serves files that were copied to dist
                 applicationBuilder.UseStaticFiles(new StaticFileOptions
                 {
-                    FileProvider = new PhysicalFileProvider(config.WebRootPath)
+                    FileProvider = new PhysicalFileProvider(config.WebRootPath),
+                    OnPrepareResponse = SetCacheHeaders
                 });
             }
 
@@ -73,6 +75,24 @@ namespace Microsoft.AspNetCore.Builder
                     spa.Options.DefaultPageStaticFileOptions = distDirStaticFiles;
                 });
             });
+        }
+
+        private static void SetCacheHeaders(StaticFileResponseContext ctx)
+        {
+            // By setting "Cache-Control: no-cache", we're allowing the browser to store
+            // a cached copy of the response, but telling it that it must check with the
+            // server for modifications (based on Etag) before using that cached copy.
+            // Longer term, we should generate URLs based on content hashes (at least
+            // for published apps) so that the browser doesn't need to make any requests
+            // for unchanged files.
+            var headers = ctx.Context.Response.GetTypedHeaders();
+            if (headers.CacheControl == null)
+            {
+                headers.CacheControl = new CacheControlHeaderValue
+                {
+                    NoCache = true
+                };
+            }
         }
 
         private static bool IsNotFrameworkDir(HttpContext context)
