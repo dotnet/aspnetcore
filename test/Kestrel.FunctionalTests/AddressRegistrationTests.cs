@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await RegisterIPEndPoint_Success(endpoint, testUrl, 443);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip="https://github.com/aspnet/KestrelHttpServer/issues/2434")]
         [MemberData(nameof(AddressRegistrationDataIPv6))]
         [IPv6SupportedCondition]
         public async Task RegisterAddresses_IPv6_Success(string addressInput, string[] testUrls)

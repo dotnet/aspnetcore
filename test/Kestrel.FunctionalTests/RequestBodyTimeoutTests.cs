@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status408RequestTimeout);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/KestrelHttpServer/issues/2464")]
         public async Task ConnectionClosedEvenIfAppSwallowsException()
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
