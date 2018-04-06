@@ -26,8 +26,7 @@ namespace E2ETests
         }
 
         [ConditionalTheory, Trait("E2ETests", "NanoServer")]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [SkipIfEnvironmentVariableNotEnabled("RUN_TESTS_ON_NANO")]
         [InlineData(ServerType.Kestrel, 5000, ApplicationType.Standalone)]
         [InlineData(ServerType.WebListener, 5000, ApplicationType.Standalone)]
@@ -58,8 +57,7 @@ namespace E2ETests
         }
 
         [ConditionalTheory, Trait("E2Etests", "NanoServer")]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [SkipIfEnvironmentVariableNotEnabled("RUN_TESTS_ON_NANO")]
         [InlineData(ServerType.Kestrel, 5000, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, 5000, ApplicationType.Portable)]

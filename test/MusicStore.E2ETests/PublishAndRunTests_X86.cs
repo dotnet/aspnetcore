@@ -1,4 +1,4 @@
-#if NETCOREAPP2_1 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
+#if !NETCOREAPP2_0 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -18,8 +18,7 @@ namespace E2ETests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task PublishAndRunTests_X86_WebListener_Clr()
         {
             // CLR must be published as standalone to perform rid specific deployment
@@ -27,8 +26,7 @@ namespace E2ETests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task PublishAndRunTests_X86_Kestrel_Clr()
         {
             // CLR must be published as standalone to perform rid specific deployment

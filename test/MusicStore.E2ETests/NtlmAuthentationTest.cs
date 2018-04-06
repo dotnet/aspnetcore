@@ -13,8 +13,7 @@ using Xunit.Abstractions;
 namespace E2ETests
 {
     [Trait("E2Etests", "E2Etests")]
-    [OSSkipCondition(OperatingSystems.Linux)]
-    [OSSkipCondition(OperatingSystems.MacOSX)]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public class NtlmAuthenticationTests : LoggedTest
     {
         public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
@@ -33,26 +32,26 @@ namespace E2ETests
             return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/MusicStore/issues/830")]
+        [ConditionalFact]
         public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Portable()
         {
             return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Portable);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/MusicStore/issues/830")]
+        [ConditionalFact]
         public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Standalone()
         {
             return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
-#if NETCOREAPP2_1 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
+#if !NETCOREAPP2_0 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
         [ConditionalFact]
         public Task NtlmAuthenticationTest_WebListener_CLR()
         {
             return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.Clr, ApplicationType.Portable);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/MusicStore/issues/830")]
+        [ConditionalFact(Skip = "https://github.com/aspnet/websdk/pull/322")]
         public Task NtlmAuthenticationTest_IISExpress_CLR()
         {
             return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.Clr, ApplicationType.Standalone);
