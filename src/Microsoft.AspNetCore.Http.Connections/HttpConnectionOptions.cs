@@ -3,21 +3,32 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
     public class HttpConnectionOptions
     {
-        public IList<IAuthorizeData> AuthorizationData { get; } = new List<IAuthorizeData>();
+        public HttpConnectionOptions()
+        {
+            AuthorizationData = new List<IAuthorizeData>();
+            Transports = HttpTransports.All;
+            WebSockets = new WebSocketOptions();
+            LongPolling = new LongPollingOptions();
+            TransportMaxBufferSize = 0;
+            ApplicationMaxBufferSize = 0;
+        }
 
-        public HttpTransportType Transports { get; set; } = HttpTransportType.All;
+        public IList<IAuthorizeData> AuthorizationData { get; }
 
-        public WebSocketOptions WebSockets { get; } = new WebSocketOptions();
+        public HttpTransportType Transports { get; set; }
 
-        public LongPollingOptions LongPolling { get; } = new LongPollingOptions();
+        public WebSocketOptions WebSockets { get; }
 
-        public long TransportMaxBufferSize { get; set; } = 0;
+        public LongPollingOptions LongPolling { get; }
 
-        public long ApplicationMaxBufferSize { get; set; } = 0;
+        public long TransportMaxBufferSize { get; set; }
+
+        public long ApplicationMaxBufferSize { get; set; }
     }
 }

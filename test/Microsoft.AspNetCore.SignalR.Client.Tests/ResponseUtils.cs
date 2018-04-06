@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -37,10 +38,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         public static string CreateNegotiationContent(string connectionId = "00000000-0000-0000-0000-000000000000",
-            HttpTransportType transportTypes = HttpTransportType.All)
+            HttpTransportType? transportTypes = null)
         {
             var availableTransports = new List<object>();
 
+            transportTypes = transportTypes ?? HttpTransports.All;
             if ((transportTypes & HttpTransportType.WebSockets) != 0)
             {
                 availableTransports.Add(new

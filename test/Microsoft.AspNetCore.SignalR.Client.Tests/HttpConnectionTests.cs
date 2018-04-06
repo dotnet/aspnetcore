@@ -38,15 +38,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Assert.Equal(connectionUrl, new HttpConnection(connectionUrl).Url);
         }
 
-        [Theory]
-        [InlineData((HttpTransportType)0)]
-        [InlineData(HttpTransportType.All + 1)]
-        public void CannotStartConnectionWithInvalidTransportType(HttpTransportType requestedTransportType)
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => new HttpConnection(new Uri("http://fakeuri.org/"), requestedTransportType));
-        }
-
         [Fact]
         public async Task HttpOptionsSetOntoHttpClientHandler()
         {

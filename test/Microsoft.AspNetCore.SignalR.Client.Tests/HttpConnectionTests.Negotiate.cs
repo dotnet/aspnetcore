@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData((HttpTransportType)0)]
+            [InlineData(HttpTransportType.None)]
             [InlineData(HttpTransportType.ServerSentEvents)]
             public Task ConnectionCannotBeStartedIfNoCommonTransportsBetweenClientAndServer(HttpTransportType serverTransports)
             {

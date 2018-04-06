@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private ITransport _transport;
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
-        private readonly HttpTransportType _requestedTransportType = HttpTransportType.All;
+        private readonly HttpTransportType _requestedTransports;
         private readonly ConnectionLogScope _logScope;
         private readonly IDisposable _scopeDisposable;
         private readonly ILoggerFactory _loggerFactory;
@@ -60,25 +60,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
         public HttpConnection(Uri url)
-            : this(url, HttpTransportType.All)
+            : this(url, HttpTransports.All)
         { }
 
-        public HttpConnection(Uri url, HttpTransportType transportType)
-            : this(url, transportType, loggerFactory: null)
+        public HttpConnection(Uri url, HttpTransportType transports)
+            : this(url, transports, loggerFactory: null)
         {
         }
 
         public HttpConnection(Uri url, ILoggerFactory loggerFactory)
-            : this(url, HttpTransportType.All, loggerFactory, httpOptions: null)
+            : this(url, HttpTransports.All, loggerFactory, httpOptions: null)
         {
         }
 
-        public HttpConnection(Uri url, HttpTransportType transportType, ILoggerFactory loggerFactory)
-            : this(url, transportType, loggerFactory, httpOptions: null)
+        public HttpConnection(Uri url, HttpTransportType transports, ILoggerFactory loggerFactory)
+            : this(url, transports, loggerFactory, httpOptions: null)
         {
         }
 
-        public HttpConnection(Uri url, HttpTransportType transportType, ILoggerFactory loggerFactory, HttpOptions httpOptions)
+        public HttpConnection(Uri url, HttpTransportType transports, ILoggerFactory loggerFactory, HttpOptions httpOptions)
         {
             Url = url ?? throw new ArgumentNullException(nameof(url));
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -86,13 +86,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpOptions = httpOptions;
 
-            _requestedTransportType = transportType;
-            if (_requestedTransportType != HttpTransportType.WebSockets)
+            _requestedTransports = transports;
+            if (_requestedTransports != HttpTransportType.WebSockets)
             {
                 _httpClient = CreateHttpClient();
             }
 
-            _transportFactory = new DefaultTransportFactory(transportType, _loggerFactory, _httpClient, httpOptions);
+            _transportFactory = new DefaultTransportFactory(transports, _loggerFactory, _httpClient, httpOptions);
             _logScope = new ConnectionLogScope();
             _scopeDisposable = _logger.BeginScope(_logScope);
         }
@@ -104,6 +104,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpOptions = httpOptions;
             _httpClient = CreateHttpClient();
+            _requestedTransports = HttpTransports.All;
             _transportFactory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
             _logScope = new ConnectionLogScope();
             _scopeDisposable = _logger.BeginScope(_logScope);
@@ -205,10 +206,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task SelectAndStartTransport(TransferFormat transferFormat)
         {
-            if (_requestedTransportType == HttpTransportType.WebSockets)
+            if (_requestedTransports == HttpTransportType.WebSockets)
             {
-                Log.StartingTransport(_logger, _requestedTransportType, Url);
-                await StartTransport(Url, _requestedTransportType, transferFormat);
+                Log.StartingTransport(_logger, _requestedTransports, Url);
+                await StartTransport(Url, _requestedTransports, transferFormat);
             }
             else
             {
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                     try
                     {
-                        if ((transportType & _requestedTransportType) == 0)
+                        if ((transportType & _requestedTransports) == 0)
                         {
                             Log.TransportDisabledByClient(_logger, transportType);
                         }

@@ -34,7 +34,7 @@ namespace JwtClientSample
             var hubConnection = new HubConnectionBuilder()
                 .WithUrl(ServerUrl + "/broadcast", options =>
                 {
-                    options.Transport = transportType;
+                    options.Transports = transportType;
                     options.AccessTokenFactory = () => _tokens[userId];
                 })
                 .Build();

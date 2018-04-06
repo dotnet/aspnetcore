@@ -147,8 +147,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Theory]
-        [InlineData(HttpTransportType.All)]
-        [InlineData((HttpTransportType)0)]
+        [InlineData(HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.None)]
         [InlineData(HttpTransportType.LongPolling | HttpTransportType.WebSockets)]
         public async Task NegotiateReturnsAvailableTransportsAfterFilteringByOptions(HttpTransportType transports)
         {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionOptions { Transports = transports });
 
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-                var availableTransports = (HttpTransportType)0;
+                var availableTransports = HttpTransportType.None;
                 foreach (var transport in negotiateResponse["availableTransports"])
                 {
                     var transportType = (HttpTransportType)Enum.Parse(typeof(HttpTransportType), transport.Value<string>("transport"));

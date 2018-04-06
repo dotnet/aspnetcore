@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -17,8 +18,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         internal IDictionary<string, string> _headers;
         internal CookieContainer _cookies;
 
+        public HttpConnectionOptions()
+        {
+            Transports = HttpTransports.All;
+        }
+
         public Uri Url { get; set; }
-        public HttpTransportType? Transport { get; set; }
+        public HttpTransportType Transports { get; set; }
         public Func<HttpMessageHandler, HttpMessageHandler> MessageHandlerFactory { get; set; }
         public bool? UseDefaultCredentials { get; set; }
         public ICredentials Credentials { get; set; }

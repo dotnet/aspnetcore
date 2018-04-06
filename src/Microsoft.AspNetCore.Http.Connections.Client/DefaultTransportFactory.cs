@@ -20,11 +20,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         public DefaultTransportFactory(HttpTransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient, HttpOptions httpOptions)
         {
-            if (requestedTransportType <= 0 || requestedTransportType > HttpTransportType.All)
-            {
-                throw new ArgumentOutOfRangeException(nameof(requestedTransportType));
-            }
-
             if (httpClient == null && requestedTransportType != HttpTransportType.WebSockets)
             {
                 throw new ArgumentNullException(nameof(httpClient));

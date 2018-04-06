@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             var value = serviceProvider.GetService<IOptions<HttpConnectionOptions>>().Value;
 
-            Assert.Equal(HttpTransportType.LongPolling, value.Transport);
+            Assert.Equal(HttpTransportType.LongPolling, value.Transports);
         }
 
         [Fact]
