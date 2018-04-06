@@ -221,8 +221,6 @@ namespace Microsoft.AspNetCore.Http.Connections
                     {
                         Log.EstablishedConnection(_logger);
 
-                        connection.Items[ConnectionMetadataNames.Transport] = HttpTransportType.LongPolling;
-
                         connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
                     }
                     else
@@ -270,7 +268,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                     if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                     {
                         // We should be able to safely dispose because there's no more data being written
-                        await _manager.DisposeAndRemoveAsync(connection);
+                        // We don't need to wait for close here since we've already waited for both sides
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
 
                         // Don't poll again if we've removed the connection completely
                         pollAgain = false;
@@ -355,15 +354,15 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Wait for any of them to end
             await Task.WhenAny(connection.ApplicationTask, connection.TransportTask);
 
-            await _manager.DisposeAndRemoveAsync(connection);
+            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
         }
 
-        private async Task ExecuteApplication(ConnectionDelegate connectionDelegate, ConnectionContext connection)
+        private async Task ExecuteApplication(ConnectionDelegate connectionDelegate, HttpConnectionContext connection)
         {
             // Verify some initialization invariants
             // We want to be positive that the IConnectionInherentKeepAliveFeature is initialized before invoking the application, if the long polling transport is in use.
-            Debug.Assert(connection.Items[ConnectionMetadataNames.Transport] != null, "Transport has not been initialized yet");
-            Debug.Assert((HttpTransportType?)connection.Items[ConnectionMetadataNames.Transport] != HttpTransportType.LongPolling ||
+            Debug.Assert(connection.TransportType != HttpTransportType.None, "Transport has not been initialized yet");
+            Debug.Assert(connection.TransportType != HttpTransportType.LongPolling ||
                 connection.Features.Get<IConnectionInherentKeepAliveFeature>() != null, "Long-polling transport is in use but IConnectionInherentKeepAliveFeature as not configured");
 
             // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
@@ -440,8 +439,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
             context.Response.ContentType = "text/plain";
 
-            var transport = (HttpTransportType?)connection.Items[ConnectionMetadataNames.Transport];
-            if (transport == HttpTransportType.WebSockets)
+            if (connection.TransportType == HttpTransportType.WebSockets)
             {
                 Log.PostNotAllowedForWebSockets(_logger);
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
@@ -457,6 +455,16 @@ namespace Microsoft.AspNetCore.Http.Connections
 
             try
             {
+                if (connection.Status == HttpConnectionContext.ConnectionStatus.Disposed)
+                {
+                    Log.ConnectionDisposed(_logger, connection.ConnectionId);
+
+                    // The connection was disposed
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    context.Response.ContentType = "text/plain";
+                    return;
+                }
+
                 await context.Request.Body.CopyToAsync(pipeWriterStream);
             }
             finally
@@ -481,17 +489,16 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Set the IHttpConnectionFeature now that we can access it.
             connection.Features.Set(context.Features.Get<IHttpConnectionFeature>());
 
-            var transport = (HttpTransportType?)connection.Items[ConnectionMetadataNames.Transport];
-
-            if (transport == null)
+            if (connection.TransportType == HttpTransportType.None)
             {
+                connection.TransportType = transportType;
                 connection.Items[ConnectionMetadataNames.Transport] = transportType;
             }
-            else if (transport != transportType)
+            else if (connection.TransportType != transportType)
             {
                 context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                Log.CannotChangeTransport(_logger, transport.Value, transportType);
+                Log.CannotChangeTransport(_logger, connection.TransportType, transportType);
                 await context.Response.WriteAsync("Cannot change transports mid-connection");
                 return false;
             }

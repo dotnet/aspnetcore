@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
+        private readonly ILogger _logger;
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
@@ -38,7 +40,8 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
         /// <param name="id"></param>
-        public HttpConnectionContext(string id)
+        /// <param name="logger"></param>
+        public HttpConnectionContext(string id, ILogger logger)
         {
             ConnectionId = id;
             LastSeenUtc = DateTime.UtcNow;
@@ -46,6 +49,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             // The default behavior is that both formats are supported.
             SupportedFormats = TransferFormat.Binary | TransferFormat.Text;
             ActiveFormat = TransferFormat.Text;
+
+            _logger = logger;
 
             // PERF: This type could just implement IFeatureCollection
             Features = new FeatureCollection();
@@ -59,14 +64,16 @@ namespace Microsoft.AspNetCore.Http.Connections
             Features.Set<IHttpContextFeature>(this);
         }
 
-        public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
-            : this(id)
+        public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
+            : this(id, logger)
         {
             Transport = transport;
             Application = application;
         }
 
         public CancellationTokenSource Cancellation { get; set; }
+
+        public HttpTransportType TransportType { get; set; }
 
         public SemaphoreSlim Lock { get; } = new SemaphoreSlim(1, 1);
 
@@ -124,7 +131,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        public async Task DisposeAsync()
+        public async Task DisposeAsync(bool closeGracefully = false)
         {
             var disposeTask = Task.CompletedTask;
 
@@ -140,30 +147,12 @@ namespace Microsoft.AspNetCore.Http.Connections
                 {
                     Status = ConnectionStatus.Disposed;
 
-                    // If the application task is faulted, propagate the error to the transport
-                    if (ApplicationTask?.IsFaulted == true)
-                    {
-                        Transport?.Output.Complete(ApplicationTask.Exception.InnerException);
-                    }
-                    else
-                    {
-                        Transport?.Output.Complete();
-                    }
-
-                    // If the transport task is faulted, propagate the error to the application
-                    if (TransportTask?.IsFaulted == true)
-                    {
-                        Application?.Output.Complete(TransportTask.Exception.InnerException);
-                    }
-                    else
-                    {
-                        Application?.Output.Complete();
-                    }
+                    Log.DisposingConnection(_logger, ConnectionId);
 
                     var applicationTask = ApplicationTask ?? Task.CompletedTask;
                     var transportTask = TransportTask ?? Task.CompletedTask;
 
-                    disposeTask = WaitOnTasks(applicationTask, transportTask);
+                    disposeTask = WaitOnTasks(applicationTask, transportTask, closeGracefully);
                 }
             }
             finally
@@ -171,25 +160,88 @@ namespace Microsoft.AspNetCore.Http.Connections
                 Lock.Release();
             }
 
-            try
-            {
-                await disposeTask;
-            }
-            finally
-            {
-                // REVIEW: Should we move this to the read loops?
-
-                // Complete the reading side of the pipes
-                Application?.Input.Complete();
-                Transport?.Input.Complete();
-            }
+            await disposeTask;
         }
 
-        private async Task WaitOnTasks(Task applicationTask, Task transportTask)
+        private async Task WaitOnTasks(Task applicationTask, Task transportTask, bool closeGracefully)
         {
             try
             {
-                await Task.WhenAll(applicationTask, transportTask);
+                // Closing gracefully means we're only going to close the finished sides of the pipe
+                // If the application finishes, that means it's done with the transport pipe
+                // If the transport finishes, that means it's done with the application pipe
+                if (closeGracefully)
+                {
+                    // Wait for either to finish
+                    var result = await Task.WhenAny(applicationTask, transportTask);
+
+                    // If the application is complete, complete the transport pipe (it's the pipe to the transport)
+                    if (result == applicationTask)
+                    {
+                        Transport?.Output.Complete(applicationTask.Exception?.InnerException);
+                        Transport?.Input.Complete();
+
+                        try
+                        {
+                            Log.WaitingForTransport(_logger, TransportType);
+
+                            // Transports are written by us and are well behaved, wait for them to drain
+                            await transportTask;
+                        }
+                        finally
+                        {
+                            Log.TransportComplete(_logger, TransportType);
+
+                            // Now complete the application
+                            Application?.Output.Complete();
+                            Application?.Input.Complete();
+                        }
+                    }
+                    else
+                    {
+                        // If the transport is complete, complete the application pipes
+                        Application?.Output.Complete(transportTask.Exception?.InnerException);
+                        Application?.Input.Complete();
+
+                        try
+                        {
+                            // A poorly written application *could* in theory hang forever and it'll show up as a memory leak
+                            Log.WaitingForApplication(_logger);
+
+                            await applicationTask;
+                        }
+                        finally
+                        {
+                            Log.ApplicationComplete(_logger);
+
+                            Transport?.Output.Complete();
+                            Transport?.Input.Complete();
+                        }
+                    }
+                }
+                else
+                {
+                    Log.ShuttingDownTransportAndApplication(_logger, TransportType);
+
+                    // Shutdown both sides and wait for nothing
+                    Transport?.Output.Complete(applicationTask.Exception?.InnerException);
+                    Application?.Output.Complete(transportTask.Exception?.InnerException);
+
+                    try
+                    {
+                        Log.WaitingForTransportAndApplication(_logger, TransportType);
+                        // A poorly written application *could* in theory hang forever and it'll show up as a memory leak
+                        await Task.WhenAll(applicationTask, transportTask);
+                    }
+                    finally
+                    {
+                        Log.TransportAndApplicationComplete(_logger, TransportType);
+
+                        // Close the reading side after both sides run
+                        Application?.Input.Complete();
+                        Transport?.Input.Complete();
+                    }
+                }
 
                 // Notify all waiters that we're done disposing
                 _disposeTcs.TrySetResult(null);
@@ -213,6 +265,112 @@ namespace Microsoft.AspNetCore.Http.Connections
             Inactive,
             Active,
             Disposed
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _disposingConnection =
+                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(1, "DisposingConnection"), "Disposing connection {TransportConnectionId}.");
+
+            private static readonly Action<ILogger, Exception> _waitingForApplication =
+                LoggerMessage.Define(LogLevel.Trace, new EventId(2, "WaitingForApplication"), "Waiting for application to complete.");
+
+            private static readonly Action<ILogger, Exception> _applicationComplete =
+                LoggerMessage.Define(LogLevel.Trace, new EventId(3, "ApplicationComplete"), "Application complete.");
+
+            private static readonly Action<ILogger, HttpTransportType, Exception> _waitingForTransport =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(4, "WaitingForTransport"), "Waiting for {TransportType} transport to complete.");
+
+            private static readonly Action<ILogger, HttpTransportType, Exception> _transportComplete =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(5, "TransportComplete"), "{TransportType} transport complete.");
+
+            private static readonly Action<ILogger, HttpTransportType, Exception> _shuttingDownTransportAndApplication =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(6, "ShuttingDownTransportAndApplication"), "Shutting down both the application and the {TransportType} transport.");
+
+            private static readonly Action<ILogger, HttpTransportType, Exception> _waitingForTransportAndApplication =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(7, "WaitingForTransportAndApplication"), "Waiting for both the application and {TransportType} transport to complete.");
+
+            private static readonly Action<ILogger, HttpTransportType, Exception> _transportAndApplicationComplete =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(8, "TransportAndApplicationComplete"), "The application and {TransportType} transport are both complete.");
+
+            public static void DisposingConnection(ILogger logger, string connectionId)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _disposingConnection(logger, connectionId, null);
+            }
+
+            public static void WaitingForApplication(ILogger logger)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _waitingForApplication(logger, null);
+            }
+
+            public static void ApplicationComplete(ILogger logger)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _applicationComplete(logger, null);
+            }
+
+            public static void WaitingForTransport(ILogger logger, HttpTransportType transportType)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _waitingForTransport(logger, transportType, null);
+            }
+
+            public static void TransportComplete(ILogger logger, HttpTransportType transportType)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _transportComplete(logger, transportType, null);
+            }
+            public static void ShuttingDownTransportAndApplication(ILogger logger, HttpTransportType transportType)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _shuttingDownTransportAndApplication(logger, transportType, null);
+            }
+
+            public static void WaitingForTransportAndApplication(ILogger logger, HttpTransportType transportType)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _waitingForTransportAndApplication(logger, transportType, null);
+            }
+
+            public static void TransportAndApplicationComplete(ILogger logger, HttpTransportType transportType)
+            {
+                if (logger == null)
+                {
+                    return;
+                }
+
+                _transportAndApplicationComplete(logger, transportType, null);
+            }
         }
     }
 }

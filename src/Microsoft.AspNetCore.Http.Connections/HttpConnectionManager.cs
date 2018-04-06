@@ -29,12 +29,14 @@ namespace Microsoft.AspNetCore.Http.Connections
         private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections = new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>();
         private Timer _timer;
         private readonly ILogger<HttpConnectionManager> _logger;
+        private readonly ILogger<HttpConnectionContext> _connectionLogger;
         private object _executionLock = new object();
         private bool _disposed;
 
-        public HttpConnectionManager(ILogger<HttpConnectionManager> logger, IApplicationLifetime appLifetime)
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
+            _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
         }
@@ -82,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-            var connection = new HttpConnectionContext(id);
+            var connection = new HttpConnectionContext(id, _connectionLogger);
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;
@@ -135,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 }
 
                 // Pause the timer while we're running
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                _timer?.Change(Timeout.Infinite, Timeout.Infinite);
 
                 // Time the scan so we know if it gets slower than 1sec
                 var timer = ValueStopwatch.StartNew();
@@ -169,7 +171,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                     {
                         Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                         HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
-                        var ignore = DisposeAndRemoveAsync(connection);
+
+                        // This is most likely a long polling connection. The transport here ends because
+                        // a poll completed and has been inactive for > 5 seconds so we wait for the 
+                        // application to finish gracefully
+                        _ = DisposeAndRemoveAsync(connection, closeGracefully: true);
                     }
                     else
                     {
@@ -184,7 +190,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 Log.ScannedConnections(_logger, elapsed);
 
                 // Resume once we finished processing all connections
-                _timer.Change(_heartbeatTickRate, _heartbeatTickRate);
+                _timer?.Change(_heartbeatTickRate, _heartbeatTickRate);
             }
             finally
             {
@@ -209,20 +215,23 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                 var tasks = new List<Task>();
 
+                // REVIEW: In the future we can consider a hybrid where we first try to wait for shutdown
+                // for a certain time frame then after some grace period we shutdown more aggressively
                 foreach (var c in _connections)
                 {
-                    tasks.Add(DisposeAndRemoveAsync(c.Value.Connection));
+                    // We're shutting down so don't wait for closing the application
+                    tasks.Add(DisposeAndRemoveAsync(c.Value.Connection, closeGracefully: false));
                 }
 
                 Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
             }
         }
 
-        public async Task DisposeAndRemoveAsync(HttpConnectionContext connection)
+        public async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully)
         {
             try
             {
-                await connection.DisposeAsync();
+                await connection.DisposeAsync(closeGracefully);
             }
             catch (IOException ex)
             {
