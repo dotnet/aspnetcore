@@ -22,6 +22,55 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Theory]
             [InlineData(HttpTransportType.LongPolling)]
             [InlineData(HttpTransportType.ServerSentEvents)]
+            public async Task HttpConnectionSetsAccessTokenOnAllRequests(HttpTransportType transportType)
+            {
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                var requestsExecuted = false;
+                var callCount = 0;
+
+                testHttpHandler.OnRequest((request, next, token) =>
+                {
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                });
+
+                testHttpHandler.OnNegotiate((_, cancellationToken) =>
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+                });
+
+                testHttpHandler.OnRequest(async (request, next, token) =>
+                {
+                    Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
+
+                    // Call count increments with each call and is used as the access token
+                    Assert.Equal(callCount.ToString(), request.Headers.Authorization.Parameter);
+
+                    requestsExecuted = true;
+
+                    return await next();
+                });
+
+                string AccessTokenFactory()
+                {
+                    callCount++;
+                    return callCount.ToString();
+                }
+
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, transportType: transportType, accessTokenFactory: AccessTokenFactory),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
+                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 2"));
+                    });
+                // Fail safe in case the code is modified and some requests don't execute as a result
+                Assert.True(requestsExecuted);
+            }
+
+            [Theory]
+            [InlineData(HttpTransportType.LongPolling)]
+            [InlineData(HttpTransportType.ServerSentEvents)]
             public async Task HttpConnectionSetsUserAgentOnAllRequests(HttpTransportType transportType)
             {
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);

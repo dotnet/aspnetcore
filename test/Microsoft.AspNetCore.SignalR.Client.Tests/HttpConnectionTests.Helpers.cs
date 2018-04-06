@@ -13,11 +13,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests
     {
-        private static HttpConnection CreateConnection(HttpMessageHandler httpHandler = null, ILoggerFactory loggerFactory = null, string url = null, ITransport transport = null, ITransportFactory transportFactory = null, HttpTransportType transportType = HttpTransportType.LongPolling)
+        private static HttpConnection CreateConnection(
+            HttpMessageHandler httpHandler = null,
+            ILoggerFactory loggerFactory = null,
+            string url = null,
+            ITransport transport = null,
+            ITransportFactory transportFactory = null,
+            HttpTransportType transportType = HttpTransportType.LongPolling,
+            Func<string> accessTokenFactory = null)
         {
-            var httpOptions = new HttpOptions()
+            var httpOptions = new HttpOptions
             {
                 HttpMessageHandlerFactory = (httpMessageHandler) => httpHandler ?? TestHttpMessageHandler.CreateDefault(),
+                AccessTokenFactory = accessTokenFactory,
             };
 
             return CreateConnection(httpOptions, loggerFactory, url, transport, transportFactory, transportType);

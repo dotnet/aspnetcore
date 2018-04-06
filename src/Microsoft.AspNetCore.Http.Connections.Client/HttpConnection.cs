@@ -399,9 +399,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         throw new InvalidOperationException("Configured HttpMessageHandlerFactory did not return a value.");
                     }
                 }
+
+                // Apply the authorization header in a handler instead of a default header because it can change with each request
+                if (_httpOptions.AccessTokenFactory != null)
+                {
+                    httpMessageHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, _httpOptions.AccessTokenFactory);
+                }
             }
 
-            // Wrap message handler in a logging handler last to ensure it is always present
+            // Wrap message handler after HttpMessageHandlerFactory to ensure not overriden
             httpMessageHandler = new LoggingHttpMessageHandler(httpMessageHandler, _loggerFactory);
 
             var httpClient = new HttpClient(httpMessageHandler);
@@ -410,21 +416,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             // Start with the user agent header
             httpClient.DefaultRequestHeaders.UserAgent.Add(Constants.UserAgentHeader);
 
-            if (_httpOptions != null)
+            // Apply any headers configured on the HttpOptions
+            if (_httpOptions?.Headers != null)
             {
-                // Apply any headers configured on the HttpOptions
-                if (_httpOptions.Headers != null)
+                foreach (var header in _httpOptions.Headers)
                 {
-                    foreach (var header in _httpOptions.Headers)
-                    {
-                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-                    }
-                }
-
-                // Apply the authorization header
-                if (_httpOptions.AccessTokenFactory != null)
-                {
-                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_httpOptions.AccessTokenFactory()}");
+                    httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
             }
 
