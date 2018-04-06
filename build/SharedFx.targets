@@ -119,6 +119,8 @@
       <RIDIsAcceptable Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
       <CrossGenSharedFx>false</CrossGenSharedFx>
       <CrossGenSharedFx Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)' AND '%(AllSharedFxRIDs.Crossgen)' != 'false' ">true</CrossGenSharedFx>
+      <CrossGenSharedFxSymbols>false</CrossGenSharedFxSymbols>
+      <CrossGenSharedFxSymbols Condition="'$(CrossGenSharedFx)' != 'false' AND '%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)' AND '%(AllSharedFxRIDs.CrossgenSymbols)' != 'false' ">true</CrossGenSharedFxSymbols>
     </PropertyGroup>
 
     <Error Text="&quot;$(SharedFxRID)&quot; not acceptable as a SharedFxRID, please specify an acceptable value: {@(AllSharedFxRIDs)}." Condition="'$(RIDIsAcceptable)' != 'true'"/>
@@ -377,7 +379,7 @@
   </Target>
 
   <Target Name="CrossGenSymbols"
-    Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('Windows'))"
+    Condition=" '$(CrossGenSharedFxSymbols)' != 'false' "
     DependsOnTargets="CrossGenAssemblies"
     Inputs="@(AssembliesToCrossgen)"
     Outputs="%(AssembliesToCrossgen.SymbolsRsp)">
