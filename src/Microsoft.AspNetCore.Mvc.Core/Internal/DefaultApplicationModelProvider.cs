@@ -221,6 +221,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var modelMetadata = _modelMetadataProvider.GetMetadataForProperty(propertyInfo.DeclaringType, propertyInfo.Name);
             var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+            if (bindingInfo == null)
+            {
+                var declaringType = propertyInfo.DeclaringType;
+                if (declaringType.IsDefined(typeof(BindPropertyAttribute), inherit: true))
+                {
+                    // Specify a BindingInfo so that the property is now considered for model binding.
+                    bindingInfo = new BindingInfo();
+                }
+            }
 
             var propertyModel = new PropertyModel(propertyInfo, attributes)
             {

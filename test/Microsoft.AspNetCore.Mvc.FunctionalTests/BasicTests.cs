@@ -520,5 +520,47 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var title = document.QuerySelector("title").TextContent;
             Assert.Equal("View Data Property Sample", title);
         }
+
+        [Fact]
+        public async Task BindPropertyCanBeAppliedToControllers()
+        {
+            // Act
+            var response = await Client.GetAsync("BindProperty/Action?Name=TestName&Id=10");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<BindPropertyControllerData>(content);
+
+            Assert.Equal("TestName", data.Name);
+            Assert.Equal(10, data.Id);
+        }
+
+        [Fact]
+        public async Task BindProperty_DoesNotApplyToPropertiesWithBindingInfo()
+        {
+            // Act
+            var response = await Client.GetAsync("BindProperty/Action?Id=10&IdFromRoute=12&CustomBound=Test");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<BindPropertyControllerData>(content);
+
+            Assert.Equal(10, data.Id);
+            Assert.Null(data.IdFromRoute);
+            Assert.Equal("CustomBoundValue", data.CustomBound);
+        }
+
+        public class BindPropertyControllerData
+        {
+            public string Name { get; set; }
+
+            public int? Id { get; set; }
+
+            public int? IdFromRoute { get; set; }
+
+            public string CustomBound { get; set; }
+        }
     }
 }

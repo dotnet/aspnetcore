@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultApplicationModelProviderTest
     {
+        private readonly TestApplicationModelProvider Provider = new TestApplicationModelProvider();
+
         [Fact]
         public void CreateControllerModel_DerivedFromControllerClass_HasFilter()
         {
@@ -1123,6 +1125,109 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Make sure that the Dispose method is from the derived controller and not the base 'Controller' type
             Assert.Equal(typeInfo, action.ActionMethod.DeclaringType.GetTypeInfo());
+        }
+
+        [BindProperty]
+        public class BindPropertyController
+        {
+            public string Property { get; set; }
+
+            [ModelBinder(typeof(object))]
+            public string BinderType { get; set; }
+
+            [FromRoute]
+            public string BinderSource { get; set; }
+        }
+
+        [Fact]
+        public void CreatePropertyModel_AddsBindingInfoToProperty_IfDeclaringTypeHasBindPropertyAttribute()
+        {
+            // Arrange
+            var propertyInfo = typeof(BindPropertyController).GetProperty(nameof(BindPropertyController.Property));
+
+            // Act
+            var property = Provider.CreatePropertyModel(propertyInfo);
+
+            // Assert
+            var bindingInfo = property.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Null(bindingInfo.BinderModelName);
+            Assert.Null(bindingInfo.BinderType);
+            Assert.Null(bindingInfo.BindingSource);
+            Assert.Null(bindingInfo.PropertyFilterProvider);
+            Assert.Null(bindingInfo.RequestPredicate);
+        }
+
+        [Fact]
+        public void CreatePropertyModel_DoesNotSetBindingInfo_IfPropertySpecifiesBinderType()
+        {
+            // Arrange
+            var propertyInfo = typeof(BindPropertyController).GetProperty(nameof(BindPropertyController.BinderType));
+
+            // Act
+            var property = Provider.CreatePropertyModel(propertyInfo);
+
+            // Assert
+            var bindingInfo = property.BindingInfo;
+            Assert.Same(typeof(object), bindingInfo.BinderType);
+        }
+
+        [Fact]
+        public void CreatePropertyModel_DoesNotSetBindingInfo_IfPropertySpecifiesBinderSource()
+        {
+            // Arrange
+            var propertyInfo = typeof(BindPropertyController).GetProperty(nameof(BindPropertyController.BinderSource));
+
+            // Act
+            var property = Provider.CreatePropertyModel(propertyInfo);
+
+            // Assert
+            var bindingInfo = property.BindingInfo;
+            Assert.Null(bindingInfo.BinderType);
+            Assert.Same(BindingSource.Path, property.BindingInfo.BindingSource);
+        }
+
+
+        public class DerivedFromBindPropertyController : BindPropertyController
+        {
+            public string DerivedProperty { get; set; }
+        }
+
+        [Fact]
+        public void CreatePropertyModel_AppliesBindPropertyAttributeDeclaredOnBaseType()
+        {
+            // Arrange
+            var propertyInfo = typeof(DerivedFromBindPropertyController).GetProperty(nameof(DerivedFromBindPropertyController.DerivedProperty));
+
+            // Act
+            var property = Provider.CreatePropertyModel(propertyInfo);
+
+            // Assert
+            Assert.NotNull(property.BindingInfo);
+        }
+
+        [BindProperty]
+        public class UserController : ControllerBase
+        {
+            public string DerivedProperty { get; set; }
+        }
+
+        [Fact]
+        public void CreatePropertyModel_DoesNotApplyBindingInfoToPropertiesOnBaseType()
+        {
+            // This test ensures that applying BindPropertyAttribute on a user defined type does not cause properties on
+            // Controller \ ControllerBase to be treated as model bound.
+            // Arrange
+            var derivedPropertyInfo = typeof(UserController).GetProperty(nameof(UserController.DerivedProperty));
+            var basePropertyInfo = typeof(UserController).GetProperty(nameof(ControllerBase.ControllerContext));
+
+            // Act
+            var derivedProperty = Provider.CreatePropertyModel(derivedPropertyInfo);
+            var baseProperty = Provider.CreatePropertyModel(basePropertyInfo);
+
+            // Assert
+            Assert.NotNull(derivedProperty.BindingInfo);
+            Assert.Null(baseProperty.BindingInfo);
         }
 
         private IList<AttributeRouteModel> GetAttributeRoutes(IList<SelectorModel> selectors)
