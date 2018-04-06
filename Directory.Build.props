@@ -27,6 +27,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <RazorPackageVersion>2.1.0-preview2-30230</RazorPackageVersion>
+    <RazorPackageVersion>2.1.0-preview2-30558</RazorPackageVersion>
   </PropertyGroup>
 </Project>
