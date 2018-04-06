@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 #if NET46
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
@@ -18,6 +17,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using Xunit.Sdk;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             IntermediateNodeVerifier.Verify(document, baseline);
         }
 
-        protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument document)
+        protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument cSharpDocument)
         {
             if (FileName == null)
             {
@@ -151,10 +151,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             if (GenerateBaselines)
             {
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFileName);
-                File.WriteAllText(baselineFullPath, document.GeneratedCode);
+                File.WriteAllText(baselineFullPath, cSharpDocument.GeneratedCode);
 
                 var baselineDiagnosticsFullPath = Path.Combine(TestProjectRoot, baselineDiagnosticsFileName);
-                var lines = document.Diagnostics.Select(RazorDiagnosticSerializer.Serialize).ToArray();
+                var lines = cSharpDocument.Diagnostics.Select(RazorDiagnosticSerializer.Serialize).ToArray();
                 if (lines.Any())
                 {
                     File.WriteAllLines(baselineDiagnosticsFullPath, lines);
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var baseline = codegenFile.ReadAllText();
 
             // Normalize newlines to match those in the baseline.
-            var actual = document.GeneratedCode.Replace("\r", "").Replace("\n", "\r\n");
+            var actual = cSharpDocument.GeneratedCode.Replace("\r", "").Replace("\n", "\r\n");
             Assert.Equal(baseline, actual);
 
             var baselineDiagnostics = string.Empty;
@@ -186,11 +186,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 baselineDiagnostics = diagnosticsFile.ReadAllText();
             }
 
-            var actualDiagnostics = string.Concat(document.Diagnostics.Select(d => RazorDiagnosticSerializer.Serialize(d) + "\r\n"));
+            var actualDiagnostics = string.Concat(cSharpDocument.Diagnostics.Select(d => RazorDiagnosticSerializer.Serialize(d) + "\r\n"));
             Assert.Equal(baselineDiagnostics, actualDiagnostics);
         }
 
-        protected void AssertSourceMappingsMatchBaseline(RazorCodeDocument document)
+        protected void AssertSourceMappingsMatchBaseline(RazorCodeDocument codeDocument)
         {
             if (FileName == null)
             {
@@ -198,11 +198,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 throw new InvalidOperationException(message);
             }
 
-            var csharpDocument = document.GetCSharpDocument();
+            var csharpDocument = codeDocument.GetCSharpDocument();
             Assert.NotNull(csharpDocument);
 
             var baselineFileName = Path.ChangeExtension(FileName, ".mappings.txt");
-            var serializedMappings = SourceMappingsSerializer.Serialize(csharpDocument, document.Source);
+            var serializedMappings = SourceMappingsSerializer.Serialize(csharpDocument, codeDocument.Source);
 
             if (GenerateBaselines)
             {
@@ -220,9 +220,102 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var baseline = testFile.ReadAllText();
 
             // Normalize newlines to match those in the baseline.
-            var actual = serializedMappings.Replace("\r", "").Replace("\n", "\r\n");
+            var actualBaseline = serializedMappings.Replace("\r", "").Replace("\n", "\r\n");
 
-            Assert.Equal(baseline, actual);
+            Assert.Equal(baseline, actualBaseline);
+
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var visitor = new CodeSpanVisitor();
+            visitor.VisitBlock(syntaxTree.Root);
+
+            var charBuffer = new char[codeDocument.Source.Length];
+            codeDocument.Source.CopyTo(0, charBuffer, 0, codeDocument.Source.Length);
+            var sourceContent = new string(charBuffer);
+
+            var spans = visitor.CodeSpans;
+            for (var i= 0; i < spans.Count; i++)
+            {
+                var span = spans[i];
+                if (span.Start.FilePath == null || span.Start.FilePath != codeDocument.Source.FilePath)
+                {
+                    // Not in the main file, skip.
+                    continue;
+                }
+
+                var location = new SourceSpan(span.Start, span.Length);
+                var expectedSpan = sourceContent.Substring(span.Start.AbsoluteIndex, span.Length);
+
+                // See #
+                if (string.IsNullOrWhiteSpace(expectedSpan))
+                {
+                    // For now we don't verify whitespace inside of a directive. We know that directives cheat
+                    // with how they bound whitespace/C#/markup to make completion work.
+                    if (span.Parent is Block block && block.Type == BlockKindInternal.Directive)
+                    {
+                        continue;
+                    }
+                }
+
+                // See #
+                if (string.Equals("@", expectedSpan) && span.Kind == SpanKindInternal.Code)
+                {
+                    // For now we don't verify an escaped transition. In some cases one of the @ tokens in @@foo
+                    // will be mapped as C# but will not be present in the output buffer because it's not actually C#.
+                    continue;
+                }
+
+                var found = false;
+                for (var j = 0; j < csharpDocument.SourceMappings.Count; j++)
+                {
+                    var mapping = csharpDocument.SourceMappings[j];
+                    if (mapping.OriginalSpan == location)
+                    {
+                        var actualSpan = csharpDocument.GeneratedCode.Substring(
+                            mapping.GeneratedSpan.AbsoluteIndex, 
+                            mapping.GeneratedSpan.Length);
+
+                        if (!string.Equals(expectedSpan, actualSpan, StringComparison.Ordinal))
+                        {
+                            throw new XunitException(
+                                $"Found the span {location} in the output mappings but it contains " +
+                                $"'{EscapeWhitespace(actualSpan)}' instead of '{EscapeWhitespace(expectedSpan)}'.");
+                        }
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    throw new XunitException(
+                        $"Could not find the span {location} - containing '{EscapeWhitespace(expectedSpan)}' " +
+                        $"in the output.");
+                }
+            }
+        }
+
+        private class CodeSpanVisitor : ParserVisitor
+        {
+            public List<Span> CodeSpans { get; } = new List<Span>();
+
+            public override void VisitSpan(Span span)
+            {
+                if (span.Kind == SpanKindInternal.Code)
+                {
+                    CodeSpans.Add(span);
+                }
+
+                base.VisitSpan(span);
+            }
+        }
+
+        private static string EscapeWhitespace(string content)
+        {
+            return content
+                .Replace("\n", "\\n")
+                .Replace("\r", "\\r")
+                .Replace("\t", "\\t");
         }
 
         private static string NormalizeNewLines(string content)
