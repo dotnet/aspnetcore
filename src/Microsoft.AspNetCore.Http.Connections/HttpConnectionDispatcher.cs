@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 return;
             }
 
-            var pipeWriterStream = new PipeWriterStream(connection.Application.Output);
+            const int bufferSize = 4096;
 
             // REVIEW: Consider spliting the connection lock into a read lock and a write lock
             // Need to think about HttpConnectionContext.DisposeAsync and whether one or both locks would be needed
@@ -464,15 +464,18 @@ namespace Microsoft.AspNetCore.Http.Connections
                     context.Response.ContentType = "text/plain";
                     return;
                 }
+                
+                await context.Request.Body.CopyToAsync(connection.ApplicationStream, bufferSize);
 
-                await context.Request.Body.CopyToAsync(pipeWriterStream);
+                Log.ReceivedBytes(_logger, connection.ApplicationStream.Length);
+
+                // Clear the amount of read bytes so logging is accurate
+                connection.ApplicationStream.Reset();
             }
             finally
             {
                 connection.Lock.Release();
             }
-
-            Log.ReceivedBytes(_logger, pipeWriterStream.Length);
         }
 
         private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)

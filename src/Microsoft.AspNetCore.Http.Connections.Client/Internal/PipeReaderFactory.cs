@@ -30,9 +30,7 @@ namespace System.IO.Pipelines
             {
                 try
                 {
-                    // REVIEW: Should we use the default buffer size here?
-                    // 81920 is the default bufferSize, there is no stream.CopyToAsync overload that takes only a cancellationToken
-                    await stream.CopyToAsync(new PipeWriterStream(pipe.Writer), bufferSize: 81920, cancellationToken);
+                    await stream.CopyToAsync(new PipeWriterStream(pipe.Writer), bufferSize: 4096, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {

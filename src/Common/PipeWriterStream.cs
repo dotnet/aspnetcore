@@ -85,5 +85,10 @@ namespace System.IO.Pipelines
 
             async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask) => await flushTask;
         }
+
+        public void Reset()
+        {
+            _length = 0;
+        }
     }
 }

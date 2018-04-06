@@ -495,10 +495,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     builder.UseConnectionHandler<TestConnectionHandler>();
                     var app = builder.Build();
 
+                    Assert.Equal(0, connection.ApplicationStream.Length);
+
                     await dispatcher.ExecuteAsync(context, new HttpConnectionOptions(), app);
 
                     Assert.True(connection.Transport.Input.TryRead(out var result));
                     Assert.Equal("Hello World", Encoding.UTF8.GetString(result.Buffer.ToArray()));
+                    Assert.Equal(0, connection.ApplicationStream.Length);
                     connection.Transport.Input.AdvanceTo(result.Buffer.End);
                 }
             }

@@ -108,6 +108,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             Log.StartReceive(_logger);
 
+            // Allocate this once for the duration of the transport so we can continuously write to it
+            var applicationStream = new PipeWriterStream(_application.Output);
+
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -143,8 +146,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     {
                         Log.ReceivedMessages(_logger);
 
-                        var stream = new PipeWriterStream(_application.Output);
-                        await response.Content.CopyToAsync(stream);
+                        await response.Content.CopyToAsync(applicationStream);
                         var flushResult = await _application.Output.FlushAsync();
 
                         // We canceled in the middle of applying back pressure
