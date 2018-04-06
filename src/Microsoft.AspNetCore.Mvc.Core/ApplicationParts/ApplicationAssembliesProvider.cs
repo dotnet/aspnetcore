@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     {
         internal static HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
+            // The deps file for the Microsoft.AspNetCore.All shared runtime is authored in a way where it does not say
+            // it depends on Microsoft.AspNetCore.Mvc even though it does. Explicitly list it so that referencing this runtime causes
+            // assembly discovery to work correctly.
+            "Microsoft.AspNetCore.All",
             "Microsoft.AspNetCore.Mvc",
             "Microsoft.AspNetCore.Mvc.Abstractions",
             "Microsoft.AspNetCore.Mvc.ApiExplorer",
