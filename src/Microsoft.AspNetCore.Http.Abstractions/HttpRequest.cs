@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Http
         public abstract HttpContext HttpContext { get; }
 
         /// <summary>
-        /// Gets or set the HTTP method.
+        /// Gets or sets the HTTP method.
         /// </summary>
         /// <returns>The HTTP method.</returns>
         public abstract string Method { get; set; }
 
         /// <summary>
-        /// Gets or set the HTTP request scheme.
+        /// Gets or sets the HTTP request scheme.
         /// </summary>
         /// <returns>The HTTP request scheme.</returns>
         public abstract string Scheme { get; set; }
@@ -36,25 +36,25 @@ namespace Microsoft.AspNetCore.Http
         public abstract bool IsHttps { get; set; }
 
         /// <summary>
-        /// Gets or set the Host header. May include the port.
+        /// Gets or sets the Host header. May include the port.
         /// </summary>
         /// <return>The Host header.</return>
         public abstract HostString Host { get; set; }
 
         /// <summary>
-        /// Gets or set the RequestPathBase.
+        /// Gets or sets the RequestPathBase.
         /// </summary>
         /// <returns>The RequestPathBase.</returns>
         public abstract PathString PathBase { get; set; }
 
         /// <summary>
-        /// Gets or set the request path from RequestPath.
+        /// Gets or sets the request path from RequestPath.
         /// </summary>
         /// <returns>The request path from RequestPath.</returns>
         public abstract PathString Path { get; set; }
 
         /// <summary>
-        /// Gets or set the raw query string used to create the query collection in Request.Query.
+        /// Gets or sets the raw query string used to create the query collection in Request.Query.
         /// </summary>
         /// <returns>The raw query string.</returns>
         public abstract QueryString QueryString { get; set; }
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract IQueryCollection Query { get; set; }
 
         /// <summary>
-        /// Gets or set the RequestProtocol.
+        /// Gets or sets the RequestProtocol.
         /// </summary>
         /// <returns>The RequestProtocol.</returns>
         public abstract string Protocol { get; set; }
@@ -84,8 +84,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract IRequestCookieCollection Cookies { get; set; }
 
         /// <summary>
-        /// Gets or sets the Content-Length header
+        /// Gets or sets the Content-Length header.
         /// </summary>
+        /// <returns>The value of the Content-Length header, if any.</returns>
         public abstract long? ContentLength { get; set; }
 
         /// <summary>
@@ -95,14 +96,15 @@ namespace Microsoft.AspNetCore.Http
         public abstract string ContentType { get; set; }
 
         /// <summary>
-        /// Gets or set the RequestBody Stream.
+        /// Gets or sets the RequestBody Stream.
         /// </summary>
         /// <returns>The RequestBody Stream.</returns>
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Checks the content-type header for form types.
+        /// Checks the Content-Type header for form types.
         /// </summary>
+        /// <returns>true if the Content-Type header represents a form content type; otherwise, false.</returns>
         public abstract bool HasFormContentType { get; }
 
         /// <summary>
