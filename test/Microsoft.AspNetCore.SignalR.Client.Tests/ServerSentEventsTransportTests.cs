@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        [Fact(Skip = "Flaky tests keep failing")]
+        [Fact]
         public async Task SSETransportStopsSendAndReceiveLoopsWhenTransportStopped()
         {
             var eventStreamCts = new CancellationTokenSource();
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     transportActiveTask = sseTransport.Running;
                     Assert.False(transportActiveTask.IsCompleted);
                     var message = await pair.Transport.Input.ReadSingleAsync().OrTimeout();
-                    Assert.Equal("3:abc", Encoding.ASCII.GetString(message));
+                    Assert.StartsWith("3:abc", Encoding.ASCII.GetString(message));
                 }
                 finally
                 {
