@@ -76,10 +76,10 @@
 
   <Target Name="GetLineupPackageInfo">
     <ItemGroup>
-      <ArtifactInfo Include="$(BuildDir)Internal.AspNetCore.Universe.Lineup.$(Version).nupkg">
+      <ArtifactInfo Include="$(BuildDir)Internal.AspNetCore.Universe.Lineup.$(PackageVersion).nupkg">
         <ArtifactType>NuGetPackage</ArtifactType>
         <PackageId>Internal.AspNetCore.Universe.Lineup</PackageId>
-        <Version>$(Version)</Version>
+        <Version>$(PackageVersion)</Version>
         <Category>noship</Category>
         <IsLineup>true</IsLineup>
       </ArtifactInfo>
@@ -109,7 +109,7 @@
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
                 DestinationFolder="$(BuildDir)"
                 Overwrite="true"
-                Properties="version=$(Version);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)">
+                Properties="version=$(PackageVersion);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>
   </Target>
