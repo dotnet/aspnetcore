@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             => new RenderBatch(
                 UpdatedComponentDiffs.ToRange(),
                 ReferenceFramesBuffer.ToRange(),
-                DisposedComponentIds.ToRange());
+                DisposedComponentIds.ToRange(),
+                DisposedEventHandlerIds.ToRange());
     }
 }

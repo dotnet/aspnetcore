@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             var component = InstantiateComponent(componentType);
             var componentId = AssignComponentId(component);
             RegisteredFunction.InvokeUnmarshalled<int, string, int, object>(
-                "attachComponentToElement",
+                "attachRootComponentToElement",
                 _browserRendererId,
                 domElementSelector,
                 componentId);

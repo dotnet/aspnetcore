@@ -86,6 +86,30 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         }
 
         [Fact]
+        public void CanAddAndRemoveEventHandlersDynamically()
+        {
+            var appElement = MountTestComponent<CounterComponent>();
+            var countDisplayElement = appElement.FindElement(By.TagName("p"));
+            var incrementButton = appElement.FindElement(By.TagName("button"));
+            var toggleClickHandlerCheckbox = appElement.FindElement(By.CssSelector("[type=checkbox]"));
+
+            // Initial count is zero; clicking button increments count
+            Assert.Equal("Current count: 0", countDisplayElement.Text);
+            incrementButton.Click();
+            Assert.Equal("Current count: 1", countDisplayElement.Text);
+
+            // We can remove an event handler
+            toggleClickHandlerCheckbox.Click();
+            incrementButton.Click();
+            Assert.Equal("Current count: 1", countDisplayElement.Text);
+
+            // We can add an event handler
+            toggleClickHandlerCheckbox.Click();
+            incrementButton.Click();
+            Assert.Equal("Current count: 2", countDisplayElement.Text);
+        }
+
+        [Fact]
         public void CanRenderChildComponents()
         {
             var appElement = MountTestComponent<ParentChildComponent>();

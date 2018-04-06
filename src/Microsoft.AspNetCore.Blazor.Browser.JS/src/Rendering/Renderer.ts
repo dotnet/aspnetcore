@@ -6,7 +6,7 @@ import { BrowserRenderer } from './BrowserRenderer';
 type BrowserRendererRegistry = { [browserRendererId: number]: BrowserRenderer };
 const browserRenderers: BrowserRendererRegistry = {};
 
-export function attachComponentToElement(browserRendererId: number, elementSelector: System_String, componentId: number) {
+export function attachRootComponentToElement(browserRendererId: number, elementSelector: System_String, componentId: number) {
   const elementSelectorJs = platform.toJavaScriptString(elementSelector);
   const element = document.querySelector(elementSelectorJs);
   if (!element) {
@@ -17,7 +17,7 @@ export function attachComponentToElement(browserRendererId: number, elementSelec
   if (!browserRenderer) {
     browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
   }
-  browserRenderer.attachComponentToElement(componentId, element);
+  browserRenderer.attachRootComponentToElement(componentId, element);
   clearElement(element);
 }
 
@@ -52,6 +52,15 @@ export function renderBatch(browserRendererId: number, batch: RenderBatchPointer
     const componentIdPtr = platform.getArrayEntryPtr(disposedComponentIdsArray, i, 4);
     const componentId = platform.readInt32Field(componentIdPtr);
     browserRenderer.disposeComponent(componentId);
+  }
+
+  const disposedEventHandlerIds = renderBatchStruct.disposedEventHandlerIds(batch);
+  const disposedEventHandlerIdsLength = arrayRange.count(disposedEventHandlerIds);
+  const disposedEventHandlerIdsArray = arrayRange.array(disposedEventHandlerIds);
+  for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
+    const eventHandlerIdPtr = platform.getArrayEntryPtr(disposedEventHandlerIdsArray, i, 4);
+    const eventHandlerId = platform.readInt32Field(eventHandlerIdPtr);
+    browserRenderer.disposeEventHandler(eventHandlerId);
   }
 }
 

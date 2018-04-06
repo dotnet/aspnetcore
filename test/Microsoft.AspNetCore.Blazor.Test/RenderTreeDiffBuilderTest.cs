@@ -434,7 +434,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var (result, referenceFrames) = GetSingleUpdatedComponent();
+            var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
+            var removedEventHandlerFrame = oldTree.GetFrames().Array[2];
 
             // Assert
             Assert.Collection(result.Edits,
@@ -444,6 +445,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
             AssertFrame.Attribute(referenceFrames[0], "will change", addedHandler);
+            Assert.NotEqual(0, removedEventHandlerFrame.AttributeEventHandlerId);
+            Assert.Equal(
+                new[] { removedEventHandlerFrame.AttributeEventHandlerId },
+                batch.DisposedEventHandlerIDs);
         }
 
         [Fact]
@@ -1163,7 +1168,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var (result, referenceFrames) = GetSingleUpdatedComponent(initializeFromFrames: true);
+            var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
             var oldAttributeFrame = oldTree.GetFrames().Array[1];
             var newAttributeFrame = newTree.GetFrames().Array[1];
 
@@ -1173,6 +1178,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
+            Assert.Empty(batch.DisposedEventHandlerIDs);
         }
 
         [Fact]
@@ -1189,7 +1195,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var (result, referenceFrames) = GetSingleUpdatedComponent(initializeFromFrames: true);
+            var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
             var oldAttributeFrame = oldTree.GetFrames().Array[1];
             var newAttributeFrame = newTree.GetFrames().Array[2];
 
@@ -1199,6 +1205,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
+            Assert.Empty(batch.DisposedEventHandlerIDs);
         }
 
         [Fact]
@@ -1318,10 +1325,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent(bool initializeFromFrames = false)
         {
+            var result = GetSingleUpdatedComponentWithBatch(initializeFromFrames);
+            return (result.Item1, result.Item2);
+        }
+
+        private (RenderTreeDiff, RenderTreeFrame[], RenderBatch) GetSingleUpdatedComponentWithBatch(bool initializeFromFrames = false)
+        {
             var batch = GetRenderedBatch(initializeFromFrames);
             var diffsInBatch = batch.UpdatedComponents;
             Assert.Equal(1, diffsInBatch.Count);
-            return (diffsInBatch.Array[0], batch.ReferenceFrames.ToArray());
+            return (diffsInBatch.Array[0], batch.ReferenceFrames.ToArray(), batch);
         }
 
         private RenderBatch GetRenderedBatch(bool initializeFromFrames = false)

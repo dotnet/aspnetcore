@@ -9,6 +9,7 @@ export const renderBatch = {
   updatedComponents: (obj: RenderBatchPointer) => platform.readStructField<ArrayRangePointer<RenderTreeDiffPointer>>(obj, 0),
   referenceFrames: (obj: RenderBatchPointer) => platform.readStructField<ArrayRangePointer<RenderTreeFramePointer>>(obj, arrayRangeStructLength),
   disposedComponentIds: (obj: RenderBatchPointer) => platform.readStructField<ArrayRangePointer<number>>(obj, arrayRangeStructLength + arrayRangeStructLength),
+  disposedEventHandlerIds: (obj: RenderBatchPointer) => platform.readStructField<ArrayRangePointer<number>>(obj, arrayRangeStructLength + arrayRangeStructLength + arrayRangeStructLength),
 };
 
 const arrayRangeStructLength = 8;

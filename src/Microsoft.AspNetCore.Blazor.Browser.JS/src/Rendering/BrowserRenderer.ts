@@ -2,18 +2,24 @@
 import { getRenderTreeEditPtr, renderTreeEdit, RenderTreeEditPointer, EditType } from './RenderTreeEdit';
 import { getTreeFramePtr, renderTreeFrame, FrameType, RenderTreeFramePointer } from './RenderTreeFrame';
 import { platform } from '../Environment';
+import { EventDelegator } from './EventDelegator';
+import { EventForDotNet, UIEventArgs } from './EventForDotNet';
 const selectValuePropname = '_blazorSelectValue';
 let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
 
 export class BrowserRenderer {
+  private eventDelegator: EventDelegator;
   private childComponentLocations: { [componentId: number]: Element } = {};
 
   constructor(private browserRendererId: number) {
+    this.eventDelegator = new EventDelegator((event, componentId, eventHandlerId, eventArgs) => {
+      raiseEvent(event, this.browserRendererId, componentId, eventHandlerId, eventArgs);
+    });
   }
 
-  public attachComponentToElement(componentId: number, element: Element) {
-    this.childComponentLocations[componentId] = element;
+  public attachRootComponentToElement(componentId: number, element: Element) {
+    this.attachComponentToElement(componentId, element);
   }
 
   public updateComponent(componentId: number, edits: System_Array<RenderTreeEditPointer>, editsOffset: number, editsLength: number, referenceFrames: System_Array<RenderTreeFramePointer>) {
@@ -29,7 +35,15 @@ export class BrowserRenderer {
     delete this.childComponentLocations[componentId];
   }
 
-  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsOffset: number, editsLength: number, referenceFrames: System_Array<RenderTreeFramePointer>) {
+  public disposeEventHandler(eventHandlerId: number) {
+    this.eventDelegator.removeListener(eventHandlerId);
+  }
+
+  private attachComponentToElement(componentId: number, element: Element) {
+    this.childComponentLocations[componentId] = element;
+  }
+
+  private applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsOffset: number, editsLength: number, referenceFrames: System_Array<RenderTreeFramePointer>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
     const maxEditIndexExcl = editsOffset + editsLength;
@@ -58,6 +72,8 @@ export class BrowserRenderer {
           break;
         }
         case EditType.removeAttribute: {
+          // Note that we don't have to dispose the info we track about event handlers here, because the
+          // disposed event handler IDs are delivered separately (in the 'disposedEventHandlerIds' array)
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
           removeAttributeFromDOM(parent, childIndexAtCurrentDepth + siblingIndex, renderTreeEdit.removedAttributeName(edit)!);
           break;
@@ -91,7 +107,7 @@ export class BrowserRenderer {
     }
   }
 
-  insertFrame(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number): number {
+  private insertFrame(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number): number {
     const frameType = renderTreeFrame.frameType(frame);
     switch (frameType) {
       case FrameType.element:
@@ -113,7 +129,7 @@ export class BrowserRenderer {
     }
   }
 
-  insertElement(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number) {
+  private insertElement(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number) {
     const tagName = renderTreeFrame.elementName(frame)!;
     const newDomElement = tagName === 'svg' || parent.namespaceURI === 'http://www.w3.org/2000/svg' ?
       document.createElementNS('http://www.w3.org/2000/svg', tagName) :
@@ -135,7 +151,7 @@ export class BrowserRenderer {
     }
   }
 
-  insertComponent(parent: Element, childIndex: number, frame: RenderTreeFramePointer) {
+  private insertComponent(parent: Element, childIndex: number, frame: RenderTreeFramePointer) {
     // Currently, to support O(1) lookups from render tree frames to DOM nodes, we rely on
     // each child component existing as a single top-level element in the DOM. To guarantee
     // that, we wrap child components in these 'blazor-component' wrappers.
@@ -162,16 +178,26 @@ export class BrowserRenderer {
     this.attachComponentToElement(childComponentId, containerElement);
   }
 
-  insertText(parent: Element, childIndex: number, textFrame: RenderTreeFramePointer) {
+  private insertText(parent: Element, childIndex: number, textFrame: RenderTreeFramePointer) {
     const textContent = renderTreeFrame.textContent(textFrame)!;
     const newDomTextNode = document.createTextNode(textContent);
     insertNodeIntoDOM(newDomTextNode, parent, childIndex);
   }
 
-  applyAttribute(componentId: number, toDomElement: Element, attributeFrame: RenderTreeFramePointer) {
+  private applyAttribute(componentId: number, toDomElement: Element, attributeFrame: RenderTreeFramePointer) {
     const attributeName = renderTreeFrame.attributeName(attributeFrame)!;
     const browserRendererId = this.browserRendererId;
     const eventHandlerId = renderTreeFrame.attributeEventHandlerId(attributeFrame);
+
+    if (eventHandlerId) {
+      const firstTwoChars = attributeName.substring(0, 2);
+      const eventName = attributeName.substring(2);
+      if (firstTwoChars !== 'on' || !eventName) {
+        throw new Error(`Attribute has nonzero event handler ID, but attribute name '${attributeName}' does not start with 'on'.`);
+      }
+      this.eventDelegator.setListener(toDomElement, eventName, componentId, eventHandlerId);
+      return;
+    }
 
     if (attributeName === 'value') {
       if (this.tryApplyValueProperty(toDomElement, renderTreeFrame.attributeValue(attributeFrame))) {
@@ -179,51 +205,14 @@ export class BrowserRenderer {
       }
     }
 
-    // TODO: Instead of applying separate event listeners to each DOM element, use event delegation
-    // and remove all the _blazor*Listener hacks
-    switch (attributeName) {
-      case 'onclick': {
-        toDomElement.removeEventListener('click', toDomElement['_blazorClickListener']);
-        const listener = evt => raiseEvent(evt, browserRendererId, componentId, eventHandlerId, 'mouse', { Type: 'click' });
-        toDomElement['_blazorClickListener'] = listener;
-        toDomElement.addEventListener('click', listener);
-        break;
-      }
-      case 'onchange': {
-        toDomElement.removeEventListener('change', toDomElement['_blazorChangeListener']);
-        const targetIsCheckbox = isCheckbox(toDomElement);
-        const listener = evt => {
-          const newValue = targetIsCheckbox ? evt.target.checked : evt.target.value;
-          raiseEvent(evt, browserRendererId, componentId, eventHandlerId, 'change', { Type: 'change', Value: newValue });
-        };
-        toDomElement['_blazorChangeListener'] = listener;
-        toDomElement.addEventListener('change', listener);
-        break;
-      }
-      case 'onkeypress': {
-        toDomElement.removeEventListener('keypress', toDomElement['_blazorKeypressListener']);
-        const listener = evt => {
-          // This does not account for special keys nor cross-browser differences. So far it's
-          // just to establish that we can pass parameters when raising events.
-          // We use C#-style PascalCase on the eventInfo to simplify deserialization, but this could
-          // change if we introduced a richer JSON library on the .NET side.
-          raiseEvent(evt, browserRendererId, componentId, eventHandlerId, 'keyboard', { Type: evt.type, Key: (evt as any).key });
-        };
-        toDomElement['_blazorKeypressListener'] = listener;
-        toDomElement.addEventListener('keypress', listener);
-        break;
-      }
-      default:
-        // Treat as a regular string-valued attribute
-        toDomElement.setAttribute(
-          attributeName,
-          renderTreeFrame.attributeValue(attributeFrame)!
-        );
-        break;
-    }
+    // Treat as a regular string-valued attribute
+    toDomElement.setAttribute(
+      attributeName,
+      renderTreeFrame.attributeValue(attributeFrame)!
+    );
   }
 
-  tryApplyValueProperty(element: Element, value: string | null) {
+  private tryApplyValueProperty(element: Element, value: string | null) {
     // Certain elements have built-in behaviour for their 'value' property
     switch (element.tagName) {
       case 'INPUT':
@@ -257,7 +246,7 @@ export class BrowserRenderer {
     }
   }
 
-  insertFrameRange(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, startIndex: number, endIndexExcl: number): number {
+  private insertFrameRange(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, startIndex: number, endIndexExcl: number): number {
     const origChildIndex = childIndex;
     for (let index = startIndex; index < endIndexExcl; index++) {
       const frame = getTreeFramePtr(frames, index);
@@ -296,7 +285,7 @@ function removeAttributeFromDOM(parent: Element, childIndex: number, attributeNa
   element.removeAttribute(attributeName);
 }
 
-function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventInfoType: EventInfoType, eventInfo: any) {
+function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {
   event.preventDefault();
 
   if (!raiseEventMethod) {
@@ -309,13 +298,11 @@ function raiseEvent(event: Event, browserRendererId: number, componentId: number
     BrowserRendererId: browserRendererId,
     ComponentId: componentId,
     EventHandlerId: eventHandlerId,
-    EventArgsType: eventInfoType
+    EventArgsType: eventArgs.type
   };
 
   platform.callMethod(raiseEventMethod, null, [
     platform.toDotNetString(JSON.stringify(eventDescriptor)),
-    platform.toDotNetString(JSON.stringify(eventInfo))
+    platform.toDotNetString(JSON.stringify(eventArgs.data))
   ]);
 }
-
-type EventInfoType = 'mouse' | 'keyboard' | 'change';

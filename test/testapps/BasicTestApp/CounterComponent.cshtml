@@ -1,9 +1,15 @@
 ﻿<h1>Counter</h1>
 <p>Current count: @currentCount</p>
-<button @onclick(IncrementCount)>Click me</button>
+<p><button @onclick(handleClicks ? IncrementCount : (Action)null)>Click me</button></p>
+
+<label>
+    <input type="checkbox" @bind(handleClicks) />
+    Toggle click handler registration
+</label>
 
 @functions {
     int currentCount = 0;
+    bool handleClicks = true;
 
     void IncrementCount()
     {

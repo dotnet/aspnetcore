@@ -27,14 +27,21 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// </summary>
         public ArrayRange<int> DisposedComponentIDs { get; }
 
+        /// <summary>
+        /// Gets the IDs of the event handlers that were disposed.
+        /// </summary>
+        public ArrayRange<int> DisposedEventHandlerIDs { get; }
+
         internal RenderBatch(
             ArrayRange<RenderTreeDiff> updatedComponents,
             ArrayRange<RenderTreeFrame> referenceFrames,
-            ArrayRange<int> disposedComponentIDs)
+            ArrayRange<int> disposedComponentIDs,
+            ArrayRange<int> disposedEventHandlerIDs)
         {
             UpdatedComponents = updatedComponents;
             ReferenceFrames = referenceFrames;
             DisposedComponentIDs = disposedComponentIDs;
+            DisposedEventHandlerIDs = disposedEventHandlerIDs;
         }
     }
 }
