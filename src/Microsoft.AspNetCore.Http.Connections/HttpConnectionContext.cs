@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                         try
                         {
-                            // A poorly written application *could* in theory hang forever and it'll show up as a memory leak
+                            // A poorly written application *could* in theory get stuck forever and it'll show up as a memory leak
                             Log.WaitingForApplication(_logger);
 
                             await applicationTask;
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     try
                     {
                         Log.WaitingForTransportAndApplication(_logger, TransportType);
-                        // A poorly written application *could* in theory hang forever and it'll show up as a memory leak
+                        // A poorly written application *could* in theory get stuck forever and it'll show up as a memory leak
                         await Task.WhenAll(applicationTask, transportTask);
                     }
                     finally

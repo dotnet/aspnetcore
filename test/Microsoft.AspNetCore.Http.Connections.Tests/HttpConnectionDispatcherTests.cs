@@ -1271,7 +1271,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var options = new HttpConnectionOptions();
                 options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
-                // would hang if EndPoint was running
+                // would get stuck if EndPoint was running
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
                 Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
@@ -1320,7 +1320,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 context.User = new ClaimsPrincipal(new ClaimsIdentity("authenticated"));
 
-                // would hang if EndPoint was running
+                // would get stuck if EndPoint was running
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
                 Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
@@ -1438,7 +1438,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // partially "authorize" user
                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-                // would hang if EndPoint was running
+                // would get stuck if EndPoint was running
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
                 Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
