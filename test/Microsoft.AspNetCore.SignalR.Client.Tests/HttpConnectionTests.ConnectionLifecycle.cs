@@ -160,28 +160,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task PipesAreDisposedAfterTransportFailsToStart()
-            {
-                using (StartLog(out var loggerFactory))
-                {
-                    var writerTcs = new TaskCompletionSource<object>();
-                    var readerTcs = new TaskCompletionSource<object>();
-                    await WithConnectionAsync(
-                        CreateConnection(
-                            loggerFactory: loggerFactory,
-                            transport: new FakeTransport(writerTcs, readerTcs)),
-                        async (connection) =>
-                        {
-                            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text));
-                            Assert.Equal("Unable to connect to the server with any of the available transports.", ex.Message);
-
-                            Assert.True(writerTcs.Task.IsCompleted);
-                            Assert.True(readerTcs.Task.IsCompleted);
-                        });
-                }
-            }
-
-            [Fact]
             public async Task CanDisposeUnstartedConnection()
             {
                 using (StartLog(out var loggerFactory))
@@ -375,35 +353,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             connectResponseTcs.TrySetResult(null);
                             await startTask;
                         });
-                }
-            }
-
-            private class FakeTransport : ITransport
-            {
-                private IDuplexPipe _application;
-                private TaskCompletionSource<object> _writerTcs;
-                private TaskCompletionSource<object> _readerTcs;
-
-                public FakeTransport(TaskCompletionSource<object> writerTcs, TaskCompletionSource<object> readerTcs)
-                {
-                    _writerTcs = writerTcs;
-                    _readerTcs = readerTcs;
-                }
-
-                public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
-                {
-                    _application = application;
-                    Action<Exception, object> onCompletedCallback = (ex, tcs) => { ((TaskCompletionSource<object>)tcs).TrySetResult(null); };
-                    _application.Input.OnWriterCompleted(onCompletedCallback, _writerTcs);
-                    _application.Output.OnReaderCompleted(onCompletedCallback, _readerTcs);
-                    throw new Exception();
-                }
-
-                public Task StopAsync()
-                {
-                    _application.Output.Complete();
-                    _application.Input.Complete();
-                    return Task.CompletedTask;
                 }
             }
 

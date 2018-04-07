@@ -9,7 +9,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -30,8 +32,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private bool _started;
         private bool _disposed;
 
-        private IDuplexPipe _transportPipe;
-
         private readonly HttpClient _httpClient;
         private readonly HttpOptions _httpOptions;
         private ITransport _transport;
@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             get
             {
                 CheckDisposed();
-                if (_transportPipe == null)
+                if (_transport == null)
                 {
                     throw new InvalidOperationException($"Cannot access the {nameof(Transport)} pipe before the connection has started.");
                 }
-                return _transportPipe;
+                return _transport;
             }
         }
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         public async Task DisposeAsync() => await DisposeAsyncCore().ForceAsync();
 
-        private async Task DisposeAsyncCore(Exception exception = null)
+        private async Task DisposeAsyncCore()
         {
             if (_disposed)
             {
@@ -166,10 +166,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 if (!_disposed && _started)
                 {
                     Log.DisposingHttpConnection(_logger);
-
-                    // Complete our ends of the pipes.
-                    _transportPipe.Input.Complete(exception);
-                    _transportPipe.Output.Complete(exception);
 
                     // Stop the transport, but we don't care if it throws.
                     // The transport should also have completed the pipe with this exception.
@@ -331,34 +327,30 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat)
         {
-            // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-            var options = new PipeOptions(writerScheduler: PipeScheduler.ThreadPool, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false, pauseWriterThreshold: 0, resumeWriterThreshold: 0);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
-
             // Construct the transport
             var transport = _transportFactory.CreateTransport(transportType);
 
             // Start the transport, giving it one end of the pipe
             try
             {
-                await transport.StartAsync(connectUrl, pair.Application, transferFormat, this);
+                await transport.StartAsync(connectUrl, transferFormat);
             }
             catch (Exception ex)
             {
                 Log.ErrorStartingTransport(_logger, transport, ex);
 
-                // Clean up pipes and null out transport when we fail to start.
-                pair.Transport.Input.Complete();
-                pair.Transport.Output.Complete();
-                pair.Application.Input.Complete();
-                pair.Application.Output.Complete();
                 _transport = null;
                 throw;
             }
 
+            if (transportType == HttpTransportType.LongPolling)
+            {
+                // Disable keep alives for long polling
+                Features.Set<IConnectionInherentKeepAliveFeature>(new ConnectionInherentKeepAliveFeature(_httpClient.Timeout));
+            }
+
             // We successfully started, set the transport properties (we don't want to set these until the transport is definitely running).
             _transport = transport;
-            _transportPipe = pair.Transport;
 
             Log.TransportStarted(_logger, _transport);
         }

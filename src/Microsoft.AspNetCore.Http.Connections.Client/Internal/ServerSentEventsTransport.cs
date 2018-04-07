@@ -22,10 +22,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private volatile Exception _error;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
-
+        private IDuplexPipe _transport;
         private IDuplexPipe _application;
 
         public Task Running { get; private set; } = Task.CompletedTask;
+
+        public PipeReader Input => _transport.Input;
+
+        public PipeWriter Output => _transport.Output;
 
         public ServerSentEventsTransport(HttpClient httpClient)
             : this(httpClient, null)
@@ -42,14 +46,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public async Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat)
         {
             if (transferFormat != TransferFormat.Text)
             {
                 throw new ArgumentException($"The '{transferFormat}' transfer format is not supported by this transport.", nameof(transferFormat));
             }
-
-            _application = application;
 
             Log.StartTransport(_logger, transferFormat);
 
@@ -71,6 +73,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                 throw;
             }
+
+            // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
+            var options = ClientPipeOptions.DefaultOptions;
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
+
+            _transport = pair.Transport;
+            _application = pair.Application;
 
             Running = ProcessAsync(url, response);
         }
@@ -193,6 +202,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public async Task StopAsync()
         {
             Log.TransportStopping(_logger);
+
+            _transport.Output.Complete();
+            _transport.Input.Complete();
 
             _application.Input.CancelPendingRead();
 

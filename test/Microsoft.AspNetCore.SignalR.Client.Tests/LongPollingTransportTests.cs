@@ -42,8 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
                     transportActiveTask = longPollingTransport.Running;
 
@@ -76,14 +75,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
                     await longPollingTransport.Running.OrTimeout();
 
-                    Assert.True(pair.Transport.Input.TryRead(out var result));
+                    Assert.True(longPollingTransport.Input.TryRead(out var result));
                     Assert.True(result.IsCompleted);
-                    pair.Transport.Input.AdvanceTo(result.Buffer.End);
+                    longPollingTransport.Input.AdvanceTo(result.Buffer.End);
                 }
                 finally
                 {
@@ -130,10 +128,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
-                    var data = await pair.Transport.Input.ReadAllAsync().OrTimeout();
+                    var data = await longPollingTransport.Input.ReadAllAsync().OrTimeout();
                     await longPollingTransport.Running.OrTimeout();
                     Assert.Equal(Encoding.UTF8.GetBytes("HelloWorld"), data);
                 }
@@ -161,15 +158,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
                     var exception =
                         await Assert.ThrowsAsync<HttpRequestException>(async () =>
                         {
                             async Task ReadAsync()
                             {
-                                await pair.Transport.Input.ReadAsync();
+                                await longPollingTransport.Input.ReadAsync();
                             }
 
                             await ReadAsync().OrTimeout();
@@ -203,14 +199,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
-                    await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+                    await longPollingTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
 
                     await longPollingTransport.Running.OrTimeout();
 
-                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await pair.Transport.Input.ReadAllAsync().OrTimeout());
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Input.ReadAllAsync().OrTimeout());
                     Assert.Contains(" 500 ", exception.Message);
                 }
                 finally
@@ -237,14 +232,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
-                    pair.Transport.Output.Complete();
+                    longPollingTransport.Output.Complete();
 
                     await longPollingTransport.Running.OrTimeout();
 
-                    await pair.Transport.Input.ReadAllAsync().OrTimeout();
+                    await longPollingTransport.Input.ReadAllAsync().OrTimeout();
                 }
                 finally
                 {
@@ -283,16 +277,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-
                     // Start the transport
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
                     // Wait for the transport to finish
                     await longPollingTransport.Running.OrTimeout();
 
                     // Pull Messages out of the channel
-                    var message = await pair.Transport.Input.ReadAllAsync();
+                    var message = await longPollingTransport.Input.ReadAllAsync();
 
                     // Check the provided request
                     Assert.Equal(2, sentRequests.Count);
@@ -331,19 +323,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-
-                    // Pre-queue some messages
-                    await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
-                    await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("World"));
-
                     // Start the transport
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
-                    pair.Transport.Output.Complete();
+                    await longPollingTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+                    await longPollingTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("World"));
+
+                    longPollingTransport.Output.Complete();
 
                     await longPollingTransport.Running.OrTimeout();
-                    await pair.Transport.Input.ReadAllAsync();
+                    await longPollingTransport.Input.ReadAllAsync();
 
                     Assert.Single(sentRequests);
                     Assert.Equal(new byte[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)'W', (byte)'o', (byte)'r', (byte)'l', (byte)'d'
@@ -376,9 +365,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, transferFormat, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat);
                 }
                 finally
                 {
@@ -405,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                    longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), null, transferFormat, connection: new TestConnection()));
+                    longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
 
                 Assert.Contains($"The '{transferFormat}' transfer format is not supported by this transport.", exception.Message);
                 Assert.Equal("transferFormat", exception.ParamName);
@@ -440,8 +427,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 try
                 {
-                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferFormat.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
                     var completedTask = await Task.WhenAny(completionTcs.Task, longPollingTransport.Running).OrTimeout();
                     Assert.Equal(completionTcs.Task, completedTask);

@@ -69,10 +69,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application,
-                    TransferFormat.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"),
+                    TransferFormat.Binary).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
                 await webSocketsTransport.Running.OrTimeout();
             }
@@ -84,17 +83,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/httpheader"), pair.Application,
-                    TransferFormat.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/httpheader"),
+                    TransferFormat.Binary).OrTimeout();
 
-                await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("User-Agent"));
+                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("User-Agent"));
 
                 // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
 
-                Assert.True(pair.Transport.Input.TryRead(out var result));
+                Assert.True(webSocketsTransport.Input.TryRead(out var result));
 
                 var userAgent = Encoding.UTF8.GetString(result.Buffer.ToArray());
 
@@ -113,17 +111,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/httpheader"), pair.Application,
-                    TransferFormat.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/httpheader"),
+                    TransferFormat.Binary).OrTimeout();
 
-                await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("X-Requested-With"));
+                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("X-Requested-With"));
 
                 // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
 
-                Assert.True(pair.Transport.Input.TryRead(out var result));
+                Assert.True(webSocketsTransport.Input.TryRead(out var result));
 
                 var headerValue = Encoding.UTF8.GetString(result.Buffer.ToArray());
 
@@ -137,11 +134,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application,
-                    TransferFormat.Binary, connection: Mock.Of<IConnection>());
-                pair.Transport.Output.Complete();
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"),
+                    TransferFormat.Binary);
+                webSocketsTransport.Output.Complete();
                 await webSocketsTransport.Running.OrTimeout(TimeSpan.FromSeconds(10));
             }
         }
@@ -154,18 +150,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echoAndClose"), pair.Application, transferFormat, connection: Mock.Of<IConnection>());
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echoAndClose"), transferFormat);
 
-                await pair.Transport.Output.WriteAsync(new byte[] { 0x42 });
+                await webSocketsTransport.Output.WriteAsync(new byte[] { 0x42 });
 
                 // The echoAndClose endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
 
-                Assert.True(pair.Transport.Input.TryRead(out var result));
+                Assert.True(webSocketsTransport.Input.TryRead(out var result));
                 Assert.Equal(new byte[] { 0x42 }, result.Buffer.ToArray());
-                pair.Transport.Input.AdvanceTo(result.Buffer.End);
+                webSocketsTransport.Input.AdvanceTo(result.Buffer.End);
             }
         }
 
@@ -177,11 +172,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
 
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application,
-                    transferFormat, connection: Mock.Of<IConnection>()).OrTimeout();
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"),
+                    transferFormat).OrTimeout();
 
                 await webSocketsTransport.StopAsync().OrTimeout();
                 await webSocketsTransport.Running.OrTimeout();
@@ -196,10 +190,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                    webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, transferFormat, connection: Mock.Of<IConnection>()));
+                    webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
 
                 Assert.Contains($"The '{transferFormat}' transfer format is not supported by this transport.", exception.Message);
                 Assert.Equal("transferFormat", exception.ParamName);

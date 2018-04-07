@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebUtilities;
@@ -471,7 +472,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             private int _tries;
             private string _prevConnectionId = null;
             private IDuplexPipe _application;
+            private IDuplexPipe _transport;
             private int availableTransports = 3;
+
+            public PipeReader Input => _transport.Input;
+
+            public PipeWriter Output => _transport.Output;
 
             public FakeTransport()
             {
@@ -481,9 +487,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
+            public Task StartAsync(Uri url, TransferFormat transferFormat)
             {
-                _application = application;
+                var options = ClientPipeOptions.DefaultOptions;
+                var pair = DuplexPipe.CreateConnectionPair(options, options);
+
+                _transport = pair.Transport;
+                _application = pair.Application;
                 _tries++;
                 Assert.True(QueryHelpers.ParseQuery(url.Query).TryGetValue("id", out var id));
                 if (_prevConnectionId == null)

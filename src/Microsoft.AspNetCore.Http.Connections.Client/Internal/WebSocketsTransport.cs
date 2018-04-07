@@ -23,7 +23,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
 
+        private IDuplexPipe _transport;
+
         public Task Running { get; private set; } = Task.CompletedTask;
+
+        public PipeReader Input => _transport.Input;
+
+        public PipeWriter Output => _transport.Output;
 
         public WebSocketsTransport()
             : this(null, null)
@@ -89,16 +95,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         }
 
-        public async Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat)
         {
             if (url == null)
             {
                 throw new ArgumentNullException(nameof(url));
-            }
-
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
             }
 
             if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
@@ -106,7 +107,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 throw new ArgumentException($"The '{transferFormat}' transfer format is not supported by this transport.", nameof(transferFormat));
             }
 
-            _application = application;
             _webSocketMessageType = transferFormat == TransferFormat.Binary
                 ? WebSocketMessageType.Binary
                 : WebSocketMessageType.Text;
@@ -116,6 +116,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
             await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
+
+            // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
+            var options = ClientPipeOptions.DefaultOptions;
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
+
+            _transport = pair.Transport;
+            _application = pair.Application;
 
             // TODO: Handle TCP connection errors
             // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
@@ -358,6 +365,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public async Task StopAsync()
         {
             Log.TransportStopping(_logger);
+
+            _transport.Output.Complete();
+            _transport.Input.Complete();
 
             // Cancel any pending reads from the application, this should start the entire shutdown process
             _application.Input.CancelPendingRead();

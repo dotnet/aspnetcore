@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {
-    public interface ITransport
+    public interface ITransport : IDuplexPipe
     {
-        Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection);
+        Task StartAsync(Uri url, TransferFormat transferFormat);
         Task StopAsync();
     }
 }

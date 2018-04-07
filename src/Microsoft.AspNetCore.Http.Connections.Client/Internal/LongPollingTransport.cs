@@ -20,12 +20,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private IDuplexPipe _application;
+        private IDuplexPipe _transport;
         // Volatile so that the poll loop sees the updated value set from a different thread
         private volatile Exception _error;
 
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
         public Task Running { get; private set; } = Task.CompletedTask;
+
+        public PipeReader Input => _transport.Input;
+
+        public PipeWriter Output => _transport.Output;
 
         public LongPollingTransport(HttpClient httpClient)
             : this(httpClient, null)
@@ -37,18 +42,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, IDuplexPipe application, TransferFormat transferFormat, IConnection connection)
+        public Task StartAsync(Uri url, TransferFormat transferFormat)
         {
             if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
             {
                 throw new ArgumentException($"The '{transferFormat}' transfer format is not supported by this transport.", nameof(transferFormat));
             }
 
-            connection.Features.Set<IConnectionInherentKeepAliveFeature>(new ConnectionInherentKeepAliveFeature(_httpClient.Timeout));
-
-            _application = application;
-
             Log.StartTransport(_logger, transferFormat);
+
+            // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
+            var options = ClientPipeOptions.DefaultOptions;
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
+
+            _transport = pair.Transport;
+            _application = pair.Application;
 
             Running = ProcessAsync(url);
 
@@ -88,6 +96,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public async Task StopAsync()
         {
             Log.TransportStopping(_logger);
+
+            _transport.Output.Complete();
+            _transport.Input.Complete();
 
             _application.Input.CancelPendingRead();
 
