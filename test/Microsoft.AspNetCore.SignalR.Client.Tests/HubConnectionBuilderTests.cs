@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void HubConnectionBuiderThrowsIfConnectionFactoryNotConfigured()
         {
             var ex = Assert.Throws<InvalidOperationException>(() => new HubConnectionBuilder().Build());
-            Assert.Equal("Cannot create HubConnection instance. A connection was not configured.", ex.Message);
+            Assert.Equal("Cannot create HubConnection instance. An IConnectionFactory was not configured.", ex.Message);
         }
 
         [Fact]
@@ -47,19 +48,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public void WithConnectionFactorySetsConnectionFactory()
+        public async Task WithConnectionFactorySetsConnectionFactory()
         {
-            Func<IConnection> connectionFactory = () => null;
+            var called = false;
+            Func<TransferFormat, Task<ConnectionContext>> connectionFactory = format =>
+            {
+                called = true;
+                return Task.FromResult<ConnectionContext>(null);
+            };
 
             var serviceProvider = new HubConnectionBuilder().WithConnectionFactory(connectionFactory).Services.BuildServiceProvider();
 
-            Assert.Equal(connectionFactory, serviceProvider.GetService<Func<IConnection>>());
+            var factory = serviceProvider.GetService<IConnectionFactory>();
+            Assert.NotNull(factory);
+            Assert.False(called);
+            await factory.ConnectAsync(TransferFormat.Text);
+            Assert.True(called);
         }
 
         [Fact]
         public void BuildCanOnlyBeCalledOnce()
         {
-            var builder = new HubConnectionBuilder().WithConnectionFactory(() => null);
+            var builder = new HubConnectionBuilder().WithConnectionFactory(format => null);
 
             Assert.NotNull(builder.Build());
 

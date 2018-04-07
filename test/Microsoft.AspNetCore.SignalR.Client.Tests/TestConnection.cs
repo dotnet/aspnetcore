@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
@@ -17,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    internal class TestConnection : IConnection
+    internal class TestConnection : ConnectionContext
     {
         private readonly bool _autoHandshake;
         private readonly TaskCompletionSource<object> _started = new TaskCompletionSource<object>();
@@ -31,11 +32,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private readonly Func<Task> _onStart;
         private readonly Func<Task> _onDispose;
 
-        public IDuplexPipe Application { get; }
-        public IDuplexPipe Transport { get; }
+        public override string ConnectionId { get; set; }
 
-        public IFeatureCollection Features { get; } = new FeatureCollection();
+        public IDuplexPipe Application { get; }
+        public override IDuplexPipe Transport { get; set; }
+
+        public override IFeatureCollection Features { get; } = new FeatureCollection();
         public int DisposeCount => _disposeCount;
+
+        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
 
         public TestConnection(Func<Task> onStart = null, Func<Task> onDispose = null, bool autoHandshake = true, bool synchronousCallbacks = false)
         {
@@ -50,14 +55,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application = pair.Application;
             Transport = pair.Transport;
 
-            Application.Input.OnWriterCompleted((ex, _) => Application.Output.Complete(), null);
+            Application.Input.OnWriterCompleted((ex, _) =>
+            {
+                Application.Output.Complete();
+
+                _ = DisposeAsync();
+            }, 
+            null);
         }
 
         public Task DisposeAsync() => DisposeCoreAsync();
 
-        public Task StartAsync() => StartAsync(TransferFormat.Binary);
-
-        public async Task StartAsync(TransferFormat transferFormat)
+        public async Task<ConnectionContext> StartAsync(TransferFormat transferFormat = TransferFormat.Binary)
         {
             _started.TrySetResult(null);
 
@@ -69,6 +78,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 // HubConnection.StartAsync which sends the Handshake in the first place!
                 _ = ReadHandshakeAndSendResponseAsync();
             }
+
+            return this;
         }
 
         public async Task<string> ReadHandshakeAndSendResponseAsync()

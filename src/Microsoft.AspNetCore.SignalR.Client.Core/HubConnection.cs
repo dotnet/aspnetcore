@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly ILogger _logger;
         private readonly IHubProtocol _protocol;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Func<IConnection> _connectionFactory;
+        private readonly IConnectionFactory _connectionFactory;
         private readonly ConcurrentDictionary<string, List<InvocationHandler>> _handlers = new ConcurrentDictionary<string, List<InvocationHandler>>();
         private bool _disposed;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
         public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
 
-        public HubConnection(Func<IConnection> connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
@@ -128,8 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 Log.Starting(_logger);
 
                 // Start the connection
-                var connection = _connectionFactory();
-                await connection.StartAsync(_protocol.TransferFormat);
+                var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat);
                 var startingConnectionState = new ConnectionState(connection, this);
 
                 // From here on, if an error occurs we need to shut down the connection because
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     Log.ErrorStartingConnection(_logger, ex);
 
                     // Can't have any invocations to cancel, we're in the lock.
-                    await startingConnectionState.Connection.DisposeAsync();
+                    Complete(startingConnectionState.Connection);
                     throw;
                 }
 
@@ -157,6 +156,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 ReleaseConnectionLock();
             }
+        }
+
+        private static void Complete(ConnectionContext connection)
+        {
+            connection.Transport.Output.Complete();
+            connection.Transport.Input.Complete();
         }
 
         // This method does both Dispose and Start, the 'disposing' flag indicates which.
@@ -661,7 +666,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             timeoutTimer?.Dispose();
 
             // Dispose the connection
-            await connectionState.Connection.DisposeAsync();
+            Complete(connectionState.Connection);
 
             // Cancel any outstanding invocations within the connection lock
             connectionState.CancelOutstandingInvocations(connectionState.CloseException);
@@ -833,7 +838,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>();
             private int _nextId;
 
-            public IConnection Connection { get; }
+            public ConnectionContext Connection { get; }
             public Task ReceiveTask { get; set; }
             public Exception CloseException { get; set; }
 
@@ -843,7 +848,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 set => _stopping = value;
             }
 
-            public ConnectionState(IConnection connection, HubConnection hubConnection)
+            public ConnectionState(ConnectionContext connection, HubConnection hubConnection)
             {
                 _hubConnection = hubConnection;
                 Connection = connection;

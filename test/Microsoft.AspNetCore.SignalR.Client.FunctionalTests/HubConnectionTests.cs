@@ -57,9 +57,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             return hubConnectionBuilder.Build();
         }
 
-        private Func<IConnection> GetHttpConnectionFactory(ILoggerFactory loggerFactory, string path, HttpTransportType transportType)
+        private Func<TransferFormat, Task<ConnectionContext>> GetHttpConnectionFactory(ILoggerFactory loggerFactory, string path, HttpTransportType transportType)
         {
-            return () => new HttpConnection(new Uri(_serverFixture.Url + path), transportType, loggerFactory);
+            return async format =>
+            {
+                var connection = new HttpConnection(new Uri(_serverFixture.Url + path), transportType, loggerFactory);
+                await connection.StartAsync(format);
+                return connection;
+            };
         }
 
         [Theory]

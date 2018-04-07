@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -9,12 +10,11 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace ClientSample
 {
-    public class TcpConnection : IConnection
+    public class TcpConnection : ConnectionContext
     {
         private readonly Socket _socket;
         private volatile bool _aborted;
         private readonly EndPoint _endPoint;
-        private IDuplexPipe _transport;
         private IDuplexPipe _application;
         private SocketSender _sender;
         private SocketReceiver _receiver;
@@ -28,30 +28,34 @@ namespace ClientSample
             _receiver = new SocketReceiver(_socket, PipeScheduler.ThreadPool);
         }
 
-        public IDuplexPipe Transport => _transport;
+        public override IDuplexPipe Transport { get; set; }
 
-        public IFeatureCollection Features { get; } = new FeatureCollection();
+        public override IFeatureCollection Features { get; } = new FeatureCollection();
+        public override string ConnectionId { get; set; } = Guid.NewGuid().ToString();
+        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
 
         public Task DisposeAsync()
         {
-            _transport?.Output.Complete();
-            _transport?.Input.Complete();
+            Transport?.Output.Complete();
+            Transport?.Input.Complete();
 
             _socket?.Dispose();
 
             return Task.CompletedTask;
         }
 
-        public async Task StartAsync()
+        public async Task<ConnectionContext> StartAsync()
         {
             await _socket.ConnectAsync(_endPoint);
 
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
-            _transport = pair.Transport;
+            Transport = pair.Transport;
             _application = pair.Application;
 
             _ = ExecuteAsync();
+
+            return this;
         }
 
         private async Task ExecuteAsync()

@@ -44,16 +44,19 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _tcs = new TaskCompletionSource<ReadResult>();
             _pipe.AddReadResult(new ValueTask<ReadResult>(_tcs.Task));
 
-            var connection = new TestConnection();
-            // prevents keep alive time being activated
-            connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
-            connection.Transport = _pipe;
 
             var protocol = Protocol == "json" ? (IHubProtocol)new JsonHubProtocol() : new MessagePackHubProtocol();
 
             var hubConnectionBuilder = new HubConnectionBuilder();
             hubConnectionBuilder.WithHubProtocol(protocol);
-            hubConnectionBuilder.WithConnectionFactory(() => connection);
+            hubConnectionBuilder.WithConnectionFactory(format =>
+            {
+                var connection = new DefaultConnectionContext();
+                // prevents keep alive time being activated
+                connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
+                connection.Transport = _pipe;
+                return Task.FromResult<ConnectionContext>(connection);
+            });
 
             _hubConnection = hubConnectionBuilder.Build();
             _hubConnection.StartAsync().GetAwaiter().GetResult();

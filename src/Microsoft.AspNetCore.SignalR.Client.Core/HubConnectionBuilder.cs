@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,10 +41,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // The service provider is disposed by the HubConnection
             var serviceProvider = Services.BuildServiceProvider();
 
-            var connectionFactory = serviceProvider.GetService<Func<IConnection>>();
+            var connectionFactory = serviceProvider.GetService<IConnectionFactory>();
             if (connectionFactory == null)
             {
-                throw new InvalidOperationException("Cannot create HubConnection instance. A connection was not configured.");
+                throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(IConnectionFactory)} was not configured.");
             }
 
             return serviceProvider.GetService<HubConnection>();

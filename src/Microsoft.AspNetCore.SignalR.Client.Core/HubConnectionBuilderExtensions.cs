@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,9 +13,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {
     public static class HubConnectionBuilderExtensions
     {
-        public static IHubConnectionBuilder WithConnectionFactory(this IHubConnectionBuilder hubConnectionBuilder, Func<IConnection> connectionFactory)
+        public static IHubConnectionBuilder WithConnectionFactory(this IHubConnectionBuilder hubConnectionBuilder, Func<TransferFormat, Task<ConnectionContext>> connectionFactory)
         {
-            hubConnectionBuilder.Services.AddSingleton(connectionFactory);
+            if (connectionFactory == null)
+            {
+                throw new ArgumentNullException(nameof(connectionFactory));
+            }
+            hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(new DelegateConnectionFactory(connectionFactory));
             return hubConnectionBuilder;
         }
 
@@ -28,6 +33,21 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             hubConnectionBuilder.Services.AddLogging(configureLogging);
             return hubConnectionBuilder;
+        }
+
+        private class DelegateConnectionFactory : IConnectionFactory
+        {
+            private readonly Func<TransferFormat, Task<ConnectionContext>> _connectionFactory;
+
+            public DelegateConnectionFactory(Func<TransferFormat, Task<ConnectionContext>> connectionFactory)
+            {
+                _connectionFactory = connectionFactory;
+            }
+
+            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat)
+            {
+                return _connectionFactory(transferFormat);
+            }
         }
     }
 }

@@ -8,13 +8,10 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -40,14 +37,16 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             _pipe = new TestDuplexPipe();
 
-            var connection = new TestConnection();
-            // prevents keep alive time being activated
-            connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
-            connection.Transport = _pipe;
-
             var hubConnectionBuilder = new HubConnectionBuilder();
             hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
-            hubConnectionBuilder.WithConnectionFactory(() => connection);
+            hubConnectionBuilder.WithConnectionFactory(format =>
+            {
+                var connection = new DefaultConnectionContext();
+                // prevents keep alive time being activated
+                connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
+                connection.Transport = _pipe;
+                return Task.FromResult<ConnectionContext>(connection);
+            });
 
             _hubConnection = hubConnectionBuilder.Build();
         }
@@ -70,27 +69,5 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     public class TestConnectionInherentKeepAliveFeature : IConnectionInherentKeepAliveFeature
     {
         public TimeSpan KeepAliveInterval { get; } = TimeSpan.Zero;
-    }
-
-    public class TestConnection : IConnection
-    {
-        public Task StartAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task StartAsync(TransferFormat transferFormat)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task DisposeAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public IDuplexPipe Transport { get; set; }
-
-        public IFeatureCollection Features { get; } = new FeatureCollection();
     }
 }

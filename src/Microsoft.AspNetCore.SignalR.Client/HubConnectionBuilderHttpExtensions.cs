@@ -2,14 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.ObjectModel;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
-using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -79,32 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 hubConnectionBuilder.Services.Configure(configureHttpConnection);
             }
 
-            hubConnectionBuilder.Services.AddSingleton(services =>
-            {
-                var value = services.GetService<IOptions<HttpConnectionOptions>>().Value;
-
-                var httpOptions = new HttpOptions
-                {
-                    HttpMessageHandlerFactory = value.MessageHandlerFactory,
-                    Headers = value._headers != null ? new ReadOnlyDictionary<string, string>(value._headers) : null,
-                    AccessTokenFactory = value.AccessTokenFactory,
-                    WebSocketOptions = value.WebSocketOptions,
-                    Cookies = value._cookies,
-                    Proxy = value.Proxy,
-                    UseDefaultCredentials = value.UseDefaultCredentials,
-                    ClientCertificates = value._clientCertificates,
-                    Credentials = value.Credentials,
-                };
-
-                Func<IConnection> createConnection = () => new HttpConnection(
-                    value.Url,
-                    value.Transports,
-                    services.GetService<ILoggerFactory>(),
-                    httpOptions);
-
-                return createConnection;
-            });
-
+            hubConnectionBuilder.Services.AddSingleton<IConnectionFactory, HttpConnectionFactory>();
             return hubConnectionBuilder;
         }
     }
