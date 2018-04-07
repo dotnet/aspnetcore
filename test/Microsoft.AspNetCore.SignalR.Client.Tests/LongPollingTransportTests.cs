@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
@@ -326,8 +327,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Start the transport
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary);
 
-                    await longPollingTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
-                    await longPollingTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("World"));
+                    longPollingTransport.Output.Write(Encoding.UTF8.GetBytes("Hello"));
+                    longPollingTransport.Output.Write(Encoding.UTF8.GetBytes("World"));
+                    await longPollingTransport.Output.FlushAsync();
 
                     longPollingTransport.Output.Complete();
 
