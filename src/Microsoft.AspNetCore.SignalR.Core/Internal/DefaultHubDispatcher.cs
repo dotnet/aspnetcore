@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
 
                             await SendInvocationError(hubMethodInvocationMessage, connection,
-                                $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is null, does not implement the IObservable<> interface or is not a ReadableChannel<>.");
+                                $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is not a ChannelReader<>.");
                             return;
                         }
 
@@ -364,13 +364,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             if (result != null)
             {
-                if (hubMethodDescriptor.IsObservable)
-                {
-                    streamCts = CreateCancellation();
-                    enumerator = hubMethodDescriptor.FromObservable(result, streamCts.Token);
-                    return true;
-                }
-
                 if (hubMethodDescriptor.IsChannel)
                 {
                     streamCts = CreateCancellation();

@@ -421,18 +421,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
-    public class ObservableHub : Hub
-    {
-        private readonly Observable<int> _numbers;
-
-        public ObservableHub(Observable<int> numbers)
-        {
-            _numbers = numbers;
-        }
-
-        public IObservable<int> Subscribe() => _numbers;
-    }
-
     public class AbortHub : Hub
     {
         public void Kill()
@@ -441,89 +429,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
-    public class Observable<T> : IObservable<T>
-    {
-        public List<IObserver<T>> Observers = new List<IObserver<T>>();
-
-        public Action<IObserver<T>> OnSubscribe;
-
-        public Action<IObserver<T>> OnDispose;
-
-        public IDisposable Subscribe(IObserver<T> observer)
-        {
-            lock (Observers)
-            {
-                Observers.Add(observer);
-            }
-
-            OnSubscribe?.Invoke(observer);
-
-            return new DisposableAction(() =>
-            {
-                lock (Observers)
-                {
-                    Observers.Remove(observer);
-                }
-
-                OnDispose?.Invoke(observer);
-            });
-        }
-
-        public void OnNext(T value)
-        {
-            lock (Observers)
-            {
-                foreach (var observer in Observers)
-                {
-                    observer.OnNext(value);
-                }
-            }
-        }
-
-        public void Complete()
-        {
-            lock (Observers)
-            {
-                foreach (var observer in Observers)
-                {
-                    observer.OnCompleted();
-                }
-            }
-        }
-
-        private class DisposableAction : IDisposable
-        {
-            private readonly Action _action;
-            public DisposableAction(Action action)
-            {
-                _action = action;
-            }
-
-            public void Dispose()
-            {
-                _action();
-            }
-        }
-    }
-
     public class StreamingHub : TestHub
     {
-        public IObservable<string> CounterObservable(int count)
-        {
-            return new CountingObservable(count);
-        }
-
-        public async Task<IObservable<string>> CounterObservableAsync(int count)
-        {
-            await Task.Yield();
-            return CounterObservable(count);
-        }
-
-        public async ValueTask<IObservable<string>> CounterObservableValueTaskAsync(int count)
-        {
-            await Task.Yield();
-            return CounterObservable(count);
-        }
 
         public ChannelReader<string> CounterChannel(int count)
         {
@@ -558,34 +465,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Channel.CreateUnbounded<string>().Reader;
         }
 
-        public IObservable<int> ThrowStream()
+        public ChannelReader<int> ThrowStream()
         {
-            return Observable.Throw<int>(new Exception("Exception from observable"));
-        }
-
-        private class CountingObservable : IObservable<string>
-        {
-            private int _count;
-
-            public CountingObservable(int count)
-            {
-                _count = count;
-            }
-
-            public IDisposable Subscribe(IObserver<string> observer)
-            {
-                var cts = new CancellationTokenSource();
-                Task.Run(() =>
-                {
-                    for (int i = 0; !cts.Token.IsCancellationRequested && i < _count; i++)
-                    {
-                        observer.OnNext(i.ToString());
-                    }
-                    observer.OnCompleted();
-                });
-
-                return new CancellationDisposable(cts);
-            }
+            var channel = Channel.CreateUnbounded<int>();
+            channel.Writer.TryComplete(new Exception("Exception from channel"));
+            return channel.Reader;
         }
     }
 

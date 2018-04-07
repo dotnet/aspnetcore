@@ -681,7 +681,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("StreamBroken").OrTimeout();
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync()).OrTimeout();
-                    Assert.Equal("The value returned by the streaming method 'StreamBroken' is null, does not implement the IObservable<> interface or is not a ReadableChannel<>.", ex.Message);
+                    Assert.Equal("The value returned by the streaming method 'StreamBroken' is not a ChannelReader<>.", ex.Message);
                 }
                 catch (Exception ex)
                 {

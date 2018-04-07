@@ -11,11 +11,13 @@ namespace SignalRSamples.Hubs
 {
     public class Streaming : Hub
     {
-        public IObservable<int> ObservableCounter(int count, int delay)
+        public ChannelReader<int> ObservableCounter(int count, int delay)
         {
-            return Observable.Interval(TimeSpan.FromMilliseconds(delay))
+            var observable = Observable.Interval(TimeSpan.FromMilliseconds(delay))
                              .Select((_, index) => index)
                              .Take(count);
+
+            return observable.AsChannelReader();
         }
 
         public ChannelReader<int> ChannelCounter(int count, int delay)

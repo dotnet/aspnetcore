@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR;
@@ -38,17 +39,24 @@ namespace FunctionalTests
             return Clients.Client(Context.ConnectionId).SendAsync("CustomObject", customObject);
         }
 
-        public IObservable<string> Stream()
+        public ChannelReader<string> Stream()
         {
-            return new string[] { "a", "b", "c" }.ToObservable();
+            var channel = Channel.CreateUnbounded<string>();
+            channel.Writer.TryWrite("a");
+            channel.Writer.TryWrite("b");
+            channel.Writer.TryWrite("c");
+            channel.Writer.Complete();
+            return channel.Reader;
         }
 
-        public IObservable<int> EmptyStream()
+        public ChannelReader<int> EmptyStream()
         {
-            return Array.Empty<int>().ToObservable();
+            var channel = Channel.CreateUnbounded<int>();
+            channel.Writer.Complete();
+            return channel.Reader;
         }
 
-        public IObservable<string> StreamThrowException(string message)
+        public ChannelReader<string> StreamThrowException(string message)
         {
             throw new InvalidOperationException(message);
         }

@@ -93,8 +93,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
         public class TestHub : Hub
         {
-            private static readonly IObservable<int> ObservableInstance = Observable.Empty<int>();
-
             public void Invocation()
             {
             }
@@ -117,21 +115,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             public ValueTask<int> InvocationValueTaskAsync()
             {
                 return new ValueTask<int>(1);
-            }
-
-            public IObservable<int> StreamObservable()
-            {
-                return ObservableInstance;
-            }
-
-            public Task<IObservable<int>> StreamObservableAsync()
-            {
-                return Task.FromResult(ObservableInstance);
-            }
-
-            public ValueTask<IObservable<int>> StreamObservableValueTaskAsync()
-            {
-                return new ValueTask<IObservable<int>>(ObservableInstance);
             }
 
             public ChannelReader<int> StreamChannelReader()
@@ -173,11 +156,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
                 return channel.Reader;
             }
-
-            public IObservable<int> StreamObservableCount(int count)
-            {
-                return Observable.Range(0, count);
-            }
         }
 
         [Benchmark]
@@ -208,24 +186,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         public Task InvocationValueTaskAsync()
         {
             return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationValueTaskAsync", null));
-        }
-
-        [Benchmark]
-        public Task StreamObservable()
-        {
-            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamObservable", null));
-        }
-
-        [Benchmark]
-        public Task StreamObservableAsync()
-        {
-            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamObservableAsync", null));
-        }
-
-        [Benchmark]
-        public Task StreamObservableValueTaskAsync()
-        {
-            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamObservableValueTaskAsync", null));
         }
 
         [Benchmark]
@@ -262,24 +222,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         public Task StreamChannelReaderCount_Thousand()
         {
             return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", argumentBindingException: null, new object[] { 1000 }));
-        }
-
-        [Benchmark]
-        public Task StreamObservableCount_Zero()
-        {
-            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamObservableCount", argumentBindingException: null, new object[] { 0 }));
-        }
-
-        [Benchmark]
-        public Task StreamObservableCount_One()
-        {
-            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamObservableCount", argumentBindingException: null, new object[] { 1 }));
-        }
-
-        [Benchmark]
-        public Task StreamObservableCount_Thousand()
-        {
-            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamObservableCount", argumentBindingException: null, new object[] { 1000 }));
         }
     }
 }

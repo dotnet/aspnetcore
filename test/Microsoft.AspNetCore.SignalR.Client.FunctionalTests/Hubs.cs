@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 
-        public IObservable<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+        public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
         public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 
-        public IObservable<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+        public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
         public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 
-        public IObservable<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+        public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
         public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
 
@@ -139,11 +139,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             return message;
         }
 
-        public static IObservable<int> Stream(int count)
+        public static ChannelReader<int> Stream(int count)
         {
-            return Observable.Interval(TimeSpan.FromMilliseconds(1))
-                             .Select((_, index) => index)
-                             .Take(count);
+            var channel = Channel.CreateUnbounded<int>();
+
+            Task.Run(async () =>
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    await channel.Writer.WriteAsync(i);
+                    await Task.Delay(100);
+                }
+
+                channel.Writer.TryComplete();
+            });
+
+            return channel.Reader;
         }
 
         public static ChannelReader<int> StreamException()

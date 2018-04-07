@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
-
 export function getParameterByName(name: string) {
     const url = window.location.href;
     name = name.replace(/[\[\]]/g, "\\$&");

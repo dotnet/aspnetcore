@@ -15,10 +15,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal class HubMethodDescriptor
     {
-        private static readonly MethodInfo FromObservableMethod = typeof(AsyncEnumeratorAdapters)
-            .GetRuntimeMethods()
-            .Single(m => m.Name.Equals(nameof(AsyncEnumeratorAdapters.FromObservable)) && m.IsGenericMethod);
-
         private static readonly MethodInfo GetAsyncEnumeratorMethod = typeof(AsyncEnumeratorAdapters)
             .GetRuntimeMethods()
             .Single(m => m.Name.Equals(nameof(AsyncEnumeratorAdapters.GetAsyncEnumerator)) && m.IsGenericMethod);
@@ -33,12 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 ? MethodExecutor.AsyncResultType
                 : MethodExecutor.MethodReturnType;
 
-            if (IsObservableType(NonAsyncReturnType, out var observableItemType))
-            {
-                IsObservable = true;
-                StreamReturnType = observableItemType;
-            }
-            else if (IsChannelType(NonAsyncReturnType, out var channelItemType))
+            if (IsChannelType(NonAsyncReturnType, out var channelItemType))
             {
                 IsChannel = true;
                 StreamReturnType = channelItemType;
@@ -53,11 +44,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public Type NonAsyncReturnType { get; }
 
-        public bool IsObservable { get; }
-
         public bool IsChannel { get; }
 
-        public bool IsStreamable => IsObservable || IsChannel;
+        public bool IsStreamable => IsChannel;
 
         public Type StreamReturnType { get; }
 
@@ -76,35 +65,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return true;
         }
 
-        private static bool IsObservableType(Type type, out Type payloadType)
-        {
-            var observableInterface = IsIObservable(type) ? type : type.GetInterfaces().FirstOrDefault(IsIObservable);
-            if (observableInterface == null)
-            {
-                payloadType = null;
-                return false;
-            }
-
-            payloadType = observableInterface.GetGenericArguments()[0];
-            return true;
-
-            bool IsIObservable(Type iface)
-            {
-                return iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IObservable<>);
-            }
-        }
-
-        public IAsyncEnumerator<object> FromObservable(object observable, CancellationToken cancellationToken)
-        {
-            // there is the potential for compile to be called times but this has no harmful effect other than perf
-            if (_convertToEnumerator == null)
-            {
-                _convertToEnumerator = CompileConvertToEnumerator(FromObservableMethod, StreamReturnType);
-            }
-
-            return _convertToEnumerator.Invoke(observable, cancellationToken);
-        }
-
         public IAsyncEnumerator<object> FromChannel(object channel, CancellationToken cancellationToken)
         {
             // there is the potential for compile to be called times but this has no harmful effect other than perf
@@ -120,10 +80,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             // This will call one of two adapter methods to wrap the passed in streamable value
             // and cancellation token to an IAsyncEnumerator<object>
-            //
-            // IObservable<T>:
-            // AsyncEnumeratorAdapters.FromObservable<T>(observable, cancellationToken);
-            //
             // ChannelReader<T>
             // AsyncEnumeratorAdapters.GetAsyncEnumerator<T>(channelReader, cancellationToken);
 
