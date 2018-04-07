@@ -28,16 +28,25 @@ namespace ClientSample
 
         public static async Task<int> ExecuteAsync(string baseUrl)
         {
-            var endpoint = new IPEndPoint(IPAddress.Loopback, 9001);
-            Console.WriteLine("Connecting to {0}", endpoint);
-            var connection = new HubConnectionBuilder()
-                .WithEndPoint(endpoint)
+            var uri = baseUrl == null ? new Uri("net.tcp://127.0.0.1:9001") : new Uri(baseUrl);
+            Console.WriteLine("Connecting to {0}", uri);
+            var connectionBuilder = new HubConnectionBuilder()
                 .WithLogging(logging =>
                 {
                     logging.AddConsole();
                     logging.SetMinimumLevel(LogLevel.Trace);
-                })
-                .Build();
+                });
+
+            if (uri.Scheme == "net.tcp")
+            {
+                connectionBuilder.WithEndPoint(uri);
+            }
+            else
+            {
+                connectionBuilder.WithUrl(uri);
+            }
+
+            var connection = connectionBuilder.Build();
 
             try
             {
@@ -48,7 +57,7 @@ namespace ClientSample
 
                 await ConnectAsync(connection);
 
-                Console.WriteLine("Connected to {0}", endpoint);
+                Console.WriteLine("Connected to {0}", uri);
 
                 var sendCts = new CancellationTokenSource();
 
