@@ -65,9 +65,9 @@ Run `build.cmd /t:Test /p:BlazorAllTests=true` or `build.sh /t:Test /p:BlazorAll
 ## Opening in Visual Studio
 
 Prerequisites:
-- Visual Studio 2017 15.7 preview 1 (or newer) - [download](https://www.visualstudio.com/thank-you-downloading-visual-studio/?ch=pre&sku=Enterprise&rel=15)
+- Visual Studio 2017 15.7 latest preview - [download](https://www.visualstudio.com/thank-you-downloading-visual-studio/?ch=pre&sku=Enterprise&rel=15)
 
-We recommend getting the preview version of Visual Studio and updating it frequently. The Blazor
+We recommend getting the latest preview version of Visual Studio and updating it frequently. The Blazor
 editing experience in Visual Studio depends on  new features of the Razor language tooling and
 will be updated frequently.
 
