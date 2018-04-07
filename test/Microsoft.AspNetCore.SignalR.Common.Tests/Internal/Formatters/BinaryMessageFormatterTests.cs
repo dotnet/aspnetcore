@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Xunit;

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -373,7 +375,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             await connectionDelegate(connection);
         }
 
-        private Task ProcessNegotiate(HttpContext context, HttpConnectionOptions options, ConnectionLogScope logScope)
+        private async Task ProcessNegotiate(HttpContext context, HttpConnectionOptions options, ConnectionLogScope logScope)
         {
             context.Response.ContentType = "application/json";
 
@@ -384,17 +386,27 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
 
-            // Get the bytes for the connection id
-            var negotiateResponseBuffer = GetNegotiatePayload(connection.ConnectionId, context, options);
+            // Don't use thread static instance here because writer is used with async
+            var writer = new MemoryBufferWriter();
 
-            Log.NegotiationRequest(_logger);
+            try
+            {
+                // Get the bytes for the connection id
+                WriteNegotiatePayload(writer, connection.ConnectionId, context, options);
 
-            // Write it out to the response with the right content length
-            context.Response.ContentLength = negotiateResponseBuffer.Length;
-            return context.Response.Body.WriteAsync(negotiateResponseBuffer, 0, negotiateResponseBuffer.Length);
+                Log.NegotiationRequest(_logger);
+
+                // Write it out to the response with the right content length
+                context.Response.ContentLength = writer.Length;
+                await writer.CopyToAsync(context.Response.Body);
+            }
+            finally
+            {
+                writer.Reset();
+            }
         }
 
-        private static byte[] GetNegotiatePayload(string connectionId, HttpContext context, HttpConnectionOptions options)
+        private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionOptions options)
         {
             var response = new NegotiationResponse();
             response.ConnectionId = connectionId;
@@ -415,10 +427,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 response.AvailableTransports.Add(_longPollingAvailableTransport);
             }
 
-            var ms = new MemoryStream();
-            NegotiateProtocol.WriteResponse(response, ms);
-
-            return ms.ToArray();
+            NegotiateProtocol.WriteResponse(response, writer);
         }
 
         private static bool ServerHasWebSockets(IFeatureCollection features)

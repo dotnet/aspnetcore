@@ -9,7 +9,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
 using Microsoft.Extensions.DependencyInjection;

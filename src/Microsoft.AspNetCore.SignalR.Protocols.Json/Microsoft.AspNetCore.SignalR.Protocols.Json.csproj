@@ -4,10 +4,13 @@
     <Description>Implements the SignalR Hub Protocol over JSON.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\Common\JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="..\Common\Utf8BufferTextReader.cs" Link="Utf8BufferTextReader.cs" />
+    <Compile Include="..\Common\Utf8BufferTextWriter.cs" Link="Utf8BufferTextWriter.cs" />
   </ItemGroup>
 
   <ItemGroup>

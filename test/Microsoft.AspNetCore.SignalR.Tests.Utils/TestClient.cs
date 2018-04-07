@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class TestClient : ITransferFormatFeature, IConnectionHeartbeatFeature, IDisposable
     {
-        private object _heartbeatLock = new object();
+        private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
 
         private static int _id;

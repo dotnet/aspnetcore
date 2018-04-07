@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.IO;
 using Microsoft.AspNetCore.Internal;
@@ -15,6 +16,22 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const string ProtocolVersionPropertyName = "version";
         private const string ErrorPropertyName = "error";
         private const string TypePropertyName = "type";
+
+        public static ReadOnlyMemory<byte> SuccessHandshakeData { get; }
+
+        static HandshakeProtocol()
+        {
+            var memoryBufferWriter = MemoryBufferWriter.Get();
+            try
+            {
+                WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
+                SuccessHandshakeData = memoryBufferWriter.ToArray();
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(memoryBufferWriter);
+            }
+        }
 
         public static void WriteRequestMessage(HandshakeRequestMessage requestMessage, IBufferWriter<byte> output)
         {

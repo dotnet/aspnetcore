@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\Common\MemoryBufferWriter.cs" Link="MemoryBufferWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\xunit.runner.json" Link="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

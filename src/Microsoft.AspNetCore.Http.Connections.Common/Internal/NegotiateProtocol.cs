@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -12,44 +13,50 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
     public static class NegotiateProtocol
     {
-        private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
         private const string ConnectionIdPropertyName = "connectionId";
         private const string AvailableTransportsPropertyName = "availableTransports";
         private const string TransportPropertyName = "transport";
         private const string TransferFormatsPropertyName = "transferFormats";
 
-        public static void WriteResponse(NegotiationResponse response, Stream output)
+        public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
-            using (var jsonWriter = JsonUtils.CreateJsonTextWriter(new StreamWriter(output, _utf8NoBom, 1024, leaveOpen: true)))
+            var textWriter = Utf8BufferTextWriter.Get(output);
+            try
             {
-                jsonWriter.WriteStartObject();
-                jsonWriter.WritePropertyName(ConnectionIdPropertyName);
-                jsonWriter.WriteValue(response.ConnectionId);
-                jsonWriter.WritePropertyName(AvailableTransportsPropertyName);
-                jsonWriter.WriteStartArray();
-
-                foreach (var availableTransport in response.AvailableTransports)
+                using (var jsonWriter = JsonUtils.CreateJsonTextWriter(textWriter))
                 {
                     jsonWriter.WriteStartObject();
-                    jsonWriter.WritePropertyName(TransportPropertyName);
-                    jsonWriter.WriteValue(availableTransport.Transport);
-                    jsonWriter.WritePropertyName(TransferFormatsPropertyName);
+                    jsonWriter.WritePropertyName(ConnectionIdPropertyName);
+                    jsonWriter.WriteValue(response.ConnectionId);
+                    jsonWriter.WritePropertyName(AvailableTransportsPropertyName);
                     jsonWriter.WriteStartArray();
 
-                    foreach (var transferFormat in availableTransport.TransferFormats)
+                    foreach (var availableTransport in response.AvailableTransports)
                     {
-                        jsonWriter.WriteValue(transferFormat);
+                        jsonWriter.WriteStartObject();
+                        jsonWriter.WritePropertyName(TransportPropertyName);
+                        jsonWriter.WriteValue(availableTransport.Transport);
+                        jsonWriter.WritePropertyName(TransferFormatsPropertyName);
+                        jsonWriter.WriteStartArray();
+
+                        foreach (var transferFormat in availableTransport.TransferFormats)
+                        {
+                            jsonWriter.WriteValue(transferFormat);
+                        }
+
+                        jsonWriter.WriteEndArray();
+                        jsonWriter.WriteEndObject();
                     }
 
                     jsonWriter.WriteEndArray();
                     jsonWriter.WriteEndObject();
+
+                    jsonWriter.Flush();
                 }
-
-                jsonWriter.WriteEndArray();
-                jsonWriter.WriteEndObject();
-
-                jsonWriter.Flush();
+            }
+            finally
+            {
+                Utf8BufferTextWriter.Return(textWriter);
             }
         }
 

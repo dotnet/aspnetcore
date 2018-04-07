@@ -2,7 +2,7 @@ using System;
 using System.Buffers;
 using System.IO;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -24,7 +25,6 @@ namespace Microsoft.AspNetCore.SignalR
     public class HubConnectionContext
     {
         private static readonly Action<object> _abortedCallback = AbortConnection;
-        private static readonly byte[] _successHandshakeResponseData;
 
         private readonly ConnectionContext _connectionContext;
         private readonly ILogger _logger;
@@ -35,20 +35,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
         private byte[] _cachedPingMessage;
-
-        static HubConnectionContext()
-        {
-            var memoryBufferWriter = MemoryBufferWriter.Get();
-            try
-            {
-                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
-                _successHandshakeResponseData = memoryBufferWriter.ToArray();
-            }
-            finally
-            {
-                MemoryBufferWriter.Return(memoryBufferWriter);
-            }
-        }
 
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
         {
@@ -264,7 +250,7 @@ namespace Microsoft.AspNetCore.SignalR
                 if (message == HandshakeResponseMessage.Empty)
                 {
                     // success response is always an empty object so send cached data
-                    _connectionContext.Transport.Output.Write(_successHandshakeResponseData);
+                    _connectionContext.Transport.Output.Write(HandshakeProtocol.SuccessHandshakeData.Span);
                 }
                 else
                 {

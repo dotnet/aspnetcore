@@ -11,6 +11,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
 using Microsoft.Extensions.Logging.Abstractions;

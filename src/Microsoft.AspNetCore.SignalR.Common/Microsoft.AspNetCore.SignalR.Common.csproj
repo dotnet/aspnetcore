@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <Compile Include="..\Common\JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="..\Common\MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+    <Compile Include="..\Common\Utf8BufferTextReader.cs" Link="Internal\Utf8BufferTextReader.cs" />
+    <Compile Include="..\Common\Utf8BufferTextWriter.cs" Link="Internal\Utf8BufferTextWriter.cs" />
   </ItemGroup>
 
   <ItemGroup>
