@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// <para>
     /// The default implementation of <see cref="OutputFormatterSelector"/> provided by ASP.NET Core MVC
     /// is <see cref="DefaultOutputFormatterSelector"/>. The <see cref="DefaultOutputFormatterSelector"/> implements
-    /// MVC's default content negotiation algorthm. This API is designed in a way that can satisfy the contract
+    /// MVC's default content negotiation algorithm. This API is designed in a way that can satisfy the contract
     /// of <see cref="ObjectResult"/>.
     /// </para>
     /// <para>

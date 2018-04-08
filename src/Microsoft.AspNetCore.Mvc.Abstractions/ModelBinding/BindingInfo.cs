@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <para>
         /// This overload does not account for <see cref="BindingInfo"/> specified via <see cref="ModelMetadata"/>. Consider using
         /// <see cref="GetBindingInfo(IEnumerable{object}, ModelMetadata)"/> overload, or <see cref="TryApplyBindingInfo(ModelMetadata)"/>
-        /// on the result of this method to to get a more accurate <see cref="BindingInfo"/> instance.
+        /// on the result of this method to get a more accurate <see cref="BindingInfo"/> instance.
         /// </para>
         /// </summary>
         /// <param name="attributes">A collection of attributes which are used to construct <see cref="BindingInfo"/>

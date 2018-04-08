@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 }
             }
 
-            // Step 2: remove candiates with non-matching handlers.
+            // Step 2: remove candidates with non-matching handlers.
             for (var i = candidates.Count - 1; i >= 0; i--)
             {
                 var handler = candidates[i];

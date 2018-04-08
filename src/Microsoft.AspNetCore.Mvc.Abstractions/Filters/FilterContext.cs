@@ -75,10 +75,10 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
         /// <summary>
         /// Returns the most effective (most specific) policy of type <typeparamref name="TMetadata"/> applied to 
-        /// the action assocatied with the <see cref="FilterContext"/>.
+        /// the action associated with the <see cref="FilterContext"/>.
         /// </summary>
         /// <typeparam name="TMetadata">The type of the filter policy.</typeparam>
-        /// <returns>The implementation of <typeparamref name="TMetadata"/> applied to the action assocatied with
+        /// <returns>The implementation of <typeparamref name="TMetadata"/> applied to the action associated with
         /// the <see cref="FilterContext"/>
         /// </returns>
         public TMetadata FindEffectivePolicy<TMetadata>() where TMetadata : IFilterMetadata

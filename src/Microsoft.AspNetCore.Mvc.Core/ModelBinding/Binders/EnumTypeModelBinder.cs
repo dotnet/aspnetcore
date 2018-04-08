@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="suppressBindingUndefinedValueToEnumType">
         /// Flag to determine if binding to undefined should be suppressed or not.
         /// </param>
-        /// <param name="modelType">The mdoel type.</param>
+        /// <param name="modelType">The model type.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>,</param>
         public EnumTypeModelBinder(
             bool suppressBindingUndefinedValueToEnumType,
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 // Enum.IsDefined does not work with combined flag enum values.
                 // From EnumDataTypeAttribute.cs in CoreFX.
-                // Exmaples:
+                // Examples:
                 // 
                 // [Flags]
                 // enum FlagsEnum { Value1 = 1, Value2 = 2, Value4 = 4 }

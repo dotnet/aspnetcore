@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             foreach (var segment in tokenizer)
             {
                 // Determine if we need to do any path resolution.
-                // We need to resovle paths with multiple path separators (e.g "//" or "\\") or, directory traversals e.g. ("../" or "./").
+                // We need to resolve paths with multiple path separators (e.g "//" or "\\") or, directory traversals e.g. ("../" or "./").
                 if (segment.Length == 0 ||
                     segment.Equals(ParentDirectoryToken, StringComparison.Ordinal) ||
                     segment.Equals(CurrentDirectoryToken, StringComparison.Ordinal))

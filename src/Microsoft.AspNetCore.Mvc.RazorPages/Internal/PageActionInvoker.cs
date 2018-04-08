@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             // We do two separate cache lookups, once for the binder and once for the executor.
-            // Reduding it to a single lookup requires a lot of code change with little value.
+            // Reducing it to a single lookup requires a lot of code change with little value.
             PageHandlerBinderDelegate handlerBinder = null;
             for (var i = 0; i < _actionDescriptor.HandlerMethods.Count; i++)
             {

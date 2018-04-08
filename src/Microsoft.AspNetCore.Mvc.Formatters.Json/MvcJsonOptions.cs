@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// <para>
         /// Error messages in the <see cref="ModelStateDictionary"/> are often communicated to clients, either in HTML
-        /// or using <see cref="BadRequestObjectResult"/>. In effect, this setting controls whether clients can recieve
+        /// or using <see cref="BadRequestObjectResult"/>. In effect, this setting controls whether clients can receive
         /// detailed error messages about submitted JSON data.
         /// </para>
         /// <para>
