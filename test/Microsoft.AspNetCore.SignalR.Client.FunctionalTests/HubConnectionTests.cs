@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var ex = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("Echo", new int[] { 42 })).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("Echo", new[] { 42 })).OrTimeout();
                     Assert.StartsWith("Failed to invoke 'Echo' due to an error on the server.", ex.Message);
                 }
                 catch (Exception ex)

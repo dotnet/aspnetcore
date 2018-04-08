@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1 });
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2 });
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3 });
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3, object arg4)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3, arg4 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3, arg4 });
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3, object arg4, object arg5)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3, arg4, arg5 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3, arg4, arg5 });
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3, arg4, arg5, arg6 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3, arg4, arg5, arg6 });
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 });
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 });
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 });
         }
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task SendAsync(this IClientProxy clientProxy, string method, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10)
         {
-            return clientProxy.SendCoreAsync(method, new object[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 });
+            return clientProxy.SendCoreAsync(method, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 });
         }
     }
 }

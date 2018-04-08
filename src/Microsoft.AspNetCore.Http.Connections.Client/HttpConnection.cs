@@ -56,10 +56,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
                 return _transport;
             }
-            set
-            {
-                throw new NotSupportedException("The transport pipe isn't settable.");
-            }
+            set => throw new NotSupportedException("The transport pipe isn't settable.");
         }
 
         public override IFeatureCollection Features { get; } = new FeatureCollection();

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             _connectionId = connectionId;
             _hubClients = hubClients;
-            _currentConnectionId = new string[] { _connectionId };
+            _currentConnectionId = new[] { _connectionId };
         }
 
         public IClientProxy Caller => _hubClients.Client(_connectionId);

@@ -872,7 +872,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Equal("Array", invocation.Target);
                     Assert.Single(invocation.Arguments);
                     var values = ((JArray)invocation.Arguments[0]).Select(t => t.Value<int>()).ToArray();
-                    Assert.Equal(new int[] { 1, 2, 3 }, values);
+                    Assert.Equal(new[] { 1, 2, 3 }, values);
                 }
 
                 // kill the connections

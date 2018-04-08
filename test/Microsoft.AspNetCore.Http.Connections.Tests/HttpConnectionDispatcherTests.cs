@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await dispatcher.ExecuteAsync(context, options, c => Task.CompletedTask);
 
                 // This write should complete immediately but it exceeds the writer threshold
-                var writeTask = connection.Application.Output.WriteAsync(new byte[] { (byte)'b', (byte)'y', (byte)'t', (byte)'e', (byte)'s' });
+                var writeTask = connection.Application.Output.WriteAsync(new[] { (byte)'b', (byte)'y', (byte)'t', (byte)'e', (byte)'s' });
 
                 Assert.False(writeTask.IsCompleted);
 
@@ -1651,7 +1651,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             private HttpContext HttpContext;
             private AuthenticationScheme _scheme;
 
-            protected virtual bool ShouldAccept { get => true; }
+            protected virtual bool ShouldAccept => true;
 
             public Task<AuthenticateResult> AuthenticateAsync()
             {

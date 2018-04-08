@@ -97,10 +97,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         public IDuplexPipe Application
         {
-            get
-            {
-                return _application;
-            }
+            get => _application;
             set
             {
                 if (value != null)

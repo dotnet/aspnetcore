@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
     public static class ServerSentEventsMessageFormatter
     {
-        private static readonly byte[] DataPrefix = new byte[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
-        private static readonly byte[] Newline = new byte[] { (byte)'\r', (byte)'\n' };
+        private static readonly byte[] DataPrefix = new[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
+        private static readonly byte[] Newline = new[] { (byte)'\r', (byte)'\n' };
 
         private const byte LineFeed = (byte)'\n';
 

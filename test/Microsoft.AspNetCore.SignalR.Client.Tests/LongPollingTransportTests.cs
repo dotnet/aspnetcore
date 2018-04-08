@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task LongPollingTransportDispatchesMessagesReceivedFromPoll()
         {
-            var message1Payload = new byte[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o' };
+            var message1Payload = new[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o' };
 
             var firstCall = true;
             var mockHttpHandler = new Mock<HttpMessageHandler>();
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await longPollingTransport.Input.ReadAllAsync();
 
                     Assert.Single(sentRequests);
-                    Assert.Equal(new byte[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)'W', (byte)'o', (byte)'r', (byte)'l', (byte)'d'
+                    Assert.Equal(new[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)'W', (byte)'o', (byte)'r', (byte)'l', (byte)'d'
                     }, sentRequests[0]);
                 }
                 finally

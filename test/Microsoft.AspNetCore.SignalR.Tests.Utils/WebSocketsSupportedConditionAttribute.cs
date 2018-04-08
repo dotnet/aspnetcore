@@ -12,13 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
     public class WebSocketsSupportedConditionAttribute : Attribute, ITestCondition
     {
-        public bool IsMet
-        {
-            get
-            {
-                return TestHelpers.IsWebSocketsSupported();
-            }
-        }
+        public bool IsMet => TestHelpers.IsWebSocketsSupported();
 
         public string SkipReason => "No WebSockets Client for this platform";
     }

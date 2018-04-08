@@ -27,13 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        public Exception ArgumentBindingException
-        {
-            get
-            {
-                return _argumentBindingException?.SourceException;
-            }
-        }
+        public Exception ArgumentBindingException => _argumentBindingException?.SourceException;
 
         protected HubMethodInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
             : base(invocationId)

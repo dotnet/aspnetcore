@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
                 }
                 return _clients;
             }
-            set { _clients = value; }
+            set => _clients = value;
         }
     }
 }

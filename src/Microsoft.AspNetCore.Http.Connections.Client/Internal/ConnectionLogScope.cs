@@ -15,10 +15,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         public string ConnectionId
         {
-            get
-            {
-                return _connectionId;
-            }
+            get => _connectionId;
             set
             {
                 _cachedToString = null;

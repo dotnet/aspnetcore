@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             var invokeMethod = typeof(IClientProxy).GetMethod(
                 nameof(IClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
-                new Type[] { typeof(string), typeof(object[]) }, null);
+                new[] { typeof(string), typeof(object[]) }, null);
 
             methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
             methodBuilder.SetParameters(paramTypes);

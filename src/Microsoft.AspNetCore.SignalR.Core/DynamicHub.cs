@@ -9,8 +9,16 @@ namespace Microsoft.AspNetCore.SignalR
 
         public new DynamicHubClients Clients
         {
-            get { return _clients ?? new DynamicHubClients(base.Clients); }
-            set { _clients = value; }
+            get
+            {
+                if (_clients == null)
+                {
+                    _clients = new DynamicHubClients(base.Clients);
+                }
+
+                return _clients;
+            }
+            set => _clients = value;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     hubMessage = new InvocationMessage(target: "Target", argumentBindingException: null, 1, "Foo", 2.0f);
                     break;
                 case Message.ManyArguments:
-                    hubMessage = new InvocationMessage(target: "Target", argumentBindingException: null, 1, "string", 2.0f, true, (byte)9, new int[] { 5, 4, 3, 2, 1 }, 'c', 123456789101112L);
+                    hubMessage = new InvocationMessage(target: "Target", argumentBindingException: null, 1, "string", 2.0f, true, (byte)9, new[] { 5, 4, 3, 2, 1 }, 'c', 123456789101112L);
                     break;
                 case Message.LargeArguments:
                     hubMessage = new InvocationMessage(target: "Target", argumentBindingException: null, new string('F', 10240), new string('B', 10240));

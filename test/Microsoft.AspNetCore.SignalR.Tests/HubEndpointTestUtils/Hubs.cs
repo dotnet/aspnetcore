@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task SendArray()
         {
-            return Clients.All.SendAsync("Array", new int[] { 1, 2, 3 });
+            return Clients.All.SendAsync("Array", new[] { 1, 2, 3 });
         }
 
         public Task<int> TaskValueMethod()
