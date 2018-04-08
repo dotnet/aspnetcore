@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public static class SignalRSocketBuilderExtensions
+    public static class SignalRConnectionBuilderExtensions
     {
         public static IConnectionBuilder UseHub<THub>(this IConnectionBuilder connectionBuilder) where THub : Hub
         {
