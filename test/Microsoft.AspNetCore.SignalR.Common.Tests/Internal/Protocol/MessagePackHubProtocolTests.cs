@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             { "ValueWithNewLines", "Also\nWorks\r\nFine" },
         };
 
-        private static MessagePackObject TestHeadersSerialized = Map(
+        private static readonly MessagePackObject TestHeadersSerialized = Map(
             ("Foo", "Bar"),
             ("KeyWith\nNew\r\nLines", "Still Works"),
             ("ValueWithNewLines", "Also\nWorks\r\nFine"));
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         private static readonly MessagePackHubProtocol _hubProtocol
             = new MessagePackHubProtocol();
 
-        private static MessagePackObject CustomObjectSerialized = Map(
+        private static readonly MessagePackObject CustomObjectSerialized = Map(
             ("ByteArrProp", new MessagePackObject(new byte[] { 1, 2, 3 }, isBinary: true)),
             ("DateTimeProp", new MessagePackObject(Timestamp.FromDateTime(new DateTime(2017, 4, 11)))),
             ("DoubleProp", 6.2831853071),

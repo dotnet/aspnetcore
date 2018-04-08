@@ -16,8 +16,8 @@ namespace ClientSample
         private volatile bool _aborted;
         private readonly EndPoint _endPoint;
         private IDuplexPipe _application;
-        private SocketSender _sender;
-        private SocketReceiver _receiver;
+        private readonly SocketSender _sender;
+        private readonly SocketReceiver _receiver;
 
         public TcpConnection(EndPoint endPoint)
         {

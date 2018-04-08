@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         // TestSink doesn't seem to be thread-safe :(.
         private class LogSinkProvider : ILoggerProvider
         {
-            private ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
+            private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
 
             public ILogger CreateLogger(string categoryName)
             {
@@ -179,8 +179,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             private class LogSinkLogger : ILogger
             {
-                private string _categoryName;
-                private LogSinkProvider _logSinkProvider;
+                private readonly string _categoryName;
+                private readonly LogSinkProvider _logSinkProvider;
 
                 public LogSinkLogger(string categoryName, LogSinkProvider logSinkProvider)
                 {

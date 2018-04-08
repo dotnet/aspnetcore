@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubCallerClients : IHubCallerClients
     {
-        private string _connectionId;
-        private IHubClients _hubClients;
-        private string[] _currentConnectionId;
+        private readonly string _connectionId;
+        private readonly IHubClients _hubClients;
+        private readonly string[] _currentConnectionId;
 
         public HubCallerClients(IHubClients hubClients, string connectionId)
         {

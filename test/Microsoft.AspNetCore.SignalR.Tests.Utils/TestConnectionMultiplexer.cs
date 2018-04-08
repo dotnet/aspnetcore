@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             remove { }
         }
 
-        private ISubscriber _subscriber;
+        private readonly ISubscriber _subscriber;
 
         public TestConnectionMultiplexer(TestRedisServer server)
         {
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class TestRedisServer
     {
-        private ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>> _subscriptions =
+        private readonly ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>> _subscriptions =
             new ConcurrentDictionary<RedisChannel, List<Action<RedisChannel, RedisValue>>>();
 
         public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)

@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class ConnectionLifetimeHub : Hub
     {
-        private ConnectionLifetimeState _state;
+        private readonly ConnectionLifetimeState _state;
 
         public ConnectionLifetimeHub(ConnectionLifetimeState state)
         {

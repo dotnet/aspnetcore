@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR
         private const string ClientModuleName = "Microsoft.AspNetCore.SignalR.TypedClientBuilder";
 
         // There is one static instance of _builder per T
-        private static Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(() => GenerateClientBuilder());
+        private static readonly Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(() => GenerateClientBuilder());
 
         public static T Build(IClientProxy proxy)
         {

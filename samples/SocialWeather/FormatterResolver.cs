@@ -9,9 +9,9 @@ namespace SocialWeather
 {
     public class FormatterResolver
     {
-        private IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
-        private Dictionary<string, Dictionary<Type, Type>> _formatters
+        private readonly Dictionary<string, Dictionary<Type, Type>> _formatters
             = new Dictionary<string, Dictionary<Type, Type>>();
 
         public FormatterResolver(IServiceProvider serviceProvider)

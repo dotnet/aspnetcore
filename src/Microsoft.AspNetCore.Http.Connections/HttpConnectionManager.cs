@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         private Timer _timer;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
-        private object _executionLock = new object();
+        private readonly object _executionLock = new object();
         private bool _disposed;
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)

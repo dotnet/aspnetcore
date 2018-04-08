@@ -9,7 +9,7 @@ namespace SocialWeather.Json
 {
     public class JsonStreamFormatter<T> : IStreamFormatter<T>
     {
-        private JsonSerializer _serializer = new JsonSerializer();
+        private readonly JsonSerializer _serializer = new JsonSerializer();
 
         public async Task<T> ReadAsync(Stream stream)
         {

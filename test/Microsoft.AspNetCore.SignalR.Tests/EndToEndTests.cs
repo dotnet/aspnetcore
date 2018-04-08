@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             private string _prevConnectionId = null;
             private IDuplexPipe _application;
             private IDuplexPipe _transport;
-            private int availableTransports = 3;
+            private readonly int availableTransports = 3;
 
             public PipeReader Input => _transport.Input;
 

@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private const byte ByteLF = (byte)'\n';
         private const byte ByteColon = (byte)':';
 
-        private static byte[] _dataPrefix = Encoding.UTF8.GetBytes("data: ");
-        private static byte[] _sseLineEnding = Encoding.UTF8.GetBytes("\r\n");
-        private static byte[] _newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
+        private static readonly byte[] _dataPrefix = Encoding.UTF8.GetBytes("data: ");
+        private static readonly byte[] _sseLineEnding = Encoding.UTF8.GetBytes("\r\n");
+        private static readonly byte[] _newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
 
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
-        private List<byte[]> _data = new List<byte[]>();
+        private readonly List<byte[]> _data = new List<byte[]>();
 
         public ParseResult ParseMessage(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[] message)
         {

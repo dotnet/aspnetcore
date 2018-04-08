@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     internal class TypedHubClients<T> : IHubCallerClients<T>
     {
-        private IHubCallerClients _hubClients;
+        private readonly IHubCallerClients _hubClients;
 
         public TypedHubClients(IHubCallerClients dynamicContext)
         {

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     internal class CancellationDisposable : IDisposable
     {
-        private CancellationTokenSource _cts;
+        private readonly CancellationTokenSource _cts;
 
         public CancellationDisposable(CancellationTokenSource cts)
         {

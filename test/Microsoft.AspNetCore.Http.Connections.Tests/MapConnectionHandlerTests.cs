@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
     public class MapConnectionHandlerTests
     {
-        private ITestOutputHelper _output;
+        private readonly ITestOutputHelper _output;
 
         public MapConnectionHandlerTests(ITestOutputHelper output)
         {

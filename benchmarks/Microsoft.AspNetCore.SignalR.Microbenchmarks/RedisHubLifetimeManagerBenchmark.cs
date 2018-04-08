@@ -22,10 +22,10 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         private RedisHubLifetimeManager<TestHub> _manager2;
         private TestClient[] _clients;
         private object[] _args;
-        private List<string> _excludedIds = new List<string>();
-        private List<string> _sendIds = new List<string>();
-        private List<string> _groups = new List<string>();
-        private List<string> _users = new List<string>();
+        private readonly List<string> _excludedIds = new List<string>();
+        private readonly List<string> _sendIds = new List<string>();
+        private readonly List<string> _groups = new List<string>();
+        private readonly List<string> _users = new List<string>();
 
         private const int ClientCount = 20;
 

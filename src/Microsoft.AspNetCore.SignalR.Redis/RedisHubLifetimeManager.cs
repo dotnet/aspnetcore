@@ -579,8 +579,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         private class GroupData
         {
-            public SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
-            public HubConnectionStore Connections = new HubConnectionStore();
+            public readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
+            public readonly HubConnectionStore Connections = new HubConnectionStore();
         }
 
         private interface IRedisFeature

@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
         private class DummyProtocol: IHubProtocol
         {
-            private static byte[] _fixedOutput = new byte[] { 0x68, 0x68, 0x6C, 0x6C, 0x6F };
+            private static readonly byte[] _fixedOutput = new byte[] { 0x68, 0x68, 0x6C, 0x6C, 0x6F };
 
             public string Name { get; }
 
