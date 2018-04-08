@@ -12,11 +12,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
         // will not occur (is not a valid character) and therefore it is safe to not escape it
         public static readonly byte RecordSeparator = 0x1e;
 
-        public static void WriteRecordSeparator(Stream output)
-        {
-            output.WriteByte(RecordSeparator);
-        }
-
         public static void WriteRecordSeparator(IBufferWriter<byte> output)
         {
             var buffer = output.GetSpan(1);

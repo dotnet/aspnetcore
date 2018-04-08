@@ -5,11 +5,13 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Internal
 {
-    internal sealed class MemoryBufferWriter : IBufferWriter<byte>
+    internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
     {
         [ThreadStatic]
         private static MemoryBufferWriter _cachedInstance;
@@ -18,19 +20,27 @@ namespace Microsoft.AspNetCore.Internal
         private bool _inUse;
 #endif
 
-        private readonly int _segmentSize;
+        private readonly int _minimumSegmentSize;
         private int _bytesWritten;
 
         private List<byte[]> _fullSegments;
         private byte[] _currentSegment;
         private int _position;
 
-        public MemoryBufferWriter(int segmentSize = 2048)
+        public MemoryBufferWriter(int minimumSegmentSize = 4096)
         {
-            _segmentSize = segmentSize;
+            _minimumSegmentSize = minimumSegmentSize;
         }
 
-        public int Length => _bytesWritten;
+        public override long Length => _bytesWritten;
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
 
         public static MemoryBufferWriter Get()
         {
@@ -39,9 +49,11 @@ namespace Microsoft.AspNetCore.Internal
             {
                 writer = new MemoryBufferWriter();
             }
-
-            // Taken off the thread static
-            _cachedInstance = null;
+            else
+            {
+                // Taken off the thread static
+                _cachedInstance = null;
+            }
 #if DEBUG
             if (writer._inUse)
             {
@@ -93,54 +105,87 @@ namespace Microsoft.AspNetCore.Internal
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            // TODO: Use sizeHint
-            if (_currentSegment == null)
-            {
-                _currentSegment = ArrayPool<byte>.Shared.Rent(_segmentSize);
-                _position = 0;
-            }
-            else if (_position == _segmentSize)
-            {
-                if (_fullSegments == null)
-                {
-                    _fullSegments = new List<byte[]>();
-                }
-                _fullSegments.Add(_currentSegment);
-                _currentSegment = ArrayPool<byte>.Shared.Rent(_segmentSize);
-                _position = 0;
-            }
+            EnsureCapacity(sizeHint);
 
             return _currentSegment.AsMemory(_position, _currentSegment.Length - _position);
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            return GetMemory(sizeHint).Span;
+            EnsureCapacity(sizeHint);
+
+            return _currentSegment.AsSpan(_position, _currentSegment.Length - _position);
         }
 
-        public Task CopyToAsync(Stream stream)
-        {
-            if (_fullSegments == null)
-            {
-                // There is only one segment so write without async
-                return stream.WriteAsync(_currentSegment, 0, _position);
-            }
-
-            return CopyToSlowAsync(stream);
-        }
-
-        private async Task CopyToSlowAsync(Stream stream)
+        public void CopyTo(IBufferWriter<byte> destination)
         {
             if (_fullSegments != null)
             {
                 // Copy full segments
-                for (var i = 0; i < _fullSegments.Count - 1; i++)
+                var count = _fullSegments.Count;
+                for (var i = 0; i < count; i++)
                 {
-                    await stream.WriteAsync(_fullSegments[i], 0, _segmentSize);
+                    destination.Write(_fullSegments[i]);
                 }
             }
 
-            await stream.WriteAsync(_currentSegment, 0, _position);
+            destination.Write(_currentSegment.AsSpan(0, _position));
+        }
+
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            if (_fullSegments == null)
+            {
+                // There is only one segment so write without async
+                return destination.WriteAsync(_currentSegment, 0, _position);
+            }
+
+            return CopyToSlowAsync(destination);
+        }
+
+        private void EnsureCapacity(int sizeHint)
+        {
+            // TODO: Use sizeHint
+            if (_currentSegment != null && _position < _currentSegment.Length)
+            {
+                // We have capacity in the current segment
+                return;
+            }
+
+            AddSegment();
+        }
+
+        private void AddSegment()
+        {
+            if (_currentSegment != null)
+            {
+                // We're adding a segment to the list
+                if (_fullSegments == null)
+                {
+                    _fullSegments = new List<byte[]>();
+                }
+
+                _fullSegments.Add(_currentSegment);
+            }
+
+            _currentSegment = ArrayPool<byte>.Shared.Rent(_minimumSegmentSize);
+            _position = 0;
+        }
+
+        private async Task CopyToSlowAsync(Stream destination)
+        {
+            if (_fullSegments != null)
+            {
+                // Copy full segments                
+                var count = _fullSegments.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var segment = _fullSegments[i];
+                    await destination.WriteAsync(segment, 0, segment.Length);
+                }
+            }
+
+            await destination.WriteAsync(_currentSegment, 0, _position);
         }
 
         public byte[] ToArray()
@@ -157,11 +202,12 @@ namespace Microsoft.AspNetCore.Internal
             if (_fullSegments != null)
             {
                 // Copy full segments
-                for (var i = 0; i < _fullSegments.Count; i++)
+                var count = _fullSegments.Count;
+                for (var i = 0; i < count; i++)
                 {
-                    _fullSegments[i].CopyTo(result, totalWritten);
-
-                    totalWritten += _segmentSize;
+                    var segment = _fullSegments[i];
+                    segment.CopyTo(result, totalWritten);
+                    totalWritten += segment.Length;
                 }
             }
 
@@ -169,6 +215,67 @@ namespace Microsoft.AspNetCore.Internal
             _currentSegment.AsSpan(0, _position).CopyTo(result.AsSpan(totalWritten));
 
             return result;
+        }
+
+        public override void Flush() { }
+        public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void WriteByte(byte value)
+        {
+            if (_currentSegment != null && (uint)_position < (uint)_currentSegment.Length)
+            {
+                _currentSegment[_position] = value;
+            }
+            else
+            {
+                AddSegment();
+                _currentSegment[0] = value;
+            }
+
+            _position++;
+            _bytesWritten++;
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            var position = _position;
+            if (_currentSegment != null && position < _currentSegment.Length - count)
+            {
+                Buffer.BlockCopy(buffer, offset, _currentSegment, position, count);
+
+                _position = position + count;
+                _bytesWritten += count;
+            }
+            else
+            {
+                BuffersExtensions.Write(this, buffer.AsSpan(offset, count));
+            }
+        }
+
+#if NETCOREAPP2_1
+        public override void Write(ReadOnlySpan<byte> span)
+        {
+            if (_currentSegment != null && span.TryCopyTo(_currentSegment.AsSpan().Slice(_position)))
+            {
+                _position += span.Length;
+                _bytesWritten += span.Length;
+            }
+            else
+            {
+                BuffersExtensions.Write(this, span);
+            }
+        }
+#endif
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Reset();
+            }
         }
     }
 }

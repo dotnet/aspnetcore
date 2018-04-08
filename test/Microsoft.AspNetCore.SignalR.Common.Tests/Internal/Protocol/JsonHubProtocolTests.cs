@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var output = new MemoryStream();
             output.Write(message, 0, message.Length);
-            TextMessageFormatter.WriteRecordSeparator(output);
+            output.WriteByte(TextMessageFormatter.RecordSeparator);
             return output.ToArray();
         }
 

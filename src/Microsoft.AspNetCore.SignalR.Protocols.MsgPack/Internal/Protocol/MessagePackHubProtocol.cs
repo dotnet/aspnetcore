@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.Extensions.Options;
 using MsgPack;
@@ -263,15 +264,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
-            using (var stream = new LimitArrayPoolWriteStream())
+            var writer = MemoryBufferWriter.Get();
+
+            try
             {
                 // Write message to a buffer so we can get its length
-                WriteMessageCore(message, stream);
-                var buffer = stream.GetBuffer();
+                WriteMessageCore(message, writer);
 
                 // Write length then message to output
-                BinaryMessageFormatter.WriteLengthPrefix(buffer.Count, output);
-                output.Write(buffer);
+                BinaryMessageFormatter.WriteLengthPrefix(writer.Length, output);
+                writer.CopyTo(output);
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 

@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Common\MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MsgPack.Cli" Version="$(MsgPackCliPackageVersion)" />
   </ItemGroup>
 

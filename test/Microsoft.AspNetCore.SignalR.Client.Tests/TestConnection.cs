@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var output = new MemoryStream();
             output.Write(message, 0, message.Length);
-            TextMessageFormatter.WriteRecordSeparator(output);
+            output.WriteByte(TextMessageFormatter.RecordSeparator);
             return output.ToArray();
         }
     }
