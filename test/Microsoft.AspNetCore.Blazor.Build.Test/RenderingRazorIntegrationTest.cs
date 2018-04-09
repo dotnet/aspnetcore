@@ -316,34 +316,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
-        public void SupportsAttributesWithCSharpCodeBlockValues()
-        {
-            // Arrange/Act
-            var component = CompileToComponent(
-                @"<elem attr=@{ DidInvokeCode = true; } />
-                @functions {
-                    public bool DidInvokeCode { get; set; } = false;
-                }");
-            var didInvokeCodeProperty = component.GetType().GetProperty("DidInvokeCode");
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.False((bool)didInvokeCodeProperty.GetValue(component));
-            Assert.Collection(frames,
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame =>
-                {
-                    Assert.Equal(RenderTreeFrameType.Attribute, frame.FrameType);
-                    Assert.NotNull(frame.AttributeValue);
-                    Assert.Equal(1, frame.Sequence);
-
-                    ((UIEventHandler)frame.AttributeValue)(null);
-                    Assert.True((bool)didInvokeCodeProperty.GetValue(component));
-                },
-                frame => AssertFrame.Whitespace(frame, 2));
-        }
-
-        [Fact]
         public void SupportsUsingStatements()
         {
             // Arrange/Act
@@ -356,37 +328,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             Assert.Collection(frames,
                 frame => AssertFrame.Whitespace(frame, 0),
                 frame => AssertFrame.Text(frame, typeof(List<string>).FullName, 1));
-        }
-
-        [Fact]
-        public void SupportsAttributeFramesEvaluatedInline()
-        {
-            // Arrange/Act
-            var component = CompileToComponent(
-                @"<elem @onclick(MyHandler) />
-                @functions {
-                    public bool DidInvokeCode { get; set; } = false;
-                    void MyHandler()
-                    {
-                        DidInvokeCode = true;
-                    }
-                }");
-            var didInvokeCodeProperty = component.GetType().GetProperty("DidInvokeCode");
-
-            // Assert
-            Assert.False((bool)didInvokeCodeProperty.GetValue(component));
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame =>
-                {
-                    Assert.Equal(RenderTreeFrameType.Attribute, frame.FrameType);
-                    Assert.NotNull(frame.AttributeValue);
-                    Assert.Equal(1, frame.Sequence);
-
-                    ((UIEventHandler)frame.AttributeValue)(null);
-                    Assert.True((bool)didInvokeCodeProperty.GetValue(component));
-                },
-                frame => AssertFrame.Whitespace(frame, 2));
         }
 
         [Fact]
@@ -404,6 +345,36 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var frames = GetRenderTree(component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
+                frame => AssertFrame.Attribute(frame, "value", "Initial value", 1),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onchange", 2);
+
+                    // Trigger the change event to show it updates the property
+                    ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
+                    {
+                        Value = "Modified value"
+                    });
+                    Assert.Equal("Modified value", myValueProperty.GetValue(component));
+                },
+                frame => AssertFrame.Text(frame, "\n", 3));
+        }
+
+        [Fact]
+        public void SupportsTwoWayBindingForTextareas()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                @"<textarea bind=""MyValue"" ></textarea>
+                @functions {
+                    public string MyValue { get; set; } = ""Initial value"";
+                }");
+            var myValueProperty = component.GetType().GetProperty("MyValue");
+
+            // Assert
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "textarea", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", "Initial value", 1),
                 frame =>
                 {
@@ -534,7 +505,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange
             var component = CompileToComponent(@"
 @using Microsoft.AspNetCore.Blazor
-<button onclick=""@OnClick"" @onclick(OnClick)/>
+<button onclick=""@OnClick"" />
 @functions {
     public void OnClick(UIMouseEventArgs e) { Clicked = true; }
     public bool Clicked { get; set; }

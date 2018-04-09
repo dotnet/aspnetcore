@@ -1,4 +1,5 @@
-﻿<h2>Textbox</h2>
+﻿@using Microsoft.AspNetCore.Blazor
+<h2>Textbox</h2>
 <p>
     Initially blank:
     <input id="textbox-initially-blank" bind="textboxInitiallyBlankValue" />
@@ -13,12 +14,12 @@
 <h2>Text Area</h2>
 <p>
     Initially blank:
-    <textarea id="textarea-initially-blank" @bind(textAreaIntiallyBlankValue)></textarea>
+    <textarea id="textarea-initially-blank" bind="textAreaIntiallyBlankValue"></textarea>
     <span id="textarea-initially-blank-value">@textAreaIntiallyBlankValue</span>
 </p>
 <p>
     Initially populated:
-    <textarea id="textarea-initially-populated" @bind(textAreaIntiallyPopulatedValue)></textarea>
+    <textarea id="textarea-initially-populated" bind="textAreaIntiallyPopulatedValue"></textarea>
     <span id="textarea-initially-populated-value">@textAreaIntiallyPopulatedValue</span>
 </p>
 
@@ -46,7 +47,7 @@
         }
     </select>
     <span id="select-box-value">@selectValue</span>
-    <button id="select-box-add-option" @onclick(AddAndSelectNewSelectOption)>Add and select new item</button>
+    <button id="select-box-add-option" onclick="@AddAndSelectNewSelectOption">Add and select new item</button>
 </p>
 
 @functions {
@@ -63,7 +64,7 @@
     enum SelectableValue { First, Second, Third, Fourth }
     SelectableValue selectValue = SelectableValue.Second;
 
-    void AddAndSelectNewSelectOption()
+    void AddAndSelectNewSelectOption(UIMouseEventArgs e)
     {
         includeFourthOption = true;
         selectValue = SelectableValue.Fourth;

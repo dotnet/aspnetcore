@@ -178,50 +178,5 @@ namespace Microsoft.AspNetCore.Blazor.Components
             // at the end of every event callback.
             StateHasChanged();
         }
-
-        // At present, if you have a .cshtml file in a project with <Project Sdk="Microsoft.NET.Sdk.Web">,
-        // Visual Studio will run design-time builds for it, codegenning a class that attempts to override
-        // this method. Therefore the virtual method must be defined, even though it won't be used at runtime,
-        // because otherwise VS will display a design-time error in its 'Error List' pane.
-        // TODO: Track down what triggers the design-time build for .cshtml files and how to stop it, then
-        // this method can be removed.
-        /// <summary>
-        /// Not used. Do not invoke this method.
-        /// </summary>
-        /// <returns>Always throws an exception.</returns>
-        public virtual Task ExecuteAsync()
-            => throw new NotImplementedException($"Blazor components do not implement {nameof(ExecuteAsync)}.");
-
-        /// <summary>
-        /// Applies two-way data binding between the element and the property.
-        /// </summary>
-        /// <param name="value">The model property to be bound to the element.</param>
-        protected RenderTreeFrame bind(object value)
-            => throw new NotImplementedException($"{nameof(bind)} is a compile-time symbol only and should not be invoked.");
-
-        /// <summary>
-        /// Applies two-way data binding between the element and the property.
-        /// </summary>
-        /// <param name="value">The model property to be bound to the element.</param>
-        protected RenderTreeFrame bind(DateTime value, string format)
-            => throw new NotImplementedException($"{nameof(bind)} is a compile-time symbol only and should not be invoked.");
-
-        /// <summary>
-        /// Handles click events by invoking <paramref name="handler"/>.
-        /// </summary>
-        /// <param name="handler">The handler to be invoked when the event occurs.</param>
-        /// <returns>A <see cref="RenderTreeFrame"/> that represents the event handler.</returns>
-        protected RenderTreeFrame onclick(Action handler)
-            // Note that the 'sequence' value is updated later when inserted into the tree
-            => RenderTreeFrame.Attribute(0, "onclick", handler != null ? (_ => handler()) : (UIEventHandler)null);
-
-        /// <summary>
-        /// Handles change events by invoking <paramref name="handler"/>.
-        /// </summary>
-        /// <param name="handler">The handler to be invoked when the event occurs. The handler will receive the new value as a parameter.</param>
-        /// <returns>A <see cref="RenderTreeFrame"/> that represents the event handler.</returns>
-        protected RenderTreeFrame onchange(Action<object> handler)
-            // Note that the 'sequence' value is updated later when inserted into the tree
-            => RenderTreeFrame.Attribute(0, "onchange", args => handler(((UIChangeEventArgs)args).Value));
     }
 }

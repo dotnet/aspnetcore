@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Html;
 using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
@@ -27,25 +25,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             = new HashSet<string>(
                 new[] { "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr" },
                 StringComparer.OrdinalIgnoreCase);
-        private readonly static Regex bindExpressionRegex = new Regex(@"^bind\((.+)\)$");
-        private readonly static CSharpParseOptions bindArgsParseOptions
-            = CSharpParseOptions.Default.WithKind(CodeAnalysis.SourceCodeKind.Script);
 
         private readonly ScopeStack _scopeStack = new ScopeStack();
         private string _unconsumedHtml;
         private List<IntermediateToken> _currentAttributeValues;
         private IDictionary<string, PendingAttribute> _currentElementAttributes = new Dictionary<string, PendingAttribute>();
-        private IList<PendingAttributeToken> _currentElementAttributeTokens = new List<PendingAttributeToken>();
         private int _sourceSequence = 0;
 
         private struct PendingAttribute
         {
             public List<IntermediateToken> Values { get; set; }
-        }
-
-        private struct PendingAttributeToken
-        {
-            public IntermediateToken AttributeValue;
         }
 
         public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
@@ -118,27 +107,26 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new InvalidOperationException($"Invoked {nameof(WriteCSharpCodeAttributeValue)} while {nameof(_currentAttributeValues)} was null.");
             }
 
-            // For attributes like "onsomeevent=@{ /* some C# code */ }", we treat it as if you
-            // wrote "onsomeevent=@(_ => { /* some C# code */ })" because then it works as an
-            // event handler and is a reasonable syntax for that.
-            var innerCSharp = (IntermediateToken)node.Children.Single();
-            innerCSharp.Content = $"_ => {{ {innerCSharp.Content} }}";
-            _currentAttributeValues.Add(innerCSharp);
+            // We used to support syntaxes like <elem onsomeevent=@{ /* some C# code */ } /> but this is no longer the 
+            // case.
+            //
+            // We provide an error for this case just to be friendly.
+            var content = string.Join("", node.Children.OfType<IntermediateToken>().Select(t => t.Content));
+            context.Diagnostics.Add(BlazorDiagnosticFactory.Create_CodeBlockInAttribute(node.Source, content));
+            return;
         }
 
         public override void WriteCSharpExpression(CodeRenderingContext context, CSharpExpressionIntermediateNode node)
         {
-            // To support syntax like <elem @completeAttributePair /> (which in turn supports syntax
-            // like <elem @OnSomeEvent(Handler) />), check whether we are currently in the middle of
-            // writing an element. If so, treat this C# expression as something that should evaluate
-            // as a RenderTreeFrame of type Attribute.
+            // We used to support syntaxes like <elem @completeAttributePair /> but this is no longer the case.
+            // The APIs that a user would need to do this correctly aren't accessible outside of Blazor's core
+            // anyway.
+            // 
+            // We provide an error for this case just to be friendly.
             if (_unconsumedHtml != null)
             {
-                var token = (IntermediateToken)node.Children.Single();
-                _currentElementAttributeTokens.Add(new PendingAttributeToken
-                {
-                    AttributeValue = token
-                });
+                var content = string.Join("", node.Children.OfType<IntermediateToken>().Select(t => t.Content));
+                context.Diagnostics.Add(BlazorDiagnosticFactory.Create_ExpressionInAttributeList(node.Source, content));
                 return;
             }
 
@@ -279,15 +267,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                     _currentElementAttributes.Clear();
                                 }
 
-                                if (_currentElementAttributeTokens.Count > 0)
-                                {
-                                    foreach (var token in _currentElementAttributeTokens)
-                                    {
-                                        WriteElementAttributeToken(context, nextTag, token);
-                                    }
-                                    _currentElementAttributeTokens.Clear();
-                                }
-
                                 _scopeStack.OpenScope( tagName: nextTag.Data, isComponent: false);
                             }
 
@@ -322,56 +301,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             if (originalHtmlContent.Length > nextToken.Position.Position)
             {
                 _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
-            }
-        }
-
-        private void WriteElementAttributeToken(CodeRenderingContext context, HtmlTagToken tag, PendingAttributeToken token)
-        {
-            var bindMatch = bindExpressionRegex.Match(token.AttributeValue.Content);
-            if (bindMatch.Success)
-            {
-                // TODO: Consider alternatives to the @bind syntax. The following is very strange.
-
-                // The @bind(X, Y, Z, ...) syntax is special. We convert it to a pair of attributes:
-                // [1] value=@BindMethods.GetValue(X, Y, Z, ...)
-                var valueParams = bindMatch.Groups[1].Value;
-                WriteAttribute(context.CodeWriter, "value", new[]
-                {
-                    new IntermediateToken
-                    {
-                        Kind = TokenKind.CSharp,
-                        Content = $"{BlazorApi.BindMethods.GetValue}({valueParams})"
-                    }
-                });
-
-                // [2] @onchange(BindSetValue(parsed => { X = parsed; }, X, Y, Z, ...))
-                var parsedArgs = CSharpSyntaxTree.ParseText(valueParams, bindArgsParseOptions);
-                var parsedArgsSplit = parsedArgs.GetRoot().ChildNodes().Select(x => x.ToString()).ToList();
-                if (parsedArgsSplit.Count > 0)
-                {
-                    parsedArgsSplit.Insert(0, $"_parsedValue_ => {{ {parsedArgsSplit[0]} = _parsedValue_; }}");
-                }
-                var parsedArgsJoined = string.Join(", ", parsedArgsSplit);
-                var onChangeAttributeToken = new PendingAttributeToken
-                {
-                    AttributeValue = new IntermediateToken
-                    {
-                        Kind = TokenKind.CSharp,
-                        Content = $"onchange({BlazorApi.BindMethods.SetValue}({parsedArgsJoined}))"
-                    }
-                };
-                WriteElementAttributeToken(context, tag, onChangeAttributeToken);
-            }
-            else
-            {
-                // For any other attribute token (e.g., @onclick(...)), treat it as an expression
-                // that will evaluate as an attribute frame
-                context.CodeWriter
-                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
-                    .Write((_sourceSequence++).ToString())
-                    .WriteParameterSeparator()
-                    .Write(token.AttributeValue.Content)
-                    .WriteEndMethodInvocation();
             }
         }
 

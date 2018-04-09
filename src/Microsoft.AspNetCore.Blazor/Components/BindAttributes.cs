@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [BindInputElement("text", null, "value", "onchange")]
 
     [BindElement("select", null, "value", "onchange")]
+    [BindElement("textarea", null, "value", "onchange")]
     public static class BindAttributes
     {
     }

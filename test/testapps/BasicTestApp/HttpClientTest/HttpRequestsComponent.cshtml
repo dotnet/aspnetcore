@@ -1,5 +1,6 @@
 ﻿@using System.Net
 @using System.Net.Http
+@using Microsoft.AspNetCore.Blazor
 @using Microsoft.AspNetCore.Blazor.Browser.Http
 @inject HttpClient Http
 
@@ -7,12 +8,12 @@
 
 <p>
     <div>URI:</div>
-    <input id="request-uri" value=@uri @onchange(value => { uri = (string)value; }) size="60"/>
+    <input id="request-uri" bind="@uri" size="60"/>
 </p>
 
 <p>
     <div>Method:</div>
-    <select id="request-method" value=@method @onchange(value => { method = (string)value; })>
+    <select id="request-method" bind="@method">
         <option value="GET">GET</option>
         <option value="POST">POST</option>
         <option value="PUT">PUT</option>
@@ -22,7 +23,7 @@
 
 <p>
     <div>Request body:</div>
-    <textarea id="request-body" value=@requestBody @onchange(value => { requestBody = (string)value; })></textarea>
+    <textarea id="request-body" bind="@requestBody"></textarea>
 </p>
 
 <p>
@@ -30,20 +31,20 @@
     @foreach (var header in requestHeaders)
     {
         <div class="header-entry">
-            Name: <input value=@header.Name @onchange(value => { header.Name = (string)value; }) />
-            Value: <input value=@header.Value @onchange(value => { header.Value = (string)value; }) />
-            [<a href="#" @onclick(() => RemoveHeader(header))>remove</a>]
+            Name: <input bind="@header.Name" />
+            Value: <input bind="@header.Value" />
+            [<a href="#" onclick="@(e => RemoveHeader(header))">remove</a>]
         </div>
     }
-    <button id="add-header" @onclick(AddHeader)>Add</button>
+    <button id="add-header" onclick="@AddHeader">Add</button>
 </p>
 
 <p>
     <div>Request referrer:</div>
-    <input id="request-referrer" type="text" value=@requestReferrer @onchange(value => { requestReferrer = (string)value; }) />
+    <input id="request-referrer" type="text" bind=@requestReferrer />
 </p>
 
-<button id="send-request" @onclick(DoRequest)>Request</button>
+<button id="send-request" onclick="@DoRequest">Request</button>
 
 @if (responseStatusCode.HasValue)
 {
@@ -71,7 +72,7 @@
     string responseBody;
     string responseHeaders;
 
-    async void DoRequest()
+    async void DoRequest(UIMouseEventArgs e)
     {
         responseStatusCode = null;
 
@@ -124,7 +125,7 @@
         StateHasChanged();
     }
 
-    void AddHeader()
+    void AddHeader(UIMouseEventArgs e)
         => requestHeaders.Add(new RequestHeader());
 
     void RemoveHeader(RequestHeader header)

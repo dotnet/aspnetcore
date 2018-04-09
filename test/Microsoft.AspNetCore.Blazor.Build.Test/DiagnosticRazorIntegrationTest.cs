@@ -47,5 +47,45 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     Assert.Equal(20, item.Span.CharacterIndex);
                 });
         }
+
+        // This is the old syntax used by @bind and @onclick, it's explicitly unsupported
+        // and has its own diagnostic.
+        [Fact]
+        public void OldEventHandlerSyntax_ReportsError()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem @foo(MyHandler) />
+@functions {
+    void MyHandler()
+    {
+    }
+
+    string foo(Action action)
+    {
+        return action.ToString();
+    }
+}");
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("BL9980", diagnostic.Id);
+        }
+
+        // This used to be a sugar syntax for lambdas, but we don't support that anymore
+        [Fact]
+        public void OldCodeBlockAttributeSyntax_ReportsError()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attr=@{ DidInvokeCode = true; } />
+@functions {
+    public bool DidInvokeCode { get; set; } = false;
+}");
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("BL9979", diagnostic.Id);
+        }
     }
 }

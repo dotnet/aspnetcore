@@ -1,10 +1,11 @@
-﻿@inject System.Net.Http.HttpClient Http
+﻿@using Microsoft.AspNetCore.Blazor
+@inject System.Net.Http.HttpClient Http
 
 <h1>Cookie counter</h1>
 <p>The server increments the count by one on each request.</p>
-<p>TestServer base URL: <input @bind(testServerBaseUrl) /></p>
-<button id="delete" @onclick(DeleteCookie)>Delete cookie</button>
-<button id="increment" @onclick(GetAndIncrementCounter)>Get and increment current value</button>
+<p>TestServer base URL: <input bind="@testServerBaseUrl" /></p>
+<button id="delete" onclick="@DeleteCookie">Delete cookie</button>
+<button id="increment" onclick="@GetAndIncrementCounter">Get and increment current value</button>
 
 @if (!requestInProgress)
 {
@@ -17,13 +18,13 @@
     string testServerBaseUrl;
     string responseText;
 
-    async void DeleteCookie()
+    async void DeleteCookie(UIMouseEventArgs e)
     {
         await DoRequest("api/cookie/reset");
         StateHasChanged();
     }
 
-    async void GetAndIncrementCounter()
+    async void GetAndIncrementCounter(UIMouseEventArgs e)
     {
         await DoRequest("api/cookie/increment");
         StateHasChanged();

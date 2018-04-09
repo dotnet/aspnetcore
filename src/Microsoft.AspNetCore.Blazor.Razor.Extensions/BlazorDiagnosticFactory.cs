@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using AngleSharp;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -13,6 +12,43 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal static class BlazorDiagnosticFactory
     {
+        public static readonly RazorDiagnosticDescriptor CodeBlockInAttribute =
+            new RazorDiagnosticDescriptor(
+            "BL9979",
+            () =>
+                "Code blocks delimited by '@{...}' like '@{{ {0} }}' for attributes are no longer supported " +
+                "These features have been changed to use attribute syntax. " +
+                "Use 'attr=\"@(x => {... }\"'.",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_CodeBlockInAttribute(SourceSpan? source, string expression)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                CodeBlockInAttribute,
+                source ?? SourceSpan.Undefined,
+                expression);
+            return diagnostic;
+        }
+
+        public static readonly RazorDiagnosticDescriptor ExpressionInAttributeList =
+            new RazorDiagnosticDescriptor(
+            "BL9980",
+            () =>
+                "Expressions like '{0}' inside of a tag must be part of an attribute. " +
+                "Previous releases of Blazor supported constructs like '@onclick(...)' or '@bind(...)'." +
+                "These features have been changed to use attribute syntax. " +
+                "Use 'onclick=\"@...\"' or 'bind=\"...\" respectively.",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_ExpressionInAttributeList(SourceSpan? source, string expression)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                ExpressionInAttributeList,
+                source ?? SourceSpan.Undefined,
+                expression);
+            return diagnostic;
+        }
+
         public static readonly RazorDiagnosticDescriptor UnexpectedClosingTag = new RazorDiagnosticDescriptor(
             "BL9981",
             () => "Unexpected closing tag '{0}' with no matching start tag.",

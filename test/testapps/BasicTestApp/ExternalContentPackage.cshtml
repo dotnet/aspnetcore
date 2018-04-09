@@ -1,4 +1,5 @@
 ﻿@addTagHelper *, TestContentPackage
+@using Microsoft.AspNetCore.Blazor
 @using TestContentPackage
 
 <h1>Functionality and content from an external package</h1>
@@ -11,7 +12,7 @@
 
 <p>Click the following button to invoke a JavaScript function.</p>
 
-<button @onclick(ShowJavaScriptPrompt)>Show JavaScript prompt</button>
+<button onclick="@ShowJavaScriptPrompt">Show JavaScript prompt</button>
 
 @if (!string.IsNullOrEmpty(result))
 {
@@ -31,7 +32,7 @@
 {
     string result;
 
-    void ShowJavaScriptPrompt()
+    void ShowJavaScriptPrompt(UIMouseEventArgs e)
     {
         result = MyPrompt.Show("Hello!");
     }
