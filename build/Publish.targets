@@ -199,6 +199,7 @@
     <Run FileName="npm"
          Arguments="publish;--registry;$(PublishMyGetNpmRegistryUrl);%(NpmPackageToPublish.Identity)"
          MaxRetries="5"
+         UseCommandProcessor="true"
          ContinueOnError="true">
       <Output TaskParameter="ExitCode" ItemName="_NpmExitCodes" />
     </Run>
