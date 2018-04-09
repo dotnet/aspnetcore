@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private const byte LineFeed = (byte)'\n';
 
-        public static async Task WriteMessageAsync(ReadOnlySequence<byte> payload, Stream output)
+        public static Task WriteMessageAsync(in ReadOnlySequence<byte> payload, Stream output)
         {
             var ms = new MemoryStream();
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             ms.Position = 0;
 
-            await ms.CopyToAsync(output);
+            return ms.CopyToAsync(output);
         }
 
         public static void WriteMessage(ReadOnlyMemory<byte> payload, Stream output)

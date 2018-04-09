@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         {
             private readonly ReadOnlySequence<byte> _buffer;
 
-            public ReadOnlySequenceContent(ReadOnlySequence<byte> buffer)
+            public ReadOnlySequenceContent(in ReadOnlySequence<byte> buffer)
             {
                 _buffer = buffer;
             }

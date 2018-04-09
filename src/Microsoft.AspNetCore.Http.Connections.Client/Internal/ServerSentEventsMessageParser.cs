@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadOnlySequence<byte> buffer)
+        private ReadOnlySpan<byte> ConvertBufferToSpan(in ReadOnlySequence<byte> buffer)
         {
             if (buffer.IsSingleSegment)
             {

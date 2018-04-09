@@ -25,7 +25,7 @@ namespace ClientSample
             _eventArgs.Completed += (_, e) => ((SocketAwaitable)e.UserToken).Complete(e.BytesTransferred, e.SocketError);
         }
 
-        public SocketAwaitable SendAsync(ReadOnlySequence<byte> buffers)
+        public SocketAwaitable SendAsync(in ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
@@ -74,7 +74,7 @@ namespace ClientSample
             return _awaitable;
         }
 
-        private List<ArraySegment<byte>> GetBufferList(ReadOnlySequence<byte> buffer)
+        private List<ArraySegment<byte>> GetBufferList(in ReadOnlySequence<byte> buffer)
         {
             Debug.Assert(!buffer.IsEmpty);
             Debug.Assert(!buffer.IsSingleSegment);

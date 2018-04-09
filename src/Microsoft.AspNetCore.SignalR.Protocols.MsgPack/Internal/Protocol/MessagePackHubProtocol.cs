@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return message != null;
         }
 
-        private static ArraySegment<byte> GetArraySegment(ReadOnlySequence<byte> input)
+        private static ArraySegment<byte> GetArraySegment(in ReadOnlySequence<byte> input)
         {
             if (input.IsSingleSegment)
             {
