@@ -196,8 +196,9 @@
     <Exec Command="npm config set &quot;$(AuthTokenSetting)&quot; $(PublishMyGetFeedKey)"
           StandardOutputImportance="Normal" />
 
-    <Run FileName="npm"
-         Arguments="publish;--registry;$(PublishMyGetNpmRegistryUrl);%(NpmPackageToPublish.Identity)"
+    <!-- When you UseCommandProcessor FileName is ignored -->
+    <Run FileName="cmd"
+         Arguments="npm;publish;--registry;$(PublishMyGetNpmRegistryUrl);%(NpmPackageToPublish.Identity)"
          MaxRetries="5"
          UseCommandProcessor="true"
          ContinueOnError="true">
