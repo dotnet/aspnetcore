@@ -112,7 +112,7 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
         // if it was, log that app_offline has been dropped.
         if (m_fAppOfflineFound)
         {
-            UTILITY::LogEventF(g_hEventLog,
+            UTILITY::LogEvent(g_hEventLog,
                 EVENTLOG_INFORMATION_TYPE,
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED,
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED_MSG);
@@ -258,7 +258,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
         {
             if (FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
             {
-                UTILITY::LogEventF(g_hEventLog,
+                UTILITY::LogEvent(g_hEventLog,
                         EVENTLOG_INFORMATION_TYPE,
                         ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
                         ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG);
@@ -268,7 +268,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
         {
             if (FAILED(hr = FindNativeAssemblyFromGlobalLocation(&struFileName)))
             {
-                UTILITY::LogEventF(g_hEventLog,
+                UTILITY::LogEvent(g_hEventLog,
                     EVENTLOG_INFORMATION_TYPE,
                     ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
                     ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG);

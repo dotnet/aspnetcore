@@ -160,7 +160,7 @@ HRESULT
 
     if (fDisableANCM)
     {
-        UTILITY::LogEventF(g_hEventLog,
+        UTILITY::LogEvent(g_hEventLog,
                             EVENTLOG_WARNING_TYPE,
                             ASPNETCORE_EVENT_MODULE_DISABLED,
                             ASPNETCORE_EVENT_MODULE_DISABLED_MSG);

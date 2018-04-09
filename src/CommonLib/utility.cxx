@@ -637,10 +637,10 @@ UTILITY::LogEventF(
     ...
 )
 {
-    STACK_STRU ( strEventMsg, 256 );
-
     va_list argsList;
     va_start(argsList, pstrMsg);
+
+    STACK_STRU ( strEventMsg, 256 );
 
     if (SUCCEEDED(strEventMsg.SafeSnwprintf(
         pstrMsg,
