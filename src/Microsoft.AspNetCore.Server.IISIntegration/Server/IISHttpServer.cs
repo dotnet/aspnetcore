@@ -144,12 +144,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
             Interlocked.Increment(ref server._outstandingRequests);
 
-            // TODO: Add try/catch and logging here
-            var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
-
-            var task = Task.Run(() => context.ProcessRequestAsync());
-
-            task.ContinueWith((t, state) => CompleteRequest((IISHttpContext)state, t), context);
+            _ = Task.Run(
+                async () => {
+                    var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
+                    var result = await context.ProcessRequestAsync();;
+                    CompleteRequest(context, result);
+                });
 
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         }
@@ -168,10 +168,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         }
 
-        private static void CompleteRequest(IISHttpContext context, Task<bool> completedTask)
+        private static void CompleteRequest(IISHttpContext context, bool result)
         {
             // Post completion after completing the request to resume the state machine
-            context.PostCompletion(ConvertRequestCompletionResults(completedTask.Result));
+            context.PostCompletion(ConvertRequestCompletionResults(result));
 
             if (Interlocked.Decrement(ref context.Server._outstandingRequests) == 0 && context.Server.Stopping)
             {
