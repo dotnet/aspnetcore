@@ -4,19 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Hosting.TestRazorCompiledItem;
 
@@ -141,10 +138,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 }),
             };
 
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile("/Pages/About.cshtml", "some other content");
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem("/Pages/About.cshtml", "some other content"));
 
-            var provider = CreateProvider(descriptors: descriptors, fileProvider: fileProvider);
+            var provider = CreateProvider(descriptors: descriptors, fileSystem: fileSystem);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -167,11 +164,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 }),
             };
 
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile("/Pages/About.cshtml", "some content");
-            fileProvider.AddFile("/Pages/_ViewImports.cshtml", "some import");
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem("/Pages/About.cshtml", "some content"));
+            fileSystem.Add(new TestRazorProjectItem("/Pages/_ViewImports.cshtml", "some import"));
 
-            var provider = CreateProvider(descriptors: descriptors, fileProvider: fileProvider);
+            var provider = CreateProvider(descriptors: descriptors, fileSystem: fileSystem);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -196,10 +193,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 }),
             };
 
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile("/Pages/_ViewImports.cshtml", "some other import");
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem("/Pages/_ViewImports.cshtml", "some other import"));
 
-            var provider = CreateProvider(descriptors: descriptors, fileProvider: fileProvider);
+            var provider = CreateProvider(descriptors: descriptors, fileSystem: fileSystem);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -625,13 +622,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private TestCompiledPageRouteModelProvider CreateProvider(
            RazorPagesOptions options = null,
            IList<CompiledViewDescriptor> descriptors = null,
-           TestFileProvider fileProvider = null)
+           VirtualRazorProjectFileSystem fileSystem = null)
         {
             options = options ?? new RazorPagesOptions();
-            fileProvider = fileProvider ?? new TestFileProvider();
-            var fileSystem = new FileProviderRazorProjectFileSystem(
-                Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider),
-                Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            fileSystem = fileSystem ?? new VirtualRazorProjectFileSystem();
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem);
 
             var provider = new TestCompiledPageRouteModelProvider(

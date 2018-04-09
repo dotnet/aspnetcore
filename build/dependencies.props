@@ -28,6 +28,7 @@
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreRazorDesignPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreRazorLanguagePackageVersion>
     <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreRazorRuntimePackageVersion>
     <MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>
     <MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>

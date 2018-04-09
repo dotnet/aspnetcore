@@ -1,10 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
-using Moq;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Hosting.TestRazorCompiledItem;
 
@@ -14,15 +12,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     {
         public ChecksumValidatorTest()
         {
-            FileProvider = new TestFileProvider();
-            FileSystem = new FileProviderRazorProjectFileSystem(
-                Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == FileProvider),
-                Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            ProjectFileSystem = new VirtualRazorProjectFileSystem();
         }
 
-        public RazorProjectFileSystem FileSystem { get; }
-
-        public TestFileProvider FileProvider { get; }
+        public VirtualRazorProjectFileSystem ProjectFileSystem { get; }
 
         [Fact]
         public void IsRecompilationSupported_NoChecksums_ReturnsFalse()
@@ -77,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var item = new TestRazorCompiledItem(typeof(string), "mvc.1.0.view", "/Views/Home/Index.cstml", new object[] { });
 
             // Act
-            var result = ChecksumValidator.IsItemValid(FileSystem, item);
+            var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
 
             // Assert
             Assert.True(result);
@@ -94,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             });
 
             // Act
-            var result = ChecksumValidator.IsItemValid(FileSystem, item);
+            var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
 
             // Assert
             Assert.True(result);
@@ -110,10 +103,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Views/Home/Index.cstml"),
             });
 
-            FileProvider.AddFile("/Views/Home/_ViewImports.cstml", "dkdkfkdf"); // This will be ignored
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/_ViewImports.cstml", "dkdkfkdf")); // This will be ignored
 
             // Act
-            var result = ChecksumValidator.IsItemValid(FileSystem, item);
+            var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
 
             // Assert
             Assert.True(result);
@@ -129,10 +122,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Views/Home/Index.cstml"),
             });
 
-            FileProvider.AddFile("/Views/Home/Index.cstml", "other content");
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/Index.cstml", "other content"));
 
             // Act
-            var result = ChecksumValidator.IsItemValid(FileSystem, item);
+            var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
 
             // Assert
             Assert.False(result);
@@ -148,10 +141,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Views/Home/Index.cstml"),
             });
 
-            FileProvider.AddFile("/Views/Home/Index.cstml", "some content");
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/Index.cstml", "some content"));
 
             // Act
-            var result = ChecksumValidator.IsItemValid(FileSystem, item);
+            var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
 
             // Assert
             Assert.False(result);
@@ -167,11 +160,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Views/Home/Index.cstml"),
             });
 
-            FileProvider.AddFile("/Views/Home/Index.cstml", "some content");
-            FileProvider.AddFile("/Views/Home/_ViewImports.cstml", "some other import");
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/Index.cstml", "some content"));
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/_ViewImports.cstml", "some other import"));
 
             // Act
-            var result = ChecksumValidator.IsItemValid(FileSystem, item);
+            var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
 
             // Assert
             Assert.False(result);
@@ -188,12 +181,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Views/Home/Index.cstml"),
             });
 
-            FileProvider.AddFile("/Views/Home/Index.cstml", "some content");
-            FileProvider.AddFile("/Views/Home/_ViewImports.cstml", "some import");
-            FileProvider.AddFile("/Views/_ViewImports.cstml", "some other import");
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/Index.cstml", "some content"));
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/_ViewImports.cstml", "some import"));
+            ProjectFileSystem.Add(new TestRazorProjectItem("/Views/_ViewImports.cstml", "some other import"));
 
             // Act
-            var result = ChecksumValidator.IsItemValid(FileSystem, item);
+            var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
 
             // Assert
             Assert.True(result);

@@ -3,20 +3,16 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class CompilerFailedExceptionFactoryTest
     {
-        private readonly IHostingEnvironment _hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
-
         [Fact]
         public void GetCompilationFailedResult_ReadsRazorErrorsFromPage()
         {
@@ -24,11 +20,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var viewPath = "/Views/Home/Index.cshtml";
             var razorEngine = RazorEngine.Create();
 
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(viewPath, "<span name=\"@(User.Id\">");
-            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
-
-            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem(viewPath, "<span name=\"@(User.Id\">"));
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
@@ -39,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert
             var failure = Assert.Single(compilationResult.CompilationFailures);
-            Assert.Equal(Path.Combine("Views", "Home", "Index.cshtml"), failure.SourceFilePath);
+            Assert.Equal(viewPath, failure.SourceFilePath);
             Assert.Collection(failure.Messages,
                 message => Assert.StartsWith(
                     @"Unterminated string literal.",
@@ -56,13 +49,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var viewPath = "/Views/Home/Index.cshtml";
             var physicalPath = @"x:\myapp\views\home\index.cshtml";
 
-            var fileProvider = new TestFileProvider();
-            var file = fileProvider.AddFile(viewPath, "<span name=\"@(User.Id\">");
-            file.PhysicalPath = physicalPath;
-            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem(viewPath, "<span name=\"@(User.Id\">", physicalPath: physicalPath));
 
             var razorEngine = RazorEngine.Create();
-            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
 
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
@@ -90,11 +80,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 </span>";
 
             var razorEngine = RazorEngine.Create();
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(viewPath, fileContent);
-            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
-
-            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem(viewPath, fileContent));
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
 
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
@@ -113,18 +100,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var viewPath = "/Views/Home/Index.cshtml";
-            var importsFilePath = @"x:\views\_MyImports.cshtml";
+            var importsPath = "/Views/_MyImports.cshtml";
             var fileContent = "@ ";
             var importsContent = "@(abc";
 
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(viewPath, fileContent);
-            var importsFile = fileProvider.AddFile("/Views/_MyImports.cshtml", importsContent);
-            importsFile.PhysicalPath = importsFilePath;
-            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem(viewPath, fileContent));
+            fileSystem.Add(new TestRazorProjectItem("/Views/_MyImports.cshtml", importsContent));
 
             var razorEngine = RazorEngine.Create();
-            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem)
             {
                 Options =
@@ -143,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 compilationResult.CompilationFailures,
                 failure =>
                 {
-                    Assert.Equal(Path.Combine("Views", "Home", "Index.cshtml"), failure.SourceFilePath);
+                    Assert.Equal(viewPath, failure.SourceFilePath);
                     Assert.Collection(failure.Messages,
                         message =>
                         {
@@ -153,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 },
                 failure =>
                 {
-                    Assert.Equal(importsFilePath, failure.SourceFilePath);
+                    Assert.Equal(importsPath, failure.SourceFilePath);
                     Assert.Collection(failure.Messages,
                         message =>
                         {
@@ -179,7 +163,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 GetRazorDiagnostic("message-3", SourceLocation.Undefined, length: -1),
                 GetRazorDiagnostic("message-4", new SourceLocation(viewImportsPath, 1, 3, 8), length: 4),
             };
-            var fileProvider = new TestFileProvider();
 
             // Act
             var result = CompilationFailedExceptionFactory.Create(codeDocument, diagnostics);

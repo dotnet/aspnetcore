@@ -192,18 +192,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 .Setup(f => f.CreateFactory("/_ViewStart.cshtml"))
                 .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), factory2));
 
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile("/Home/Path1/_ViewStart.cshtml", "content1");
-            fileProvider.AddFile("/_ViewStart.cshtml", "content2");
-            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
-
-            var defaultFileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var fileSystem = new VirtualRazorProjectFileSystem();
+            fileSystem.Add(new TestRazorProjectItem("/Home/Path1/_ViewStart.cshtml", "content1"));
+            fileSystem.Add(new TestRazorProjectItem("/_ViewStart.cshtml", "content2"));
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
                 razorPageFactoryProvider: razorPageFactoryProvider.Object,
-                fileSystem: defaultFileSystem);
+                fileSystem: fileSystem);
 
             var context = new ActionInvokerProviderContext(new ActionContext()
             {

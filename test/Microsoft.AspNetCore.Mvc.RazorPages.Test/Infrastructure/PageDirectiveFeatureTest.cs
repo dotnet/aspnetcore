@@ -1,10 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         public void TryGetPageDirective_FindsTemplate()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem(@"@page ""Some/Path/{value}""
+            var projectItem = new TestRazorProjectItem("Test.cshtml", @"@page ""Some/Path/{value}""
 The rest of the thing");
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
@@ -34,7 +31,7 @@ The rest of the thing");
         public void TryGetPageDirective_NoNewLine()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem(@"@page ""Some/Path/{value}""");
+            var projectItem = new TestRazorProjectItem("Test.cshtml", @"@page ""Some/Path/{value}""");
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
 
@@ -48,7 +45,7 @@ The rest of the thing");
         public void TryGetPageDirective_JunkBeforeDirective()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem(@"Not a directive @page ""Some/Path/{value}""");
+            var projectItem = new TestRazorProjectItem("Test.cshtml", @"Not a directive @page ""Some/Path/{value}""");
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
 
@@ -67,7 +64,7 @@ The rest of the thing");
             var expected = "The page directive at 'Test.cshtml' is malformed. Please fix the following issues: The 'page' directive expects a string surrounded by double quotes.";
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
-            var projectItem = new TestRazorProjectItem($@"@page {inTemplate}");
+            var projectItem = new TestRazorProjectItem("Test.cshtml", $@"@page {inTemplate}");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
@@ -87,7 +84,7 @@ The rest of the thing");
             var expected = "The page directive at 'Test.cshtml' is malformed. Please fix the following issues: The 'page' directive expects a string surrounded by double quotes.";
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
-            var projectItem = new TestRazorProjectItem(@"@page Some/Path/{value}");
+            var projectItem = new TestRazorProjectItem("Test.cshtml", @"@page Some/Path/{value}");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
@@ -105,7 +102,7 @@ The rest of the thing");
         public void TryGetPageDirective_NewLineBeforeDirective()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem("\n @page \"Some/Path/{value}\"");
+            var projectItem = new TestRazorProjectItem("Test.cshtml", "\n @page \"Some/Path/{value}\"");
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
 
@@ -119,7 +116,7 @@ The rest of the thing");
         public void TryGetPageDirective_Directive_WithoutPathOrContent()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem(@"@page");
+            var projectItem = new TestRazorProjectItem("Test.cshtml", @"@page");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(NullLogger.Instance, projectItem, out var template));
@@ -130,7 +127,7 @@ The rest of the thing");
         public void TryGetPageDirective_DirectiveWithContent_WithoutPath()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem(@"@page
+            var projectItem = new TestRazorProjectItem("Test.cshtml", @"@page
 Non-path things");
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
@@ -145,7 +142,7 @@ Non-path things");
         public void TryGetPageDirective_NoDirective()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem(@"This is junk
+            var projectItem = new TestRazorProjectItem("Test.cshtml", @"This is junk
 Nobody will use it");
             var sink = new TestSink();
             var logger = new TestLogger("logger", sink, enabled: true);
@@ -154,36 +151,6 @@ Nobody will use it");
             Assert.False(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Null(template);
             Assert.Empty(sink.Writes);
-        }
-    }
-
-    public class TestRazorProjectItem : RazorProjectItem
-    {
-        private string _content;
-
-        public TestRazorProjectItem(string content)
-        {
-            _content = content;
-        }
-
-        public override string BasePath => throw new NotImplementedException();
-
-        public override bool Exists => throw new NotImplementedException();
-
-        public override string FilePath => "Test.cshtml";
-
-        public override string PhysicalPath => null;
-
-        public override Stream Read()
-        {
-            if (_content == null)
-            {
-                return null;
-            }
-            else
-            {
-                return new MemoryStream(Encoding.UTF8.GetBytes(_content));
-            }
         }
     }
 }
