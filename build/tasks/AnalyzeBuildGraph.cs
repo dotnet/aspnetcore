@@ -93,15 +93,19 @@ namespace RepoTasks
         {
             // ensure versions cascade
             var buildPackageMap = packages.ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
-            var dependencyMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var dependencyMap = new Dictionary<string, List<ExternalDependency>>(StringComparer.OrdinalIgnoreCase);
             foreach (var dep in Dependencies)
             {
                 if (!dependencyMap.TryGetValue(dep.ItemSpec, out var versions))
                 {
-                    dependencyMap[dep.ItemSpec] = versions = new List<string>();
+                    dependencyMap[dep.ItemSpec] = versions = new List<ExternalDependency>();
                 }
 
-                versions.Add(dep.GetMetadata("Version"));
+                versions.Add(new ExternalDependency
+                {
+                    PackageId = dep.ItemSpec,
+                    Version = dep.GetMetadata("Version"),
+                });
             }
 
             var inconsistentVersions = new List<VersionMismatch>();
@@ -115,15 +119,18 @@ namespace RepoTasks
             {
                 if (!buildPackageMap.TryGetValue(dependency.Key, out var package))
                 {
+                    var idx = -1;
                     // This dependency is not one of the packages that will be compiled by this run of Universe.
                     if (!dependencyMap.TryGetValue(dependency.Key, out var externalVersions)
-                        || !externalVersions.Contains(dependency.Value.Version))
+                        || (idx = externalVersions.FindIndex(0, externalVersions.Count, i => i.Version == dependency.Value.Version)) < 0)
                     {
                         Log.LogKoreBuildError(
                             project.FullPath,
                             KoreBuildErrors.UndefinedExternalDependency,
                             message: $"Undefined external dependency on {dependency.Key}/{dependency.Value.Version}");
                     }
+
+                    externalVersions[idx].IsReferenced = true;
                     continue;
                 }
 
@@ -174,6 +181,15 @@ namespace RepoTasks
                 Log.LogError("Package versions are inconsistent. See build log for details.");
             }
 
+            foreach (var versions in dependencyMap.Values)
+            {
+                foreach (var item in versions.Where(i => !i.IsReferenced))
+                {
+                    // See https://github.com/aspnet/Universe/wiki/Build-warning-and-error-codes#potentially-unused-external-dependency for details
+                    Log.LogMessage(MessageImportance.Normal, $"Potentially unused external dependency: {item.PackageId}/{item.Version}. See https://github.com/aspnet/Universe/wiki/Build-warning-and-error-codes for details.");
+                }
+            }
+
             foreach (var repo in reposThatShouldPatch)
             {
                 Log.LogError($"{repo} should not be a 'ShippedRepository'. Version changes in other repositories mean it should be patched to perserve cascading version upgrades.");
@@ -211,13 +227,13 @@ namespace RepoTasks
 
 
                         projectGroup.Add(new Project(proj.PackageId)
-                            {
-                                Repository = repo,
-                                PackageReferences = new HashSet<string>(proj
+                        {
+                            Repository = repo,
+                            PackageReferences = new HashSet<string>(proj
                                     .Frameworks
                                     .SelectMany(f => f.Dependencies.Keys)
                                     .Concat(proj.Tools.Select(t => t.Id)), StringComparer.OrdinalIgnoreCase),
-                            });
+                        });
                     }
 
                     foreach (var packageId in packages.Keys)
