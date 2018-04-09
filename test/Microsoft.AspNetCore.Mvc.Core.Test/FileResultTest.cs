@@ -396,6 +396,84 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expected, ifRangeIsValid);
         }
 
+        public static TheoryData<DateTimeOffset, int> LastModifiedDateData
+        {
+            get
+            {
+                return new TheoryData<DateTimeOffset, int>()
+                {
+                    { new DateTimeOffset(2018, 4, 9, 11, 23, 22, TimeSpan.Zero), 200 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 24, 21, TimeSpan.Zero), 200 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 24, 22, TimeSpan.Zero), 304 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 24, 23, TimeSpan.Zero), 304 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 25, 22, TimeSpan.Zero), 304 },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(LastModifiedDateData))]
+        public async Task IfModifiedSinceComparison_OnlyUsesWholeSeconds(
+            DateTimeOffset ifModifiedSince,
+            int expectedStatusCode)
+        {
+            // Arrange
+            var httpContext = GetHttpContext();
+            httpContext.Request.Headers[HeaderNames.IfModifiedSince] = HeaderUtilities.FormatDate(ifModifiedSince);
+            var actionContext = CreateActionContext(httpContext);
+            // Represents 4/9/2018 11:24:22 AM +00:00
+            // Ticks rounded down to seconds: 636588698620000000
+            var ticks = 636588698625969382;
+            var result = new EmptyFileResult("application/test")
+            {
+                LastModified = new DateTimeOffset(ticks, TimeSpan.Zero)
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+        }
+
+        public static TheoryData<DateTimeOffset, int> IfUnmodifiedSinceDateData
+        {
+            get
+            {
+                return new TheoryData<DateTimeOffset, int>()
+                {
+                    { new DateTimeOffset(2018, 4, 9, 11, 23, 22, TimeSpan.Zero), 412 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 24, 21, TimeSpan.Zero), 412 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 24, 22, TimeSpan.Zero), 200 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 24, 23, TimeSpan.Zero), 200 },
+                    { new DateTimeOffset(2018, 4, 9, 11, 25, 22, TimeSpan.Zero), 200 },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(IfUnmodifiedSinceDateData))]
+        public async Task IfUnmodifiedSinceComparison_OnlyUsesWholeSeconds(DateTimeOffset ifUnmodifiedSince, int expectedStatusCode)
+        {
+            // Arrange
+            var httpContext = GetHttpContext();
+            httpContext.Request.Headers[HeaderNames.IfUnmodifiedSince] = HeaderUtilities.FormatDate(ifUnmodifiedSince);
+            var actionContext = CreateActionContext(httpContext);
+            // Represents 4/9/2018 11:24:22 AM +00:00
+            // Ticks rounded down to seconds: 636588698620000000
+            var ticks = 636588698625969382;
+            var result = new EmptyFileResult("application/test")
+            {
+                LastModified = new DateTimeOffset(ticks, TimeSpan.Zero)
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+        }
+
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
@@ -449,7 +527,12 @@ namespace Microsoft.AspNetCore.Mvc
 
             public Task ExecuteAsync(ActionContext context, EmptyFileResult result)
             {
-                SetHeadersAndLog(context, result, 0L, true);
+                SetHeadersAndLog(
+                    context,
+                    result,
+                    fileLength: 0L,
+                    enableRangeProcessing: true,
+                    lastModified: result.LastModified);
                 result.WasWriteFileCalled = true;
                 return Task.FromResult(0);
             }
