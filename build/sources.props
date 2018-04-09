@@ -10,7 +10,7 @@
     </RestoreSources>
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
       $(RestoreSources);
-      https://aspnetcore.blob.core.windows.net/patchdrops/core-setup/2.0.7-20180403/index.json;
+      https://aspnetcore.blob.core.windows.net/patchdrops/core-setup/2.0.7-20180406/index.json;
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://api.nuget.org/v3/index.json;
     </RestoreSources>
