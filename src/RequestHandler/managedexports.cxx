@@ -194,7 +194,7 @@ http_read_request_bytes(
     _Out_ BOOL* pfCompletionPending
 )
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
 
     if (pInProcessHandler == NULL)
     {
@@ -206,7 +206,7 @@ http_read_request_bytes(
     }
     IHttpRequest *pHttpRequest = (IHttpRequest*)pInProcessHandler->QueryHttpContext()->GetRequest();
 
-
+    // Check if there is anything to read
     if (pHttpRequest->GetRemainingEntityBytes() > 0)
     {
         BOOL fAsync = TRUE;
@@ -225,8 +225,8 @@ http_read_request_bytes(
     }
     else
     {
-        // nothing to read
-        hr = S_OK;
+        *pdwBytesReceived = 0;
+        *pfCompletionPending = FALSE;
     }
 
     return hr;

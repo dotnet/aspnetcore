@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 if (LocalIpAddress == null)
                 {
-                    InitializeRemoteEndpoint();
+                    InitializeLocalEndpoint();
                 }
                 return LocalIpAddress;
             }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 if (LocalIpAddress == null)
                 {
-                    InitializeRemoteEndpoint();
+                    InitializeLocalEndpoint();
                 }
 
                 return LocalPort;

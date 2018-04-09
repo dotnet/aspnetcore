@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             ResetFeatureCollection();
 
-            if (_server.IsWebSocketAvailible(pInProcessHandler))
+            if (!_server.IsWebSocketAvailible(pInProcessHandler))
             {
                 _currentIHttpUpgradeFeature = null;
             }
