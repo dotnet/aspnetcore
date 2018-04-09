@@ -24,7 +24,7 @@
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\RequestHandler\RequestHandler.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\AspNetCoreModuleTests\AspNetCoreModuleTests.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
@@ -84,7 +84,7 @@
       <Platforms Include="Win32;x64" />
     </ItemGroup>
 
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\AspNetCoreModuleTests\AspNetCoreModuleTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.Identity)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 </Project>
