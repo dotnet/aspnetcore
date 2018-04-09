@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
         public string WebRootPath { get; }
         public string DistPath
             => Path.Combine(Path.GetDirectoryName(SourceOutputAssemblyPath), "dist");
+        public bool EnableAutoRebuilding { get; }
 
         public static BlazorConfig Read(string assemblyPath)
             => new BlazorConfig(assemblyPath);
@@ -41,6 +42,8 @@ namespace Microsoft.AspNetCore.Blazor.Server
             {
                 WebRootPath = webRootPath;
             }
+
+            EnableAutoRebuilding = configLines.Contains("autorebuild:true", StringComparer.Ordinal);
         }
     }
 }

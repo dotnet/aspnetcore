@@ -4,6 +4,9 @@
   <PropertyGroup>
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
 
+    <!-- By default, enable auto rebuilds for debug builds. Note that the server will not enable it in production environments regardless. -->
+    <BlazorRebuildOnFileChange Condition="'$(Configuration)' == 'Debug'">true</BlazorRebuildOnFileChange>
+    
     <!-- We can remove this after updating to newer Razor tooling, where it's enabled by default -->
     <UseRazorBuildServer>true</UseRazorBuildServer>
   </PropertyGroup>

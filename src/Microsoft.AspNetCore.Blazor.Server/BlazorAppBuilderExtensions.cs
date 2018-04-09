@@ -49,6 +49,11 @@ namespace Microsoft.AspNetCore.Builder
                 OnPrepareResponse = SetCacheHeaders
             };
 
+            if (env.IsDevelopment() && config.EnableAutoRebuilding)
+            {
+                applicationBuilder.UseAutoRebuild(config);
+            }
+
             // First, match the request against files in the client app dist directory
             applicationBuilder.UseStaticFiles(distDirStaticFiles);
 

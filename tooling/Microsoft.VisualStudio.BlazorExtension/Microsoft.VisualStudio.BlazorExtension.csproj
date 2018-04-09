@@ -250,6 +250,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutDialogInfoAttribute.cs" />
+    <Compile Include="AutoRebuild\AutoRebuildService.cs" />
+    <Compile Include="AutoRebuild\BuildEventsWatcher.cs" />
+    <Compile Include="AutoRebuild\StreamProtocolExtensions.cs" />
     <Compile Include="BlazorPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
