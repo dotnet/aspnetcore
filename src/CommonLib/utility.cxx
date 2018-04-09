@@ -28,7 +28,7 @@ Arguments:
     pstrDestination - destination
     pDestinationPort - port
     pstrUrl - URL
-    
+
 Return Value:
 
     HRESULT
@@ -260,7 +260,7 @@ UTILITY::EscapeAbsPath(
     }
 
     strEscapedUrl->Append(pszAbsPath);
-    strEscapedUrl->Append(pRequest->GetRawHttpRequest()->CookedUrl.pQueryString, 
+    strEscapedUrl->Append(pRequest->GetRawHttpRequest()->CookedUrl.pQueryString,
                           pRequest->GetRawHttpRequest()->CookedUrl.QueryStringLength / sizeof(WCHAR));
 
 Finished:
@@ -343,8 +343,8 @@ UTILITY::IsValidHeaderName(
 
 HRESULT
 UTILITY::IsPathUnc(
-    __in  LPCWSTR       pszPath, 
-    __out BOOL *        pfIsUnc 
+    __in  LPCWSTR       pszPath,
+    __out BOOL *        pfIsUnc
 )
 {
     HRESULT hr = S_OK;
@@ -484,7 +484,7 @@ UTILITY::EnsureDirectoryPathExist(
         }
         else if (struPath.QueryStr()[dwPosition-1] == L':')
         {
-            //  skip volume case 
+            //  skip volume case
             continue;
         }
         else
@@ -626,4 +626,31 @@ UTILITY::LogEvent(
     {
         fwprintf(stderr, L"ERROR: %s\n", pstrMsg);
     }
+}
+
+VOID
+UTILITY::LogEventF(
+    _In_ HANDLE  hEventLog,
+    _In_ WORD    dwEventInfoType,
+    _In_ DWORD   dwEventId,
+    _In_ LPCWSTR pstrMsg,
+    ...
+)
+{
+    va_list argsList;
+    va_start(argsList, pstrMsg);
+
+    STACK_STRU ( strEventMsg, 256 );
+
+    if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        pstrMsg,
+        argsList)))
+    {
+        UTILITY::LogEvent(hEventLog,
+            dwEventInfoType,
+            dwEventId,
+            strEventMsg.QueryStr());
+    }
+
+    va_end( argsList );
 }
