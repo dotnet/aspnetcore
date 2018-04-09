@@ -19,12 +19,12 @@
     </contentFiles>
   </metadata>
   <files>
-    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\Win32\aspnetcore.dll" target="contentFiles\any\any\x86\aspnetcore.dll" />
-    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\x64\aspnetcore.dll" target="contentFiles\any\any\x64\aspnetcore.dll" />
-    <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\Win32\aspnetcoreV2.dll" target="contentFiles\any\any\x86\aspnetcoreV2.dll" />
-    <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\x64\aspnetcoreV2.dll" target="contentFiles\any\any\x64\aspnetcoreV2.dll" />
-    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\Win32\aspnetcorerh.dll" target="contentFiles\any\any\x86\aspnetcorerh.dll" />
-    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\x64\aspnetcorerh.dll" target="contentFiles\any\any\x64\aspnetcorerh.dll" />
+    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\Win32\aspnetcore.dll" target="contentFiles\any\any\AspNetCoreModuleV1\x86\aspnetcore.dll" />
+    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\x64\aspnetcore.dll" target="contentFiles\any\any\AspNetCoreModuleV1\x64\aspnetcore.dll" />
+    <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\Win32\aspnetcore.dll" target="contentFiles\any\any\AspNetCoreModuleV2\x86\aspnetcore.dll" />
+    <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\x64\aspnetcore.dll" target="contentFiles\any\any\AspNetCoreModuleV2\x64\aspnetcore.dll" />
+    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\Win32\aspnetcorerh.dll" target="contentFiles\any\any\AspNetCoreModuleV2\x86\aspnetcorerh.dll" />
+    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\x64\aspnetcorerh.dll" target="contentFiles\any\any\AspNetCoreModuleV2\x64\aspnetcorerh.dll" />
     <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\x64\*.xml"/>
     <file src="tools\installancm.ps1"/>
     <file src="LICENSE.txt"/>

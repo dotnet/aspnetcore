@@ -24,7 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AspNetCoreModule</RootNamespace>
     <ProjectName>AspNetCore</ProjectName>
-    <TargetName>aspnetcoreV2</TargetName>
+    <TargetName>aspnetcore</TargetName>
     <LinkIncremental>false</LinkIncremental>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -232,8 +232,7 @@
       <Project>{55494e58-e061-4c4c-a0a8-837008e72f85}</Project>
     </ProjectReference>
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">
-      <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <Project>{09d9d1d6-2951-4e14-bc35-76a23cf9391a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

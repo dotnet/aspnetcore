@@ -211,12 +211,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IISLib\IISLib.vcxproj">
-      <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="ancm.mof" />
     <None Include="Source.def" />
   </ItemGroup>
@@ -271,6 +265,11 @@
     <ClInclude Include="Inc\websockethandler.h" />
     <ClInclude Include="Inc\winhttphelper.h" />
     <ClInclude Include="src\precomp.hxx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IISLib\IISLib.vcxproj">
+      <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\..\build\native.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
