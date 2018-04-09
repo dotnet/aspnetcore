@@ -12,13 +12,17 @@ using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
     public class ComponentRenderingTest : BasicTestAppTestBase
     {
-        public ComponentRenderingTest(BrowserFixture browserFixture, DevHostServerFixture<Program> serverFixture)
-            : base(browserFixture, serverFixture)
+        public ComponentRenderingTest(
+            BrowserFixture browserFixture,
+            DevHostServerFixture<Program> serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
         {
             Navigate(ServerPathBase, noReload: true);
         }
@@ -233,7 +237,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         public void CanRenderSvgWithCorrectNamespace()
         {
             var appElement = MountTestComponent<SvgComponent>();
-            
+
             var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
             Assert.NotNull(svgElement);
 
@@ -245,7 +249,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         public void CanRenderSvgChildComponentWithCorrectNamespace()
         {
             var appElement = MountTestComponent<SvgWithChildComponent>();
-            
+
             var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
             Assert.NotNull(svgElement);
 

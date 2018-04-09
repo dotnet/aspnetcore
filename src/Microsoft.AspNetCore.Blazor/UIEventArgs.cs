@@ -15,10 +15,15 @@ namespace Microsoft.AspNetCore.Blazor
     }
 
     /// <summary>
-    /// Supplies information about a mouse event that is being raised.
+    /// Supplies information about an input change event that is being raised.
     /// </summary>
-    public class UIMouseEventArgs : UIEventArgs
+    public class UIChangeEventArgs : UIEventArgs
     {
+        /// <summary>
+        /// Gets or sets the new value of the input. This may be a <see cref="string"/>
+        /// or a <see cref="bool"/>.
+        /// </summary>
+        public object Value { get; set; }
     }
 
     /// <summary>
@@ -33,14 +38,9 @@ namespace Microsoft.AspNetCore.Blazor
     }
 
     /// <summary>
-    /// Supplies information about an input change event that is being raised.
+    /// Supplies information about a mouse event that is being raised.
     /// </summary>
-    public class UIChangeEventArgs : UIEventArgs
+    public class UIMouseEventArgs : UIEventArgs
     {
-        /// <summary>
-        /// Gets or sets the new value of the input. This may be a <see cref="string"/>
-        /// or a <see cref="bool"/>.
-        /// </summary>
-        public object Value { get; set; }
     }
 }

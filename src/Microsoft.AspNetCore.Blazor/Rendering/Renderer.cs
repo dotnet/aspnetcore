@@ -113,7 +113,30 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         internal void AssignEventHandlerId(ref RenderTreeFrame frame)
         {
             var id = ++_lastEventHandlerId;
-            _eventHandlersById.Add(id, (UIEventHandler)frame.AttributeValue);
+
+            // The attribute value might be a more specialized type like UIKeyboardEventHandler.
+            // In that case, it won't be a UIEventHandler, and it will go down the MulticastDelegate
+            // code path (MulticastDelegate is any delegate).
+            //
+            // In order to dispatch the event, we need a UIEventHandler, so we're going weakly
+            // typed here. The user will get a cast exception if they map the wrong type of
+            // delegate to the event.
+            if (frame.AttributeValue is UIEventHandler wrapper)
+            {
+                _eventHandlersById.Add(id, wrapper);
+            }
+            else if (frame.AttributeValue is MulticastDelegate @delegate)
+            {
+                // IMPORTANT: we're creating an additional delegate when necessary. This is
+                // going to get cached in _eventHandlersById, but the render tree diff
+                // will operate on 'AttributeValue' which means that we'll only create a new
+                // wrapper delegate when the underlying delegate changes.
+                //
+                // TLDR: If the component uses a method group or a non-capturing lambda
+                // we don't allocate much.
+               _eventHandlersById.Add(id, (UIEventArgs e) => @delegate.DynamicInvoke(e));
+            }
+
             frame = frame.WithAttributeEventHandlerId(id);
         }
 

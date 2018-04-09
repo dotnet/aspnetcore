@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 {
                     AssertFrame.Attribute(frame, "onclick", 1);
 
-                    var func = Assert.IsType<UIEventHandler>(frame.AttributeValue);
+                    var func = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
                     Assert.False((bool)clicked.GetValue(component));
 
                     func(new UIMouseEventArgs());
@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 {
                     AssertFrame.Attribute(frame, "onclick", 1);
 
-                    var func = Assert.IsType<UIEventHandler>(frame.AttributeValue);
+                    var func = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
                     Assert.False((bool)clicked.GetValue(component));
 
                     func(new UIMouseEventArgs());

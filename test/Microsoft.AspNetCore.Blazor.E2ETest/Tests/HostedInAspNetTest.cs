@@ -7,13 +7,17 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
     public class HostedInAspNetTest : ServerTestBase<AspNetSiteServerFixture>
     {
-        public HostedInAspNetTest(BrowserFixture browserFixture, AspNetSiteServerFixture serverFixture)
-            : base(browserFixture, serverFixture)
+        public HostedInAspNetTest(
+            BrowserFixture browserFixture, 
+            AspNetSiteServerFixture serverFixture, 
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
         {
             serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
             serverFixture.Environment = AspNetEnvironment.Development;

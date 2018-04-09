@@ -4,7 +4,22 @@
 namespace Microsoft.AspNetCore.Blazor
 {
     /// <summary>
-    /// Handles an event raised for a <see cref="RenderTreeFrame"/>.
+    /// Handles an <see cref="UIEventArgs"/> event raised for a <see cref="RenderTreeFrame"/>.
     /// </summary>
-    public delegate void UIEventHandler(UIEventArgs eventArgs);
+    public delegate void UIEventHandler(UIEventArgs e);
+
+    /// <summary>
+    /// Handles an <see cref="UIChangeEventArgs"/> event raised for a <see cref="RenderTreeFrame"/>.
+    /// </summary>
+    public delegate void UIChangeEventHandler(UIChangeEventArgs e);
+
+    /// <summary>
+    /// Handles an <see cref="UIKeyboardEventArgs"/> event raised for a <see cref="RenderTreeFrame"/>.
+    /// </summary>
+    public delegate void UIKeyboardEventHandler(UIKeyboardEventArgs e);
+
+    /// <summary>
+    /// Handles an <see cref="UIMouseEventArgs"/> event raised for a <see cref="RenderTreeFrame"/>.
+    /// </summary>
+    public delegate void UIMouseEventHandler(UIMouseEventArgs e);
 }

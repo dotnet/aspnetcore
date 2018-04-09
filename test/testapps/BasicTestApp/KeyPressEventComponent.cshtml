@@ -11,8 +11,8 @@ Type here: <input onkeypress=@OnKeyPressed />
 @functions {
     List<string> keysPressed = new List<string>();
 
-    void OnKeyPressed(UIEventArgs eventArgs)
+    void OnKeyPressed(UIKeyboardEventArgs eventArgs)
     {
-        keysPressed.Add(((UIKeyboardEventArgs)eventArgs).Key);
+        keysPressed.Add(eventArgs.Key);
     }
 }

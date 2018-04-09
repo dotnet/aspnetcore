@@ -7,13 +7,17 @@ using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
     public class BindTest : BasicTestAppTestBase
     {
-        public BindTest(BrowserFixture browserFixture, DevHostServerFixture<Program> serverFixture)
-            : base(browserFixture, serverFixture)
+        public BindTest(
+            BrowserFixture browserFixture, 
+            DevHostServerFixture<Program> serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
         {
             Navigate(ServerPathBase, noReload: true);
             MountTestComponent<BindCasesComponent>();

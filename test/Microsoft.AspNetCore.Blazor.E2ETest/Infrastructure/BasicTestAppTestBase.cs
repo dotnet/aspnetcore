@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
 {
@@ -14,8 +15,11 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
     {
         public const string ServerPathBase = "/subdir";
 
-        public BasicTestAppTestBase(BrowserFixture browserFixture, DevHostServerFixture<Program> serverFixture)
-            : base(browserFixture, serverFixture)
+        public BasicTestAppTestBase(
+            BrowserFixture browserFixture,
+            DevHostServerFixture<Program> serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
         {
             serverFixture.PathBase = ServerPathBase;
         }

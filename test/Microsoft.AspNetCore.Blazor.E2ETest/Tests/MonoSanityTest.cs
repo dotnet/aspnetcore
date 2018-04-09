@@ -7,13 +7,17 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
     public class MonoSanityTest : ServerTestBase<AspNetSiteServerFixture>
     {
-        public MonoSanityTest(BrowserFixture browserFixture, AspNetSiteServerFixture serverFixture)
-            : base(browserFixture, serverFixture)
+        public MonoSanityTest(
+            BrowserFixture browserFixture,
+            AspNetSiteServerFixture serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
         {
             serverFixture.BuildWebHostMethod = MonoSanity.Program.BuildWebHost;
             Navigate("/", noReload: true);

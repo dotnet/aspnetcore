@@ -35,10 +35,10 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
-        public static UIEventHandler GetEventHandlerValue<T>(Action<T> value)
+        public static MulticastDelegate GetEventHandlerValue<T>(Action<T> value)
             where T : UIEventArgs
         {
-            return e => value((T)e);
+            return value;
         }
 
         /// <summary>

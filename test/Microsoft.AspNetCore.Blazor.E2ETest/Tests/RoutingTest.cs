@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
@@ -16,8 +17,11 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
     {
         private readonly ServerFixture _server;
 
-        public RoutingTest(BrowserFixture browserFixture, DevHostServerFixture<Program> serverFixture)
-            : base(browserFixture, serverFixture)
+        public RoutingTest(
+            BrowserFixture browserFixture, 
+            DevHostServerFixture<Program> serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
         {
             _server = serverFixture;
             Navigate(ServerPathBase, noReload: true);

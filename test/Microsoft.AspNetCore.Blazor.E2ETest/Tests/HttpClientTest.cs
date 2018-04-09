@@ -10,6 +10,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
@@ -24,8 +25,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         public HttpClientTest(
             BrowserFixture browserFixture,
             DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
-            AspNetSiteServerFixture apiServerFixture)
-            : base(browserFixture, devHostServerFixture)
+            AspNetSiteServerFixture apiServerFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, devHostServerFixture, output)
         {
             apiServerFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
             _apiServerFixture = apiServerFixture;

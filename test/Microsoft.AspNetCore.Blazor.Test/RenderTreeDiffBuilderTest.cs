@@ -1156,10 +1156,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             UIEventHandler retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
-            oldTree.AddAttribute(1, "will remain", retainedHandler);
+            oldTree.AddAttribute(1, "ontest", retainedHandler);
             oldTree.CloseElement();
             newTree.OpenElement(0, "My element");
-            newTree.AddAttribute(1, "will remain", retainedHandler);
+            newTree.AddAttribute(1, "ontest", retainedHandler);
             newTree.CloseElement();
 
             // Act
@@ -1169,8 +1169,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Empty(result.Edits);
-            AssertFrame.Attribute(oldAttributeFrame, "will remain", retainedHandler);
-            AssertFrame.Attribute(newAttributeFrame, "will remain", retainedHandler);
+            AssertFrame.Attribute(oldAttributeFrame, "ontest", retainedHandler);
+            AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
         }
@@ -1181,11 +1181,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             UIEventHandler retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
-            oldTree.AddAttribute(0, "will remain", retainedHandler);
+            oldTree.AddAttribute(0, "ontest", retainedHandler);
             oldTree.CloseElement();
             newTree.OpenElement(0, "My element");
             newTree.AddAttribute(0, "another-attribute", "go down the slow path please");
-            newTree.AddAttribute(0, "will remain", retainedHandler);
+            newTree.AddAttribute(0, "ontest", retainedHandler);
             newTree.CloseElement();
 
             // Act
@@ -1195,8 +1195,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Single(result.Edits);
-            AssertFrame.Attribute(oldAttributeFrame, "will remain", retainedHandler);
-            AssertFrame.Attribute(newAttributeFrame, "will remain", retainedHandler);
+            AssertFrame.Attribute(oldAttributeFrame, "ontest", retainedHandler);
+            AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
         }

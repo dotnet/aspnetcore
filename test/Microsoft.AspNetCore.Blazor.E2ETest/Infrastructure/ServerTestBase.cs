@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
 {
@@ -13,8 +14,8 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
     {
         private readonly TServerFixture _serverFixture;
 
-        public ServerTestBase(BrowserFixture browserFixture, TServerFixture serverFixture)
-            : base(browserFixture)
+        public ServerTestBase(BrowserFixture browserFixture, TServerFixture serverFixture, ITestOutputHelper output)
+            : base(browserFixture, output)
         {
             _serverFixture = serverFixture;
         }

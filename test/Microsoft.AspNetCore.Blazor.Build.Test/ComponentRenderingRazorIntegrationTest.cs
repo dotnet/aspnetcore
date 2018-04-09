@@ -174,7 +174,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
-        public UIEventHandler OnClick { get; set; }
+        public UIMouseEventHandler OnClick { get; set; }
     }
 }
 "));
@@ -186,7 +186,7 @@ namespace Test
 
 @functions {{
     private int counter;
-    private void Increment(UIEventArgs e) {{
+    private void Increment(UIMouseEventArgs e) {{
         counter++;
     }}
 }}");
@@ -203,7 +203,7 @@ namespace Test
                     AssertFrame.Attribute(frame, "OnClick", 1);
 
                     // The handler will have been assigned to a lambda
-                    var handler = Assert.IsType<UIEventHandler>(frame.AttributeValue);
+                    var handler = Assert.IsType<UIMouseEventHandler>(frame.AttributeValue);
                     Assert.Equal("Test.TestComponent", handler.Target.GetType().FullName);
                 },
                 frame => AssertFrame.Whitespace(frame, 2));

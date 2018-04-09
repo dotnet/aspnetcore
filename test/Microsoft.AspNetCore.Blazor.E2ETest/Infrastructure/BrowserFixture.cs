@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 using System;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
 {
@@ -12,12 +13,19 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
     {
         public IWebDriver Browser { get; }
 
+        public ILogs Logs { get; }
+
+        public ITestOutputHelper Output { get; set; }
+
         public BrowserFixture()
         {
             var opts = new ChromeOptions();
 
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
             opts.AddArgument("--headless");
+
+            // Log errors
+            opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
 
             // On Windows/Linux, we don't need to set opts.BinaryLocation
             // But for Travis Mac builds we do
@@ -30,7 +38,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
 
             try
             {
-                Browser = new RemoteWebDriver(opts);
+                var driver = new RemoteWebDriver(opts);
+                Browser = driver;
+                Logs = new RemoteLogs(driver);
             }
             catch (WebDriverException ex)
             {

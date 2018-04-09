@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Rendering;
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Blazor.Rendering;
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
@@ -101,9 +101,13 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             => AddContent(sequence, textContent?.ToString());
 
         /// <summary>
+        /// <para>
         /// Appends a frame representing a bool-valued attribute.
+        /// </para>
+        /// <para>
         /// The attribute is associated with the most recently added element. If the value is <c>false</c> and the
         /// current element is not a component, the frame will be omitted.
+        /// </para>
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
@@ -124,9 +128,13 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
+        /// <para>
         /// Appends a frame representing a string-valued attribute.
+        /// </para>
+        /// <para>
         /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
         /// current element is not a component, the frame will be omitted.
+        /// </para>
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
@@ -141,14 +149,44 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
-        /// Appends a frame representing an <see cref="UIEventArgs"/>-valued attribute.
+        /// <para>
+        /// Appends a frame representing an <see cref="UIEventHandler"/>-valued attribute.
+        /// </para>
+        /// <para>
         /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
         /// current element is not a component, the frame will be omitted.
+        /// </para>
         /// </summary>
+        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, UIEventHandler value)
+        {
+            AddAttribute(sequence, name, (MulticastDelegate)value);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Appends a frame representing a delegate-valued attribute.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
+        /// current element is not a component, the frame will be omitted.
+        /// </para>
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        /// <remarks>
+        /// This method is provided for infrastructure purposes, and is used to be
+        /// <see cref="UIEventHandlerRenderTreeBuilderExtensions"/> to provide support for delegates of specific
+        /// types. For a good programming experience when using a custom delegate type, define an
+        /// extension method similar to 
+        /// <see cref="UIEventHandlerRenderTreeBuilderExtensions.AddAttribute(RenderTreeBuilder, int, string, UIChangeEventHandler)"/>
+        /// that calls this method.
+        /// </remarks>
+        public void AddAttribute(int sequence, string name, MulticastDelegate value)
         {
             AssertCanAddAttribute();
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
@@ -185,7 +223,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
                     // Don't add anything for false bool value.
                 }
-                else if (value is UIEventHandler eventHandler)
+                else if (value is MulticastDelegate)
                 {
                     Append(RenderTreeFrame.Attribute(sequence, name, value));
                 }
@@ -207,8 +245,12 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
+        /// <para>
         /// Appends a frame representing an attribute.
+        /// </para>
+        /// <para>
         /// The attribute is associated with the most recently added element.
+        /// </para>
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>

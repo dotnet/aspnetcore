@@ -8,6 +8,7 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
@@ -16,8 +17,11 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
     {
         private readonly ServerFixture _serverFixture;
 
-        public StandaloneAppTest(BrowserFixture browserFixture, DevHostServerFixture<StandaloneApp.Program> serverFixture)
-            : base(browserFixture, serverFixture)
+        public StandaloneAppTest(
+            BrowserFixture browserFixture, 
+            DevHostServerFixture<StandaloneApp.Program> serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
         {
             _serverFixture = serverFixture;
             Navigate("/", noReload: true);

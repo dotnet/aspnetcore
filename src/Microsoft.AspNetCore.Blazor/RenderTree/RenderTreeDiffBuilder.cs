@@ -597,7 +597,13 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         private static void InitializeNewAttributeFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
-            if (newFrame.AttributeValue is UIEventHandler)
+            // Any attribute with an event handler id will be callable via DOM events
+            //
+            // We're following a simple heuristic here that's reflected in the ts runtime
+            // based on the common usage of attributes for DOM events.
+            if (newFrame.AttributeValue is MulticastDelegate &&
+                newFrame.AttributeName.Length >= 3 &&
+                newFrame.AttributeName.StartsWith("on"))
             {
                 diffContext.Renderer.AssignEventHandlerId(ref newFrame);
             }
