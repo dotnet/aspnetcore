@@ -30,15 +30,15 @@ CProxyModuleFactory::Terminate(
 
 Routine description:
 
-    Function called by IIS for global (non-request-specific) notifications
+Function called by IIS for global (non-request-specific) notifications
 
 Arguments:
 
-    None.
+None.
 
 Return value:
 
-    None
+None
 
 --*/
 {
@@ -109,6 +109,6 @@ CProxyModule::OnAsyncCompletion(
     DBG_ASSERT(fPostNotification == FALSE);
 
     return m_pHandler->OnAsyncCompletion(
-            pCompletionInfo->GetCompletionBytes(),
-            pCompletionInfo->GetCompletionStatus());
+        pCompletionInfo->GetCompletionBytes(),
+        pCompletionInfo->GetCompletionStatus());
 }

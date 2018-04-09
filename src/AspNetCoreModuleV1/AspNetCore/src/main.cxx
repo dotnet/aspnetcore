@@ -4,12 +4,6 @@
 #include "precomp.hxx"
 #include <IPHlpApi.h>
 
-#ifdef DEBUG
-DECLARE_DEBUG_PRINTS_OBJECT();
-DECLARE_DEBUG_VARIABLE();
-DECLARE_PLATFORM_TYPE();
-#endif // DEBUG
-
 HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
 BOOL                g_fAsyncDisconnectAvailable = FALSE;

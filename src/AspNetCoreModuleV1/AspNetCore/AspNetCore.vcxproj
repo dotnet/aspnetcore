@@ -82,7 +82,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>..\IISLib;.\Inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;inc\</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -115,7 +115,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>..\IISLib;.\Inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;inc\</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -148,7 +148,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\IISLib;inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;inc\</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -184,7 +184,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\IISLib;inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;inc\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
@@ -230,6 +230,47 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="aspnetcore_schema.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\application.cxx" />
+    <ClCompile Include="src\applicationmanager.cxx" />
+    <ClCompile Include="src\aspnetcoreconfig.cxx" />
+    <ClCompile Include="src\filewatcher.cxx" />
+    <ClCompile Include="src\forwarderconnection.cxx" />
+    <ClCompile Include="src\forwardinghandler.cxx" />
+    <ClCompile Include="src\main.cxx" />
+    <ClCompile Include="src\path.cxx" />
+    <ClCompile Include="src\processmanager.cxx" />
+    <ClCompile Include="src\protocolconfig.cxx" />
+    <ClCompile Include="src\proxymodule.cxx" />
+    <ClCompile Include="src\responseheaderhash.cxx" />
+    <ClCompile Include="src\serverprocess.cxx" />
+    <ClCompile Include="src\websockethandler.cxx" />
+    <ClCompile Include="src\winhttphelper.cxx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Inc\application.h" />
+    <ClInclude Include="Inc\applicationmanager.h" />
+    <ClInclude Include="Inc\aspnetcoreconfig.h" />
+    <ClInclude Include="Inc\aspnetcore_msg.h" />
+    <ClInclude Include="Inc\debugutil.h" />
+    <ClInclude Include="Inc\environmentvariablehash.h" />
+    <ClInclude Include="Inc\filewatcher.h" />
+    <ClInclude Include="Inc\forwarderconnection.h" />
+    <ClInclude Include="Inc\forwardinghandler.h" />
+    <ClInclude Include="Inc\fx_ver.h" />
+    <ClInclude Include="Inc\globalmodule.h" />
+    <ClInclude Include="Inc\path.h" />
+    <ClInclude Include="Inc\processmanager.h" />
+    <ClInclude Include="Inc\protocolconfig.h" />
+    <ClInclude Include="Inc\proxymodule.h" />
+    <ClInclude Include="Inc\resource.h" />
+    <ClInclude Include="Inc\responseheaderhash.h" />
+    <ClInclude Include="Inc\serverprocess.h" />
+    <ClInclude Include="Inc\sttimer.h" />
+    <ClInclude Include="Inc\websockethandler.h" />
+    <ClInclude Include="Inc\winhttphelper.h" />
+    <ClInclude Include="src\precomp.hxx" />
   </ItemGroup>
   <Import Project="..\..\..\build\native.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

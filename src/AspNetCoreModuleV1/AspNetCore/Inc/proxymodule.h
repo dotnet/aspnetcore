@@ -1,19 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
 
-extern HTTP_MODULE_ID   g_pModuleId;
-extern IHttpServer     *g_pHttpServer;
-extern HMODULE          g_hAspnetCoreRH;
+#include "forwardinghandler.h"
 
-class ASPNET_CORE_PROXY_MODULE : public CHttpModule
+class CProxyModule : public CHttpModule
 {
- public:
+public:
 
-     ASPNET_CORE_PROXY_MODULE();
+    CProxyModule();
 
-    ~ASPNET_CORE_PROXY_MODULE();
+    ~CProxyModule();
 
     void * operator new(size_t size, IModuleAllocator * pPlacement)
     {
@@ -21,44 +20,43 @@ class ASPNET_CORE_PROXY_MODULE : public CHttpModule
     }
 
     VOID
-    operator delete(
-        void *
-    )
-    {}
+        operator delete(
+            void *
+            )
+    {
+    }
 
     __override
-    REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequestHandler(
-        IHttpContext *          pHttpContext,
-        IHttpEventProvider *    pProvider
-    );
+        REQUEST_NOTIFICATION_STATUS
+        OnExecuteRequestHandler(
+            IHttpContext *          pHttpContext,
+            IHttpEventProvider *    pProvider
+        );
 
     __override
-    REQUEST_NOTIFICATION_STATUS
-    OnAsyncCompletion(
-        IHttpContext *          pHttpContext,
-        DWORD                   dwNotification,
-        BOOL                    fPostNotification,
-        IHttpEventProvider *    pProvider,
-        IHttpCompletionInfo *   pCompletionInfo
-    );
+        REQUEST_NOTIFICATION_STATUS
+        OnAsyncCompletion(
+            IHttpContext *          pHttpContext,
+            DWORD                   dwNotification,
+            BOOL                    fPostNotification,
+            IHttpEventProvider *    pProvider,
+            IHttpCompletionInfo *   pCompletionInfo
+        );
 
- private:
+private:
 
-    APPLICATION_INFO *m_pApplicationInfo;
-    APPLICATION      *m_pApplication;
-    REQUEST_HANDLER  *m_pHandler;
+    FORWARDING_HANDLER * m_pHandler;
 };
 
-class ASPNET_CORE_PROXY_MODULE_FACTORY : public IHttpModuleFactory
+class CProxyModuleFactory : public IHttpModuleFactory
 {
- public:
+public:
     HRESULT
-    GetHttpModule(
-        CHttpModule **      ppModule,
-        IModuleAllocator *  pAllocator
-    );
+        GetHttpModule(
+            CHttpModule **      ppModule,
+            IModuleAllocator *  pAllocator
+        );
 
     VOID
-    Terminate();
+        Terminate();
 };
