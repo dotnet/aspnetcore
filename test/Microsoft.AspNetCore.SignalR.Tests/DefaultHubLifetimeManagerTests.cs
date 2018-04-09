@@ -92,6 +92,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task SendGroupExceptAsyncDoesNotWriteToExcludedConnections()
+        {
+            using (var client1 = new TestClient())
+            using (var client2 = new TestClient())
+            {
+                var manager = new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
+
+                await manager.OnConnectedAsync(connection1).OrTimeout();
+                await manager.OnConnectedAsync(connection2).OrTimeout();
+
+                await manager.AddGroupAsync(connection1.ConnectionId, "gunit").OrTimeout();
+                await manager.AddGroupAsync(connection2.ConnectionId, "gunit").OrTimeout();
+
+                await manager.SendGroupExceptAsync("gunit", "Hello", new object[] { "World" }, new []{ connection2.ConnectionId }).OrTimeout();
+
+                var message = Assert.IsType<InvocationMessage>(client1.TryRead());
+                Assert.Equal("Hello", message.Target);
+                Assert.Single(message.Arguments);
+                Assert.Equal("World", (string)message.Arguments[0]);
+
+                Assert.Null(client2.TryRead());
+            }
+        }
+
+        [Fact]
         public async Task SendConnectionAsyncWritesToConnectionOutput()
         {
             using (var client = new TestClient())

@@ -147,8 +147,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                 // Scan the registered connections looking for ones that have timed out
                 foreach (var c in _connections)
                 {
-                    var status = HttpConnectionContext.ConnectionStatus.Inactive;
-                    var lastSeenUtc = DateTimeOffset.UtcNow;
+                    HttpConnectionContext.ConnectionStatus status;
+                    DateTimeOffset lastSeenUtc;
                     var connection = c.Value.Connection;
 
                     try
