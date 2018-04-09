@@ -35,13 +35,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private readonly AckHandler _ackHandler;
         private int _internalId;
 
-        // This serializer is ONLY use to transmit the data through redis, it has no connection to the serializer used on each connection.
-        private readonly JsonSerializer _serializer = new JsonSerializer
-        {
-            TypeNameHandling = TypeNameHandling.None,
-            Formatting = Formatting.None,
-        };
-
         public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
                                        IOptions<RedisOptions> options,
                                        IHubProtocolResolver hubProtocolResolver)
