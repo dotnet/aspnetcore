@@ -60,11 +60,4 @@ SAFEIsDigit(UCHAR c)
     return isdigit( c );
 }
 
-#define __RETURN_GLE_FAIL(str)                      return HRESULT_FROM_WIN32(GetLastError());
-#define __RETURN_HR_FAIL(hr, str)                   do { HRESULT __hr = (hr); return __hr; } while (0, 0)
-
-#define RETURN_IF_FAILED(hr)                        do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { __RETURN_HR_FAIL(__hrRet, #hr); }} while (0, 0)
-#define RETURN_LAST_ERROR_IF_NULL(ptr)              do { if ((ptr) == nullptr) { __RETURN_GLE_FAIL(#ptr); }} while (0, 0)
-#define RETURN_IF_HANDLE_INVALID(handle)            do { HANDLE __hRet = (handle); if (__hRet == INVALID_HANDLE_VALUE) { __RETURN_GLE_FAIL(#handle); }} while (0, 0)
-
 #endif // _MACROS_H
