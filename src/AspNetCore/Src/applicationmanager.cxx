@@ -24,7 +24,6 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     BOOL                   fMixedHostingModelError = FALSE;
     BOOL                   fDuplicatedInProcessApp = FALSE;
     PCWSTR                 pszApplicationId = NULL;
-    STACK_STRU ( strEventMsg, 256 );
 
     DBG_ASSERT(pServer);
     DBG_ASSERT(pConfig);
@@ -32,9 +31,9 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
     *ppApplicationInfo = NULL;
 
-    // The configuration path is unique for each application and is used for the 
+    // The configuration path is unique for each application and is used for the
     // key in the applicationInfoHash.
-    pszApplicationId = pConfig->QueryConfigPath()->QueryStr(); 
+    pszApplicationId = pConfig->QueryConfigPath()->QueryStr();
     hr = key.Initialize(pszApplicationId);
     if (FAILED(hr))
     {
@@ -55,7 +54,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
     if (*ppApplicationInfo == NULL)
     {
-        // Check which hosting model we want to support 
+        // Check which hosting model we want to support
         switch (pConfig->QueryHostingModel())
         {
         case HOSTING_IN_PROCESS:
@@ -160,41 +159,29 @@ Finished:
     {
         if (fDuplicatedInProcessApp)
         {
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
                 ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
-                pszApplicationId)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
-                    strEventMsg.QueryStr());
-            }
+                pszApplicationId);
         }
         else if (fMixedHostingModelError)
         {
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
                 ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
                 pszApplicationId,
-                pConfig->QueryHostingModel())))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
-                    strEventMsg.QueryStr());
-            }
+                pConfig->QueryHostingModel());
         }
         else
         {
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
                 ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
                 pszApplicationId,
-                hr)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
-                    strEventMsg.QueryStr());
-            }
+                hr);
         }
     }
 
@@ -215,7 +202,7 @@ APPLICATION_MANAGER::FindConfigChangedApplication(
     DBG_ASSERT(pvContext);
 
     // Config Change context contains the original config path that changed
-    // and a multiStr containing 
+    // and a multiStr containing
     CONFIG_CHANGE_CONTEXT* pContext = static_cast<CONFIG_CHANGE_CONTEXT*>(pvContext);
     STRU* pstruConfigPath = pEntry->QueryConfig()->QueryConfigPath();
 
@@ -250,7 +237,7 @@ APPLICATION_MANAGER::FindConfigChangedApplication(
 //             This will cause a shutdown event to occur through the global stop listening event.
 // OutOfProcess: Removes all applications in the application manager and calls Recycle, which will call Shutdown,
 //             on each application.
-// 
+//
 HRESULT
 APPLICATION_MANAGER::RecycleApplicationFromManager(
     _In_ LPCWSTR pszApplicationId
@@ -307,7 +294,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
     // Don't call application shutdown inside the lock
     m_pApplicationInfoHash->Apply(APPLICATION_INFO_HASH::ReferenceCopyToTable, static_cast<PVOID>(table));
     DBG_ASSERT(dwPreviousCounter == table->Count());
-    
+
     // Removed the applications which are impacted by the configurtion change
     m_pApplicationInfoHash->DeleteIf(FindConfigChangedApplication, (PVOID)&context);
 
@@ -349,16 +336,11 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             APPLICATION_INFO* pRecord;
 
             // Application got recycled. Log an event
-            STACK_STRU(strEventMsg, 256);
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_RECYCLE_CONFIGURATION,
                 ASPNETCORE_EVENT_RECYCLE_CONFIGURATION_MSG,
-                path)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_INFORMATION_TYPE,
-                    ASPNETCORE_EVENT_RECYCLE_CONFIGURATION,
-                    strEventMsg.QueryStr());
-            }
+                path);
 
             hr = key.Initialize(path);
             if (FAILED(hr))
@@ -369,7 +351,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             table->FindKey(&key, &pRecord);
             DBG_ASSERT(pRecord != NULL);
 
-            // RecycleApplication is called on a separate thread. 
+            // RecycleApplication is called on a separate thread.
             pRecord->RecycleApplication();
             pRecord->DereferenceApplicationInfo();
             path = context.MultiSz.Next(path);
@@ -386,16 +368,11 @@ Finished:
     if (FAILED(hr))
     {
         // Failed to recycle an application. Log an event
-        STACK_STRU(strEventMsg, 256);
-        if  (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG,
-                pszApplicationId)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_RECYCLE_APP_FAILURE,
-                strEventMsg.QueryStr());
-        }
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_RECYCLE_APP_FAILURE,
+            ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG,
+            pszApplicationId);
         // Need to recycle the process as we cannot recycle the application
         if (!g_fRecycleProcessCalled)
         {
@@ -410,7 +387,7 @@ Finished:
 //
 // Shutsdown all applications in the application hashtable
 // Only called by OnGlobalStopListening.
-// 
+//
 VOID
 APPLICATION_MANAGER::ShutDown()
 {
@@ -427,7 +404,7 @@ APPLICATION_MANAGER::ShutDown()
         }
 
         DBG_ASSERT(m_pApplicationInfoHash);
-        // During shutdown we lock until we delete the application 
+        // During shutdown we lock until we delete the application
         AcquireSRWLockExclusive(&m_srwLock);
 
         // Call shutdown on each application in the application manager

@@ -40,7 +40,7 @@ PROCESS_MANAGER::Initialize(
     {
         SECURITY_ATTRIBUTES saAttr;
         saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-        saAttr.bInheritHandle = TRUE; 
+        saAttr.bInheritHandle = TRUE;
         saAttr.lpSecurityDescriptor = NULL;
 
         m_hNULHandle = CreateFileW( L"NUL",
@@ -101,7 +101,7 @@ PROCESS_MANAGER::~PROCESS_MANAGER()
     ReleaseSRWLockExclusive(&m_srwLock);
 }
 
-HRESULT 
+HRESULT
 PROCESS_MANAGER::GetProcess(
     _In_    ASPNETCORE_CONFIG      *pConfig,
     _Out_   SERVER_PROCESS        **ppServerProcess
@@ -110,7 +110,6 @@ PROCESS_MANAGER::GetProcess(
     HRESULT          hr = S_OK;
     BOOL             fSharedLock = FALSE;
     BOOL             fExclusiveLock = FALSE;
-    STACK_STRU(strEventMsg, 256);
     DWORD            dwProcessIndex = 0;
     SERVER_PROCESS  *pSelectedServerProcess = NULL;
 
@@ -189,15 +188,11 @@ PROCESS_MANAGER::GetProcess(
             //
             // rapid fails per minute exceeded, do not create new process.
             //
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED,
                 ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG,
-                pConfig->QueryRapidFailsPerMinute())))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_INFORMATION_TYPE,
-                    ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED,
-                    strEventMsg.QueryStr());
-            }
+                pConfig->QueryRapidFailsPerMinute());
 
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
             goto Finished;

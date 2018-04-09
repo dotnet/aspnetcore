@@ -49,7 +49,7 @@ BOOL WINAPI DllMain(HMODULE hModule,
         break;
     case DLL_PROCESS_DETACH:
         // IIS can cause dll detach to occur before we receive global notifications
-        // For example, when we switch the bitness of the worker process, 
+        // For example, when we switch the bitness of the worker process,
         // this is a bug in IIS. To try to avoid AVs, we will set a global flag
         g_fInShutdown = TRUE;
         StaticCleanup();
@@ -160,16 +160,10 @@ HRESULT
 
     if (fDisableANCM)
     {
-        // Logging
-        STACK_STRU(strEventMsg, 256);
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-            ASPNETCORE_EVENT_MODULE_DISABLED_MSG)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                              EVENTLOG_WARNING_TYPE,
-                              ASPNETCORE_EVENT_MODULE_DISABLED,
-                              strEventMsg.QueryStr());
-        }
+        UTILITY::LogEventF(g_hEventLog,
+                            EVENTLOG_WARNING_TYPE,
+                            ASPNETCORE_EVENT_MODULE_DISABLED,
+                            ASPNETCORE_EVENT_MODULE_DISABLED_MSG);
         // this will return 500 error to client
         // as we did not register the module
         goto Finished;
@@ -204,7 +198,7 @@ HRESULT
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
-    
+
     hr = pApplicationManager->Initialize();
     if(FAILED(hr))
      {

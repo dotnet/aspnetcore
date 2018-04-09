@@ -103,17 +103,11 @@ Finished:
 
     if (FAILED(hr))
     {
-        STACK_STRU(strEventMsg, 256);
-
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_WARNING_TYPE,
+            ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
             ASPNETCORE_EVENT_APP_SHUTDOWN_FAILURE_MSG,
-            m_pConfig->QueryConfigPath()->QueryStr())))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_WARNING_TYPE,
-                ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
-                strEventMsg.QueryStr());
-        }
+            m_pConfig->QueryConfigPath()->QueryStr());
 
         //
         // Managed layer may block the shutdown and lead to shutdown timeout
@@ -177,7 +171,7 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
         ReleaseSRWLockExclusive(&m_srwLock);
         fLocked = FALSE;
 
-        // Release the lock before we wait on the thread to exit. 
+        // Release the lock before we wait on the thread to exit.
         if (m_hThread != NULL &&
             GetExitCodeThread(m_hThread, &dwThreadStatus) != 0 &&
             dwThreadStatus == STILL_ACTIVE)
@@ -219,7 +213,7 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
     // delete empty log file
     handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
     if (handle != INVALID_HANDLE_VALUE &&
-        fileData.nFileSizeHigh == 0 &&  
+        fileData.nFileSizeHigh == 0 &&
         fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
     {
         FindClose(handle);
@@ -244,7 +238,7 @@ IN_PROCESS_APPLICATION::Recycle(
 {
     BOOL  fLockAcquired = FALSE;
     // We need to guarantee that recycle is only called once, as calling pHttpServer->RecycleProcess
-    // multiple times can lead to AVs. 
+    // multiple times can lead to AVs.
     if (m_fRecycleCalled)
     {
         goto Finished;
@@ -565,17 +559,12 @@ Finished:
     }
     if (FAILED(hr) && m_pConfig->QueryStdoutLogEnabled())
     {
-        STRU                    strEventMsg;
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_WARNING_TYPE,
+            ASPNETCORE_EVENT_CONFIG_ERROR,
             ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
             m_struLogFilePath.QueryStr(),
-            hr)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_WARNING_TYPE,
-                ASPNETCORE_EVENT_CONFIG_ERROR,
-                strEventMsg.QueryStr());
-        }
+            hr);
     }
 }
 
@@ -739,7 +728,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
 
     // Wait on either the thread to complete or the event to be set
     dwResult = WaitForMultipleObjects(2, pHandles, FALSE, dwTimeout);
-    
+
     // It all timed out
     if (dwResult == WAIT_TIMEOUT)
     {
@@ -767,20 +756,15 @@ Finished:
 
     if (FAILED(hr))
     {
-        STACK_STRU(strEventMsg, 256);
         m_status = APPLICATION_STATUS::FAIL;
 
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
             ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
             m_pConfig->QueryApplicationPath()->QueryStr(),
             m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-            hr)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-                strEventMsg.QueryStr());
-        }
+            hr);
     }
 
     if (fLocked)
@@ -926,13 +910,12 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
     DWORD           dwNumBytesRead;
     STRU            struStdErrLog;
     LARGE_INTEGER   li = { 0 };
-    STRU            strEventMsg;
     BOOL            fLogged = FALSE;
     DWORD           dwFilePointer = 0;
 
     if (m_pConfig->QueryStdoutLogEnabled())
     {
-        // Put stdout/stderr logs into 
+        // Put stdout/stderr logs into
         if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
         {
             if (GetFileSizeEx(m_hLogFileHandle, &li) && li.LowPart > 0 && li.HighPart == 0)
@@ -949,18 +932,16 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
                 {
                     if (ReadFile(m_hLogFileHandle, pzFileContents, 4096, &dwNumBytesRead, NULL))
                     {
-                        if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)) &&
-                            SUCCEEDED(strEventMsg.SafeSnwprintf(
+                        if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)))
+                        {
+                            UTILITY::LogEventF(g_hEventLog,
+                                EVENTLOG_ERROR_TYPE,
+                                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
                                 ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
                                 m_pConfig->QueryApplicationPath()->QueryStr(),
                                 m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
                                 hr,
-                                struStdErrLog.QueryStr())))
-                        {
-                            UTILITY::LogEvent(g_hEventLog,
-                                EVENTLOG_ERROR_TYPE,
-                                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-                                strEventMsg.QueryStr());
+                                struStdErrLog.QueryStr());
                             fLogged = TRUE;
 
                         }
@@ -973,18 +954,16 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
     {
         if (m_dwStdErrReadTotal > 0)
         {
-            if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)) &&
-                SUCCEEDED(strEventMsg.SafeSnwprintf(
+            if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)))
+            {
+                UTILITY::LogEventF(g_hEventLog,
+                    EVENTLOG_ERROR_TYPE,
+                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
                     ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDERR_MSG,
                     m_pConfig->QueryApplicationPath()->QueryStr(),
                     m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
                     hr,
-                    struStdErrLog.QueryStr())))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-                    strEventMsg.QueryStr());
+                    struStdErrLog.QueryStr());
                 fLogged = TRUE;
             }
         }
@@ -993,27 +972,23 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
     if (!fLogged)
     {
         // If we didn't log, log the generic message.
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
             ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
             m_pConfig->QueryApplicationPath()->QueryStr(),
             m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-            hr)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-                strEventMsg.QueryStr());
-            fLogged = TRUE;
-        }
+            hr);
+        fLogged = TRUE;
     }
 }
 
 //
 // Calls hostfxr_main with the hostfxr and application as arguments.
-// Method should be called with only 
+// Method should be called with only
 // Need to have __try / __except in methods that require unwinding.
-// Note, this will not 
-// 
+// Note, this will not
+//
 HRESULT
 IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hostfxr_main_fn pProc)
 {

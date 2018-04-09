@@ -67,8 +67,8 @@ public:
     static
     HRESULT
     IsPathUnc(
-        __in  LPCWSTR       pszPath, 
-        __out BOOL *        pfIsUnc 
+        __in  LPCWSTR       pszPath,
+        __out BOOL *        pfIsUnc
     );
 
     static
@@ -118,6 +118,16 @@ public:
         _In_ WORD    dwEventInfoType,
         _In_ DWORD   dwEventId,
         _In_ LPCWSTR pstrMsg
+    );
+
+    static
+    VOID
+    LogEventF(
+        _In_ HANDLE  hEventLog,
+        _In_ WORD    dwEventInfoType,
+        _In_ DWORD   dwEventId,
+        __in PCWSTR  pstrMsg,
+        ...
     );
 
 private:

@@ -15,7 +15,7 @@ APPLICATION_INFO::~APPLICATION_INFO()
     {
         // Mark the entry as invalid,
         // StopMonitor will close the file handle and trigger a FCN
-        // the entry will delete itself when processing this FCN 
+        // the entry will delete itself when processing this FCN
         m_pFileWatcherEntry->MarkEntryInValid();
         m_pFileWatcherEntry->StopMonitor();
         m_pFileWatcherEntry = NULL;
@@ -112,15 +112,10 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
         // if it was, log that app_offline has been dropped.
         if (m_fAppOfflineFound)
         {
-            STACK_STRU(strEventMsg, 256);
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED_MSG)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_INFORMATION_TYPE,
-                    ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED,
-                    strEventMsg.QueryStr());
-            }
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED,
+                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED_MSG);
         }
 
         m_fAppOfflineFound = FALSE;
@@ -157,16 +152,11 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
         // recycle the application
         if (m_pApplication != NULL)
         {
-            STACK_STRU(strEventMsg, 256);
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
-                m_pApplication->QueryConfig()->QueryApplicationPath()->QueryStr())))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_INFORMATION_TYPE,
-                    ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
-                    strEventMsg.QueryStr());
-            }
+                m_pApplication->QueryConfig()->QueryApplicationPath()->QueryStr());
 
             RecycleApplication();
         }
@@ -268,32 +258,20 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
         {
             if (FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
             {
-                STACK_STRU(strEventMsg, 256);
-                if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                    ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG)))
-                {
-                    UTILITY::LogEvent(g_hEventLog,
+                UTILITY::LogEventF(g_hEventLog,
                         EVENTLOG_INFORMATION_TYPE,
                         ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
-                        strEventMsg.QueryStr());
-                }
-
-                goto Finished;
+                        ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG);
             }
         }
         else
         {
             if (FAILED(hr = FindNativeAssemblyFromGlobalLocation(&struFileName)))
             {
-                STACK_STRU(strEventMsg, 256);
-                if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                    ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG)))
-                {
-                    UTILITY::LogEvent(g_hEventLog,
-                        EVENTLOG_INFORMATION_TYPE,
-                        ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
-                        strEventMsg.QueryStr());
-                }
+                UTILITY::LogEventF(g_hEventLog,
+                    EVENTLOG_INFORMATION_TYPE,
+                    ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
+                    ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG);
 
                 goto Finished;
             }
@@ -327,7 +305,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
 Finished:
     //
     // Question: we remember the load failure so that we will not try again.
-    // User needs to check whether the fuction pointer is NULL 
+    // User needs to check whether the fuction pointer is NULL
     //
     m_pfnAspNetCoreCreateApplication = g_pfnAspNetCoreCreateApplication;
     m_pfnAspNetCoreCreateRequestHandler = g_pfnAspNetCoreCreateRequestHandler;
@@ -400,11 +378,11 @@ Finished:
     return hr;
 }
 
-// 
+//
 // Tries to find aspnetcorerh.dll from the application
 // Calls into hostfxr.dll to find it.
 // Will leave hostfxr.dll loaded as it will be used again to call hostfxr_main.
-// 
+//
 HRESULT
 APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     STRU* struFilename
@@ -439,7 +417,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     if (pFnHostFxrSearchDirectories == NULL)
     {
         // Host fxr version is incorrect (need a higher version).
-        // TODO log error 
+        // TODO log error
         hr = E_FAIL;
         goto Finished;
     }

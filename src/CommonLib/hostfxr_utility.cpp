@@ -39,7 +39,6 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
     STRU                struArguments;
     STRU                struHostFxrPath;
     STRU                struRuntimeConfigLocation;
-    STRU                strEventMsg;
     DWORD               dwPosition;
 
     // Obtain the app name from the processPath section.
@@ -80,31 +79,23 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
         {
 
             hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP_MSG,
-                pcwzApplicationPhysicalPath,
-                hr)))
-            {
-                UTILITY::LogEvent( hEventLog,
-                                   EVENTLOG_ERROR_TYPE,
-                                   ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP,
-                                   strEventMsg.QueryStr() );
-            }
+            UTILITY::LogEventF(hEventLog,
+                                EVENTLOG_ERROR_TYPE,
+                                ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP,
+                                ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP_MSG,
+                                pcwzApplicationPhysicalPath,
+                                hr);
         }
         else
         {
             // If a runtime config file does exist, report a file not found on the app.exe
             hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-	            ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND_MSG,
+	        UTILITY::LogEventF(hEventLog,
+		        EVENTLOG_ERROR_TYPE,
+		        ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND,
+		        ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND_MSG,
 	            pcwzApplicationPhysicalPath,
-	            hr)))
-            {
-	            UTILITY::LogEvent(hEventLog,
-		            EVENTLOG_ERROR_TYPE,
-		            ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND,
-		            strEventMsg.QueryStr());
-            }
+	            hr);
         }
 
         goto Finished;
@@ -190,12 +181,12 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         goto Finished;
     }
 
-    // Check if the absolute path is to dotnet or not. 
+    // Check if the absolute path is to dotnet or not.
     if (struAbsolutePathToDotnet.EndsWith(L"dotnet.exe") || struAbsolutePathToDotnet.EndsWith(L"dotnet"))
     {
         //
         // The processPath ends with dotnet.exe or dotnet
-        // like: C:\Program Files\dotnet\dotnet.exe, C:\Program Files\dotnet\dotnet, dotnet.exe, or dotnet. 
+        // like: C:\Program Files\dotnet\dotnet.exe, C:\Program Files\dotnet\dotnet, dotnet.exe, or dotnet.
         // Get the absolute path to dotnet. If the path is already an absolute path, it will return that path
         //
         if (FAILED(hr = HOSTFXR_UTILITY::GetAbsolutePathToDotnet(&struAbsolutePathToDotnet))) // Make sure to append the dotnet.exe path correctly here (pass in regular path)?
@@ -249,16 +240,12 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             // then it is an invalid argument.
             //
             hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);;
-            if (SUCCEEDED(struEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_GENERAL_ERROR_MSG,
                 ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG,
                 struExpandedProcessPath.QueryStr(),
-                hr)))
-            {
-                UTILITY::LogEvent(hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_GENERAL_ERROR_MSG,
-                    struEventMsg.QueryStr());
-            }
+                hr);
         }
     }
 
@@ -273,8 +260,8 @@ Finished:
 // Arg structure:
 // argv[0] = Path to exe activating hostfxr.
 // argv[1] = L"exec"
-// argv[2] = absolute path to dll. 
-// 
+// argv[2] = absolute path to dll.
+//
 HRESULT
 HOSTFXR_UTILITY::ParseHostfxrArguments(
     PCWSTR              pwzArgumentsFromConfig,
@@ -473,16 +460,13 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
     if (!UTILITY::DirectoryExists(&struHostFxrPath))
     {
         hr = ERROR_BAD_ENVIRONMENT;
-        if (SUCCEEDED(struEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND,
+            struEventMsg.QueryStr(),
             ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND_MSG,
             struHostFxrPath.QueryStr(),
-            hr)))
-        {
-            UTILITY::LogEvent(hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND,
-                struEventMsg.QueryStr());
-        }
+            hr);
         goto Finished;
     }
 
@@ -505,16 +489,12 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
     if (vVersionFolders.size() == 0)
     {
         hr = HRESULT_FROM_WIN32(ERROR_BAD_ENVIRONMENT);
-        if (SUCCEEDED(struEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND,
             ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND_MSG,
             struHostFxrPath.QueryStr(),
-            hr)))
-        {
-            UTILITY::LogEvent(hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND,
-                struEventMsg.QueryStr());
-        }
+            hr);
         goto Finished;
     }
 
@@ -535,16 +515,12 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
     {
         // ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND_MSG
         hr = HRESULT_FROM_WIN32(ERROR_FILE_INVALID);
-        if (SUCCEEDED(struEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND,
             ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND_MSG,
             struHostFxrPath.QueryStr(),
-            hr)))
-        {
-            UTILITY::LogEvent(hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND,
-                struEventMsg.QueryStr());
-        }
+            hr);
         goto Finished;
     }
 
@@ -657,7 +633,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     // where.exe will return 0 on success, 1 if the file is not found
     // and 2 if there was an error. Check if the exit code is 1 and set
     // a new hr result saying it couldn't find dotnet.exe
-    // 
+    //
     if (!GetExitCodeProcess(processInformation.hProcess, &dwExitCode))
     {
         goto Finished;
@@ -666,14 +642,14 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     //
     // In this block, if anything fails, we will goto our fallback of
     // looking in C:/Program Files/
-    // 
+    //
     if (dwExitCode != 0)
     {
         goto Finished;
     }
 
-    // Where succeeded. 
-    // Reset file pointer to the beginning of the file. 
+    // Where succeeded.
+    // Reset file pointer to the beginning of the file.
     dwFilePointer = SetFilePointer(hStdOutReadPipe, 0, NULL, FILE_BEGIN);
     if (dwFilePointer == INVALID_SET_FILE_POINTER)
     {
@@ -703,7 +679,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     }
 
     // Check the bitness of the currently running process
-    // matches the dotnet.exe found. 
+    // matches the dotnet.exe found.
     if (!IsWow64Process(GetCurrentProcess(), &fIsWow64Process))
     {
         // Calling IsWow64Process failed
@@ -716,7 +692,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     }
     else
     {
-        // Check the SystemInfo to see if we are currently 32 or 64 bit. 
+        // Check the SystemInfo to see if we are currently 32 or 64 bit.
         SYSTEM_INFO systemInfo;
         GetNativeSystemInfo(&systemInfo);
         fIsCurrentProcess64Bit = systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
@@ -748,7 +724,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
             break;
         }
     }
-  
+
 Finished:
 
     if (hStdOutReadPipe != INVALID_HANDLE_VALUE)

@@ -75,7 +75,7 @@ SERVER_PROCESS::SetupJobObject(VOID)
             m_hJobObject = NULL;
             // ignore job object creation error.
         }
-#pragma warning( error : 4312) 
+#pragma warning( error : 4312)
         if (m_hJobObject != NULL)
         {
             jobInfo.BasicLimitInformation.LimitFlags =
@@ -119,7 +119,7 @@ SERVER_PROCESS::GetRandomPort
         do
         {
             //
-            // ignore dwActualProcessId because here we are 
+            // ignore dwActualProcessId because here we are
             // determing whether the randomly generated port is
             // in use by any other process.
             //
@@ -144,7 +144,6 @@ SERVER_PROCESS::SetupListenPort(
 {
     HRESULT hr = S_OK;
     ENVIRONMENT_VAR_ENTRY *pEntry = NULL;
-    STACK_STRU(strEventMsg, 256);
     *pfCriticalError = FALSE;
 
     pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
@@ -167,7 +166,7 @@ SERVER_PROCESS::SetupListenPort(
         {
             //
             // user set the env variable but did not give value, let's set it up
-            // 
+            //
             pEnvironmentVarTable->DeleteKey(ASPNETCORE_PORT_ENV_STR);
         }
         pEntry->Dereference();
@@ -209,20 +208,16 @@ Finished:
 
     if (FAILED(hr))
     {
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
             ASPNETCORE_EVENT_PROCESS_START_PORTSETUP_ERROR_MSG,
             m_struAppFullPath.QueryStr(),
             m_struPhysicalPath.QueryStr(),
             m_dwPort,
             MIN_PORT,
             MAX_PORT,
-            hr)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
-                strEventMsg.QueryStr());
-        }
+            hr);
     }
 
     return hr;
@@ -363,10 +358,10 @@ SERVER_PROCESS::OutputEnvironmentVariables
     ENVIRONMENT_VAR_ENTRY* pEntry = NULL;
 
     DBG_ASSERT(pmszOutput);
-    DBG_ASSERT(pEnvironmentVarTable); // We added some startup variables 
+    DBG_ASSERT(pEnvironmentVarTable); // We added some startup variables
     DBG_ASSERT(pEnvironmentVarTable->Count() >0);
 
-    // cleanup, as we may in retry logic 
+    // cleanup, as we may in retry logic
     pmszOutput->Reset();
 
     pszEnvironmentVariables = GetEnvironmentStringsW();
@@ -625,7 +620,7 @@ SERVER_PROCESS::PostStartCheck(
         if(!fProcessMatch)
         {
             //
-            // process that we created is not listening 
+            // process that we created is not listening
             // on the port we specified.
             //
             fReady = FALSE;
@@ -667,7 +662,7 @@ SERVER_PROCESS::PostStartCheck(
         // This is needed because, the child process might have crashed/exited between
         // the previous call to checkIfServerIsUp and RegisterProcessWait
         // and we would not know about it.
-        // 
+        //
 
         hr = CheckIfServerIsUp(m_dwPort, &dwActualProcessId, &fReady);
 
@@ -685,8 +680,8 @@ SERVER_PROCESS::PostStartCheck(
     }
 
     //
-    // ready to mark the server process ready but before this, 
-    // create and initialize the FORWARDER_CONNECTION 
+    // ready to mark the server process ready but before this,
+    // create and initialize the FORWARDER_CONNECTION
     //
     if (m_pForwarderConnection == NULL)
     {
@@ -744,7 +739,6 @@ SERVER_PROCESS::StartProcess(
     STARTUPINFOW            startupInfo = {0};
     DWORD                   dwRetryCount = 2; // should we allow customer to config it
     DWORD                   dwCreationFlags = 0;
-    STACK_STRU(             strEventMsg, 256);
     MULTISZ                 mszNewEnvironment;
     ENVIRONMENT_VAR_HASH    *pHashTable = NULL;
     PWSTR                   pStrStage = NULL;
@@ -890,17 +884,13 @@ SERVER_PROCESS::StartProcess(
         // Backend process starts successfully. Set retry counter to 0
         dwRetryCount = 0;
 
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG,
-                m_struAppFullPath.QueryStr(),
-                m_dwProcessId,
-                m_dwPort)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_INFORMATION_TYPE,
-                ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
-                strEventMsg.QueryStr());
-        }
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_INFORMATION_TYPE,
+            ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
+            ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG,
+            m_struAppFullPath.QueryStr(),
+            m_dwProcessId,
+            m_dwPort);
 
         goto Finished;
 
@@ -911,21 +901,17 @@ SERVER_PROCESS::StartProcess(
             dwRetryCount = 0;
         }
 
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
-                m_struAppFullPath.QueryStr(),
-                m_struPhysicalPath.QueryStr(),
-                m_struCommandLine.QueryStr(),
-                pStrStage,
-                hr,
-                m_dwPort,
-                dwRetryCount)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_WARNING_TYPE,
-                ASPNETCORE_EVENT_PROCESS_START_ERROR,
-                strEventMsg.QueryStr());
-        }
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_WARNING_TYPE,
+            ASPNETCORE_EVENT_PROCESS_START_ERROR,
+            ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
+            m_struAppFullPath.QueryStr(),
+            m_struPhysicalPath.QueryStr(),
+            m_struCommandLine.QueryStr(),
+            pStrStage,
+            hr,
+            m_dwPort,
+            dwRetryCount);
 
         if (processInformation.hThread != NULL)
         {
@@ -960,18 +946,14 @@ Finished:
             m_Timer.CancelTimer();
         }
 
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_PROCESS_START_FAILURE,
             ASPNETCORE_EVENT_PROCESS_START_FAILURE_MSG,
             m_struAppFullPath.QueryStr(),
             m_struPhysicalPath.QueryStr(),
             m_struCommandLine.QueryStr(),
-            m_dwPort)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_PROCESS_START_FAILURE,
-                strEventMsg.QueryStr());
-        }
+            m_dwPort);
     }
     return hr;
 }
@@ -1101,17 +1083,12 @@ Finished:
         if (m_fStdoutLogEnabled)
         {
             // Log the error
-            STRU              strEventMsg;
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            UTILITY::LogEventF(g_hEventLog,
+                EVENTLOG_WARNING_TYPE,
+                ASPNETCORE_EVENT_CONFIG_ERROR,
                 ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
                 m_struFullLogFile.IsEmpty()? m_struLogFile.QueryStr() : m_struFullLogFile.QueryStr(),
-                hr)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_WARNING_TYPE,
-                    ASPNETCORE_EVENT_CONFIG_ERROR,
-                    strEventMsg.QueryStr());
-            }
+                hr);
         }
         // The log file was not created yet in case of failure. No need to clean it
         m_struFullLogFile.Reset();
@@ -1264,7 +1241,7 @@ SERVER_PROCESS::SendSignal(
 
     if (m_hShutdownHandle == NULL)
     {
-        // since we cannot open the process. let's terminate the process 
+        // since we cannot open the process. let's terminate the process
         hr = HRESULT_FROM_WIN32(GetLastError());
         goto Finished;
     }
@@ -1358,7 +1335,7 @@ SERVER_PROCESS::StopProcess(
     }
 }
 
-BOOL 
+BOOL
 SERVER_PROCESS::IsDebuggerIsAttached(
     VOID
 )
@@ -1441,7 +1418,7 @@ SERVER_PROCESS::IsDebuggerIsAttached(
         hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
         goto Finished;
     }
- 
+
     for (DWORD i=0; i<processList->NumberOfProcessIdsInList; i++)
     {
         dwPid = (DWORD)processList->ProcessIdList[i];
@@ -1481,7 +1458,7 @@ Finished:
     return fDebuggerPresent;
 }
 
-HRESULT 
+HRESULT
 SERVER_PROCESS::GetChildProcessHandles(
     VOID
 )
@@ -1560,7 +1537,7 @@ SERVER_PROCESS::GetChildProcessHandles(
         hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
         goto Finished;
     }
- 
+
     for (DWORD i=0; i<processList->NumberOfProcessIdsInList; i++)
     {
         dwPid = (DWORD)processList->ProcessIdList[i];
@@ -1569,8 +1546,8 @@ SERVER_PROCESS::GetChildProcessHandles(
         {
             m_hChildProcessHandles[m_cChildProcess] = OpenProcess(
                                             PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
-                                            FALSE, 
-                                            dwPid 
+                                            FALSE,
+                                            dwPid
                                         );
             m_dwChildProcessIds[m_cChildProcess] = dwPid;
             m_cChildProcess ++;
@@ -1650,7 +1627,7 @@ SERVER_PROCESS::StopAllProcessesInJobObject(
         // some error
         goto Finished;
     }
- 
+
     for (DWORD i=0; i<processList->NumberOfProcessIdsInList; i++)
     {
         if (dwWorkerProcessPid != (DWORD)processList->ProcessIdList[i])
@@ -1791,7 +1768,7 @@ SERVER_PROCESS::~SERVER_PROCESS()
     m_pEnvironmentVarTable = NULL;
     // no need to free m_pEnvironmentVarTable, as it references to
     // the same hash table hold by configuration.
-    // the hashtable memory will be freed once onfiguration got recycled 
+    // the hashtable memory will be freed once onfiguration got recycled
 
     if (m_pProcessManager != NULL)
     {
@@ -1812,7 +1789,7 @@ SERVER_PROCESS::~SERVER_PROCESS()
     {
         m_Timer.CancelTimer();
     }
-    
+
     if (!m_fStdoutLogEnabled && !m_struFullLogFile.IsEmpty())
     {
         WIN32_FIND_DATA fileData;
@@ -1863,7 +1840,7 @@ SERVER_PROCESS::RegisterProcessWait(
                 (WAITORTIMERCALLBACKFUNC)&ProcessHandleCallback,
                 this,
                 INFINITE,
-                WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD 
+                WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD
                 );
 
     if (status < 0)
@@ -1917,7 +1894,6 @@ SERVER_PROCESS::SendShutdownHttpMessage( VOID )
     STRU       strUrl;
     DWORD      dwStatusCode = 0;
     DWORD      dwSize = sizeof(dwStatusCode);
-    STACK_STRU(strEventMsg, 256);
 
     hSession = WinHttpOpen(L"",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
@@ -2020,16 +1996,12 @@ SERVER_PROCESS::SendShutdownHttpMessage( VOID )
     }
 
     // log
-    if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+    UTILITY::LogEventF(g_hEventLog,
+        EVENTLOG_INFORMATION_TYPE,
+        ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST,
         ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST_MSG,
         m_dwProcessId,
-        dwStatusCode)))
-    {
-        UTILITY::LogEvent(g_hEventLog,
-            EVENTLOG_INFORMATION_TYPE,
-            ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST,
-            strEventMsg.QueryStr());
-    }
+        dwStatusCode);
 
 Finished:
     if (hRequest)
@@ -2120,8 +2092,6 @@ SERVER_PROCESS::TerminateBackendProcess(
     VOID
 )
 {
-    STACK_STRU(strEventMsg, 256);
-
     if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L)
     {
         // backend process will be terminated, remove the waitcallback
@@ -2129,7 +2099,7 @@ SERVER_PROCESS::TerminateBackendProcess(
         {
             UnregisterWait(m_hProcessWaitHandle);
 
-            // as we skipped process exit callback (ProcessHandleCallback), 
+            // as we skipped process exit callback (ProcessHandleCallback),
             // need to dereference the object otherwise memory leak
             DereferenceServerProcess();
 
@@ -2144,14 +2114,10 @@ SERVER_PROCESS::TerminateBackendProcess(
         }
 
         // log a warning for ungraceful shutdown
-        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_WARNING_TYPE,
+            ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
             ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG,
-            m_dwProcessId)))
-        {
-            UTILITY::LogEvent(g_hEventLog,
-                EVENTLOG_WARNING_TYPE,
-                ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
-                strEventMsg.QueryStr());
-        }
+            m_dwProcessId);
     }
 }
