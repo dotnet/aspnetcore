@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             foreach (var nodeReference in visitor.DirectiveNodes)
             {
+                // Lift the diagnostics in the directive node up to the document node.
+                for (var i = 0; i < nodeReference.Node.Diagnostics.Count; i++)
+                {
+                    documentNode.Diagnostics.Add(nodeReference.Node.Diagnostics[i]);
+                }
+
                 nodeReference.Remove();
             }
         }

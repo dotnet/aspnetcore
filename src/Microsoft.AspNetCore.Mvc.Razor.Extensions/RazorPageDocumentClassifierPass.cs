@@ -116,9 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 if (!PageDirective.TryGetPageDirective(leadingDirectiveDocumentNode, out var _))
                 {
                     // The page directive is not the leading directive. Add an error.
-                    // Note: Adding the error to the top-level document node because the directive node will be removed by a later optimization pass.
-                    var originalDocumentNode = codeDocument.GetDocumentIntermediateNode();
-                    originalDocumentNode.Diagnostics.Add(
+                    pageDirective.DirectiveNode.Diagnostics.Add(
                         RazorExtensionsDiagnosticFactory.CreatePageDirective_MustExistAtTheTopOfFile(pageDirective.DirectiveNode.Source.Value));
                 }
             }

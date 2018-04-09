@@ -68,8 +68,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            var documentNode = codeDocument.GetDocumentIntermediateNode();
-            var diagnostic = Assert.Single(documentNode.Diagnostics);
+            var pageDirectives = irDocument.FindDirectiveReferences(PageDirective.Directive);
+            var directive = Assert.Single(pageDirectives);
+            var diagnostic = Assert.Single(directive.Node.Diagnostics);
             Assert.Equal(expectedDiagnostic, diagnostic);
         }
 
@@ -97,8 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            var documentNode = codeDocument.GetDocumentIntermediateNode();
-            Assert.Empty(documentNode.Diagnostics);
+            var pageDirectives = irDocument.FindDirectiveReferences(PageDirective.Directive);
+            var directive = Assert.Single(pageDirectives);
+            Assert.Empty(directive.Node.Diagnostics);
         }
 
         [Fact]
