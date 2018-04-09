@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal class IISHttpServer : IServer
     {
+        private const string WebSocketVersionString = "WEBSOCKET_VERSION";
+
         private static NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
         private static NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
         private static NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
@@ -32,8 +34,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private bool Stopping => _stopping == 1;
         private int _outstandingRequests;
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool? _websocketAvailable;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
+
+        // TODO: Remove pInProcessHandler argument
+        public bool IsWebSocketAvailible(IntPtr pInProcessHandler)
+        {
+            // Check if the Http upgrade feature is available in IIS.
+            // To check this, we can look at the server variable WEBSOCKET_VERSION
+            // And see if there is a version. Same check that Katana did:
+            // https://github.com/aspnet/AspNetKatana/blob/9f6e09af6bf203744feb5347121fe25f6eec06d8/src/Microsoft.Owin.Host.SystemWeb/OwinAppContext.cs#L125
+            // Actively not locking here as acquiring a lock on every request will hurt perf more than checking the
+            // server variables a few extra times if a bunch of requests hit the server at the same time.
+            if (!_websocketAvailable.HasValue)
+            {
+                _websocketAvailable = NativeMethods.HttpTryGetServerVariable(pInProcessHandler, WebSocketVersionString, out var webSocketsSupported)
+                    && !string.IsNullOrEmpty(webSocketsSupported);
+            }
+
+            return _websocketAvailable.Value;
+        }
+
         public IISHttpServer(IApplicationLifetime applicationLifetime, IAuthenticationSchemeProvider authentication, IOptions<IISOptions> options)
         {
             _applicationLifetime = applicationLifetime;
@@ -122,6 +144,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
             Interlocked.Increment(ref server._outstandingRequests);
 
+            // TODO: Add try/catch and logging here
             var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
 
             var task = Task.Run(() => context.ProcessRequestAsync());

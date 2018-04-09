@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Benchmarks.Middleware;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,6 +19,7 @@ namespace NativeIISSample
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IAuthenticationSchemeProvider authSchemeProvider)
         {
+            app.UsePlainText();
             app.Run(async (context) =>
             {
                 context.Response.ContentType = "text/plain";

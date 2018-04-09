@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const int PauseWriterThreshold = 65536;
         private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
 
-        // TODO make this static again.
-        private static WebsocketAvailabilityStatus _websocketAvailability = WebsocketAvailabilityStatus.Uninitialized;
 
         protected readonly IntPtr _pInProcessHandler;
 
@@ -60,7 +58,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
-        private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
         internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
@@ -72,103 +69,64 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _server = server;
 
             NativeMethods.HttpSetManagedContext(pInProcessHandler, (IntPtr)_thisHandle);
-            unsafe
+            Method = GetVerb();
+
+            RawTarget = GetRawUrl();
+            // TODO version is slow.
+            HttpVersion = GetVersion();
+            Scheme = SslStatus != SslStatus.Insecure ? Constants.HttpsScheme : Constants.HttpScheme;
+            KnownMethod = VerbId;
+            StatusCode = 200;
+
+            var originalPath = RequestUriBuilder.DecodeAndUnescapePath(GetRawUrlInBytes());
+
+            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
-                Method = GetVerb();
+                PathBase = string.Empty;
+                Path = string.Empty;
+            }
+            else
+            {
+                // Path and pathbase are unescaped by RequestUriBuilder
+                // The UsePathBase middleware will modify the pathbase and path correctly
+                PathBase = string.Empty;
+                Path = originalPath;
+            }
 
-                RawTarget = GetRawUrl();
-                // TODO version is slow.
-                HttpVersion = GetVersion();
-                Scheme = SslStatus != SslStatus.Insecure ? Constants.HttpsScheme : Constants.HttpScheme;
-                KnownMethod = VerbId;
+            var cookedUrl = GetCookedUrl();
+            QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-                var originalPath = RequestUriBuilder.DecodeAndUnescapePath(GetRawUrlInBytes());
+            RequestHeaders = new RequestHeaders(this);
+            HttpResponseHeaders = new HeaderCollection();
+            ResponseHeaders = HttpResponseHeaders;
 
-                if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
+            if (options.ForwardWindowsAuthentication)
+            {
+                WindowsUser = GetWindowsPrincipal();
+                if (options.AutomaticAuthentication)
                 {
-                    PathBase = string.Empty;
-                    Path = string.Empty;
+                    User = WindowsUser;
                 }
-                else
-                {
-                    // Path and pathbase are unescaped by RequestUriBuilder
-                    // The UsePathBase middleware will modify the pathbase and path correctly
-                    PathBase = string.Empty;
-                    Path = originalPath;
-                }
+            }
 
-                var cookedUrl = GetCookedUrl();
-                QueryString = cookedUrl.GetQueryString() ?? string.Empty;
+            ResetFeatureCollection();
 
-                // TODO: Avoid using long.ToString, it's pretty slow
-                RequestConnectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
-
-                // Copied from WebListener
-                // This is the base GUID used by HTTP.SYS for generating the activity ID.
-                // HTTP.SYS overwrites the first 8 bytes of the base GUID with RequestId to generate ETW activity ID.
-                // The requestId should be set by the NativeRequestContext
-                var guid = new Guid(0xffcb4c93, 0xa57f, 0x453c, 0xb6, 0x3f, 0x84, 0x71, 0xc, 0x79, 0x67, 0xbb);
-                *((ulong*)&guid) = RequestId;
-
-                // TODO: Also make this not slow
-                TraceIdentifier = guid.ToString();
-
-                var localEndPoint = GetLocalEndPoint();
-                LocalIpAddress = localEndPoint.GetIPAddress();
-                LocalPort = localEndPoint.GetPort();
-
-                var remoteEndPoint = GetRemoteEndPoint();
-                RemoteIpAddress = remoteEndPoint.GetIPAddress();
-                RemotePort = remoteEndPoint.GetPort();
-                StatusCode = 200;
-
-                RequestHeaders = new RequestHeaders(this);
-                HttpResponseHeaders = new HeaderCollection();
-                ResponseHeaders = HttpResponseHeaders;
-
-                if (options.ForwardWindowsAuthentication)
-                {
-                    WindowsUser = GetWindowsPrincipal();
-                    if (options.AutomaticAuthentication)
-                    {
-                        User = WindowsUser;
-                    }
-                }
-
-                ResetFeatureCollection();
-
-                // Check if the Http upgrade feature is available in IIS.
-                // To check this, we can look at the server variable WEBSOCKET_VERSION
-                // And see if there is a version. Same check that Katana did:
-                // https://github.com/aspnet/AspNetKatana/blob/9f6e09af6bf203744feb5347121fe25f6eec06d8/src/Microsoft.Owin.Host.SystemWeb/OwinAppContext.cs#L125
-                // Actively not locking here as acquiring a lock on every request will hurt perf more than checking the
-                // server variables a few extra times if a bunch of requests hit the server at the same time.
-                if (_websocketAvailability == WebsocketAvailabilityStatus.Uninitialized)
-                {
-                    var webSocketsAvailable =  NativeMethods.HttpTryGetServerVariable(pInProcessHandler, WebSocketVersionString, out var webSocketsSupported)
-                                               && !string.IsNullOrEmpty(webSocketsSupported);
-
-                    _websocketAvailability = webSocketsAvailable ?
-                        WebsocketAvailabilityStatus.Available :
-                        WebsocketAvailabilityStatus.NotAvailable;
-                }
-
-                if (_websocketAvailability == WebsocketAvailabilityStatus.NotAvailable)
-                {
-                    _currentIHttpUpgradeFeature = null;
-                }
+            if (_server.IsWebSocketAvailible(pInProcessHandler))
+            {
+                _currentIHttpUpgradeFeature = null;
             }
 
             RequestBody = new IISHttpRequestBody(this);
             ResponseBody = new IISHttpResponseBody(this);
 
             Input = new Pipe(new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.ThreadPool, minimumSegmentSize: MinAllocBufferSize));
-            var pipe = new Pipe(new PipeOptions(
-                _memoryPool,
-                readerScheduler: PipeScheduler.ThreadPool,
-                pauseWriterThreshold: PauseWriterThreshold,
-                resumeWriterThreshold: ResumeWriterTheshold,
-                minimumSegmentSize: MinAllocBufferSize));
+            var pipe = new Pipe(
+                new PipeOptions(
+                    _memoryPool,
+                    readerScheduler: PipeScheduler.ThreadPool,
+                    pauseWriterThreshold: PauseWriterThreshold,
+                    resumeWriterThreshold: ResumeWriterTheshold,
+                    minimumSegmentSize: MinAllocBufferSize));
             Output = new OutputProducer(pipe);
         }
 
@@ -544,13 +502,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
             }
             return null;
-        }
-
-        private enum WebsocketAvailabilityStatus
-        {
-            Uninitialized = 1,
-            Available,
-            NotAvailable
         }
     }
 }
