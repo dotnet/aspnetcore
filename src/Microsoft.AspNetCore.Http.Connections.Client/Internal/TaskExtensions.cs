@@ -14,7 +14,7 @@ namespace System.Threading.Tasks
         }
     }
 
-    internal struct NoThrowAwaiter : ICriticalNotifyCompletion
+    internal readonly struct NoThrowAwaiter : ICriticalNotifyCompletion
     {
         private readonly Task _task;
         public NoThrowAwaiter(Task task) { _task = task; }

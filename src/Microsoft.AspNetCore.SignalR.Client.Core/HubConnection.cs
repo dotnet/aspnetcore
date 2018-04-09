@@ -807,7 +807,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private struct InvocationHandler
+        private readonly struct InvocationHandler
         {
             public Type[] ParameterTypes { get; }
             private readonly Func<object[], object, Task> _callback;

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return new Awaitable();
         }
 
-        public struct Awaitable : ICriticalNotifyCompletion
+        public readonly struct Awaitable : ICriticalNotifyCompletion
         {
             public void GetResult()
             {
