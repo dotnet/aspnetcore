@@ -117,12 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 rootDirectory = rootDirectory + "/";
             }
 
-            var areaRootDirectory = _pagesOptions.AreaRootDirectory;
-            if (!areaRootDirectory.EndsWith("/", StringComparison.Ordinal))
-            {
-                areaRootDirectory = areaRootDirectory + "/";
-            }
-
+            var areaRootDirectory = "/Areas/";
             foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
             {
                 if (viewDescriptor.Item != null && !ChecksumValidator.IsItemValid(_razorProjectEngine.FileSystem, viewDescriptor.Item))

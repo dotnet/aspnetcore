@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _normalizedRootDirectory = NormalizeDirectory(options.RootDirectory);
-            _normalizedAreaRootDirectory = NormalizeDirectory(options.AreaRootDirectory);
+            _normalizedAreaRootDirectory = "/Areas/";
         }
 
         public PageRouteModel CreateRouteModel(string relativePath, string routeTemplate)
@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // path = "/Areas/Products/Pages/Manage/Home.cshtml"
             // Result ("Products", "/Manage/Home")
+            const string AreaPagesRoot = "/Pages/";
 
             result = default;
             Debug.Assert(relativePath.StartsWith("/", StringComparison.Ordinal));
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 areaRootEndIndex >= relativePath.Length - 1 || // There's at least one token after the area root.
                 !relativePath.StartsWith(_normalizedAreaRootDirectory, StringComparison.OrdinalIgnoreCase)) // The path must start with area root.
             {
-                _logger.UnsupportedAreaPath(_options, relativePath);
+                _logger.UnsupportedAreaPath(relativePath);
                 return false;
             }
 
@@ -103,35 +104,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var areaEndIndex = relativePath.IndexOf('/', startIndex: areaRootEndIndex + 1);
             if (areaEndIndex == -1 || areaEndIndex == relativePath.Length)
             {
-                _logger.UnsupportedAreaPath(_options, relativePath);
+                _logger.UnsupportedAreaPath(relativePath);
                 return false;
             }
 
             var areaName = relativePath.Substring(areaRootEndIndex + 1, areaEndIndex - areaRootEndIndex - 1);
-
-            string viewEnginePath;
-            if (_options.RootDirectory == "/")
+            // Ensure the next token is the "Pages" directory
+            if (string.Compare(relativePath, areaEndIndex, AreaPagesRoot, 0, AreaPagesRoot.Length, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                // When RootDirectory is "/", every thing past the area name is the page path.
-                Debug.Assert(relativePath.EndsWith(RazorViewEngine.ViewExtension), $"{relativePath} does not end in extension '{RazorViewEngine.ViewExtension}'.");
-                viewEnginePath = relativePath.Substring(areaEndIndex, relativePath.Length - areaEndIndex - RazorViewEngine.ViewExtension.Length);
+                _logger.UnsupportedAreaPath(relativePath);
+                return false;
             }
-            else
-            {
-                // Normalize the pages root directory so that it has a trailing slash. This ensures we're looking at a directory delimiter
-                // and not just the area name occuring as part of a segment.
-                Debug.Assert(_options.RootDirectory.StartsWith("/", StringComparison.Ordinal));
-                // If the pages root has a value i.e. it's not the app root "/", ensure that the area path contains this value.
-                if (string.Compare(relativePath, areaEndIndex, _normalizedRootDirectory, 0, _normalizedRootDirectory.Length, StringComparison.OrdinalIgnoreCase) != 0)
-                {
-                    _logger.UnsupportedAreaPath(_options, relativePath);
-                    return false;
-                }
 
-                // Include the trailing slash of the root directory at the start of the viewEnginePath
-                var pageNameIndex = areaEndIndex + _normalizedRootDirectory.Length - 1;
-                viewEnginePath = relativePath.Substring(pageNameIndex, relativePath.Length - pageNameIndex - RazorViewEngine.ViewExtension.Length);
-            }
+            // Include the trailing slash of the root directory at the start of the viewEnginePath
+            var pageNameIndex = areaEndIndex + AreaPagesRoot.Length - 1;
+            var viewEnginePath = relativePath.Substring(pageNameIndex, relativePath.Length - pageNameIndex - RazorViewEngine.ViewExtension.Length);
 
             result = (areaName, viewEnginePath);
             return true;

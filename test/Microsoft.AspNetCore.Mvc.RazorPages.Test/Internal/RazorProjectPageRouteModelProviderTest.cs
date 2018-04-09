@@ -155,15 +155,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var fileSystem = new VirtualRazorProjectFileSystem();
-            fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Categories.cshtml", "@page"));
-            // We shouldn't add a route for this.
-            fileSystem.Add(new TestRazorProjectItem("/Areas/Home.cshtml", "@page"));
+            fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Pages/Categories.cshtml", "@page"));
             fileSystem.Add(new TestRazorProjectItem("/About.cshtml", "@page"));
+            // We shouldn't add a route for the following paths.
+            fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Categories.cshtml", "@page"));
+            fileSystem.Add(new TestRazorProjectItem("/Areas/Home.cshtml", "@page"));
 
             var optionsManager = Options.Create(new RazorPagesOptions
             {
                 RootDirectory = "/",
-                AreaRootDirectory = "/Areas",
                 AllowAreas = true,
             });
             var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Collection(context.RouteModels,
                 model =>
                 {
-                    Assert.Equal("/Areas/Products/Categories.cshtml", model.RelativePath);
+                    Assert.Equal("/Areas/Products/Pages/Categories.cshtml", model.RelativePath);
                     Assert.Equal("/Categories", model.ViewEnginePath);
                     Assert.Collection(model.Selectors,
                         selector => Assert.Equal("Products/Categories", selector.AttributeRouteModel.Template));

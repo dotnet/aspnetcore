@@ -214,15 +214,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptors = new[]
             {
-                CreateVersion_2_0_Descriptor("/Features/Products/Files/About.cshtml"),
-                CreateVersion_2_0_Descriptor("/Features/Products/Files/Manage/Index.cshtml"),
-                CreateVersion_2_0_Descriptor("/Features/Products/Files/Manage/Edit.cshtml", "{id}"),
+                CreateVersion_2_0_Descriptor("/Areas/Products/Files/About.cshtml"),
+                CreateVersion_2_0_Descriptor("/Areas/Products/Pages/About.cshtml"),
+                CreateVersion_2_0_Descriptor("/Areas/Products/Pages/Manage/Index.cshtml"),
+                CreateVersion_2_0_Descriptor("/Areas/Products/Pages/Manage/Edit.cshtml", "{id}"),
             };
 
             var options = new RazorPagesOptions
             {
                 AllowAreas = true,
-                AreaRootDirectory = "/Features",
+                // Setting this value should not affect area page lookup.
                 RootDirectory = "/Files",
             };
 
@@ -237,7 +238,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 context.RouteModels,
                 result =>
                 {
-                    Assert.Equal("/Features/Products/Files/About.cshtml", result.RelativePath);
+                    Assert.Equal("/Areas/Products/Pages/About.cshtml", result.RelativePath);
                     Assert.Equal("/About", result.ViewEnginePath);
                     Assert.Collection(
                         result.Selectors,
@@ -257,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 },
                 result =>
                 {
-                    Assert.Equal("/Features/Products/Files/Manage/Index.cshtml", result.RelativePath);
+                    Assert.Equal("/Areas/Products/Pages/Manage/Index.cshtml", result.RelativePath);
                     Assert.Equal("/Manage/Index", result.ViewEnginePath);
                     Assert.Collection(result.Selectors,
                         selector => Assert.Equal("Products/Manage/Index", selector.AttributeRouteModel.Template),
@@ -277,7 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 },
                 result =>
                 {
-                    Assert.Equal("/Features/Products/Files/Manage/Edit.cshtml", result.RelativePath);
+                    Assert.Equal("/Areas/Products/Pages/Manage/Edit.cshtml", result.RelativePath);
                     Assert.Equal("/Manage/Edit", result.ViewEnginePath);
                     Assert.Collection(
                         result.Selectors,
@@ -341,6 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptors = new[]
             {
+                CreateVersion_2_0_Descriptor("/Areas/Accounts/Pages/Manage/Home.cshtml"),
                 CreateVersion_2_0_Descriptor("/Areas/Accounts/Manage/Home.cshtml"),
                 CreateVersion_2_0_Descriptor("/Areas/About.cshtml"),
                 CreateVersion_2_0_Descriptor("/Contact.cshtml"),
@@ -349,7 +351,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var options = new RazorPagesOptions
             {
                 AllowAreas = true,
-                AreaRootDirectory = "/Areas",
                 RootDirectory = "/",
             };
 
@@ -364,7 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 context.RouteModels,
                 result =>
                 {
-                    Assert.Equal("/Areas/Accounts/Manage/Home.cshtml", result.RelativePath);
+                    Assert.Equal("/Areas/Accounts/Pages/Manage/Home.cshtml", result.RelativePath);
                     Assert.Equal("/Manage/Home", result.ViewEnginePath);
                     Assert.Collection(
                         result.Selectors,

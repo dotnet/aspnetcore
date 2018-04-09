@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -58,14 +57,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             if (razorPagesOptions.Value.AllowAreas)
             {
-                var areaRootDirectory = razorPagesOptions.Value.AreaRootDirectory;
-                Debug.Assert(!string.IsNullOrEmpty(areaRootDirectory));
-                areaRootDirectory = areaRootDirectory.TrimEnd('/');
-
                 // Search pattern that matches all cshtml files under the Pages AreaRootDirectory
-                var areaRootSearchPattern = areaRootDirectory + "/**/*.cshtml";
+                var areaRootSearchPattern = "/Areas/**/*.cshtml";
 
-                var importFileAtAreaPagesRoot = areaRootDirectory + "/" + templateEngine.Options.ImportsFileName;
+                var importFileAtAreaPagesRoot = $"/Areas/{templateEngine.Options.ImportsFileName}";
                 var importPathsOutsideAreaPagesRoot = templateEngine.GetImportItems(importFileAtAreaPagesRoot)
                     .Select(item => item.FilePath);
 

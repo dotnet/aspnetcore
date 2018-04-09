@@ -88,21 +88,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Configure_WithCustomRoots_AddsAreaPageViewLocationFormats()
+        public void Configure_WithCustomRoot_AddsAreaPageViewLocationFormats()
         {
             // Arrange
             var expected = new[]
             {
-                "/Features/{2}/RazorFiles/{1}/{0}.cshtml",
-                "/Features/{2}/RazorFiles/Shared/{0}.cshtml",
-                "/Features/{2}/Views/Shared/{0}.cshtml",
+                "/Areas/{2}/Pages/{1}/{0}.cshtml",
+                "/Areas/{2}/Pages/Shared/{0}.cshtml",
+                "/Areas/{2}/Views/Shared/{0}.cshtml",
                 "/RazorFiles/Shared/{0}.cshtml",
                 "/Views/Shared/{0}.cshtml",
             };
 
             var razorPagesOptions = new RazorPagesOptions
             {
-                AreaRootDirectory = "/Features",
                 RootDirectory = "/RazorFiles/",
             };
             var viewEngineOptions = GetViewEngineOptions();

@@ -36,10 +36,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             options.PageViewLocationFormats.Add("/Views/Shared/{0}" + RazorViewEngine.ViewExtension);
 
-            Debug.Assert(!string.IsNullOrEmpty(_pagesOptions.AreaRootDirectory));
-            var areaDirectory = CombinePath(_pagesOptions.AreaRootDirectory, "{2}");
+            var areaDirectory = CombinePath("/Areas/", "{2}");
             // Areas/{2}/Pages/
-            var areaPagesDirectory = CombinePath(areaDirectory, rootDirectory);
+            var areaPagesDirectory = CombinePath(areaDirectory, "/Pages/");
 
             // Areas/{2}/Pages/{1}/{0}.cshtml
             // Areas/{2}/Pages/Shared/{0}.cshtml

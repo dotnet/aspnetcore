@@ -221,30 +221,5 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Equal(expectedArea, result.areaName);
             Assert.Equal(expectedViewEnginePath, result.viewEnginePath);
         }
-
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
-        [InlineData("/Areas/MyArea/Dir1/Dir2/Index.cshtml", "MyArea", "/Index")]
-        [InlineData("/Areas/Accounts/Dir1/Dir2/Manage/Edit.cshtml", "Accounts", "/Manage/Edit")]
-        public void TryParseAreaPath_ParsesAreaPath_WithMultiLevelRootDirectory(
-            string path,
-            string expectedArea,
-            string expectedViewEnginePath)
-        {
-            // Arrange
-            var options = new RazorPagesOptions
-            {
-                RootDirectory = "/Dir1/Dir2"
-            };
-            var routeModelFactory = new PageRouteModelFactory(options, NullLogger.Instance);
-
-            // Act
-            var success = routeModelFactory.TryParseAreaPath(path, out var result);
-
-            // Assert
-            Assert.True(success);
-            Assert.Equal(expectedArea, result.areaName);
-            Assert.Equal(expectedViewEnginePath, result.viewEnginePath);
-        }
     }
 }

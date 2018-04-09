@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
         private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
-        private static readonly Action<ILogger, string, string, string, string, Exception> _unsupportedAreaPath;
+        private static readonly Action<ILogger, string, Exception> _unsupportedAreaPath;
         private static readonly Action<ILogger, Type, Exception> _notMostEffectiveFilter;
         private static readonly Action<ILogger, string, string, string, Exception> _beforeExecutingMethodOnFilter;
         private static readonly Action<ILogger, string, string, string, Exception> _afterExecutingMethodOnFilter;
@@ -63,10 +63,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 2,
                 "{FilterType}: After executing {Method} on filter {Filter}.");
 
-            _unsupportedAreaPath = LoggerMessage.Define<string, string, string, string>(
+            _unsupportedAreaPath = LoggerMessage.Define<string>(
                 LogLevel.Warning,
                 1,
-                "The page at '{FilePath}' is located under the area root directory '{AreaRootDirectory}' but does not follow the path format '{AreaRootDirectory}{RootDirectory}/Directory/FileName.cshtml");
+                "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml");
         }
 
         public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object[] arguments)
@@ -140,11 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _notMostEffectiveFilter(logger, policyType, null);
         }
 
-        public static void UnsupportedAreaPath(this ILogger logger, RazorPagesOptions options, string filePath)
+        public static void UnsupportedAreaPath(this ILogger logger, string filePath)
         {
             if (logger.IsEnabled(LogLevel.Warning))
             {
-                _unsupportedAreaPath(logger, filePath, options.AreaRootDirectory, options.AreaRootDirectory, options.RootDirectory, null);
+                _unsupportedAreaPath(logger, filePath, null);
             }
         }
     }

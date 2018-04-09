@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class RazorProjectPageRouteModelProvider : IPageRouteModelProvider
     {
+        private const string AreaRootDirectory = "/Areas/";
         private readonly RazorProjectFileSystem _razorFileSystem;
         private readonly RazorPagesOptions _pagesOptions;
         private readonly PageRouteModelFactory _routeModelFactory;
@@ -54,12 +55,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private void AddPageModels(PageRouteModelProviderContext context)
         {
-            var normalizedAreaRootDirectory = _pagesOptions.AreaRootDirectory;
-            if (!normalizedAreaRootDirectory.EndsWith("/", StringComparison.Ordinal))
-            {
-                normalizedAreaRootDirectory += "/";
-            }
-
             foreach (var item in _razorFileSystem.EnumerateItems(_pagesOptions.RootDirectory))
             {
                 if (!IsRouteable(item))
@@ -84,11 +79,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                if (_pagesOptions.AllowAreas && relativePath.StartsWith(normalizedAreaRootDirectory, StringComparison.OrdinalIgnoreCase))
+                if (_pagesOptions.AllowAreas && relativePath.StartsWith(AreaRootDirectory, StringComparison.OrdinalIgnoreCase))
                 {
                     // Ignore Razor pages that are under the area root directory when AllowAreas is enabled. 
                     // Conforming page paths will be added by AddAreaPageModels.
-                    _logger.UnsupportedAreaPath(_pagesOptions, relativePath);
+                    _logger.UnsupportedAreaPath(relativePath);
                     continue;
                 }
 
@@ -102,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private void AddAreaPageModels(PageRouteModelProviderContext context)
         {
-            foreach (var item in _razorFileSystem.EnumerateItems(_pagesOptions.AreaRootDirectory))
+            foreach (var item in _razorFileSystem.EnumerateItems(AreaRootDirectory))
             {
                 if (!IsRouteable(item))
                 {
