@@ -15,7 +15,7 @@ async function sendAsync(id: number, method: string, requestUri: string, body: s
   let response: Response;
   let responseText: string;
 
-  const requestInit = fetchArgs || {};
+  const requestInit: RequestInit = fetchArgs || {};
   requestInit.method = method;
   requestInit.body = body || undefined;
 

@@ -106,6 +106,38 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.EndsWith("/test-referrer", _responseBody.Text);
         }
 
+        [Fact]
+        public void CanSendAndReceiveCookies()
+        {
+            var app = MountTestComponent<CookieCounterComponent>();
+            var deleteButton = app.FindElement(By.Id("delete"));
+            var incrementButton = app.FindElement(By.Id("increment"));
+            app.FindElement(By.TagName("input")).SendKeys(_apiServerFixture.RootUri.ToString());
+
+            // Ensure we're starting from a clean state
+            deleteButton.Click();
+            Assert.Equal("Reset completed", WaitAndGetResponseText());
+
+            // Observe that subsequent requests manage to preserve state via cookie
+            incrementButton.Click();
+            Assert.Equal("Counter value is 1", WaitAndGetResponseText());
+            incrementButton.Click();
+            Assert.Equal("Counter value is 2", WaitAndGetResponseText());
+
+            // Verify that attempting to delete a cookie actually works
+            deleteButton.Click();
+            Assert.Equal("Reset completed", WaitAndGetResponseText());
+            incrementButton.Click();
+            Assert.Equal("Counter value is 1", WaitAndGetResponseText());
+
+            string WaitAndGetResponseText()
+            {
+                new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
+                    driver => driver.FindElement(By.Id("response-text")) != null);
+                return app.FindElement(By.Id("response-text")).Text;
+            }
+        }
+
         private void IssueRequest(string requestMethod, string relativeUri, string requestBody = null)
         {
             var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);

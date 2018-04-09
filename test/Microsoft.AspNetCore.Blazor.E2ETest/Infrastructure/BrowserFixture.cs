@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
         public BrowserFixture()
         {
             var opts = new ChromeOptions();
+
+            // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
             opts.AddArgument("--headless");
 
             // On Windows/Linux, we don't need to set opts.BinaryLocation
