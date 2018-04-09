@@ -17,12 +17,14 @@ The previous versions of Identity for MVC5 and lower, previously available on Co
 
 **IMPORTANT: Extensions are built by a variety of sources and not maintained as part of the ASP.NET Identity project. When considering a third party provider, be sure to evaluate quality, licensing, compatibility, support, etc. to ensure they meet your requirements.**
 
- - [ASP.NET Identity MongoDB Provider](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
- - [ASP.NET Identity LinqToDB Provider](https://github.com/ili/LinqToDB.Identity)
- - [ASP.NET Identity DynamoDB Provider](https://github.com/miltador/AspNetCore.Identity.DynamoDB)
- - ASP.NET Identity RavenDB Provider:
-    - [By Judah Gabriel Himango](https://github.com/JudahGabriel/RavenDB.Identity)
-    - [By Iskandar Rafiev](https://github.com/maqduni/AspNetCore.Identity.RavenDB)
- - [ASP.NET Identity Cassandra Provider](https://github.com/lkubis/AspNetCore.Identity.Cassandra)
- - [ASP.NET Identity Firebase Provider](https://github.com/aguacongas/Identity.Firebase)
- - [ASP.NET Identity Redis Provider](https://github.com/aguacongas/Identity.Redis)
+* ASP.NET Identity MongoDB Providers:
+  * [By Tugberk Ugurlu](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
+  * [By Alexandre Spieser](https://github.com/alexandre-spieser/AspNetCore.Identity.MongoDbCore) 
+ * [ASP.NET Identity LinqToDB Provider](https://github.com/ili/LinqToDB.Identity) 
+ * [ASP.NET Identity DynamoDB Provider](https://github.com/miltador/AspNetCore.Identity.DynamoDB)
+ * ASP.NET Identity RavenDB Providers:
+    * [By Judah Gabriel Himango](https://github.com/JudahGabriel/RavenDB.Identity)
+    * [By Iskandar Rafiev](https://github.com/maqduni/AspNetCore.Identity.RavenDB)
+ * [ASP.NET Identity Cassandra Provider](https://github.com/lkubis/AspNetCore.Identity.Cassandra)
+ * [ASP.NET Identity Firebase Provider](https://github.com/aguacongas/Identity.Firebase)
+ * [ASP.NET Identity Redis Provider](https://github.com/aguacongas/Identity.Redis)
