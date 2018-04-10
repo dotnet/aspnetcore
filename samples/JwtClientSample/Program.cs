@@ -23,13 +23,13 @@ namespace JwtClientSample
 
         private const string ServerUrl = "http://localhost:54543";
 
-        private readonly ConcurrentDictionary<string, string> _tokens = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, Task<string>> _tokens = new ConcurrentDictionary<string, Task<string>>(StringComparer.Ordinal);
         private readonly Random _random = new Random();
 
         private async Task RunConnection(HttpTransportType transportType)
         {
             var userId = "C#" + transportType;
-            _tokens[userId] = await GetJwtToken(userId);
+            _tokens[userId] = GetJwtToken(userId);
 
             var hubConnection = new HubConnectionBuilder()
                 .WithUrl(ServerUrl + "/broadcast", options =>
@@ -60,7 +60,7 @@ namespace JwtClientSample
                         // no need to refresh the token for websockets
                         if (transportType != HttpTransportType.WebSockets)
                         {
-                            _tokens[userId] = await GetJwtToken(userId);
+                            _tokens[userId] = GetJwtToken(userId);
                             Console.WriteLine($"[{userId}] Token refreshed");
                         }
                     }

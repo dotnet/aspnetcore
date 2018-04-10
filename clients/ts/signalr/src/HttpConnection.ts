@@ -13,7 +13,7 @@ export interface IHttpConnectionOptions {
     httpClient?: HttpClient;
     transport?: TransportType | ITransport;
     logger?: ILogger | LogLevel;
-    accessTokenFactory?: () => string;
+    accessTokenFactory?: () => string | Promise<string>;
     logMessageContent?: boolean;
 }
 
@@ -87,7 +87,7 @@ export class HttpConnection implements IConnection {
                 // No fallback or negotiate in this case.
                 await this.transport.connect(this.url, transferFormat, this);
             } else {
-                const token = this.options.accessTokenFactory();
+                const token = await this.options.accessTokenFactory();
                 let headers;
                 if (token) {
                     headers = {

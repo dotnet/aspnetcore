@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public bool? UseDefaultCredentials { get; set; }
         public ICredentials Credentials { get; set; }
         public IWebProxy Proxy { get; set; }
-        public Func<string> AccessTokenFactory { get; set; }
+        public Func<Task<string>> AccessTokenFactory { get; set; }
         public Action<ClientWebSocketOptions> WebSocketOptions { get; set; }
 
         public X509CertificateCollection ClientCertificates

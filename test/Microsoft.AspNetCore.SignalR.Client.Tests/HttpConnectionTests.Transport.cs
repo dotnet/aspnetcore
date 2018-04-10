@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return await next();
                 });
 
-                string AccessTokenFactory()
+                Task<string> AccessTokenFactory()
                 {
                     callCount++;
-                    return callCount.ToString();
+                    return Task.FromResult(callCount.ToString());
                 }
 
                 await WithConnectionAsync(

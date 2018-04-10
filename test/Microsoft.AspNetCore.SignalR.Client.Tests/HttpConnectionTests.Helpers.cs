@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             ITransport transport = null,
             ITransportFactory transportFactory = null,
             HttpTransportType transportType = HttpTransportType.LongPolling,
-            Func<string> accessTokenFactory = null)
+            Func<Task<string>> accessTokenFactory = null)
         {
             var httpOptions = new HttpOptions
             {

@@ -532,6 +532,33 @@ describe("hubConnection", () => {
                 }
             });
 
+            it("can connect to hub with authorization using async token factory", async (done) => {
+                const message = "你好，世界！";
+
+                try {
+                    const hubConnection = new HubConnection("/authorizedhub", {
+                        accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
+                        ...commonOptions,
+                        transport: transportType,
+                    });
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
+                        done();
+                    });
+                    await hubConnection.start();
+                    const response = await hubConnection.invoke("Echo", message);
+
+                    expect(response).toEqual(message);
+
+                    await hubConnection.stop();
+
+                    done();
+                } catch (err) {
+                    fail(err);
+                    done();
+                }
+            });
+
             if (transportType !== TransportType.LongPolling) {
                 it("terminates if no messages received within timeout interval", (done) => {
                     const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {

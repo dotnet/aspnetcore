@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public Func<HttpMessageHandler, HttpMessageHandler> HttpMessageHandlerFactory { get; set; }
 
         public IReadOnlyCollection<KeyValuePair<string, string>> Headers { get; set; }
-        public Func<string> AccessTokenFactory { get; set; }
+        public Func<Task<string>> AccessTokenFactory { get; set; }
         public TimeSpan CloseTimeout { get; set; } = TimeSpan.FromSeconds(5);
         public ICredentials Credentials { get; set; }
         public X509CertificateCollection ClientCertificates { get; set; } = new X509CertificateCollection();
