@@ -92,7 +92,7 @@
     <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" Private="true" />
     <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" Private="true" />
     <ExternalDependency Include="Moq" Version="$(MoqPackageVersion)" Private="true" />
-    <ExternalDependency Include="MsgPack.Cli" Version="$(MsgPackCliPackageVersion)" />
+    <ExternalDependency Include="MessagePack" Version="$(MessagePackPackageVersion)" />
 
     <!-- netstandard1.x -->
     <ExternalDependency Include="NETStandard.Library" Version="$(NETStandard16PackageVersion)" VariableName="NETStandard16PackageVersion" />
