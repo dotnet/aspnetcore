@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (_disposed)
             {
-                return Helpers.CompletedTask();
+                return Task.CompletedTask;
             }
             return FlushInternalAsync(new ArraySegment<byte>(), cancellationToken);
         }
@@ -274,20 +274,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (_skipWrites)
             {
-                return Helpers.CompletedTask();
+                return Task.CompletedTask;
             }
 
             var started = _requestContext.Response.HasStarted;
             if (data.Count == 0 && started)
             {
                 // No data to send and we've already sent the headers
-                return Helpers.CompletedTask();
+                return Task.CompletedTask;
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
                 Abort(ThrowWriteExceptions);
-                return Helpers.CanceledTask<int>();
+                return Task.FromCanceled<int>(cancellationToken);
             }
 
             // Make sure all validation is performed before this computes the headers
@@ -535,20 +535,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (_skipWrites)
             {
-                return Helpers.CompletedTask();
+                return Task.CompletedTask;
             }
 
             var started = _requestContext.Response.HasStarted;
             if (count == 0 && started)
             {
                 // No data to send and we've already sent the headers
-                return Helpers.CompletedTask();
+                return Task.CompletedTask;
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
                 Abort(ThrowWriteExceptions);
-                return Helpers.CanceledTask<int>();
+                return Task.FromCanceled<int>(cancellationToken);
             }
 
             // We are setting buffer size to 1 to prevent FileStream from allocating it's internal buffer

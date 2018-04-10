@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (cancellationToken.IsCancellationRequested)
             {
-                return Helpers.CanceledTask<int>();
+                return Task.FromCanceled<int>(cancellationToken);
             }
             // TODO: Verbose log parameters
 
