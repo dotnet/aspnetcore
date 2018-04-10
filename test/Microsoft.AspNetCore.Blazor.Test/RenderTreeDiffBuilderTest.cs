@@ -425,12 +425,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
             UIEventHandler removedHandler = _ => { };
             UIEventHandler addedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
-            oldTree.AddAttribute(1, "will remain", retainedHandler);
-            oldTree.AddAttribute(2, "will change", removedHandler);
+            oldTree.AddAttribute(1, "onfoo", retainedHandler);
+            oldTree.AddAttribute(2, "onbar", removedHandler);
             oldTree.CloseElement();
             newTree.OpenElement(0, "My element");
-            newTree.AddAttribute(1, "will remain", retainedHandler);
-            newTree.AddAttribute(2, "will change", addedHandler);
+            newTree.AddAttribute(1, "onfoo", retainedHandler);
+            newTree.AddAttribute(2, "onbar", addedHandler);
             newTree.CloseElement();
 
             // Act
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
-            AssertFrame.Attribute(referenceFrames[0], "will change", addedHandler);
+            AssertFrame.Attribute(referenceFrames[0], "onbar", addedHandler);
             Assert.NotEqual(0, removedEventHandlerFrame.AttributeEventHandlerId);
             Assert.Equal(
                 new[] { removedEventHandlerFrame.AttributeEventHandlerId },
