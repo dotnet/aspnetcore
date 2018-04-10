@@ -33,6 +33,7 @@
 
   <Target Name="RunBrowserTests">
     <Message Text="Running TypeScript client Browser tests" Importance="high" />
+    <Exec Command="npm run build" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
     <Exec Command="npm run ci-test -- --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 

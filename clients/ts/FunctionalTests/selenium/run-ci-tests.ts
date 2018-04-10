@@ -74,15 +74,15 @@ if (!existsSync(chromeBinary)) {
     console.log(`Using Google Chrome Browser from '${chromeBinary}`);
 }
 
-// Launch the tests
-const args = ["test", "--", "--raw", "--chrome", chromeBinary];
+// Launch the tests (we know the CI already built, so run the 'test-only' script)
+const args = ["run", "test-only", "--", "--raw", "--chrome", chromeBinary];
 if (configuration) {
     args.push("--configuration");
     args.push(configuration);
 }
-if (verbose) {
+
     args.push("--verbose");
-}
+
 
 let command = "npm";
 
