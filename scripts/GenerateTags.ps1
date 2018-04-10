@@ -6,12 +6,15 @@
     to the value in version.props
 .PARAMETER Push
     Push the tag to origin
+.PARAMETER OutFile
+    When specified, generate a .csv with repo names and tags
 .PARAMETER WhatIf
     Dry run
 #>
 [cmdletbinding(PositionalBinding = $false, SupportsShouldProcess = $true)]
 param(
-    [switch]$Push
+    [switch]$Push,
+    [string]$OutFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -57,6 +60,7 @@ function New-GitTag {
 function Get-PackageVersion([string]$repoRoot) {
     $buildScript = if (-not $IsCoreCLR -or $IsWindows) { 'build.ps1' } else { 'build.sh' }
     $inspectTarget = "/p:CustomAfterKoreBuildTargets=$PSScriptRoot/GetPackageVersion.targets"
+    Write-Verbose "Running `"$repoRoot/$buildScript`" $inspectTarget /v:m /p:IsFinalBuild=true /t:Noop /t:GetPackageVersion"
     # Add the /t:Noop target which may be used by the bootstrapper to skip unimportant initialization
     $output = & "$repoRoot/$buildScript" $inspectTarget /v:m /p:IsFinalBuild=true /t:Noop /t:GetPackageVersion
     $output | out-string | Write-Verbose
@@ -64,7 +68,7 @@ function Get-PackageVersion([string]$repoRoot) {
         throw "$buildScript failed on $repoRoot. Exit code $LASTEXITCODE"
     }
     $packageVersion = $output | where-object { $_ -like '*PackageVersion=*' } | select-object -first 1
-    $packageVersion = $packageVersion -replace 'PackageVersion=',''
+    $packageVersion = $packageVersion -replace 'PackageVersion=', ''
     if ($packageVersion) { $packageVersion = $packageVersion.Trim() }
     if (-not $packageVersion) {
         throw "Could not determine final package version for $repoRoot"
@@ -79,6 +83,12 @@ if (-not $PSCmdlet.ShouldContinue("Continue?", "This will apply tags to all subm
     Write-Host "Exiting"
     exit 1
 }
+
+$tags = @([pscustomobject] @{
+        repo   = $(git config remote.origin.url)
+        tag    = $universeTag
+        commit = $(git rev-parse HEAD)
+    })
 
 $universeTag = Get-PackageVersion $repoRoot
 New-GitTag $repoRoot $universeTag -WhatIf:$WhatIfPreference
@@ -96,6 +106,11 @@ Get-Submodules $repoRoot | ForEach-Object {
         if ($tag -ne $universeTag) {
             Write-Warning "${module}: version ($tag) does not match universe ($universeTag)"
         }
+        $tags += [pscustomobject] @{
+            repo   = $_.remote
+            tag    = $tag
+            commit = $_.commit
+        }
     }
     catch {
         Write-Warning "${module}: Could not automatically determine tag for $modPath. Skipping"
@@ -103,4 +118,10 @@ Get-Submodules $repoRoot | ForEach-Object {
     }
 
     New-GitTag $_.path $tag -WhatIf:$WhatIfPreference
+}
+
+$tags | Format-Table
+
+if ($OutFile) {
+    $tags | Select-Object -Property * | Export-Csv -Path $OutFile -WhatIf:$false -NoTypeInformation
 }

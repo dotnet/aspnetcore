@@ -54,6 +54,7 @@ function Get-Submodules {
                 commit        = $(git rev-parse HEAD)
                 newCommit     = $null
                 changed       = $false
+                remote        = $(git config remote.origin.url)
                 branch        = $(git config -f $moduleConfigFile --get submodule.modules/$($_.Name).branch )
                 versionPrefix = $versionPrefix
                 versionSuffix = $versionSuffix
