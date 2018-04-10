@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR.Redis;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var protocols = GenerateProtocols(ProtocolCount).ToArray();
             var options = Options.Create(new RedisOptions()
             {
-                Factory = t => new TestConnectionMultiplexer(server)
+                Factory = _ => Task.FromResult<IConnectionMultiplexer>(new TestConnectionMultiplexer(server))
             });
             var resolver = new DefaultHubProtocolResolver(protocols, NullLogger<DefaultHubProtocolResolver>.Instance);
 

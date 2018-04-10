@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private RedisHubLifetimeManager<MyHub> CreateLifetimeManager(TestRedisServer server, MessagePackHubProtocolOptions messagePackOptions = null, JsonHubProtocolOptions jsonOptions = null)
         {
-            var options = new RedisOptions() { Factory = t => new TestConnectionMultiplexer(server) };
+            var options = new RedisOptions() { Factory = async (t) => await Task.FromResult(new TestConnectionMultiplexer(server)) };
             messagePackOptions = messagePackOptions ?? new MessagePackHubProtocolOptions();
             jsonOptions = jsonOptions ?? new JsonHubProtocolOptions();
 

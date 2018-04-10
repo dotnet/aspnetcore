@@ -171,10 +171,10 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task WriteSlowAsync(HubMessage message)
         {
+            await _writeLock.WaitAsync();
             try
             {
                 // Failed to get the lock immediately when entering WriteAsync so await until it is available
-                await _writeLock.WaitAsync();
 
                 await WriteCore(message);
             }

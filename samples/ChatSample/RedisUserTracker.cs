@@ -28,14 +28,14 @@ namespace ChatSample
         private const int ScanInterval = 5; //seconds
         private const int ServerInactivityTimeout = 30; // seconds
 
-        private readonly IConnectionMultiplexer _redisConnection;
-        private readonly IDatabase _redisDatabase;
-        private readonly ISubscriber _redisSubscriber;
+        private IConnectionMultiplexer _redisConnection;
+        private IDatabase _redisDatabase;
+        private ISubscriber _redisSubscriber;
 
         private const string UserAddedChannelName = "UserAdded";
         private const string UserRemovedChannelName = "UserRemoved";
-        private readonly RedisChannel _userAddedChannel;
-        private readonly RedisChannel _userRemovedChannel;
+        private RedisChannel _userAddedChannel;
+        private RedisChannel _userRemovedChannel;
 
         private readonly ILogger _logger;
 
@@ -44,8 +44,9 @@ namespace ChatSample
         private HashSet<UserDetails> _users;
         private readonly object _lockObj = new object();
         private readonly SemaphoreSlim _userSyncSempaphore = new SemaphoreSlim(initialCount: 1);
+        private readonly RedisOptions _options;
 
-        private readonly Timer _timer;
+        private Timer _timer;
 
         public event Action<UserDetails[]> UsersJoined;
         public event Action<UserDetails[]> UsersLeft;
@@ -57,7 +58,18 @@ namespace ChatSample
             _users = new HashSet<UserDetails>(_userEqualityComparer);
 
             _logger = loggerFactory.CreateLogger<RedisUserTracker<THub>>();
-            (_redisConnection, _redisDatabase) = StartRedisConnection(options.Value);
+            _options = options.Value;
+        }
+
+        private async Task EstablishRedisConnection()
+        {
+            // TODO: handle connection failures
+            _redisConnection = await ConnectToRedis(_options, _logger);
+            _redisDatabase = _redisConnection.GetDatabase(_options.Options.DefaultDatabase.GetValueOrDefault());
+
+            // Register connection
+            _redisDatabase.SetAdd(ServerIndexRedisKey, ServerId);
+            _redisDatabase.StringSet(LastSeenRedisKey, DateTimeOffset.UtcNow.Ticks);
 
             _timer = new Timer(Scan, this, TimeSpan.FromMilliseconds(0), TimeSpan.FromSeconds(ScanInterval));
 
@@ -88,30 +100,17 @@ namespace ChatSample
             });
         }
 
-        private (IConnectionMultiplexer, IDatabase) StartRedisConnection(RedisOptions options)
-        {
-            // TODO: handle connection failures
-            var redisConnection = ConnectToRedis(options, _logger);
-            var redisDatabase = redisConnection.GetDatabase(options.Options.DefaultDatabase.GetValueOrDefault());
-
-            // Register connection
-            redisDatabase.SetAdd(ServerIndexRedisKey, ServerId);
-            redisDatabase.StringSet(LastSeenRedisKey, DateTimeOffset.UtcNow.Ticks);
-
-            return (redisConnection, redisDatabase);
-        }
-
-        private static IConnectionMultiplexer ConnectToRedis(RedisOptions options, ILogger logger)
+        private static async Task<IConnectionMultiplexer> ConnectToRedis(RedisOptions options, ILogger logger)
         {
             var loggerTextWriter = new LoggerTextWriter(logger);
             if (options.Factory != null)
             {
-                return options.Factory(loggerTextWriter);
+                return await options.Factory(loggerTextWriter);
             }
 
             if (options.Options.EndPoints.Any())
             {
-                return ConnectionMultiplexer.Connect(options.Options, loggerTextWriter);
+                return await ConnectionMultiplexer.ConnectAsync(options.Options, loggerTextWriter);
             }
 
             var configurationOptions = new ConfigurationOptions();
