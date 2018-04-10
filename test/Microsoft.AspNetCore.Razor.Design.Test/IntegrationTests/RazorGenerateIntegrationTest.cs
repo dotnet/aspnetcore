@@ -92,8 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/Razor#1888")]
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorGenerate_BuildsIncrementally()
         {
