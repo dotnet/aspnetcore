@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR
         internal ExceptionDispatchInfo AbortException { get; private set; }
 
         // Currently used only for streaming methods
-        internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>();
+        internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
         public virtual ValueTask WriteAsync(HubMessage message)
         {

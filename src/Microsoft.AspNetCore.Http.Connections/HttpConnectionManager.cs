@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         private static readonly RNGCryptoServiceProvider _keyGenerator = new RNGCryptoServiceProvider();
 
-        private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections = new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>();
+        private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections =
+            new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>(StringComparer.Ordinal);
         private Timer _timer;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;

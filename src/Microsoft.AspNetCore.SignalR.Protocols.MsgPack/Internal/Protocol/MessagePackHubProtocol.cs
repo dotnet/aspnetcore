@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             if (headerCount > 0)
             {
                 // If headerCount is larger than int.MaxValue, things are going to go horribly wrong anyway :)
-                var headers = new Dictionary<string, string>((int)headerCount);
+                var headers = new Dictionary<string, string>((int)headerCount, StringComparer.Ordinal);
 
                 for (var i = 0; i < headerCount; i++)
                 {

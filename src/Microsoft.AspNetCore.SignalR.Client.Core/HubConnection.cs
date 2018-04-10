@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IHubProtocol _protocol;
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
-        private readonly ConcurrentDictionary<string, List<InvocationHandler>> _handlers = new ConcurrentDictionary<string, List<InvocationHandler>>();
+        private readonly ConcurrentDictionary<string, List<InvocationHandler>> _handlers = new ConcurrentDictionary<string, List<InvocationHandler>>(StringComparer.Ordinal);
         private bool _disposed;
 
         // Transient state to a connection
@@ -835,7 +836,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private TaskCompletionSource<object> _stopTcs;
             private readonly object _lock = new object();
-            private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>();
+            private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>(StringComparer.Ordinal);
             private int _nextId;
 
             public ConnectionContext Connection { get; }
@@ -854,7 +855,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 Connection = connection;
             }
 
-            public string GetNextId() => Interlocked.Increment(ref _nextId).ToString();
+            public string GetNextId() => Interlocked.Increment(ref _nextId).ToString(CultureInfo.InvariantCulture);
 
             public void AddInvocation(InvocationRequest irq)
             {

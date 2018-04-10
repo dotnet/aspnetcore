@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private Dictionary<string, string> ReadHeaders(JsonTextReader reader)
         {
-            var headers = new Dictionary<string, string>();
+            var headers = new Dictionary<string, string>(StringComparer.Ordinal);
 
             if (reader.TokenType != JsonToken.StartObject)
             {

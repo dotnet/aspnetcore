@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
     {
         private readonly HubConnectionStore _connections = new HubConnectionStore();
         // TODO: Investigate "memory leak" entries never get removed
-        private readonly ConcurrentDictionary<string, GroupData> _groups = new ConcurrentDictionary<string, GroupData>();
+        private readonly ConcurrentDictionary<string, GroupData> _groups = new ConcurrentDictionary<string, GroupData>(StringComparer.Ordinal);
         private readonly IConnectionMultiplexer _redisServerConnection;
         private readonly ISubscriber _bus;
         private readonly ILogger _logger;

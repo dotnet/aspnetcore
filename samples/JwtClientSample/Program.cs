@@ -23,7 +23,7 @@ namespace JwtClientSample
 
         private const string ServerUrl = "http://localhost:54543";
 
-        private readonly ConcurrentDictionary<string, string> _tokens = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> _tokens = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
         private readonly Random _random = new Random();
 
         private async Task RunConnection(HttpTransportType transportType)

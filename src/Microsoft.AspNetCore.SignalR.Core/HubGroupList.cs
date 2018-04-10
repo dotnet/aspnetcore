@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR
     public class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<string, HubConnectionContext>>
     {
         private readonly ConcurrentDictionary<string, GroupConnectionList> _groups =
-            new ConcurrentDictionary<string, GroupConnectionList>();
+            new ConcurrentDictionary<string, GroupConnectionList>(StringComparer.Ordinal);
 
         private static readonly GroupConnectionList EmptyGroupConnectionList = new GroupConnectionList();
 

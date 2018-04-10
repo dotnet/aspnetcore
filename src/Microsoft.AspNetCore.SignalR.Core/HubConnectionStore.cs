@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,7 +10,8 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubConnectionStore
     {
-        private readonly ConcurrentDictionary<string, HubConnectionContext> _connections = new ConcurrentDictionary<string, HubConnectionContext>();
+        private readonly ConcurrentDictionary<string, HubConnectionContext> _connections =
+            new ConcurrentDictionary<string, HubConnectionContext>(StringComparer.Ordinal);
 
         public HubConnectionContext this[string connectionId]
         {

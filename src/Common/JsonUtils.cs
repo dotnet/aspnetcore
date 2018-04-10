@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Internal
                 return null;
             }
 
-            return Convert.ToInt32(reader.Value);
+            return Convert.ToInt32(reader.Value, CultureInfo.InvariantCulture);
         }
 
         public static string ReadAsString(JsonTextReader reader, string propertyName)
