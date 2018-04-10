@@ -50,15 +50,6 @@ export interface CompletionMessage extends HubInvocationMessage {
     readonly result?: any;
 }
 
-export interface HandshakeRequestMessage {
-    readonly protocol: string;
-    readonly version: number;
-}
-
-export interface HandshakeResponseMessage {
-    readonly error: string;
-}
-
 export interface PingMessage extends HubMessageBase {
     readonly type: MessageType.Ping;
 }

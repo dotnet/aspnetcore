@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { ConnectionClosed } from "./Common";
+import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { HttpConnection, IHttpConnectionOptions } from "./HttpConnection";
 import { IConnection } from "./IConnection";
-import { CancelInvocationMessage, CompletionMessage, HandshakeRequestMessage, HandshakeResponseMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import { CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { ConsoleLogger, LoggerFactory, NullLogger } from "./Loggers";
@@ -25,6 +26,7 @@ export class HubConnection {
     private readonly connection: IConnection;
     private readonly logger: ILogger;
     private protocol: IHubProtocol;
+    private handshakeProtocol: HandshakeProtocol;
     private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => void };
     private methods: { [name: string]: Array<(...args: any[]) => void> };
     private id: number;
@@ -41,6 +43,7 @@ export class HubConnection {
         this.timeoutInMilliseconds = options.timeoutInMilliseconds || DEFAULT_TIMEOUT_IN_MS;
 
         this.protocol = options.protocol || new JsonHubProtocol();
+        this.handshakeProtocol = new HandshakeProtocol();
 
         if (typeof urlOrConnection === "string") {
             this.connection = new HttpConnection(urlOrConnection, options);
@@ -106,39 +109,10 @@ export class HubConnection {
 
     private processHandshakeResponse(data: any): any {
         let responseMessage: HandshakeResponseMessage;
-        let messageData: string;
         let remainingData: any;
+
         try {
-            if (data instanceof ArrayBuffer) {
-                // Format is binary but still need to read JSON text from handshake response
-                const binaryData = new Uint8Array(data);
-                const separatorIndex = binaryData.indexOf(TextMessageFormat.RecordSeparatorCode);
-                if (separatorIndex === -1) {
-                    throw new Error("Message is incomplete.");
-                }
-
-                // content before separator is handshake response
-                // optional content after is additional messages
-                const responseLength = separatorIndex + 1;
-                messageData = String.fromCharCode.apply(null, binaryData.slice(0, responseLength));
-                remainingData = (binaryData.byteLength > responseLength) ? binaryData.slice(responseLength).buffer : null;
-            } else {
-                const textData: string = data;
-                const separatorIndex = textData.indexOf(TextMessageFormat.RecordSeparator);
-                if (separatorIndex === -1) {
-                    throw new Error("Message is incomplete.");
-                }
-
-                // content before separator is handshake response
-                // optional content after is additional messages
-                const responseLength = separatorIndex + 1;
-                messageData = textData.substring(0, responseLength);
-                remainingData = (textData.length > responseLength) ? textData.substring(responseLength) : null;
-            }
-
-            // At this point we should have just the single handshake message
-            const messages = TextMessageFormat.parse(messageData);
-            responseMessage = JSON.parse(messages[0]);
+            [remainingData, responseMessage] = this.handshakeProtocol.parseHandshakeResponse(data);
         } catch (e) {
             const message = "Error parsing handshake response: " + e;
             this.logger.log(LogLevel.Error, message);
@@ -155,8 +129,6 @@ export class HubConnection {
             this.logger.log(LogLevel.Trace, "Server handshake complete.");
         }
 
-        // multiple messages could have arrived with handshake
-        // return additional data to be parsed as usual, or null if all parsed
         return remainingData;
     }
 
@@ -204,6 +176,11 @@ export class HubConnection {
     }
 
     public async start(): Promise<void> {
+        const handshakeRequest: HandshakeRequestMessage = {
+            protocol: this.protocol.name,
+            version: this.protocol.version,
+        };
+
         this.logger.log(LogLevel.Trace, "Starting HubConnection.");
 
         this.receivedHandshakeResponse = false;
@@ -211,10 +188,8 @@ export class HubConnection {
         await this.connection.start(this.protocol.transferFormat);
 
         this.logger.log(LogLevel.Trace, "Sending handshake request.");
-        // Handshake request is always JSON
-        await this.connection.send(
-            TextMessageFormat.write(
-                JSON.stringify({ protocol: this.protocol.name, version: this.protocol.version } as HandshakeRequestMessage)));
+
+        await this.connection.send(this.handshakeProtocol.writeHandshakeRequest(handshakeRequest));
 
         this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
 
@@ -324,7 +299,7 @@ export class HubConnection {
         // Preventing adding the same handler multiple times.
         if (this.methods[methodName].indexOf(newMethod) !== -1) {
             return;
-         }
+        }
 
         this.methods[methodName].push(newMethod);
     }
