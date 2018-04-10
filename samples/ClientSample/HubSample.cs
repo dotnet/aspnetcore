@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -34,7 +35,6 @@ namespace ClientSample
                 .WithLogging(logging =>
                 {
                     logging.AddConsole();
-                    logging.SetMinimumLevel(LogLevel.Trace);
                 });
 
             if (uri.Scheme == "net.tcp")
@@ -48,59 +48,83 @@ namespace ClientSample
 
             var connection = connectionBuilder.Build();
 
-            try
+            Console.CancelKeyPress += (sender, a) =>
             {
-                var closeTcs = new TaskCompletionSource<object>();
-                connection.Closed += e => closeTcs.SetResult(null);
-                // Set up handler
-                connection.On<string>("Send", Console.WriteLine);
+                a.Cancel = true;
+                connection.DisposeAsync().GetAwaiter().GetResult();
+            };
 
-                await ConnectAsync(connection);
+            // Set up handler
+            connection.On<string>("Send", Console.WriteLine);
 
-                Console.WriteLine("Connected to {0}", uri);
+            CancellationTokenSource closedTokenSource = null;
 
-                var sendCts = new CancellationTokenSource();
+            connection.Closed += e =>
+            {
+                // This should never be null by the time this fires
+                closedTokenSource.Cancel();
 
-                Console.CancelKeyPress += async (sender, a) =>
+                Console.WriteLine("Connection closed...");
+            };
+
+            while (true)
+            {
+                // Dispose the previous token
+                closedTokenSource?.Dispose();
+
+                // Create a new token for this run
+                closedTokenSource = new CancellationTokenSource();
+
+                // Connect to the server
+                if (!await ConnectAsync(connection))
                 {
-                    a.Cancel = true;
-                    Console.WriteLine("Stopping loops...");
-                    sendCts.Cancel();
-                    await connection.DisposeAsync();
-                };
+                    break;
+                }
 
-                while (!closeTcs.Task.IsCompleted)
+                Console.WriteLine("Connected to {0}", uri); ;
+
+                // Handle the connected connection
+                while (true)
                 {
-                    var completedTask = await Task.WhenAny(Task.Run(() => Console.ReadLine()), closeTcs.Task);
-                    if (completedTask == closeTcs.Task)
+                    try
                     {
+                        var line = Console.ReadLine();
+
+                        if (line == null || closedTokenSource.Token.IsCancellationRequested)
+                        {
+                            break;
+                        }
+
+                        await connection.InvokeAsync<object>("Send", line);
+                    }
+                    catch (IOException)
+                    {
+                        // Process being shutdown
                         break;
                     }
-
-                    var line = await (Task<string>)completedTask;
-
-                    if (line == null)
+                    catch (OperationCanceledException)
                     {
+                        // The connection closed
                         break;
                     }
-
-                    await connection.InvokeAsync<object>("Send", line, sendCts.Token);
+                    catch (ObjectDisposedException)
+                    {
+                        // We're shutting down the client
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Send could have failed because the connection closed
+                        System.Console.WriteLine(ex);
+                        break;
+                    }
                 }
             }
-            catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))
-            {
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            finally
-            {
-                await connection.DisposeAsync();
-            }
+
             return 0;
         }
 
-        private static async Task ConnectAsync(HubConnection connection)
+        private static async Task<bool> ConnectAsync(HubConnection connection)
         {
             // Keep trying to until we can start
             while (true)
@@ -108,11 +132,18 @@ namespace ClientSample
                 try
                 {
                     await connection.StartAsync();
-                    return;
+                    return true;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Client side killed the connection
+                    return false;
                 }
                 catch (Exception)
                 {
-                    await Task.Delay(1000);
+                    Console.WriteLine("Failed to connect, trying again in 5000(ms)");
+
+                    await Task.Delay(5000);
                 }
             }
         }

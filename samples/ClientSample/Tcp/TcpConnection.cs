@@ -4,13 +4,15 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace ClientSample
 {
-    public class TcpConnection : ConnectionContext
+    public class TcpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
     {
         private readonly Socket _socket;
         private volatile bool _aborted;
@@ -26,6 +28,10 @@ namespace ClientSample
 
             _sender = new SocketSender(_socket, PipeScheduler.ThreadPool);
             _receiver = new SocketReceiver(_socket, PipeScheduler.ThreadPool);
+
+            // Add IConnectionInherentKeepAliveFeature to the tcp connection impl since Kestrel doesn't implement
+            // the IConnectionHeartbeatFeature
+            Features.Set<IConnectionInherentKeepAliveFeature>(this);
         }
 
         public override IDuplexPipe Transport { get; set; }
@@ -33,6 +39,8 @@ namespace ClientSample
         public override IFeatureCollection Features { get; } = new FeatureCollection();
         public override string ConnectionId { get; set; } = Guid.NewGuid().ToString();
         public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
+
+        public TimeSpan KeepAliveInterval => Timeout.InfiniteTimeSpan;
 
         public Task DisposeAsync()
         {
