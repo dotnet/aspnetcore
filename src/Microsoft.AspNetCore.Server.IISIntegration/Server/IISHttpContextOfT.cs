@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public override async Task<bool> ProcessRequestAsync()
         {
+            InitializeContext();
+
             var context = default(TContext);
             var success = true;
 

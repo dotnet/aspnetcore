@@ -194,7 +194,7 @@ http_read_request_bytes(
     _Out_ BOOL* pfCompletionPending
 )
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
 
     if (pInProcessHandler == NULL)
     {
@@ -206,19 +206,27 @@ http_read_request_bytes(
     }
     IHttpRequest *pHttpRequest = (IHttpRequest*)pInProcessHandler->QueryHttpContext()->GetRequest();
 
-    BOOL fAsync = TRUE;
-
-    hr = pHttpRequest->ReadEntityBody(
-        pvBuffer,
-        dwCbBuffer,
-        fAsync,
-        pdwBytesReceived,
-        pfCompletionPending);
-
-    if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
+    // Check if there is anything to read
+    if (pHttpRequest->GetRemainingEntityBytes() > 0)
     {
-        // We reached the end of the data
-        hr = S_OK;
+        BOOL fAsync = TRUE;
+        hr = pHttpRequest->ReadEntityBody(
+            pvBuffer,
+            dwCbBuffer,
+            fAsync,
+            pdwBytesReceived,
+            pfCompletionPending);
+
+        if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
+        {
+            // We reached the end of the data
+            hr = S_OK;
+        }
+    }
+    else
+    {
+        *pdwBytesReceived = 0;
+        *pfCompletionPending = FALSE;
     }
 
     return hr;

@@ -20,9 +20,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                                             IHttpRequestFeature,
                                             IHttpResponseFeature,
                                             IHttpUpgradeFeature,
-                                            IHttpConnectionFeature,
                                             IHttpRequestLifetimeFeature,
-                                            IHttpRequestIdentifierFeature,
                                             IHttpAuthenticationFeature,
                                             IServerVariablesFeature
     {
@@ -183,48 +181,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
-        // The UpgradeAvailable Feature is set on the first request to the server. 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => _websocketAvailability == WebsocketAvailabilityStatus.Available;
+        bool IHttpUpgradeFeature.IsUpgradableRequest => _server.IsWebSocketAvailible(_pInProcessHandler);
 
         bool IFeatureCollection.IsReadOnly => false;
 
         int IFeatureCollection.Revision => _featureRevision;
-
-        IPAddress IHttpConnectionFeature.RemoteIpAddress
-        {
-            get => RemoteIpAddress;
-            set => RemoteIpAddress = value;
-        }
-
-        IPAddress IHttpConnectionFeature.LocalIpAddress
-        {
-            get => LocalIpAddress;
-            set => LocalIpAddress = value;
-        }
-
-        int IHttpConnectionFeature.RemotePort
-        {
-            get => RemotePort;
-            set => RemotePort = value;
-        }
-
-        int IHttpConnectionFeature.LocalPort
-        {
-            get => LocalPort;
-            set => LocalPort = value;
-        }
-
-        string IHttpConnectionFeature.ConnectionId
-        {
-            get => RequestConnectionId;
-            set => RequestConnectionId = value;
-        }
-
-        string IHttpRequestIdentifierFeature.TraceIdentifier
-        {
-            get => TraceIdentifier;
-            set => TraceIdentifier = value;
-        }
 
         ClaimsPrincipal IHttpAuthenticationFeature.User
         {
