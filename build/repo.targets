@@ -55,7 +55,13 @@
   </ItemGroup>
 
   <Target Name="PackageNativeProjects">
-    <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCore.nuspec"
+    <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCoreV1.nuspec"
+      DestinationFolder="$(BuildDir)"
+      Properties="version=$(PackageVersion);Configuration=$(Configuration)"
+      Overwrite="true"
+      BasePath="$(RepositoryRoot)" />
+
+    <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCoreV2.nuspec"
       DestinationFolder="$(BuildDir)"
       Properties="version=$(PackageVersion);Configuration=$(Configuration)"
       Overwrite="true"
