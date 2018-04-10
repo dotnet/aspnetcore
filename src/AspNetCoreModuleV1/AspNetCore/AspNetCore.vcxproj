@@ -264,7 +264,11 @@
     <ClInclude Include="Inc\sttimer.h" />
     <ClInclude Include="Inc\websockethandler.h" />
     <ClInclude Include="Inc\winhttphelper.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\precomp.hxx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="aspnetcoremodule.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">

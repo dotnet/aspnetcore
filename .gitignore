@@ -49,6 +49,7 @@ x64/
 *.lib
 *.idb
 
+src/*/AspNetCore/aspnetcoremodule.h
 src/*/AspNetCore/aspnetcore_msg.h
 src/*/AspNetCore/aspnetcore_msg.rc
 src/*/*/version.h

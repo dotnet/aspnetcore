@@ -39,6 +39,14 @@
     </ArtifactInfo>
     <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg" />
 
+    <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV1.$(PackageVersion).nupkg">
+      <ArtifactType>NuGetPackage</ArtifactType>
+      <PackageId>Microsoft.AspNetCore.AspNetCoreModuleV1</PackageId>
+      <Version>$(PackageVersion)</Version>
+      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+    </ArtifactInfo>
+    <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV1.$(PackageVersion).nupkg" />
+
     <ArtifactInfo Include="$(AncmZipOutputPath)">
       <ArtifactType>ZipArchive</ArtifactType>
       <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
