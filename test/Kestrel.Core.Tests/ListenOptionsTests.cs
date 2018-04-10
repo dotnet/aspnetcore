@@ -21,16 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void Http2DisabledByDefault()
-        {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            var ex = Assert.Throws<NotSupportedException>(() => listenOptions.Protocols = HttpProtocols.Http1AndHttp2);
-            Assert.Equal(CoreStrings.Http2NotSupported, ex.Message);
-            ex = Assert.Throws<NotSupportedException>(() => listenOptions.Protocols = HttpProtocols.Http2);
-            Assert.Equal(CoreStrings.Http2NotSupported, ex.Message);
-        }
-
-        [Fact]
         public void LocalHostListenOptionsClonesConnectionMiddleware()
         {
             var localhostListenOptions = new LocalhostListenOptions(1004);

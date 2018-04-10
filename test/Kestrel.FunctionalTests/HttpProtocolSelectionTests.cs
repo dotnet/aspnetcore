@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(IPAddress.Loopback, 0, listenOptions =>
                     {
-                        listenOptions._isHttp2Supported = true;
                         listenOptions.Protocols = serverProtocols;
                     });
                 })
@@ -81,7 +80,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .ConfigureLogging(loggingBuilder => loggingBuilder.AddProvider(loggerProvider.Object))
                 .UseKestrel(options => options.Listen(IPAddress.Loopback, 0, listenOptions =>
                 {
-                    listenOptions._isHttp2Supported = true;
                     listenOptions.Protocols = serverProtocols;
                 }))
                 .Configure(app => app.Run(context => Task.CompletedTask));
