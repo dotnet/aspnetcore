@@ -48,6 +48,9 @@
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
+    <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
     <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
