@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     public class ComponentDocumentClassifierPass : DocumentClassifierPassBase, IRazorDocumentClassifierPass
     {
-        public static readonly string ComponentDocumentKind = "Blazor.Component-0.1";
+        public static readonly string ComponentDocumentKind = "Blazor.Component";
 
         private static readonly char[] PathSeparators = new char[] { '/', '\\' };
 

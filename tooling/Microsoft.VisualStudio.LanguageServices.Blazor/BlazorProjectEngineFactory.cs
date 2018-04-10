@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.LanguageServices.Blazor
 {
+    // This factory is wired up based on a match of the $(DefaultRazorConfiguration) property is MSBuild
+    // keep this in sync with the supported runtime/build version.
     [ExportCustomProjectEngineFactory("Blazor-0.1", SupportsSerialization = false)]
     internal class BlazorProjectEngineFactory : IProjectEngineFactory
     {

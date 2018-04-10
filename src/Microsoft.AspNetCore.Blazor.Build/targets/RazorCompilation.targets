@@ -24,7 +24,15 @@
     <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
 
-    <RazorDefaultConfiguration>Blazor-0.1</RazorDefaultConfiguration>
+    <!-- 
+      This version is used to build our RazorConfiguration, and is hardcoded into the tools in VS. If you change
+      This to a value that doesn't match VS, then the Blazor Razor experience won't work for those documents.
+    -->
+    <BlazorLanguageVersion>0.1</BlazorLanguageVersion>
+    <BlazorDefinitionConfiguration>Blazor-$(BlazorLanguageVersion)</BlazorDefinitionConfiguration>
+    <BlazorDeclarationConfiguration>BlazorDeclaration-$(BlazorLanguageVersion)</BlazorDeclarationConfiguration>
+    <RazorDefaultConfiguration>$(BlazorDefinitionConfiguration)</RazorDefaultConfiguration>
+    
   </PropertyGroup>
 
   <!-- Something quick for input/output tracking - the assumptions here should match what the CLI does -->
@@ -39,18 +47,18 @@
     <ProjectCapability Include="Blazor" />
     <ProjectCapability Include="DotNetCoreRazorConfiguration" />
     
-    <RazorConfiguration Include="Blazor-0.1">
-      <Extensions>Blazor-0.1;Blazor.AngleSharp-0.1;$(CustomRazorExtension)</Extensions>
+    <RazorConfiguration Include="$(BlazorDefinitionConfiguration)">
+      <Extensions>Blazor-$(BlazorLanguageVersion);Blazor.AngleSharp-$(BlazorLanguageVersion);$(CustomRazorExtension)</Extensions>
     </RazorConfiguration>
-    <RazorConfiguration Include="BlazorDeclaration-0.1">
-      <Extensions>Blazor-0.1;Blazor.AngleSharp-0.1;$(CustomRazorExtension)</Extensions>
+    <RazorConfiguration Include="$(BlazorDeclarationConfiguration)">
+      <Extensions>Blazor-$(BlazorLanguageVersion)Blazor.AngleSharp-$(BlazorLanguageVersion);$(CustomRazorExtension)</Extensions>
     </RazorConfiguration>
 
-    <RazorExtension Include="Blazor.AngleSharp-0.1">
+    <RazorExtension Include="Blazor.AngleSharp-$(BlazorLanguageVersion)">
       <AssemblyName>Microsoft.AspNetCore.Blazor.AngleSharp</AssemblyName>
       <AssemblyFilePath>$(_BlazorAngleSharpAssemblyPath)</AssemblyFilePath>
     </RazorExtension>
-    <RazorExtension Include="Blazor-0.1">
+    <RazorExtension Include="Blazor-$(BlazorLanguageVersion)">
       <AssemblyName>Microsoft.AspNetCore.Blazor.Razor.Extensions</AssemblyName>
       <AssemblyFilePath>$(_BlazorExtensionAssemblyPath)</AssemblyFilePath>
     </RazorExtension>
@@ -171,7 +179,7 @@
       <_BlazorGenerateDeclarationWithTargetPath Include="@(BlazorGenerateWithTargetPath)">
         <GeneratedOutput>%(GeneratedDeclaration)</GeneratedOutput>
       </_BlazorGenerateDeclarationWithTargetPath>
-      <_BlazorDeclarationConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', 'BlazorDeclaration-0.1'))" />
+      <_BlazorDeclarationConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(BlazorDeclarationConfiguration)'))" />
     </ItemGroup>
 
     <MakeDir Directories="%(BlazorDeclaration.RelativeDir)" />
@@ -212,7 +220,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <_BlazorDeclarationConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', 'BlazorDeclaration-0.1'))" />
+      <_BlazorDeclarationConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(BlazorDeclarationConfiguration)'))" />
     </ItemGroup>
 
     <!-- 
@@ -265,7 +273,7 @@
       <_BlazorGenerateDefinitionWithTargetPath Include="@(BlazorGenerateWithTargetPath)">
         <GeneratedOutput>%(GeneratedDefinition)</GeneratedOutput>
       </_BlazorGenerateDefinitionWithTargetPath>
-      <_BlazorDefinitionConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', 'Blazor-0.1'))" />
+      <_BlazorDefinitionConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(BlazorDefinitionConfiguration)'))" />
     </ItemGroup>
 
     <MakeDir Directories="%(BlazorDefinition.RelativeDir)" />

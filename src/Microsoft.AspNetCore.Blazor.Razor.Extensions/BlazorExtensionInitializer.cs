@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         static BlazorExtensionInitializer()
         {
+            // The configuration names here need to match what we put in the MSBuild configuration
             DeclarationConfiguration = RazorConfiguration.Create(
                 RazorLanguageVersion.Version_2_1, // Cannot use experimental until 15.7p4
                 "BlazorDeclaration-0.1",

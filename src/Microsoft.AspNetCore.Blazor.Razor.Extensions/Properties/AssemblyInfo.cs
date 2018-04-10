@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Blazor.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 
+// These should match the configuration names specified by the Blazor MSBuild files.
 [assembly: ProvideRazorExtensionInitializer("Blazor-0.1", typeof(BlazorExtensionInitializer))]
 [assembly: ProvideRazorExtensionInitializer("BlazorDeclaration-0.1", typeof(BlazorExtensionInitializer))]
 

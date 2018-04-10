@@ -18,7 +18,6 @@ osx_image: xcode8.2
 branches:
   only:
   - dev
-  - feature/0.1.0
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 before_install:
