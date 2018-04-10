@@ -143,6 +143,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
                 output.Write(_fixedOutput);
             }
+
+            public byte[] GetMessageBytes(HubMessage message)
+            {
+                return HubProtocolExtensions.GetMessageBytes(this, message);
+            }
         }
     }
 }

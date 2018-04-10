@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             }
 
             _parser = new ServerSentEventsMessageParser();
-            _rawData = hubProtocol.WriteToArray(hubMessage);
+            _rawData = hubProtocol.GetMessageBytes(hubMessage);
             var ms = new MemoryStream();
             ServerSentEventsMessageFormatter.WriteMessage(_rawData, ms);
             _sseFormattedData = ms.ToArray();

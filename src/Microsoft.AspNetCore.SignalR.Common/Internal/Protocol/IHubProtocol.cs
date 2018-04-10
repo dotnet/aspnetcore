@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
-using System.IO;
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
@@ -18,6 +17,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message);
 
         void WriteMessage(HubMessage message, IBufferWriter<byte> output);
+
+        byte[] GetMessageBytes(HubMessage message);
 
         bool IsVersionSupported(int version);
     }

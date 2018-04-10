@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -215,6 +216,35 @@ namespace Microsoft.AspNetCore.Internal
             _currentSegment.AsSpan(0, _position).CopyTo(result.AsSpan(totalWritten));
 
             return result;
+        }
+
+        public void CopyTo(Span<byte> span)
+        {
+            Debug.Assert(span.Length >= _bytesWritten);
+
+            if (_currentSegment == null)
+            {
+                return;
+            }
+
+            var totalWritten = 0;
+
+            if (_fullSegments != null)
+            {
+                // Copy full segments
+                var count = _fullSegments.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var segment = _fullSegments[i];
+                    segment.AsSpan().CopyTo(span.Slice(totalWritten));
+                    totalWritten += segment.Length;
+                }
+            }
+
+            // Copy current incomplete segment
+            _currentSegment.AsSpan(0, _position).CopyTo(span.Slice(totalWritten));
+
+            Debug.Assert(_bytesWritten == totalWritten + _position);
         }
 
         public override void Flush() { }

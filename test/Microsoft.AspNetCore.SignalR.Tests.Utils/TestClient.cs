@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public async Task<string> SendHubMessageAsync(HubMessage message)
         {
-            var payload = _protocol.WriteToArray(message);
+            var payload = _protocol.GetMessageBytes(message);
 
             await Connection.Application.Output.WriteAsync(payload);
             return message is HubInvocationMessage hubMessage ? hubMessage.InvocationId : null;

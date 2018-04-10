@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         "This message was received from another server that did not have the requested protocol available.");
                 }
 
-                serialized = protocol.WriteToArray(Message);
+                serialized = protocol.GetMessageBytes(Message);
                 SetCache(protocol.Name, serialized);
             }
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 writer.Write(protocol.Name);
 
-                var buffer = protocol.WriteToArray(message);
+                var buffer = protocol.GetMessageBytes(message);
                 writer.Write(buffer.Length);
                 writer.Write(buffer);
             }
