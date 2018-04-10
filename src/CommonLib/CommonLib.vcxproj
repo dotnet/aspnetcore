@@ -179,6 +179,7 @@
     <ClInclude Include="hostfxr_utility.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
+    <ClInclude Include="SRWLockWrapper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="utility.h" />
   </ItemGroup>
@@ -188,6 +189,7 @@
     <ClCompile Include="fx_ver.cxx" />
     <ClCompile Include="hostfxr_utility.cpp" />
     <ClCompile Include="requesthandler.cxx" />
+    <ClCompile Include="SRWLockWrapper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

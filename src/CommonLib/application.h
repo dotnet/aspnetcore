@@ -18,7 +18,7 @@ class APPLICATION
 {
 public:
     APPLICATION(
-        _In_ IHttpServer* pHttpServer, 
+        _In_ IHttpServer* pHttpServer,
         _In_ ASPNETCORE_CONFIG* pConfig);
 
     virtual
@@ -49,6 +49,5 @@ public:
 protected:
     mutable LONG            m_cRefs;
     volatile APPLICATION_STATUS m_status;
-    IHttpServer*            m_pHttpServer;
     ASPNETCORE_CONFIG*      m_pConfig;
 };
