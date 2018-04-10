@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MsgPack.Cli" Version="$(MsgPackCliPackageVersion)" />
+    <PackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,6 +8,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using MessagePack;
+using MessagePack.Formatters;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
@@ -16,8 +18,6 @@ using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using MsgPack;
-using MsgPack.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -1679,7 +1679,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 services.AddSignalR()
                     .AddMessagePackProtocol(options =>
                     {
-                        options.SerializationContext.SerializationMethod = SerializationMethod.Array;
+                        options.FormatterResolvers.Insert(0, new CustomFormatter());
                     });
             });
 
@@ -1697,14 +1697,57 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().OrTimeout());
 
-                var msgPackObject = Assert.IsType<MessagePackObject>(message.Arguments[0]);
-                // Custom serialization - object was serialized as an array and not a map
-                Assert.True(msgPackObject.IsArray);
-                Assert.Equal(new[] { "test", "param" }, ((MessagePackObject[])msgPackObject.ToObject()).Select(o => o.AsString()));
+                var result = message.Arguments[0] as Dictionary<object, object>;
+                Assert.Equal("formattedString", result["Message"]);
+                Assert.Equal("formattedString", result["paramName"]);
 
                 client.Dispose();
 
                 await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        private class CustomFormatter : IFormatterResolver
+        {
+            public IMessagePackFormatter<T> GetFormatter<T>()
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    return new StringFormatter<T>();
+                }
+                return null;
+            }
+
+            private class StringFormatter<T> : IMessagePackFormatter<T>
+            {
+                public T Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
+                {
+                    // this method isn't used in our tests
+                    readSize = 0;
+                    return default;
+                }
+
+                public int Serialize(ref byte[] bytes, int offset, T value, IFormatterResolver formatterResolver)
+                {
+                    // string of size 15
+                    bytes[offset] = 0xAF;
+                    bytes[offset + 1] = (byte)'f';
+                    bytes[offset + 2] = (byte)'o';
+                    bytes[offset + 3] = (byte)'r';
+                    bytes[offset + 4] = (byte)'m';
+                    bytes[offset + 5] = (byte)'a';
+                    bytes[offset + 6] = (byte)'t';
+                    bytes[offset + 7] = (byte)'t';
+                    bytes[offset + 8] = (byte)'e';
+                    bytes[offset + 9] = (byte)'d';
+                    bytes[offset + 10] = (byte)'S';
+                    bytes[offset + 11] = (byte)'t';
+                    bytes[offset + 12] = (byte)'r';
+                    bytes[offset + 13] = (byte)'i';
+                    bytes[offset + 14] = (byte)'n';
+                    bytes[offset + 15] = (byte)'g';
+                    return 16;
+                }
             }
         }
 

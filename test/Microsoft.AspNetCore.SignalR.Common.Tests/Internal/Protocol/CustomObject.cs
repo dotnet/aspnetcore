@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public int IntProp { get; set; } = 42;
 
-        public DateTime DateTimeProp { get; set; } = new DateTime(2017, 4, 11);
+        public DateTime DateTimeProp { get; set; } = new DateTime(2017, 4, 11, 0, 0, 0, DateTimeKind.Utc);
 
         public object NullProp { get; set; } = null;
 

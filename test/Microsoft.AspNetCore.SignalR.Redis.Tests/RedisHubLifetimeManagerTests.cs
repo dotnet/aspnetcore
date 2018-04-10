@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using MsgPack.Serialization;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -506,7 +505,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             var server = new TestRedisServer();
 
             var messagePackOptions = new MessagePackHubProtocolOptions();
-            messagePackOptions.SerializationContext.DictionarySerlaizationOptions.KeyTransformer = DictionaryKeyTransformers.LowerCamel;
 
             var jsonOptions = new JsonHubProtocolOptions();
             jsonOptions.PayloadSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();

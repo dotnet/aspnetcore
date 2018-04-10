@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using MsgPack.Serialization;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
 
@@ -24,10 +23,7 @@ namespace SignalRSamples
                 // Faster pings for testing
                 options.KeepAliveInterval = TimeSpan.FromSeconds(5);
             })
-            .AddMessagePackProtocol(options =>
-            {
-                options.SerializationContext.DictionarySerlaizationOptions.KeyTransformer = DictionaryKeyTransformers.LowerCamel;
-            });
+            .AddMessagePackProtocol();
             //.AddRedis();
 
             services.AddCors(o =>
