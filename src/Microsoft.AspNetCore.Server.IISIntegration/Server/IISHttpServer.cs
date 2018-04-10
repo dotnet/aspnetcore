@@ -144,21 +144,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
             Interlocked.Increment(ref server._outstandingRequests);
 
-#if NETCOREAPP2_1
-            ThreadPool.QueueUserWorkItem<(IISHttpServer, IntPtr)>(
-                state => _ = HandleRequest(state.Item1, state.Item2),
-                (server, pInProcessHandler),
-                preferLocal: false);
-#else
-            ThreadPool.QueueUserWorkItem(
-                state => _ = HandleRequest(server, pInProcessHandler));
-#endif
+            var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
+
+            ThreadPool.QueueUserWorkItem(state => _ = HandleRequest((IISHttpContext)state), context);
+
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         }
 
-        private static async Task HandleRequest(IISHttpServer server, IntPtr handler)
+        private static async Task HandleRequest(IISHttpContext context)
         {
-            var context = server._iisContextFactory.CreateHttpContext(handler);
             var result = await context.ProcessRequestAsync();
             CompleteRequest(context, result);
         }

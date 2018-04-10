@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         protected readonly IntPtr _pInProcessHandler;
 
+        private readonly IISOptions _options;
+
         private bool _reading; // To know whether we are currently in a read operation.
         private volatile bool _hasResponseStarted;
 
@@ -62,13 +64,45 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
         {
-            _thisHandle = GCHandle.Alloc(this);
-
             _memoryPool = memoryPool;
             _pInProcessHandler = pInProcessHandler;
+            _options = options;
             _server = server;
+        }
 
-            NativeMethods.HttpSetManagedContext(pInProcessHandler, (IntPtr)_thisHandle);
+        public Version HttpVersion { get; set; }
+        public string Scheme { get; set; }
+        public string Method { get; set; }
+        public string PathBase { get; set; }
+        public string Path { get; set; }
+        public string QueryString { get; set; }
+        public string RawTarget { get; set; }
+        public CancellationToken RequestAborted { get; set; }
+        public bool HasResponseStarted => _hasResponseStarted;
+        public IPAddress RemoteIpAddress { get; set; }
+        public int RemotePort { get; set; }
+        public IPAddress LocalIpAddress { get; set; }
+        public int LocalPort { get; set; }
+        public string RequestConnectionId { get; set; }
+        public string TraceIdentifier { get; set; }
+        public ClaimsPrincipal User { get; set; }
+        internal WindowsPrincipal WindowsUser { get; set; }
+        public Stream RequestBody { get; set; }
+        public Stream ResponseBody { get; set; }
+        public Pipe Input { get; set; }
+        public OutputProducer Output { get; set; }
+
+        public IHeaderDictionary RequestHeaders { get; set; }
+        public IHeaderDictionary ResponseHeaders { get; set; }
+        private HeaderCollection HttpResponseHeaders { get; set; }
+        internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
+
+        protected void InitializeContext()
+        {
+            _thisHandle = GCHandle.Alloc(this);
+
+            NativeMethods.HttpSetManagedContext(_pInProcessHandler, (IntPtr)_thisHandle);
+
             Method = GetVerb();
 
             RawTarget = GetRawUrl();
@@ -100,10 +134,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             HttpResponseHeaders = new HeaderCollection();
             ResponseHeaders = HttpResponseHeaders;
 
-            if (options.ForwardWindowsAuthentication)
+            if (_options.ForwardWindowsAuthentication)
             {
                 WindowsUser = GetWindowsPrincipal();
-                if (options.AutomaticAuthentication)
+                if (_options.AutomaticAuthentication)
                 {
                     User = WindowsUser;
                 }
@@ -111,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             ResetFeatureCollection();
 
-            if (!_server.IsWebSocketAvailible(pInProcessHandler))
+            if (!_server.IsWebSocketAvailible(_pInProcessHandler))
             {
                 _currentIHttpUpgradeFeature = null;
             }
@@ -129,33 +163,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     minimumSegmentSize: MinAllocBufferSize));
             Output = new OutputProducer(pipe);
         }
-
-        public Version HttpVersion { get; set; }
-        public string Scheme { get; set; }
-        public string Method { get; set; }
-        public string PathBase { get; set; }
-        public string Path { get; set; }
-        public string QueryString { get; set; }
-        public string RawTarget { get; set; }
-        public CancellationToken RequestAborted { get; set; }
-        public bool HasResponseStarted => _hasResponseStarted;
-        public IPAddress RemoteIpAddress { get; set; }
-        public int RemotePort { get; set; }
-        public IPAddress LocalIpAddress { get; set; }
-        public int LocalPort { get; set; }
-        public string RequestConnectionId { get; set; }
-        public string TraceIdentifier { get; set; }
-        public ClaimsPrincipal User { get; set; }
-        internal WindowsPrincipal WindowsUser { get; set; }
-        public Stream RequestBody { get; set; }
-        public Stream ResponseBody { get; set; }
-        public Pipe Input { get; set; }
-        public OutputProducer Output { get; set; }
-
-        public IHeaderDictionary RequestHeaders { get; set; }
-        public IHeaderDictionary ResponseHeaders { get; set; }
-        private HeaderCollection HttpResponseHeaders { get; set; }
-        internal HttpApiTypes.HTTP_VERB KnownMethod { get; }
 
         public int StatusCode
         {
