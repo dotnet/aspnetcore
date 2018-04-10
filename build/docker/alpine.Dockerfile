@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.1-runtime-deps-alpine
+FROM microsoft/dotnet:2.1.0-preview1-runtime-deps-alpine
 ARG USER
 ARG USER_ID
 ARG GROUP_ID
