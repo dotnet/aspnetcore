@@ -5,7 +5,6 @@ import { AbortController } from "./AbortController";
 import { DataReceived, TransportClosed } from "./Common";
 import { HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest } from "./HttpClient";
-import { IConnection } from "./IConnection";
 import { ILogger, LogLevel } from "./ILogger";
 import { Arg } from "./Utils";
 
@@ -21,7 +20,7 @@ export enum TransferFormat {
 }
 
 export interface ITransport {
-    connect(url: string, transferFormat: TransferFormat, connection: IConnection): Promise<void>;
+    connect(url: string, transferFormat: TransferFormat): Promise<void>;
     send(data: any): Promise<void>;
     stop(): Promise<void>;
     onreceive: DataReceived;
@@ -40,11 +39,10 @@ export class WebSocketTransport implements ITransport {
         this.logMessageContent = logMessageContent;
     }
 
-    public async connect(url: string, transferFormat: TransferFormat, connection: IConnection): Promise<void> {
+    public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
         Arg.isRequired(url, "url");
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
-        Arg.isRequired(connection, "connection");
 
         if (typeof (WebSocket) === "undefined") {
             throw new Error("'WebSocket' is not supported in your environment.");
@@ -131,11 +129,10 @@ export class ServerSentEventsTransport implements ITransport {
         this.logMessageContent = logMessageContent;
     }
 
-    public async connect(url: string, transferFormat: TransferFormat, connection: IConnection): Promise<void> {
+    public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
         Arg.isRequired(url, "url");
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
-        Arg.isRequired(connection, "connection");
 
         if (typeof (EventSource) === "undefined") {
             throw new Error("'EventSource' is not supported in your environment.");
@@ -226,18 +223,14 @@ export class LongPollingTransport implements ITransport {
         this.logMessageContent = logMessageContent;
     }
 
-    public connect(url: string, transferFormat: TransferFormat, connection: IConnection): Promise<void> {
+    public connect(url: string, transferFormat: TransferFormat): Promise<void> {
         Arg.isRequired(url, "url");
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
-        Arg.isRequired(connection, "connection");
 
         this.url = url;
 
         this.logger.log(LogLevel.Trace, "(LongPolling transport) Connecting");
-
-        // Set a flag indicating we have inherent keep-alive in this transport.
-        connection.features.inherentKeepAlive = true;
 
         if (transferFormat === TransferFormat.Binary && (typeof new XMLHttpRequest().responseType !== "string")) {
             // This will work if we fix: https://github.com/aspnet/SignalR/issues/742

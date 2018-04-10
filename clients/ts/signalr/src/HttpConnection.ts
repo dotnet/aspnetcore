@@ -85,7 +85,7 @@ export class HttpConnection implements IConnection {
                 this.transport = this.constructTransport(TransportType.WebSockets);
                 // We should just call connect directly in this case.
                 // No fallback or negotiate in this case.
-                await this.transport.connect(this.url, transferFormat, this);
+                await this.transport.connect(this.url, transferFormat);
             } else {
                 const token = await this.options.accessTokenFactory();
                 let headers;
@@ -101,6 +101,10 @@ export class HttpConnection implements IConnection {
                     return;
                 }
                 await this.createTransport(this.options.transport, negotiateResponse, transferFormat, headers);
+            }
+
+            if (typeof this.transport === typeof LongPollingTransport) {
+                this.features.inherentKeepAlive = true;
             }
 
             this.transport.onreceive = this.onreceive;
@@ -121,7 +125,7 @@ export class HttpConnection implements IConnection {
         const negotiateUrl = this.resolveNegotiateUrl(this.baseUrl);
         this.logger.log(LogLevel.Trace, `Sending negotiation request: ${negotiateUrl}`);
         try {
-            const response =  await this.httpClient.post(negotiateUrl, {
+            const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
                 headers,
             });
@@ -142,7 +146,7 @@ export class HttpConnection implements IConnection {
         if (this.isITransport(requestedTransport)) {
             this.logger.log(LogLevel.Trace, "Connection was provided an instance of ITransport, using that directly.");
             this.transport = requestedTransport;
-            await this.transport.connect(this.url, requestedTransferFormat, this);
+            await this.transport.connect(this.url, requestedTransferFormat);
 
             // only change the state if we were connecting to not overwrite
             // the state if the connection is already marked as Disconnected
@@ -161,7 +165,7 @@ export class HttpConnection implements IConnection {
                     this.updateConnectionId(negotiateResponse);
                 }
                 try {
-                    await this.transport.connect(this.url, requestedTransferFormat, this);
+                    await this.transport.connect(this.url, requestedTransferFormat);
                     this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
                     return;
                 } catch (ex) {
