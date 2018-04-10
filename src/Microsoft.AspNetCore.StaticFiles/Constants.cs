@@ -16,14 +16,5 @@ namespace Microsoft.AspNetCore.StaticFiles
         internal const int Status304NotModified = 304;
         internal const int Status412PreconditionFailed = 412;
         internal const int Status416RangeNotSatisfiable = 416;
-
-        internal static readonly Task CompletedTask = CreateCompletedTask();
-
-        private static Task CreateCompletedTask()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            tcs.SetResult(null);
-            return tcs.Task;
-        }
     }
 }

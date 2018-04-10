@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             ApplyResponseHeaders(statusCode);
 
             _logger.LogHandled(statusCode, SubPath);
-            return Constants.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public async Task SendAsync()

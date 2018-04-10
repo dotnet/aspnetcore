@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                             {
                                 context.Response.StatusCode = 301;
                                 context.Response.Headers[HeaderNames.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
-                                return Constants.CompletedTask;
+                                return Task.CompletedTask;
                             }
 
                             // Match found, re-write the url. A later middleware will actually serve the file.

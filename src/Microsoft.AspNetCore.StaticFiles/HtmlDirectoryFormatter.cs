@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             if (HttpMethods.IsHead(context.Request.Method))
             {
                 // HEAD, no response body
-                return Constants.CompletedTask;
+                return Task.CompletedTask;
             }
 
             PathString requestPath = context.Request.PathBase + context.Request.Path;
