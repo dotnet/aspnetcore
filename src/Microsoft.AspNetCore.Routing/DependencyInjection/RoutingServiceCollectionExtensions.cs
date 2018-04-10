@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -29,17 +29,21 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
-            services.TryAddSingleton(UrlEncoder.Default);
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
                 var provider = s.GetRequiredService<ObjectPoolProvider>();
-                var encoder = s.GetRequiredService<UrlEncoder>();
-                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(encoder));
+                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy());
             });
 
             // The TreeRouteBuilder is a builder for creating routes, it should stay transient because it's
             // stateful.
-            services.TryAddTransient<TreeRouteBuilder>();
+            services.TryAdd(ServiceDescriptor.Transient<TreeRouteBuilder>(s =>
+            {
+                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
+                var objectPool = s.GetRequiredService<ObjectPool<UriBuildingContext>>();
+                var constraintResolver = s.GetRequiredService<IInlineConstraintResolver>();
+                return new TreeRouteBuilder(loggerFactory, objectPool, constraintResolver);
+            }));
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
 

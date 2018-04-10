@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -643,6 +645,37 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("/Home/Index?name=name%20with%20%25special%20%23characters", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void GetVirtualPath_AlwaysUsesDefaultUrlEncoder()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.AddRouting();
+            // This test encoder should not be used by Routing and should always use the default one.
+            services.AddSingleton<UrlEncoder>(new UrlTestEncoder());
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = services.BuildServiceProvider(),
+            };
+
+            var context = new VirtualPathContext(
+                httpContext,
+                values: new RouteValueDictionary(new { name = "name with %special #characters Jörn" }),
+                ambientValues: new RouteValueDictionary(new { controller = "Home", action = "Index" }));
+
+            var route = CreateRoute("{controller}/{action}");
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("/Home/Index?name=name%20with%20%25special%20%23characters%20J%C3%B6rn", pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }

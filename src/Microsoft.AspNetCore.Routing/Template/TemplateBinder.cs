@@ -20,6 +20,13 @@ namespace Microsoft.AspNetCore.Routing.Template
         private readonly RouteValueDictionary _filters;
         private readonly RouteTemplate _template;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="TemplateBinder"/>.
+        /// </summary>
+        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="pool">The <see cref="ObjectPool{T}"/>.</param>
+        /// <param name="template">The <see cref="RouteTemplate"/> to bind values to.</param>
+        /// <param name="defaults">The default values for <paramref name="template"/>.</param>
         public TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
@@ -90,8 +97,8 @@ namespace Microsoft.AspNetCore.Routing.Template
                     }
                 }
 
-                if (!hasNewParameterValue && 
-                    !hasCurrentParameterValue && 
+                if (!hasNewParameterValue &&
+                    !hasCurrentParameterValue &&
                     _defaults?.ContainsKey(parameter.Name) != true)
                 {
                     // This is an unsatisfied parameter value and there are no defaults. We might still

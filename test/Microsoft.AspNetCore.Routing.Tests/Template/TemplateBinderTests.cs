@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template.Tests
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                     "Test/{val1}/{val2}",
                     new RouteValueDictionary(new {val1 = "", val2 = ""}),
                     new RouteValueDictionary(new {val1 = "a"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[a]]"
+                    "/Test/a"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}",
@@ -43,67 +42,67 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                     "Test/{val1}/{val2}",
                     new RouteValueDictionary(new {val1 = "", val2 = ""}),
                     new RouteValueDictionary(new {val1 = "a", val2 = "b"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[a]]/UrlEncode[[b]]"
+                    "/Test/a/b"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}",
                     new RouteValueDictionary(new {val1 = "", val2 = "", val3 = ""}),
                     new RouteValueDictionary(new {val1 = "a", val2 = "b", val3 = "c"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[a]]/UrlEncode[[b]]/UrlEncode[[c]]"
+                    "/Test/a/b/c"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}",
                     new RouteValueDictionary(new {val1 = "", val2 = "", val3 = ""}),
                     new RouteValueDictionary(new {val1 = "a", val2 = "b"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[a]]/UrlEncode[[b]]"
+                    "/Test/a/b"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}",
                     new RouteValueDictionary(new {val1 = "", val2 = "", val3 = ""}),
                     new RouteValueDictionary(new {val1 = "a"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[a]]"
+                    "/Test/a"
                 },
                 {
                     "Test/{val1}",
                     new RouteValueDictionary(new {val1 = "42", val2 = "", val3 = ""}),
                     new RouteValueDictionary(),
-                    "/UrlEncode[[Test]]"
+                    "/Test"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}",
                     new RouteValueDictionary(new {val1 = "42", val2 = (string)null, val3 = (string)null}),
                     new RouteValueDictionary(),
-                    "/UrlEncode[[Test]]"
+                    "/Test"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}/{val4}",
                     new RouteValueDictionary(new {val1 = "21", val2 = "", val3 = "", val4 = ""}),
                     new RouteValueDictionary(new {val1 = "42", val2 = "11", val3 = "", val4 = ""}),
-                    "/UrlEncode[[Test]]/UrlEncode[[42]]/UrlEncode[[11]]"
+                    "/Test/42/11"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}",
                     new RouteValueDictionary(new {val1 = "21", val2 = "", val3 = ""}),
                     new RouteValueDictionary(new {val1 = "42"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[42]]"
+                    "/Test/42"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}/{val4}",
                     new RouteValueDictionary(new {val1 = "21", val2 = "", val3 = "", val4 = ""}),
                     new RouteValueDictionary(new {val1 = "42", val2 = "11"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[42]]/UrlEncode[[11]]"
+                    "/Test/42/11"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}",
                     new RouteValueDictionary(new {val1 = "21", val2 = (string)null, val3 = (string)null}),
                     new RouteValueDictionary(new {val1 = "42"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[42]]"
+                    "/Test/42"
                 },
                 {
                     "Test/{val1}/{val2}/{val3}/{val4}",
                     new RouteValueDictionary(new {val1 = "21", val2 = (string)null, val3 = (string)null, val4 = (string)null}),
                     new RouteValueDictionary(new {val1 = "42", val2 = "11"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[42]]/UrlEncode[[11]]"
+                    "/Test/42/11"
                 },
             };
 
@@ -116,10 +115,9 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var encoder = new UrlTestEncoder();
             var binder = new TemplateBinder(
-                encoder,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
                 TemplateParser.Parse(template),
                 defaults);
 
@@ -157,7 +155,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }),
                 new RouteValueDictionary(new { lang = "xx", region = "yy" }),
-                "/UrlEncode[[language]]/UrlEncode[[xx]]UrlEncode[[-]]UrlEncode[[yy]]");
+                "/language/xx-yy");
         }
 
         [Fact]
@@ -168,7 +166,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }),
                 new RouteValueDictionary(new { lang = "xx", region = "yy" }),
-                "/UrlEncode[[language]]/UrlEncode[[xx]]UrlEncode[[-]]UrlEncode[[yy]]UrlEncode[[a]]");
+                "/language/xx-yya");
         }
 
         [Fact]
@@ -179,7 +177,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }),
                 new RouteValueDictionary(new { lang = "xx", region = "yy" }),
-                "/UrlEncode[[language]]/UrlEncode[[a]]UrlEncode[[xx]]UrlEncode[[-]]UrlEncode[[yy]]");
+                "/language/axx-yy");
         }
 
         public static TheoryData OptionalParamValues =>
@@ -193,66 +191,66 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
                     new RouteValueDictionary(new {val3 = "someval3"}),
                     new RouteValueDictionary(new {val3 = "someval3"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]/UrlEncode[[someval2]]UrlEncode[[.]]UrlEncode[[someval3]]"
+                    "/Test/someval1/someval2.someval3"
                 },
                 {
                     "Test/{val1}/{val2}.{val3?}",
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
                     new RouteValueDictionary(new {val3 = "someval3a"}),
                     new RouteValueDictionary(new {val3 = "someval3v"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]/UrlEncode[[someval2]]UrlEncode[[.]]UrlEncode[[someval3v]]"
+                    "/Test/someval1/someval2.someval3v"
                 },
                 {
                     "Test/{val1}/{val2}.{val3?}",
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
                     new RouteValueDictionary(new {val3 = "someval3a"}),
                     new RouteValueDictionary(),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]/UrlEncode[[someval2]]UrlEncode[[.]]UrlEncode[[someval3a]]"
+                    "/Test/someval1/someval2.someval3a"
                 },
                 {
                     "Test/{val1}/{val2}.{val3?}",
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
                     new RouteValueDictionary(),
                     new RouteValueDictionary(new {val3 = "someval3v"}),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]/UrlEncode[[someval2]]UrlEncode[[.]]UrlEncode[[someval3v]]"
+                    "/Test/someval1/someval2.someval3v"
                 },
                 {
                     "Test/{val1}/{val2}.{val3?}",
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2"}),
                     new RouteValueDictionary(),
                     new RouteValueDictionary(),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]/UrlEncode[[someval2]]"
+                    "/Test/someval1/someval2"
                 },
                 {
                     "Test/{val1}.{val2}.{val3}.{val4?}",
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2" }),
                     new RouteValueDictionary(),
                     new RouteValueDictionary(new {val4 = "someval4", val3 = "someval3" }),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]UrlEncode[[.]]UrlEncode[[someval2]]UrlEncode[[.]]"
-                    + "UrlEncode[[someval3]]UrlEncode[[.]]UrlEncode[[someval4]]"
+                    "/Test/someval1.someval2."
+                    + "someval3.someval4"
                 },
                 {
                     "Test/{val1}.{val2}.{val3}.{val4?}",
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2" }),
                     new RouteValueDictionary(),
                     new RouteValueDictionary(new {val3 = "someval3" }),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]UrlEncode[[.]]UrlEncode[[someval2]]UrlEncode[[.]]"
-                    + "UrlEncode[[someval3]]"
+                    "/Test/someval1.someval2."
+                    + "someval3"
                 },
                 {
                     "Test/.{val2?}",
                     new RouteValueDictionary(new { }),
                     new RouteValueDictionary(),
                     new RouteValueDictionary(new {val2 = "someval2" }),
-                    "/UrlEncode[[Test]]/UrlEncode[[.]]UrlEncode[[someval2]]"
+                    "/Test/.someval2"
                 },
                 {
                     "Test/{val1}.{val2}",
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2" }),
                     new RouteValueDictionary(),
                     new RouteValueDictionary(new {val3 = "someval3" }),
-                    "/UrlEncode[[Test]]/UrlEncode[[someval1]]UrlEncode[[.]]UrlEncode[[someval2]]?" +
-                    "UrlEncode[[val3]]=UrlEncode[[someval3]]"
+                    "/Test/someval1.someval2?" +
+                    "val3=someval3"
                 },
             };
 
@@ -266,10 +264,9 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var encoder = new UrlTestEncoder();
             var binder = new TemplateBinder(
-                encoder,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
                 TemplateParser.Parse(template),
                 defaults);
 
@@ -307,7 +304,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }),
                 new RouteValueDictionary(new { lang = "xx", region = "yy" }),
-                "/UrlEncode[[language]]/UrlEncode[[a]]UrlEncode[[xx]]UrlEncode[[-]]UrlEncode[[yy]]UrlEncode[[a]]");
+                "/language/axx-yya");
         }
 
         [Fact]
@@ -340,7 +337,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en" }),
                 new RouteValueDictionary(new { lang = "xx" }),
-                "/UrlEncode[[language]]/UrlEncode[[xx]]");
+                "/language/xx");
         }
 
         [Fact]
@@ -351,7 +348,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en" }),
                 new RouteValueDictionary(new { lang = "xx" }),
-                "/UrlEncode[[language]]/UrlEncode[[xx]]UrlEncode[[-]]");
+                "/language/xx-");
         }
 
         [Fact]
@@ -362,7 +359,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en" }),
                 new RouteValueDictionary(new { lang = "xx" }),
-                "/UrlEncode[[language]]/UrlEncode[[a]]UrlEncode[[xx]]");
+                "/language/axx");
         }
 
         [Fact]
@@ -373,7 +370,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { lang = "en" }),
                 new RouteValueDictionary(new { lang = "xx" }),
-                "/UrlEncode[[language]]/UrlEncode[[a]]UrlEncode[[xx]]UrlEncode[[a]]");
+                "/language/axxa");
         }
 
         [Fact]
@@ -384,7 +381,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { action = "Index", id = (string)null }),
                 new RouteValueDictionary(new { controller = "home", action = "list", id = (string)null }),
                 new RouteValueDictionary(new { controller = "products" }),
-                "/UrlEncode[[products]]UrlEncode[[.mvc]]");
+                "/products.mvc");
         }
 
         [Fact]
@@ -395,7 +392,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { lang = "xx", region = "yy" }),
                 new RouteValueDictionary(new { lang = "en", region = "US" }),
                 new RouteValueDictionary(new { lang = "zz" }),
-                "/UrlEncode[[language]]/UrlEncode[[zz]]UrlEncode[[-]]UrlEncode[[yy]]");
+                "/language/zz-yy");
         }
 
         [Fact]
@@ -407,7 +404,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                new RouteValueDictionary(new { id = "defaultid" }),
                new RouteValueDictionary(new { controller = "home", action = "oldaction" }),
                new RouteValueDictionary(new { action = "newaction" }),
-               "/UrlEncode[[home]]/UrlEncode[[newaction]]");
+               "/home/newaction");
         }
 
         [Fact]
@@ -440,7 +437,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { }),
                 new RouteValueDictionary(new { controller = "home" }),
-                "/UrlEncode[[foo]]/UrlEncode[[home]]");
+                "/foo/home");
         }
 
         [Fact]
@@ -452,7 +449,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { id = (string)null }),
                 new RouteValueDictionary(new { controller = "home", action = "oldaction", id = (string)null }),
                 new RouteValueDictionary(new { action = "newaction" }),
-                "/UrlEncode[[home]]/UrlEncode[[newaction]]");
+                "/home/newaction");
         }
 
         [Fact]
@@ -463,7 +460,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { language = "en", locale = "US" }),
                 new RouteValueDictionary(),
                 new RouteValueDictionary(new { controller = "Orders" }),
-                "/UrlEncode[[Orders]]/UrlEncode[[en]]UrlEncode[[-]]UrlEncode[[US]]");
+                "/Orders/en-US");
         }
 
         [Fact]
@@ -474,7 +471,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { action = "Index", id = "" }),
                 new RouteValueDictionary(new { controller = "Home", action = "Index", id = "" }),
                 new RouteValueDictionary(new { controller = "Home", action = "TestAction", id = "1", format = (string)null }),
-                "/UrlEncode[[Home]]UrlEncode[[.mvc]]/UrlEncode[[TestAction]]/UrlEncode[[1]]");
+                "/Home.mvc/TestAction/1");
         }
 
         [Fact]
@@ -507,7 +504,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new { p2 = "d2", p3 = "d3" },
                 new { p1 = "v1", },
                 new { p2 = "", p3 = "" },
-                "/UrlEncode[[v1]]");
+                "/v1");
         }
 
         [Fact]
@@ -518,7 +515,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new { action = "Index", id = (string)null },
                 new { controller = "orig", action = "init", id = "123" },
                 new { action = "new", },
-                "/UrlEncode[[orig]]/UrlEncode[[new]]");
+                "/orig/new");
         }
 
         [Fact]
@@ -529,8 +526,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new { year = 1995, occasion = "Christmas", action = "Play", SafeParam = "SafeParamValue" },
                 new { controller = "UrlRouting", action = "Play", category = "Photos", year = "2008", occasion = "Easter", SafeParam = "SafeParamValue" },
                 new { year = (string)null, occasion = "Hola" },
-                "/UrlEncode[[UrlGeneration1]]/UrlEncode[[UrlRouting]]UrlEncode[[.mvc]]/UrlEncode[[Play]]/"
-                + "UrlEncode[[Photos]]/UrlEncode[[1995]]/UrlEncode[[Hola]]");
+                "/UrlGeneration1/UrlRouting.mvc/Play/"
+                + "Photos/1995/Hola");
         }
 
         [Fact]
@@ -553,8 +550,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { year = 1995, occasion = "Christmas", action = "Play", SafeParam = "SafeParamValue" }),
                 ambientValues,
                 values,
-                "/UrlEncode[[UrlGeneration1]]/UrlEncode[[UrlRouting]]UrlEncode[[.mvc]]/"
-                + "UrlEncode[[Play]]/UrlEncode[[Photos]]/UrlEncode[[1995]]/UrlEncode[[Hola]]");
+                "/UrlGeneration1/UrlRouting.mvc/"
+                + "Play/Photos/1995/Hola");
         }
 
         [Fact]
@@ -576,7 +573,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { action = "Default" }),
                 ambientValues,
                 values,
-                "/UrlEncode[[subtest]]UrlEncode[[.mvc]]/UrlEncode[[Default]]/UrlEncode[[b]]");
+                "/subtest.mvc/Default/b");
         }
 
         [Fact]
@@ -594,8 +591,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { controller = "Home" }),
                 new RouteValueDictionary(new { controller = "home", action = "Index", id = (string)null }),
                 values,
-                "/%23;%3F%3A@%26%3D%2B$,.mvc/showcategory/123?so%3Frt=de%3Fsc&maxPrice=100",
-                UrlEncoder.Default);
+                "/%23;%3F%3A@%26%3D%2B$,.mvc/showcategory/123?so%3Frt=de%3Fsc&maxPrice=100");
         }
 
         [Fact]
@@ -609,8 +605,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { controller = "Home" }),
                 new RouteValueDictionary(new { controller = "home", action = "Index", id = (string)null }),
                 values,
-               "/UrlEncode[[products]]UrlEncode[[.mvc]]/UrlEncode[[showcategory]]/UrlEncode[[123]]" +
-               "?UrlEncode[[so?rt]]=UrlEncode[[de?sc]]&UrlEncode[[maxPrice]]=UrlEncode[[100]]");
+               "/products.mvc/showcategory/123" +
+               "?so%3Frt=de%3Fsc&maxPrice=100");
         }
 
         [Fact]
@@ -630,8 +626,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                         maxPrice = 100,
                         custom = "customValue"
                     }),
-                "/UrlEncode[[products]]UrlEncode[[.mvc]]/UrlEncode[[showcategory]]/UrlEncode[[123]]" +
-                "?UrlEncode[[sort]]=UrlEncode[[desc]]&UrlEncode[[maxPrice]]=UrlEncode[[100]]");
+                "/products.mvc/showcategory/123" +
+                "?sort=desc&maxPrice=100");
         }
 
         [Fact]
@@ -642,8 +638,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { controller = "ho%me", action = "li st" }),
                 new RouteValueDictionary(),
-                "/bl%25og/ho%25me/he%20llo/li%20st",
-                UrlEncoder.Default);
+                "/bl%25og/ho%25me/he%20llo/li%20st");
         }
 
         [Fact]
@@ -654,8 +649,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 new RouteValueDictionary(new { controller = "/home", action = "/my/index" }),
                 new RouteValueDictionary(),
-                "/home/%2Fmy%2Findex",
-                UrlEncoder.Default);
+                "/home/%2Fmy%2Findex");
         }
 
         [Fact]
@@ -666,7 +660,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { id = "defaultid" }),
                 new RouteValueDictionary(new { p1 = "v1" }),
                 new RouteValueDictionary(new { p2 = "v2a/v2b" }),
-                "/UrlEncode[[v1]]/UrlEncode[[v2a/v2b]]");
+                "/v1/v2a%2Fv2b");
         }
 
         [Fact]
@@ -677,7 +671,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { id = "defaultid" }),
                 new RouteValueDictionary(new { p1 = "v1" }),
                 new RouteValueDictionary(new { p2 = "" }),
-                "/UrlEncode[[v1]]");
+                "/v1");
         }
 
         [Fact]
@@ -688,7 +682,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { id = "defaultid" }),
                 new RouteValueDictionary(new { p1 = "v1" }),
                 new RouteValueDictionary(new { p2 = (string)null }),
-                "/UrlEncode[[v1]]");
+                "/v1");
         }
 
         [Fact]
@@ -699,7 +693,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 null,
                 new RouteValueDictionary(new { }),
-                "/UrlEncode[[foo]]");
+                "/foo");
         }
 
         [Fact]
@@ -710,7 +704,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 null,
                 null,
                 new RouteValueDictionary(new { }),
-                "/UrlEncode[[foo]]");
+                "/foo");
         }
 
         [Fact]
@@ -718,10 +712,9 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         {
             // Arrange
             var template = "{area?}/{controller=Home}/{action=Index}/{id?}";
-            var encoder = new UrlTestEncoder();
             var binder = new TemplateBinder(
-                new UrlTestEncoder(),
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
                 TemplateParser.Parse(template),
                 defaults: null);
             var ambientValues = new RouteValueDictionary();
@@ -1145,15 +1138,12 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             RouteValueDictionary defaults,
             RouteValueDictionary ambientValues,
             RouteValueDictionary values,
-            string expected,
-            UrlEncoder encoder = null)
+            string expected)
         {
             // Arrange
-            encoder = encoder ?? new UrlTestEncoder();
-
             var binder = new TemplateBinder(
-                encoder,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
                 TemplateParser.Parse(template),
                 defaults);
 

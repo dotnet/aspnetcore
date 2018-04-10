@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -23,9 +22,72 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
 
-        private static UrlEncoder Encoder = UrlTestEncoder.Default;
         private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
-            new UriBuilderContextPooledObjectPolicy(Encoder));
+            new UriBuilderContextPooledObjectPolicy());
+
+        [Fact]
+        public async Task TreeRouter_RouteAsync_MatchesCatchAllRoutesWithDefaults_UsingObsoleteConstructo()
+        {
+            // Arrange
+            var routes = new[] {
+                "{parameter1=1}/{parameter2=2}/{parameter3=3}/{*parameter4=4}",
+            };
+            var url = "/a/b/c";
+            var routeValues = new[] { "a", "b", "c", "4" };
+
+            var expectedRouteGroup = CreateRouteGroup(0, "{parameter1=1}/{parameter2=2}/{parameter3=3}/{*parameter4=4}");
+            var routeValueKeys = new[] { "parameter1", "parameter2", "parameter3", "parameter4" };
+            var expectedRouteValues = new RouteValueDictionary();
+            for (int i = 0; i < routeValueKeys.Length; i++)
+            {
+                expectedRouteValues.Add(routeValueKeys[i], routeValues[i]);
+            }
+
+            var builder = CreateBuilderUsingObsoleteConstructor();
+
+            // We setup the route entries in reverse order of precedence to ensure that when we
+            // try to route the request, the route with a higher precedence gets tried first.
+            foreach (var template in routes.Reverse())
+            {
+                MapInboundEntry(builder, template);
+            }
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(expectedRouteGroup, context.RouteData.Values["test_route_group"]);
+            foreach (var entry in expectedRouteValues)
+            {
+                var data = Assert.Single(context.RouteData.Values, v => v.Key == entry.Key);
+                Assert.Equal(entry.Value, data.Value);
+            }
+        }
+
+        [Fact]
+        public async Task TreeRouter_RouteAsync_DoesNotMatchRoutesWithIntermediateDefaultRouteValues_UsingObsoleteConstructor()
+        {
+            // Arrange
+            var url = "/a/b";
+
+            var builder = CreateBuilderUsingObsoleteConstructor();
+
+            MapInboundEntry(builder, "a/b/{parameter3=3}/d");
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
 
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
@@ -1990,15 +2052,31 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static TreeRouteBuilder CreateBuilder()
         {
             var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default);
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
             var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
 
             var constraintResolver = CreateConstraintResolver();
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
+                objectPool,
+                constraintResolver);
+            return builder;
+        }
+
+        private static TreeRouteBuilder CreateBuilderUsingObsoleteConstructor()
+        {
+            var objectPoolProvider = new DefaultObjectPoolProvider();
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
+            var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
+
+            var constraintResolver = CreateConstraintResolver();
+#pragma warning disable CS0618 // Type or member is obsolete
+            var builder = new TreeRouteBuilder(
+                NullLoggerFactory.Instance,
                 UrlEncoder.Default,
                 objectPool,
                 constraintResolver);
+#pragma warning restore CS0618 // Type or member is obsolete
             return builder;
         }
 
