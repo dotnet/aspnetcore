@@ -75,6 +75,7 @@ describe("connection", () => {
 
                 // DON'T use commonOptions because we want to specifically test the scenario where logMessageContent is not set.
                 const connection = new HttpConnection("echo", {
+                    logger: TestLogger.instance,
                     transport: transportType,
                 });
 
@@ -86,6 +87,7 @@ describe("connection", () => {
 
                 connection.onclose = (error) => {
                     // Search the logs for the message content
+                    expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
                     for (const [_, logMessage] of TestLogger.instance.currentLog.messages) {
                         expect(logMessage).not.toContain(message);
                     }
@@ -119,6 +121,7 @@ describe("connection", () => {
                 connection.onclose = (error) => {
                     // Search the logs for the message content
                     let matches = 0;
+                    expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
                     for (const [_, logMessage] of TestLogger.instance.currentLog.messages) {
                         if (logMessage.indexOf(message) !== -1) {
                             matches += 1;
