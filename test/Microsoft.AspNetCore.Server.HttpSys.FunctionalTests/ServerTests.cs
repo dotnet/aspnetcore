@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
@@ -295,6 +296,44 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await server.StartAsync(new DummyApplication(), CancellationToken.None);
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Server_SetHttp503VebosittHittingThrottle_Success()
+        {
+            // This is just to get a dynamic port
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
+
+            var server = Utilities.CreatePump();
+            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
+            Assert.Null(server.Listener.Options.MaxConnections);
+            server.Listener.Options.MaxConnections = 3;
+            server.Listener.Options.Http503Verbosity = Http503VerbosityLevel.Limited;
+
+            using (server)
+            {
+                await server.StartAsync(new DummyApplication(), CancellationToken.None);
+
+                using (var client1 = await SendHungRequestAsync("GET", address))
+                using (var client2 = await SendHungRequestAsync("GET", address))
+                {
+                    using (var client3 = await SendHungRequestAsync("GET", address))
+                    {
+                        using (HttpClient client4 = new HttpClient())
+                        {
+                            // Maxed out, refuses connection should return 503
+                            HttpResponseMessage response = await client4.GetAsync(address);
+
+                            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+                        }
+                    }
+
+                    // A connection has been closed, try again.
+                    string responseText = await SendRequestAsync(address);
+                    Assert.Equal(string.Empty, responseText);
+                }
             }
         }
 

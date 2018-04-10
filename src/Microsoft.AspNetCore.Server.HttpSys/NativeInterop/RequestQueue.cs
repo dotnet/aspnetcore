@@ -99,6 +99,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        // The listener must be active for this to work.
+        internal unsafe void SetRejectionVerbosity(Http503VerbosityLevel verbosity)
+        {
+            CheckDisposed();
+
+            var result = HttpApi.HttpSetRequestQueueProperty(Handle,
+                HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
+                new IntPtr((void*)&verbosity), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
+
+            if (result != 0)
+            {
+                throw new HttpSysException((int)result);
+            }
+        }
+
         public void Dispose()
         {
             if (_disposed)

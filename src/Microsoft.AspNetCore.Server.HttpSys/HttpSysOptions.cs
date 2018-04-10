@@ -2,18 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     public class HttpSysOptions
     {
+        private const Http503VerbosityLevel DefaultRejectionVerbosityLevel = Http503VerbosityLevel.Basic; // Http.sys default.
         private const long DefaultRequestQueueLength = 1000; // Http.sys default.
         internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
         // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
         // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
         private const long DefaultMaxRequestBodySize = 30000000;
 
+        private Http503VerbosityLevel _rejectionVebosityLevel = DefaultRejectionVerbosityLevel;
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
         private long? _maxConnections;
@@ -137,6 +140,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </summary>
         public bool AllowSynchronousIO { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request
+        /// queue limit is reached. The default in http.sys is "Basic" which means http.sys is just resetting the TCP connection. IIS uses Limited
+        /// as its default behavior which will result in sending back a 503 - Service Unavailable back to the client.
+        /// </summary>
+        public Http503VerbosityLevel Http503Verbosity
+        {
+            get
+            {
+                return _rejectionVebosityLevel;
+            }
+            set
+            {
+                if (value < Http503VerbosityLevel.Basic || value > Http503VerbosityLevel.Full)
+                {
+                    string message = String.Format(
+                        CultureInfo.InvariantCulture,
+                        "The value must be one of the values defined in the '{0}' enum.",
+                        typeof(Http503VerbosityLevel).Name);
+
+                    throw new ArgumentOutOfRangeException(nameof(value), value, message);
+                }
+
+                if (_requestQueue != null)
+                {
+                    _requestQueue.SetRejectionVerbosity(value);
+                }
+                // Only store it if it succeeds or hasn't started yet
+                _rejectionVebosityLevel = value;
+            }
+        }
+
         internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
         {
             _urlGroup = urlGroup;
@@ -150,6 +185,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_requestQueueLength != DefaultRequestQueueLength)
             {
                 _requestQueue.SetLengthLimit(_requestQueueLength);
+            }
+
+            if (_rejectionVebosityLevel != DefaultRejectionVerbosityLevel)
+            {
+                _requestQueue.SetRejectionVerbosity(_rejectionVebosityLevel);
             }
 
             Authentication.SetUrlGroupSecurity(urlGroup);
