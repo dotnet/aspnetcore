@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [DllImport(AspNetCoreModuleDll)]
         private static extern int http_get_server_variable(
             IntPtr pInProcessHandler,
-            [MarshalAs(UnmanagedType.AnsiBStr)] string variableName,
+            [MarshalAs(UnmanagedType.LPStr)] string variableName,
             [MarshalAs(UnmanagedType.BStr)] out string value);
 
         [DllImport(AspNetCoreModuleDll)]
