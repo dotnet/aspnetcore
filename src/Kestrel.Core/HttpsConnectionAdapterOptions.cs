@@ -6,7 +6,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// If the server certificate has an Extended Key Usage extension, the usages must include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
         /// </para>
         /// </summary>
-        public Func<IFeatureCollection, string, X509Certificate2> ServerCertificateSelector { get; set; }
+        public Func<ConnectionContext, string, X509Certificate2> ServerCertificateSelector { get; set; }
 
         /// <summary>
         /// Specifies the client certificate requirements for a HTTPS connection. Defaults to <see cref="ClientCertificateMode.NoCertificate"/>.

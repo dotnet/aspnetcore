@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var httpConnectionContext = new HttpConnectionContext
             {
                 ConnectionId = connectionContext.ConnectionId,
+                ConnectionContext = connectionContext,
                 HttpConnectionId = httpConnectionId,
                 Protocols = _protocols,
                 ServiceContext = _serviceContext,
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var connection = new HttpConnection(httpConnectionContext);
 
             var processingTask = connection.StartRequestProcessing(_application);
-            
+
             connectionContext.Transport.Input.OnWriterCompleted((error, state) =>
             {
                 ((HttpConnection)state).Abort(error);

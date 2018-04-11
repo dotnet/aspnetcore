@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         private readonly HttpsConnectionAdapterOptions _options;
         private readonly X509Certificate2 _serverCertificate;
-        private readonly Func<IFeatureCollection, string, X509Certificate2> _serverCertificateSelector;
+        private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
 
         private readonly ILogger _logger;
 
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     selector = (sender, name) =>
                     {
                         context.Features.Set(sslStream);
-                        var cert = _serverCertificateSelector(context.Features, name);
+                        var cert = _serverCertificateSelector(context.ConnectionContext, name);
                         if (cert != null)
                         {
                             EnsureCertificateIsAllowedForServerAuth(cert);
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 if (_serverCertificateSelector != null)
                 {
                     context.Features.Set(sslStream);
-                    serverCert = _serverCertificateSelector(context.Features, null);                
+                    serverCert = _serverCertificateSelector(context.ConnectionContext, null);
                     if (serverCert != null)
                     {
                         EnsureCertificateIsAllowedForServerAuth(serverCert);

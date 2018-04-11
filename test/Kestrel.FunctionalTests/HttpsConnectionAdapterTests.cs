@@ -160,10 +160,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
                     {
-                        ServerCertificateSelector = (features, name) =>
+                        ServerCertificateSelector = (connection, name) =>
                         {
-                            Assert.NotNull(features);
-                            Assert.NotNull(features.Get<SslStream>());
+                            Assert.NotNull(connection);
+                            Assert.NotNull(connection.Features.Get<SslStream>());
 #if NETCOREAPP2_1
                             Assert.Equal("localhost", name);
 #else
@@ -201,10 +201,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
                     {
-                        ServerCertificateSelector = (features, name) =>
+                        ServerCertificateSelector = (connection, name) =>
                         {
-                            Assert.NotNull(features);
-                            Assert.NotNull(features.Get<SslStream>());
+                            Assert.NotNull(connection);
+                            Assert.NotNull(connection.Features.Get<SslStream>());
 #if NETCOREAPP2_1
                             Assert.Equal("localhost", name);
 #else
@@ -291,10 +291,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
                     {
                         ServerCertificate = _x509Certificate2NoExt,
-                        ServerCertificateSelector = (features, name) =>
+                        ServerCertificateSelector = (connection, name) =>
                         {
-                            Assert.NotNull(features);
-                            Assert.NotNull(features.Get<SslStream>());
+                            Assert.NotNull(connection);
+                            Assert.NotNull(connection.Features.Get<SslStream>());
 #if NETCOREAPP2_1
                             Assert.Equal("localhost", name);
 #else

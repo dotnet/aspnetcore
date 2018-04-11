@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             var connectionAdapters = _context.ConnectionAdapters;
             var stream = new RawStream(_context.Transport.Input, _context.Transport.Output);
-            var adapterContext = new ConnectionAdapterContext(_context.ConnectionFeatures, stream);
+            var adapterContext = new ConnectionAdapterContext(_context.ConnectionContext, stream);
             _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
 
             try
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     var adaptedConnection = await connectionAdapters[i].OnConnectionAsync(adapterContext);
                     _adaptedConnections.Add(adaptedConnection);
-                    adapterContext = new ConnectionAdapterContext(_context.ConnectionFeatures, adaptedConnection.ConnectionStream);
+                    adapterContext = new ConnectionAdapterContext(_context.ConnectionContext, adaptedConnection.ConnectionStream);
                 }
             }
             catch (Exception ex)
