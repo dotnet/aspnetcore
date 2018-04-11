@@ -10,13 +10,18 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class ConnectionsAppBuilderExtensions
     {
-        public static IApplicationBuilder UseConnections(this IApplicationBuilder app, Action<ConnectionsRouteBuilder> callback)
+        public static IApplicationBuilder UseConnections(this IApplicationBuilder app, Action<ConnectionsRouteBuilder> configure)
         {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             var dispatcher = app.ApplicationServices.GetRequiredService<HttpConnectionDispatcher>();
 
             var routes = new RouteBuilder(app);
 
-            callback(new ConnectionsRouteBuilder(routes, dispatcher));
+            configure(new ConnectionsRouteBuilder(routes, dispatcher));
 
             app.UseWebSockets();
             app.UseRouter(routes.Build());
