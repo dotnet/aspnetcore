@@ -82,7 +82,7 @@
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" Link="AspNetCoreModuleV2\x64\aspnetcore.dll" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb" Link="AspNetCoreModuleV2\x64\aspnetcore.pdb" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" Link="AspNetCoreModuleV2\x64\aspnetcorerh.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.pdb" Link="x64\aspnetcorerh.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.pdb" Link="AspNetCoreModuleV2\x64\aspnetcorerh.pdb" />
       <!-- x86 -->
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" Link="AspNetCoreModuleV1\x86\aspnetcore.dll" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="AspNetCoreModuleV1\x86\aspnetcore.pdb" />
