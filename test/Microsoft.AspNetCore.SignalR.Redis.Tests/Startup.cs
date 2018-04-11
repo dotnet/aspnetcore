@@ -11,7 +11,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR()
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            })
                 .AddMessagePackProtocol()
                 .AddRedis(options =>
                 {
