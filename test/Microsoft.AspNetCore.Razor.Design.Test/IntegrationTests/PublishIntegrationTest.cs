@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithP2PReference", "ClassLibrary")]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
         public async Task Publish_WithP2P_AndRazorCompileOnBuild_CopiesRazorAssembly()
         {
             var result = await DotnetMSBuild("Publish");
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithP2PReference", "ClassLibrary")]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
         public async Task Publish_WithP2P_AndRazorCompileOnPublish_CopiesRazorAssembly()
         {
             var result = await DotnetMSBuild("Publish");
@@ -291,6 +291,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary.pdb");
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary.Views.dll");
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
+        public async Task Publish_SimpleMvcFSharp_NoopsWithoutFailing()
+        {
+            var result = await DotnetMSBuild("Publish");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvcFSharp.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvcFSharp.pdb");
+
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
         }
     }
 }

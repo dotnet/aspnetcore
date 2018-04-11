@@ -13,18 +13,20 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         private readonly string _testProjectName;
         private readonly string _baseDirectory;
         private readonly string[] _additionalProjects;
+        private readonly string _language;
 
-        public InitializeTestProjectAttribute(string projectName, params string[] additionalProjects)
-            : this (projectName, projectName, string.Empty, additionalProjects)
+        public InitializeTestProjectAttribute(string projectName, string language = "C#", params string[] additionalProjects)
+            : this (projectName, projectName, string.Empty, language, additionalProjects)
         {
         }
 
-        public InitializeTestProjectAttribute(string originalProjectName, string targetProjectName, string baseDirectory, string[] additionalProjects = null)
+        public InitializeTestProjectAttribute(string originalProjectName, string targetProjectName, string baseDirectory, string language = "C#", string[] additionalProjects = null)
         {
             _originalProjectName = originalProjectName;
             _testProjectName = targetProjectName;
             _baseDirectory = baseDirectory;
             _additionalProjects = additionalProjects ?? Array.Empty<string>();
+            _language = language;
         }
 
         public override void Before(MethodInfo methodUnderTest)
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new InvalidOperationException($"This should be used on a class derived from {typeof(MSBuildIntegrationTestBase)}");
             }
 
-            MSBuildIntegrationTestBase.Project = ProjectDirectory.Create(_originalProjectName, _testProjectName, _baseDirectory, _additionalProjects);
+            MSBuildIntegrationTestBase.Project = ProjectDirectory.Create(_originalProjectName, _testProjectName, _baseDirectory, _additionalProjects, _language);
             MSBuildIntegrationTestBase.TargetFramework = _originalProjectName == "ClassLibrary" ? "netstandard2.0" : "netcoreapp2.0";
         }
 

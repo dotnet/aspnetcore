@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("SimpleMvc", "LinkedDir")]
+        [InitializeTestProject("SimpleMvc", additionalProjects: "LinkedDir")]
         public async Task RazorGenerate_WorksWithLinkedFiles()
         {
             // Arrange
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("SimpleMvc", "LinkedDir")]
+        [InitializeTestProject("SimpleMvc", additionalProjects: "LinkedDir")]
         public async Task RazorGenerate_PrintsErrorsFromLinkedFiles()
         {
             // Arrange

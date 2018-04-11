@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public bool PreserveWorkingDirectory { get; set; }
 #endif
 
-        public static ProjectDirectory Create(string originalProjectName, string targetProjectName, string baseDirectory, string[] additionalProjects)
+        public static ProjectDirectory Create(string originalProjectName, string targetProjectName, string baseDirectory, string[] additionalProjects, string language)
         {
             var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", baseDirectory, Path.GetRandomFileName());
             Directory.CreateDirectory(destinationPath);
@@ -53,10 +53,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     SetupDirectoryBuildFiles(solutionRoot, binariesRoot, testAppsRoot, projectDestination);
                 }
 
-                // Rename the csproj
+                // Rename the csproj/fsproj
+                string extension;
+                if (language.Equals("C#", StringComparison.OrdinalIgnoreCase))
+                {
+                    extension = ".csproj";
+                }
+                else if (language.Equals("F#", StringComparison.OrdinalIgnoreCase))
+                {
+                    extension = ".fsproj";
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Language {language} is not supported.");
+                }
                 var directoryPath = Path.Combine(destinationPath, originalProjectName);
-                var oldProjectFilePath = Path.Combine(directoryPath, originalProjectName + ".csproj");
-                var newProjectFilePath = Path.Combine(directoryPath, targetProjectName + ".csproj");
+                var oldProjectFilePath = Path.Combine(directoryPath, originalProjectName + extension);
+                var newProjectFilePath = Path.Combine(directoryPath, targetProjectName + extension);
                 File.Move(oldProjectFilePath, newProjectFilePath);
 
                 CopyGlobalJson(solutionRoot, destinationPath);

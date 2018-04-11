@@ -74,11 +74,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- 
     Default values for properties that affect Razor targets to the standard build lifecycle.
   -->
-  <PropertyGroup Condition="'$(RazorCompileOnBuild)'==''">
+  <PropertyGroup Condition="'$(RazorCompileOnBuild)'=='' AND '$(Language)'=='C#'">
     <RazorCompileOnBuild>true</RazorCompileOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(RazorCompileOnPublish)'==''">
+  <PropertyGroup Condition="'$(RazorCompileOnPublish)'=='' AND '$(Language)'=='C#'">
     <!-- Always compile on publish by default if we're compiling on build -->
     <RazorCompileOnPublish Condition="'$(RazorCompileOnBuild)'=='true'">true</RazorCompileOnPublish>
 

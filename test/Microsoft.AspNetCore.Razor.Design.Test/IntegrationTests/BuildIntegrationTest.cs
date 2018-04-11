@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithP2PReference", "ClassLibrary")]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
         public async Task Build_WithP2P_CopiesRazorAssembly()
         {
             var result = await DotnetMSBuild("Build");
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("SimplePages", "LinkedDir")]
+        [InitializeTestProject("SimplePages", additionalProjects: "LinkedDir")]
         public async Task Build_SetsUpEmbeddedResourcesWithLogicalName()
         {
             // Arrange
@@ -453,6 +453,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, assemblyInfo);
             Assert.FileDoesNotContain(result, assemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"2.1\")");
             Assert.FileDoesNotContain(result, assemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-2-1\")");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
+        public async Task Build_SimpleMvcFSharp_NoopsWithoutFailing()
+        {
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvcFSharp.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvcFSharp.pdb");
+
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)
