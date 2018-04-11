@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             LoggerMessage.Define<string, string, double>(LogLevel.Information, new EventId(27, nameof(RequestBodyMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
 
         private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(28, nameof(ResponseMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed becuase the response was not read by the client at the specified minimum data rate.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(28, nameof(ResponseMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
 
         private static readonly Action<ILogger, string, Exception> _http2ConnectionError =
             LoggerMessage.Define<string>(LogLevel.Information, new EventId(29, nameof(Http2ConnectionError)), @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
