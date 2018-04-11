@@ -34,10 +34,14 @@
         {
           "choice": "netcoreapp2.0",
           "description": "Target netcoreapp2.0"
+        },
+        {
+          "choice": "netcoreapp2.1",
+          "description": "Target netcoreapp2.1"
         }
       ],
-      "replaces": "netcoreapp2.0",
-      "defaultValue": "netcoreapp2.0"
+      "replaces": "netcoreapp2.1",
+      "defaultValue": "netcoreapp2.1"
     },
     "HostIdentifier": {
       "type": "bind",
