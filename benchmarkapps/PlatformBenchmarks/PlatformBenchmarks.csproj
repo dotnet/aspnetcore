@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Utf8Json" Version="$(Utf8JsonPackageVersion)" />
+  </ItemGroup>
+  
+  <!-- These references are used when running locally -->
+  <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
+    <ProjectReference Include="..\..\src\Kestrel\Kestrel.csproj" />
+    <ProjectReference Include="..\..\src\Kestrel.Transport.Libuv\Kestrel.Transport.Libuv.csproj" />
+
+    <PackageReference Include="Microsoft.Extensions.Buffers.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
+  </ItemGroup>
+
+  <!-- These references are used when running on the Benchmarks Server -->
+  <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Buffers.Sources" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
+  </ItemGroup>
+</Project>

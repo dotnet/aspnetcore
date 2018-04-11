@@ -7,6 +7,7 @@
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview3-17002</InternalAspNetCoreSdkPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
+    <MicrosoftAspNetCoreAllPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
@@ -20,6 +21,7 @@
     <MicrosoftExtensionsBuffersSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsBuffersSourcesPackageVersion>
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview3-32037</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
@@ -40,6 +42,7 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview3-26331-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview3-26331-02</SystemSecurityCryptographyCngPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview3-26331-02</SystemThreadingTasksExtensionsPackageVersion>
+    <Utf8JsonPackageVersion>1.3.7</Utf8JsonPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
