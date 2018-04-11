@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task ValidateThrowsWithNullTest()
         {
             // Setup
-            var validator = new PasswordValidator<TestUser>();
+            var validator = new PasswordValidator<PocoUser>();
 
             // Act
             // Assert
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task FailsIfTooShortTests(string input)
         {
             const string error = "Passwords must be at least 6 characters.";
-            var manager = MockHelpers.TestUserManager<TestUser>();
-            var valid = new PasswordValidator<TestUser>();
+            var manager = MockHelpers.TestUserManager<PocoUser>();
+            var valid = new PasswordValidator<PocoUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("aaaaaaaaaaa")]
         public async Task SuccessIfLongEnoughTests(string input)
         {
-            var manager = MockHelpers.TestUserManager<TestUser>();
-            var valid = new PasswordValidator<TestUser>();
+            var manager = MockHelpers.TestUserManager<PocoUser>();
+            var valid = new PasswordValidator<PocoUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("aaaaaaaaaaa")]
         public async Task FailsWithoutRequiredNonAlphanumericTests(string input)
         {
-            var manager = MockHelpers.TestUserManager<TestUser>();
-            var valid = new PasswordValidator<TestUser>();
+            var manager = MockHelpers.TestUserManager<PocoUser>();
+            var valid = new PasswordValidator<PocoUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonAlphanumeric = true;
             manager.Options.Password.RequireLowercase = false;
@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("!!!!!!")]
         public async Task SucceedsWithRequiredNonAlphanumericTests(string input)
         {
-            var manager = MockHelpers.TestUserManager<TestUser>();
-            var valid = new PasswordValidator<TestUser>();
+            var manager = MockHelpers.TestUserManager<PocoUser>();
+            var valid = new PasswordValidator<PocoUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonAlphanumeric = true;
             manager.Options.Password.RequireLowercase = false;
@@ -103,8 +103,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("abcdabcdabcdabcdabcdabcdabcd", 5)]
         public async Task FailsWithoutRequiredUniqueCharsTests(string input, int uniqueChars)
         {
-            var manager = MockHelpers.TestUserManager<TestUser>();
-            var valid = new PasswordValidator<TestUser>();
+            var manager = MockHelpers.TestUserManager<PocoUser>();
+            var valid = new PasswordValidator<PocoUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
@@ -124,8 +124,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("this is a long password with many chars", 10)]
         public async Task SucceedsWithRequiredUniqueCharsTests(string input, int uniqueChars)
         {
-            var manager = MockHelpers.TestUserManager<TestUser>();
-            var valid = new PasswordValidator<TestUser>();
+            var manager = MockHelpers.TestUserManager<PocoUser>();
+            var valid = new PasswordValidator<PocoUser>();
             manager.Options.Password.RequireUppercase = false;
             manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
@@ -149,8 +149,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             const string lowerError = "Passwords must have at least one lowercase ('a'-'z').";
             const string digitError = "Passwords must have at least one digit ('0'-'9').";
             const string lengthError = "Passwords must be at least 6 characters.";
-            var manager = MockHelpers.TestUserManager<TestUser>();
-            var valid = new PasswordValidator<TestUser>();
+            var manager = MockHelpers.TestUserManager<PocoUser>();
+            var valid = new PasswordValidator<PocoUser>();
             var errors = new List<string>();
             if ((errorMask & Errors.Length) != Errors.None)
             {

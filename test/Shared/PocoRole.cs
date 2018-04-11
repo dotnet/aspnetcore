@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Identity.Test
     /// <summary>
     ///     Represents a Role entity
     /// </summary>
-    public class TestRole : TestRole<string>
+    public class PocoRole : PocoRole<string>
     {
         /// <summary>
         ///     Constructor
         /// </summary>
-        public TestRole()
+        public PocoRole()
         {
             Id = Guid.NewGuid().ToString();
         }
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         ///     Constructor
         /// </summary>
         /// <param name="roleName"></param>
-        public TestRole(string roleName) : this()
+        public PocoRole(string roleName) : this()
         {
             Name = roleName;
         }
@@ -33,18 +33,18 @@ namespace Microsoft.AspNetCore.Identity.Test
     ///     Represents a Role entity
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class TestRole<TKey> where TKey : IEquatable<TKey>
+    public class PocoRole<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         ///     Constructor
         /// </summary>
-        public TestRole() { }
+        public PocoRole() { }
 
         /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="roleName"></param>
-        public TestRole(string roleName) : this()
+        public PocoRole(string roleName) : this()
         {
             Name = roleName;
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <summary>
         /// Navigation property for claims in the role
         /// </summary>
-        public virtual ICollection<TestRoleClaim<TKey>> Claims { get; private set; } = new List<TestRoleClaim<TKey>>();
+        public virtual ICollection<PocoRoleClaim<TKey>> Claims { get; private set; } = new List<PocoRoleClaim<TKey>>();
 
         /// <summary>
         ///     Role name

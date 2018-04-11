@@ -53,5 +53,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 }
             }
         }
+
+        internal static void IsOK(HttpResponseMessage download)
+        {
+            Assert.Equal(HttpStatusCode.OK, download.StatusCode);
+        }
     }
 }

@@ -6,58 +6,58 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
-    public class NoopRoleStore : IRoleStore<TestRole>
+    public class NoopRoleStore : IRoleStore<PocoRole>
     {
-        public Task<IdentityResult> CreateAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> CreateAsync(PocoRole user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task<IdentityResult> UpdateAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> UpdateAsync(PocoRole user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<string> GetRoleNameAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult<string>(null);
         }
 
-        public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task SetRoleNameAsync(PocoRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(0);
         }
 
-        public Task<TestRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<PocoRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult<TestRole>(null);
+            return Task.FromResult<PocoRole>(null);
         }
 
-        public Task<TestRole> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<PocoRole> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult<TestRole>(null);
+            return Task.FromResult<PocoRole>(null);
         }
 
         public void Dispose()
         {
         }
 
-        public Task<IdentityResult> DeleteAsync(TestRole user, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IdentityResult> DeleteAsync(PocoRole user, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(IdentityResult.Success);
         }
 
-        public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<string> GetRoleIdAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult<string>(null);
         }
 
-        public Task<string> GetNormalizedRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<string> GetNormalizedRoleNameAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult<string>(null);
         }
 
-        public Task SetNormalizedRoleNameAsync(TestRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        public Task SetNormalizedRoleNameAsync(PocoRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(0);
         }

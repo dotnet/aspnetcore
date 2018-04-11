@@ -104,6 +104,15 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
                     var userId = await _userManager.GetUserIdAsync(user);
                     throw new InvalidOperationException($"Unexpected error occurred setting email for user with ID '{userId}'.");
                 }
+
+                // In our UI email and user name are one and the same, so when we update the email
+                // we need to update the user name.
+                var setUserNameResult = await _userManager.SetUserNameAsync(user, Input.Email);
+                if (!setUserNameResult.Succeeded)
+                {
+                    var userId = await _userManager.GetUserIdAsync(user);
+                    throw new InvalidOperationException($"Unexpected error occurred setting name for user with ID '{userId}'.");
+                }
             }
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);

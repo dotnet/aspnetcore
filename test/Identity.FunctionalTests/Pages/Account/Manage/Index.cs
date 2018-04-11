@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
@@ -16,6 +18,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
         private readonly IHtmlAnchorElement _externalLoginLink;
         private readonly IHtmlAnchorElement _personalDataLink;
         private readonly IHtmlFormElement _updateProfileForm;
+        private readonly IHtmlElement _emailInput;
+        private readonly IHtmlElement _userNameInput;
+        private readonly IHtmlElement _updateProfileButton;
         private readonly IHtmlElement _confirmEmailButton;
         public static readonly string Path = "/";
 
@@ -33,6 +38,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
             }
             _personalDataLink = HtmlAssert.HasLink("#personal-data", manage);
             _updateProfileForm = HtmlAssert.HasForm("#profile-form", manage);
+            _emailInput = HtmlAssert.HasElement("#Input_Email", manage);
+            _userNameInput = HtmlAssert.HasElement("#Username", manage);
+            _updateProfileButton = HtmlAssert.HasElement("#update-profile-button", manage);
             if (!Context.EmailConfirmed)
             {
                 _confirmEmailButton = HtmlAssert.HasElement("button#email-verification", manage);
@@ -67,12 +75,29 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
             return new Index(Client, manage, Context);
         }
 
+        internal async Task<Index> SendUpdateProfileAsync(string newEmail)
+        {
+            var response = await Client.SendAsync(_updateProfileForm, _updateProfileButton, new Dictionary<string, string>
+            {
+                ["Input_Email"] = newEmail
+            });
+            var goToManage = ResponseAssert.IsRedirect(response);
+            var manageResponse = await Client.GetAsync(goToManage);
+            var manage = await ResponseAssert.IsHtmlDocumentAsync(manageResponse);
+
+            return new Index(Client, manage, Context);
+        }
+
         public async Task<ChangePassword> ClickChangePasswordLinkAsync()
         {
             var goToChangePassword = await Client.GetAsync(_changePasswordLink.Href);
             var changePasswordDocument = await ResponseAssert.IsHtmlDocumentAsync(goToChangePassword);
             return new ChangePassword(Client, changePasswordDocument, Context);
         }
+
+        internal string GetEmail() => _emailInput.GetAttribute("value");
+
+        internal object GetUserName() => _userNameInput.GetAttribute("value");
 
         public async Task<SetPassword> ClickChangePasswordLinkExternalLoginAsync()
         {

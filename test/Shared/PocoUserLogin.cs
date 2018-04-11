@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Identity.Test
     /// <summary>
     ///     Entity type for a user's login (i.e. facebook, google)
     /// </summary>
-    public class TestUserLogin : TestUserLogin<string> { }
+    public class PocoUserLogin : PocoUserLogin<string> { }
 
     /// <summary>
     ///     Entity type for a user's login (i.e. facebook, google)
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class TestUserLogin<TKey> where TKey : IEquatable<TKey>
+    public class PocoUserLogin<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         ///     The login provider for the login (i.e. facebook, google)

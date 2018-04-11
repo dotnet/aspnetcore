@@ -20,25 +20,25 @@ namespace Microsoft.AspNetCore.Identity.Test
         public void AddRolesServicesAdded()
         {
             var services = new ServiceCollection();
-            services.AddIdentityCore<TestUser>(o => { })
-                .AddRoles<TestRole>()
+            services.AddIdentityCore<PocoUser>(o => { })
+                .AddRoles<PocoRole>()
                 .AddRoleStore<NoopRoleStore>();
             var sp = services.BuildServiceProvider();
-            Assert.NotNull(sp.GetRequiredService<IRoleValidator<TestRole>>());
-            Assert.IsType<NoopRoleStore>(sp.GetRequiredService<IRoleStore<TestRole>>());
-            Assert.NotNull(sp.GetRequiredService<RoleManager<TestRole>>());
+            Assert.NotNull(sp.GetRequiredService<IRoleValidator<PocoRole>>());
+            Assert.IsType<NoopRoleStore>(sp.GetRequiredService<IRoleStore<PocoRole>>());
+            Assert.NotNull(sp.GetRequiredService<RoleManager<PocoRole>>());
         }
 
         [Fact]
         public void AddRolesWithoutStoreWillError()
         {
             var services = new ServiceCollection();
-            services.AddIdentityCore<TestUser>(o => { })
-                .AddRoles<TestRole>();
+            services.AddIdentityCore<PocoUser>(o => { })
+                .AddRoles<PocoRole>();
             var sp = services.BuildServiceProvider();
-            Assert.NotNull(sp.GetRequiredService<IRoleValidator<TestRole>>());
-            Assert.Null(sp.GetService<IRoleStore<TestRole>>());
-            Assert.Throws<InvalidOperationException>(() => sp.GetService<RoleManager<TestRole>>());
+            Assert.NotNull(sp.GetRequiredService<IRoleValidator<PocoRole>>());
+            Assert.Null(sp.GetService<IRoleStore<PocoRole>>());
+            Assert.Throws<InvalidOperationException>(() => sp.GetService<RoleManager<PocoRole>>());
         }
 
 
@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser,TestRole>().AddUserStore<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IUserStore<TestUser>>() as MyUberThingy;
+            services.AddIdentity<PocoUser,PocoRole>().AddUserStore<MyUberThingy>();
+            var thingy = services.BuildServiceProvider().GetRequiredService<IUserStore<PocoUser>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -57,8 +57,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser,TestRole>().AddRoleStore<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IRoleStore<TestRole>>() as MyUberThingy;
+            services.AddIdentity<PocoUser,PocoRole>().AddRoleStore<MyUberThingy>();
+            var thingy = services.BuildServiceProvider().GetRequiredService<IRoleStore<PocoRole>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -68,12 +68,12 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection()
                 .AddLogging()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser, TestRole>()
+            services.AddIdentity<PocoUser, PocoRole>()
                 .AddClaimsPrincipalFactory<MyClaimsPrincipalFactory>()
                 .AddUserManager<MyUserManager>()
                 .AddUserStore<NoopUserStore>()
                 .AddRoleStore<NoopRoleStore>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IUserClaimsPrincipalFactory<TestUser>>() as MyClaimsPrincipalFactory;
+            var thingy = services.BuildServiceProvider().GetRequiredService<IUserClaimsPrincipalFactory<PocoUser>>() as MyClaimsPrincipalFactory;
             Assert.NotNull(thingy);
         }
 
@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser,TestRole>().AddRoleValidator<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IRoleValidator<TestRole>>() as MyUberThingy;
+            services.AddIdentity<PocoUser,PocoRole>().AddRoleValidator<MyUberThingy>();
+            var thingy = services.BuildServiceProvider().GetRequiredService<IRoleValidator<PocoRole>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -92,8 +92,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser,TestRole>().AddUserValidator<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IUserValidator<TestUser>>() as MyUberThingy;
+            services.AddIdentity<PocoUser,PocoRole>().AddUserValidator<MyUberThingy>();
+            var thingy = services.BuildServiceProvider().GetRequiredService<IUserValidator<PocoUser>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -102,8 +102,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser,TestRole>().AddPasswordValidator<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IPasswordValidator<TestUser>>() as MyUberThingy;
+            services.AddIdentity<PocoUser,PocoRole>().AddPasswordValidator<MyUberThingy>();
+            var thingy = services.BuildServiceProvider().GetRequiredService<IPasswordValidator<PocoUser>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -112,10 +112,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser, TestRole>()
+            services.AddIdentity<PocoUser, PocoRole>()
                 .AddUserStore<NoopUserStore>()
                 .AddUserManager<MyUserManager>();
-            var myUserManager = services.BuildServiceProvider().GetRequiredService(typeof(UserManager<TestUser>)) as MyUserManager;
+            var myUserManager = services.BuildServiceProvider().GetRequiredService(typeof(UserManager<PocoUser>)) as MyUserManager;
             Assert.NotNull(myUserManager);
         }
 
@@ -124,10 +124,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser, TestRole>()
+            services.AddIdentity<PocoUser, PocoRole>()
                     .AddRoleStore<NoopRoleStore>()
                     .AddRoleManager<MyRoleManager>();
-            var myRoleManager = services.BuildServiceProvider().GetRequiredService<RoleManager<TestRole>>() as MyRoleManager;
+            var myRoleManager = services.BuildServiceProvider().GetRequiredService<RoleManager<PocoRole>>() as MyRoleManager;
             Assert.NotNull(myRoleManager);
         }
 
@@ -138,13 +138,13 @@ namespace Microsoft.AspNetCore.Identity.Test
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .AddHttpContextAccessor()
                 .AddLogging();
-            services.AddIdentity<TestUser, TestRole>()
+            services.AddIdentity<PocoUser, PocoRole>()
                 .AddUserStore<NoopUserStore>()
                 .AddRoleStore<NoopRoleStore>()
                 .AddUserManager<MyUserManager>()
                 .AddClaimsPrincipalFactory<MyClaimsPrincipalFactory>()
                 .AddSignInManager<MySignInManager>();
-            var myUserManager = services.BuildServiceProvider().GetRequiredService(typeof(SignInManager<TestUser>)) as MySignInManager;
+            var myUserManager = services.BuildServiceProvider().GetRequiredService(typeof(SignInManager<PocoUser>)) as MySignInManager;
             Assert.NotNull(myUserManager);
         }
 
@@ -153,16 +153,16 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser,TestRole>();
+            services.AddIdentity<PocoUser,PocoRole>();
 
             var provider = services.BuildServiceProvider();
-            var userValidator = provider.GetRequiredService<IUserValidator<TestUser>>() as UserValidator<TestUser>;
+            var userValidator = provider.GetRequiredService<IUserValidator<PocoUser>>() as UserValidator<PocoUser>;
             Assert.NotNull(userValidator);
 
-            var pwdValidator = provider.GetRequiredService<IPasswordValidator<TestUser>>() as PasswordValidator<TestUser>;
+            var pwdValidator = provider.GetRequiredService<IPasswordValidator<PocoUser>>() as PasswordValidator<PocoUser>;
             Assert.NotNull(pwdValidator);
 
-            var hasher = provider.GetRequiredService<IPasswordHasher<TestUser>>() as PasswordHasher<TestUser>;
+            var hasher = provider.GetRequiredService<IPasswordHasher<PocoUser>>() as PasswordHasher<PocoUser>;
             Assert.NotNull(hasher);
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<TestUser,TestRole>().AddDefaultTokenProviders();
+            services.AddIdentity<PocoUser,PocoRole>().AddDefaultTokenProviders();
 
             var provider = services.BuildServiceProvider();
             var tokenProviders = provider.GetRequiredService<IOptions<IdentityOptions>>().Value.Tokens.ProviderMap.Values;
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            var builder = services.AddIdentity<TestUser, TestRole>();
+            var builder = services.AddIdentity<PocoUser, PocoRole>();
             Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<object>());
             Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<object>());
             Assert.Throws<InvalidOperationException>(() => builder.AddSignInManager<object>());
@@ -194,29 +194,29 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            var builder = services.AddIdentity<TestUser, TestRole>();
+            var builder = services.AddIdentity<PocoUser, PocoRole>();
             Assert.Throws<InvalidOperationException>(() => builder.AddTokenProvider<object>("whatevs"));
             Assert.Throws<InvalidOperationException>(() => builder.AddTokenProvider("whatevs", typeof(object)));
         }
 
-        private class MyUberThingy : IUserValidator<TestUser>, IPasswordValidator<TestUser>, IRoleValidator<TestRole>, IUserStore<TestUser>, IRoleStore<TestRole>
+        private class MyUberThingy : IUserValidator<PocoUser>, IPasswordValidator<PocoUser>, IRoleValidator<PocoRole>, IUserStore<PocoUser>, IRoleStore<PocoRole>
         {
-            public Task<IdentityResult> CreateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> DeleteAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -226,123 +226,123 @@ namespace Microsoft.AspNetCore.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetNormalizedRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetNormalizedRoleNameAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetNormalizedUserNameAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetRoleIdAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetRoleIdAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetRoleNameAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetRoleNameAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserIdAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserNameAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetNormalizedRoleNameAsync(TestRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetNormalizedRoleNameAsync(PocoRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetNormalizedUserNameAsync(TestUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetNormalizedUserNameAsync(PocoUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetRoleNameAsync(TestRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetRoleNameAsync(PocoRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetUserNameAsync(PocoUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> UpdateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(PocoRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync(RoleManager<TestRole> manager, TestRole role)
+            public Task<IdentityResult> ValidateAsync(RoleManager<PocoRole> manager, PocoRole role)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TestUser> manager, TestUser user)
+            public Task<IdentityResult> ValidateAsync(UserManager<PocoUser> manager, PocoUser user)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TestUser> manager, TestUser user, string password)
+            public Task<IdentityResult> ValidateAsync(UserManager<PocoUser> manager, PocoUser user, string password)
             {
                 throw new NotImplementedException();
             }
 
-            Task<TestRole> IRoleStore<TestRole>.FindByIdAsync(string roleId, CancellationToken cancellationToken)
+            Task<PocoRole> IRoleStore<PocoRole>.FindByIdAsync(string roleId, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            Task<TestRole> IRoleStore<TestRole>.FindByNameAsync(string roleName, CancellationToken cancellationToken)
+            Task<PocoRole> IRoleStore<PocoRole>.FindByNameAsync(string roleName, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
         }
 
-        private class MySignInManager : SignInManager<TestUser>
+        private class MySignInManager : SignInManager<PocoUser>
         {
-            public MySignInManager(UserManager<TestUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<TestUser> claimsFactory) : base(manager, context, claimsFactory, null, null, null) { }
+            public MySignInManager(UserManager<PocoUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<PocoUser> claimsFactory) : base(manager, context, claimsFactory, null, null, null) { }
         }
 
-        private class MyUserManager : UserManager<TestUser>
+        private class MyUserManager : UserManager<PocoUser>
         {
-            public MyUserManager(IUserStore<TestUser> store) : base(store, null, null, null, null, null, null, null, null) { }
+            public MyUserManager(IUserStore<PocoUser> store) : base(store, null, null, null, null, null, null, null, null) { }
         }
 
-        private class MyClaimsPrincipalFactory : UserClaimsPrincipalFactory<TestUser, TestRole>
+        private class MyClaimsPrincipalFactory : UserClaimsPrincipalFactory<PocoUser, PocoRole>
         {
-            public MyClaimsPrincipalFactory(UserManager<TestUser> userManager, RoleManager<TestRole> roleManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, roleManager, optionsAccessor)
+            public MyClaimsPrincipalFactory(UserManager<PocoUser> userManager, RoleManager<PocoRole> roleManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, roleManager, optionsAccessor)
             {
             }
         }
 
-        private class MyRoleManager : RoleManager<TestRole>
+        private class MyRoleManager : RoleManager<PocoRole>
         {
-            public MyRoleManager(IRoleStore<TestRole> store,
-                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store, null, null, null, null)
+            public MyRoleManager(IRoleStore<PocoRole> store,
+                IEnumerable<IRoleValidator<PocoRole>> roleValidators) : base(store, null, null, null, null)
             {
 
             }

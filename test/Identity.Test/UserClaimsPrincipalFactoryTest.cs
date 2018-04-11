@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CreateIdentityNullChecks()
         {
-            var userManager = MockHelpers.MockUserManager<TestUser>().Object;
-            var roleManager = MockHelpers.MockRoleManager<TestRole>().Object;
+            var userManager = MockHelpers.MockUserManager<PocoUser>().Object;
+            var roleManager = MockHelpers.MockRoleManager<PocoRole>().Object;
             var options = new Mock<IOptions<IdentityOptions>>();
             Assert.Throws<ArgumentNullException>("optionsAccessor",
-                () => new UserClaimsPrincipalFactory<TestUser, TestRole>(userManager, roleManager, options.Object));
+                () => new UserClaimsPrincipalFactory<PocoUser, PocoRole>(userManager, roleManager, options.Object));
             var identityOptions = new IdentityOptions();
             options.Setup(a => a.Value).Returns(identityOptions);
-            var factory = new UserClaimsPrincipalFactory<TestUser, TestRole>(userManager, roleManager, options.Object);
+            var factory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(userManager, roleManager, options.Object);
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await factory.CreateAsync(null));
         }
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task EnsureClaimsIdentityHasExpectedClaims(bool supportRoles, bool supportClaims, bool supportRoleClaims)
         {
             // Setup
-            var userManager = MockHelpers.MockUserManager<TestUser>();
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var user = new TestUser { UserName = "Foo" };
+            var userManager = MockHelpers.MockUserManager<PocoUser>();
+            var roleManager = MockHelpers.MockRoleManager<PocoRole>();
+            var user = new PocoUser { UserName = "Foo" };
             userManager.Setup(m => m.SupportsUserClaim).Returns(supportClaims);
             userManager.Setup(m => m.SupportsUserRole).Returns(supportRoles);
             userManager.Setup(m => m.GetUserIdAsync(user)).ReturnsAsync(user.Id);
@@ -59,8 +59,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
             userManager.Object.Options = new IdentityOptions();
 
-            var admin = new TestRole() { Name = "Admin" };
-            var local = new TestRole() { Name = "Local" };
+            var admin = new PocoRole() { Name = "Admin" };
+            var local = new PocoRole() { Name = "Local" };
             var adminClaims = new[] { new Claim("AdminClaim1", "Value1"), new Claim("AdminClaim2", "Value2") };
             var localClaims = new[] { new Claim("LocalClaim1", "Value1"), new Claim("LocalClaim2", "Value2") };
             if (supportRoleClaims)
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var options = new Mock<IOptions<IdentityOptions>>();
             var identityOptions = new IdentityOptions();
             options.Setup(a => a.Value).Returns(identityOptions);
-            var factory = new UserClaimsPrincipalFactory<TestUser, TestRole>(userManager.Object, roleManager.Object, options.Object);
+            var factory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(userManager.Object, roleManager.Object, options.Object);
 
             // Act
             var principal = await factory.CreateAsync(user);

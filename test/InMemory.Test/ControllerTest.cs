@@ -35,20 +35,20 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
                 .AddLogging()
                 .AddSingleton(contextAccessor.Object);
 
-            services.AddIdentity<TestUser, TestRole>();
-            services.AddSingleton<IUserStore<TestUser>, InMemoryStore<TestUser, TestRole>>();
-            services.AddSingleton<IRoleStore<TestRole>, InMemoryStore<TestUser, TestRole>>();
+            services.AddIdentity<PocoUser, PocoRole>();
+            services.AddSingleton<IUserStore<PocoUser>, InMemoryStore<PocoUser, PocoRole>>();
+            services.AddSingleton<IRoleStore<PocoRole>, InMemoryStore<PocoUser, PocoRole>>();
             
             var app = new ApplicationBuilder(services.BuildServiceProvider());
 
             // Act
-            var user = new TestUser
+            var user = new PocoUser
             {
                 UserName = "Yolo"
             };
             const string password = "Yol0Sw@g!";
-            var userManager = app.ApplicationServices.GetRequiredService<UserManager<TestUser>>();
-            var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<TestUser>>();
+            var userManager = app.ApplicationServices.GetRequiredService<UserManager<PocoUser>>();
+            var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<PocoUser>>();
 
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
 
@@ -86,19 +86,19 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .AddLogging()
                 .AddSingleton(contextAccessor.Object);
-            services.AddIdentity<TestUser, TestRole>();
-            services.AddSingleton<IUserStore<TestUser>, InMemoryStore<TestUser, TestRole>>();
-            services.AddSingleton<IRoleStore<TestRole>, InMemoryStore<TestUser, TestRole>>();
+            services.AddIdentity<PocoUser, PocoRole>();
+            services.AddSingleton<IUserStore<PocoUser>, InMemoryStore<PocoUser, PocoRole>>();
+            services.AddSingleton<IRoleStore<PocoRole>, InMemoryStore<PocoUser, PocoRole>>();
 
             var app = new ApplicationBuilder(services.BuildServiceProvider());
 
             // Act
-            var user = new TestUser
+            var user = new PocoUser
             {
                 UserName = "Yolo"
             };
-            var userManager = app.ApplicationServices.GetRequiredService<UserManager<TestUser>>();
-            var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<TestUser>>();
+            var userManager = app.ApplicationServices.GetRequiredService<UserManager<PocoUser>>();
+            var signInManager = app.ApplicationServices.GetRequiredService<SignInManager<PocoUser>>();
 
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await userManager.AddLoginAsync(user, new UserLoginInfo(authScheme, externalId, "whatever")));

@@ -273,8 +273,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                     {
                         var req = context.Request;
                         var res = context.Response;
-                        var userManager = context.RequestServices.GetRequiredService<UserManager<TestUser>>();
-                        var signInManager = context.RequestServices.GetRequiredService<SignInManager<TestUser>>();
+                        var userManager = context.RequestServices.GetRequiredService<UserManager<PocoUser>>();
+                        var signInManager = context.RequestServices.GetRequiredService<SignInManager<PocoUser>>();
                         PathString remainder;
                         if (req.Path == new PathString("/normal"))
                         {
@@ -282,12 +282,12 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                         }
                         else if (req.Path == new PathString("/createMe"))
                         {
-                            var result = await userManager.CreateAsync(new TestUser("hao"), TestPassword);
+                            var result = await userManager.CreateAsync(new PocoUser("hao"), TestPassword);
                             res.StatusCode = result.Succeeded ? 200 : 500;
                         }
                         else if (req.Path == new PathString("/createSimple"))
                         {
-                            var result = await userManager.CreateAsync(new TestUser("simple"), "aaaaaa");
+                            var result = await userManager.CreateAsync(new PocoUser("simple"), "aaaaaa");
                             res.StatusCode = result.Succeeded ? 200 : 500;
                         }
                         else if (req.Path == new PathString("/signoutEverywhere"))
@@ -340,9 +340,9 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddIdentity<TestUser, TestRole>().AddDefaultTokenProviders();
-                    services.AddSingleton<IUserStore<TestUser>, InMemoryStore<TestUser, TestRole>>();
-                    services.AddSingleton<IRoleStore<TestRole>, InMemoryStore<TestUser, TestRole>>();
+                    services.AddIdentity<PocoUser, PocoRole>().AddDefaultTokenProviders();
+                    services.AddSingleton<IUserStore<PocoUser>, InMemoryStore<PocoUser, PocoRole>>();
+                    services.AddSingleton<IRoleStore<PocoRole>, InMemoryStore<PocoUser, PocoRole>>();
                     configureServices?.Invoke(services);
                 });
             var server = new TestServer(builder);

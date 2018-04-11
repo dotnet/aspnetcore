@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         IUserRoleStore<TUser>,
         IQueryableRoleStore<TRole>, 
         IRoleClaimStore<TRole>
-        where TRole : TestRole
-        where TUser : TestUser
+        where TRole : PocoRole
+        where TUser : PocoUser
     {
         // RoleId == roleName for InMemory
         public Task AddToRoleAsync(TUser user, string role, CancellationToken cancellationToken = default(CancellationToken))
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             var roleEntity = _roles.Values.SingleOrDefault(r => r.NormalizedName == role);
             if (roleEntity != null)
             {
-                user.Roles.Add(new TestUserRole { RoleId = roleEntity.Id, UserId = user.Id });
+                user.Roles.Add(new PocoUserRole { RoleId = roleEntity.Id, UserId = user.Id });
             }
             return Task.FromResult(0);
         }
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
 
         public Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
         {
-            role.Claims.Add(new TestRoleClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, RoleId = role.Id });
+            role.Claims.Add(new PocoRoleClaim<string> { ClaimType = claim.Type, ClaimValue = claim.Value, RoleId = role.Id });
             return Task.FromResult(0);
         }
 

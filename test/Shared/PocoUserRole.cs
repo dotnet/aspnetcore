@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Identity.Test
     /// <summary>
     ///     EntityType that represents a user belonging to a role
     /// </summary>
-    public class TestUserRole : TestUserRole<string> { }
+    public class PocoUserRole : PocoUserRole<string> { }
 
     /// <summary>
     ///     EntityType that represents a user belonging to a role
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class TestUserRole<TKey> where TKey : IEquatable<TKey>
+    public class PocoUserRole<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         ///     UserId for the user that is in the role

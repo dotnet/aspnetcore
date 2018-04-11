@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Identity.Test
     /// <summary>
     /// Test user class
     /// </summary>
-    public class TestUser : TestUser<string>
+    public class PocoUser : PocoUser<string>
     {
         /// <summary>
         /// Ctor
         /// </summary>
-        public TestUser()
+        public PocoUser()
         {
             Id = Guid.NewGuid().ToString();
         }
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Ctor
         /// </summary>
         /// <param name="userName"></param>
-        public TestUser(string userName) : this()
+        public PocoUser(string userName) : this()
         {
             UserName = userName;
         }
@@ -33,18 +33,18 @@ namespace Microsoft.AspNetCore.Identity.Test
     /// Test user
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class TestUser<TKey> where TKey : IEquatable<TKey>
+    public class PocoUser<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         /// ctor
         /// </summary>
-        public TestUser() { }
+        public PocoUser() { }
 
         /// <summary>
         /// ctor
         /// </summary>
         /// <param name="userName"></param>
-        public TestUser(string userName) : this()
+        public PocoUser(string userName) : this()
         {
             UserName = userName;
         }
@@ -52,11 +52,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <summary>
         /// Id
         /// </summary>
+        [PersonalData]
         public virtual TKey Id { get; set; }
 
         /// <summary>
         /// Name
         /// </summary>
+        [PersonalData]
         public virtual string UserName { get; set; }
 
         /// <summary>
@@ -67,6 +69,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <summary>
         ///     Email
         /// </summary>
+        [PersonalData]
         public virtual string Email { get; set; }
 
         /// <summary>
@@ -77,6 +80,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <summary>
         ///     True if the email is confirmed, default is false
         /// </summary>
+        [PersonalData]
         public virtual bool EmailConfirmed { get; set; }
 
         /// <summary>
@@ -97,16 +101,19 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <summary>
         ///     PhoneNumber for the user
         /// </summary>
+        [PersonalData]
         public virtual string PhoneNumber { get; set; }
 
         /// <summary>
         ///     True if the phone number is confirmed, default is false
         /// </summary>
+        [PersonalData]
         public virtual bool PhoneNumberConfirmed { get; set; }
 
         /// <summary>
         ///     Is two factor enabled for the user
         /// </summary>
+        [PersonalData]
         public virtual bool TwoFactorEnabled { get; set; }
 
         /// <summary>
@@ -127,18 +134,18 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <summary>
         /// Navigation property
         /// </summary>
-        public virtual ICollection<TestUserRole<TKey>> Roles { get; private set; } = new List<TestUserRole<TKey>>();
+        public virtual ICollection<PocoUserRole<TKey>> Roles { get; private set; } = new List<PocoUserRole<TKey>>();
         /// <summary>
         /// Navigation property
         /// </summary>
-        public virtual ICollection<TestUserClaim<TKey>> Claims { get; private set; } = new List<TestUserClaim<TKey>>();
+        public virtual ICollection<PocoUserClaim<TKey>> Claims { get; private set; } = new List<PocoUserClaim<TKey>>();
         /// <summary>
         /// Navigation property
         /// </summary>
-        public virtual ICollection<TestUserLogin<TKey>> Logins { get; private set; } = new List<TestUserLogin<TKey>>();
+        public virtual ICollection<PocoUserLogin<TKey>> Logins { get; private set; } = new List<PocoUserLogin<TKey>>();
         /// <summary>
         /// Navigation property
         /// </summary>
-        public virtual ICollection<TestUserToken<TKey>> Tokens { get; private set; } = new List<TestUserToken<TKey>>();
+        public virtual ICollection<PocoUserToken<TKey>> Tokens { get; private set; } = new List<PocoUserToken<TKey>>();
     }
 }

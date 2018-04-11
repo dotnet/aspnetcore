@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
     public static class FunctionalTestsServiceCollectionExtensions
     {
-        public static IServiceCollection SetupTestDatabase(this IServiceCollection services, string databaseName) =>
-            services.AddDbContext<IdentityDbContext>(options =>
+        public static IServiceCollection SetupTestDatabase<TContext>(this IServiceCollection services, string databaseName) where TContext : DbContext =>
+            services.AddDbContext<TContext>(options =>
                 options.UseInMemoryDatabase(databaseName, memoryOptions => { }));
 
         public static IServiceCollection SetupTestThirdPartyLogin(this IServiceCollection services) =>

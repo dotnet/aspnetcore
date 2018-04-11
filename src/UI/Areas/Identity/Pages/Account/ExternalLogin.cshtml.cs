@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -44,18 +45,20 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
     {
         private readonly SignInManager<TUser> _signInManager;
         private readonly UserManager<TUser> _userManager;
-        private readonly IUserFactory<TUser> _userFactory;
+        private readonly IUserStore<TUser> _userStore;
+        private readonly IUserEmailStore<TUser> _emailStore;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
             SignInManager<TUser> signInManager,
             UserManager<TUser> userManager,
-            IUserFactory<TUser> userFactory,
+            IUserStore<TUser> userStore,
             ILogger<ExternalLoginModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
-            _userFactory = userFactory;
+            _userStore = userStore;
+            _emailStore = GetEmailStore();
             _logger = logger;
         }
 
@@ -127,7 +130,11 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 
             if (ModelState.IsValid)
             {
-                var user = _userFactory.CreateUser(email: Input.Email, userName: Input.Email);
+                var user = CreateUser();
+
+                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -148,6 +155,29 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
             LoginProvider = info.LoginProvider;
             ReturnUrl = returnUrl;
             return Page();
+        }
+
+        private TUser CreateUser()
+        {
+            try
+            {
+                return Activator.CreateInstance<TUser>();
+            }
+            catch
+            {
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(TUser)}'. " +
+                    $"Ensure that '{nameof(TUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                    $"override the external login page in /Areas/Identity/Pages/Account/ExternalLogin.cshtml");
+            }
+        }
+
+        private IUserEmailStore<TUser> GetEmailStore()
+        {
+            if (!_userManager.SupportsUserEmail)
+            {
+                throw new NotSupportedException("The default UI requires a user store with email support.");
+            }
+            return (IUserEmailStore<TUser>)_userStore;
         }
     }
 }

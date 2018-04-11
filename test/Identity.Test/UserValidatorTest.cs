@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            var validator = new UserValidator<TestUser>();
+            var validator = new UserValidator<PocoUser>();
 
             // Act
             // Assert
@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            var validator = new UserValidator<TestUser>();
-            var user = new TestUser {UserName = input};
+            var validator = new UserValidator<PocoUser>();
+            var user = new PocoUser {UserName = input};
 
             // Act
             var result = await validator.ValidateAsync(manager, user);
@@ -51,8 +51,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            var validator = new UserValidator<TestUser>();
-            var user = new TestUser {UserName = userName};
+            var validator = new UserValidator<PocoUser>();
+            var user = new PocoUser {UserName = userName};
 
             // Act
             var result = await validator.ValidateAsync(manager, user);
@@ -79,8 +79,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
             manager.Options.User.AllowedUserNameCharacters = null;
-            var validator = new UserValidator<TestUser>();
-            var user = new TestUser {UserName = userName};
+            var validator = new UserValidator<PocoUser>();
+            var user = new PocoUser {UserName = userName};
 
             // Act
             var result = await validator.ValidateAsync(manager, user);

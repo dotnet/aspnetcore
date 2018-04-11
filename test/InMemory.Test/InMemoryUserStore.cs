@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         IUserAuthenticationTokenStore<TUser>,
         IUserAuthenticatorKeyStore<TUser>,
         IUserTwoFactorRecoveryCodeStore<TUser>
-        where TUser : TestUser
+        where TUser : PocoUser
     {
         private readonly Dictionary<string, TUser> _logins = new Dictionary<string, TUser>();
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         {
             foreach (var claim in claims)
             {
-                user.Claims.Add(new TestUserClaim { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
+                user.Claims.Add(new PocoUserClaim { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = user.Id });
             }
             return Task.FromResult(0);
         }
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         public virtual Task AddLoginAsync(TUser user, UserLoginInfo login,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            user.Logins.Add(new TestUserLogin
+            user.Logins.Add(new PocoUserLogin
             {
                 UserId = user.Id,
                 ProviderKey = login.ProviderKey,
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             }
             else
             {
-                user.Tokens.Add(new TestUserToken
+                user.Tokens.Add(new PocoUserToken
                 {
                     UserId = user.Id,
                     LoginProvider = loginProvider,

@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             var config = new ConfigurationBuilder().Build();
             var services = new ServiceCollection()
                     .AddSingleton<IConfiguration>(config)
-                    .AddTransient<IUserStore<TestUser>, NoopUserStore>();
-            services.AddIdentity<TestUser, TestRole>();
+                    .AddTransient<IUserStore<PocoUser>, NoopUserStore>();
+            services.AddIdentity<PocoUser, PocoRole>();
             services.AddHttpContextAccessor();
             services.AddLogging();
-            var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
+            var manager = services.BuildServiceProvider().GetRequiredService<UserManager<PocoUser>>();
             Assert.NotNull(manager.PasswordHasher);
             Assert.NotNull(manager.Options);
         }
@@ -38,30 +38,30 @@ namespace Microsoft.AspNetCore.Identity.Test
             var config = new ConfigurationBuilder().Build();
             var services = new ServiceCollection()
                     .AddSingleton<IConfiguration>(config)
-                    .AddTransient<IUserStore<TestUser>, NoopUserStore>()
+                    .AddTransient<IUserStore<PocoUser>, NoopUserStore>()
                     .AddHttpContextAccessor();
 
             services.AddLogging();
 
-            services.AddIdentity<TestUser, TestRole>()
+            services.AddIdentity<PocoUser, PocoRole>()
                 .AddUserManager<CustomUserManager>()
                 .AddRoleManager<CustomRoleManager>();
             var provider = services.BuildServiceProvider();
-            Assert.Same(provider.GetRequiredService<UserManager<TestUser>>(),
+            Assert.Same(provider.GetRequiredService<UserManager<PocoUser>>(),
                 provider.GetRequiredService<CustomUserManager>());
-            Assert.Same(provider.GetRequiredService<RoleManager<TestRole>>(),
+            Assert.Same(provider.GetRequiredService<RoleManager<PocoRole>>(),
                 provider.GetRequiredService<CustomRoleManager>());
         }
 
-        public class CustomUserManager : UserManager<TestUser>
+        public class CustomUserManager : UserManager<PocoUser>
         {
-            public CustomUserManager() : base(new Mock<IUserStore<TestUser>>().Object, null, null, null, null, null, null, null, null)
+            public CustomUserManager() : base(new Mock<IUserStore<PocoUser>>().Object, null, null, null, null, null, null, null, null)
             { }
         }
 
-        public class CustomRoleManager : RoleManager<TestRole>
+        public class CustomRoleManager : RoleManager<PocoRole>
         {
-            public CustomRoleManager() : base(new Mock<IRoleStore<TestRole>>().Object, null, null, null, null)
+            public CustomRoleManager() : base(new Mock<IRoleStore<PocoRole>>().Object, null, null, null, null)
             { }
         }
 
@@ -69,12 +69,12 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CreateCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
             store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.CreateAsync(user);
@@ -88,14 +88,14 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CreateCallsUpdateEmailStore()
         {
             // Setup
-            var store = new Mock<IUserEmailStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo", Email = "Foo@foo.com" };
+            var store = new Mock<IUserEmailStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo", Email = "Foo@foo.com" };
             store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
             store.Setup(s => s.GetEmailAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.Email)).Verifiable();
             store.Setup(s => s.SetNormalizedEmailAsync(user, user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.CreateAsync(user);
@@ -109,8 +109,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task DeleteCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
 
@@ -126,8 +126,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task UpdateCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
             store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
@@ -145,8 +145,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task UpdateWillUpdateNormalizedEmail()
         {
             // Setup
-            var store = new Mock<IUserEmailStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo", Email = "email" };
+            var store = new Mock<IUserEmailStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo", Email = "email" };
             store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.UserName)).Verifiable();
             store.Setup(s => s.GetEmailAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.Email)).Verifiable();
             store.Setup(s => s.SetNormalizedUserNameAsync(user, user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
@@ -166,8 +166,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task SetUserNameCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser();
+            var store = new Mock<IUserStore<PocoUser>>();
+            var user = new PocoUser();
             store.Setup(s => s.SetUserNameAsync(user, "foo", CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             store.Setup(s => s.GetUserNameAsync(user, CancellationToken.None)).Returns(Task.FromResult("foo")).Verifiable();
             store.Setup(s => s.SetNormalizedUserNameAsync(user, "FOO", CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
@@ -186,10 +186,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task FindByIdCallsStore()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             store.Setup(s => s.FindByIdAsync(user.Id, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.FindByIdAsync(user.Id);
@@ -203,10 +203,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task FindByNameCallsStoreWithNormalizedName()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             store.Setup(s => s.FindByNameAsync(user.UserName.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.FindByNameAsync(user.UserName);
@@ -220,8 +220,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CanFindByNameCallsStoreWithoutNormalizedName()
         {
             // Setup
-            var store = new Mock<IUserStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             store.Setup(s => s.FindByNameAsync(user.UserName, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
             userManager.KeyNormalizer = null;
@@ -238,8 +238,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task FindByEmailCallsStoreWithNormalizedEmail()
         {
             // Setup
-            var store = new Mock<IUserEmailStore<TestUser>>();
-            var user = new TestUser { Email = "Foo" };
+            var store = new Mock<IUserEmailStore<PocoUser>>();
+            var user = new PocoUser { Email = "Foo" };
             store.Setup(s => s.FindByEmailAsync(user.Email.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
 
@@ -255,8 +255,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CanFindByEmailCallsStoreWithoutNormalizedEmail()
         {
             // Setup
-            var store = new Mock<IUserEmailStore<TestUser>>();
-            var user = new TestUser { Email = "Foo" };
+            var store = new Mock<IUserEmailStore<PocoUser>>();
+            var user = new PocoUser { Email = "Foo" };
             store.Setup(s => s.FindByEmailAsync(user.Email, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
             var userManager = MockHelpers.TestUserManager(store.Object);
             userManager.KeyNormalizer = null;
@@ -273,8 +273,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task AddToRolesCallsStore()
         {
             // Setup
-            var store = new Mock<IUserRoleStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserRoleStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var roles = new string[] { "A", "B", "C", "C" };
             store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             store.Setup(s => s.IsInRoleAsync(user, "C", CancellationToken.None))
                 .Returns(Task.FromResult(false))
                 .Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.AddToRolesAsync(user, roles);
@@ -311,8 +311,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task AddToRolesFailsIfUserInRole()
         {
             // Setup
-            var store = new Mock<IUserRoleStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserRoleStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var roles = new[] { "A", "B", "C" };
             store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
@@ -334,8 +334,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task RemoveFromRolesCallsStore()
         {
             // Setup
-            var store = new Mock<IUserRoleStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserRoleStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var roles = new[] { "A", "B", "C" };
             store.Setup(s => s.RemoveFromRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             store.Setup(s => s.IsInRoleAsync(user, "C", CancellationToken.None))
                 .Returns(Task.FromResult(true))
                 .Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.RemoveFromRolesAsync(user, roles);
@@ -370,8 +370,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task RemoveFromRolesFailsIfNotInRole()
         {
             // Setup
-            var store = new Mock<IUserRoleStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserRoleStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var roles = new string[] { "A", "B", "C" };
             store.Setup(s => s.RemoveFromRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             store.Setup(s => s.IsInRoleAsync(user, "B", CancellationToken.None))
                 .Returns(Task.FromResult(false))
                 .Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.RemoveFromRolesAsync(user, roles);
@@ -396,8 +396,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task AddClaimsCallsStore()
         {
             // Setup
-            var store = new Mock<IUserClaimStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserClaimStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var claims = new Claim[] { new Claim("1", "1"), new Claim("2", "2"), new Claim("3", "3") };
             store.Setup(s => s.AddClaimsAsync(user, claims, CancellationToken.None))
                 .Returns(Task.FromResult(0))
@@ -417,8 +417,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task AddClaimCallsStore()
         {
             // Setup
-            var store = new Mock<IUserClaimStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserClaimStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var claim = new Claim("1", "1");
             store.Setup(s => s.AddClaimsAsync(user, It.IsAny<IEnumerable<Claim>>(), CancellationToken.None))
                 .Returns(Task.FromResult(0))
@@ -438,8 +438,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task UpdateClaimCallsStore()
         {
             // Setup
-            var store = new Mock<IUserClaimStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserClaimStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var claim = new Claim("1", "1");
             var newClaim = new Claim("1", "2");
             store.Setup(s => s.ReplaceClaimAsync(user, It.IsAny<Claim>(), It.IsAny<Claim>(), CancellationToken.None))
@@ -460,9 +460,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CheckPasswordWillRehashPasswordWhenNeeded()
         {
             // Setup
-            var store = new Mock<IUserPasswordStore<TestUser>>();
-            var hasher = new Mock<IPasswordHasher<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserPasswordStore<PocoUser>>();
+            var hasher = new Mock<IPasswordHasher<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var pwd = "password";
             var hashed = "hashed";
             var rehashed = "rehashed";
@@ -471,7 +471,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                 .ReturnsAsync(hashed)
                 .Verifiable();
             store.Setup(s => s.SetPasswordHashAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
-            store.Setup(x => x.UpdateAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(IdentityResult.Success));
+            store.Setup(x => x.UpdateAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(IdentityResult.Success));
 
             hasher.Setup(s => s.VerifyHashedPassword(user, hashed, pwd)).Returns(PasswordVerificationResult.SuccessRehashNeeded).Verifiable();
             hasher.Setup(s => s.HashPassword(user, pwd)).Returns(rehashed).Verifiable();
@@ -491,9 +491,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CreateFailsWithNullSecurityStamp()
         {
             // Setup
-            var store = new Mock<IUserSecurityStampStore<TestUser>>();
+            var store = new Mock<IUserSecurityStampStore<PocoUser>>();
             var manager = MockHelpers.TestUserManager(store.Object);
-            var user = new TestUser { UserName = "nulldude" };
+            var user = new PocoUser { UserName = "nulldude" };
             store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(default(string)).Verifiable();
 
             // Act
@@ -508,9 +508,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task UpdateFailsWithNullSecurityStamp()
         {
             // Setup
-            var store = new Mock<IUserSecurityStampStore<TestUser>>();
+            var store = new Mock<IUserSecurityStampStore<PocoUser>>();
             var manager = MockHelpers.TestUserManager(store.Object);
-            var user = new TestUser { UserName = "nulldude" };
+            var user = new PocoUser { UserName = "nulldude" };
             store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(default(string)).Verifiable();
 
             // Act
@@ -527,8 +527,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task RemoveClaimsCallsStore()
         {
             // Setup
-            var store = new Mock<IUserClaimStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserClaimStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var claims = new Claim[] { new Claim("1", "1"), new Claim("2", "2"), new Claim("3", "3") };
             store.Setup(s => s.RemoveClaimsAsync(user, claims, CancellationToken.None))
                 .Returns(Task.FromResult(0))
@@ -548,14 +548,14 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task RemoveClaimCallsStore()
         {
             // Setup
-            var store = new Mock<IUserClaimStore<TestUser>>();
-            var user = new TestUser { UserName = "Foo" };
+            var store = new Mock<IUserClaimStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
             var claim = new Claim("1", "1");
             store.Setup(s => s.RemoveClaimsAsync(user, It.IsAny<IEnumerable<Claim>>(), CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
             store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
             // Act
             var result = await userManager.RemoveClaimAsync(user, claim);
@@ -606,7 +606,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task TokenMethodsThrowWithNoTokenProvider()
         {
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            var user = new TestUser();
+            var user = new PocoUser();
             await Assert.ThrowsAsync<NotSupportedException>(
                 async () => await manager.GenerateUserTokenAsync(user, "bogus", null));
             await Assert.ThrowsAsync<NotSupportedException>(
@@ -629,16 +629,16 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
         {
-            var store = new Mock<IUserStore<TestUser>>();
-            store.Setup(x => x.GetUserIdAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(Guid.NewGuid().ToString()));
+            var store = new Mock<IUserStore<PocoUser>>();
+            store.Setup(x => x.GetUserIdAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(Guid.NewGuid().ToString()));
             var manager = MockHelpers.TestUserManager(store.Object);
             Assert.False(manager.SupportsUserSecurityStamp);
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStampAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.VerifyChangePhoneNumberTokenAsync(new TestUser(), "1", "111-111-1111"));
+                    () => manager.VerifyChangePhoneNumberTokenAsync(new PocoUser(), "1", "111-111-1111"));
             await Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.GenerateChangePhoneNumberTokenAsync(new TestUser(), "111-111-1111"));
+                    () => manager.GenerateChangePhoneNumberTokenAsync(new PocoUser(), "111-111-1111"));
         }
 
         [Fact]
@@ -663,19 +663,19 @@ namespace Microsoft.AspNetCore.Identity.Test
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaimsAsync(null));
         }
 
-        private class ATokenProvider : IUserTwoFactorTokenProvider<TestUser>
+        private class ATokenProvider : IUserTwoFactorTokenProvider<PocoUser>
         {
-            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user)
+            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<PocoUser> manager, PocoUser user)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user)
+            public Task<string> GenerateAsync(string purpose, UserManager<PocoUser> manager, PocoUser user)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TestUser> manager, TestUser user)
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<PocoUser> manager, PocoUser user)
             {
                 throw new NotImplementedException();
             }
@@ -690,12 +690,12 @@ namespace Microsoft.AspNetCore.Identity.Test
                     .AddSingleton<IConfiguration>(config)
                     .AddLogging();
 
-            services.AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add("A", new TokenProviderDescriptor(typeof(ATokenProvider))
+            services.AddIdentity<PocoUser, PocoRole>(o => o.Tokens.ProviderMap.Add("A", new TokenProviderDescriptor(typeof(ATokenProvider))
             {
                 ProviderInstance = provider
             })).AddUserStore<NoopUserStore>();
-            var manager = services.BuildServiceProvider().GetService<UserManager<TestUser>>();
-            Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new TestUser(), "A", "purpose"));
+            var manager = services.BuildServiceProvider().GetService<UserManager<PocoUser>>();
+            Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new PocoUser(), "A", "purpose"));
         }
 
         [Fact]
@@ -703,9 +703,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                     .AddLogging();
-            services.AddIdentity<TestUser, TestRole>(o => o.Stores.ProtectPersonalData = true)
+            services.AddIdentity<PocoUser, PocoRole>(o => o.Stores.ProtectPersonalData = true)
                 .AddUserStore<NoopUserStore>();
-            var e = Assert.Throws<InvalidOperationException>(() => services.BuildServiceProvider().GetService<UserManager<TestUser>>());
+            var e = Assert.Throws<InvalidOperationException>(() => services.BuildServiceProvider().GetService<UserManager<PocoUser>>());
             Assert.Contains("Store does not implement IProtectedUserStore", e.Message);
         }
 
@@ -714,20 +714,20 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                     .AddLogging();
-            services.AddIdentity<TestUser, TestRole>(o => o.Stores.ProtectPersonalData = true)
+            services.AddIdentity<PocoUser, PocoRole>(o => o.Stores.ProtectPersonalData = true)
                 .AddUserStore<ProtectedStore>();
-            var e = Assert.Throws<InvalidOperationException>(() => services.BuildServiceProvider().GetService<UserManager<TestUser>>());
+            var e = Assert.Throws<InvalidOperationException>(() => services.BuildServiceProvider().GetService<UserManager<PocoUser>>());
             Assert.Contains("No IPersonalDataProtector service was registered", e.Message);
         }
 
-        private class ProtectedStore : IProtectedUserStore<TestUser>
+        private class ProtectedStore : IProtectedUserStore<PocoUser>
         {
-            public Task<IdentityResult> CreateAsync(TestUser user, CancellationToken cancellationToken)
+            public Task<IdentityResult> CreateAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> DeleteAsync(TestUser user, CancellationToken cancellationToken)
+            public Task<IdentityResult> DeleteAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
@@ -737,42 +737,42 @@ namespace Microsoft.AspNetCore.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+            public Task<PocoUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+            public Task<PocoUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken)
+            public Task<string> GetNormalizedUserNameAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken)
+            public Task<string> GetUserIdAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken)
+            public Task<string> GetUserNameAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetNormalizedUserNameAsync(TestUser user, string normalizedName, CancellationToken cancellationToken)
+            public Task SetNormalizedUserNameAsync(PocoUser user, string normalizedName, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken)
+            public Task SetUserNameAsync(PocoUser user, string userName, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> UpdateAsync(TestUser user, CancellationToken cancellationToken)
+            public Task<IdentityResult> UpdateAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
@@ -787,12 +787,12 @@ namespace Microsoft.AspNetCore.Identity.Test
                     .AddSingleton<IConfiguration>(config)
                     .AddLogging();
 
-            services.AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add(TokenOptions.DefaultProvider, new TokenProviderDescriptor(typeof(ATokenProvider))
+            services.AddIdentity<PocoUser, PocoRole>(o => o.Tokens.ProviderMap.Add(TokenOptions.DefaultProvider, new TokenProviderDescriptor(typeof(ATokenProvider))
                 {
                     ProviderInstance = provider
                 })).AddUserStore<NoopUserStore>().AddDefaultTokenProviders();
-            var manager = services.BuildServiceProvider().GetService<UserManager<TestUser>>();
-            Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new TestUser(), TokenOptions.DefaultProvider, "purpose"));
+            var manager = services.BuildServiceProvider().GetService<UserManager<PocoUser>>();
+            Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new PocoUser(), TokenOptions.DefaultProvider, "purpose"));
         }
 
         [Fact]
@@ -882,16 +882,16 @@ namespace Microsoft.AspNetCore.Identity.Test
             // TODO: Can switch to Mock eventually
             var manager = MockHelpers.TestUserManager(new EmptyStore());
             manager.PasswordValidators.Clear();
-            manager.PasswordValidators.Add(new BadPasswordValidator<TestUser>());
-            IdentityResultAssert.IsFailure(await manager.CreateAsync(new TestUser(), "password"),
-                BadPasswordValidator<TestUser>.ErrorMessage);
+            manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>());
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(new PocoUser(), "password"),
+                BadPasswordValidator<PocoUser>.ErrorMessage);
         }
 
         [Fact]
         public async Task ResetTokenCallNoopForTokenValueZero()
         {
-            var user = new TestUser() { UserName = Guid.NewGuid().ToString() };
-            var store = new Mock<IUserLockoutStore<TestUser>>();
+            var user = new PocoUser() { UserName = Guid.NewGuid().ToString() };
+            var store = new Mock<IUserLockoutStore<PocoUser>>();
             store.Setup(x => x.ResetAccessFailedCountAsync(user, It.IsAny<CancellationToken>())).Returns(() =>
                {
                    throw new Exception();
@@ -905,7 +905,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task ManagerPublicNullChecks()
         {
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null, null, null, null, null));
+                () => new UserManager<PocoUser>(null, null, null, null, null, null, null, null, null));
 
             var manager = MockHelpers.TestUserManager(new NotImplementedStore());
 
@@ -913,7 +913,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.CreateAsync(null, null));
             await
                 Assert.ThrowsAsync<ArgumentNullException>("password",
-                    async () => await manager.CreateAsync(new TestUser(), null));
+                    async () => await manager.CreateAsync(new PocoUser(), null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.UpdateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.DeleteAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.AddClaimAsync(null, null));
@@ -927,8 +927,8 @@ namespace Microsoft.AspNetCore.Identity.Test
                 async () => await manager.RemoveLoginAsync(null, "", null));
             await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmailAsync(null));
             Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTokenProvider("whatever", null));
-            await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.AddToRolesAsync(new TestUser(), null));
-            await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new TestUser(), null));
+            await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.AddToRolesAsync(new PocoUser(), null));
+            await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new PocoUser(), null));
         }
 
         [Fact]
@@ -1082,392 +1082,392 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         private class EmptyStore :
-            IUserPasswordStore<TestUser>,
-            IUserClaimStore<TestUser>,
-            IUserLoginStore<TestUser>,
-            IUserEmailStore<TestUser>,
-            IUserPhoneNumberStore<TestUser>,
-            IUserLockoutStore<TestUser>,
-            IUserTwoFactorStore<TestUser>,
-            IUserRoleStore<TestUser>,
-            IUserSecurityStampStore<TestUser>
+            IUserPasswordStore<PocoUser>,
+            IUserClaimStore<PocoUser>,
+            IUserLoginStore<PocoUser>,
+            IUserEmailStore<PocoUser>,
+            IUserPhoneNumberStore<PocoUser>,
+            IUserLockoutStore<PocoUser>,
+            IUserTwoFactorStore<PocoUser>,
+            IUserRoleStore<PocoUser>,
+            IUserSecurityStampStore<PocoUser>
         {
-            public Task<IList<Claim>> GetClaimsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<Claim>> GetClaimsAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<IList<Claim>>(new List<Claim>());
             }
 
-            public Task AddClaimsAsync(TestUser user, IEnumerable<Claim> claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddClaimsAsync(PocoUser user, IEnumerable<Claim> claim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task ReplaceClaimAsync(TestUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task ReplaceClaimAsync(PocoUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task RemoveClaimsAsync(TestUser user, IEnumerable<Claim> claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveClaimsAsync(PocoUser user, IEnumerable<Claim> claim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task SetEmailAsync(TestUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailAsync(PocoUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetEmailAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("");
             }
 
-            public Task<bool> GetEmailConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetEmailConfirmedAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetEmailConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailConfirmedAsync(PocoUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<TestUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult<TestUser>(null);
+                return Task.FromResult<PocoUser>(null);
             }
 
-            public Task<DateTimeOffset?> GetLockoutEndDateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<DateTimeOffset?> GetLockoutEndDateAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<DateTimeOffset?>(DateTimeOffset.MinValue);
             }
 
-            public Task SetLockoutEndDateAsync(TestUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEndDateAsync(PocoUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<int> IncrementAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> IncrementAccessFailedCountAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task ResetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task ResetAccessFailedCountAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<int> GetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> GetAccessFailedCountAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> GetLockoutEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetLockoutEnabledAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetLockoutEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEnabledAsync(PocoUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task AddLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddLoginAsync(PocoUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task RemoveLoginAsync(TestUser user, string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveLoginAsync(PocoUser user, string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<IList<UserLoginInfo>> GetLoginsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<UserLoginInfo>> GetLoginsAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<IList<UserLoginInfo>>(new List<UserLoginInfo>());
             }
 
-            public Task<TestUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult<TestUser>(null);
+                return Task.FromResult<PocoUser>(null);
             }
 
             public void Dispose()
             {
             }
 
-            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetUserNameAsync(PocoUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<IdentityResult> CreateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> CreateAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Success);
             }
 
-            public Task<IdentityResult> UpdateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> UpdateAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Success);
             }
 
-            public Task<IdentityResult> DeleteAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IdentityResult> DeleteAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(IdentityResult.Success);
             }
 
-            public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult<TestUser>(null);
+                return Task.FromResult<PocoUser>(null);
             }
 
-            public Task<TestUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult<TestUser>(null);
+                return Task.FromResult<PocoUser>(null);
             }
 
-            public Task SetPasswordHashAsync(TestUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPasswordHashAsync(PocoUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetPasswordHashAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPasswordHashAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<string>(null);
             }
 
-            public Task<bool> HasPasswordAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> HasPasswordAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetPhoneNumberAsync(TestUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberAsync(PocoUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetPhoneNumberAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPhoneNumberAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("");
             }
 
-            public Task<bool> GetPhoneNumberConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetPhoneNumberConfirmedAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetPhoneNumberConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberConfirmedAsync(PocoUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task AddToRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddToRoleAsync(PocoUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task RemoveFromRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveFromRoleAsync(PocoUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<IList<string>> GetRolesAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<string>> GetRolesAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<IList<string>>(new List<string>());
             }
 
-            public Task<bool> IsInRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> IsInRoleAsync(PocoUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task SetSecurityStampAsync(TestUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetSecurityStampAsync(PocoUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<string> GetSecurityStampAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetSecurityStampAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("");
             }
 
-            public Task SetTwoFactorEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetTwoFactorEnabledAsync(PocoUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<bool> GetTwoFactorEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetTwoFactorEnabledAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(false);
             }
 
-            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserIdAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<string>(null);
             }
 
-            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserNameAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<string>(null);
             }
 
-            public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetNormalizedUserNameAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult<string>(null);
             }
 
-            public Task SetNormalizedUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetNormalizedUserNameAsync(PocoUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task<IList<TestUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<PocoUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult<IList<TestUser>>(new List<TestUser>());
+                return Task.FromResult<IList<PocoUser>>(new List<PocoUser>());
             }
 
-            public Task<IList<TestUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<PocoUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
-                return Task.FromResult<IList<TestUser>>(new List<TestUser>());
+                return Task.FromResult<IList<PocoUser>>(new List<PocoUser>());
             }
 
-            public Task<string> GetNormalizedEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetNormalizedEmailAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult("");
             }
 
-            public Task SetNormalizedEmailAsync(TestUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetNormalizedEmailAsync(PocoUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
         }
 
-        private class NoOpTokenProvider : IUserTwoFactorTokenProvider<TestUser>
+        private class NoOpTokenProvider : IUserTwoFactorTokenProvider<PocoUser>
         {
             public string Name { get; } = "Noop";
 
-            public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user)
+            public Task<string> GenerateAsync(string purpose, UserManager<PocoUser> manager, PocoUser user)
             {
                 return Task.FromResult("Test");
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TestUser> manager, TestUser user)
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<PocoUser> manager, PocoUser user)
             {
                 return Task.FromResult(true);
             }
 
-            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user)
+            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<PocoUser> manager, PocoUser user)
             {
                 return Task.FromResult(true);
             }
         }
 
         private class NotImplementedStore :
-            IUserPasswordStore<TestUser>,
-            IUserClaimStore<TestUser>,
-            IUserLoginStore<TestUser>,
-            IUserRoleStore<TestUser>,
-            IUserEmailStore<TestUser>,
-            IUserPhoneNumberStore<TestUser>,
-            IUserLockoutStore<TestUser>,
-            IUserTwoFactorStore<TestUser>
+            IUserPasswordStore<PocoUser>,
+            IUserClaimStore<PocoUser>,
+            IUserLoginStore<PocoUser>,
+            IUserRoleStore<PocoUser>,
+            IUserEmailStore<PocoUser>,
+            IUserPhoneNumberStore<PocoUser>,
+            IUserLockoutStore<PocoUser>,
+            IUserTwoFactorStore<PocoUser>
         {
-            public Task<IList<Claim>> GetClaimsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<Claim>> GetClaimsAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task AddClaimsAsync(TestUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddClaimsAsync(PocoUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task ReplaceClaimAsync(TestUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task ReplaceClaimAsync(PocoUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task RemoveClaimsAsync(TestUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveClaimsAsync(PocoUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetEmailAsync(TestUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailAsync(PocoUser user, string email, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetEmailAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetEmailConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetEmailConfirmedAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetEmailConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetEmailConfirmedAsync(PocoUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByEmailAsync(string email, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<DateTimeOffset?> GetLockoutEndDateAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<DateTimeOffset?> GetLockoutEndDateAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetLockoutEndDateAsync(TestUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEndDateAsync(PocoUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<int> IncrementAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> IncrementAccessFailedCountAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task ResetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task ResetAccessFailedCountAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<int> GetAccessFailedCountAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<int> GetAccessFailedCountAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetLockoutEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetLockoutEnabledAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetLockoutEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetLockoutEnabledAsync(PocoUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task AddLoginAsync(TestUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddLoginAsync(PocoUser user, UserLoginInfo login, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task RemoveLoginAsync(TestUser user, string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveLoginAsync(PocoUser user, string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IList<UserLoginInfo>> GetLoginsAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<UserLoginInfo>> GetLoginsAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -1477,137 +1477,137 @@ namespace Microsoft.AspNetCore.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserIdAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetUserNameAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetUserNameAsync(PocoUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<TestUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<PocoUser> FindByNameAsync(string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetPasswordHashAsync(TestUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPasswordHashAsync(PocoUser user, string passwordHash, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetPasswordHashAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPasswordHashAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> HasPasswordAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> HasPasswordAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetPhoneNumberAsync(TestUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberAsync(PocoUser user, string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetPhoneNumberAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetPhoneNumberAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetPhoneNumberConfirmedAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetPhoneNumberConfirmedAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetPhoneNumberConfirmedAsync(TestUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetPhoneNumberConfirmedAsync(PocoUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetTwoFactorEnabledAsync(TestUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetTwoFactorEnabledAsync(PocoUser user, bool enabled, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> GetTwoFactorEnabledAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> GetTwoFactorEnabledAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task AddToRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task AddToRoleAsync(PocoUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task RemoveFromRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task RemoveFromRoleAsync(PocoUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IList<string>> GetRolesAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<string>> GetRolesAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> IsInRoleAsync(TestUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<bool> IsInRoleAsync(PocoUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetNormalizedUserNameAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetNormalizedUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetNormalizedUserNameAsync(PocoUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IList<TestUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<PocoUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task<IList<TestUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<IList<PocoUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            Task<IdentityResult> IUserStore<TestUser>.CreateAsync(TestUser user, CancellationToken cancellationToken)
+            Task<IdentityResult> IUserStore<PocoUser>.CreateAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            Task<IdentityResult> IUserStore<TestUser>.UpdateAsync(TestUser user, CancellationToken cancellationToken)
+            Task<IdentityResult> IUserStore<PocoUser>.UpdateAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            Task<IdentityResult> IUserStore<TestUser>.DeleteAsync(TestUser user, CancellationToken cancellationToken)
+            Task<IdentityResult> IUserStore<PocoUser>.DeleteAsync(PocoUser user, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetNormalizedEmailAsync(TestUser user, CancellationToken cancellationToken = default(CancellationToken))
+            public Task<string> GetNormalizedEmailAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetNormalizedEmailAsync(TestUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+            public Task SetNormalizedEmailAsync(PocoUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -1616,23 +1616,23 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanCustomizeUserValidatorErrors()
         {
-            var store = new Mock<IUserEmailStore<TestUser>>();
+            var store = new Mock<IUserEmailStore<PocoUser>>();
             var describer = new TestErrorDescriber();
             var config = new ConfigurationBuilder().Build();
             var services = new ServiceCollection()
                     .AddSingleton<IConfiguration>(config)
                     .AddLogging()
                     .AddSingleton<IdentityErrorDescriber>(describer)
-                    .AddSingleton<IUserStore<TestUser>>(store.Object)
+                    .AddSingleton<IUserStore<PocoUser>>(store.Object)
                     .AddHttpContextAccessor();
 
-            services.AddIdentity<TestUser, TestRole>();
+            services.AddIdentity<PocoUser, PocoRole>();
 
-            var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
+            var manager = services.BuildServiceProvider().GetRequiredService<UserManager<PocoUser>>();
 
             manager.Options.User.RequireUniqueEmail = true;
-            var user = new TestUser() { UserName = "dupeEmail", Email = "dupe@email.com" };
-            var user2 = new TestUser() { UserName = "dupeEmail2", Email = "dupe@email.com" };
+            var user = new PocoUser() { UserName = "dupeEmail", Email = "dupe@email.com" };
+            var user2 = new PocoUser() { UserName = "dupeEmail2", Email = "dupe@email.com" };
             store.Setup(s => s.FindByEmailAsync("DUPE@EMAIL.COM", CancellationToken.None))
                 .Returns(Task.FromResult(user2))
                 .Verifiable();

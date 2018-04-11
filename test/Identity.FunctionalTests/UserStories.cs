@@ -8,6 +8,8 @@ using AngleSharp.Dom.Html;
 using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
@@ -51,6 +53,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         {
             var manage = await index.ClickManageLinkAsync();
             return await manage.SendConfirmationEmailAsync();
+        }
+
+        internal static async Task<Account.Manage.Index> SendUpdateProfileAsync(Index index, string newEmail)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            return await manage.SendUpdateProfileAsync(newEmail);
         }
 
         internal static async Task<Index> LoginWithSocialLoginAsync(HttpClient client, string userName)
@@ -185,12 +193,13 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await deleteUser.Delete(password);
         }
 
-        internal static async Task<string> DownloadPersonalData(Index index, string userName)
+        internal static async Task<JObject> DownloadPersonalData(Index index, string userName)
         {
             var manage = await index.ClickManageLinkAsync();
             var personalData = await manage.ClickPersonalDataLinkAsync();
             var download = await personalData.SubmitDownloadForm();
-            return await download.Content.ReadAsStringAsync();
+            ResponseAssert.IsOK(download);
+            return JsonConvert.DeserializeObject<JObject>(await download.Content.ReadAsStringAsync());
         }
     }
 }

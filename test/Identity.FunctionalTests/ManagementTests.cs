@@ -8,192 +8,221 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Identity.DefaultUI.WebSite;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class ManagementTests : LoggedTest, IClassFixture<ServerFactory>
+    public abstract class ManagementTests<TStartup, TContext> : IClassFixture<ServerFactory<TStartup, TContext>>
+        where TStartup : class
+        where TContext : DbContext
     {
-        public ManagementTests(ServerFactory serverFactory, ITestOutputHelper output) : base(output)
+        public ManagementTests(ServerFactory<TStartup, TContext> serverFactory)
         {
             ServerFactory = serverFactory;
         }
 
-        public ServerFactory ServerFactory { get; }
+        public ServerFactory<TStartup, TContext> ServerFactory { get; }
 
         [Fact]
         public async Task CanEnableTwoFactorAuthentication()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var client = ServerFactory.CreateDefaultClient(loggerFactory);
+            // Arrange
+            var client = ServerFactory
+                .CreateClient();
 
-                var userName = $"{Guid.NewGuid()}@example.com";
-                var password = $"!Test.Password1$";
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
 
-                var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-                // Act & Assert
-                await UserStories.EnableTwoFactorAuthentication(index);
-            }
+            // Act & Assert
+            await UserStories.EnableTwoFactorAuthentication(index);
         }
 
         [Fact]
         public async Task CanConfirmEmail()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var emails = new ContosoEmailSender();
-                var server = ServerFactory.CreateServer(loggerFactory, builder =>
-                    builder.ConfigureServices(s => s.SetupTestEmailSender(emails)));
-                var client = ServerFactory.CreateDefaultClient(server);
+            // Arrange
+            var emails = new ContosoEmailSender();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupTestEmailSender(emails);
 
-                var userName = $"{Guid.NewGuid()}@example.com";
-                var password = $"!Test.Password1$";
+            var client = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+                .CreateClient();
 
-                var index = await UserStories.RegisterNewUserAsync(client, userName, password);
-                var manageIndex = await UserStories.SendEmailConfirmationLinkAsync(index);
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
 
-                // Act & Assert
-                Assert.Equal(2, emails.SentEmails.Count);
-                var email = emails.SentEmails[1];
-                await UserStories.ConfirmEmailAsync(email, client);
-            }
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var manageIndex = await UserStories.SendEmailConfirmationLinkAsync(index);
+
+            // Act & Assert
+            Assert.Equal(2, emails.SentEmails.Count);
+            var email = emails.SentEmails[1];
+            await UserStories.ConfirmEmailAsync(email, client);
+        }
+
+        [Fact]
+        public async Task CanChangeEmail()
+        {
+            // Arrange
+            var emails = new ContosoEmailSender();
+            var client = ServerFactory
+                .CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+            var newEmail = "updatedEmail@example.com";
+
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var manageIndex = await UserStories.SendUpdateProfileAsync(index, newEmail);
+
+            // Act & Assert
+            var pageUserName = manageIndex.GetUserName();
+            Assert.Equal(newEmail, pageUserName);
+            var pageEmail = manageIndex.GetEmail();
+            Assert.Equal(newEmail, pageEmail);
         }
 
         [Fact]
         public async Task CanChangePassword()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var principals = new List<ClaimsPrincipal>();
-                var server = ServerFactory.CreateServer(loggerFactory, builder =>
-                    builder.ConfigureTestServices(s => s.SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme)));
+            // Arrange
+            var principals = new List<ClaimsPrincipal>();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme);
 
-                var client = ServerFactory.CreateDefaultClient(server);
-                var newClient = ServerFactory.CreateDefaultClient(server);
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices));
 
-                var userName = $"{Guid.NewGuid()}@example.com";
-                var password = "!Test.Password1";
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
 
-                var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = "!Test.Password1";
 
-                // Act 1
-                var changedPassword = await UserStories.ChangePasswordAsync(index, "!Test.Password1", "!Test.Password2");
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-                // Assert 1
-                // RefreshSignIn generates a new security stamp claim
-                AssertClaimsNotEqual(principals[0], principals[1], "AspNet.Identity.SecurityStamp");
+            // Act 1
+            var changedPassword = await UserStories.ChangePasswordAsync(index, "!Test.Password1", "!Test.Password2");
 
-                // Act 2
-                await UserStories.LoginExistingUserAsync(newClient, userName, "!Test.Password2");
+            // Assert 1
+            // RefreshSignIn generates a new security stamp claim
+            AssertClaimsNotEqual(principals[0], principals[1], "AspNet.Identity.SecurityStamp");
 
-                // Assert 2
-                // Signing in again with a different client uses the same security stamp claim
-                AssertClaimsEqual(principals[1], principals[2], "AspNet.Identity.SecurityStamp");
-            }
+            // Act 2
+            await UserStories.LoginExistingUserAsync(newClient, userName, "!Test.Password2");
+
+            // Assert 2
+            // Signing in again with a different client uses the same security stamp claim
+            AssertClaimsEqual(principals[1], principals[2], "AspNet.Identity.SecurityStamp");
         }
 
         [Fact]
         public async Task CanSetPasswordWithExternalLogin()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var principals = new List<ClaimsPrincipal>();
-                var server = ServerFactory.CreateServer(loggerFactory, builder =>
-                    builder.ConfigureTestServices(s => s.SetupTestThirdPartyLogin()
-                    .SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme)));
+            // Arrange
+            var principals = new List<ClaimsPrincipal>();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services
+                    .SetupTestThirdPartyLogin()
+                    .SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme);
 
-                var client = ServerFactory.CreateDefaultClient(server);
-                var newClient = ServerFactory.CreateDefaultClient(server);
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices));
 
-                var guid = Guid.NewGuid();
-                var userName = $"{guid}";
-                var email = $"{guid}@example.com";
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+            var loginAfterSetPasswordClient = server.CreateClient();
 
-                // Act 1
-                var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
-                index = await UserStories.LoginWithSocialLoginAsync(newClient, userName);
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
 
-                // Assert 1
-                Assert.NotNull(principals[1].Identities.Single().Claims.Single(c => c.Type == ClaimTypes.AuthenticationMethod).Value);
+            // Act 1
+            var index = await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+            index = await UserStories.LoginWithSocialLoginAsync(newClient, userName);
 
-                // Act 2
-                await UserStories.SetPasswordAsync(index, "!Test.Password2");
+            // Assert 1
+            Assert.NotNull(principals[1].Identities.Single().Claims.Single(c => c.Type == ClaimTypes.AuthenticationMethod).Value);
 
-                // Assert 2
-                // RefreshSignIn uses the same AuthenticationMethod claim value
-                AssertClaimsEqual(principals[1], principals[2], ClaimTypes.AuthenticationMethod);
+            // Act 2
+            await UserStories.SetPasswordAsync(index, "!Test.Password2");
 
-                // Act & Assert 3
-                // Can log in with the password set above
-                await UserStories.LoginExistingUserAsync(ServerFactory.CreateDefaultClient(server), email, "!Test.Password2");
-            }
+            // Assert 2
+            // RefreshSignIn uses the same AuthenticationMethod claim value
+            AssertClaimsEqual(principals[1], principals[2], ClaimTypes.AuthenticationMethod);
+
+            // Act & Assert 3
+            // Can log in with the password set above
+            await UserStories.LoginExistingUserAsync(loginAfterSetPasswordClient, email, "!Test.Password2");
         }
 
         [Fact]
         public async Task CanRemoveExternalLogin()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var principals = new List<ClaimsPrincipal>();
-                var server = ServerFactory.CreateServer(loggerFactory, builder =>
-                    builder.ConfigureTestServices(s => s.SetupTestThirdPartyLogin()
-                    .SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme)));
+            // Arrange
+            var principals = new List<ClaimsPrincipal>();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services
+                    .SetupTestThirdPartyLogin()
+                    .SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme);
 
-                var client = ServerFactory.CreateDefaultClient(server);
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices));
 
-                var guid = Guid.NewGuid();
-                var userName = $"{guid}";
-                var email = $"{guid}@example.com";
+            var client = server.CreateClient();
 
-                // Act
-                var index = await UserStories.RegisterNewUserAsync(client, email, "!TestPassword1");
-                var linkLogin = await UserStories.LinkExternalLoginAsync(index, email);
-                await UserStories.RemoveExternalLoginAsync(linkLogin, email);
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
 
-                // RefreshSignIn generates a new security stamp claim
-                AssertClaimsNotEqual(principals[0], principals[1], "AspNet.Identity.SecurityStamp");
-            }
+            // Act
+            var index = await UserStories.RegisterNewUserAsync(client, email, "!TestPassword1");
+            var linkLogin = await UserStories.LinkExternalLoginAsync(index, email);
+            await UserStories.RemoveExternalLoginAsync(linkLogin, email);
+
+            // RefreshSignIn generates a new security stamp claim
+            AssertClaimsNotEqual(principals[0], principals[1], "AspNet.Identity.SecurityStamp");
         }
 
         [Fact]
         public async Task CanResetAuthenticator()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var principals = new List<ClaimsPrincipal>();
-                var server = ServerFactory.CreateServer(loggerFactory, builder =>
-                    builder.ConfigureTestServices(s => s.SetupTestThirdPartyLogin()
-                    .SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme)));
+            // Arrange
+            var principals = new List<ClaimsPrincipal>();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services
+                    .SetupTestThirdPartyLogin()
+                    .SetupGetUserClaimsPrincipal(user => principals.Add(user), IdentityConstants.ApplicationScheme);
 
-                var client = ServerFactory.CreateDefaultClient(server);
-                var newClient = ServerFactory.CreateDefaultClient(server);
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices));
 
-                var userName = $"{Guid.NewGuid()}@example.com";
-                var password = $"!Test.Password1$";
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
 
-                // Act
-                var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-                var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
-                var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
 
-                // Use a new client to simulate a new browser session.
-                var index = await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
-                await UserStories.ResetAuthenticator(index);
+            // Act
+            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
+            var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
 
-                // RefreshSignIn generates a new security stamp claim
-                AssertClaimsNotEqual(principals[1], principals[2], "AspNet.Identity.SecurityStamp");
-            }
+            // Use a new client to simulate a new browser session.
+            var index = await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
+            await UserStories.ResetAuthenticator(index);
+
+            // RefreshSignIn generates a new security stamp claim
+            AssertClaimsNotEqual(principals[1], principals[2], "AspNet.Identity.SecurityStamp");
         }
 
         [Theory]
@@ -203,74 +232,93 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         [InlineData(true, true)]
         public async Task CanDownloadPersonalData(bool twoFactor, bool social)
         {
-            using (StartLog(out var loggerFactory))
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupTestThirdPartyLogin();
+
+            var client = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices))
+                .CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var guid = Guid.NewGuid();
+            var email = userName;
+
+            var index = social
+                ? await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email)
+                : await UserStories.RegisterNewUserAsync(client, email, "!TestPassword1");
+
+            if (twoFactor)
             {
-                // Arrange
-                var server = ServerFactory.CreateServer(loggerFactory, builder =>
-                    builder.ConfigureTestServices(s => s.SetupTestThirdPartyLogin()));
+                await UserStories.EnableTwoFactorAuthentication(index);
+            }
 
-                var client = ServerFactory.CreateDefaultClient(server);
+            // Act & Assert
+            var jsonData = await UserStories.DownloadPersonalData(index, userName);
+            Assert.NotNull(jsonData);
+            Assert.True(jsonData.ContainsKey("Id"));
+            Assert.NotNull(jsonData["Id"]);
+            Assert.True(jsonData.ContainsKey("UserName"));
+            Assert.Equal(userName, (string)jsonData["UserName"]);
+            Assert.True(jsonData.ContainsKey("Email"));
+            Assert.Equal(userName, (string)jsonData["Email"]);
+            Assert.True(jsonData.ContainsKey("EmailConfirmed"));
+            Assert.False((bool)jsonData["EmailConfirmed"]);
+            Assert.True(jsonData.ContainsKey("PhoneNumber"));
+            Assert.Equal("null", (string)jsonData["PhoneNumber"]);
+            Assert.True(jsonData.ContainsKey("PhoneNumberConfirmed"));
+            Assert.False((bool)jsonData["PhoneNumberConfirmed"]);
+            Assert.Equal(twoFactor, (bool)jsonData["TwoFactorEnabled"]);
 
-                var userName = $"{Guid.NewGuid()}@example.com";
-                var guid = Guid.NewGuid();
-                var email = userName;
+            if (twoFactor)
+            {
+                Assert.NotNull(jsonData["Authenticator Key"]);
+            }
+            else
+            {
+                Assert.Null((string)jsonData["Authenticator Key"]);
+            }
 
-                var index = social 
-                    ? await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email)
-                    : await UserStories.RegisterNewUserAsync(client, email, "!TestPassword1");
-
-                if (twoFactor)
-                {
-                    await UserStories.EnableTwoFactorAuthentication(index);
-                }
-
-                // Act & Assert
-                var jsonData = await UserStories.DownloadPersonalData(index, userName);
-                Assert.Contains($"\"Id\":\"", jsonData);
-                Assert.Contains($"\"UserName\":\"{userName}\"", jsonData);
-                Assert.Contains($"\"Email\":\"{userName}\"", jsonData);
-                Assert.Contains($"\"EmailConfirmed\":\"False\"", jsonData);
-                Assert.Contains($"\"PhoneNumber\":\"null\"", jsonData);
-                Assert.Contains($"\"PhoneNumberConfirmed\":\"False\"", jsonData);
-                Assert.Contains($"\"TwoFactorEnabled\":\"{twoFactor}\"", jsonData);
-                Assert.Equal(twoFactor, jsonData.Contains($"\"Authenticator Key\":\""));
-                Assert.Equal(social, jsonData.Contains($"\"Contoso external login provider key\":\"{userName}\""));
+            if (social)
+            {
+                Assert.Equal(userName, (string)jsonData["Contoso external login provider key"]);
+            }
+            else
+            {
+                Assert.Null((string)jsonData["Contoso external login provider key"]);
             }
         }
 
         [Fact]
         public async Task GetOnDownloadPersonalData_ReturnsNotFound()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var client = ServerFactory.CreateDefaultClient(loggerFactory);
-                await UserStories.RegisterNewUserAsync(client);
+            // Arrange
+            var client = ServerFactory
+                .CreateClient();
 
-                // Act
-                var response = await client.GetAsync("/Identity/Account/Manage/DownloadPersonalData");
+            await UserStories.RegisterNewUserAsync(client);
 
-                // Assert
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
+            // Act
+            var response = await client.GetAsync("/Identity/Account/Manage/DownloadPersonalData");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
         public async Task CanDeleteUser()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var client = ServerFactory.CreateDefaultClient(loggerFactory);
+            // Arrange
+            var client = ServerFactory
+                .CreateClient();
 
-                var userName = $"{Guid.NewGuid()}@example.com";
-                var password = $"!Test.Password1$";
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
 
-                var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-                // Act & Assert
-                await UserStories.DeleteUser(index, password);
-            }
+            // Act & Assert
+            await UserStories.DeleteUser(index, password);
         }
 
         private void AssertClaimsEqual(ClaimsPrincipal expectedPrincipal, ClaimsPrincipal actualPrincipal, string claimType)
