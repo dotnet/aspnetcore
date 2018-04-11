@@ -142,6 +142,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.dll");
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.pdb");
+
+            // By default refs will not be copied on publish
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
         }
 
         [Fact]

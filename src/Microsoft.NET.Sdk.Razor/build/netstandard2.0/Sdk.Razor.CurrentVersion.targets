@@ -492,17 +492,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'=='false'">
       <ResolvedFileToPublish Remove="%(RazorGenerate.FullPath)"/>
     </ItemGroup>
+  </Target>
 
+  <Target
+    Name="_RazorRemoveRefAssembliesFromPublish"
+    AfterTargets="ComputeRefAssembliesToPublish"
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '$(CopyRefAssembliesToPublishDirectory)'=='false'">
     <!--
       The ref assemblies are published whenever PreserveCompilationContext is true, which we expect to be true for
       most usages of Razor. There's no setting that excludes just the ref assemblies, so we do it ourselves. 
     -->
-    <ItemGroup Condition="'$(CopyRefAssembliesToPublishDirectory)'=='false'">
+    <ItemGroup>
       <ResolvedFileToPublish 
         Remove="%(ResolvedFileToPublish.Identity)"
         Condition="'%(ResolvedFileToPublish.RelativePath)'=='$(RefAssembliesFolderName)\%(Filename)%(Extension)'"/>
     </ItemGroup>
-
   </Target>
 
   <Target Name="_CheckForMissingRazorCompiler" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
