@@ -5,12 +5,14 @@ using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore
 {
@@ -184,11 +186,20 @@ namespace Microsoft.AspNetCore
                 })
                 .ConfigureServices((hostingContext, services) =>
                 {
-                    var hosts = hostingContext.Configuration["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                    services.AddHostFiltering(options =>
+                    // Fallback
+                    services.PostConfigure<HostFilteringOptions>(options =>
                     {
-                        options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
+                        if (options.AllowedHosts == null || options.AllowedHosts.Count == 0)
+                        {
+                            // "AllowedHosts": "localhost;127.0.0.1;[::1]"
+                            var hosts = hostingContext.Configuration["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                            // Fall back to "*" to disable.
+                            options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
+                        }
                     });
+                    // Change notification
+                    services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(
+                        new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
 
                     services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
                 })
