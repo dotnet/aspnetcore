@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
                     writer.WriteVarInt(0);
                 }
 
-                SerializedHubMessage.WriteAllSerializedVersions(writer, new InvocationMessage(methodName, argumentBindingException: null, args), _protocols);
+                SerializedHubMessage.WriteAllSerializedVersions(writer, new InvocationMessage(methodName, null, args), _protocols);
                 return stream.ToArray();
             }
         }

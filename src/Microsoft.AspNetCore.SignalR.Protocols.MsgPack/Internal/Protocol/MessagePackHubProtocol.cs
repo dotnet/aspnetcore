@@ -148,11 +148,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             try
             {
                 var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
-                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, argumentBindingException: null, arguments: arguments));
+                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, null, arguments));
             }
             catch (Exception ex)
             {
-                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex)));
+                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex), null));
             }
         }
 
@@ -166,11 +166,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             try
             {
                 var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
-                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, argumentBindingException: null, arguments: arguments));
+                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, null, arguments));
             }
             catch (Exception ex)
             {
-                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex)));
+                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex), null));
             }
         }
 

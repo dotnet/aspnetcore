@@ -294,8 +294,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.PreparingBlockingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
             // Client invocations are always blocking
-            var invocationMessage = new InvocationMessage(irq.InvocationId, target: methodName,
-                argumentBindingException: null, arguments: args);
+            var invocationMessage = new InvocationMessage(irq.InvocationId, methodName, null, args);
 
             Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
 
@@ -322,8 +321,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             Log.PreparingStreamingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
-            var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName,
-                argumentBindingException: null, arguments: args);
+            var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName, null, args);
 
             // I just want an excuse to use 'irq' as a variable name...
             Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
@@ -371,8 +369,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
 
-                var invocationMessage = new InvocationMessage(null, target: methodName,
-                    argumentBindingException: null, arguments: args);
+                var invocationMessage = new InvocationMessage(null, methodName, null, args);
 
                 await SendHubMessage(invocationMessage, cancellationToken);
             }

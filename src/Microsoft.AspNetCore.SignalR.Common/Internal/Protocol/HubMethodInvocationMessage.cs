@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
     public class InvocationMessage : HubMethodInvocationMessage
     {
-        public InvocationMessage(string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
-            : this(invocationId: null, target, argumentBindingException, arguments)
+        public InvocationMessage(string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
+            : this(null, target, argumentBindingException, arguments)
         {
         }
 
-        public InvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
+        public InvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
             : base(invocationId, target, argumentBindingException, arguments)
         {
         }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
     public class StreamInvocationMessage : HubMethodInvocationMessage
     {
-        public StreamInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
+        public StreamInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
             : base(invocationId, target, argumentBindingException, arguments)
         {
             if (string.IsNullOrEmpty(invocationId))

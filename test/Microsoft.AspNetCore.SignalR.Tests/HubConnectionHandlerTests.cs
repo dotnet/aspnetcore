@@ -1430,8 +1430,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await client.Connected.OrTimeout();
 
                 var invocationId = Guid.NewGuid().ToString("N");
-                await client.SendHubMessageAsync(new StreamInvocationMessage(invocationId, nameof(StreamingHub.BlockingStream),
-                    argumentBindingException: null));
+                await client.SendHubMessageAsync(new StreamInvocationMessage(invocationId, nameof(StreamingHub.BlockingStream), null, Array.Empty<object>()));
 
                 // cancel the Streaming method
                 await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).OrTimeout();

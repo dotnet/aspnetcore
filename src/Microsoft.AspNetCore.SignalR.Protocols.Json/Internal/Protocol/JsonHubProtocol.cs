@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 throw new InvalidDataException($"Missing required property '{TargetPropertyName}'.");
             }
 
-            return new StreamInvocationMessage(invocationId, target, argumentBindingException: argumentBindingException, arguments: arguments);
+            return new StreamInvocationMessage(invocationId, target, argumentBindingException, arguments);
         }
 
         private HubMessage BindInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments, bool hasArguments, IInvocationBinder binder)
@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 throw new InvalidDataException($"Missing required property '{ArgumentsPropertyName}'.");
             }
 
-            return new InvocationMessage(invocationId, target, argumentBindingException: argumentBindingException, arguments: arguments);
+            return new InvocationMessage(invocationId, target, argumentBindingException, arguments);
         }
 
         private object[] BindArguments(JsonTextReader reader, IReadOnlyList<Type> paramTypes)

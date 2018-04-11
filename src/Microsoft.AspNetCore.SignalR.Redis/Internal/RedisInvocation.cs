@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
         public static RedisInvocation Create(string target, object[] arguments, IReadOnlyList<string> excludedIds = null)
         {
             return new RedisInvocation(
-                new SerializedHubMessage(new InvocationMessage(target, argumentBindingException: null, arguments)),
+                new SerializedHubMessage(new InvocationMessage(target, null, arguments)),
                 excludedIds);
         }
     }

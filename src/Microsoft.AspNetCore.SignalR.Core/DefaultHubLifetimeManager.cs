@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private HubMessage CreateInvocationMessage(string methodName, object[] args)
         {
-            return new InvocationMessage(target: methodName, argumentBindingException: null, arguments: args);
+            return new InvocationMessage(methodName, null, args);
         }
 
         public override Task SendUserAsync(string userId, string methodName, object[] args)
