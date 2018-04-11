@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -251,11 +252,11 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             Assert.Empty(baseCompilation.GetDiagnostics());
             
             // Arrange
-            var engine = CreateDesignTimeEngine(baseCompilation);
-            var document = CreateCodeDocument();
+            var engine = CreateEngine(baseCompilation);
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var document = engine.ProcessDesignTime(projectItem);
 
             // Assert
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
@@ -291,54 +292,21 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             }
         }
 
-        protected RazorEngine CreateDesignTimeEngine(CSharpCompilation compilation)
+        protected RazorProjectEngine CreateEngine(CSharpCompilation compilation)
         {
             var references = compilation.References.Concat(new[] { compilation.ToMetadataReference() });
 
-            return RazorEngine.CreateDesignTime(b =>
+            return CreateProjectEngine(b =>
             {
                 RazorExtensions.Register(b);
                 RazorExtensions.RegisterViewComponentTagHelpers(b);
 
+                var existingImportFeature = b.Features.OfType<IImportProjectFeature>().Single();
+                b.SetImportFeature(new NormalizedDefaultImportFeature(existingImportFeature));
+
                 b.Features.Add(GetMetadataReferenceFeature(references));
                 b.Features.Add(new CompilationTagHelperFeature());
             });
-        }
-
-        protected override void OnCreatingCodeDocument(ref RazorSourceDocument source, IList<RazorSourceDocument> imports)
-        {
-            // It's important that we normalize the newlines in the default imports. The default imports will
-            // be created with Environment.NewLine, but we need to normalize to `\r\n` so that the indices
-            // are the same on xplat.
-            var buffer = new char[DefaultImports.Length];
-            DefaultImports.CopyTo(0, buffer, 0, DefaultImports.Length);
-
-            var text = new string(buffer);
-            text = Regex.Replace(text, "(?<!\r)\n", "\r\n");
-
-            imports.Add(RazorSourceDocument.Create(text, DefaultImports.FilePath, DefaultImports.Encoding));
-        }
-
-        private static MetadataReference BuildDynamicAssembly(
-            string text,
-            IEnumerable<MetadataReference> references,
-            string assemblyName)
-        {
-            var syntaxTree = new SyntaxTree[] { CSharpSyntaxTree.ParseText(text) };
-
-            var compilation = CSharpCompilation.Create(
-                assemblyName,
-                syntaxTree,
-                references,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-            var stream = new MemoryStream();
-            var compilationResult = compilation.Emit(stream, options: new EmitOptions());
-            stream.Position = 0;
-
-            Assert.True(compilationResult.Success);
-
-            return MetadataReference.CreateFromStream(stream);
         }
 
         private static IRazorEngineFeature GetMetadataReferenceFeature(IEnumerable<MetadataReference> references)
@@ -349,47 +317,47 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             };
         }
 
-        private static IEnumerable<MetadataReference> CreateAppCodeReferences(string appCode, IEnumerable<MetadataReference> shimReferences)
+        private class NormalizedDefaultImportFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
         {
-            var references = new List<MetadataReference>(shimReferences);
+            private IImportProjectFeature _existingFeature;
 
-            if (appCode != null)
+            public NormalizedDefaultImportFeature(IImportProjectFeature existingFeature)
             {
-                var appCodeSyntaxTrees = new List<SyntaxTree> { CSharpSyntaxTree.ParseText(appCode) };
-
-                var compilation = CSharpCompilation.Create(
-                    "AppCode",
-                    appCodeSyntaxTrees,
-                    shimReferences,
-                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-                var stream = new MemoryStream();
-                var compilationResult = compilation.Emit(stream, options: new EmitOptions());
-                stream.Position = 0;
-
-                var diagString = string.Join(";", compilationResult.Diagnostics.Where(s => s.Severity == DiagnosticSeverity.Error).Select(s => s.ToString()));
-                Assert.True(compilationResult.Success, string.Format("Application code needed for tests didn't compile!: {0}", diagString));
-
-                references.Add(MetadataReference.CreateFromStream(stream));
+                _existingFeature = existingFeature;
             }
 
-            return references;
-        }
+            protected override void OnInitialized()
+            {
+                _existingFeature.ProjectEngine = ProjectEngine;
+            }
 
-        private static IEnumerable<MetadataReference> CreateMvcShimReferences(string mvcShimName)
-        {
-            var dllPath = Path.Combine(Directory.GetCurrentDirectory(), mvcShimName);
-            var assembly = Assembly.LoadFile(dllPath);
-            var assemblyDependencyContext = DependencyContext.Load(assembly);
+            public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
+            {
+                var normalizedImports = new List<RazorProjectItem>();
+                var imports = _existingFeature.GetImports(projectItem);
+                foreach (var import in imports)
+                {
+                    var text = string.Empty;
+                    using (var stream = import.Read())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        text = reader.ReadToEnd().Trim();
+                    }
 
-            var assemblyReferencePaths = assemblyDependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths());
+                    // It's important that we normalize the newlines in the default imports. The default imports will
+                    // be created with Environment.NewLine, but we need to normalize to `\r\n` so that the indices
+                    // are the same on xplat.
+                    var normalizedText = Regex.Replace(text, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
+                    var normalizedImport = new TestRazorProjectItem(import.FilePath, import.PhysicalPath, import.RelativePhysicalPath, import.BasePath)
+                    {
+                        Content = normalizedText
+                    };
 
-            var references = assemblyReferencePaths
-                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
-                .ToList<MetadataReference>();
+                    normalizedImports.Add(normalizedImport);
+                }
 
-            Assert.NotEmpty(references);
-
-            return references;
+                return normalizedImports;
+            }
         }
     }
 }

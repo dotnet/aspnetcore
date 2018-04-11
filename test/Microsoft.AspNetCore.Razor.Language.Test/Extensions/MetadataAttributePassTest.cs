@@ -353,10 +353,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         private static RazorEngine CreateEngine()
         {
-            return RazorEngine.Create(b =>
+            return RazorProjectEngine.Create(b =>
             {
                 b.Features.Add(new DefaultMetadataIdentifierFeature());
-            });
+            }).Engine;
         }
     }
 }

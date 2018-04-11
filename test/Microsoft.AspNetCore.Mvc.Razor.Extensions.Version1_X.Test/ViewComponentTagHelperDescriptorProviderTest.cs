@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
             var provider = new ViewComponentTagHelperDescriptorProvider()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(

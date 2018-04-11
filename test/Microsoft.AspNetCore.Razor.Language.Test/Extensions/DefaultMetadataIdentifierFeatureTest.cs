@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var feature = new DefaultMetadataIdentifierFeature()
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var feature = new DefaultMetadataIdentifierFeature()
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var feature = new DefaultMetadataIdentifierFeature()
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act

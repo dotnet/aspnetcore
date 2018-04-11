@@ -53,6 +53,19 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected abstract void ProcessCore(RazorCodeDocument codeDocument);
 
+        internal static RazorProjectEngine CreateEmpty(Action<RazorProjectEngineBuilder> configure = null)
+        {
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, RazorProjectFileSystem.Empty);
+
+            configure?.Invoke(builder);
+
+            return builder.Build();
+        }
+
+        internal static RazorProjectEngine Create() => Create(configure: null);
+
+        internal static RazorProjectEngine Create(Action<RazorProjectEngineBuilder> configure) => Create(RazorConfiguration.Default, RazorProjectFileSystem.Empty, configure);
+
         public static RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem) => Create(configuration, fileSystem, configure: null);
 
         public static RazorProjectEngine Create(
@@ -78,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             //
             // This allows extensions to rely on default features, and customizations to override choices made by
             // extensions.
-            RazorEngine.AddDefaultPhases(builder.Phases);
+            AddDefaultPhases(builder.Phases);
             AddDefaultsFeatures(builder.Features);
 
             LoadExtensions(builder, configuration.Extensions);
@@ -87,7 +100,19 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             return builder.Build();
         }
-        
+
+        private static void AddDefaultPhases(IList<IRazorEnginePhase> phases)
+        {
+            phases.Add(new DefaultRazorParsingPhase());
+            phases.Add(new DefaultRazorSyntaxTreePhase());
+            phases.Add(new DefaultRazorTagHelperBinderPhase());
+            phases.Add(new DefaultRazorIntermediateNodeLoweringPhase());
+            phases.Add(new DefaultRazorDocumentClassifierPhase());
+            phases.Add(new DefaultRazorDirectiveClassifierPhase());
+            phases.Add(new DefaultRazorOptimizationPhase());
+            phases.Add(new DefaultRazorCSharpLoweringPhase());
+        }
+
         private static void AddDefaultsFeatures(ICollection<IRazorFeature> features)
         {
             features.Add(new DefaultImportProjectFeature());
@@ -109,7 +134,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Syntax Tree passes
             features.Add(new DefaultDirectiveSyntaxTreePass());
             features.Add(new HtmlNodeOptimizationPass());
-            features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
 
             // Intermediate Node Passes
             features.Add(new DefaultDocumentClassifierPass());
@@ -117,6 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             features.Add(new DesignTimeDirectivePass());
             features.Add(new DirectiveRemovalOptimizationPass());
             features.Add(new DefaultTagHelperOptimizationPass());
+            features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
 
             // Default Code Target Extensions
             var targetExtensionFeature = new DefaultRazorTargetExtensionFeature();

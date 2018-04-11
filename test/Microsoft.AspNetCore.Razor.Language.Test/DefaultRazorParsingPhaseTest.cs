@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorParsingPhase();
-            var engine = RazorEngine.CreateEmpty(builder =>
+            var engine = RazorProjectEngine.CreateEmpty(builder =>
             {
                 builder.Phases.Add(phase);
                 builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest));
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorParsingPhase();
-            var engine = RazorEngine.CreateEmpty((builder) =>
+            var engine = RazorProjectEngine.CreateEmpty((builder) =>
             {
                 builder.Phases.Add(phase);
                 builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest));
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorParsingPhase();
-            var engine = RazorEngine.CreateEmpty((builder) =>
+            var engine = RazorProjectEngine.CreateEmpty((builder) =>
             {
                 builder.Phases.Add(phase);
                 builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest));

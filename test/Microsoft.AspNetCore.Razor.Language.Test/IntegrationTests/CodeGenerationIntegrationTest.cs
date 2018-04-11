@@ -883,7 +883,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         private void DesignTimeTest()
         {
             // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => 
+            var projectEngine = CreateProjectEngine(builder => 
             {
                 builder.ConfigureDocumentClassifier();
 
@@ -895,21 +895,21 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var document = CreateCodeDocument();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
-            AssertSourceMappingsMatchBaseline(document);
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
+            AssertSourceMappingsMatchBaseline(codeDocument);
         }
 
         private void RunTimeTest()
         {
             // Arrange
-            var engine = RazorEngine.Create(builder =>
+            var projectEngine = CreateProjectEngine(builder =>
             {
                 builder.ConfigureDocumentClassifier();
 
@@ -921,20 +921,20 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var document = CreateCodeDocument();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
         }
 
         private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
         {
             // Arrange
-            var engine = RazorEngine.Create(builder =>
+            var projectEngine = CreateProjectEngine(builder =>
             {
                 builder.ConfigureDocumentClassifier();
                 builder.AddTagHelpers(descriptors);
@@ -947,20 +947,20 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var document = CreateCodeDocument();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
         }
 
         private void RunDesignTimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
         {
             // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder =>
+            var projectEngine = CreateProjectEngine(builder =>
             {
                 builder.ConfigureDocumentClassifier();
                 builder.AddTagHelpers(descriptors);
@@ -973,15 +973,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var document = CreateCodeDocument();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
-            AssertSourceMappingsMatchBaseline(document);
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
+            AssertSourceMappingsMatchBaseline(codeDocument);
         }
     }
 }

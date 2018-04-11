@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class RazorEngineTest
     {
         [Fact]
@@ -228,4 +229,5 @@ namespace Microsoft.AspNetCore.Razor.Language
                 phase => Assert.IsType<DefaultRazorCSharpLoweringPhase>(phase));
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

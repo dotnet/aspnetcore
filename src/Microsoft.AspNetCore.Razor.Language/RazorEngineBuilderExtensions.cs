@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     /// <summary>
     /// Extension methods to <see cref="IRazorEngineBuilder" />.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version. The recommended alternative is " + nameof(RazorProjectEngineBuilderExtensions) + ".")]
     public static class RazorEngineBuilderExtensions
     {
         /// <summary>

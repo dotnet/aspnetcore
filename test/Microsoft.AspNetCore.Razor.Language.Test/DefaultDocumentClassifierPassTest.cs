@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
 
             var pass = new DefaultDocumentClassifierPass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
+            pass.Engine = RazorProjectEngine.Create().Engine;
 
             // Act
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), documentNode);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
 
             var pass = new DefaultDocumentClassifierPass();
-            pass.Engine = RazorEngine.CreateEmpty(b =>{ });
+            pass.Engine = RazorProjectEngine.Create().Engine;
 
             // Act
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), documentNode);

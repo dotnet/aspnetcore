@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 "@using Microsoft.AspNetCore.Mvc.ViewFeatures",
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
-                RazorEngine.Create(),
+                RazorProjectEngine.Create().Engine,
                 new TestRazorProjectFileSystem());
 
             // Act
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 "@inject global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider",
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
-                RazorEngine.Create(),
+                RazorProjectEngine.Create().Engine,
                 new TestRazorProjectFileSystem());
 
             // Act
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         {
             // Arrange
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
-                RazorEngine.Create(),
+                RazorProjectEngine.Create().Engine,
                 new TestRazorProjectFileSystem());
 
             // Act

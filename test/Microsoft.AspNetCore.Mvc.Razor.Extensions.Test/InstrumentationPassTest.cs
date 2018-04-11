@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new InstrumentationPass()
             {
-                Engine = RazorEngine.CreateEmpty(b => { }),
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
             };
 
             // Act

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var first = Mock.Of<IRazorSyntaxTreePass>(p => p.Order == 15);
             var second = Mock.Of<IRazorSyntaxTreePass>(p => p.Order == 17);
 
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var phase = new DefaultRazorSyntaxTreePhase();
 
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorProjectEngine.CreateEmpty(b => b.Phases.Add(phase));
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var phase = new DefaultRazorSyntaxTreePhase();
 
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,6 @@ using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
@@ -602,11 +602,11 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             Assert.Empty(baseCompilation.GetDiagnostics());
 
             // Arrange
-            var engine = CreateRuntimeEngine(baseCompilation);
-            var document = CreateCodeDocument();
+            var engine = CreateEngine(baseCompilation);
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var document = engine.Process(projectItem);
 
             // Assert
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
@@ -621,11 +621,11 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             Assert.Empty(baseCompilation.GetDiagnostics());
 
             // Arrange
-            var engine = CreateDesignTimeEngine(baseCompilation);
-            var document = CreateCodeDocument();
+            var engine = CreateEngine(baseCompilation);
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var document = engine.ProcessDesignTime(projectItem);
 
             // Assert
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
@@ -661,66 +661,20 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             }
         }
 
-        protected RazorEngine CreateDesignTimeEngine(CSharpCompilation compilation)
+        protected RazorProjectEngine CreateEngine(CSharpCompilation compilation)
         {
             var references = compilation.References.Concat(new[] { compilation.ToMetadataReference() });
 
-            return RazorEngine.CreateDesignTime(b =>
+            return CreateProjectEngine(b =>
             {
                 RazorExtensions.Register(b);
+
+                var existingImportFeature = b.Features.OfType<IImportProjectFeature>().Single();
+                b.SetImportFeature(new NormalizedDefaultImportFeature(existingImportFeature));
 
                 b.Features.Add(GetMetadataReferenceFeature(references));
                 b.Features.Add(new CompilationTagHelperFeature());
             });
-        }
-
-        protected RazorEngine CreateRuntimeEngine(CSharpCompilation compilation)
-        {
-            var references = compilation.References.Concat(new[] { compilation.ToMetadataReference() });
-
-            return RazorEngine.Create(b =>
-            {
-                RazorExtensions.Register(b);
-
-                b.Features.Add(GetMetadataReferenceFeature(references));
-                b.Features.Add(new CompilationTagHelperFeature());
-            });
-        }
-
-        protected override void OnCreatingCodeDocument(ref RazorSourceDocument source, IList<RazorSourceDocument> imports)
-        {
-            // It's important that we normalize the newlines in the default imports. The default imports will
-            // be created with Environment.NewLine, but we need to normalize to `\r\n` so that the indices
-            // are the same on xplat.
-            var buffer = new char[DefaultImports.Length];
-            DefaultImports.CopyTo(0, buffer, 0, DefaultImports.Length);
-
-            var text = new string(buffer);
-            text = Regex.Replace(text, "(?<!\r)\n", "\r\n");
-
-            imports.Add(RazorSourceDocument.Create(text, DefaultImports.FilePath, DefaultImports.Encoding));
-        }
-
-        private static MetadataReference BuildDynamicAssembly(
-            string text,
-            IEnumerable<MetadataReference> references,
-            string assemblyName)
-        {
-            var syntaxTree = new SyntaxTree[] { CSharpSyntaxTree.ParseText(text) };
-
-            var compilation = CSharpCompilation.Create(
-                assemblyName,
-                syntaxTree,
-                references,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-            var stream = new MemoryStream();
-            var compilationResult = compilation.Emit(stream, options: new EmitOptions());
-            stream.Position = 0;
-
-            Assert.True(compilationResult.Success);
-
-            return MetadataReference.CreateFromStream(stream);
         }
 
         private static IRazorEngineFeature GetMetadataReferenceFeature(IEnumerable<MetadataReference> references)
@@ -729,6 +683,49 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             {
                 References = references.ToList()
             };
+        }
+
+        private class NormalizedDefaultImportFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
+        {
+            private IImportProjectFeature _existingFeature;
+
+            public NormalizedDefaultImportFeature(IImportProjectFeature existingFeature)
+            {
+                _existingFeature = existingFeature;
+            }
+
+            protected override void OnInitialized()
+            {
+                _existingFeature.ProjectEngine = ProjectEngine;
+            }
+
+            public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
+            {
+                var normalizedImports = new List<RazorProjectItem>();
+                var imports = _existingFeature.GetImports(projectItem);
+                foreach (var import in imports)
+                {
+                    var text = string.Empty;
+                    using (var stream = import.Read())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        text = reader.ReadToEnd().Trim();
+                    }
+
+                    // It's important that we normalize the newlines in the default imports. The default imports will
+                    // be created with Environment.NewLine, but we need to normalize to `\r\n` so that the indices
+                    // are the same on xplat.
+                    var normalizedText = Regex.Replace(text, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
+                    var normalizedImport = new TestRazorProjectItem(import.FilePath, import.PhysicalPath, import.RelativePhysicalPath, import.BasePath)
+                    {
+                        Content = normalizedText
+                    };
+
+                    normalizedImports.Add(normalizedImport);
+                }
+
+                return normalizedImports;
+            }
         }
     }
 }

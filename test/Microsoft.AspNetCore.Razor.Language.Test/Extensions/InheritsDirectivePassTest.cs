@@ -69,10 +69,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         private static RazorEngine CreateEngine()
         {
-            return RazorEngine.Create(b =>
+            return RazorProjectEngine.Create(b =>
             {
                 InheritsDirective.Register(b);
-            });
+            }).Engine;
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)

@@ -446,16 +446,16 @@ Render Children
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
-            var engine = RazorEngine.Create();
+            var projectEngine = RazorProjectEngine.Create();
 
-            return Lower(codeDocument, engine);
+            return Lower(codeDocument, projectEngine);
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)
         {
-            for (var i = 0; i < engine.Phases.Count; i++)
+            for (var i = 0; i < projectEngine.Phases.Count; i++)
             {
-                var phase = engine.Phases[i];
+                var phase = projectEngine.Phases[i];
                 phase.Execute(codeDocument);
 
                 if (phase is IRazorIntermediateNodeLoweringPhase)

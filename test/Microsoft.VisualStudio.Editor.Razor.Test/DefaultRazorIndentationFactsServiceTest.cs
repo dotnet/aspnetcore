@@ -313,7 +313,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private static RazorSyntaxTree GetSyntaxTree(StringTextSnapshot source, IEnumerable<DirectiveDescriptor> directives = null)
         {
             directives = directives ?? Enumerable.Empty<DirectiveDescriptor>();
-            var engine = RazorEngine.CreateDesignTime(builder =>
+            var engine = RazorProjectEngine.Create(builder =>
             {
                 foreach (var directive in directives)
                 {
@@ -321,10 +321,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
             });
 
-            var sourceDocument = RazorSourceDocument.Create(source.GetText(), "test.cshtml");
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var sourceProjectItem = new TestRazorProjectItem("test.cshtml")
+            {
+                Content = source.GetText()
+            };
 
-            engine.Process(codeDocument);
+            var codeDocument = engine.ProcessDesignTime(sourceProjectItem);
 
             return codeDocument.GetSyntaxTree();
         }

@@ -208,12 +208,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         private RazorEngine CreateEngine(params TagHelperDescriptor[] tagHelpers)
         {
-            return RazorEngine.Create(b =>
+            return RazorProjectEngine.Create(b =>
             {
                 b.Features.Add(new MvcViewDocumentClassifierPass());
 
                 b.Features.Add(new TestTagHelperFeature(tagHelpers));
-            });
+            }).Engine;
         }
 
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)

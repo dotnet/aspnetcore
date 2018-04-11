@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal class PreallocatedTagHelperAttributeOptimizationPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
-        // We want to run after the passes that 'lower' tag helpers.
-        public override int Order => DefaultFeatureOrder + 1000;
+        // We want to run after the passes that 'lower' tag helpers. We also want this to run after DefaultTagHelperOptimizationPass.
+        public override int Order => DefaultFeatureOrder + 1010;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {

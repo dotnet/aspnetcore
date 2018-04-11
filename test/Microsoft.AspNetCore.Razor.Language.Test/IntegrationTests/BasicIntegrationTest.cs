@@ -12,83 +12,82 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void Empty()
         {
             // Arrange
-            var engine = RazorEngine.Create();
-
-            var document = CreateCodeDocument();
+            var projectEngine = CreateProjectEngine();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
         public void HelloWorld()
         {
             // Arrange
-            var engine = RazorEngine.Create();
-
-            var document = CreateCodeDocument();
+            var projectEngine = CreateProjectEngine();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
         public void CustomDirective()
         {
             // Arrange
-            var engine = RazorEngine.Create(b =>
+            var projectEngine = CreateProjectEngine(b =>
             {
                 b.AddDirective(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine));
             });
 
-            var document = CreateCodeDocument();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
         public void BuildEngine_CallProcess()
         {
             // Arrange
-            var engine = RazorEngine.Create();
-
-            var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create());
+            var projectEngine = CreateProjectEngine();
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            Assert.NotNull(document.GetSyntaxTree());
-            Assert.NotNull(document.GetDocumentIntermediateNode());
+            Assert.NotNull(codeDocument.GetSyntaxTree());
+            Assert.NotNull(codeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
         public void CSharpDocument_Runtime_PreservesParserErrors()
         {
             // Arrange
-            var engine = RazorEngine.Create();
-
-            var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create("@!!!", filePath: "test.cshtml"));
+            var projectEngine = CreateProjectEngine();
+            var projectItem = new TestRazorProjectItem("test.cshtml")
+            {
+                Content = "@!!!"
+            };
 
             var expected = RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
                                 new SourceSpan(new SourceLocation("test.cshtml", 1, 0, 1), contentLength: 1),
                                 "!");
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            var csharpDocument = document.GetCSharpDocument();
+            var csharpDocument = codeDocument.GetCSharpDocument();
             var error = Assert.Single(csharpDocument.Diagnostics);
             Assert.Equal(expected, error);
         }
@@ -97,18 +96,20 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void CSharpDocument_DesignTime_PreservesParserErrors()
         {
             // Arrange
-            var engine = RazorEngine.CreateDesignTime();
-
-            var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create("@{", filePath: "test.cshtml"));
+            var projectEngine = CreateProjectEngine();
+            var projectItem = new TestRazorProjectItem("test.cshtml")
+            {
+                Content = "@{"
+            };
 
             var expected = RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                 new SourceSpan(new SourceLocation("test.cshtml", 1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{");
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
 
             // Assert
-            var csharpDocument = document.GetCSharpDocument();
+            var csharpDocument = codeDocument.GetCSharpDocument();
             var error = Assert.Single(csharpDocument.Diagnostics);
             Assert.Equal(expected, error);
         }

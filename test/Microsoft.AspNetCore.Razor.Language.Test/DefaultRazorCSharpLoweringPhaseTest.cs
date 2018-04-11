@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var phase = new DefaultRazorCSharpLoweringPhase();
 
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorProjectEngine.CreateEmpty(b => b.Phases.Add(phase));
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var phase = new DefaultRazorCSharpLoweringPhase();
 
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorProjectEngine.CreateEmpty(b => b.Phases.Add(phase));
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorCSharpLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorProjectEngine.CreateEmpty(b => b.Phases.Add(phase));
             var codeDocument = TestRazorCodeDocument.Create("<p class=@(");
             var options = RazorCodeGenerationOptions.CreateDefault();
             var irDocument = new DocumentIntermediateNode()

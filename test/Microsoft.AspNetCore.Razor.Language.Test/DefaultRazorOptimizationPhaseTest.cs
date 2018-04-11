@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var first = Mock.Of<IRazorOptimizationPass>(p => p.Order == 15);
             var second = Mock.Of<IRazorOptimizationPass>(p => p.Order == 17);
 
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var phase = new DefaultRazorOptimizationPhase();
 
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorProjectEngine.CreateEmpty(b => b.Phases.Add(phase));
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var phase = new DefaultRazorOptimizationPhase();
 
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
 

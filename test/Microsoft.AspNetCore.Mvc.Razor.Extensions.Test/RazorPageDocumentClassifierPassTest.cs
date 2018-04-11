@@ -334,10 +334,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private static RazorEngine CreateEngine()
         {
-            return RazorEngine.Create(b =>
+            return RazorProjectEngine.Create(b =>
             {
                 PageDirective.Register(b);
-            });
+            }).Engine;
         }
 
         private static DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)

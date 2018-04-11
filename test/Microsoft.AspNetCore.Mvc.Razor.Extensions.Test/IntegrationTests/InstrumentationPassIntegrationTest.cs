@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
                     })
             };
 
-            var engine = RazorEngine.Create(b =>
+            var engine = CreateProjectEngine(b =>
             {
                 b.AddTagHelpers(descriptors);
                 b.Features.Add(new InstrumentationPass());
@@ -52,10 +52,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
                 b.AddTargetExtension(new TemplateTargetExtension());
             });
 
-            var document = CreateCodeDocument();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var document = engine.Process(projectItem);
 
             // Assert
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());

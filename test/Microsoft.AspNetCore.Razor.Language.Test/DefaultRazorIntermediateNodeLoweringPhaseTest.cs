@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                 });
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                 });
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                 });
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var codeBlockDirective = DirectiveDescriptor.CreateCodeBlockDirective("code", b => b.AddStringToken());
             var razorBlockDirective = DirectiveDescriptor.CreateRazorBlockDirective("razor", b => b.AddStringToken());
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var directive = DirectiveDescriptor.CreateCodeBlockDirective("custom", b => b.Usage = DirectiveUsage.FileScopedSinglyOccurring);
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var directive = DirectiveDescriptor.CreateRazorBlockDirective("custom", b => b.Usage = DirectiveUsage.FileScopedSinglyOccurring);
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
 
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b =>
+            var engine = RazorProjectEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
                 b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));

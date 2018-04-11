@@ -1125,17 +1125,22 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
-            var engine = RazorEngine.Create();
-            return Lower(codeDocument, engine);
+            var projectEngine = RazorProjectEngine.Create();
+
+            return Lower(codeDocument, projectEngine);
         }
 
         private static DocumentIntermediateNode LowerDesignTime(RazorCodeDocument codeDocument)
         {
-            var engine = RazorEngine.CreateDesignTime();
-            return Lower(codeDocument, engine);
+            var projectEngine = RazorProjectEngine.Create(b =>
+            {
+                b.Features.Add(new DesignTimeOptionsFeature(designTime: true));
+            });
+
+            return Lower(codeDocument, projectEngine);
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine engine)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
@@ -1176,6 +1181,30 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
             var descriptor = builder.Build();
 
             return descriptor;
+        }
+
+        private class DesignTimeOptionsFeature : IConfigureRazorParserOptionsFeature, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            private bool _designTime;
+
+            public DesignTimeOptionsFeature(bool designTime)
+            {
+                _designTime = designTime;
+            }
+
+            public int Order { get; }
+
+            public RazorEngine Engine { get; set; }
+
+            public void Configure(RazorParserOptionsBuilder options)
+            {
+                options.SetDesignTime(_designTime);
+            }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                options.SetDesignTime(_designTime);
+            }
         }
     }
 }

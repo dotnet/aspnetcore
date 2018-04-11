@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         }
 
         #region Obsolete
+        [Obsolete("This method is obsolete and will be removed in a future version.")]
         public static void Register(IRazorEngineBuilder builder)
         {
             if (builder == null)
@@ -86,6 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             builder.Features.Add(new MvcViewDocumentClassifierPass());
         }
 
+        [Obsolete("This method is obsolete and will be removed in a future version.")]
         public static void RegisterViewComponentTagHelpers(IRazorEngineBuilder builder)
         {
             if (builder == null)
@@ -100,7 +102,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private static void EnsureDesignTime(IRazorEngineBuilder builder)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             if (builder.DesignTime)
             {

@@ -32,14 +32,18 @@ namespace Microsoft.AspNetCore.Razor.Language
         
         public override RazorProjectEngine Build()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var engine = RazorEngine.CreateEmpty(ConfigureRazorEngine);
+#pragma warning restore CS0618 // Type or member is obsolete
             var projectFeatures = Features.OfType<IRazorProjectEngineFeature>().ToArray();
             var projectEngine = new DefaultRazorProjectEngine(Configuration, engine, FileSystem, projectFeatures);
 
             return projectEngine;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private void ConfigureRazorEngine(IRazorEngineBuilder engineBuilder)
+#pragma warning disable CS0618 // Type or member is obsolete
         {
             var engineFeatures = Features.OfType<IRazorEngineFeature>();
             foreach (var engineFeature in engineFeatures)

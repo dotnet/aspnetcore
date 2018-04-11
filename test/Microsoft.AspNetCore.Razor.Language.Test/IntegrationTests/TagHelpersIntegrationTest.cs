@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     assemblyName: "TestAssembly")
             };
 
-            var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
-            var document = CreateCodeDocument();
+            var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
@@ -50,14 +50,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     })
             };
 
-            var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
-            var document = CreateCodeDocument();
+            var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
@@ -87,14 +87,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     })
             };
 
-            var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
-            var document = CreateCodeDocument();
+            var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
         private static TagHelperDescriptor CreateTagHelperDescriptor(

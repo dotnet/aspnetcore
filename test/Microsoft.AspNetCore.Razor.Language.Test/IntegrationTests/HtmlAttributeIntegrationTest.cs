@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -12,30 +11,28 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void HtmlWithDataDashAttribute()
         {
             // Arrange
-            var engine = RazorEngine.Create();
-
-            var document = CreateCodeDocument();
+            var projectEngine = CreateProjectEngine();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
         public void HtmlWithConditionalAttribute()
         {
             // Arrange
-            var engine = RazorEngine.Create();
-
-            var document = CreateCodeDocument();
+            var projectEngine = CreateProjectEngine();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
     }
 }

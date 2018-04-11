@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .Build()
             };
 
-            var engine = CreateEngine(tagHelpers);
+            var projectEngine = CreateProjectEngine(tagHelpers);
             var pass = new ViewComponentTagHelperPass()
             {
-                Engine = engine,
+                Engine = projectEngine.Engine,
             };
 
-            var irDocument = CreateIRDocument(engine, codeDocument);
+            var irDocument = CreateIRDocument(projectEngine, codeDocument);
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -71,13 +71,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .Build()
             };
 
-            var engine = CreateEngine(tagHelpers);
+            var projectEngine = CreateProjectEngine(tagHelpers);
             var pass = new ViewComponentTagHelperPass()
             {
-                Engine = engine,
+                Engine = projectEngine.Engine,
             };
 
-            var irDocument = CreateIRDocument(engine, codeDocument);
+            var irDocument = CreateIRDocument(projectEngine, codeDocument);
 
             var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
 
@@ -118,13 +118,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .Build()
             };
 
-            var engine = CreateEngine(tagHelpers);
+            var projectEngine = CreateProjectEngine(tagHelpers);
             var pass = new ViewComponentTagHelperPass()
             {
-                Engine = engine,
+                Engine = projectEngine.Engine,
             };
 
-            var irDocument = CreateIRDocument(engine, codeDocument);
+            var irDocument = CreateIRDocument(projectEngine, codeDocument);
 
             var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
 
@@ -171,13 +171,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .Build()
             };
 
-            var engine = CreateEngine(tagHelpers);
+            var projectEngine = CreateProjectEngine(tagHelpers);
             var pass = new ViewComponentTagHelperPass()
             {
-                Engine = engine,
+                Engine = projectEngine.Engine,
             };
 
-            var irDocument = CreateIRDocument(engine, codeDocument);
+            var irDocument = CreateIRDocument(projectEngine, codeDocument);
             
             var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
 
@@ -206,9 +206,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return RazorCodeDocument.Create(source);
         }
 
-        private RazorEngine CreateEngine(params TagHelperDescriptor[] tagHelpers)
+        private RazorProjectEngine CreateProjectEngine(params TagHelperDescriptor[] tagHelpers)
         {
-            return RazorEngine.Create(b =>
+            return RazorProjectEngine.Create(b =>
             {
                 b.Features.Add(new MvcViewDocumentClassifierPass());
 
@@ -216,11 +216,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
         }
 
-        private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode CreateIRDocument(RazorProjectEngine projectEngine, RazorCodeDocument codeDocument)
         {
-            for (var i = 0; i < engine.Phases.Count; i++)
+            for (var i = 0; i < projectEngine.Phases.Count; i++)
             {
-                var phase = engine.Phases[i];
+                var phase = projectEngine.Phases[i];
                 phase.Execute(codeDocument);
 
                 if (phase is IRazorDirectiveClassifierPhase)
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // We also expect the default tag helper pass to run first.
             var documentNode = codeDocument.GetDocumentIntermediateNode();
 
-            var defaultTagHelperPass = engine.Features.OfType<DefaultTagHelperOptimizationPass>().Single();
+            var defaultTagHelperPass = projectEngine.EngineFeatures.OfType<DefaultTagHelperOptimizationPass>().Single();
             defaultTagHelperPass.Execute(codeDocument, documentNode);
 
             return codeDocument.GetDocumentIntermediateNode();

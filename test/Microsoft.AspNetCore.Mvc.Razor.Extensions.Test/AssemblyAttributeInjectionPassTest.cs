@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             // Act
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "\\test\\\"Index.cshtml"));
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorEngine.Create(),
+                Engine = RazorProjectEngine.Create().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "test\\\"Index.cshtml"));
@@ -423,15 +423,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     Assert.Equal(expectedAttribute, token.Content);
                 },
                 node => Assert.Same(@namespace, node));
-        }
-
-        private RazorEngine CreateEngine()
-        {
-            return RazorEngine.Create(b =>
-            {
-                // Notice we're not registering the InjectDirective.Pass here so we can run it on demand.
-                b.Features.Add(new AssemblyAttributeInjectionPass());
-            });
         }
 
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)

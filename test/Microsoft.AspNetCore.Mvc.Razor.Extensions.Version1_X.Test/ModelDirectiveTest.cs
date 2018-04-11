@@ -236,26 +236,26 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         private RazorEngine CreateEngine()
         {
-            return RazorEngine.Create(b =>
-            {
-                // Notice we're not registering the ModelDirective.Pass here so we can run it on demand.
-                b.AddDirective(ModelDirective.Directive);
-
-                // There's some special interaction with the inherits directive
-                InheritsDirective.Register(b);
-            });
+            return CreateEngineCore();
         }
 
         private RazorEngine CreateDesignTimeEngine()
         {
-            return RazorEngine.CreateDesignTime(b =>
+            return CreateEngineCore(designTime: true);
+        }
+
+        private RazorEngine CreateEngineCore(bool designTime = false)
+        {
+            return RazorProjectEngine.Create(b =>
             {
                 // Notice we're not registering the ModelDirective.Pass here so we can run it on demand.
                 b.AddDirective(ModelDirective.Directive);
 
                 // There's some special interaction with the inherits directive
                 InheritsDirective.Register(b);
-            });
+
+                b.Features.Add(new DesignTimeOptionsFeature(designTime));
+            }).Engine;
         }
 
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
@@ -313,6 +313,30 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
             {
                 Node = node;
+            }
+        }
+
+        private class DesignTimeOptionsFeature : IConfigureRazorParserOptionsFeature, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            private bool _designTime;
+
+            public DesignTimeOptionsFeature(bool designTime)
+            {
+                _designTime = designTime;
+            }
+
+            public int Order { get; }
+
+            public RazorEngine Engine { get; set; }
+
+            public void Configure(RazorParserOptionsBuilder options)
+            {
+                options.SetDesignTime(_designTime);
+            }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                options.SetDesignTime(_designTime);
             }
         }
     }

@@ -128,6 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         }
 
         #region Obsolete
+        [Obsolete("This method is obsolete and will be removed in a future version.")]
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {
             if (builder == null)

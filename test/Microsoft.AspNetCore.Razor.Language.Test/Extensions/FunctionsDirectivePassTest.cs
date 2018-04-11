@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void Execute_SkipsDocumentWithNoClassNode()
         {
             // Arrange
-            var engine = CreateEngine();
+            var projectEngine = CreateProjectEngine();
             var pass = new FunctionsDirectivePass()
             {
-                Engine = engine,
+                Engine = projectEngine.Engine,
             };
 
             var sourceDocument = TestRazorSourceDocument.Create("@functions { var value = true; }");
@@ -38,16 +38,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void Execute_AddsStatementsToClassLevel()
         {
             // Arrange
-            var engine = CreateEngine();
+            var projectEngine = CreateProjectEngine();
             var pass = new FunctionsDirectivePass()
             {
-                Engine = engine,
+                Engine = projectEngine.Engine,
             };
             
             var sourceDocument = TestRazorSourceDocument.Create("@functions { var value = true; }");
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
 
-            var irDocument = Lower(codeDocument, engine);
+            var irDocument = Lower(codeDocument, projectEngine);
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -74,19 +74,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 node => Assert.IsType<DirectiveIntermediateNode>(node));
         }
 
-        private static RazorEngine CreateEngine()
+        private static RazorProjectEngine CreateProjectEngine()
         {
-            return RazorEngine.Create(b =>
+            return RazorProjectEngine.Create(b =>
             {
                 FunctionsDirective.Register(b);
             });
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)
         {
-            for (var i = 0; i < engine.Phases.Count; i++)
+            for (var i = 0; i < projectEngine.Phases.Count; i++)
             {
-                var phase = engine.Phases[i];
+                var phase = projectEngine.Phases[i];
                 phase.Execute(codeDocument);
 
                 if (phase is IRazorDocumentClassifierPhase)

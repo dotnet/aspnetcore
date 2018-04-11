@@ -32,8 +32,8 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
         {
             var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
 
-            var engine = RazorEngine.Create();
-            var directives = engine.Features.OfType<IRazorDirectiveFeature>().FirstOrDefault()?.Directives;
+            var projectEngine = RazorProjectEngine.Create();
+            var directives = projectEngine.EngineFeatures.OfType<IRazorDirectiveFeature>().FirstOrDefault()?.Directives;
             return Task.FromResult(directives ?? Enumerable.Empty<DirectiveDescriptor>());
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
         {
             var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
 
-            var engine = RazorEngine.Create();
+            var projectEngine = RazorProjectEngine.Create();
 
             RazorSourceDocument source;
             using (var stream = new MemoryStream())
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             }
 
             var code = RazorCodeDocument.Create(source);
-            engine.Process(code);
+            projectEngine.Engine.Process(code);
 
             var csharp = code.GetCSharpDocument();
             if (csharp == null)

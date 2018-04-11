@@ -173,12 +173,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private RazorEngine CreateEngine()
         {
-            return RazorEngine.Create(b =>
+            return RazorProjectEngine.Create(b =>
             {
                 // Notice we're not registering the InjectDirective.Pass here so we can run it on demand.
                 b.AddDirective(InjectDirective.Directive);
                 b.AddDirective(ModelDirective.Directive);
-            });
+            }).Engine;
         }
 
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
@@ -14,10 +13,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             // Arrange
             var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
-            var razorEngine = RazorEngine.Create(engine =>
+            var razorEngine = RazorProjectEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
-            });
+            }).Engine;
             var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act
@@ -32,12 +31,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             // Arrange
             var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
-            var razorEngine = RazorEngine.Create(engine =>
+            var razorEngine = RazorProjectEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
 
                 engine.SetBaseType("MyBaseType");
-            });
+            }).Engine;
             var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             // Arrange
             var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
-            var razorEngine = RazorEngine.Create(engine =>
+            var razorEngine = RazorProjectEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
 
@@ -71,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     @class.Interfaces = new[] { "global::System.IDisposable" };
                     @class.BaseType = "CustomBaseType";
                 });
-            });
+            }).Engine;
             var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act
@@ -86,12 +85,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             // Arrange
             var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
-            var razorEngine = RazorEngine.Create(engine =>
+            var razorEngine = RazorProjectEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
 
                 engine.SetNamespace("MyApp.Razor.Views");
-            });
+            }).Engine;
             var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act

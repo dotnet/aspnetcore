@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
+            pass.Engine = Mock.Of<RazorEngine>();
 
             // Act
             pass.Execute(codeDocument, document);
@@ -179,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
+            pass.Engine = Mock.Of<RazorEngine>();
 
             // Act
             pass.Execute(codeDocument, document);
@@ -217,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage-Info/Add+User.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
+            pass.Engine = Mock.Of<RazorEngine>();
 
             // Act
             pass.Execute(codeDocument, document);
@@ -264,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
+            pass.Engine = Mock.Of<RazorEngine>();
 
             // Act
             pass.Execute(codeDocument, document);
@@ -302,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
+            pass.Engine = Mock.Of<RazorEngine>();
 
             // Act
             pass.Execute(codeDocument, document);
@@ -338,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
             var pass = new NamespaceDirective.Pass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
+            pass.Engine = Mock.Of<RazorEngine>();
 
             // Act
             pass.Execute(codeDocument, document);

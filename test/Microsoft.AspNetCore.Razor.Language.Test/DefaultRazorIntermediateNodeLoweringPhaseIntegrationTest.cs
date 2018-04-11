@@ -432,26 +432,28 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private DocumentIntermediateNode Lower(
             RazorCodeDocument codeDocument,
-            Action<IRazorEngineBuilder> builder = null,
+            Action<RazorProjectEngineBuilder> builder = null,
             IEnumerable<TagHelperDescriptor> tagHelpers = null,
             bool designTime = false)
         {
             tagHelpers = tagHelpers ?? new TagHelperDescriptor[0];
 
-            Action<IRazorEngineBuilder> configureEngine = b =>
+            Action<RazorProjectEngineBuilder> configureEngine = b =>
             {
                 builder?.Invoke(b);
 
                 FunctionsDirective.Register(b);
                 SectionDirective.Register(b);
                 b.AddTagHelpers(tagHelpers);
+
+                b.Features.Add(new DesignTimeOptionsFeature(designTime));
             };
 
-            var engine = designTime ? RazorEngine.CreateDesignTime(configureEngine) : RazorEngine.Create(configureEngine);
+            var projectEngine = RazorProjectEngine.Create(configureEngine);
 
-            for (var i = 0; i < engine.Phases.Count; i++)
+            for (var i = 0; i < projectEngine.Phases.Count; i++)
             {
-                var phase = engine.Phases[i];
+                var phase = projectEngine.Phases[i];
                 phase.Execute(codeDocument);
 
                 if (phase is IRazorIntermediateNodeLoweringPhase)
@@ -488,6 +490,30 @@ namespace Microsoft.AspNetCore.Razor.Language
             var descriptor = builder.Build();
 
             return descriptor;
+        }
+
+        private class DesignTimeOptionsFeature : IConfigureRazorParserOptionsFeature, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            private bool _designTime;
+
+            public DesignTimeOptionsFeature(bool designTime)
+            {
+                _designTime = designTime;
+            }
+
+            public int Order { get; }
+
+            public RazorEngine Engine { get; set; }
+
+            public void Configure(RazorParserOptionsBuilder options)
+            {
+                options.SetDesignTime(_designTime);
+            }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                options.SetDesignTime(_designTime);
+            }
         }
     }
 }

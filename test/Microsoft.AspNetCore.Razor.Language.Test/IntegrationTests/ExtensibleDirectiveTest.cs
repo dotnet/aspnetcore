@@ -12,22 +12,22 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void NamespaceToken()
         {
             // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder =>
+            var engine = CreateProjectEngine(builder =>
             {
                 builder.ConfigureDocumentClassifier();
 
                 builder.AddDirective(DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddNamespaceToken()));
             });
 
-            var document = CreateCodeDocument();
+            var projectItem = CreateProjectItem();
 
             // Act
-            engine.Process(document);
+            var codeDocument = engine.ProcessDesignTime(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
-            AssertSourceMappingsMatchBaseline(document);
+            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
+            AssertSourceMappingsMatchBaseline(codeDocument);
         }
     }
 }
