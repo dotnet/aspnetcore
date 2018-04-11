@@ -218,6 +218,34 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void CanDispatchActionEventsToTopLevelComponents()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+            object receivedArgs = null;
+
+            var component = new EventComponent
+            {
+                OnClickAction = () => { receivedArgs = new object(); }
+            };
+            var componentId = renderer.AssignComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Event not yet fired
+            Assert.Null(receivedArgs);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIMouseEventArgs();
+            renderer.DispatchEvent(componentId, eventHandlerId, eventArgs);
+            Assert.NotNull(receivedArgs);
+        }
+
+        [Fact]
         public void CanDispatchEventsToNestedComponents()
         {
             UIEventArgs receivedArgs = null;
@@ -955,6 +983,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             public UIEventHandler OnTest { get; set; }
             public UIMouseEventHandler OnClick { get; set; }
+            public Action OnClickAction { get; set; }
 
             public bool SkipElement { get; set; }
             private int renderCount = 0;
@@ -974,11 +1003,15 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     {
                         builder.AddAttribute(4, "onclick", OnClick);
                     }
+                    if (OnClickAction != null)
+                    {
+                        builder.AddAttribute(5, "onclickaction", OnClickAction);
+                    }
                     builder.CloseElement();
                     builder.CloseElement();
                 }
                 builder.CloseElement();
-                builder.AddContent(5, $"Render count: {++renderCount}");
+                builder.AddContent(6, $"Render count: {++renderCount}");
             }
 
             public void HandleEvent(UIEventHandler handler, UIEventArgs args)

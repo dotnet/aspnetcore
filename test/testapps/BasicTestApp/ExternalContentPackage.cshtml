@@ -1,5 +1,4 @@
 ﻿@addTagHelper *, TestContentPackage
-@using Microsoft.AspNetCore.Blazor
 @using TestContentPackage
 
 <h1>Functionality and content from an external package</h1>
@@ -32,7 +31,7 @@
 {
     string result;
 
-    void ShowJavaScriptPrompt(UIMouseEventArgs e)
+    void ShowJavaScriptPrompt()
     {
         result = MyPrompt.Show("Hello!");
     }

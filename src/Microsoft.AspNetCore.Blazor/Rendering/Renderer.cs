@@ -125,15 +125,20 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             {
                 _eventHandlersById.Add(id, wrapper);
             }
+            // IMPORTANT: we're creating an additional delegate when necessary. This is
+            // going to get cached in _eventHandlersById, but the render tree diff
+            // will operate on 'AttributeValue' which means that we'll only create a new
+            // wrapper delegate when the underlying delegate changes.
+            //
+            // TLDR: If the component uses a method group or a non-capturing lambda
+            // we don't allocate much.
+            else if (frame.AttributeValue is Action action)
+            {
+                _eventHandlersById.Add(id, (UIEventArgs e) => action());
+            }
             else if (frame.AttributeValue is MulticastDelegate @delegate)
             {
-                // IMPORTANT: we're creating an additional delegate when necessary. This is
-                // going to get cached in _eventHandlersById, but the render tree diff
-                // will operate on 'AttributeValue' which means that we'll only create a new
-                // wrapper delegate when the underlying delegate changes.
-                //
-                // TLDR: If the component uses a method group or a non-capturing lambda
-                // we don't allocate much.
+
                _eventHandlersById.Add(id, (UIEventArgs e) => @delegate.DynamicInvoke(e));
             }
 

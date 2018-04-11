@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.Blazor
-<div class="special-style">
+﻿<div class="special-style">
     This component, including the CSS and image required to produce its
     elegant styling, is in an external NuGet package.
     <button onclick="@ChangeLabel">@buttonLabel </button>
@@ -8,7 +7,7 @@
 @functions {
     string buttonLabel = "Click me";
 
-    void ChangeLabel(UIMouseEventArgs e)
+    void ChangeLabel()
     {
         buttonLabel = "It works";
     }

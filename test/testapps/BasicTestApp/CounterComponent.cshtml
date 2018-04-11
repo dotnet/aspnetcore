@@ -1,7 +1,6 @@
-﻿@using Microsoft.AspNetCore.Blazor
-<h1>Counter</h1>
+﻿<h1>Counter</h1>
 <p>Current count: @currentCount</p>
-<p><button onclick="@((handleClicks ? (Action<UIMouseEventArgs>)IncrementCount : null))">Click me</button></p>
+<p><button onclick="@((handleClicks ? (Action)IncrementCount : null))">Click me</button></p>
 
 <label>
     <input type="checkbox" bind="@handleClicks" />
@@ -12,7 +11,7 @@
     int currentCount = 0;
     bool handleClicks = true;
 
-    void IncrementCount(UIMouseEventArgs e)
+    void IncrementCount()
     {
         currentCount++;
     }

@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_EventHandler_AddsFrame()
+        public void AddAttribute_Element_UIEventHandler_AddsFrame()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_NullEventHandler_IgnoresFrame()
+        public void AddAttribute_Element_NullUIEventHandler_IgnoresFrame()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -526,6 +526,43 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attr", (UIEventHandler)null);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames(),
+                frame => AssertFrame.Element(frame, "elem", 1, 0));
+        }
+
+        [Fact]
+        public void AddAttribute_Element_Action_AddsFrame()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            var value = new Action(() => { });
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attr", value);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames(),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "attr", value, 1));
+        }
+
+        [Fact]
+        public void AddAttribute_Element_NullAction_IgnoresFrame()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attr", (Action)null);
             builder.CloseElement();
 
             // Assert
@@ -651,7 +688,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectEventHandler_AddsFrame()
+        public void AddAttribute_Element_ObjectUIEventHandler_AddsFrame()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -671,12 +708,52 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void AddAttribute_Component_ObjectEventHandleValue_SetsAttributeValue()
+        public void AddAttribute_Component_ObjectUIEventHandleValue_SetsAttributeValue()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             var value = new UIEventHandler((e) => { });
+
+            // Act
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddAttribute(1, "attr", (object)value);
+            builder.CloseComponent();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames(),
+                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
+                frame => AssertFrame.Attribute(frame, "attr", value, 1));
+        }
+
+        [Fact]
+        public void AddAttribute_Element_ObjectAction_AddsFrame()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            var value = new Action(() => { });
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attr", (object)value);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames(),
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "attr", value, 1));
+        }
+
+        [Fact]
+        public void AddAttribute_Component_ObjectAction_SetsAttributeValue()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            var value = new Action(() => { });
 
             // Act
             builder.OpenComponent<TestComponent>(0);

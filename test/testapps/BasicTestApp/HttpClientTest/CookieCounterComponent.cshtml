@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.Blazor
-@inject System.Net.Http.HttpClient Http
+﻿@inject System.Net.Http.HttpClient Http
 
 <h1>Cookie counter</h1>
 <p>The server increments the count by one on each request.</p>
@@ -18,13 +17,13 @@
     string testServerBaseUrl;
     string responseText;
 
-    async void DeleteCookie(UIMouseEventArgs e)
+    async void DeleteCookie()
     {
         await DoRequest("api/cookie/reset");
         StateHasChanged();
     }
 
-    async void GetAndIncrementCounter(UIMouseEventArgs e)
+    async void GetAndIncrementCounter()
     {
         await DoRequest("api/cookie/increment");
         StateHasChanged();

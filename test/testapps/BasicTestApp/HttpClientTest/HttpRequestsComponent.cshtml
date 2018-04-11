@@ -1,6 +1,5 @@
 ﻿@using System.Net
 @using System.Net.Http
-@using Microsoft.AspNetCore.Blazor
 @using Microsoft.AspNetCore.Blazor.Browser.Http
 @inject HttpClient Http
 
@@ -72,7 +71,7 @@
     string responseBody;
     string responseHeaders;
 
-    async void DoRequest(UIMouseEventArgs e)
+    async void DoRequest()
     {
         responseStatusCode = null;
 
@@ -125,7 +124,7 @@
         StateHasChanged();
     }
 
-    void AddHeader(UIMouseEventArgs e)
+    void AddHeader()
         => requestHeaders.Add(new RequestHeader());
 
     void RemoveHeader(RequestHeader header)

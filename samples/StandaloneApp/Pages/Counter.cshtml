@@ -1,5 +1,4 @@
 ﻿@page "/counter"
-@using Microsoft.AspNetCore.Blazor
 
 <h1>Counter</h1>
 
@@ -10,7 +9,7 @@
 @functions {
     int currentCount = 0;
 
-    void IncrementCount(UIMouseEventArgs e)
+    void IncrementCount()
     {
         currentCount++;
     }

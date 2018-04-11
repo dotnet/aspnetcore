@@ -150,6 +150,24 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         /// <summary>
         /// <para>
+        /// Appends a frame representing an <see cref="Action"/>-valued attribute.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
+        /// current element is not a component, the frame will be omitted.
+        /// </para>
+        /// </summary>
+        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        public void AddAttribute(int sequence, string name, Action value)
+        {
+            AddAttribute(sequence, name, (MulticastDelegate)value);
+        }
+
+        /// <summary>
+        /// <para>
         /// Appends a frame representing an <see cref="UIEventHandler"/>-valued attribute.
         /// </para>
         /// <para>

@@ -3,7 +3,6 @@
 
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
@@ -276,7 +275,23 @@ namespace Test
         }
 
         [Fact]
-        public void EventHandler_OnElement_WithLambdaDelegate()
+        public void EventHandler_OnElement_WithNoArgsLambdaDelegate()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""@(() => { })"" />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_OnElement_WithEventArgsLambdaDelegate()
         {
             // Arrange
 
@@ -292,7 +307,27 @@ namespace Test
         }
 
         [Fact]
-        public void EventHandler_OnElement_WithDelegate()
+        public void EventHandler_OnElement_WithNoArgMethodGroup()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""@OnClick"" />
+@functions {
+    void OnClick() {
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_OnElement_WithEventArgsMethodGroup()
         {
             // Arrange
 
@@ -302,6 +337,26 @@ namespace Test
 <input onclick=""@OnClick"" />
 @functions {
     void OnClick(UIMouseEventArgs e) {
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_OnElement_ArbitraryEventName_WithEventArgsMethodGroup()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""@OnClick"" />
+@functions {
+    void OnClick(UIEventArgs e) {
     }
 }");
 
