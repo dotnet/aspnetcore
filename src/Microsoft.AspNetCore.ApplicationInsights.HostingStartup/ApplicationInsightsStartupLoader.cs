@@ -29,9 +29,13 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
         /// <param name="builder"></param>
         public void Configure(IWebHostBuilder builder)
         {
+            Console.WriteLine("ApplicationInsightsHostingStartup 1");
             builder.UseApplicationInsights();
 
+            Console.WriteLine("ApplicationInsightsHostingStartup 2");
             builder.ConfigureServices(InitializeServices);
+
+            Console.WriteLine("ApplicationInsightsHostingStartup 3");
         }
 
 
@@ -41,18 +45,26 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
         /// <param name="services">The <see cref="IServiceCollection"/> associated with the application.</param>
         private void InitializeServices(IServiceCollection services)
         {
+            Console.WriteLine("ApplicationInsightsHostingStartup 4");
             services.AddSingleton<IStartupFilter, ApplicationInsightsLoggerStartupFilter>();
             services.AddSingleton<ITagHelperComponent, JavaScriptSnippetTagHelperComponent>();
 
+            Console.WriteLine("ApplicationInsightsHostingStartup 5");
             var home = Environment.GetEnvironmentVariable("HOME");
             if (!string.IsNullOrEmpty(home))
             {
+                Console.WriteLine("ApplicationInsightsHostingStartup 6");
                 var settingsFile = Path.Combine(home, "site", "diagnostics", ApplicationInsightsSettingsFile);
                 var configurationBuilder = new ConfigurationBuilder()
                     .AddJsonFile(settingsFile, optional: true, reloadOnChange: true);
 
-                services.AddLogging(builder => builder.AddConfiguration(configurationBuilder.Build().GetSection("Logging")));
+                Console.WriteLine("ApplicationInsightsHostingStartup 7");
+                var config = configurationBuilder.Build().GetSection("Logging");
+
+                Console.WriteLine("ApplicationInsightsHostingStartup 8");
+                services.AddLogging(builder => builder.AddConfiguration(config));
             }
+            Console.WriteLine("ApplicationInsightsHostingStartup 9");
         }
     }
 }
