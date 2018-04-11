@@ -3,19 +3,19 @@
   "classifications": [
     "Web",
     "Blazor",
-    "Content"
+    "Library"
   ],
-  "groupIdentity": "Microsoft.Web.Blazor.Content",
-  "identity": "Microsoft.Web.Blazor.Content.CSharp",
-  "name": "Blazor (content)",
+  "groupIdentity": "Microsoft.Web.Blazor.Library",
+  "identity": "Microsoft.Web.Blazor.Library.CSharp",
+  "name": "Blazor Library",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "BlazorContent.CSharp.csproj"
+      "path": "BlazorLibrary.CSharp.csproj"
     }
   ],
-  "shortName": "blazorcontent",
-  "sourceName": "BlazorContent.CSharp",
+  "shortName": "blazorlib",
+  "sourceName": "BlazorLibrary.CSharp",
   "sources": [
     {
       "source": "./",

@@ -93,7 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Performance", "benchmarks\Microsoft.AspNetCore.Blazor.Performance\Microsoft.AspNetCore.Blazor.Performance.csproj", "{50F6820F-D058-4E68-9E15-801F893F514E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorContent.CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorContent.CSharp\BlazorContent.CSharp.csproj", "{3A457B14-D91B-4FFF-A81A-8F350BDB911F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorLibrary.CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorLibrary.CSharp\BlazorLibrary.CSharp.csproj", "{3A457B14-D91B-4FFF-A81A-8F350BDB911F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
