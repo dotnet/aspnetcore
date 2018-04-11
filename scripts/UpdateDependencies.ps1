@@ -7,6 +7,8 @@
 param(
     [Parameter(Mandatory = $true)]
     $BuildXml,
+    [switch]
+    $NoCommit,
     [string[]]$ConfigVars = @()
 )
 
@@ -14,6 +16,14 @@ $ErrorActionPreference = 'Stop'
 Import-Module -Scope Local -Force "$PSScriptRoot/common.psm1"
 Set-StrictMode -Version 1
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+if (-not $NoCommit) {
+    $GitHubEmail = $ConfigVars["GithubEmail"]
+    $GitHubUsername = $ConfigVars["GithubUsername"]
+    $GitHubPassword = $ConfigVars["GithubToken"]
+
+    Set-GitHubInfo $GitHubPassword $GitHubUsername $GitHubEmail
+}
 
 $depsPath = Resolve-Path "$PSScriptRoot/../build/dependencies.props"
 [xml] $dependencies = LoadXml $depsPath
@@ -46,5 +56,15 @@ foreach ($package in $remoteDeps.SelectNodes('//Package')) {
     }
 }
 
-$updatedVars = UpdateVersions $variables $dependencies
-CommitUpdatedVersions $updatedVars $dependencies $depsPath
+$updatedVars = UpdateVersions $variables $dependencies $depsPath
+
+if (-not $NoCommit) {
+    $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+    $destinationBranch = "dotnetbot/UpdateDeps"
+
+    $baseBranch = $ConfigVars["GithubUpstreamBranch"]
+
+    if ($body) {
+        CreatePR $baseBranch $destinationBranch $body $GitHubPassword
+    }
+}

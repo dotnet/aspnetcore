@@ -1,6 +1,10 @@
 
 [CmdletBinding()]
-param()
+param(
+    [string]$GitHubEmail,
+    [string]$GitHubUsername,
+    [string]$GitHubPassword
+)
 
 $ErrorActionPreference = 'Stop'
 Import-Module -Scope Local -Force "$PSScriptRoot/common.psm1"
@@ -23,6 +27,8 @@ Invoke-WebRequest -OutFile $localCoreSetupVersions -Uri $coreSetupVersions
 
 $msNetCoreAppPackageVersion = $null
 $msNetCoreAppPackageName = "Microsoft.NETCore.App"
+
+Set-GitHubInfo $GitHubPassword $GitHubUsername $GitHubEmail
 
 $variables = @{}
 
@@ -96,5 +102,21 @@ $depsPath = Resolve-Path "$PSScriptRoot/../build/dependencies.props"
 Write-Host "Loading deps from $depsPath"
 [xml] $dependencies = LoadXml $depsPath
 
-$updatedVars = UpdateVersions $variables $dependencies $depsPath
-CommitUpdatedVersions $updatedVars $dependencies $depsPath
+$remote = "origin"
+$baseBranch = "dev"
+
+$currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
+$destinationBranch = "rybrande/UpgradeDepsTest"
+
+Invoke-Block { & git checkout -tb $destinationBranch "$remote/$baseBranch" }
+try {
+    $updatedVars = UpdateVersions $variables $dependencies $depsPath
+    $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+
+    if ($body) {
+        CreatePR $baseBranch $destinationBranch $body $GitHubPassword
+    }
+}
+finally {
+    Invoke-Block { & git checkout $currentBranch }
+}

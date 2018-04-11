@@ -115,12 +115,16 @@ function PackageIdVarName([string]$packageId) {
 
 function Ensure-Hub() {
     $tmpDir = "$PSScriptRoot\tmp"
-    $zipDir = "$tmpDir\Hub\"
+    $zipDir = "$tmpDir\Hub"
     $hubLocation = "$zipDir\bin\hub.exe"
 
     if (-Not (Test-Path $hubLocation) ) {
         $source = "https://github.com/github/hub/releases/download/v2.3.0-pre9/hub-windows-amd64-2.3.0-pre9.zip"
         $zipLocation = "$tmpDir\hub.zip"
+        if(-not (Test-Path $zipLocation)) {
+            New-Item -ItemType directory -Path $tmpDir
+        }
+
         Invoke-WebRequest -OutFile $zipLocation -Uri $source
 
         Expand-Archive -Path $zipLocation -DestinationPath $zipDir -Force
@@ -132,39 +136,45 @@ function Ensure-Hub() {
     return $hubLocation
 }
 
-function CommitUpdatedVersions([hashtable]$updatedVars, [xml]$dependencies, [string]$depsPath) {
+function CreatePR([string]$baseBranch, [string]$destinationBranch, [string]$body, [string]$gitHubToken) {
+    $hubLocation = Ensure-Hub
+
+    Invoke-Block { git push -f https://$gitHubToken@github.com/aspnet/Universe.git $destinationBranch }
+    & $hubLocation pull-request -f -b $baseBranch -h $destinationBranch -m $body
+}
+
+function Set-GithubInfo(
+    [string]$GitHubPassword,
+    [string]$GitHubUser,
+    [string]$GitHubEmail)
+{
+    $Env:GITHUB_TOKEN = $GitHubPassword
+    $Env:GITHUB_USER = $GitHubUser
+    $Env:GITHUB_EMAIL = $GitHubEmail
+}
+function CommitUpdatedVersions(
+    [hashtable]$updatedVars,
+    [xml]$dependencies,
+    [string]$depsPath)
+{
     $count = $updatedVars.Count
     if ($count -gt 0) {
-        $hubLocation = Ensure-Hub
+        & git add build\dependencies.props
 
-        $destinationBranch = "rybrande/UpgradeDepsTest"
-        $currentBranch = & git rev-parse --abbrev-ref HEAD
+        $subject = "Updating external dependencies"
 
-        $remote = "origin"
-        $baseBranch = "dev"
+        # Have to pipe null so that the output from this doesn't end up as part of the return value
+        $null = Invoke-Block { & git commit -m $subject }
 
-        Invoke-Block { & git checkout -tb $destinationBranch "$remote/$baseBranch" }
-        try
-        {
-            & git add build\dependencies.props
+        $body = "$subject`n`n"
 
-            $subject = "Updating external dependencies"
-            & git commit -m $subject
+        $body += "New versions:`n"
 
-            $body = "$subject`n`n"
-
-            $body += "New versions:`n"
-
-            foreach ($var in $updatedVars.GetEnumerator()) {
-                $body += "    $($var.Name)`n"
-            }
-            Invoke-Block { & git push -f origin $destinationBranch }
-
-            Invoke-Block { & $hubLocation pull-request -b $baseBranch -h $destinationBranch -m $body }
+        foreach ($var in $updatedVars.GetEnumerator()) {
+            $body += "    $($var.Name)`n"
         }
-        finally{
-            & git checkout $currentBranch
-        }
+
+        return $body
     }
 }
 
