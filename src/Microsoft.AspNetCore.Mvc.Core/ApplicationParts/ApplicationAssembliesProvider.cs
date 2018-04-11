@@ -51,8 +51,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
             IEnumerable<AssemblyItem> assemblyItems;
 
-            if (dependencyContext == null)
+            if (dependencyContext == null || dependencyContext.CompileLibraries.Count == 0)
             {
+                // If an application was built with PreserveCompilationContext = false, CompileLibraries will be empty and we
+                // can no longer reliably infer the dependency closure. In this case, treat it the same as a missing
+                // deps file.
                 assemblyItems = new[] { GetAssemblyItem(entryAssembly) };
             }
             else
@@ -151,30 +154,46 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         // Internal for unit testing
         internal static IEnumerable<RuntimeLibrary> GetCandidateLibraries(DependencyContext dependencyContext)
         {
-            var candidatesResolver = new CandidateResolver(dependencyContext.RuntimeLibraries, ReferenceAssemblies);
-            return candidatesResolver.GetCandidates();
+            // When using Microsoft.AspNetCore.App \ Microsoft.AspNetCore.All shared runtimes, entries in the RuntimeLibraries
+            // get "erased" and it is no longer accurate to query to determine a library's dependency closure.
+            // We'll use CompileLibraries to calculate the dependency graph and runtime library to resolve assemblies to inspect.
+            var candidatesResolver = new CandidateResolver(dependencyContext.CompileLibraries, ReferenceAssemblies);
+            foreach (var library in dependencyContext.RuntimeLibraries)
+            {
+                if (candidatesResolver.IsCandidate(library))
+                {
+                    yield return library;
+                }
+            }
         }
 
         private class CandidateResolver
         {
-            private readonly IDictionary<string, Dependency> _runtimeDependencies;
+            private readonly IDictionary<string, Dependency> _compileLibraries;
 
-            public CandidateResolver(IReadOnlyList<RuntimeLibrary> runtimeDependencies, ISet<string> referenceAssemblies)
+            public CandidateResolver(IReadOnlyList<Library> compileLibraries, ISet<string> referenceAssemblies)
             {
-                var dependenciesWithNoDuplicates = new Dictionary<string, Dependency>(StringComparer.OrdinalIgnoreCase);
-                foreach (var dependency in runtimeDependencies)
+                var compileLibrariesWithNoDuplicates = new Dictionary<string, Dependency>(StringComparer.OrdinalIgnoreCase);
+                foreach (var library in compileLibraries)
                 {
-                    if (dependenciesWithNoDuplicates.ContainsKey(dependency.Name))
+                    if (compileLibrariesWithNoDuplicates.ContainsKey(library.Name))
                     {
-                        throw new InvalidOperationException(Resources.FormatCandidateResolver_DifferentCasedReference(dependency.Name));
+                        throw new InvalidOperationException(Resources.FormatCandidateResolver_DifferentCasedReference(library.Name));
                     }
-                    dependenciesWithNoDuplicates.Add(dependency.Name, CreateDependency(dependency, referenceAssemblies));
+
+                    compileLibrariesWithNoDuplicates.Add(library.Name, CreateDependency(library, referenceAssemblies));
                 }
 
-                _runtimeDependencies = dependenciesWithNoDuplicates;
+                _compileLibraries = compileLibrariesWithNoDuplicates;
             }
 
-            private Dependency CreateDependency(RuntimeLibrary library, ISet<string> referenceAssemblies)
+            public bool IsCandidate(Library library)
+            {
+                var classification = ComputeClassification(library.Name);
+                return classification == DependencyClassification.ReferencesMvc;
+            }
+
+            private Dependency CreateDependency(Library library, ISet<string> referenceAssemblies)
             {
                 var classification = DependencyClassification.Unknown;
                 if (referenceAssemblies.Contains(library.Name))
@@ -187,14 +206,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
             private DependencyClassification ComputeClassification(string dependency)
             {
-                if (!_runtimeDependencies.ContainsKey(dependency))
+                if (!_compileLibraries.ContainsKey(dependency))
                 {
                     // Library does not have runtime dependency. Since we can't infer
                     // anything about it's references, we'll assume it does not have a reference to Mvc.
                     return DependencyClassification.DoesNotReferenceMvc;
                 }
 
-                var candidateEntry = _runtimeDependencies[dependency];
+                var candidateEntry = _compileLibraries[dependency];
                 if (candidateEntry.Classification != DependencyClassification.Unknown)
                 {
                     return candidateEntry.Classification;
@@ -219,26 +238,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 }
             }
 
-            public IEnumerable<RuntimeLibrary> GetCandidates()
-            {
-                foreach (var dependency in _runtimeDependencies)
-                {
-                    if (ComputeClassification(dependency.Key) == DependencyClassification.ReferencesMvc)
-                    {
-                        yield return dependency.Value.Library;
-                    }
-                }
-            }
-
             private class Dependency
             {
-                public Dependency(RuntimeLibrary library, DependencyClassification classification)
+                public Dependency(Library library, DependencyClassification classification)
                 {
                     Library = library;
                     Classification = classification;
                 }
 
-                public RuntimeLibrary Library { get; }
+                public Library Library { get; }
 
                 public DependencyClassification Classification { get; set; }
 

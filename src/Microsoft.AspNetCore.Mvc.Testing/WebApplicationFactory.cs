@@ -176,34 +176,35 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             {
                 // The default dependency context will be populated in .net core applications.
                 var context = DependencyContext.Default;
-                if (context != null)
-                {
-                    // Find the list of projects
-                    var projects = context.CompileLibraries.Where(l => l.Type == "project");
-
-                    // Find the list of projects runtime information and their assembly names.
-                    var runtimeProjectLibraries = context.RuntimeLibraries
-                        .Where(r => projects.Any(p => p.Name == r.Name))
-                        .ToDictionary(r => r, r => r.GetDefaultAssemblyNames(context).ToArray());
-
-                    var entryPointAssemblyName = typeof(TEntryPoint).Assembly.GetName().Name;
-
-                    // Find the project containing TEntryPoint
-                    var entryPointRuntimeLibrary = runtimeProjectLibraries
-                        .Single(rpl => rpl.Value.Any(a => string.Equals(a.Name, entryPointAssemblyName, StringComparison.Ordinal)));
-
-                    // Find the list of projects referencing TEntryPoint.
-                    var candidates = runtimeProjectLibraries
-                        .Where(rpl => rpl.Key.Dependencies
-                            .Any(d => string.Equals(d.Name, entryPointRuntimeLibrary.Key.Name, StringComparison.Ordinal)));
-
-                    return candidates.SelectMany(rl => rl.Value).Select(Assembly.Load);
-                }
-                else
+                if (context == null || context.CompileLibraries.Count == 0)
                 {
                     // The app domain friendly name will be populated in full framework.
                     return new[] { Assembly.Load(AppDomain.CurrentDomain.FriendlyName) };
                 }
+
+                var runtimeProjectLibraries = context.RuntimeLibraries
+                    .ToDictionary(r => r.Name, r => r, StringComparer.Ordinal);
+
+                // Find the list of projects
+                var projects = context.CompileLibraries.Where(l => l.Type == "project");
+
+                var entryPointAssemblyName = typeof(TEntryPoint).Assembly.GetName().Name;
+
+                // Find the list of projects referencing TEntryPoint.
+                var candidates = context.CompileLibraries
+                    .Where(library => library.Dependencies.Any(d => string.Equals(d.Name, entryPointAssemblyName, StringComparison.Ordinal)));
+
+                var testAssemblies = new List<Assembly>();
+                foreach (var candidate in candidates)
+                {
+                    if (runtimeProjectLibraries.TryGetValue(candidate.Name, out var runtimeLibrary))
+                    {
+                        var runtimeAssemblies = runtimeLibrary.GetDefaultAssemblyNames(context);
+                        testAssemblies.AddRange(runtimeAssemblies.Select(Assembly.Load));
+                    }
+                }
+
+                return testAssemblies;
             }
             catch (Exception)
             {

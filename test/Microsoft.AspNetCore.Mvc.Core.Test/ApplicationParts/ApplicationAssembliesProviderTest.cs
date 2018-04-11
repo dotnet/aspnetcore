@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyModel;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
@@ -20,6 +21,30 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         {
             // Arrange
             var provider = new TestApplicationAssembliesProvider();
+
+            // Act
+            var result = provider.ResolveAssemblies(ThisAssembly);
+
+            // Assert
+            Assert.Equal(new[] { ThisAssembly }, result);
+        }
+
+        [Fact]
+        public void ResolveAssemblies_ReturnsCurrentAssembly_IfDepsFileDoesNotHaveAnyCompileLibraries()
+        {
+            // Arrange
+            var runtimeLibraries = new[]
+            {
+                GetRuntimeLibrary("MyApp", "Microsoft.AspNetCore.All"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.All", "Microsoft.NETCore.App"),
+                GetRuntimeLibrary("Microsoft.NETCore.App"),
+                GetRuntimeLibrary("ClassLibrary"),
+            };
+            var dependencyContext = GetDependencyContext(compileLibraries: Array.Empty<CompilationLibrary>(), runtimeLibraries);
+            var provider = new TestApplicationAssembliesProvider
+            {
+                DependencyContext = dependencyContext,
+            };
 
             // Act
             var result = provider.ResolveAssemblies(ThisAssembly);
@@ -56,12 +81,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var mvcAssembly = typeof(IActionResult).Assembly;
             var classLibrary = typeof(FactAttribute).Assembly;
 
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary(ThisAssembly.GetName().Name, new[] { mvcAssembly.GetName().Name, classLibrary.GetName().Name }),
-                GetLibrary(mvcAssembly.GetName().Name),
-                GetLibrary(classLibrary.GetName().Name, new[] { mvcAssembly.GetName().Name }),
-            });
+                [ThisAssembly.GetName().Name] = new[] { mvcAssembly.GetName().Name, classLibrary.GetName().Name },
+                [mvcAssembly.GetName().Name] = Array.Empty<string>(),
+                [classLibrary.GetName().Name] = new[] { mvcAssembly.GetName().Name },
+            };
+
+            var dependencyContext = GetDependencyContext(libraries);
 
             var provider = new TestApplicationAssembliesProvider
             {
@@ -83,13 +110,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var classLibrary = typeof(object).Assembly;
             var relatedPart = typeof(FactAttribute).Assembly;
 
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary(ThisAssembly.GetName().Name, new[] { relatedPart.GetName().Name, classLibrary.GetName().Name }),
-                GetLibrary(classLibrary.GetName().Name, new[] { mvcAssembly.GetName().Name }),
-                GetLibrary(relatedPart.GetName().Name, new[] { mvcAssembly.GetName().Name }),
-                GetLibrary(mvcAssembly.GetName().Name),
-            });
+                [ThisAssembly.GetName().Name] = new[] { relatedPart.GetName().Name, classLibrary.GetName().Name },
+                [classLibrary.GetName().Name] = new[] { mvcAssembly.GetName().Name },
+                [relatedPart.GetName().Name] = new[] { mvcAssembly.GetName().Name },
+                [mvcAssembly.GetName().Name] = Array.Empty<string>(),
+            };
+
+            var dependencyContext = GetDependencyContext(libraries);
 
             var provider = new TestApplicationAssembliesProvider
             {
@@ -136,8 +165,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         {
             // Arrange
             var mvcAssembly = typeof(IActionResult).Assembly;
-            var libraryAssembly1 = typeof(object).Assembly;
-            var libraryAssembly2 = typeof(HttpContext).Assembly;
+            var libraryAssembly1 = typeof(HttpContext).Assembly;
+            var libraryAssembly2 = typeof(JsonConverter).Assembly;
             var relatedPart = typeof(FactAttribute).Assembly;
             var expected = string.Join(
                 Environment.NewLine,
@@ -145,13 +174,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 libraryAssembly1.FullName,
                 libraryAssembly2.FullName);
 
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary(ThisAssembly.GetName().Name, new[] { relatedPart.GetName().Name, libraryAssembly1.GetName().Name }),
-                GetLibrary(libraryAssembly1.GetName().Name, new[] { mvcAssembly.GetName().Name }),
-                GetLibrary(libraryAssembly2.GetName().Name, new[] { mvcAssembly.GetName().Name }),
-                GetLibrary(mvcAssembly.GetName().Name),
-            });
+                [ThisAssembly.GetName().Name] = new[] { relatedPart.GetName().Name, libraryAssembly1.GetName().Name },
+                [libraryAssembly1.GetName().Name] = new[] { mvcAssembly.GetName().Name },
+                [libraryAssembly2.GetName().Name] = new[] { mvcAssembly.GetName().Name },
+                [mvcAssembly.GetName().Name] = Array.Empty<string>(),
+            };
+
+            var dependencyContext = GetDependencyContext(libraries);
 
             var provider = new TestApplicationAssembliesProvider
             {
@@ -179,31 +210,41 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var upperCaseLibrary = "Microsoft.AspNetCore.Mvc";
             var mixedCaseLibrary = "microsoft.aspNetCore.mvc";
 
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary(mixedCaseLibrary),
-                GetLibrary(upperCaseLibrary),
-            });
+                [upperCaseLibrary] = Array.Empty<string>(),
+                [mixedCaseLibrary] = Array.Empty<string>(),
+            };
+            var dependencyContext = GetDependencyContext(libraries);
 
             // Act
-            var exception = Assert.Throws<InvalidOperationException>(() => ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext));
+            var exception = Assert.Throws<InvalidOperationException>(() => ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext).ToArray());
 
             // Assert
-            Assert.Equal($"A duplicate entry for library reference {upperCaseLibrary} was found. Please check that all package references in all projects use the same casing for the same package references.", exception.Message);
+            Assert.Equal($"A duplicate entry for library reference {mixedCaseLibrary} was found. Please check that all package references in all projects use the same casing for the same package references.", exception.Message);
         }
 
         [Fact]
         public void GetCandidateLibraries_IgnoresMvcAssemblies()
         {
             // Arrange
-            var expected = GetLibrary("SomeRandomAssembly", "Microsoft.AspNetCore.Mvc.Abstractions");
-            var dependencyContext = GetDependencyContext(new[]
+            var expected = GetRuntimeLibrary("SomeRandomAssembly", "Microsoft.AspNetCore.Mvc.Abstractions");
+            var runtimeLibraries = new[]
             {
-                GetLibrary("Microsoft.AspNetCore.Mvc.Core"),
-                GetLibrary("Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.Mvc.Core"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.Mvc"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
                 expected,
-            });
+            };
+
+            var compileLibraries = new[]
+            {
+                GetCompileLibrary("Microsoft.AspNetCore.Mvc.Core"),
+                GetCompileLibrary("Microsoft.AspNetCore.Mvc"),
+                GetCompileLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
+                GetCompileLibrary("SomeRandomAssembly", "Microsoft.AspNetCore.Mvc.Abstractions"),
+            };
+            var dependencyContext = GetDependencyContext(compileLibraries, runtimeLibraries);
 
             // Act
             var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext);
@@ -213,16 +254,86 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         }
 
         [Fact]
-        public void GetCandidateLibraries_DoesNotThrow_IfLibraryDoesNotHaveRuntimeComponent()
+        public void GetCandidateLibraries_ReturnsRuntimeLibraries_IfCompileLibraryDependencyToMvcIsPresent()
         {
             // Arrange
-            var expected = GetLibrary("MyApplication", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc");
-            var dependencyContext = GetDependencyContext(new[]
+            // When an app is running against Microsoft.AspNetCore.All shared runtime or if the DependencyContext is queried
+            // from an app that's running on Microsoft.NETCore.App (e.g. in a unit testing scenario), the
+            // runtime library does not state that the app references Mvc whereas the compile library does. This test validates
+            // that we correctly recognize this scenario.
+            var expected = GetRuntimeLibrary("MyApp", "Microsoft.AspNetCore.All");
+            var runtimeLibraries = new[]
             {
                 expected,
-                GetLibrary("Microsoft.AspNetCore.Server.Kestrel", "Libuv"),
-                GetLibrary("Microsoft.AspNetCore.Mvc"),
-            });
+                GetRuntimeLibrary("Microsoft.AspNetCore.All", "Microsoft.NETCore.App"),
+                GetRuntimeLibrary("Microsoft.NETCore.App"),
+            };
+
+            var compileLibraries = new[]
+            {
+                GetCompileLibrary("MyApp", "Microsoft.AspNetCore.All"),
+                GetCompileLibrary("Microsoft.AspNetCore.All", "Microsoft.AspNetCore.Mvc", "Microsoft.NETCore.App"),
+                GetCompileLibrary("Microsoft.AspNetCore.Mvc"),
+                GetCompileLibrary("Microsoft.NETCore.App"),
+            };
+            var dependencyContext = GetDependencyContext(compileLibraries, runtimeLibraries);
+
+            // Act
+            var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext);
+
+            // Assert
+            Assert.Equal(new[] { expected }, candidates);
+        }
+
+        [Fact]
+        public void GetCandidateLibraries_DoesNotThrow_IfLibraryDoesNotAppearAsCompileOrRuntimeLibrary()
+        {
+            // Arrange
+            var expected = GetRuntimeLibrary("MyApplication", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc");
+            var compileLibraries = new[]
+            {
+                GetCompileLibrary("MyApplication", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc"),
+                GetCompileLibrary("Microsoft.AspNetCore.Mvc"),
+                GetCompileLibrary("Microsoft.AspNetCore.Server.Kestrel", "Libuv"),
+            };
+
+            var runtimeLibraries = new[]
+            {
+                expected,
+                GetRuntimeLibrary("Microsoft.AspNetCore.Server.Kestrel", "Libuv"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.Mvc"),
+            };
+
+            var dependencyContext = GetDependencyContext(compileLibraries, runtimeLibraries);
+
+            // Act
+            var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext).ToList();
+
+            // Assert
+            Assert.Equal(new[] { expected }, candidates);
+        }
+
+        [Fact]
+        public void GetCandidateLibraries_DoesNotThrow_IfCompileLibraryIsPresentButNotRuntimeLibrary()
+        {
+            // Arrange
+            var expected = GetRuntimeLibrary("MyApplication", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc");
+            var compileLibraries = new[]
+            {
+                GetCompileLibrary("MyApplication", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc"),
+                GetCompileLibrary("Microsoft.AspNetCore.Mvc"),
+                GetCompileLibrary("Microsoft.AspNetCore.Server.Kestrel", "Libuv"),
+                GetCompileLibrary("Libuv"),
+            };
+
+            var runtimeLibraries = new[]
+            {
+                expected,
+                GetRuntimeLibrary("Microsoft.AspNetCore.Server.Kestrel", "Libuv"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.Mvc"),
+            };
+
+            var dependencyContext = GetDependencyContext(compileLibraries, runtimeLibraries);
 
             // Act
             var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext).ToList();
@@ -235,78 +346,81 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void GetCandidateLibraries_ReturnsLibrariesReferencingAnyMvcAssembly()
         {
             // Arrange
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary("Foo", "Microsoft.AspNetCore.Mvc.Core"),
-                GetLibrary("Bar", "Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Qux", "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Baz", "Microsoft.AspNetCore.Mvc.Abstractions"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Core"),
-                GetLibrary("Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Not.Mvc.Assembly"),
-                GetLibrary("Unofficial.Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
-            });
+                ["Foo"] = new[] { "Microsoft.AspNetCore.Mvc.Core" },
+                ["Bar"] = new[] { "Microsoft.AspNetCore.Mvc" },
+                ["Qux"] = new[] { "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc" },
+                ["Baz"] = new[] { "Microsoft.AspNetCore.Mvc.Abstractions" },
+                ["Microsoft.AspNetCore.Mvc.Core"] = Array.Empty<string>(),
+                ["Microsoft.AspNetCore.Mvc"] = Array.Empty<string>(),
+                ["Not.Mvc.Assembly"] = Array.Empty<string>(),
+                ["Unofficial.Microsoft.AspNetCore.Mvc"] = Array.Empty<string>(),
+                ["Microsoft.AspNetCore.Mvc.Abstractions"] = Array.Empty<string>(),
+            };
+            var dependencyContext = GetDependencyContext(libraries);
 
             // Act
             var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext);
 
             // Assert
-            Assert.Equal(new[] { "Foo", "Bar", "Baz" }, candidates.Select(a => a.Name));
+            Assert.Equal(new[] { "Bar", "Baz", "Foo", }, candidates.Select(a => a.Name));
         }
 
         [Fact]
         public void GetCandidateLibraries_LibraryNameComparisonsAreCaseInsensitive()
         {
             // Arrange
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary("Foo", "MICROSOFT.ASPNETCORE.MVC.CORE"),
-                GetLibrary("Bar", "microsoft.aspnetcore.mvc"),
-                GetLibrary("Qux", "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Baz", "mIcRoSoFt.AsPnEtCoRe.MvC.aBsTrAcTiOnS"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Core"),
-                GetLibrary("LibraryA", "LIBRARYB"),
-                GetLibrary("LibraryB", "microsoft.aspnetcore.mvc"),
-                GetLibrary("Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Not.Mvc.Assembly"),
-                GetLibrary("Unofficial.Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
-            });
+                ["Foo"] = new[] { "MICROSOFT.ASPNETCORE.MVC.CORE" },
+                ["Bar"] = new[] { "microsoft.aspnetcore.mvc" },
+                ["Qux"] = new[] { "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc" },
+                ["Baz"] = new[] { "mIcRoSoFt.AsPnEtCoRe.MvC.aBsTrAcTiOnS" },
+                ["Microsoft.AspNetCore.Mvc.Core"] = Array.Empty<string>(),
+                ["LibraryA"] = new[] { "LIBRARYB" },
+                ["LibraryB"] = new[] { "microsoft.aspnetcore.mvc" },
+                ["Microsoft.AspNetCore.Mvc"] = Array.Empty<string>(),
+                ["Not.Mvc.Assembly"] = Array.Empty<string>(),
+                ["Unofficial.Microsoft.AspNetCore.Mvc"] = Array.Empty<string>(),
+                ["Microsoft.AspNetCore.Mvc.Abstractions"] = Array.Empty<string>(),
+            };
+            var dependencyContext = GetDependencyContext(libraries);
 
             // Act
             var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext);
 
             // Assert
-            Assert.Equal(new[] { "Foo", "Bar", "Baz", "LibraryA", "LibraryB" }, candidates.Select(a => a.Name));
+            Assert.Equal(new[] { "Bar", "Baz", "Foo", "LibraryA", "LibraryB" }, candidates.Select(a => a.Name));
         }
 
         [Fact]
         public void GetCandidateLibraries_ReturnsLibrariesWithTransitiveReferencesToAnyMvcAssembly()
         {
             // Arrange
-            var expectedLibraries = new[] { "Foo", "Bar", "Baz", "LibraryA", "LibraryB", "LibraryC", "LibraryE", "LibraryG", "LibraryH" };
+            var expectedLibraries = new[] { "Bar", "Baz", "Foo", "LibraryA", "LibraryB", "LibraryC", "LibraryE", "LibraryG", "LibraryH" };
 
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary("Foo", "Bar"),
-                GetLibrary("Bar", "Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Qux", "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Baz", "Microsoft.AspNetCore.Mvc.Abstractions"),
-                GetLibrary("Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Not.Mvc.Assembly"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
-                GetLibrary("Unofficial.Microsoft.AspNetCore.Mvc"),
-                GetLibrary("LibraryA", "LibraryB"),
-                GetLibrary("LibraryB","LibraryC"),
-                GetLibrary("LibraryC", "LibraryD", "Microsoft.AspNetCore.Mvc.Abstractions"),
-                GetLibrary("LibraryD"),
-                GetLibrary("LibraryE","LibraryF","LibraryG"),
-                GetLibrary("LibraryF"),
-                GetLibrary("LibraryG", "LibraryH"),
-                GetLibrary("LibraryH", "LibraryI", "Microsoft.AspNetCore.Mvc"),
-                GetLibrary("LibraryI"),
-            });
+                ["Foo"] = new[] { "Bar" },
+                ["Bar"] = new[] { "Microsoft.AspNetCore.Mvc" },
+                ["Qux"] = new[] { "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc" },
+                ["Baz"] = new[] { "Microsoft.AspNetCore.Mvc.Abstractions" },
+                ["Microsoft.AspNetCore.Mvc"] = Array.Empty<string>(),
+                ["Not.Mvc.Assembly"] = Array.Empty<string>(),
+                ["Microsoft.AspNetCore.Mvc.Abstractions"] = Array.Empty<string>(),
+                ["Unofficial.Microsoft.AspNetCore.Mvc"] = Array.Empty<string>(),
+                ["LibraryA"] = new[] { "LibraryB" },
+                ["LibraryB"] = new[] { "LibraryC" },
+                ["LibraryC"] = new[] { "LibraryD", "Microsoft.AspNetCore.Mvc.Abstractions" },
+                ["LibraryD"] = Array.Empty<string>(),
+                ["LibraryE"] = new[] { "LibraryF", "LibraryG" },
+                ["LibraryF"] = Array.Empty<string>(),
+                ["LibraryG"] = new[] { "LibraryH" },
+                ["LibraryH"] = new[] { "LibraryI", "Microsoft.AspNetCore.Mvc" },
+                ["LibraryI"] = Array.Empty<string>(),
+            };
+            var dependencyContext = GetDependencyContext(libraries);
 
             // Act
             var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext);
@@ -319,23 +433,25 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void GetCandidateLibraries_SkipsMvcAssemblies()
         {
             // Arrange
-            var dependencyContext = GetDependencyContext(new[]
+            var libraries = new Dictionary<string, string[]>
             {
-                GetLibrary("MvcSandbox", "Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.Mvc"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.HttpAbstractions"),
-                GetLibrary("Microsoft.AspNetCore.HttpAbstractions"),
-                GetLibrary("Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Mvc.Abstractions", "Microsoft.AspNetCore.Mvc.Core"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.TagHelpers", "Microsoft.AspNetCore.Mvc.Razor"),
-                GetLibrary("Microsoft.AspNetCore.Mvc.Razor"),
-                GetLibrary("ControllersAssembly", "Microsoft.AspNetCore.Mvc"),
-            });
+                ["MvcSandbox"] = new[] { "Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.Mvc" },
+                ["Microsoft.AspNetCore.Mvc.Core"] = new[] { "Microsoft.AspNetCore.HttpAbstractions" },
+                ["Microsoft.AspNetCore.HttpAbstractions"] = Array.Empty<string>(),
+                ["Microsoft.AspNetCore.Mvc"] = new[] { "Microsoft.AspNetCore.Mvc.Abstractions", "Microsoft.AspNetCore.Mvc.Core" },
+                ["Microsoft.AspNetCore.Mvc.Abstractions"] = Array.Empty<string>(),
+                ["Microsoft.AspNetCore.Mvc.TagHelpers"] = new[] { "Microsoft.AspNetCore.Mvc.Razor" },
+                ["Microsoft.AspNetCore.Mvc.Razor"] = Array.Empty<string>(),
+                ["ControllersAssembly"] = new[] { "Microsoft.AspNetCore.Mvc" },
+            };
+
+            var dependencyContext = GetDependencyContext(libraries);
 
             // Act
             var candidates = ApplicationAssembliesProvider.GetCandidateLibraries(dependencyContext);
 
             // Assert
-            Assert.Equal(new[] { "MvcSandbox", "ControllersAssembly" }, candidates.Select(a => a.Name));
+            Assert.Equal(new[] { "ControllersAssembly", "MvcSandbox" }, candidates.Select(a => a.Name));
         }
 
         // This test verifies DefaultAssemblyPartDiscoveryProvider.ReferenceAssemblies reflects the actual loadable assemblies
@@ -397,18 +513,37 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             }
         }
 
-        private static DependencyContext GetDependencyContext(RuntimeLibrary[] libraries)
+        private static DependencyContext GetDependencyContext(IDictionary<string, string[]> libraries)
+        {
+            var compileLibraries = new List<CompilationLibrary>();
+            var runtimeLibraries = new List<RuntimeLibrary>();
+
+            foreach (var kvp in libraries.OrderBy(kvp => kvp.Key, StringComparer.Ordinal))
+            {
+                var compileLibrary = GetCompileLibrary(kvp.Key, kvp.Value);
+                compileLibraries.Add(compileLibrary);
+
+                var runtimeLibrary = GetRuntimeLibrary(kvp.Key, kvp.Value);
+                runtimeLibraries.Add(runtimeLibrary);
+            }
+
+            return GetDependencyContext(compileLibraries, runtimeLibraries);
+        }
+
+        private static DependencyContext GetDependencyContext(
+            IReadOnlyList<CompilationLibrary> compileLibraries,
+            IReadOnlyList<RuntimeLibrary> runtimeLibraries)
         {
             var dependencyContext = new DependencyContext(
                 new TargetInfo("framework", "runtime", "signature", isPortable: true),
                 CompilationOptions.Default,
-                new CompilationLibrary[0],
-                libraries,
+                compileLibraries,
+                runtimeLibraries,
                 Enumerable.Empty<RuntimeFallbacks>());
             return dependencyContext;
         }
 
-        private static RuntimeLibrary GetLibrary(string name, params string[] dependencyNames)
+        private static RuntimeLibrary GetRuntimeLibrary(string name, params string[] dependencyNames)
         {
             var dependencies = dependencyNames?.Select(d => new Dependency(d, "42.0.0")) ?? new Dependency[0];
 
@@ -420,6 +555,20 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 new RuntimeAssetGroup[0],
                 new RuntimeAssetGroup[0],
                 new ResourceAssembly[0],
+                dependencies: dependencies.ToArray(),
+                serviceable: true);
+        }
+
+        private static CompilationLibrary GetCompileLibrary(string name, params string[] dependencyNames)
+        {
+            var dependencies = dependencyNames?.Select(d => new Dependency(d, "42.0.0")) ?? new Dependency[0];
+
+            return new CompilationLibrary(
+                "package",
+                name,
+                "23.0.0",
+                "hash",
+                Enumerable.Empty<string>(),
                 dependencies: dependencies.ToArray(),
                 serviceable: true);
         }
