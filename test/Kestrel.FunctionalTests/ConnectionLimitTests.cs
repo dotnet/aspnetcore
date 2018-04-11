@@ -12,11 +12,12 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class ConnectionLimitTests
+    public class ConnectionLimitTests : LoggedTest
     {
         [Fact]
         public async Task ResetsCountWhenConnectionClosed()
@@ -190,14 +191,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private TestServer CreateServerWithMaxConnections(RequestDelegate app, long max)
         {
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
             serviceContext.ServerOptions.Limits.MaxConcurrentConnections = max;
             return new TestServer(app, serviceContext);
         }
 
         private TestServer CreateServerWithMaxConnections(RequestDelegate app, ResourceCounter concurrentConnectionCounter)
         {
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next =>
             {

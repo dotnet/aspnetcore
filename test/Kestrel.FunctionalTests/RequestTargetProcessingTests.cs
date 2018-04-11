@@ -9,16 +9,17 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class RequestTargetProcessingTests
+    public class RequestTargetProcessingTests : LoggedTest
     {
         [Fact]
         public async Task RequestPathIsNotNormalized()
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
             using (var server = new TestServer(async context =>
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("/base/hello%20world?foo=1&bar=2")]
         public async Task RequestFeatureContainsRawTarget(string requestTarget)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async context =>
             {
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData(HttpMethod.Connect, "host")]
         public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async context =>
             {
@@ -111,8 +112,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    var host = method == HttpMethod.Connect 
-                        ? requestTarget 
+                    var host = method == HttpMethod.Connect
+                        ? requestTarget
                         : string.Empty;
 
                     await connection.Send(

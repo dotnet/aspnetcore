@@ -17,6 +17,10 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 To run a complete build on command line only, execute `build.cmd` or `build.sh` without arguments. See [developer documentation](https://github.com/aspnet/Home/wiki) for more details.
 
+## File logging for functional test
+
+Turn on file logging for Kestrel functional tests by specifying the environment variable ASPNETCORE_TEST_LOG_DIR to the log output directory.
+
 ## Packages
 
 Kestrel is available as a NuGet package.

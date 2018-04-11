@@ -5,26 +5,19 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class CertificateLoaderTests
+    public class CertificateLoaderTests : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public CertificateLoaderTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
         [Theory]
         [InlineData("no_extensions.pfx")]
         public void IsCertificateAllowedForServerAuth_AllowWithNoExtensions(string testCertName)
         {
             var certPath = TestResources.GetCertPath(testCertName);
-            _output.WriteLine("Loading " + certPath);
+            TestOutputHelper.WriteLine("Loading " + certPath);
             var cert = new X509Certificate2(certPath, "testPassword");
             Assert.Empty(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
 
@@ -37,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public void IsCertificateAllowedForServerAuth_ValidatesEnhancedKeyUsageOnCertificate(string testCertName)
         {
             var certPath = TestResources.GetCertPath(testCertName);
-            _output.WriteLine("Loading " + certPath);
+            TestOutputHelper.WriteLine("Loading " + certPath);
             var cert = new X509Certificate2(certPath, "testPassword");
             Assert.NotEmpty(cert.Extensions);
             var eku = Assert.Single(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
@@ -52,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public void IsCertificateAllowedForServerAuth_RejectsCertificatesMissingServerEku(string testCertName)
         {
             var certPath = TestResources.GetCertPath(testCertName);
-            _output.WriteLine("Loading " + certPath);
+            TestOutputHelper.WriteLine("Loading " + certPath);
             var cert = new X509Certificate2(certPath, "testPassword");
             Assert.NotEmpty(cert.Extensions);
             var eku = Assert.Single(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());

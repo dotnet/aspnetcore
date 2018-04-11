@@ -9,20 +9,13 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class UpgradeTests
+    public class UpgradeTests : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public UpgradeTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
         [Fact]
         public async Task ResponseThrowsAfterUpgrade()
         {
@@ -42,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
 
                 upgrade.TrySetResult(true);
-            }))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -93,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     upgrade.SetException(ex);
                     throw;
                 }
-            }))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -136,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await Task.Delay(100);
                 }
-            }))
+            }, new TestServiceContext(LoggerFactory)))
             using (var connection = server.CreateConnection())
             {
                 await connection.SendEmptyGetWithUpgrade();
@@ -155,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task RejectsRequestWithContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             using (var connection = server.CreateConnection())
             {
                 await connection.Send("POST / HTTP/1.1",
@@ -178,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task AcceptsRequestWithNoContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -202,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task RejectsRequestWithChunkedEncodingAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             using (var connection = server.CreateConnection())
             {
                 await connection.Send("POST / HTTP/1.1",
@@ -226,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var upgradeTcs = new TaskCompletionSource<bool>();
             using (var server = new TestServer(async context =>
-             {
+            {
                  var feature = context.Features.Get<IHttpUpgradeFeature>();
                  Assert.False(feature.IsUpgradableRequest);
                  try
@@ -241,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                  {
                      upgradeTcs.TrySetResult(false);
                  }
-             }))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -259,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             const int limit = 10;
             var upgradeTcs = new TaskCompletionSource<object>();
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
             serviceContext.ConnectionManager = new HttpConnectionManager(serviceContext.Log, ResourceCounter.Quota(limit));
 
             using (var server = new TestServer(async context =>

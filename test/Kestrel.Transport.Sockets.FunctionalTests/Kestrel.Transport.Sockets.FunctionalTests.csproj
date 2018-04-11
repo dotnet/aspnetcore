@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.FunctionalTests</AssemblyName>
-    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.FunctionalTests</RootNamespace>
+    <AssemblyName>Sockets.FunctionalTests</AssemblyName>
+    <RootNamespace>Sockets.FunctionalTests</RootNamespace>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <DefineConstants>$(DefineConstants);SOCKETS</DefineConstants>

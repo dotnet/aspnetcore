@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class KeepAliveTimeoutTests
+    public class KeepAliveTimeoutTests : LoggedTest
     {
         private static readonly TimeSpan _keepAliveTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan _longDelay = TimeSpan.FromSeconds(30);
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private TestServer CreateServer(CancellationToken longRunningCt, CancellationToken upgradeCt)
         {
-            return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), new TestServiceContext
+            return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), new TestServiceContext(LoggerFactory)
             {
                 // Use real SystemClock so timeouts trigger.
                 SystemClock = new SystemClock(),

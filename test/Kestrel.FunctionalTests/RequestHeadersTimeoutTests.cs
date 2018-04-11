@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class RequestHeadersTimeoutTests
+    public class RequestHeadersTimeoutTests : LoggedTest
     {
         private static readonly TimeSpan RequestHeadersTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan LongDelay = TimeSpan.FromSeconds(30);
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
                 await httpContext.Response.WriteAsync("hello, world");
             },
-            new TestServiceContext
+            new TestServiceContext(LoggerFactory)
             {
                 // Use real SystemClock so timeouts trigger.
                 SystemClock = new SystemClock(),

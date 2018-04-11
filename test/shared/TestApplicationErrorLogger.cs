@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -14,6 +15,8 @@ namespace Microsoft.AspNetCore.Testing
     {
         // Application errors are logged using 13 as the eventId.
         private const int ApplicationErrorEventId = 13;
+
+        public List<Type> IgnoredExceptions { get; } = new List<Type>();
 
         public bool ThrowOnCriticalErrors { get; set; } = true;
 
@@ -49,7 +52,7 @@ namespace Microsoft.AspNetCore.Testing
 
                 Console.WriteLine(log);
 
-                if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors)
+                if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors && !IgnoredExceptions.Contains(exception.GetType()))
                 {
                     throw new Exception($"Unexpected critical error. {log}", exception);
                 }

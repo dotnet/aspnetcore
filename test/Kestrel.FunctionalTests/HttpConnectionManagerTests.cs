@@ -9,12 +9,13 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class HttpConnectionManagerTests
+    public class HttpConnectionManagerTests : LoggedTest
     {
 // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
 #if !DEBUG

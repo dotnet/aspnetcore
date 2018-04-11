@@ -11,11 +11,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class ConnectionAdapterTests
+    public class ConnectionAdapterTests : LoggedTest
     {
         [Fact]
         public async Task CanReadAndWriteWithRewritingConnectionAdapter()
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { adapter }
             };
 
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new AsyncConnectionAdapter() }
             };
 
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new AsyncConnectionAdapter() }
             };
 
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new ThrowingConnectionAdapter() }
             };
 
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new AsyncConnectionAdapter() }
             };
 
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             var stopTask = Task.CompletedTask;
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new ThrowingConnectionAdapter() }
             };
 
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
@@ -181,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new PassThroughConnectionAdapter() }
             };
 
-            var serviceContext = new TestServiceContext();
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async context =>
             {

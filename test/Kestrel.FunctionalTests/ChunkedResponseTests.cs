@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class ChunkedResponseTests
+    public class ChunkedResponseTests : LoggedTest
     {
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ResponsesAreChunkedAutomatically(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ResponsesAreNotChunkedAutomaticallyForHttp10Requests(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ResponsesAreChunkedAutomaticallyForHttp11NonKeepAliveRequests(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -167,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ZeroLengthWritesAreIgnored(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ZeroLengthWritesFlushHeaders(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             var flushed = new SemaphoreSlim(0, 1);
 
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -280,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedIfExceptionThrownAfterWrite(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -314,7 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedIfExceptionThrownAfterZeroLengthWrite(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -347,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task WritesAreFlushedPriorToResponseCompletion(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             var flushWh = new ManualResetEventSlim();
 
@@ -394,7 +395,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ChunksCanBeWrittenManually(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {

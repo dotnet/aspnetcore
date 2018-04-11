@@ -17,14 +17,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class RequestBodyTimeoutTests
+    public class RequestBodyTimeoutTests : LoggedTest
     {
         [Fact]
         public async Task RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate()
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
             var systemClock = new MockSystemClock();
-            var serviceContext = new TestServiceContext
+            var serviceContext = new TestServiceContext(LoggerFactory)
             {
                 SystemClock = systemClock,
                 DateHeaderValueManager = new DateHeaderValueManager(systemClock)
@@ -69,16 +69,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task RequestTimesOutWhenNotDrainedWithinDrainTimeoutPeriod()
         {
-            var sink = new TestSink();
-            var logger = new TestLogger("TestLogger", sink, enabled: true);
-
             // This test requires a real clock since we can't control when the drain timeout is set
             var systemClock = new SystemClock();
-            var serviceContext = new TestServiceContext
+            var serviceContext = new TestServiceContext(LoggerFactory)
             {
                 SystemClock = systemClock,
                 DateHeaderValueManager = new DateHeaderValueManager(systemClock),
-                Log = new KestrelTrace(logger)
             };
 
             var appRunningEvent = new ManualResetEventSlim();
@@ -115,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            Assert.Contains(sink.Writes, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information && w.Exception is BadHttpRequestException
+            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status408RequestTimeout);
         }
 
@@ -124,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
             var systemClock = new MockSystemClock();
-            var serviceContext = new TestServiceContext
+            var serviceContext = new TestServiceContext(LoggerFactory)
             {
                 SystemClock = systemClock,
                 DateHeaderValueManager = new DateHeaderValueManager(systemClock)

@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Listening to open TCP socket and/or pipe handles is not supported on Windows.")]
-    public class ListenHandleTests
+    public class ListenHandleTests : LoggedTest
     {
         [ConditionalFact]
         public async Task CanListenToOpenTcpSocketHandle()
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 listenSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
 
-                using (var server = new TestServer(_ => Task.CompletedTask, new TestServiceContext(), new ListenOptions((ulong)listenSocket.Handle)))
+                using (var server = new TestServer(_ => Task.CompletedTask, new TestServiceContext(LoggerFactory), new ListenOptions((ulong)listenSocket.Handle)))
                 {
                     using (var connection = new TestConnection(((IPEndPoint)listenSocket.LocalEndPoint).Port))
                     {

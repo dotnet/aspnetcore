@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class EventSourceTests : IDisposable
+    public class EventSourceTests : LoggedTest, IDisposable
     {
         private readonly TestEventListener _listener = new TestEventListener();
 
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 connectionId = context.Features.Get<IHttpConnectionFeature>().ConnectionId;
                 requestId = context.TraceIdentifier;
                 return Task.CompletedTask;
-            }))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 port = server.Port;
                 using (var connection = server.CreateConnection())

@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class MaxRequestLineSizeTests
+    public class MaxRequestLineSizeTests : LoggedTest
     {
         [Theory]
         [InlineData("GET / HTTP/1.1\r\nHost:\r\n\r\n", 16)]
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private TestServer CreateServer(int maxRequestLineSize)
         {
-            return new TestServer(async httpContext => await httpContext.Response.WriteAsync("hello, world"), new TestServiceContext
+            return new TestServer(async httpContext => await httpContext.Response.WriteAsync("hello, world"), new TestServiceContext(LoggerFactory)
             {
                 ServerOptions = new KestrelServerOptions
                 {

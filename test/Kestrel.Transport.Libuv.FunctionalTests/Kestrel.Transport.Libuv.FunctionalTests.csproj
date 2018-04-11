@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.FunctionalTests</AssemblyName>
-    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.FunctionalTests</RootNamespace>
+    <AssemblyName>Libuv.FunctionalTests</AssemblyName>
+    <RootNamespace>Libuv.FunctionalTests</RootNamespace>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <ServerGarbageCollection>true</ServerGarbageCollection>

@@ -20,11 +20,12 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions.Internal;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class HttpsTests
+    public class HttpsTests : LoggedTest
     {
         private KestrelServerOptions CreateServerOptions()
         {
@@ -117,6 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task EmptyRequestLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
 
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
@@ -126,11 +128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .ConfigureLogging(builder =>
-                {
-                    builder.AddProvider(loggerProvider);
-                    builder.SetMinimumLevel(LogLevel.Debug);
-                })
+                .ConfigureServices(AddTestLogging)
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => { });
 
             using (var host = hostBuilder.Build())
@@ -155,6 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
 
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
@@ -164,11 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .ConfigureLogging(builder =>
-                {
-                    builder.AddProvider(loggerProvider);
-                    builder.SetMinimumLevel(LogLevel.Debug);
-                })
+                .ConfigureServices(AddTestLogging)
                 .Configure(app => { });
 
             using (var host = hostBuilder.Build())
@@ -196,6 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -204,6 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
+                .ConfigureServices(AddTestLogging)
                 .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => app.Run(async httpContext =>
                 {
@@ -248,6 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var tcs = new TaskCompletionSource<object>();
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -256,6 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
+                .ConfigureServices(AddTestLogging)
                 .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => app.Run(async httpContext =>
                 {
@@ -297,6 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotThrowObjectDisposedExceptionOnEmptyConnection()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -305,6 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
+                .ConfigureServices(AddTestLogging)
                 .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => app.Run(httpContext => Task.CompletedTask));
 
@@ -330,6 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public void ConnectionFilterDoesNotLeakBlock()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
 
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
@@ -339,6 +342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
+                .ConfigureServices(AddTestLogging)
                 .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => { });
 
@@ -360,6 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task HandshakeTimesOutAndIsLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -372,11 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         });
                     });
                 })
-                .ConfigureLogging(builder =>
-                {
-                    builder.AddProvider(loggerProvider);
-                    builder.SetMinimumLevel(LogLevel.Debug);
-                })
+                .ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(httpContext => Task.CompletedTask));
 
             using (var host = hostBuilder.Build())
