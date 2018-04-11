@@ -25,8 +25,8 @@ namespace HostFilteringSample
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true)
-                          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                 })
                 .UseKestrel()
                 .UseStartup<Startup>();

@@ -2,10 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -178,6 +182,59 @@ namespace Microsoft.AspNetCore.HostFiltering
             var server = new TestServer(builder);
             var response = await server.CreateRequest("/").GetAsync();
             Assert.Equal(400, (int)response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SupportsDynamicOptionsReload()
+        {
+            var config = new ConfigurationBuilder().Add(new ReloadableMemorySource()).Build();
+            config["AllowedHosts"] = "localhost";
+            var currentHost = "otherHost";
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddHostFiltering(options =>
+                    {
+                        options.AllowedHosts = new[] { config["AllowedHosts"] };
+                    });
+                    services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(new ConfigurationChangeTokenSource<HostFilteringOptions>(config));
+                })
+                .Configure(app =>
+                {
+                    app.Use((ctx, next) =>
+                    {
+                        ctx.Request.Headers[HeaderNames.Host] = currentHost;
+                        return next();
+                    });
+                    app.UseHostFiltering();
+                    app.Run(c => Task.CompletedTask);
+                });
+            var server = new TestServer(builder);
+            var response = await server.CreateRequest("/").GetAsync();
+            Assert.Equal(400, (int)response.StatusCode);
+
+            config["AllowedHosts"] = "otherHost";
+
+            response = await server.CreateRequest("/").GetAsync();
+            Assert.Equal(200, (int)response.StatusCode);
+        }
+
+        private class ReloadableMemorySource : IConfigurationSource
+        {
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                return new ReloadableMemoryProvider();
+            }
+        }
+
+        internal class ReloadableMemoryProvider : ConfigurationProvider
+        {
+            public override void Set(string key, string value)
+            {
+                base.Set(key, value);
+                OnReload();
+            }
         }
     }
 }

@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.HostFiltering
 
         private readonly RequestDelegate _next;
         private readonly ILogger<HostFilteringMiddleware> _logger;
-        private readonly HostFilteringOptions _options;
+        private readonly IOptionsMonitor<HostFilteringOptions> _optionsMonitor;
+        private HostFilteringOptions _options;
         private IList<StringSegment> _allowedHosts;
         private bool? _allowAnyNonEmptyHost;
 
@@ -39,13 +40,21 @@ namespace Microsoft.AspNetCore.HostFiltering
         /// </summary>
         /// <param name="next"></param>
         /// <param name="logger"></param>
-        /// <param name="options"></param>
+        /// <param name="optionsMonitor"></param>
         public HostFilteringMiddleware(RequestDelegate next, ILogger<HostFilteringMiddleware> logger, 
-            IOptions<HostFilteringOptions> options)
+            IOptionsMonitor<HostFilteringOptions> optionsMonitor)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
+            _options = _optionsMonitor.CurrentValue;
+            _optionsMonitor.OnChange(options =>
+            {
+                // Clear the cached settings so the next EnsureConfigured will re-evaluate.
+                _options = options;
+                _allowedHosts = new List<StringSegment>();
+                _allowAnyNonEmptyHost = null;
+            });
         }
 
         /// <summary>
@@ -55,9 +64,9 @@ namespace Microsoft.AspNetCore.HostFiltering
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            EnsureConfigured();
+            var allowedHosts = EnsureConfigured();
 
-            if (!CheckHost(context))
+            if (!CheckHost(context, allowedHosts))
             {
                 context.Response.StatusCode = 400;
                 if (_options.IncludeFailureMessage)
@@ -72,19 +81,20 @@ namespace Microsoft.AspNetCore.HostFiltering
             return _next(context);
         }
 
-        private void EnsureConfigured()
+        private IList<StringSegment> EnsureConfigured()
         {
             if (_allowAnyNonEmptyHost == true || _allowedHosts?.Count > 0)
             {
-                return;
+                return _allowedHosts;
             }
 
             var allowedHosts = new List<StringSegment>();
             if (_options.AllowedHosts?.Count > 0 && !TryProcessHosts(_options.AllowedHosts, allowedHosts))
             {
                 _logger.LogDebug("Wildcard detected, all requests with hosts will be allowed.");
+                _allowedHosts = allowedHosts;
                 _allowAnyNonEmptyHost = true;
-                return;
+                return _allowedHosts;
             }
 
             if (allowedHosts.Count == 0)
@@ -94,6 +104,7 @@ namespace Microsoft.AspNetCore.HostFiltering
 
             _logger.LogDebug("Allowed hosts: " + string.Join("; ", allowedHosts));
             _allowedHosts = allowedHosts;
+            return _allowedHosts;
         }
 
         // returns false if any wildcards were found
@@ -127,7 +138,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         }
 
         // This does not duplicate format validations that are expected to be performed by the host.
-        private bool CheckHost(HttpContext context)
+        private bool CheckHost(HttpContext context, IList<StringSegment> allowedHosts)
         {
             var host = new StringSegment(context.Request.Headers[HeaderNames.Host].ToString()).Trim();
 
@@ -153,7 +164,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                 return true;
             }
 
-            if (HostString.MatchesAny(host, _allowedHosts))
+            if (HostString.MatchesAny(host, allowedHosts))
             {
                 _logger.LogTrace($"The host '{host}' matches an allowed host.");
                 return true;
