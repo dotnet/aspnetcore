@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _protocol = new RedisProtocol(hubProtocolResolver.AllProtocols);
 
             RedisLog.ConnectingToEndpoints(_logger, options.Value.Options.EndPoints, _serverName);
+            _ = EnsureRedisServerConnection();
         }
 
         public override async Task OnConnectedAsync(HubConnectionContext connection)
