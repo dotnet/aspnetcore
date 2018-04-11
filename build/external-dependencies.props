@@ -154,6 +154,7 @@
     <ExternalDependency Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
     <ExternalDependency Include="xunit.core" Version="$(XunitCorePackageVersion)" />
     <ExternalDependency Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
+    <ExternalDependency Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
     <ExternalDependency Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" Private="true" />
   </ItemGroup>
 </Project>
