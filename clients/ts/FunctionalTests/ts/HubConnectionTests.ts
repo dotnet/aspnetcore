@@ -15,6 +15,9 @@ const commonOptions: IHubConnectionOptions = {
     logger: TestLogger.instance,
 };
 
+// On slower CI machines, these tests sometimes take longer than 5s
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
+
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
         describe("using " + protocol.name + " over " + TransportType[transportType] + " transport", () => {
@@ -27,7 +30,7 @@ describe("hubConnection", () => {
                     transport: transportType,
                 });
                 hubConnection.onclose((error) => {
-                    expect(error).toBe(undefined);
+                    expect(error).toBeUndefined();
                     done();
                 });
 

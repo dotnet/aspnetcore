@@ -1,17 +1,17 @@
 import { ConsoleLogger, ILogger, LogLevel } from "@aspnet/signalr";
 
 export class TestLog {
-    public messages: Array<[LogLevel, string]> = [];
+    public messages: Array<[Date, LogLevel, string]> = [];
 
-    public addMessage(logLevel: LogLevel, message: string): void {
-        this.messages.push([logLevel, message]);
+    public addMessage(timestamp: Date, logLevel: LogLevel, message: string): void {
+        this.messages.push([timestamp, logLevel, message]);
     }
 
     public getLog(): string {
         // Dump the logs to a string
         let str = "";
-        for (const [level, message] of this.messages) {
-            str += `${LogLevel[level]}: ${message}\r\n`;
+        for (const [timestamp, level, message] of this.messages) {
+            str += `[${timestamp.toISOString()}] ${LogLevel[level]}: ${message}\r\n`;
         }
 
         return str;
@@ -34,7 +34,7 @@ export class TestLogger implements ILogger {
     public currentLog: TestLog = new TestLog();
 
     public log(logLevel: LogLevel, message: string): void {
-        this.currentLog.addMessage(logLevel, message);
+        this.currentLog.addMessage(new Date(), logLevel, message);
 
         // Also write to browser console
         TestLogger.consoleLogger.log(logLevel, message);

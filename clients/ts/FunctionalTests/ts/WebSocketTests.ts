@@ -3,6 +3,9 @@
 
 import { ECHOENDPOINT_URL } from "./Common";
 
+// On slower CI machines, these tests sometimes take longer than 5s
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
+
 if (typeof WebSocket !== "undefined") {
     describe("WebSockets", () => {
         it("can be used to connect to SignalR", (done) => {

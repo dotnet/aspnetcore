@@ -76,8 +76,9 @@ class WebDriverReporter implements jasmine.CustomReporter {
             // Report log messages
             if (testLog.messages.length > 0) {
                 this.taplog("    - logs: ");
-                for (const [level, message] of testLog.messages) {
+                for (const [timestamp, level, message] of testLog.messages) {
                     this.taplog(`      - level: ${LogLevel[level]}`);
+                    this.taplog(`        timestamp: ${timestamp.toISOString()}`);
                     this.taplog(`        message: ${message}`);
                 }
             }

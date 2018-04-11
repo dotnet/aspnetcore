@@ -10,6 +10,9 @@ const commonOptions: IHttpConnectionOptions = {
     logger: TestLogger.instance,
 };
 
+// On slower CI machines, these tests sometimes take longer than 5s
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
+
 describe("connection", () => {
     it("can connect to the server without specifying transport explicitly", (done) => {
         const message = "Hello World!";
@@ -88,7 +91,7 @@ describe("connection", () => {
                 connection.onclose = (error) => {
                     // Search the logs for the message content
                     expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
-                    for (const [_, logMessage] of TestLogger.instance.currentLog.messages) {
+                    for (const [_, __, logMessage] of TestLogger.instance.currentLog.messages) {
                         expect(logMessage).not.toContain(message);
                     }
                     done();
@@ -122,7 +125,7 @@ describe("connection", () => {
                     // Search the logs for the message content
                     let matches = 0;
                     expect(TestLogger.instance.currentLog.messages.length).toBeGreaterThan(0);
-                    for (const [_, logMessage] of TestLogger.instance.currentLog.messages) {
+                    for (const [_, __, logMessage] of TestLogger.instance.currentLog.messages) {
                         if (logMessage.indexOf(message) !== -1) {
                             matches += 1;
                         }
