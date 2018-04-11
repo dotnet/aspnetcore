@@ -35,6 +35,7 @@
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.0-preview3-32170</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0-preview3-32170</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.0-preview3-32170</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.1.0-preview3-32170</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.1.0-preview3-32170</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0-preview3-32170</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview3-32170</MicrosoftExtensionsConfigurationCommandLinePackageVersion>

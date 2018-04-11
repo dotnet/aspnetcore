@@ -70,6 +70,28 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
         }
 
+        [Fact]
+        public async Task SSEWritesVeryLargeMessages()
+        {
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+            var context = new DefaultHttpContext();
+
+            var ms = new MemoryStream();
+            context.Response.Body = ms;
+            var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+
+            var task = sse.ProcessRequestAsync(context, context.RequestAborted);
+
+            string hText = new string('H', 60000);
+            string wText = new string('W', 60000);
+
+            await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes(hText + wText));
+            connection.Transport.Output.Complete();
+            await task.OrTimeout();
+            Assert.Equal(":\r\ndata: " + hText + wText + "\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
+        }
+
         [Theory]
         [InlineData("Hello World", ":\r\ndata: Hello World\r\n\r\n")]
         [InlineData("Hello\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]

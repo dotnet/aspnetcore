@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Buffers;
 using System.IO;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -12,15 +14,32 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     {
         private ServerSentEventsMessageParser _parser;
         private byte[] _sseFormattedData;
-        private byte[] _rawData;
+        private ReadOnlySequence<byte> _rawData;
 
         [Params(Message.NoArguments, Message.FewArguments, Message.ManyArguments, Message.LargeArguments)]
         public Message Input { get; set; }
 
+        [Params("json", "json-formatted")]
+        public string Protocol { get; set; }
+
         [GlobalSetup]
         public void GlobalSetup()
         {
-            var hubProtocol = new JsonHubProtocol();
+            IHubProtocol protocol;
+
+            if (Protocol == "json")
+            {
+                protocol = new JsonHubProtocol();
+            }
+            else
+            {
+                // New line in result to trigger SSE formatting
+                protocol = new JsonHubProtocol
+                {
+                    PayloadSerializer = { Formatting = Formatting.Indented }
+                };
+            }
+
             HubMessage hubMessage = null;
             switch (Input)
             {
@@ -39,9 +58,9 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             }
 
             _parser = new ServerSentEventsMessageParser();
-            _rawData = hubProtocol.GetMessageBytes(hubMessage);
+            _rawData = new ReadOnlySequence<byte>(protocol.GetMessageBytes(hubMessage));
             var ms = new MemoryStream();
-            ServerSentEventsMessageFormatter.WriteMessage(_rawData, ms);
+            ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, ms).GetAwaiter().GetResult();
             _sseFormattedData = ms.ToArray();
         }
 
@@ -59,9 +78,9 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         }
 
         [Benchmark]
-        public void WriteSingleMessage()
+        public Task WriteSingleMessage()
         {
-            ServerSentEventsMessageFormatter.WriteMessage(_rawData, Stream.Null);
+            return ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, Stream.Null);
         }
 
         public enum Message
