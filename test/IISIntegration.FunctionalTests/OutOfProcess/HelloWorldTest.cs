@@ -19,19 +19,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
-        public Task HelloWorld_IISExpress_Clr_X64_Portable()
+        [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData("V1")]
+        [InlineData("V2")]
+        public Task HelloWorld_IISExpress_Clr_X64_Portable(string ancmVersion)
         {
-            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable);
+            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, ancmVersion);
         }
 
-        [Fact]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
+        [Theory]
+        [InlineData("V1")]
+        [InlineData("V2")]
+        public Task HelloWorld_IISExpress_CoreClr_X64_Portable(string ancmVersion)
         {
-            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable);
+            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, ancmVersion);
         }
 
-        private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
+        private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, string ancmVersion)
         {
             var serverType = ServerType.IISExpress;
             var architecture = RuntimeArchitecture.x64;
@@ -49,10 +53,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     ApplicationType = applicationType,
                     Configuration =
 #if DEBUG
-                        "Debug"
+                        "Debug",
 #else
-                        "Release"
+                        "Release",
 #endif
+                    AdditionalPublishParameters = $" /p:ANCMVersion={ancmVersion}"
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

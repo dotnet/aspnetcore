@@ -2,8 +2,9 @@
 <Project ToolsVersion="12.0" DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"> 
    <Import Project="$(MSBuildThisFileDirectory)\Build.Settings" /> 
    <ItemGroup> 
-     <Projects Include="$(SolutionDir)\src\AspNetCore\AspNetCore.vcxproj" /> 
-     <Projects Include="$(SolutionDir)\src\RequestHandler\RequestHandler.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\RequestHandler\RequestHandler.vcxproj" /> 
      <Projects Include="$(SolutionDir)\test\CommonLibTests\CommonLibTests.vcxproj">
    </ItemGroup> 
  

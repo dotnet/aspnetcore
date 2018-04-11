@@ -37,10 +37,10 @@ project.lock.json
 *.CppClean.log
 *msbuild.log
 
-src/*/Debug/
-src/*/x64/Debug/
-src/*/Release/
-src/*/x64/Release/
+src/*/*/Debug/
+src/*/*/x64/Debug/
+src/*/*/Release/
+src/*/*/x64/Release/
 x64/
 
 *vcxproj.filters
@@ -49,12 +49,13 @@ x64/
 *.lib
 *.idb
 
-src/AspNetCore/aspnetcore_msg.h
-src/AspNetCore/aspnetcore_msg.rc
-src/AspNetCore/version.h
-src/RequestHandler/version.h
-src/CommonLib/aspnetcore_msg.h
-src/CommonLib/aspnetcore_msg.rc
+src/*/AspNetCore/aspnetcoremodule.h
+src/*/AspNetCore/aspnetcore_msg.h
+src/*/AspNetCore/aspnetcore_msg.rc
+src/*/*/version.h
+src/*/RequestHandler/version.h
+src/*/CommonLib/aspnetcore_msg.h
+src/*/CommonLib/aspnetcore_msg.rc
 test/*/Debug
 test/*/Release
 test/gtest-1.8.0/msvc/Debug

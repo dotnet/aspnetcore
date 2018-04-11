@@ -9,7 +9,7 @@ param()
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
 
-$schemaSource = Resolve-Path "$PSScriptRoot\..\src\AspNetCore\aspnetcore_schema.xml"
+$schemaSource = Resolve-Path "$PSScriptRoot\..\src\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema.xml"
 [bool]$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 
 if (-not $isAdmin -and -not $WhatIfPreference) {

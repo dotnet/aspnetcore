@@ -26,7 +26,7 @@
 
     <file src="Microsoft.AspNetCore.Server.IIS.targets" target="build/$tfm$/Microsoft.AspNetCore.Server.IIS.targets" />
 
-    <file src="..\RequestHandler\bin\$Configuration$\Win32\aspnetcorerh.dll" target="runtimes\win-x86\nativeassets\$tfm$\aspnetcorerh.dll" />
-    <file src="..\RequestHandler\bin\$Configuration$\x64\aspnetcorerh.dll" target="runtimes\win-x64\nativeassets\$tfm$\aspnetcorerh.dll" />
+    <file src="..\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\Win32\aspnetcorerh.dll" target="runtimes\win-x86\nativeassets\$tfm$\aspnetcorerh.dll" />
+    <file src="..\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\x64\aspnetcorerh.dll" target="runtimes\win-x64\nativeassets\$tfm$\aspnetcorerh.dll" />
   </files>
 </package>
