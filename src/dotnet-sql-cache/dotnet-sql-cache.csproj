@@ -12,6 +12,7 @@
     <Compile Include="..\..\shared\**\*.cs" />
 
     <!-- This should already be signed by the dotnet-core team -->
+    <ExcludePackageFileFromSigning Include="$(PublishDir)System.Runtime.CompilerServices.Unsafe.dll" PackagePath="$(PackageBasePath)System.Runtime.CompilerServices.Unsafe.dll" />
     <ExcludePackageFileFromSigning Include="$(PublishDir)System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)System.Data.SqlClient.dll" />
     <ExcludePackageFileFromSigning Include="$(PublishDir)System.Text.Encoding.CodePages.dll" PackagePath="$(PackageBasePath)System.Text.Encoding.CodePages.dll" />
     <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win-arm64/native/sni.dll" PackagePath="$(PackageBasePath)runtimes/win-arm64/native/sni.dll" />
