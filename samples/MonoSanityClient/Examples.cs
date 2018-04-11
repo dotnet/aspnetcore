@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using WebAssembly;
 
@@ -53,5 +54,10 @@ namespace MonoSanityClient
 
             return $".NET received: {result}";
         }
+
+        public static string GetRuntimeInformation()
+            => $"OSDescription: '{RuntimeInformation.OSDescription}';"
+            + $" OSArchitecture: '{RuntimeInformation.OSArchitecture}';"
+            + $" IsOSPlatform(WEBASSEMBLY): '{RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"))}'";
     }
 }

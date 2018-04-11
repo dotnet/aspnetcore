@@ -126,6 +126,15 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.StartsWith(".NET got exception: Division by zero", GetValue(Browser, "callJsNoBoxingResult"));
         }
 
+        [Fact]
+        public void ReturnsExpectedRuntimeInformation()
+        {
+            Browser.FindElement(By.CssSelector("#getRuntimeInformation button")).Click();
+            Assert.Equal(
+                "OSDescription: 'web'; OSArchitecture: 'X86'; IsOSPlatform(WEBASSEMBLY): 'True'",
+                GetValue(Browser, "getRuntimeInformationResult"));
+        }
+
         private static string GetValue(IWebDriver webDriver, string elementId)
         {
             var element = webDriver.FindElement(By.Id(elementId));

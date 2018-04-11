@@ -55,6 +55,14 @@
     </form>
   </fieldset>
 
+  <fieldset>
+    <legend>Get runtime OS</legend>
+    <form id="getRuntimeInformation">
+      <button type="submit" disabled>Get</button>
+      <input id="getRuntimeInformationResult" readonly />
+    </form>
+  </fieldset>
+
   <p id="loadingIndicator">Loading...</p>
 
   <script type="blazor-boot"></script>
@@ -109,6 +117,12 @@
       var b = parseInt(el('callJsNoBoxingNumberB').value);
       var result = invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'CallJsNoBoxing', [a, b]);
       el('callJsNoBoxingResult').value = result;
+    };
+
+    el('getRuntimeInformation').onsubmit = function (evt) {
+      evt.preventDefault();
+      var result = invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'GetRuntimeInformation', []);
+      el('getRuntimeInformationResult').value = result;
     };
 
     function el(id) {
