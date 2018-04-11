@@ -20,12 +20,12 @@ using Microsoft.VisualStudio.Shell;
     GenerateCodeBase = true,
     PublicKeyToken = "",
     OldVersionLowerBound = "0.0.0.0",
-    OldVersionUpperBound = "0.2.0.0",
-    NewVersion = "0.2.0.0")]
+    OldVersionUpperBound = "0.3.0.0",
+    NewVersion = "0.3.0.0")]
 [assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.VisualStudio.LanguageServices.Blazor",
     GenerateCodeBase = true,
     PublicKeyToken = "",
     OldVersionLowerBound = "0.0.0.0",
-    OldVersionUpperBound = "0.2.0.0",
-    NewVersion = "0.2.0.0")]
+    OldVersionUpperBound = "0.3.0.0",
+    NewVersion = "0.3.0.0")]
