@@ -20,34 +20,39 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             string url = null,
             ITransport transport = null,
             ITransportFactory transportFactory = null,
-            HttpTransportType transportType = HttpTransportType.LongPolling,
+            HttpTransportType? transportType = null,
             Func<Task<string>> accessTokenFactory = null)
         {
-            var httpOptions = new HttpOptions
+            var httpOptions = new HttpConnectionOptions
             {
+                Transports = transportType ?? HttpTransportType.LongPolling,
                 HttpMessageHandlerFactory = (httpMessageHandler) => httpHandler ?? TestHttpMessageHandler.CreateDefault(),
                 AccessTokenFactory = accessTokenFactory,
             };
+            if (url != null)
+            {
+                httpOptions.Url = new Uri(url);
+            }
 
-            return CreateConnection(httpOptions, loggerFactory, url, transport, transportFactory, transportType);
+            return CreateConnection(httpOptions, loggerFactory, transport, transportFactory);
         }
 
-        private static HttpConnection CreateConnection(HttpOptions httpOptions, ILoggerFactory loggerFactory = null, string url = null, ITransport transport = null, ITransportFactory transportFactory = null, HttpTransportType transportType = HttpTransportType.LongPolling)
+        private static HttpConnection CreateConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory = null, ITransport transport = null, ITransportFactory transportFactory = null)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-            var uri = new Uri(url ?? "http://fakeuri.org/");
+            httpConnectionOptions.Url = httpConnectionOptions.Url ?? new Uri("http://fakeuri.org/");
 
             if (transportFactory != null)
             {
-                return new HttpConnection(uri, transportFactory, loggerFactory, httpOptions);
+                return new HttpConnection(httpConnectionOptions, loggerFactory, transportFactory);
             }
             else if (transport != null)
             {
-                return new HttpConnection(uri, new TestTransportFactory(transport), loggerFactory, httpOptions);
+                return new HttpConnection(httpConnectionOptions, loggerFactory, new TestTransportFactory(transport));
             }
             else
             {
-                return new HttpConnection(uri, transportType, loggerFactory, httpOptions);
+                return new HttpConnection(httpConnectionOptions, loggerFactory);
             }
         }
 

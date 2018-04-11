@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -115,6 +116,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await WithConnectionAsync(
                         CreateConnection(
                             loggerFactory: loggerFactory,
+                            transportType: HttpTransports.All,
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection) =>
                     {
@@ -142,6 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await WithConnectionAsync(
                         CreateConnection(
                             loggerFactory: loggerFactory,
+                            transportType: HttpTransports.All,
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection) =>
                         {
@@ -318,7 +321,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
 
                     await WithConnectionAsync(
-                        CreateConnection(httpHandler, loggerFactory: loggerFactory, url: null, transport: sse),
+                        CreateConnection(httpHandler, loggerFactory: loggerFactory, transport: sse),
                         async (connection) =>
                         {
                             await Assert.ThrowsAsync<InvalidOperationException>(
@@ -344,7 +347,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
 
                     await WithConnectionAsync(
-                        CreateConnection(httpHandler, loggerFactory: loggerFactory, url: null, transport: sse),
+                        CreateConnection(httpHandler, loggerFactory: loggerFactory, transport: sse),
                         async (connection) =>
                         {
                             var startTask = connection.StartAsync(TransferFormat.Text).OrTimeout();

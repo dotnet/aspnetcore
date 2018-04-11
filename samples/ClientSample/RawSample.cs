@@ -33,10 +33,8 @@ namespace ClientSample
         {
             baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/chat" : baseUrl;
 
-            var loggerFactory = new LoggerFactory();
-
             Console.WriteLine($"Connecting to {baseUrl}...");
-            var connection = new HttpConnection(new Uri(baseUrl), loggerFactory);
+            var connection = new HttpConnection(new Uri(baseUrl));
             try
             {
                 await connection.StartAsync(TransferFormat.Text);

@@ -32,10 +32,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public void ConnectionReturnsUrlUsedToStartTheConnection()
+        public void CannotCreateConnectionWithNullUrlOnOptions()
         {
-            var connectionUrl = new Uri("http://fakeuri.org/");
-            Assert.Equal(connectionUrl, new HttpConnection(connectionUrl).Url);
+            var exception = Assert.Throws<ArgumentException>(() => new HttpConnection(new HttpConnectionOptions(), NullLoggerFactory.Instance));
+            Assert.Equal("httpConnectionOptions", exception.ParamName);
         }
 
         [Fact]
@@ -53,7 +53,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             HttpClientHandler httpClientHandler = null;
 
-            var httpOptions = new HttpOptions();
+            var httpOptions = new HttpConnectionOptions();
+            httpOptions.Url = new Uri("http://fakeuri.org/");
             httpOptions.HttpMessageHandlerFactory = inner =>
             {
                 httpClientHandler = (HttpClientHandler)inner;
@@ -65,9 +66,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             httpOptions.UseDefaultCredentials = false;
             httpOptions.Credentials = Mock.Of<ICredentials>();
             httpOptions.Proxy = Mock.Of<IWebProxy>();
+            httpOptions.Transports = HttpTransportType.LongPolling;
 
             await WithConnectionAsync(
-                CreateConnection(httpOptions, url: "http://fakeuri.org/"),
+                CreateConnection(httpOptions),
                 async (connection) =>
                 {
                     await connection.StartAsync(TransferFormat.Text).OrTimeout();
@@ -89,7 +91,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.BadGateway));
 
-            var httpOptions = new HttpOptions();
+            var httpOptions = new HttpConnectionOptions();
+            httpOptions.Url = new Uri("http://fakeuri.org/");
             httpOptions.HttpMessageHandlerFactory = inner => testHttpHandler;
 
             const string loggerName = "Microsoft.AspNetCore.Http.Connections.Client.Internal.LoggingHttpMessageHandler";
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             try
             {
                 await WithConnectionAsync(
-                    CreateConnection(httpOptions, loggerFactory: mockLoggerFactory.Object, url: "http://fakeuri.org/"),
+                    CreateConnection(httpOptions, loggerFactory: mockLoggerFactory.Object),
                     async (connection) =>
                     {
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();

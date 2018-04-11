@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
     public class DefaultTransportFactory : ITransportFactory
     {
         private readonly HttpClient _httpClient;
-        private readonly HttpOptions _httpOptions;
+        private readonly HttpConnectionOptions _httpConnectionOptions;
         private readonly HttpTransportType _requestedTransportType;
         private readonly ILoggerFactory _loggerFactory;
         private static volatile bool _websocketsSupported = true;
 
-        public DefaultTransportFactory(HttpTransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient, HttpOptions httpOptions)
+        public DefaultTransportFactory(HttpTransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient, HttpConnectionOptions httpConnectionOptions)
         {
             if (httpClient == null && requestedTransportType != HttpTransportType.WebSockets)
             {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _requestedTransportType = requestedTransportType;
             _loggerFactory = loggerFactory;
             _httpClient = httpClient;
-            _httpOptions = httpOptions;
+            _httpConnectionOptions = httpConnectionOptions;
         }
 
         public ITransport CreateTransport(HttpTransportType availableServerTransports)
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             {
                 try
                 {
-                    return new WebSocketsTransport(_httpOptions, _loggerFactory);
+                    return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory);
                 }
                 catch (PlatformNotSupportedException)
                 {

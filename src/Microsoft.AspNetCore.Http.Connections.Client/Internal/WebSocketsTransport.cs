@@ -37,56 +37,56 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
         }
 
-        public WebSocketsTransport(HttpOptions httpOptions, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
         {
             _webSocket = new ClientWebSocket();
 
             // Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627
             //_webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
 
-            if (httpOptions != null)
+            if (httpConnectionOptions != null)
             {
-                if (httpOptions.Headers != null)
+                if (httpConnectionOptions.Headers != null)
                 {
-                    foreach (var header in httpOptions.Headers)
+                    foreach (var header in httpConnectionOptions.Headers)
                     {
                         _webSocket.Options.SetRequestHeader(header.Key, header.Value);
                     }
                 }
 
-                if (httpOptions.Cookies != null)
+                if (httpConnectionOptions.Cookies != null)
                 {
-                    _webSocket.Options.Cookies = httpOptions.Cookies;
+                    _webSocket.Options.Cookies = httpConnectionOptions.Cookies;
                 }
 
-                if (httpOptions.ClientCertificates != null)
+                if (httpConnectionOptions.ClientCertificates != null)
                 {
-                    _webSocket.Options.ClientCertificates.AddRange(httpOptions.ClientCertificates);
+                    _webSocket.Options.ClientCertificates.AddRange(httpConnectionOptions.ClientCertificates);
                 }
 
-                if (httpOptions.Credentials != null)
+                if (httpConnectionOptions.Credentials != null)
                 {
-                    _webSocket.Options.Credentials = httpOptions.Credentials;
+                    _webSocket.Options.Credentials = httpConnectionOptions.Credentials;
                 }
 
-                if (httpOptions.Proxy != null)
+                if (httpConnectionOptions.Proxy != null)
                 {
-                    _webSocket.Options.Proxy = httpOptions.Proxy;
+                    _webSocket.Options.Proxy = httpConnectionOptions.Proxy;
                 }
 
-                if (httpOptions.UseDefaultCredentials != null)
+                if (httpConnectionOptions.UseDefaultCredentials != null)
                 {
-                    _webSocket.Options.UseDefaultCredentials = httpOptions.UseDefaultCredentials.Value;
+                    _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
                 }
 
-                if (httpOptions.AccessTokenFactory != null)
+                if (httpConnectionOptions.AccessTokenFactory != null)
                 {
-                    _accessTokenFactory = httpOptions.AccessTokenFactory;
+                    _accessTokenFactory = httpConnectionOptions.AccessTokenFactory;
                 }
 
-                httpOptions.WebSocketOptions?.Invoke(_webSocket.Options);
+                httpConnectionOptions.WebSocketOptions?.Invoke(_webSocket.Options);
 
-                _closeTimeout = httpOptions.CloseTimeout;
+                _closeTimeout = httpConnectionOptions.CloseTimeout;
             }
 
             // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code

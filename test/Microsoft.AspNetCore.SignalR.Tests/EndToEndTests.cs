@@ -23,6 +23,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 using Xunit.Abstractions;
+using HttpConnectionOptions = Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
 
             // The test logic lives in the TestTransportFactory and FakeTransport.
-            var connection = new HttpConnection(new Uri(url), new TestTransportFactory(), null, null);
+            var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url) }, null, new TestTransportFactory());
             await connection.StartAsync(TransferFormat.Text).OrTimeout();
             await connection.DisposeAsync().OrTimeout();
         }
@@ -171,7 +172,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Returns<HttpRequestMessage, CancellationToken>(
                         (request, cancellationToken) => Task.FromException<HttpResponseMessage>(new InvalidOperationException("HTTP requests should not be sent.")));
 
-                var connection = new HttpConnection(new Uri(url), HttpTransportType.WebSockets, loggerFactory, new HttpOptions { HttpMessageHandlerFactory = (httpMessageHandler) => mockHttpHandler.Object });
+                var httpOptions = new HttpConnectionOptions
+                {
+                    Url = new Uri(url),
+                    Transports = HttpTransportType.WebSockets,
+                    HttpMessageHandlerFactory = (httpMessageHandler) => mockHttpHandler.Object
+                };
+
+                var connection = new HttpConnection(httpOptions, loggerFactory);
 
                 try
                 {
