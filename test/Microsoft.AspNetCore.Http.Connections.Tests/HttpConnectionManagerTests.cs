@@ -283,17 +283,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        public void ScanAfterDisposeNoops()
-        {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
-
-            connectionManager.CloseConnections();
-
-            connectionManager.Scan();
-        }
-
-        [Fact]
         public async Task ApplicationLifetimeIsHookedUp()
         {
             var appLifetime = new TestApplicationLifetime();

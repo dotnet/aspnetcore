@@ -28,8 +28,17 @@ namespace Microsoft.AspNetCore.Http.Connections
             private static readonly Action<ILogger, Exception> _scanningConnections =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(6, "ScanningConnections"), "Scanning connections.");
 
+            private static readonly Action<ILogger, Exception> _scanningConnectionsFailed =
+                LoggerMessage.Define(LogLevel.Error, new EventId(7, "ScanningConnectionsFailed"), "Scanning connections failed.");
+
             private static readonly Action<ILogger, TimeSpan, Exception> _scannedConnections =
-                LoggerMessage.Define<TimeSpan>(LogLevel.Trace, new EventId(7, "ScannedConnections"), "Scanned connections in {Duration}.");
+                LoggerMessage.Define<TimeSpan>(LogLevel.Trace, new EventId(8, "ScannedConnections"), "Scanned connections in {Duration}.");
+
+            private static readonly Action<ILogger, Exception> _heartbeatStarted =
+                LoggerMessage.Define(LogLevel.Trace, new EventId(9, "HeartBeatStarted"), "Starting connection heartbeat.");
+
+            private static readonly Action<ILogger, Exception> _heartbeatEnded =
+                LoggerMessage.Define(LogLevel.Trace, new EventId(10, "HeartBeatEnded"), "Ending connection heartbeat.");
 
             public static void CreatedNewConnection(ILogger logger, string connectionId)
             {
@@ -61,9 +70,24 @@ namespace Microsoft.AspNetCore.Http.Connections
                 _scanningConnections(logger, null);
             }
 
+            public static void ScanningConnectionsFailed(ILogger logger, Exception exception)
+            {
+                _scanningConnectionsFailed(logger, exception);
+            }
+
             public static void ScannedConnections(ILogger logger, TimeSpan duration)
             {
                 _scannedConnections(logger, duration, null);
+            }
+
+            public static void HeartBeatStarted(ILogger logger)
+            {
+                _heartbeatStarted(logger, null);
+            }
+
+            public static void HeartBeatEnded(ILogger logger)
+            {
+                _heartbeatEnded(logger, null);
             }
         }
     }
