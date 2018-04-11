@@ -12,6 +12,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -433,6 +434,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task DispatchInvocationAsync(InvocationMessage invocation)
         {
+            // Make sure we get off the main event loop before we dispatch into user code
+            await AwaitableThreadPool.Yield();
+
             // Find the handler
             if (!_handlers.TryGetValue(invocation.Target, out var handlers))
             {
@@ -678,29 +682,30 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 Log.ShutdownConnection(_logger);
             }
 
-            // Fire-and-forget the closed event
-            RunClosedEvent(connectionState.CloseException);
-        }
-
-        private void RunClosedEvent(Exception closeException)
-        {
             var closed = Closed;
 
             // There is no need to start a new task if there is no Closed event registered
             if (closed != null)
             {
-                _ = Task.Run(() =>
-                {
-                    try
-                    {
-                        Log.InvokingClosedEventHandler(_logger);
-                        closed.Invoke(closeException);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.ErrorDuringClosedEvent(_logger, ex);
-                    }
-                });
+
+                // Fire-and-forget the closed event
+                _ = RunClosedEvent(closed, connectionState.CloseException);
+            }
+        }
+
+        private async Task RunClosedEvent(Action<Exception> closed, Exception closeException)
+        {
+            // Dispatch to the thread pool before we invoke the user callback
+            await AwaitableThreadPool.Yield();
+
+            try
+            {
+                Log.InvokingClosedEventHandler(_logger);
+                closed.Invoke(closeException);
+            }
+            catch (Exception ex)
+            {
+                Log.ErrorDuringClosedEvent(_logger, ex);
             }
         }
 
@@ -925,7 +930,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                     else
                     {
-                        _stopTcs = new TaskCompletionSource<object>();
+                        _stopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                         return StopAsyncCore(timeout);
                     }
                 }

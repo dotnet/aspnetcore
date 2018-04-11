@@ -485,9 +485,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await connection.ReceiveTextAsync(":[\"hello\"]}\u001e");
 
-                    Assert.True(tcs.Task.IsCompleted);
-
-                    var response = await tcs.Task;
+                    var response = await tcs.Task.OrTimeout();
 
                     Assert.Equal("hello", response);
                 }
