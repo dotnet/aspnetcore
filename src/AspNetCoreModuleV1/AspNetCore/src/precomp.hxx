@@ -109,7 +109,7 @@ inline bool IsSpace(char ch)
 
 #include "filewatcher.h"
 #include "environmentvariablehash.h"
-#include "aspnetcore_msg.h"
+#include "..\aspnetcore_msg.h"
 #include "aspnetcoreconfig.h"
 #include "serverprocess.h"
 #include "processmanager.h"

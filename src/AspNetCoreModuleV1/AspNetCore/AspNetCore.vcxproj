@@ -211,14 +211,10 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ancm.mof" />
     <None Include="Source.def" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="aspnetcore_schema.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ancm.mof">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -246,14 +242,11 @@
     <ClInclude Include="Inc\application.h" />
     <ClInclude Include="Inc\applicationmanager.h" />
     <ClInclude Include="Inc\aspnetcoreconfig.h" />
-    <ClInclude Include="Inc\aspnetcore_msg.h" />
     <ClInclude Include="Inc\debugutil.h" />
     <ClInclude Include="Inc\environmentvariablehash.h" />
     <ClInclude Include="Inc\filewatcher.h" />
     <ClInclude Include="Inc\forwarderconnection.h" />
     <ClInclude Include="Inc\forwardinghandler.h" />
-    <ClInclude Include="Inc\fx_ver.h" />
-    <ClInclude Include="Inc\globalmodule.h" />
     <ClInclude Include="Inc\path.h" />
     <ClInclude Include="Inc\processmanager.h" />
     <ClInclude Include="Inc\protocolconfig.h" />
@@ -279,4 +272,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+
+  <ItemGroup>
+    <CustomBuild Include="aspnetcore_msg.mc">
+      <FileType>Document</FileType>
+      <Command>mc %(FullPath)</Command>
+      <Message>Compiling Event Messages ...</Message>
+      <Outputs>%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
+    </CustomBuild>
+  </ItemGroup>
 </Project>

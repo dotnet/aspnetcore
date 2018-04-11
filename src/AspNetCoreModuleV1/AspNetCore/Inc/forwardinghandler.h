@@ -1,18 +1,7 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
 #pragma once
-
-/*++
-
-Copyright (c) 2013 Microsoft Corporation
-
-Module Name:
-
-    forwardinghandler.h
-
-Abstract:
-
-    Handler for handling URLs from out-of-box.
-
---*/
 
 #include "forwarderconnection.h"
 #include "protocolconfig.h"

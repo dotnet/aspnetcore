@@ -81,11 +81,11 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile" DependsOnTargets="PrepareInjectionApp">
+  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == ''">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(ProjectDepsFilePath)&quot;" />
   </Target>
 
-  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile" DependsOnTargets="PrepareInjectionApp">
+  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == ''">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(PublishDepsFilePath)&quot;" />
   </Target>
 
