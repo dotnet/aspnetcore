@@ -34,7 +34,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public static bool IsNegotiateRequest(HttpRequestMessage request)
         {
             return request.Method == HttpMethod.Post &&
-                new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate");
+                   new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate");
+        }
+
+        public static bool IsLongPollRequest(HttpRequestMessage request)
+        {
+            return request.Method == HttpMethod.Get &&
+                   (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
+        }
+
+        public static bool IsSocketSendRequest(HttpRequestMessage request)
+        {
+            return request.Method == HttpMethod.Post &&
+                   (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
         }
 
         public static string CreateNegotiationContent(string connectionId = "00000000-0000-0000-0000-000000000000",

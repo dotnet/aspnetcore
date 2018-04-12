@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             OnRequest((request, next, cancellationToken) =>
             {
-                if (request.Method.Equals(HttpMethod.Get) && request.RequestUri.PathAndQuery.StartsWith("/?id="))
+                if (ResponseUtils.IsLongPollRequest(request))
                 {
                     return handler(cancellationToken);
                 }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             OnRequest(async (request, next, cancellationToken) =>
             {
-                if (request.Method.Equals(HttpMethod.Post) && request.RequestUri.PathAndQuery.StartsWith("/?id="))
+                if (ResponseUtils.IsSocketSendRequest(request))
                 {
                     var data = await request.Content.ReadAsByteArrayAsync();
                     return await handler(data, cancellationToken);
