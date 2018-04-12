@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -212,13 +213,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
         }
 
-        internal static void AssertLoggedMessages(List<WriteContext> messages, params LoggedMessage[] expectedMessages)
+        internal static void AssertLoggedMessages(IEnumerable<WriteContext> messages, params LoggedMessage[] expectedMessages)
         {
-            Assert.Equal(messages.Count, expectedMessages.Length);
-            for (var i = 0; i < messages.Count; i++)
+            var messageList = messages.ToList();
+            Assert.Equal(messageList.Count, expectedMessages.Length);
+
+            for (var i = 0; i < messageList.Count; i++)
             {
-                Assert.Equal(expectedMessages[i].EventId, messages[i].EventId);
-                Assert.Equal(expectedMessages[i].LogLevel, messages[i].LogLevel);
+                Assert.Equal(expectedMessages[i].EventId, messageList[i].EventId);
+                Assert.Equal(expectedMessages[i].LogLevel, messageList[i].LogLevel);
             }
         }
 
