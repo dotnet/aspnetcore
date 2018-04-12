@@ -460,26 +460,6 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        private static async Task<TestSink> SetUp(bool enabled, bool handled)
-        {
-            // Arrange
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<RouteCollection>,
-                TestSink.EnableWithTypeName<RouteCollection>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled);
-
-            var routes = new RouteCollection();
-            var route = CreateRoute(accept: handled);
-            routes.Add(route.Object);
-
-            var context = CreateRouteContext("/Cool", loggerFactory);
-
-            // Act
-            await routes.RouteAsync(context);
-
-            return sink;
-        }
-
         private static RouteCollection GetRouteCollectionWithNamedRoutes(IEnumerable<string> routeNames)
         {
             var routes = new RouteCollection();
