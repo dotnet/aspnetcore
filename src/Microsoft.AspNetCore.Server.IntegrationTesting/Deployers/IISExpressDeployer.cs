@@ -4,10 +4,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -148,6 +150,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         File.WriteAllText(DeploymentParameters.ServerConfigLocation, serverConfig);
                     }
 
+                    if (DeploymentParameters.HostingModel == HostingModel.InProcess)
+                    {
+                        ModifyWebConfigToInProcess();
+                    }
+
                     var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigLocation) ?
                                     string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, contentRoot) :
                                     string.Format("/site:{0} /config:{1} /trace:error", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
@@ -196,6 +203,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                             }
                         }
                     };
+
                     process.EnableRaisingEvents = true;
                     var hostExitTokenSource = new CancellationTokenSource();
                     process.Exited += (sender, e) =>
@@ -293,6 +301,17 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 throw new Exception($"iisexpress Process {_hostProcess.Id} failed to shutdown");
             }
+        }
+
+        // Transforms the web.config file to include the hostingModel="inprocess" element
+        // and adds the server type = Microsoft.AspNetServer.IIS such that Kestrel isn't added again in ServerTests
+        private void ModifyWebConfigToInProcess()
+        {
+            var webConfigFile = $"{DeploymentParameters.PublishedApplicationRootPath}/web.config";
+            var config = XDocument.Load(webConfigFile);
+            var element = config.Descendants("aspNetCore").FirstOrDefault();
+            element.SetAttributeValue("hostingModel", "inprocess");
+            config.Save(webConfigFile);
         }
     }
 }
