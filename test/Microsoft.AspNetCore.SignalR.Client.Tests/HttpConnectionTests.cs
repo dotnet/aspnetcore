@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
@@ -118,9 +119,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 // ignore connection error
             }
 
-            Assert.Equal(2, testSink.Writes.Count);
-            Assert.Equal("SendingHttpRequest", testSink.Writes[0].EventId.Name);
-            Assert.Equal("UnsuccessfulHttpResponse", testSink.Writes[1].EventId.Name);
+            var writeList = testSink.Writes.ToList();
+
+            Assert.Equal(2, writeList.Count);
+            Assert.Equal("SendingHttpRequest", writeList[0].EventId.Name);
+            Assert.Equal("UnsuccessfulHttpResponse", writeList[1].EventId.Name);
         }
     }
 }
