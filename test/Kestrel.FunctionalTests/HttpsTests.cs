@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task EmptyRequestLoggedAsInformation()
+        public async Task EmptyRequestLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
 
@@ -126,7 +126,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
+                .ConfigureLogging(builder =>
+                {
+                    builder.AddProvider(loggerProvider);
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                })
                 .Configure(app => { });
 
             using (var host = hostBuilder.Build())
@@ -142,13 +146,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
-            Assert.Equal(LogLevel.Information, loggerProvider.FilterLogger.LastLogLevel);
+            Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
             Assert.True(loggerProvider.ErrorLogger.TotalErrorsLogged == 0,
                 userMessage: string.Join(Environment.NewLine, loggerProvider.ErrorLogger.ErrorMessages));
         }
 
         [Fact]
-        public async Task ClientHandshakeFailureLoggedAsInformation()
+        public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
 
@@ -160,7 +164,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
+                .ConfigureLogging(builder =>
+                {
+                    builder.AddProvider(loggerProvider);
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                })
                 .Configure(app => { });
 
             using (var host = hostBuilder.Build())
@@ -178,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
-            Assert.Equal(LogLevel.Information, loggerProvider.FilterLogger.LastLogLevel);
+            Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
             Assert.True(loggerProvider.ErrorLogger.TotalErrorsLogged == 0,
                 userMessage: string.Join(Environment.NewLine, loggerProvider.ErrorLogger.ErrorMessages));
         }
@@ -349,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task HandshakeTimesOutAndIsLoggedAsInformation()
+        public async Task HandshakeTimesOutAndIsLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
             var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -364,7 +372,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         });
                     });
                 })
-                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
+                .ConfigureLogging(builder =>
+                {
+                    builder.AddProvider(loggerProvider);
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                })
                 .Configure(app => app.Run(httpContext => Task.CompletedTask));
 
             using (var host = hostBuilder.Build())
@@ -381,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
             Assert.Equal(2, loggerProvider.FilterLogger.LastEventId);
-            Assert.Equal(LogLevel.Information, loggerProvider.FilterLogger.LastLogLevel);
+            Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
         private class HandshakeErrorLoggerProvider : ILoggerProvider

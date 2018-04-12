@@ -182,13 +182,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
             catch (OperationCanceledException)
             {
-                _logger?.LogInformation(2, CoreStrings.AuthenticationTimedOut);
+                _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
             catch (IOException ex)
             {
-                _logger?.LogInformation(1, ex, CoreStrings.AuthenticationFailed);
+                _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
