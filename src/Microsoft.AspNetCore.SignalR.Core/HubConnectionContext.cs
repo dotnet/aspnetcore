@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly ConnectionContext _connectionContext;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
-        private readonly TaskCompletionSource<object> _abortCompletedTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _abortCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly long _keepAliveDuration;
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
