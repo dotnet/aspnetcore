@@ -14,13 +14,13 @@
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationExtensionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26331-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview3-32110</MicrosoftNetHttpHeadersPackageVersion>
