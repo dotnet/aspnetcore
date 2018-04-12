@@ -40,21 +40,11 @@ namespace Microsoft.VisualStudio.ProjectSystem
             DataSourceVersions = dataSourceVersions;
         }
 
-        public void SetProperty(string key, string value)
-        {
-            Properties = Properties.SetItem(key, value);
-        }
-
-        public void SetItem(string key, Dictionary<string, string> values)
-        {
-            Items = Items.SetItem(key, values.ToImmutableDictionary());
-        }
-
         public string RuleName { get; }
 
-        public IImmutableDictionary<string, IImmutableDictionary<string, string>> Items { get; set; }
+        public IImmutableDictionary<string, IImmutableDictionary<string, string>> Items { get; }
 
-        public IImmutableDictionary<string, string> Properties { get; set; }
+        public IImmutableDictionary<string, string> Properties { get; }
 
         public IImmutableDictionary<NamedIdentity, IComparable> DataSourceVersions { get; }
     }

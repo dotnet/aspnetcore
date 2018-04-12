@@ -5,9 +5,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal enum ProjectChangeKind
     {
-        Added,
-        Removed,
-        Changed,
-        TagHelpersChanged,
+        ProjectAdded,
+        ProjectRemoved,
+        ProjectChanged,
+        DocumentsChanged,
+        DocumentContentChanged,
     }
 }

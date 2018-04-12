@@ -9,7 +9,7 @@
   Background="{DynamicResource VsBrush.Window}"
   Foreground="{DynamicResource VsBrush.WindowText}"
   mc:Ignorable="d"
-  d:DesignHeight="300"
+  d:DesignHeight="900"
   d:DesignWidth="300"
   Name="RazorInfoToolWindow">
   <UserControl.Resources>
@@ -84,12 +84,6 @@
           Height="Auto" />
         <RowDefinition
           Height="Auto" />
-        <RowDefinition
-          Height="Auto" />
-        <RowDefinition
-          Height="Auto" />
-        <RowDefinition
-          Height="Auto" />
       </Grid.RowDefinitions>
       <Grid
         Grid.Row="0">
@@ -107,8 +101,7 @@
         <ComboBox
           Grid.Column="1"
           ItemsSource="{Binding Projects}"
-          SelectedValue="{Binding CurrentProject}"
-          IsEnabled="{Binding IsSelectionEnabled}">
+          SelectedValue="{Binding CurrentProject}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <StackPanel
@@ -122,8 +115,8 @@
         </ComboBox>
         <Button
           Grid.Column="2"
-          Content="Load"
-          Command="{Binding LoadCommand}" />
+          Content="Update"
+          Command="{Binding UpdateCommand}" />
       </Grid>
       <GridSplitter
         Grid.Row="1" 
@@ -175,24 +168,74 @@
         Grid.Row="4"
         IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
         <Expander.Header>
-          <Label
-            Content="Tag Helpers" />
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label
+              Grid.Column="0"
+              Content="Tag Helpers" />
+            <ProgressBar
+              Grid.Column="1"
+              Width="Auto"
+              Height="20"
+              Margin="5"
+              Visibility="{Binding CurrentProjectInfo.TagHelperProgressVisibility}"
+              IsIndeterminate="True" />
+          </Grid>
+
         </Expander.Header>
         <ListView
           ItemsSource="{Binding CurrentProjectInfo.TagHelpers}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <StackPanel
-                Orientation="Horizontal">
-                <Label
-                  Content="{Binding TargetElement}" />
-                <Label
-                  Content="{Binding TypeName}" />
-                <Label
-                  Content="{Binding AssemblyName}" />
-              </StackPanel>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Target Element" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=TargetElement, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Type Name" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=TypeName, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Assembly Name" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=AssemblyName, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
         </ListView>
       </Expander>
       <GridSplitter
@@ -206,15 +249,39 @@
         </Expander.Header>
         <ListView
           ItemsSource="{Binding CurrentProjectInfo.Directives}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <StackPanel
-                Orientation="Horizontal">
-                <Label
-                  Content="{Binding Name}" />
-              </StackPanel>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Directive" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=Name, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Usage" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=DisplayText, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
         </ListView>
       </Expander>
       <GridSplitter
@@ -224,43 +291,45 @@
         IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
         <Expander.Header>
           <Label
-            Content="Select Document" />
+            Content="Documents" />
         </Expander.Header>
-        <StackPanel>
-          <ListBox
-            ItemsSource="{Binding CurrentProjectInfo.Documents}"
-            SelectedValue="{Binding CurrentDocument}"
-            IsEnabled="{Binding IsSelectionEnabled}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <StackPanel
-                  Orientation="Horizontal">
-                  <Label
-                    Content="{Binding FilePath}" />
-                </StackPanel>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ListBox>
-          <Button
-            Content="Generate"
-            Command="{Binding GenerateCommand}" />
-        </StackPanel>
+        <ListView
+          ItemsSource="{Binding CurrentProjectInfo.Documents}">
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Target Path" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=TargetPath, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="File Path" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=FilePath, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
       </Expander>
-      <GridSplitter
-        Grid.Row="9" />
-      <Expander
-        Grid.Row="10"
-        IsEnabled="{Binding CurrentDocumentInfo, TargetNullValue=False}">
-        <Expander.Header>
-          <Label
-            Content="Generated Code" />
-        </Expander.Header>
-        <TextBlock
-          Text="{Binding CurrentDocumentInfo.Text}"
-          TextWrapping="Wrap" />
-      </Expander>
-      <GridSplitter
-        Grid.Row="11" />
     </Grid>
   </ScrollViewer>
 </UserControl>

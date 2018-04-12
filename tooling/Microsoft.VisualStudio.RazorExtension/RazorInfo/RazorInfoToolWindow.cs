@@ -17,10 +17,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
     [Guid("079e9499-d150-40af-8876-3047f7942c2a")]
     public class RazorInfoToolWindow : ToolWindowPane
     {
-        private IRazorEngineDocumentGenerator _documentGenerator;
-        private IRazorEngineDirectiveResolver _directiveResolver;
         private ProjectSnapshotManager _projectManager;
-        private TagHelperResolver _tagHelperResolver;
         private VisualStudioWorkspace _workspace;
 
         public RazorInfoToolWindow() : base(null)
@@ -42,14 +39,10 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             var componentModel = (IComponentModel)GetService(typeof(SComponentModel));
             _workspace = componentModel.GetService<VisualStudioWorkspace>();
 
-            _documentGenerator = componentModel.GetService<IRazorEngineDocumentGenerator>();
-            _directiveResolver = componentModel.GetService<IRazorEngineDirectiveResolver>();
-            _tagHelperResolver = _workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<TagHelperResolver>();
-
             _projectManager = _workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<ProjectSnapshotManager>();
             _projectManager.Changed += ProjectManager_Changed;
 
-            DataContext = new RazorInfoViewModel(this, _workspace, _projectManager, _directiveResolver, _tagHelperResolver, _documentGenerator, OnException);
+            DataContext = new RazorInfoViewModel(this, _workspace, _projectManager, OnException);
             foreach (var project in _projectManager.Projects)
             {
                 DataContext.Projects.Add(new ProjectViewModel(project.FilePath)
@@ -78,11 +71,11 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         {
             switch (e.Kind)
             {
-                case ProjectChangeKind.Added:
+                case ProjectChangeKind.ProjectAdded:
                     {
-                        var added = new ProjectViewModel(e.Project.FilePath)
+                        var added = new ProjectViewModel(e.ProjectFilePath)
                         {
-                            Snapshot = new ProjectSnapshotViewModel(e.Project),
+                            Snapshot = new ProjectSnapshotViewModel(_projectManager.GetLoadedProject(e.ProjectFilePath)),
                         };
 
                         DataContext.Projects.Add(added);
@@ -94,13 +87,13 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                         break;
                     }
 
-                case ProjectChangeKind.Removed:
+                case ProjectChangeKind.ProjectRemoved:
                     {
                         ProjectViewModel removed = null;
                         for (var i = DataContext.Projects.Count - 1; i >= 0; i--)
                         {
                             var project = DataContext.Projects[i];
-                            if (project.FilePath == e.Project.FilePath)
+                            if (project.FilePath == e.ProjectFilePath)
                             {
                                 removed = project;
                                 DataContext.Projects.RemoveAt(i);
@@ -116,20 +109,26 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                         break;
                     }
 
-                case ProjectChangeKind.Changed:
+                case ProjectChangeKind.ProjectChanged:
+                case ProjectChangeKind.DocumentsChanged:
                     {
                         ProjectViewModel changed = null;
                         for (var i = DataContext.Projects.Count - 1; i >= 0; i--)
                         {
                             var project = DataContext.Projects[i];
-                            if (project.FilePath == e.Project.FilePath)
+                            if (project.FilePath == e.ProjectFilePath)
                             {
                                 changed = project;
-                                changed.Snapshot = new ProjectSnapshotViewModel(e.Project);
+                                changed.Snapshot = new ProjectSnapshotViewModel(_projectManager.GetLoadedProject(e.ProjectFilePath));
                                 break;
                             }
                         }
                         
+                        break;
+                    }
+
+                case ProjectChangeKind.DocumentContentChanged:
+                    {
                         break;
                     }
             }

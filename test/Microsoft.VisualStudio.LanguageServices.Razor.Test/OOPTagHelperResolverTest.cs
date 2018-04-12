@@ -45,12 +45,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             ErrorReporter = new DefaultErrorReporter();
             ProjectManager = new TestProjectSnapshotManager(Workspace);
-            EngineFactory = new DefaultProjectEngineFactoryService(ProjectManager, FallbackFactory, CustomFactories);
+            EngineFactory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
         }
 
         private ErrorReporter ErrorReporter { get; }
 
-        private RazorProjectEngineFactoryService EngineFactory { get; }
+        private ProjectSnapshotProjectEngineFactory EngineFactory { get; }
 
         private Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[] CustomFactories { get; }
 
@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             ProjectManager.HostProjectAdded(HostProject_For_2_0);
 
-            var project = ProjectManager.GetProjectWithFilePath("Test.csproj");
+            var project = ProjectManager.GetLoadedProject("Test.csproj");
 
             var resolver = new TestTagHelperResolver(EngineFactory, ErrorReporter, Workspace);
 
@@ -89,7 +89,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             ProjectManager.HostProjectAdded(HostProject_For_2_0);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
 
-            var project = ProjectManager.GetProjectWithFilePath("Test.csproj");
+            var project = ProjectManager.GetLoadedProject("Test.csproj");
 
             var resolver = new TestTagHelperResolver(EngineFactory, ErrorReporter, Workspace)
             {
@@ -105,7 +105,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var result = await resolver.GetTagHelpersAsync(project);
 
             // Assert
-            Assert.Same(TagHelperResolutionResult.Empty, result);      
+            Assert.Same(TagHelperResolutionResult.Empty, result);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             ProjectManager.HostProjectAdded(HostProject_For_NonSerializableConfiguration);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
 
-            var project = ProjectManager.GetProjectWithFilePath("Test.csproj");
+            var project = ProjectManager.GetLoadedProject("Test.csproj");
 
             var resolver = new TestTagHelperResolver(EngineFactory, ErrorReporter, Workspace)
             {
@@ -136,8 +136,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
         private class TestTagHelperResolver : OOPTagHelperResolver
         {
-            public TestTagHelperResolver(RazorProjectEngineFactoryService engineFactory, ErrorReporter errorReporter, Workspace workspace) 
-                : base(engineFactory, errorReporter, workspace)
+            public TestTagHelperResolver(ProjectSnapshotProjectEngineFactory factory, ErrorReporter errorReporter, Workspace workspace) 
+                : base(factory, errorReporter, workspace)
             {
             }
 
@@ -163,13 +163,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 : base(
                       Mock.Of<ForegroundDispatcher>(),
                       Mock.Of<ErrorReporter>(),
-                      Mock.Of<ProjectSnapshotWorker>(),
                       Enumerable.Empty<ProjectSnapshotChangeTrigger>(),
                       workspace)
-            {
-            }
-
-            protected override void NotifyBackgroundWorker(ProjectSnapshotUpdateContext context)
             {
             }
         }

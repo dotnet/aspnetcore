@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
-        private readonly RazorProjectEngineFactoryService _projectEngineFactory;
+        private readonly ProjectSnapshotProjectEngineFactory _projectEngineFactory;
         private readonly ErrorReporter _errorReporter;
         private RazorProjectEngine _projectEngine;
         private RazorCodeDocument _codeDocument;
@@ -47,7 +48,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public DefaultVisualStudioRazorParser(
             ForegroundDispatcher dispatcher,
             VisualStudioDocumentTracker documentTracker,
-            RazorProjectEngineFactoryService projectEngineFactory,
+            ProjectSnapshotProjectEngineFactory projectEngineFactory,
             ErrorReporter errorReporter,
             VisualStudioCompletionBroker completionBroker)
         {
@@ -167,8 +168,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _dispatcher.AssertForegroundThread();
 
+            // Make sure any tests use the real thing or a good mock. These tests can cause failures
+            // that are hard to understand when this throws.
+            Debug.Assert(_documentTracker.IsSupportedProject);
+            Debug.Assert(_documentTracker.ProjectSnapshot != null);
+
+            _projectEngine = _projectEngineFactory.Create(_documentTracker.ProjectSnapshot, ConfigureProjectEngine);
+
+            Debug.Assert(_projectEngine != null); 
+            Debug.Assert(_projectEngine.Engine != null);
+            Debug.Assert(_projectEngine.FileSystem != null);
+
             var projectDirectory = Path.GetDirectoryName(_documentTracker.ProjectPath);
-            _projectEngine = _projectEngineFactory.Create(projectDirectory, ConfigureProjectEngine);
             _parser = new BackgroundParser(_projectEngine, FilePath, projectDirectory);
             _parser.ResultsReady += OnResultsReady;
             _parser.Start();

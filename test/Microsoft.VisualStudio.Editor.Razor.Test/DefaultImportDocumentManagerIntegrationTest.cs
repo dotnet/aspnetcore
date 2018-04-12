@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
@@ -13,23 +14,51 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class DefaultImportDocumentManagerIntegrationTest : ForegroundDispatcherTestBase
     {
+        public DefaultImportDocumentManagerIntegrationTest()
+        {
+            ProjectPath = "C:\\path\\to\\project\\project.csproj";
+
+            FileSystem = RazorProjectFileSystem.Create(Path.GetDirectoryName(ProjectPath));
+            ProjectEngine = RazorProjectEngine.Create(FallbackRazorConfiguration.MVC_2_1, FileSystem, b =>
+            {
+                // These tests rely on MVC's import behavior.
+                Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorExtensions.Register(b);
+            });
+        }
+
+        private string FilePath { get; }
+
+        private string ProjectPath { get; }
+
+        private RazorProjectFileSystem FileSystem { get; }
+
+        private RazorProjectEngine ProjectEngine { get; }
+
         [ForegroundFact]
         public void Changed_TrackerChanged_ResultsInChangedHavingCorrectArgs()
         {
             // Arrange
-            var filePath = "C:\\path\\to\\project\\Views\\Home\\file.cshtml";
-            var anotherFilePath = "C:\\path\\to\\project\\anotherFile.cshtml";
-            var projectPath = "C:\\path\\to\\project\\project.csproj";
             var testImportsPath = "C:\\path\\to\\project\\_ViewImports.cshtml";
-            var tracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == filePath && t.ProjectPath == projectPath);
-            var anotherTracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == anotherFilePath && t.ProjectPath == projectPath);
-            var projectEngineFactoryService = GetProjectEngineFactoryService();
-            var fileChangeTracker = new Mock<FileChangeTracker>();
-            fileChangeTracker.Setup(f => f.FilePath).Returns(testImportsPath);
+
+            var tracker = Mock.Of<VisualStudioDocumentTracker>(
+                t => t.FilePath == "C:\\path\\to\\project\\Views\\Home\\file.cshtml" &&
+                t.ProjectPath == ProjectPath &&
+                t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
+
+            var anotherTracker = Mock.Of<VisualStudioDocumentTracker>(
+                t => t.FilePath == "C:\\path\\to\\project\\anotherFile.cshtml" &&
+                t.ProjectPath == ProjectPath &&
+                t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
+
             var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
+            var fileChangeTracker = new Mock<FileChangeTracker>();
+            fileChangeTracker
+                .Setup(f => f.FilePath)
+                .Returns(testImportsPath);
             fileChangeTrackerFactory
                 .Setup(f => f.Create(testImportsPath))
                 .Returns(fileChangeTracker.Object);
+
             fileChangeTrackerFactory
                 .Setup(f => f.Create("C:\\path\\to\\project\\Views\\_ViewImports.cshtml"))
                 .Returns(Mock.Of<FileChangeTracker>());
@@ -38,7 +67,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Returns(Mock.Of<FileChangeTracker>());
 
             var called = false;
-            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, projectEngineFactoryService);
+            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object);
             manager.OnSubscribed(tracker);
             manager.OnSubscribed(anotherTracker);
             manager.Changed += (sender, args) =>
@@ -49,8 +78,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 Assert.Equal(FileChangeKind.Changed, args.Kind);
                 Assert.Collection(
                     args.AssociatedDocuments,
-                    f => Assert.Equal(filePath, f),
-                    f => Assert.Equal(anotherFilePath, f));
+                    f => Assert.Equal("C:\\path\\to\\project\\Views\\Home\\file.cshtml", f),
+                    f => Assert.Equal("C:\\path\\to\\project\\anotherFile.cshtml", f));
             };
 
             // Act
@@ -58,26 +87,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             Assert.True(called);
-        }
-
-        private RazorProjectEngineFactoryService GetProjectEngineFactoryService()
-        {
-            var projectManager = new Mock<ProjectSnapshotManager>();
-            projectManager.Setup(p => p.Projects).Returns(Array.Empty<ProjectSnapshot>());
-
-            var projectEngineFactory = new Mock<IFallbackProjectEngineFactory>();
-            projectEngineFactory.Setup(s => s.Create(It.IsAny<RazorConfiguration>(), It.IsAny<RazorProjectFileSystem>(), It.IsAny<Action<RazorProjectEngineBuilder>>()))
-                .Returns<RazorConfiguration, RazorProjectFileSystem, Action<RazorProjectEngineBuilder>>(
-                    (c, fs, b) => RazorProjectEngine.Create(
-                        RazorConfiguration.Default,
-                        fs,
-                        builder => RazorExtensions.Register(builder)));
-
-            var service = new DefaultProjectEngineFactoryService(
-                projectManager.Object,
-                projectEngineFactory.Object,
-                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[0]);
-            return service;
         }
     }
 }

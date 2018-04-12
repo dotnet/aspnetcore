@@ -13,14 +13,14 @@ namespace Microsoft.CodeAnalysis.Host
         private static readonly Workspace DefaultWorkspace = TestWorkspace.Create();
 
         private readonly HostServices _hostServices;
+        private readonly HostLanguageServices _razorLanguageServices;
         private readonly IEnumerable<IWorkspaceService> _workspaceServices;
-        private readonly TestRazorLanguageServices _razorLanguageServices;
         private readonly Workspace _workspace;
 
         public TestWorkspaceServices(
             HostServices hostServices,
             IEnumerable<IWorkspaceService> workspaceServices,
-            IEnumerable<ILanguageService> razorLanguageServices,
+            IEnumerable<ILanguageService> languageServices,
             Workspace workspace)
         {
             if (hostServices == null)
@@ -33,9 +33,9 @@ namespace Microsoft.CodeAnalysis.Host
                 throw new ArgumentNullException(nameof(workspaceServices));
             }
 
-            if (razorLanguageServices == null)
+            if (languageServices == null)
             {
-                throw new ArgumentNullException(nameof(razorLanguageServices));
+                throw new ArgumentNullException(nameof(languageServices));
             }
 
             if (workspace == null)
@@ -45,8 +45,9 @@ namespace Microsoft.CodeAnalysis.Host
 
             _hostServices = hostServices;
             _workspaceServices = workspaceServices;
-            _razorLanguageServices = new TestRazorLanguageServices(this, razorLanguageServices);
             _workspace = workspace;
+
+            _razorLanguageServices = new TestLanguageServices(this, languageServices);
         }
 
         public override HostServices HostServices => _hostServices;
@@ -68,12 +69,13 @@ namespace Microsoft.CodeAnalysis.Host
 
         public override HostLanguageServices GetLanguageServices(string languageName)
         {
-            if (languageName != RazorLanguage.Name)
+            if (languageName == RazorLanguage.Name)
             {
-                throw new InvalidOperationException($"Test services do not support language service '{languageName}'. The only language services supported are '{RazorLanguage.Name}'.");
+                return _razorLanguageServices;
             }
 
-            return _razorLanguageServices;
+            // Fallback to default host services to resolve roslyn specific features.
+            return DefaultWorkspace.Services.GetLanguageServices(languageName);
         }
 
         public override IEnumerable<string> SupportedLanguages => new[] { RazorLanguage.Name };

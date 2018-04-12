@@ -3,16 +3,18 @@
 
 #if RAZOR_EXTENSION_DEVELOPER_MODE
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
     public class ProjectInfoViewModel : NotifyPropertyChanged
     {
-        private ObservableCollection<DirectiveViewModel> _directives;
-        private ObservableCollection<DocumentViewModel> _documents;
+        private ObservableCollection<DirectiveDescriptorViewModel> _directives;
+        private ObservableCollection<DocumentSnapshotViewModel> _documents;
         private ObservableCollection<TagHelperViewModel> _tagHelpers;
+        private bool _tagHelpersLoading;
 
-        public ObservableCollection<DirectiveViewModel> Directives
+        public ObservableCollection<DirectiveDescriptorViewModel> Directives
         {
             get { return _directives; }
             set
@@ -22,7 +24,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             }
         }
 
-        public ObservableCollection<DocumentViewModel> Documents
+        public ObservableCollection<DocumentSnapshotViewModel> Documents
         {
             get { return _documents; }
             set
@@ -41,6 +43,20 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 OnPropertyChanged();
             }
         }
+
+        public bool TagHelpersLoading
+        {
+            get { return _tagHelpersLoading; }
+            set
+            {
+                _tagHelpersLoading = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TagHelperProgressVisibility));
+            }
+        }
+
+        public Visibility TagHelperProgressVisibility => TagHelpersLoading ? Visibility.Visible : Visibility.Hidden;
+
     }
 }
 #endif

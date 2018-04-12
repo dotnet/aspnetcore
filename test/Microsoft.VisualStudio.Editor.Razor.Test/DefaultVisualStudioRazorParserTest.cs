@@ -4,7 +4,9 @@
 using System;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Moq;
@@ -14,12 +16,32 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class DefaultVisualStudioRazorParserTest : ForegroundDispatcherTestBase
     {
-        private static VisualStudioDocumentTracker CreateDocumentTracker(bool isSupportedProject = true)
+        public DefaultVisualStudioRazorParserTest()
+        {
+            Workspace = TestWorkspace.Create();
+            ProjectSnapshot = new EphemeralProjectSnapshot(Workspace.Services, "c:\\SomeProject.csproj");
+
+            var engine = RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Empty);
+            ProjectEngineFactory = Mock.Of<ProjectSnapshotProjectEngineFactory>(
+                f => f.Create(
+                    It.IsAny<ProjectSnapshot>(),
+                    It.IsAny<RazorProjectFileSystem>(),
+                    It.IsAny<Action<RazorProjectEngineBuilder>>()) == engine);
+        }
+
+        private ProjectSnapshot ProjectSnapshot { get; }
+
+        private ProjectSnapshotProjectEngineFactory ProjectEngineFactory { get; }
+
+        private Workspace Workspace { get; }
+
+        private VisualStudioDocumentTracker CreateDocumentTracker(bool isSupportedProject = true)
         {
             var documentTracker = Mock.Of<VisualStudioDocumentTracker>(tracker =>
             tracker.TextBuffer == new TestTextBuffer(new StringTextSnapshot(string.Empty)) &&
-                tracker.ProjectPath == "SomeProject.csproj" &&
-                tracker.FilePath == "SomeFilePath.cshtml" &&
+                tracker.ProjectPath == "c:\\SomeProject.csproj" &&
+                tracker.ProjectSnapshot == ProjectSnapshot &&
+                tracker.FilePath == "c:\\SomeFilePath.cshtml" &&
                 tracker.IsSupportedProject == isSupportedProject);
 
             return documentTracker;
@@ -32,7 +54,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>());
             parser.Dispose();
@@ -48,7 +70,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>());
             parser.Dispose();
@@ -64,7 +86,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>());
             parser.Dispose();
@@ -80,7 +102,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>()))
             {
@@ -108,7 +130,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 documentTracker,
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>()))
             {
@@ -139,7 +161,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>())
             {
@@ -169,7 +191,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>())
             {
@@ -198,7 +220,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>()))
             {
@@ -222,7 +244,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 documentTracker,
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>()))
             {
@@ -242,7 +264,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(isSupportedProject: true),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>()))
             {
@@ -261,7 +283,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 CreateDocumentTracker(isSupportedProject: false),
-                Mock.Of<RazorProjectEngineFactoryService>(),
+                ProjectEngineFactory,
                 new DefaultErrorReporter(),
                 Mock.Of<VisualStudioCompletionBroker>()))
             {

@@ -35,13 +35,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var errorReporter = languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>();
             var fileChangeTrackerFactory = languageServices.GetRequiredService<FileChangeTrackerFactory>();
-            var projectEngineFactoryService = languageServices.GetRequiredService<RazorProjectEngineFactoryService>();
 
-            return new DefaultImportDocumentManager(
-                _foregroundDispatcher,
-                errorReporter,
-                fileChangeTrackerFactory,
-                projectEngineFactoryService);
+            return new DefaultImportDocumentManager(_foregroundDispatcher, errorReporter, fileChangeTrackerFactory);
         }
     }
 }

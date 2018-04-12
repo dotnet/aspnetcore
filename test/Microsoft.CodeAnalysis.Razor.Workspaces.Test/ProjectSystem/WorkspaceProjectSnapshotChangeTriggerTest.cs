@@ -3,8 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -214,22 +212,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
-                : base(Mock.Of<ForegroundDispatcher>(), Mock.Of<ErrorReporter>(), new TestProjectSnapshotWorker(), triggers, workspace)
+                : base(Mock.Of<ForegroundDispatcher>(), Mock.Of<ErrorReporter>(), triggers, workspace)
             {
-            }
-
-            protected override void NotifyBackgroundWorker(ProjectSnapshotUpdateContext context)
-            {
-                Assert.NotNull(context.HostProject);
-                Assert.NotNull(context.WorkspaceProject);
-            }
-        }
-
-        private class TestProjectSnapshotWorker : ProjectSnapshotWorker
-        {
-            public override Task ProcessUpdateAsync(ProjectSnapshotUpdateContext update, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                return Task.CompletedTask;
             }
         }
     }

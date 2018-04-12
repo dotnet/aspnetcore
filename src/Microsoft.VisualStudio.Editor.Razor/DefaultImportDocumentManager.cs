@@ -16,7 +16,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly FileChangeTrackerFactory _fileChangeTrackerFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ErrorReporter _errorReporter;
-        private readonly RazorProjectEngineFactoryService _projectEngineFactoryService;
         private readonly Dictionary<string, ImportTracker> _importTrackerCache;
 
         public override event EventHandler<ImportChangedEventArgs> Changed;
@@ -24,8 +23,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public DefaultImportDocumentManager(
             ForegroundDispatcher foregroundDispatcher,
             ErrorReporter errorReporter,
-            FileChangeTrackerFactory fileChangeTrackerFactory,
-            RazorProjectEngineFactoryService projectEngineFactoryService)
+            FileChangeTrackerFactory fileChangeTrackerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -42,15 +40,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(fileChangeTrackerFactory));
             }
 
-            if (projectEngineFactoryService == null)
-            {
-                throw new ArgumentNullException(nameof(projectEngineFactoryService));
-            }
-
             _foregroundDispatcher = foregroundDispatcher;
             _errorReporter = errorReporter;
             _fileChangeTrackerFactory = fileChangeTrackerFactory;
-            _projectEngineFactoryService = projectEngineFactoryService;
             _importTrackerCache = new Dictionary<string, ImportTracker>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -115,8 +107,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private IEnumerable<RazorProjectItem> GetImportItems(VisualStudioDocumentTracker tracker)
         {
-            var projectDirectory = Path.GetDirectoryName(tracker.ProjectPath);
-            var projectEngine = _projectEngineFactoryService.Create(projectDirectory, _ => { });
+            var projectEngine = tracker.ProjectSnapshot.GetProjectEngine();
             var trackerItem = projectEngine.FileSystem.GetItem(tracker.FilePath);
             var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
 

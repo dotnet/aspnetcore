@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -23,6 +24,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         private const string TestLinePragmaFileName = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml";
         private const string TestProjectPath = "C:\\This\\Path\\Is\\Just\\For\\Project.csproj";
+
+        public DefaultVisualStudioRazorParserIntegrationTest()
+        {
+            Workspace = TestWorkspace.Create();
+            ProjectSnapshot = new EphemeralProjectSnapshot(Workspace.Services, TestProjectPath);
+        }
+
+        private ProjectSnapshot ProjectSnapshot { get; }
+
+        private Workspace Workspace { get; }
 
         [ForegroundFact]
         public async Task BufferChangeStartsFullReparseIfChangeOverlapsMultipleSpans()
@@ -505,7 +516,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var textBuffer = new TestTextBuffer(originalSnapshot);
             var documentTracker = CreateDocumentTracker(textBuffer);
-            var templateEngineFactory = CreateTemplateEngineFactory();
+            var templateEngineFactory = CreateProjectEngineFactory();
             var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
                 documentTracker,
@@ -524,7 +535,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return new TestParserManager(parser);
         }
 
-        private static RazorProjectEngineFactoryService CreateTemplateEngineFactory(
+        private static ProjectSnapshotProjectEngineFactory CreateProjectEngineFactory(
             string path = TestLinePragmaFileName,
             IEnumerable<TagHelperDescriptor> tagHelpers = null)
         {
@@ -541,10 +552,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
             });
 
-            var projectEngineFactoryService = Mock.Of<RazorProjectEngineFactoryService>(
-                service => service.Create(It.IsAny<string>(), It.IsAny<Action<RazorProjectEngineBuilder>>()) == projectEngine);
-
-            return projectEngineFactoryService;
+            return new TestProjectSnapshotProjectEngineFactory()
+            {
+                Engine = projectEngine,
+            };
         }
 
         private async Task RunTypeKeywordTestAsync(string keyword)
@@ -584,7 +595,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 #endif
         }
 
-        private static VisualStudioDocumentTracker CreateDocumentTracker(Text.ITextBuffer textBuffer)
+        private VisualStudioDocumentTracker CreateDocumentTracker(Text.ITextBuffer textBuffer)
         {
             var focusedTextView = Mock.Of<ITextView>(textView => textView.HasAggregateFocus == true);
             var documentTracker = Mock.Of<VisualStudioDocumentTracker>(tracker =>
@@ -592,6 +603,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 tracker.TextViews == new[] { focusedTextView } &&
                 tracker.FilePath == TestLinePragmaFileName &&
                 tracker.ProjectPath == TestProjectPath &&
+                tracker.ProjectSnapshot == ProjectSnapshot &&
                 tracker.IsSupportedProject == true);
             textBuffer.Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
 

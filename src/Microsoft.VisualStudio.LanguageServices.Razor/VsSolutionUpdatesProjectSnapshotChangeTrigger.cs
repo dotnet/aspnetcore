@@ -86,14 +86,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public int UpdateProjectCfg_Done(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, int fSuccess, int fCancel)
         {
             var projectPath = _projectService.GetProjectPath(pHierProj);
-
-            // Get the corresponding roslyn project by matching the project name and the project path.
-            foreach (var projectSnapshot in _projectManager.Projects)
+            var project = _projectManager.GetLoadedProject(projectPath);
+            if (project != null && project.WorkspaceProject != null)
             {
-                if (string.Equals(projectPath, projectSnapshot.FilePath, StringComparison.OrdinalIgnoreCase))
+                var workspaceProject = _projectManager.Workspace.CurrentSolution.GetProject(project.WorkspaceProject.Id);
+                if (workspaceProject != null)
                 {
-                    _projectManager.HostProjectBuildComplete(projectSnapshot.HostProject);
-                    break;
+                    // Trigger a tag helper update by forcing the project manager to see the workspace Project
+                    // from the current solution.
+                    _projectManager.WorkspaceProjectChanged(workspaceProject);
                 }
             }
 

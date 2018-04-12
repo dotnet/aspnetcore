@@ -16,15 +16,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     internal class OOPTagHelperResolver : TagHelperResolver
     {
         private readonly DefaultTagHelperResolver _defaultResolver;
-        private readonly RazorProjectEngineFactoryService _engineFactory;
+        private readonly ProjectSnapshotProjectEngineFactory _factory;
         private readonly ErrorReporter _errorReporter;
         private readonly Workspace _workspace;
 
-        public OOPTagHelperResolver(RazorProjectEngineFactoryService engineFactory, ErrorReporter errorReporter, Workspace workspace)
+        public OOPTagHelperResolver(ProjectSnapshotProjectEngineFactory factory, ErrorReporter errorReporter, Workspace workspace)
         {
-            if (engineFactory == null)
+            if (factory == null)
             {
-                throw new ArgumentNullException(nameof(engineFactory));
+                throw new ArgumentNullException(nameof(factory));
             }
 
             if (errorReporter == null)
@@ -37,11 +37,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(workspace));
             }
 
-            _engineFactory = engineFactory;
+            _factory = factory;
             _errorReporter = errorReporter;
             _workspace = workspace;
 
-            _defaultResolver = new DefaultTagHelperResolver(_engineFactory);
+            _defaultResolver = new DefaultTagHelperResolver();
         }
 
         public override async Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshot project, CancellationToken cancellationToken = default)
@@ -63,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // 3. Use fallback factory in process
             //
             // Calling into RazorTemplateEngineFactoryService.Create will accomplish #2 and #3 in one step.
-            var factory = _engineFactory.FindSerializableFactory(project);
+            var factory = _factory.FindSerializableFactory(project);
 
             try
             {

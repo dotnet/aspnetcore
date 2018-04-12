@@ -14,6 +14,41 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     public class VsSolutionUpdatesProjectSnapshotChangeTriggerTest
     {
+        public VsSolutionUpdatesProjectSnapshotChangeTriggerTest()
+        {
+            SomeProject = new HostProject("c:\\SomeProject\\SomeProject.csproj", FallbackRazorConfiguration.MVC_1_0);
+            SomeOtherProject = new HostProject("c:\\SomeOtherProject\\SomeOtherProject.csproj", FallbackRazorConfiguration.MVC_2_0);
+
+            Workspace = TestWorkspace.Create(w =>
+            {
+                SomeWorkspaceProject = w.AddProject(ProjectInfo.Create(
+                    ProjectId.CreateNewId(),
+                    VersionStamp.Create(),
+                    "SomeProject",
+                    "SomeProject",
+                    LanguageNames.CSharp,
+                    filePath: SomeProject.FilePath));
+
+                SomeOtherWorkspaceProject = w.AddProject(ProjectInfo.Create(
+                    ProjectId.CreateNewId(),
+                    VersionStamp.Create(),
+                    "SomeOtherProject",
+                    "SomeOtherProject",
+                    LanguageNames.CSharp,
+                    filePath: SomeOtherProject.FilePath));
+            });
+        }
+
+        private HostProject SomeProject { get; }
+
+        private HostProject SomeOtherProject { get; }
+
+        private Project SomeWorkspaceProject { get; set; }
+
+        private Project SomeOtherWorkspaceProject { get; set; }
+
+        private Workspace Workspace { get; }
+
         [Fact]
         public void Initialize_AttachesEventSink()
         {
@@ -38,10 +73,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         [Fact]
-        public void UpdateProjectCfg_Done_KnownProject_Invokes_ProjectBuildComplete()
+        public void UpdateProjectCfg_Done_KnownProject_Invokes_WorkspaceProjectChanged()
         {
             // Arrange
-            var expectedProjectPath = "Path/To/Project";
+            var expectedProjectPath = SomeProject.FilePath;
 
             uint cookie;
             var buildManager = new Mock<IVsSolutionBuildManager>(MockBehavior.Strict);
@@ -57,16 +92,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var projectSnapshots = new[]
             {
-                Mock.Of<ProjectSnapshot>(p => p.FilePath == expectedProjectPath && p.HostProject == new HostProject(expectedProjectPath, RazorConfiguration.Default)),
-                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Test2.csproj" && p.HostProject == new HostProject("Test2.csproj", RazorConfiguration.Default)),
+                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeProject, SomeWorkspaceProject)),
+                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
             };
 
             var called = false;
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
-            projectManager.SetupGet(p => p.Projects).Returns(projectSnapshots);
+            projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
-                .Setup(p => p.HostProjectBuildComplete(It.IsAny<HostProject>()))
-                .Callback<HostProject>(c =>
+                .Setup(p => p.GetLoadedProject(expectedProjectPath))
+                .Returns(projectSnapshots[0]);
+            projectManager
+                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
+                .Callback<Project>(c =>
                 {
                     called = true;
                     Assert.Equal(expectedProjectPath, c.FilePath);
@@ -83,7 +121,50 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         [Fact]
-        public void UpdateProjectCfg_Done_UnknownProject_DoesNotInvoke_ProjectBuildComplete()
+        public void UpdateProjectCfg_Done_WithoutWorkspaceProject_DoesNotInvoke_WorkspaceProjectChanged()
+        {
+            // Arrange
+            var expectedProjectPath = SomeProject.FilePath;
+
+            uint cookie;
+            var buildManager = new Mock<IVsSolutionBuildManager>(MockBehavior.Strict);
+            buildManager
+                .Setup(b => b.AdviseUpdateSolutionEvents(It.IsAny<VsSolutionUpdatesProjectSnapshotChangeTrigger>(), out cookie))
+                .Returns(VSConstants.S_OK);
+
+            var services = new Mock<IServiceProvider>();
+            services.Setup(s => s.GetService(It.Is<Type>(f => f == typeof(SVsSolutionBuildManager)))).Returns(buildManager.Object);
+
+            var projectService = new Mock<TextBufferProjectService>();
+            projectService.Setup(p => p.GetProjectPath(It.IsAny<IVsHierarchy>())).Returns(expectedProjectPath);
+
+            var projectSnapshots = new[]
+            {
+                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeProject, null)),
+                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
+            };
+
+            var projectManager = new Mock<ProjectSnapshotManagerBase>();
+            projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
+            projectManager
+                .Setup(p => p.GetLoadedProject(expectedProjectPath))
+                .Returns(projectSnapshots[0]);
+            projectManager
+                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
+                .Callback<Project>(c =>
+                {
+                    throw new InvalidOperationException("This should not be called.");
+                });
+
+            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object);
+            trigger.Initialize(projectManager.Object);
+
+            // Act & Assert - Does not throw
+            trigger.UpdateProjectCfg_Done(Mock.Of<IVsHierarchy>(), Mock.Of<IVsCfg>(), Mock.Of<IVsCfg>(), 0, 0, 0);
+        }
+
+        [Fact]
+        public void UpdateProjectCfg_Done_UnknownProject_DoesNotInvoke_WorkspaceProjectChanged()
         {
             // Arrange
             var expectedProjectPath = "Path/To/Project";
@@ -102,15 +183,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var projectSnapshots = new[]
             {
-                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Path/To/AnotherProject" && p.HostProject == new HostProject("Path/To/AnotherProject", RazorConfiguration.Default)),
-                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Path/To/DifferenProject" && p.HostProject == new HostProject("Path/To/DifferenProject", RazorConfiguration.Default)),
+                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeProject, SomeWorkspaceProject)),
+                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
             };
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
-            projectManager.SetupGet(p => p.Projects).Returns(projectSnapshots);
+            projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
-                .Setup(p => p.HostProjectBuildComplete(It.IsAny<HostProject>()))
-                .Callback<HostProject>(c =>
+                .Setup(p => p.GetLoadedProject(expectedProjectPath))
+                .Returns((ProjectSnapshot)null);
+            projectManager
+                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
+                .Callback<Project>(c =>
                 {
                     throw new InvalidOperationException("This should not be called.");
                 });

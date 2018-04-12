@@ -9,15 +9,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public abstract Workspace Workspace { get; }
 
-        public abstract void ProjectUpdated(ProjectSnapshotUpdateContext update);
+        public abstract void DocumentAdded(HostProject hostProject, HostDocument hostDocument);
+
+        public abstract void DocumentRemoved(HostProject hostProject, HostDocument hostDocument);
 
         public abstract void HostProjectAdded(HostProject hostProject);
 
         public abstract void HostProjectChanged(HostProject hostProject);
 
         public abstract void HostProjectRemoved(HostProject hostProject);
-
-        public abstract void HostProjectBuildComplete(HostProject hostProject);
 
         public abstract void WorkspaceProjectAdded(Project workspaceProject);
 

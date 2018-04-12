@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServices;
@@ -18,6 +21,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private ProjectSnapshotManagerBase _projectManager;
         private HostProject _current;
+        private Dictionary<string, HostDocument> _currentDocuments;
 
         public RazorProjectHostBase(
             IUnconfiguredProjectCommonServices commonServices,
@@ -38,6 +42,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _workspace = workspace;
 
             _lock = new AsyncSemaphore(initialCount: 1);
+            _currentDocuments = new Dictionary<string, HostDocument>(FilePathComparer.Instance);
         }
 
         // Internal for testing
@@ -67,7 +72,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _projectManager = projectManager;
 
             _lock = new AsyncSemaphore(initialCount: 1);
+            _currentDocuments = new Dictionary<string, HostDocument>(FilePathComparer.Instance);
         }
+
+        protected HostProject Current => _current;
 
         protected IUnconfiguredProjectCommonServices CommonServices { get; }
 
@@ -94,7 +102,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     if (_current != null)
                     {
-                        await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                        await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
                     }
                 });
             }
@@ -113,10 +121,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 if (_current != null)
                 {
                     var old = _current;
-                    await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                    var oldDocuments = _currentDocuments.Values.ToArray();
 
-                    var filePath = CommonServices.UnconfiguredProject.FullPath;
-                    await UpdateProjectUnsafeAsync(new HostProject(filePath, old.Configuration)).ConfigureAwait(false);
+                    await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
+
+                    await UpdateAsync(() =>
+                    {
+                        var filePath = CommonServices.UnconfiguredProject.FullPath;
+                        UpdateProjectUnsafe(new HostProject(filePath, old.Configuration));
+
+                        // This should no-op in the common case, just putting it here for insurance.
+                        for (var i = 0; i < oldDocuments.Length; i++)
+                        {
+                            AddDocumentUnsafe(oldDocuments[i]);
+                        }
+                    }).ConfigureAwait(false);
                 }
             });
         }
@@ -134,12 +153,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return _projectManager;
         }
 
-        // Must be called inside the lock.
-        protected async Task UpdateProjectUnsafeAsync(HostProject project)
+        protected async Task UpdateAsync(Action action)
         {
             await CommonServices.ThreadingService.SwitchToUIThread();
-            var projectManager = GetProjectManager();
+            action();
+        }
 
+        protected void UninitializeProjectUnsafe()
+        {
+            ClearDocumentsUnsafe();
+            UpdateProjectUnsafe(null);
+        }
+
+        protected void UpdateProjectUnsafe(HostProject project)
+        {
+            var projectManager = GetProjectManager();
             if (_current == null && project == null)
             {
                 // This is a no-op. This project isn't using Razor.
@@ -150,6 +178,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
             else if (_current != null && project == null)
             {
+                Debug.Assert(_currentDocuments.Count == 0);
                 projectManager.HostProjectRemoved(_current);
             }
             else
@@ -158,6 +187,40 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             _current = project;
+        }
+
+        protected void AddDocumentUnsafe(HostDocument document)
+        {
+            var projectManager = GetProjectManager();
+
+            if (_currentDocuments.ContainsKey(document.FilePath))
+            {
+                // Ignore duplicates
+                return;
+            }
+
+            projectManager.DocumentAdded(_current, document);
+            _currentDocuments.Add(document.FilePath, document);
+        }
+
+        protected void RemoveDocumentUnsafe(HostDocument document)
+        {
+            var projectManager = GetProjectManager();
+
+            projectManager.DocumentRemoved(_current, document);
+            _currentDocuments.Remove(document.FilePath);
+        }
+
+        protected void ClearDocumentsUnsafe()
+        {
+            var projectManager = GetProjectManager();
+
+            foreach (var kvp in _currentDocuments)
+            {
+                _projectManager.DocumentRemoved(_current, kvp.Value);
+            }
+
+            _currentDocuments.Clear();
         }
         
         protected async Task ExecuteWithLock(Func<Task> func)

@@ -8,12 +8,12 @@ using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.CodeAnalysis.Host
 {
-    internal class TestRazorLanguageServices : HostLanguageServices
+    internal class TestLanguageServices : HostLanguageServices
     {
         private readonly HostWorkspaceServices _workspaceServices;
         private readonly IEnumerable<ILanguageService> _languageServices;
 
-        public TestRazorLanguageServices(HostWorkspaceServices workspaceServices, IEnumerable<ILanguageService> languageServices)
+        public TestLanguageServices(HostWorkspaceServices workspaceServices, IEnumerable<ILanguageService> languageServices)
         {
             if (workspaceServices == null)
             {

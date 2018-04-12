@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public abstract class RazorConfiguration
+    public abstract class RazorConfiguration : IEquatable<RazorConfiguration>
     {
         public static readonly RazorConfiguration Default = new DefaultRazorConfiguration(
             RazorLanguageVersion.Latest, 
@@ -42,6 +43,58 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract IReadOnlyList<RazorExtension> Extensions { get; }
 
         public abstract RazorLanguageVersion LanguageVersion { get; }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj as RazorConfiguration);
+        }
+
+        public virtual bool Equals(RazorConfiguration other)
+        {
+            if (object.ReferenceEquals(other, null))
+            {
+                return false;
+            }
+
+            if (LanguageVersion != other.LanguageVersion)
+            {
+                return false;
+            }
+
+            if (ConfigurationName != other.ConfigurationName)
+            {
+                return false;
+            }
+
+            if (Extensions.Count != other.Extensions.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < Extensions.Count; i++)
+            {
+                if (Extensions[i].ExtensionName != other.Extensions[i].ExtensionName)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCodeCombiner();
+            hash.Add(LanguageVersion);
+            hash.Add(ConfigurationName);
+
+            for (var i = 0; i < Extensions.Count; i++)
+            {
+                hash.Add(Extensions[i].ExtensionName);
+            }
+
+            return hash;
+        }
 
         private class DefaultRazorConfiguration : RazorConfiguration
         {

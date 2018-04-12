@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +14,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
-using ProjectState = System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IProjectRuleSnapshot>;
-using ProjectStateItem = System.Collections.Generic.KeyValuePair<string, System.Collections.Immutable.IImmutableDictionary<string, string>>;
+using Item = System.Collections.Generic.KeyValuePair<string, System.Collections.Immutable.IImmutableDictionary<string, string>>;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -62,7 +62,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 receiver,
                 initialDataAsNew: true,
                 suppressVersionOnlyUpdates: true,
-                ruleNames: new string[] { Rules.RazorGeneral.SchemaName, Rules.RazorConfiguration.SchemaName, Rules.RazorExtension.SchemaName });
+                ruleNames: new string[]
+                {
+                    Rules.RazorGeneral.SchemaName,
+                    Rules.RazorConfiguration.SchemaName,
+                    Rules.RazorExtension.SchemaName,
+                    Rules.RazorGenerateWithTargetPath.SchemaName,
+                });
         }
 
         protected override async Task DisposeCoreAsync(bool initialized)
@@ -90,12 +96,36 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     if (TryGetConfiguration(update.Value.CurrentState, out var configuration))
                     {
                         var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
-                        await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
+
+                        // We need to deal with the case where the project was uninitialized, but now
+                        // is valid for Razor. In that case we might have previously seen all of the documents
+                        // but ignored them because the project wasn't active.
+                        //
+                        // So what we do to deal with this, is that we 'remove' all changed and removed items
+                        // and then we 'add' all current items. This allows minimal churn to the PSM, but still
+                        // makes us up to date.
+                        var documents = GetCurrentDocuments(update.Value);
+                        var changedDocuments = GetChangedAndRemovedDocuments(update.Value);
+
+                        await UpdateAsync(() =>
+                        {
+                            UpdateProjectUnsafe(hostProject);
+
+                            for (var i = 0; i < changedDocuments.Length; i++)
+                            {
+                                RemoveDocumentUnsafe(changedDocuments[i]);
+                            }
+
+                            for (var i = 0; i < documents.Length; i++)
+                            {
+                                AddDocumentUnsafe(documents[i]);
+                            }
+                        }).ConfigureAwait(false);
                     }
                     else
                     {
                         // Ok we can't find a configuration. Let's assume this project isn't using Razor then.
-                        await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                        await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
                     }
                 });
             }, registerFaultHandler: true);
@@ -103,34 +133,34 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         // Internal for testing
         internal static bool TryGetConfiguration(
-            ProjectState projectState,
+            IImmutableDictionary<string, IProjectRuleSnapshot> state,
             out RazorConfiguration configuration)
         {
-            if (!TryGetDefaultConfiguration(projectState, out var defaultConfiguration))
+            if (!TryGetDefaultConfiguration(state, out var defaultConfiguration))
             {
                 configuration = null;
                 return false;
             }
 
-            if (!TryGetLanguageVersion(projectState, out var languageVersion))
+            if (!TryGetLanguageVersion(state, out var languageVersion))
             {
                 configuration = null;
                 return false;
             }
 
-            if (!TryGetConfigurationItem(defaultConfiguration, projectState, out var configurationItem))
+            if (!TryGetConfigurationItem(defaultConfiguration, state, out var configurationItem))
             {
                 configuration = null;
                 return false;
             }
 
-            if (!TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames))
+            if (!TryGetExtensionNames(configurationItem, out var extensionNames))
             {
                 configuration = null;
                 return false;
             }
 
-            if (!TryGetExtensions(configuredExtensionNames, projectState, out var extensions))
+            if (!TryGetExtensions(extensionNames, state, out var extensions))
             {
                 configuration = null;
                 return false;
@@ -142,9 +172,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
 
         // Internal for testing
-        internal static bool TryGetDefaultConfiguration(ProjectState projectState, out string defaultConfiguration)
+        internal static bool TryGetDefaultConfiguration(
+            IImmutableDictionary<string, IProjectRuleSnapshot> state,
+            out string defaultConfiguration)
         {
-            if (!projectState.TryGetValue(Rules.RazorGeneral.SchemaName, out var rule))
+            if (!state.TryGetValue(Rules.RazorGeneral.SchemaName, out var rule))
             {
                 defaultConfiguration = null;
                 return false;
@@ -166,9 +198,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // Internal for testing
-        internal static bool TryGetLanguageVersion(ProjectState projectState, out RazorLanguageVersion languageVersion)
+        internal static bool TryGetLanguageVersion(
+            IImmutableDictionary<string, IProjectRuleSnapshot> state,
+            out RazorLanguageVersion languageVersion)
         {
-            if (!projectState.TryGetValue(Rules.RazorGeneral.SchemaName, out var rule))
+            if (!state.TryGetValue(Rules.RazorGeneral.SchemaName, out var rule))
             {
                 languageVersion = null;
                 return false;
@@ -197,17 +231,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // Internal for testing
         internal static bool TryGetConfigurationItem(
             string configuration,
-            ProjectState projectState,
-            out ProjectStateItem configurationItem)
+            IImmutableDictionary<string, IProjectRuleSnapshot> state,
+            out Item configurationItem)
         {
-            if (!projectState.TryGetValue(Rules.RazorConfiguration.PrimaryDataSourceItemType, out var configurationState))
+            if (!state.TryGetValue(Rules.RazorConfiguration.PrimaryDataSourceItemType, out var configurationState))
             {
-                configurationItem = default(ProjectStateItem);
+                configurationItem = default(Item);
                 return false;
             }
 
-            var razorConfigurationItems = configurationState.Items;
-            foreach (var item in razorConfigurationItems)
+            var items = configurationState.Items;
+            foreach (var item in items)
             {
                 if (item.Key == configuration)
                 {
@@ -216,44 +250,49 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
             }
 
-            configurationItem = default(ProjectStateItem);
+            configurationItem = default(Item);
             return false;
         }
 
         // Internal for testing
-        internal static bool TryGetConfiguredExtensionNames(ProjectStateItem configurationItem, out string[] configuredExtensionNames)
+        internal static bool TryGetExtensionNames(
+            Item configurationItem, 
+            out string[] configuredExtensionNames)
         {
-            if (!configurationItem.Value.TryGetValue(Rules.RazorConfiguration.ExtensionsProperty, out var extensionNamesValue))
+            if (!configurationItem.Value.TryGetValue(Rules.RazorConfiguration.ExtensionsProperty, out var extensionNames))
             {
                 configuredExtensionNames = null;
                 return false;
             }
 
-            if (string.IsNullOrEmpty(extensionNamesValue))
+            if (string.IsNullOrEmpty(extensionNames))
             {
                 configuredExtensionNames = null;
                 return false;
             }
 
-            configuredExtensionNames = extensionNamesValue.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            configuredExtensionNames = extensionNames.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             return true;
         }
 
         // Internal for testing
-        internal static bool TryGetExtensions(string[] configuredExtensionNames, ProjectState projectState, out ProjectSystemRazorExtension[] extensions)
+        internal static bool TryGetExtensions(
+            string[] extensionNames,
+            IImmutableDictionary<string, IProjectRuleSnapshot> state, 
+            out ProjectSystemRazorExtension[] extensions)
         {
-            if (!projectState.TryGetValue(Rules.RazorExtension.PrimaryDataSourceItemType, out var extensionState))
+            if (!state.TryGetValue(Rules.RazorExtension.PrimaryDataSourceItemType, out var rule))
             {
                 extensions = null;
                 return false;
             }
 
-            var extensionItems = extensionState.Items;
+            var items = rule.Items;
             var extensionList = new List<ProjectSystemRazorExtension>();
-            foreach (var item in extensionItems)
+            foreach (var item in items)
             {
                 var extensionName = item.Key;
-                if (configuredExtensionNames.Contains(extensionName))
+                if (extensionNames.Contains(extensionName))
                 {
                     extensionList.Add(new ProjectSystemRazorExtension(extensionName));
                 }
@@ -261,6 +300,54 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             extensions = extensionList.ToArray();
             return true;
+        }
+
+
+        private HostDocument[] GetCurrentDocuments(IProjectSubscriptionUpdate update)
+        {
+            if (!update.CurrentState.TryGetValue(Rules.RazorGenerateWithTargetPath.SchemaName, out var rule))
+            {
+                return Array.Empty<HostDocument>();
+            }
+
+            var documents = new List<HostDocument>();
+            foreach (var kvp in rule.Items)
+            {
+                if (kvp.Value.TryGetValue(Rules.RazorGenerateWithTargetPath.TargetPathProperty, out var targetPath) &&
+                    !string.IsNullOrWhiteSpace(kvp.Key) &&
+                    !string.IsNullOrWhiteSpace(targetPath))
+                {
+                    var filePath = CommonServices.UnconfiguredProject.MakeRooted(kvp.Key);
+                    documents.Add(new HostDocument(filePath, targetPath));
+                }
+            }
+
+            return documents.ToArray();
+        }
+
+        private HostDocument[] GetChangedAndRemovedDocuments(IProjectSubscriptionUpdate update)
+        {
+            if (!update.ProjectChanges.TryGetValue(Rules.RazorGenerateWithTargetPath.SchemaName, out var rule))
+            {
+                return Array.Empty<HostDocument>();
+            }
+
+            var documents = new List<HostDocument>();
+            foreach (var key in rule.Difference.RemovedItems.Concat(rule.Difference.ChangedItems))
+            {
+                if (rule.Before.Items.TryGetValue(key, out var value))
+                {
+                    if (value.TryGetValue(Rules.RazorGenerateWithTargetPath.TargetPathProperty, out var targetPath) &&
+                        !string.IsNullOrWhiteSpace(key) &&
+                        !string.IsNullOrWhiteSpace(targetPath))
+                    {
+                        var filePath = CommonServices.UnconfiguredProject.MakeRooted(key);
+                        documents.Add(new HostDocument(filePath, targetPath));
+                    }
+                }
+            }
+
+            return documents.ToArray();
         }
     }
 }

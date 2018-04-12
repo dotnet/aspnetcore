@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.LanguageServices.Razor;
 using Microsoft.VisualStudio.ProjectSystem;
 using Moq;
 using Xunit;
@@ -17,7 +16,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             Workspace = new AdhocWorkspace();
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
+
+            ReferenceItems = new ItemCollection(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName);
         }
+
+        private ItemCollection ReferenceItems { get; }
 
         private TestProjectSnapshotManager ProjectManager { get; }
 
@@ -53,20 +56,37 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Empty(ProjectManager.Projects);
         }
 
-        [ForegroundFact]
-        public async Task OnProjectChanged_ReadsProperties_InitializesProject()
+        [ForegroundFact] // This can happen if the .xaml files aren't included correctly.
+        public async Task OnProjectChanged_NoRulesDefined()
         {
             // Arrange
             var changes = new TestProjectChangeDescription[]
             {
-                new TestProjectChangeDescription()
-                {
-                    RuleName = ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName,
-                    After = TestProjectRuleSnapshot.CreateItems(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName, new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        { "c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll", new Dictionary<string, string>() },
-                    }),
-                },
+            };
+
+            var services = new TestProjectSystemServices("Test.csproj");
+            var host = new TestFallbackRazorProjectHost(services, Workspace, ProjectManager)
+            {
+                AssemblyVersion = new Version(2, 0),
+            };
+
+            // Act & Assert
+            await Task.Run(async () => await host.LoadAsync());
+            Assert.Empty(ProjectManager.Projects);
+
+            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            Assert.Empty(ProjectManager.Projects);
+        }
+
+        [ForegroundFact]
+        public async Task OnProjectChanged_ReadsProperties_InitializesProject()
+        {
+            // Arrange
+            ReferenceItems.Item("c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll");
+
+            var changes = new TestProjectChangeDescription[]
+            {
+                ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -97,14 +117,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var changes = new TestProjectChangeDescription[]
             {
-                new TestProjectChangeDescription()
-                {
-                    RuleName = ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName,
-                    After = TestProjectRuleSnapshot.CreateItems(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName, new Dictionary<string, Dictionary<string, string>>()
-                    {
-                    }),
-                },
-
+                ReferenceItems.ToChange(),
             };
             var services = new TestProjectSystemServices("Test.csproj");
 
@@ -127,16 +140,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task OnProjectChanged_AssemblyFoundButCannotReadVersion_DoesNotIniatializeProject()
         {
             // Arrange
+            ReferenceItems.Item("c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll");
+
             var changes = new TestProjectChangeDescription[]
             {
-                new TestProjectChangeDescription()
-                {
-                    RuleName = ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName,
-                    After = TestProjectRuleSnapshot.CreateItems(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName, new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        { "c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll", new Dictionary<string, string>() },
-                    }),
-                },
+                ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -160,16 +168,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task OnProjectChanged_UpdateProject_Succeeds()
         {
             // Arrange
+            ReferenceItems.Item("c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll");
+
             var changes = new TestProjectChangeDescription[]
             {
-                new TestProjectChangeDescription()
-                {
-                    RuleName = ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName,
-                    After = TestProjectRuleSnapshot.CreateItems(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName, new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        { "c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll", new Dictionary<string, string>() },
-                    }),
-                },
+                ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -207,16 +210,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task OnProjectChanged_VersionRemoved_DeinitializesProject()
         {
             // Arrange
+            ReferenceItems.Item("c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll");
+
             var changes = new TestProjectChangeDescription[]
             {
-                new TestProjectChangeDescription()
-                {
-                    RuleName = ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName,
-                    After = TestProjectRuleSnapshot.CreateItems(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName, new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        { "c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll", new Dictionary<string, string>() },
-                    }),
-                },
+                ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -252,16 +250,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task OnProjectChanged_AfterDispose_IgnoresUpdate()
         {
             // Arrange
+            ReferenceItems.Item("c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll");
+
             var changes = new TestProjectChangeDescription[]
             {
-                new TestProjectChangeDescription()
-                {
-                    RuleName = ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName,
-                    After = TestProjectRuleSnapshot.CreateItems(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName, new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        { "c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll", new Dictionary<string, string>() },
-                    }),
-                },
+                ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -300,16 +293,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task OnProjectRenamed_RemovesHostProject_CopiesConfiguration()
         {
             // Arrange
+            ReferenceItems.Item("c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll");
+
             var changes = new TestProjectChangeDescription[]
             {
-                new TestProjectChangeDescription()
-                {
-                    RuleName = ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName,
-                    After = TestProjectRuleSnapshot.CreateItems(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName, new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        { "c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll", new Dictionary<string, string>() },
-                    }),
-                },
+                ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -361,11 +349,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, Workspace workspace)
-                : base(dispatcher, Mock.Of<ErrorReporter>(), Mock.Of<ProjectSnapshotWorker>(), Array.Empty<ProjectSnapshotChangeTrigger>(), workspace)
-            {
-            }
-
-            protected override void NotifyBackgroundWorker(ProjectSnapshotUpdateContext context)
+                : base(dispatcher, Mock.Of<ErrorReporter>(), Array.Empty<ProjectSnapshotChangeTrigger>(), workspace)
             {
             }
         }

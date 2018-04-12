@@ -48,15 +48,15 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             {
                 FilePath = filePath;
                 Configuration = configuration;
-                HostProject = new HostProject(filePath, configuration);
                 WorkspaceProject = workspaceProject;
-                TagHelpers = Array.Empty<TagHelperDescriptor>();
 
                 IsInitialized = true;
                 Version = VersionStamp.Default;
             }
 
             public override RazorConfiguration Configuration { get; }
+
+            public override IEnumerable<string> DocumentFilePaths => Array.Empty<string>();
 
             public override string FilePath { get; }
 
@@ -66,9 +66,30 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 
             public override Project WorkspaceProject { get; }
 
-            public override HostProject HostProject { get; }
+            public override DocumentSnapshot GetDocument(string filePath)
+            {
+                if (filePath == null)
+                {
+                    throw new ArgumentNullException(nameof(filePath));
+                }
 
-            public override IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
+                return null;
+            }
+
+            public override RazorProjectEngine GetProjectEngine()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> results)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

@@ -85,20 +85,23 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 await ExecuteWithLock(async () =>
                 {
                     string mvcReferenceFullPath = null;
-                    var references = update.Value.CurrentState[ResolvedCompilationReference.SchemaName].Items;
-                    foreach (var reference in references)
+                    if (update.Value.CurrentState.ContainsKey(ResolvedCompilationReference.SchemaName))
                     {
-                        if (reference.Key.EndsWith(MvcAssemblyFileName, StringComparison.OrdinalIgnoreCase))
+                        var references = update.Value.CurrentState[ResolvedCompilationReference.SchemaName].Items;
+                        foreach (var reference in references)
                         {
-                            mvcReferenceFullPath = reference.Key;
-                            break;
+                            if (reference.Key.EndsWith(MvcAssemblyFileName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                mvcReferenceFullPath = reference.Key;
+                                break;
+                            }
                         }
                     }
 
                     if (mvcReferenceFullPath == null)
                     {
                         // Ok we can't find an MVC version. Let's assume this project isn't using Razor then.
-                        await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                        await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
                         return;
                     }
 
@@ -106,13 +109,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     if (version == null)
                     {
                         // Ok we can't find an MVC version. Let's assume this project isn't using Razor then.
-                        await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                        await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
                         return;
                     }
 
                     var configuration = FallbackRazorConfiguration.SelectConfiguration(version);
                     var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
-                    await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
+                    await UpdateAsync(() =>
+                    {
+                        UpdateProjectUnsafe(hostProject);
+                    }).ConfigureAwait(false);
                 });
             }, registerFaultHandler: true);
         }

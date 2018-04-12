@@ -1,8 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Host;
 using Moq;
 using Xunit;
 
@@ -12,9 +16,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultProjectSnapshotManagerTest()
         {
-            HostProject = new HostProject("Test.csproj", FallbackRazorConfiguration.MVC_2_0);
+            TagHelperResolver = new TestTagHelperResolver();
 
-            Workspace = TestWorkspace.Create();
+            HostServices = TestServices.Create(
+                new IWorkspaceService[]
+                {
+                    new TestProjectSnapshotProjectEngineFactory(),
+                },
+                new ILanguageService[]
+                {
+                    TagHelperResolver,
+                });
+
+            Documents = new HostDocument[]
+            {
+                new HostDocument("c:\\MyProject\\File.cshtml", "File.cshtml"),
+                new HostDocument("c:\\MyProject\\Index.cshtml", "Index.cshtml"),
+
+                // linked file
+                new HostDocument("c:\\SomeOtherProject\\Index.cshtml", "Pages\\Index.cshtml"),
+            };
+
+            HostProject = new HostProject("c:\\MyProject\\Test.csproj", FallbackRazorConfiguration.MVC_2_0);
+            HostProjectWithConfigurationChange = new HostProject("c:\\MyProject\\Test.csproj", FallbackRazorConfiguration.MVC_1_0);
+
+            Workspace = TestWorkspace.Create(HostServices);
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Enumerable.Empty<ProjectSnapshotChangeTrigger>(), Workspace);
 
             var projectId = ProjectId.CreateNewId("Test");
@@ -24,7 +50,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 "Test",
                 "Test",
                 LanguageNames.CSharp,
-                "Test.csproj"));
+                "c:\\MyProject\\Test.csproj"));
             WorkspaceProject = solution.GetProject(projectId);
 
             var vbProjectId = ProjectId.CreateNewId("VB");
@@ -54,11 +80,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 "Test (Different TFM)",
                 "Test",
                 LanguageNames.CSharp,
-                "Test.csproj"));
+                "c:\\MyProject\\Test.csproj"));
             WorkspaceProjectWithDifferentTfm = solution.GetProject(projectIdWithDifferentTfm);
+
+            SomeTagHelpers = TagHelperResolver.TagHelpers;
+            SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
         }
 
+        private HostDocument[] Documents { get; }
+
         private HostProject HostProject { get; }
+
+        private HostProject HostProjectWithConfigurationChange { get; }
 
         private Project WorkspaceProject { get; }
 
@@ -68,30 +101,203 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private Project VBWorkspaceProject { get; }
 
+        private TestTagHelperResolver TagHelperResolver { get; }
+
         private TestProjectSnapshotManager ProjectManager { get; }
+
+        private HostServices HostServices { get; }
 
         private Workspace Workspace { get; }
 
+        private IList<TagHelperDescriptor> SomeTagHelpers { get; }
+
         [ForegroundFact]
-        public void HostProjectBuildComplete_FindsChangedWorkspaceProject_AndStartsBackgroundWorker()
+        public void DocumentAdded_AddsDocument()
         {
             // Arrange
-            Assert.True(Workspace.TryApplyChanges(WorkspaceProject.Solution));
             ProjectManager.HostProjectAdded(HostProject);
-            var project = WorkspaceProject.WithAssemblyName("Test1"); // Simulate a project change
-            ProjectManager.WorkspaceProjectAdded(project);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
             ProjectManager.Reset();
 
             // Act
-            ProjectManager.HostProjectBuildComplete(HostProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(HostProject);
-            Assert.True(snapshot.IsDirty);
-            Assert.True(snapshot.IsInitialized);
+            Assert.Collection(snapshot.DocumentFilePaths, d => Assert.Equal(Documents[0].FilePath, d));
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.DocumentsChanged, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void DocumentAdded_IgnoresDuplicate()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Collection(snapshot.DocumentFilePaths, d => Assert.Equal(Documents[0].FilePath, d));
+
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void DocumentAdded_IgnoresUnknownProject()
+        {
+            // Arrange
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Null(snapshot);
+        }
+
+        [ForegroundFact]
+        public async Task DocumentAdded_CachesTagHelpers()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+
+            // Adding some computed state
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            await snapshot.GetTagHelpersAsync();
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+
+            // Assert
+            snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.True(snapshot.TryGetTagHelpers(out var _));
+        }
+
+        [ForegroundFact]
+        public void DocumentAdded_CachesProjectEngine()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.Reset();
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var projectEngine = snapshot.GetProjectEngine();
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+
+            // Assert
+            snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Same(projectEngine, snapshot.GetProjectEngine());
+        }
+
+        [ForegroundFact]
+        public void DocumentRemoved_RemovesDocument()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[1]);
+            ProjectManager.DocumentAdded(HostProject, Documents[2]);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.DocumentRemoved(HostProject, Documents[1]);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Collection(
+                snapshot.DocumentFilePaths, 
+                d => Assert.Equal(Documents[0].FilePath, d),
+                d => Assert.Equal(Documents[2].FilePath, d));
+
+            Assert.Equal(ProjectChangeKind.DocumentsChanged, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void DocumentRemoved_IgnoresNotFoundDocument()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.DocumentRemoved(HostProject, Documents[0]);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Empty(snapshot.DocumentFilePaths);
+
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void DocumentRemoved_IgnoresUnknownProject()
+        {
+            // Arrange
+
+            // Act
+            ProjectManager.DocumentRemoved(HostProject, Documents[0]);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Null(snapshot);
+        }
+
+        [ForegroundFact]
+        public async Task DocumentRemoved_CachesTagHelpers()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[1]);
+            ProjectManager.DocumentAdded(HostProject, Documents[2]);
+            ProjectManager.Reset();
+
+            // Adding some computed state
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            await snapshot.GetTagHelpersAsync();
+
+            // Act
+            ProjectManager.DocumentRemoved(HostProject, Documents[1]);
+
+            // Assert
+            snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.True(snapshot.TryGetTagHelpers(out var _));
+        }
+
+        [ForegroundFact]
+        public void DocumentRemoved_CachesProjectEngine()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[1]);
+            ProjectManager.DocumentAdded(HostProject, Documents[2]);
+            ProjectManager.Reset();
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var projectEngine = snapshot.GetProjectEngine();
+
+            // Act
+            ProjectManager.DocumentRemoved(HostProject, Documents[1]);
+
+            // Assert
+            snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Same(projectEngine, snapshot.GetProjectEngine());
         }
 
         [ForegroundFact]
@@ -104,15 +310,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(HostProject);
-            Assert.True(snapshot.IsDirty);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectAdded, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
-        public void HostProjectAdded_FindsWorkspaceProject_NotifiesListeners_AndStartsBackgroundWorker()
+        public void HostProjectAdded_FindsWorkspaceProject_NotifiesListeners()
         {
             // Arrange
             Assert.True(Workspace.TryApplyChanges(WorkspaceProject.Solution));
@@ -122,60 +326,85 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(HostProject);
-            Assert.True(snapshot.IsDirty);
             Assert.True(snapshot.IsInitialized);
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectAdded, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
-        public void HostProjectChanged_WithoutWorkspaceProject_NotifiesListeners_AndDoesNotStartBackgroundWorker()
+        public void HostProjectChanged_ConfigurationChange_WithoutWorkspaceProject_NotifiesListeners()
         {
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.Reset();
 
-            var project = new HostProject(HostProject.FilePath, FallbackRazorConfiguration.MVC_1_0); // Simulate a project change
-
             // Act
-            ProjectManager.HostProjectChanged(project);
+            ProjectManager.HostProjectChanged(HostProjectWithConfigurationChange);
 
             // Assert
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            Assert.True(snapshot.IsDirty);
+            var snapshot = ProjectManager.GetSnapshot(HostProjectWithConfigurationChange);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
-        public void HostProjectChanged_WithWorkspaceProject_RetainsComputedState_NotifiesListeners_AndStartsBackgroundWorker()
+        public void HostProjectChanged_ConfigurationChange_WithWorkspaceProject_NotifiesListeners()
         {
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
             ProjectManager.Reset();
 
-            // Adding some computed state
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-            ProjectManager.ProjectUpdated(updateContext);
-            ProjectManager.Reset();
-
-            var project = new HostProject(HostProject.FilePath, FallbackRazorConfiguration.MVC_1_0); // Simulate a project change
-
             // Act
-            ProjectManager.HostProjectChanged(project);
+            ProjectManager.HostProjectChanged(HostProjectWithConfigurationChange);
 
             // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.True(snapshot.IsDirty);
+            var snapshot = ProjectManager.GetSnapshot(HostProjectWithConfigurationChange);
             Assert.True(snapshot.IsInitialized);
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void HostProjectChanged_ConfigurationChange_DoesNotCacheProjectEngine()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var projectEngine = snapshot.GetProjectEngine();
+
+            // Act
+            ProjectManager.HostProjectChanged(HostProjectWithConfigurationChange);
+
+            // Assert
+            snapshot = ProjectManager.GetSnapshot(HostProjectWithConfigurationChange);
+            Assert.NotSame(projectEngine, snapshot.GetProjectEngine());
+        }
+
+        [ForegroundFact]
+        public async Task HostProjectChanged_ConfigurationChange_DoesNotCacheComputedState()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            ProjectManager.Reset();
+
+            // Adding some computed state
+            await snapshot.GetTagHelpersAsync();
+
+            // Act
+            ProjectManager.HostProjectChanged(HostProjectWithConfigurationChange);
+
+            // Assert
+            snapshot = ProjectManager.GetSnapshot(HostProjectWithConfigurationChange);
+            Assert.False(snapshot.TryGetTagHelpers(out var _));
         }
 
         [ForegroundFact]
@@ -189,8 +418,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             Assert.Empty(ProjectManager.Projects);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -206,277 +434,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             Assert.Empty(ProjectManager.Projects);
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void ProjectUpdated_WithComputedState_IgnoresUnknownProject()
-        {
-            // Arrange
-
-            // Act
-            ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext("Test", HostProject, WorkspaceProject, VersionStamp.Default));
-
-            // Assert
-            Assert.Empty(ProjectManager.Projects);
-
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void ProjectUpdated_WhenHostProjectChanged_MadeClean_NotifiesListeners_AndDoesNotStartBackgroundWorker()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            var project = new HostProject(HostProject.FilePath, FallbackRazorConfiguration.MVC_1_0); // Simulate a project change
-            ProjectManager.HostProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Generate the update
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.False(snapshot.IsDirty);
-
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void ProjectUpdated_WhenWorkspaceProjectChanged_MadeClean_NotifiesListeners_AndDoesNotStartBackgroundWorker()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            var project = WorkspaceProject.WithAssemblyName("Test1"); // Simulate a project change
-            ProjectManager.WorkspaceProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Generate the update
-            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            var updateContext = snapshot.CreateUpdateContext();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.False(snapshot.IsDirty);
-
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void ProjectUpdated_WhenHostProjectChanged_StillDirty_WithSignificantChanges_NotifiesListeners_AndStartsBackgroundWorker()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Generate the update
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-
-            var project = new HostProject(HostProject.FilePath, FallbackRazorConfiguration.MVC_1_0); // Simulate a project change
-            ProjectManager.HostProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.True(snapshot.IsDirty);
-
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void WorkspaceProjectChanged_BackgroundUpdate_StillDirty_WithSignificantChanges_NotifiesListeners_AndStartsBackgroundWorker()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Generate the update
-            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            var updateContext = snapshot.CreateUpdateContext();
-
-            var project = WorkspaceProject.WithAssemblyName("Test1"); // Simulate a project change
-            ProjectManager.WorkspaceProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.True(snapshot.IsDirty);
-
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
-        }
-
-        [Fact(Skip = "We no longer have any background-computed state")]
-        public void ProjectUpdated_WhenHostProjectChanged_StillDirty_WithoutSignificantChanges_DoesNotNotifyListeners_AndStartsBackgroundWorker()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Generate an update based on the original state
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-            ProjectManager.ProjectUpdated(updateContext);
-            ProjectManager.Reset();
-
-            var project = new HostProject(HostProject.FilePath, FallbackRazorConfiguration.MVC_1_0); // Simulate a project change
-            ProjectManager.HostProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Now start computing another update
-            snapshot = ProjectManager.GetSnapshot(HostProject);
-            updateContext = snapshot.CreateUpdateContext();
-
-            project = new HostProject(HostProject.FilePath, FallbackRazorConfiguration.MVC_1_1); // Simulate a project change
-            ProjectManager.HostProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext); // Still dirty because the project changed while computing the update
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.True(snapshot.IsDirty);
-
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
-        }
-
-        [Fact(Skip = "We no longer have any background-computed state")]
-        public void ProjectUpdated_WhenWorkspaceProjectChanged_StillDirty_WithoutSignificantChanges_DoesNotNotifyListeners_AndStartsBackgroundWorker()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Generate an update based on the original state
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-            ProjectManager.ProjectUpdated(updateContext);
-            ProjectManager.Reset();
-
-            var project = WorkspaceProject.WithAssemblyName("Test1"); // Simulate a project change
-            ProjectManager.WorkspaceProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Now start computing another update
-            snapshot = ProjectManager.GetSnapshot(HostProject);
-            updateContext = snapshot.CreateUpdateContext();
-
-            project = project.WithAssemblyName("Test2"); // Simulate a project change
-            ProjectManager.WorkspaceProjectChanged(project);
-            ProjectManager.Reset();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext); // Still dirty because the project changed while computing the update
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.True(snapshot.IsDirty);
-
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void ProjectUpdated_WhenHostProjectRemoved_DiscardsUpdate()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Generate the update
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-
-            ProjectManager.HostProjectRemoved(HostProject);
-            ProjectManager.Reset();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(HostProject);
-            Assert.Null(snapshot);
-        }
-
-        [ForegroundFact]
-        public void ProjectUpdated_WhenWorkspaceProjectRemoved_DiscardsUpdate()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Generate the update
-            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            var updateContext = snapshot.CreateUpdateContext();
-
-            ProjectManager.WorkspaceProjectRemoved(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            Assert.True(snapshot.IsDirty);
-
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void ProjectUpdated_BackgroundUpdate_MadeClean_WithSignificantChanges_NotifiesListeners_AndDoesNotStartBackgroundWorker()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
-
-            // Generate the update
-            var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-
-            // Act
-            ProjectManager.ProjectUpdated(updateContext);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            Assert.False(snapshot.IsDirty);
-
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectRemoved, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -490,8 +448,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             Assert.Empty(ProjectManager.Projects);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -508,8 +465,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -527,8 +483,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.Same(WorkspaceProject, snapshot.WorkspaceProject);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -545,12 +500,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
-        public void WorkspaceProjectAdded_WithHostProject_NotifiesListenters_AndStartsBackgroundWorker()
+        public void WorkspaceProjectAdded_WithHostProject_NotifiesListenters()
         {
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
@@ -561,11 +515,45 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            Assert.True(snapshot.IsDirty);
             Assert.True(snapshot.IsInitialized);
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void WorkspaceProjectChanged_WithHostProject_NotifiesListenters()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.WorkspaceProjectChanged(WorkspaceProject.WithAssemblyName("Test1"));
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
+            Assert.True(snapshot.IsInitialized);
+
+            Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void WorkspaceProjectChanged_WithHostProject_CanNoOp()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.WorkspaceProjectChanged(WorkspaceProject);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
+            Assert.True(snapshot.IsInitialized);
+
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -583,8 +571,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             Assert.Empty(ProjectManager.Projects);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -604,10 +591,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
-
 
         [ForegroundFact]
         public void WorkspaceProjectChanged_IgnoresProjectWithoutFilePath()
@@ -626,8 +611,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -645,64 +629,45 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.Same(WorkspaceProject, snapshot.WorkspaceProject);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
-        public void WorkspaceProjectChanged_MadeDirty_RetainsComputedState_NotifiesListeners_AndStartsBackgroundWorker()
+        public async Task WorkspaceProjectRemoved_DoesNotRemoveProject_RemovesTagHelpers()
         {
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
             ProjectManager.Reset();
 
-            // Generate the update
             var snapshot = ProjectManager.GetSnapshot(HostProject);
-            var updateContext = snapshot.CreateUpdateContext();
-            ProjectManager.ProjectUpdated(updateContext);
-            ProjectManager.Reset();
 
-            var project = WorkspaceProject.WithAssemblyName("Test1"); // Simulate a project change
-
-            // Act
-            ProjectManager.WorkspaceProjectChanged(project);
-
-            // Assert
-            snapshot = ProjectManager.GetSnapshot(project);
-            Assert.True(snapshot.IsDirty);
-
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
-        }
-
-        [ForegroundFact]
-        public void WorkspaceProjectRemoved_WithHostProject_DoesNotRemoveProject()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.Reset();
+            // Adding some computed state
+            await snapshot.GetTagHelpersAsync();
 
             // Act
             ProjectManager.WorkspaceProjectRemoved(WorkspaceProject);
 
             // Assert
-            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            Assert.True(snapshot.IsDirty);
+            snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.False(snapshot.IsInitialized);
+            Assert.False(snapshot.TryGetTagHelpers(out var _));
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
-        public void WorkspaceProjectRemoved_WithHostProject_FallsBackToSecondProject()
+        public async Task WorkspaceProjectRemoved_FallsBackToSecondProject()
         {
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
             ProjectManager.Reset();
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+
+            // Adding some computed state
+            await snapshot.GetTagHelpersAsync();
 
             // Sets up a solution where the which has WorkspaceProjectWithDifferentTfm but not WorkspaceProject
             // This will enable us to fall back and find the WorkspaceProjectWithDifferentTfm 
@@ -712,13 +677,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.WorkspaceProjectRemoved(WorkspaceProject);
 
             // Assert
-            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
-            Assert.True(snapshot.IsDirty);
+            snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.True(snapshot.IsInitialized);
             Assert.Equal(WorkspaceProjectWithDifferentTfm.Id, snapshot.WorkspaceProject.Id);
+            Assert.False(snapshot.TryGetTagHelpers(out var _));
 
-            Assert.True(ProjectManager.ListenersNotified);
-            Assert.True(ProjectManager.WorkerStarted);
+            Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -736,8 +700,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.Same(WorkspaceProject, snapshot.WorkspaceProject);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -755,8 +718,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -774,8 +736,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
             Assert.False(snapshot.IsInitialized);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -789,20 +750,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             Assert.Empty(ProjectManager.Projects);
 
-            Assert.False(ProjectManager.ListenersNotified);
-            Assert.False(ProjectManager.WorkerStarted);
+            Assert.Null(ProjectManager.ListenersNotifiedOf);
         }
 
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
-                : base(dispatcher, Mock.Of<ErrorReporter>(), Mock.Of<ProjectSnapshotWorker>(), triggers, workspace)
+                : base(dispatcher, Mock.Of<ErrorReporter>(), triggers, workspace)
             {
             }
 
-            public bool ListenersNotified { get; private set; }
-
-            public bool WorkerStarted { get; private set; }
+            public ProjectChangeKind? ListenersNotifiedOf { get; private set; }
 
             public DefaultProjectSnapshot GetSnapshot(HostProject hostProject)
             {
@@ -816,21 +774,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public void Reset()
             {
-                ListenersNotified = false;
-                WorkerStarted = false;
+                ListenersNotifiedOf = null;
             }
 
             protected override void NotifyListeners(ProjectChangeEventArgs e)
             {
-                ListenersNotified = true;
-            }
-
-            protected override void NotifyBackgroundWorker(ProjectSnapshotUpdateContext context)
-            {
-                Assert.NotNull(context.HostProject);
-                Assert.NotNull(context.WorkspaceProject);
-
-                WorkerStarted = true;
+                ListenersNotifiedOf = e.Kind;
             }
         }
     }
