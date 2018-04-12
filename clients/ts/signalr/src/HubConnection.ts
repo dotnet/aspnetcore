@@ -11,7 +11,6 @@ import { JsonHubProtocol } from "./JsonHubProtocol";
 import { ConsoleLogger, LoggerFactory, NullLogger } from "./Loggers";
 import { Observable, Subject } from "./Observable";
 import { TextMessageFormat } from "./TextMessageFormat";
-import { TransferFormat, TransportType } from "./Transports";
 
 export { JsonHubProtocol };
 

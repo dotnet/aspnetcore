@@ -1588,6 +1588,140 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task DeleteEndpointRejectsRequestToTerminateNonLongPollingTransport(HttpTransportType transportType)
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = transportType;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, transportType);
+
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddSingleton<TestConnectionHandler>();
+                var services = serviceCollection.BuildServiceProvider();
+                var builder = new ConnectionBuilder(services);
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionOptions();
+
+                _ = dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+                // Issue the delete request
+                var deleteContext = new DefaultHttpContext();
+                deleteContext.Request.Path = "/foo";
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.Method = "DELETE";
+                var ms = new MemoryStream();
+                deleteContext.Response.Body = ms;
+
+                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+
+                // Verify the response from the DELETE request
+                Assert.Equal(StatusCodes.Status400BadRequest, deleteContext.Response.StatusCode);
+                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+                Assert.Equal("Cannot terminate this connection using the DELETE endpoint.", Encoding.UTF8.GetString(ms.ToArray()));
+            }
+        }
+
+        [Fact]
+        public async Task DeleteEndpointGracefullyTerminatesLongPolling()
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var context = MakeRequest("/foo", connection);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionOptions();
+
+                var pollTask = dispatcher.ExecuteAsync(context, options, app);
+
+                // Issue the delete request and make sure the poll completes
+                var deleteContext = new DefaultHttpContext();
+                deleteContext.Request.Path = "/foo";
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.Method = "DELETE";
+
+                Assert.False(pollTask.IsCompleted);
+
+                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+
+                await pollTask.OrTimeout();
+
+                // Verify that everything shuts down
+                await connection.ApplicationTask.OrTimeout();
+                await connection.TransportTask.OrTimeout();
+
+                // Verify the response from the DELETE request
+                Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
+                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+
+                // Verify the connection was removed from the manager
+                Assert.False(manager.TryGetConnection(connection.ConnectionId, out _));
+            }
+        }
+
+        [Fact]
+        public async Task DeleteEndpointGracefullyTerminatesLongPollingEvenWhenBetweenPolls()
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var context = MakeRequest("/foo", connection);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionOptions();
+                options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1);
+
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+                // Issue the delete request and make sure the poll completes
+                var deleteContext = new DefaultHttpContext();
+                deleteContext.Request.Path = "/foo";
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.Method = "DELETE";
+
+                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+
+                // Verify that everything shuts down
+                await connection.ApplicationTask.OrTimeout();
+                await connection.TransportTask.OrTimeout();
+
+                // Verify the response from the DELETE request
+                Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
+                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+
+                // Verify the connection was removed from the manager
+                Assert.False(manager.TryGetConnection(connection.ConnectionId, out _));
+            }
+        }
+
         [Fact]
         public async Task NegotiateDoesNotReturnWebSocketsWhenNotAvailable()
         {
@@ -1747,7 +1881,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
     }
 
-    public class NerverEndingConnectionHandler : ConnectionHandler
+    public class NeverEndingConnectionHandler : ConnectionHandler
     {
         public override Task OnConnectedAsync(ConnectionContext connection)
         {
@@ -1817,8 +1951,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
     public class TestConnectionHandler : ConnectionHandler
     {
+        private TaskCompletionSource<object> _startedTcs = new TaskCompletionSource<object>();
+
+        public Task Started => _startedTcs.Task;
+
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
+            _startedTcs.TrySetResult(null);
+
             while (true)
             {
                 var result = await connection.Transport.Input.ReadAsync();

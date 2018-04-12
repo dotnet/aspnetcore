@@ -16,13 +16,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         private readonly PipeReader _application;
         private readonly ILogger _logger;
         private readonly CancellationToken _timeoutToken;
-        private readonly string _connectionId;
 
-        public LongPollingTransport(CancellationToken timeoutToken, PipeReader application, string connectionId, ILoggerFactory loggerFactory)
+        public LongPollingTransport(CancellationToken timeoutToken, PipeReader application, ILoggerFactory loggerFactory)
         {
             _timeoutToken = timeoutToken;
             _application = application;
-            _connectionId = connectionId;
             _logger = loggerFactory.CreateLogger<LongPollingTransport>();
         }
 

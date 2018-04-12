@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             var context = new DefaultHttpContext();
 
-            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory: new LoggerFactory());
 
             connection.Transport.Output.Complete();
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var context = new DefaultHttpContext();
 
             var timeoutToken = new CancellationToken(true);
-            var poll = new LongPollingTransport(timeoutToken, connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var poll = new LongPollingTransport(timeoutToken, connection.Application.Input, loggerFactory: new LoggerFactory());
 
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutToken, context.RequestAborted))
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
 
-            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory: new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
 
-            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory: new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 

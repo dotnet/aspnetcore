@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpConnection, IHttpConnectionOptions, LogLevel, TransferFormat, TransportType } from "@aspnet/signalr";
+import { HttpConnection, HttpTransportType, IHttpConnectionOptions, LogLevel, TransferFormat } from "@aspnet/signalr";
 import { eachTransport, ECHOENDPOINT_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
 
@@ -42,7 +42,7 @@ describe("connection", () => {
     });
 
     eachTransport((transportType) => {
-        describe(`over ${TransportType[transportType]}`, () => {
+        describe(`over ${HttpTransportType[transportType]}`, () => {
             it("can send and receive messages", (done) => {
                 const message = "Hello World!";
                 // the url should be resolved relative to the document.location.host

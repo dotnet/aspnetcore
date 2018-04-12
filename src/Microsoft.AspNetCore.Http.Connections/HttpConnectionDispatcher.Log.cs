@@ -40,6 +40,12 @@ namespace Microsoft.AspNetCore.Http.Connections
             private static readonly Action<ILogger, Exception> _negotiationRequest =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(10, "NegotiationRequest"), "Sending negotiation response.");
 
+            private static readonly Action<ILogger, HttpTransportType, Exception> _receivedDeleteRequestForUnsupportedTransport =
+                LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(11, "ReceivedDeleteRequestForUnsupportedTransport"), "Received DELETE request for unsupported transport: {TransportType}.");
+
+            private static readonly Action<ILogger, Exception> _terminatingConnection =
+                LoggerMessage.Define(LogLevel.Trace, new EventId(12, "TerminatingConection"), "Terminating Long Polling connection due to a DELETE request.");
+
             public static void ConnectionDisposed(ILogger logger, string connectionId)
             {
                 _connectionDisposed(logger, connectionId, null);
@@ -88,6 +94,16 @@ namespace Microsoft.AspNetCore.Http.Connections
             public static void NegotiationRequest(ILogger logger)
             {
                 _negotiationRequest(logger, null);
+            }
+
+            public static void ReceivedDeleteRequestForUnsupportedTransport(ILogger logger, HttpTransportType transportType)
+            {
+                _receivedDeleteRequestForUnsupportedTransport(logger, transportType, null);
+            }
+
+            public static void TerminatingConection(ILogger logger)
+            {
+                _terminatingConnection(logger, null);
             }
         }
     }

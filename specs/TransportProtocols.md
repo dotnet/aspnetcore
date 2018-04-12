@@ -96,6 +96,8 @@ In this transport, the client establishes an SSE connection to `[endpoint-base]`
 
 The Server-Sent Events transport only supports text data, because it is a text-based protocol. As a result, it is reported by the server as supporting only the `Text` transfer format. If a client wishes to send arbitrary binary data, it should skip the Server-Sent Events transport when selecting an appropriate transport.
 
+When the client has finished with the connection, it can terminate the event stream connection (send a TCP reset). The server will clean up the necessary resources.
+
 ## Long Polling (Server-to-Client only)
 
 Long Polling is a server-to-client half-transport, so it is always paired with HTTP Post. It requires a connection already be established using the `POST [endpoint-base]/negotiate` request.
@@ -109,3 +111,5 @@ A Poll is established by sending an HTTP GET request to `[endpoint-base]` with t
 When data is available, the server responds with a body in one of the two formats below (depending upon the value of the `Accept` header). The response may be chunked, as per the chunked encoding part of the HTTP spec.
 
 If the `connectionId` parameter is missing, a `400 Bad Request` response is returned. If there is no connection with the ID specified in `connectionId`, a `404 Not Found` response is returned.
+
+When the client has finished with the connection, it can issue a `DELETE` request to `[endpoint-base]` (with the `connectionId` in the querystring) to gracefully terminate the connection. The server will complete the latest poll with `204` to indicate that it has shut down.

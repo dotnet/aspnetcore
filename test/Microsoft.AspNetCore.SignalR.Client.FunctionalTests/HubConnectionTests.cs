@@ -871,6 +871,59 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task StopCausesPollToReturnImmediately()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                PollTrackingMessageHandler pollTracker = null;
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(loggerFactory)
+                    .WithUrl(_serverFixture.Url + "/default", options =>
+                    {
+                        options.Transports = HttpTransportType.LongPolling;
+                        options.HttpMessageHandlerFactory = handler =>
+                        {
+                            pollTracker = new PollTrackingMessageHandler(handler);
+                            return pollTracker;
+                        };
+                    })
+                    .Build();
+
+                await hubConnection.StartAsync();
+
+                Assert.NotNull(pollTracker);
+                Assert.NotNull(pollTracker.ActivePoll);
+
+                var stopTask = hubConnection.StopAsync();
+
+                // Stop async and wait for the poll to shut down. It should do so very quickly because the DELETE will stop the poll!
+                await pollTracker.ActivePoll.OrTimeout(TimeSpan.FromMilliseconds(100));
+
+                await stopTask;
+            }
+        }
+
+        private class PollTrackingMessageHandler : DelegatingHandler
+        {
+            public Task<HttpResponseMessage> ActivePoll { get; private set; }
+
+            public PollTrackingMessageHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+            {
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                if (request.Method == HttpMethod.Get)
+                {
+                    ActivePoll = base.SendAsync(request, cancellationToken);
+                    return ActivePoll;
+                }
+
+                return base.SendAsync(request, cancellationToken);
+            }
+        }
+
         public static IEnumerable<object[]> HubProtocolsAndTransportsAndHubPaths
         {
             get

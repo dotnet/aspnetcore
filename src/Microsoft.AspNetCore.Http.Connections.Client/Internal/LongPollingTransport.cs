@@ -8,8 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -17,6 +15,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     public partial class LongPollingTransport : ITransport
     {
+        private static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(5);
+
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private IDuplexPipe _application;
@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         public PipeWriter Output => _transport.Output;
 
+        internal TimeSpan ShutdownTimeout { get; set; }
+
         public LongPollingTransport(HttpClient httpClient)
             : this(httpClient, null)
         { }
@@ -40,6 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             _httpClient = httpClient;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
+            ShutdownTimeout = DefaultShutdownTimeout;
         }
 
         public Task StartAsync(Uri url, TransferFormat transferFormat)
@@ -74,6 +77,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             if (trigger == receiving)
             {
+                // We don't need to DELETE here because the poll completed, which means the server shut down already.
+
                 // We're waiting for the application to finish and there are 2 things it could be doing
                 // 1. Waiting for application data
                 // 2. Waiting for an outgoing send (this should be instantaneous)
@@ -86,7 +91,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // Set the sending error so we communicate that to the application
                 _error = sending.IsFaulted ? sending.Exception.InnerException : null;
 
-                _transportCts.Cancel();
+                // Send the DELETE request to clean-up the connection on the server.
+                // This will also cause the poll to return.
+                await SendDeleteRequest(url);
+
+                // This timeout is only to ensure the poll is cleaned up despite a misbehaving server.
+                // It doesn't need to be configurable.
+                _transportCts.CancelAfter(ShutdownTimeout);
 
                 // Cancel any pending flush so that we can quit
                 _application.Output.CancelPendingFlush();
@@ -96,9 +107,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public async Task StopAsync()
         {
             Log.TransportStopping(_logger);
-
-            _transport.Output.Complete();
-            _transport.Input.Complete();
 
             _application.Input.CancelPendingRead();
 
@@ -111,6 +119,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 Log.TransportStopped(_logger, ex);
                 throw;
             }
+
+            _transport.Output.Complete();
+            _transport.Input.Complete();
 
             Log.TransportStopped(_logger, null);
         }
@@ -185,6 +196,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _application.Output.Complete(_error);
 
                 Log.ReceiveStopped(_logger);
+            }
+        }
+
+        private async Task SendDeleteRequest(Uri pollUrl)
+        {
+            try
+            {
+                Log.SendingDeleteRequest(_logger, pollUrl);
+                var response = await _httpClient.DeleteAsync(pollUrl);
+                response.EnsureSuccessStatusCode();
+                Log.DeleteRequestAccepted(_logger, pollUrl);
+            }
+            catch (Exception ex)
+            {
+                Log.ErrorSendingDeleteRequest(_logger, pollUrl, ex);
             }
         }
     }

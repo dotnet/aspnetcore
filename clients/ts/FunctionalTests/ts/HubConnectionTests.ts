@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HubConnection, IHubConnectionOptions, JsonHubProtocol, LogLevel, TransportType } from "@aspnet/signalr";
+import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, IHubConnectionOptions, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol } from "./Common";
@@ -20,7 +20,7 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
 
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
-        describe("using " + protocol.name + " over " + TransportType[transportType] + " transport", () => {
+        describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", async () => {
             it("can invoke server method and receive result", (done) => {
                 const message = "你好，世界！";
 
@@ -505,7 +505,7 @@ describe("hubConnection", () => {
     });
 
     eachTransport((transportType) => {
-        describe("over " + TransportType[transportType] + " transport", () => {
+        describe("over " + HttpTransportType[transportType] + " transport", () => {
 
             it("can connect to hub with authorization", async (done) => {
                 const message = "你好，世界！";
@@ -562,7 +562,34 @@ describe("hubConnection", () => {
                 }
             });
 
-            if (transportType !== TransportType.LongPolling) {
+            it("can connect to hub with authorization using async token factory", async (done) => {
+                const message = "你好，世界！";
+
+                try {
+                    const hubConnection = new HubConnection("/authorizedhub", {
+                        accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
+                        ...commonOptions,
+                        transport: transportType,
+                    });
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
+                        done();
+                    });
+                    await hubConnection.start();
+                    const response = await hubConnection.invoke("Echo", message);
+
+                    expect(response).toEqual(message);
+
+                    await hubConnection.stop();
+
+                    done();
+                } catch (err) {
+                    fail(err);
+                    done();
+                }
+            });
+
+            if (transportType !== HttpTransportType.LongPolling) {
                 it("terminates if no messages received within timeout interval", (done) => {
                     const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
                         ...commonOptions,
@@ -631,7 +658,7 @@ describe("hubConnection", () => {
         };
 
         const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-            logger: LogLevel.Trace,
+            ...commonOptions,
             protocol: new JsonHubProtocol(),
         });
 
@@ -645,6 +672,44 @@ describe("hubConnection", () => {
             fail(e);
         } finally {
             (window as any).WebSocket = oldWebSocket;
+            done();
+        }
+    });
+
+    it("over LongPolling it sends DELETE request and waits for poll to terminate", async (done) => {
+        // Create an HTTP client to capture the poll
+        const defaultClient = new DefaultHttpClient(TestLogger.instance);
+
+        class TestClient extends HttpClient {
+            public pollPromise: Promise<HttpResponse>;
+
+            public send(request: HttpRequest): Promise<HttpResponse> {
+                if (request.method === "GET") {
+                    this.pollPromise = defaultClient.send(request);
+                    return this.pollPromise;
+                }
+                return defaultClient.send(request);
+            }
+        }
+
+        const testClient = new TestClient();
+        const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
+            ...commonOptions,
+            httpClient: testClient,
+        });
+        try {
+            await hubConnection.start();
+
+            expect(testClient.pollPromise).not.toBeNull();
+
+            // Stop the connection and await the poll terminating
+            const stopPromise = hubConnection.stop();
+
+            await testClient.pollPromise;
+            await stopPromise;
+        } catch (e) {
+            fail(e);
+        } finally {
             done();
         }
     });

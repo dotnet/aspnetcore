@@ -1,31 +1,31 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { IHubProtocol, JsonHubProtocol, TransportType } from "@aspnet/signalr";
+import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 export const ECHOENDPOINT_URL = "http://" + document.location.host + "/echo";
 
-export function getTransportTypes(): TransportType[] {
+export function getHttpTransportTypes(): HttpTransportType[] {
     const transportTypes = [];
     if (typeof WebSocket !== "undefined") {
-        transportTypes.push(TransportType.WebSockets);
+        transportTypes.push(HttpTransportType.WebSockets);
     }
     if (typeof EventSource !== "undefined") {
-        transportTypes.push(TransportType.ServerSentEvents);
+        transportTypes.push(HttpTransportType.ServerSentEvents);
     }
-    transportTypes.push(TransportType.LongPolling);
+    transportTypes.push(HttpTransportType.LongPolling);
 
     return transportTypes;
 }
 
-export function eachTransport(action: (transport: TransportType) => void) {
-    getTransportTypes().forEach((t) => {
+export function eachTransport(action: (transport: HttpTransportType) => void) {
+    getHttpTransportTypes().forEach((t) => {
         return action(t);
     });
 }
 
-export function eachTransportAndProtocol(action: (transport: TransportType, protocol: IHubProtocol) => void) {
+export function eachTransportAndProtocol(action: (transport: HttpTransportType, protocol: IHubProtocol) => void) {
     const protocols: IHubProtocol[] = [new JsonHubProtocol()];
     // IE9 does not support XmlHttpRequest advanced features so disable for now
     // This can be enabled if we fix: https://github.com/aspnet/SignalR/issues/742
@@ -35,9 +35,9 @@ export function eachTransportAndProtocol(action: (transport: TransportType, prot
         // Everything works fine in the module
         protocols.push(new MessagePackHubProtocol());
     }
-    getTransportTypes().forEach((t) => {
+    getHttpTransportTypes().forEach((t) => {
         return protocols.forEach((p) => {
-            if (t !== TransportType.ServerSentEvents || !(p instanceof MessagePackHubProtocol)) {
+            if (t !== HttpTransportType.ServerSentEvents || !(p instanceof MessagePackHubProtocol)) {
                 return action(t, p);
             }
         });

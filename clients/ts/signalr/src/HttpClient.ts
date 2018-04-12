@@ -46,6 +46,16 @@ export abstract class HttpClient {
         });
     }
 
+    public delete(url: string): Promise<HttpResponse>;
+    public delete(url: string, options: HttpRequest): Promise<HttpResponse>;
+    public delete(url: string, options?: HttpRequest): Promise<HttpResponse> {
+        return this.send({
+            ...options,
+            method: "DELETE",
+            url,
+        });
+    }
+
     public abstract send(request: HttpRequest): Promise<HttpResponse>;
 }
 

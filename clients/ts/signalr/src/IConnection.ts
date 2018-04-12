@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { ConnectionClosed, DataReceived } from "./Common";
-import { ITransport, TransferFormat, TransportType } from "./Transports";
+import { TransferFormat } from "./ITransport";
 
 export interface IConnection {
     readonly features: any;

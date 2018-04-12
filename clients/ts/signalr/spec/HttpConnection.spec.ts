@@ -5,7 +5,7 @@ import { DataReceived, TransportClosed } from "../src/Common";
 import { HttpConnection } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/HttpConnection";
 import { HttpResponse } from "../src/index";
-import { ITransport, TransferFormat, TransportType } from "../src/Transports";
+import { ITransport, TransferFormat, HttpTransportType } from "../src/ITransport";
 import { eachEndpointUrl, eachTransport } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 
@@ -223,12 +223,12 @@ describe("HttpConnection", () => {
         });
     });
 
-    eachTransport((requestedTransport: TransportType) => {
+    eachTransport((requestedTransport: HttpTransportType) => {
         // OPTIONS is not sent when WebSockets transport is explicitly requested
-        if (requestedTransport === TransportType.WebSockets) {
+        if (requestedTransport === HttpTransportType.WebSockets) {
             return;
         }
-        it(`cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async (done) => {
+        it(`cannot be started if requested ${HttpTransportType[requestedTransport]} transport not available on server`, async (done) => {
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
@@ -272,7 +272,7 @@ describe("HttpConnection", () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient(),
-            transport: TransportType.WebSockets,
+            transport: HttpTransportType.WebSockets,
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
@@ -288,8 +288,29 @@ describe("HttpConnection", () => {
         }
     });
 
+    it("sets inherentKeepAlive feature when using LongPolling", async (done) => {
+        const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
+
+        const options: IHttpConnectionOptions = {
+            ...commonOptions,
+            httpClient: new TestHttpClient()
+                .on("POST", (r) => ({ connectionId: "42", availableTransports: [availableTransport] })),
+        } as IHttpConnectionOptions;
+
+        const connection = new HttpConnection("http://tempuri.org", options);
+
+        try {
+            await connection.start(TransferFormat.Text);
+            expect(connection.features.inherentKeepAlive).toBe(true);
+            done();
+        } catch (e) {
+            fail(e);
+            done();
+        }
+    });
+
     it("does not select ServerSentEvents transport when not available in environment", async (done) => {
-        const serverSentEventsTransport = { transport: "ServerSentEvents", transferFormats: [ "Text" ] };
+        const serverSentEventsTransport = { transport: "ServerSentEvents", transferFormats: ["Text"] };
 
         const options: IHttpConnectionOptions = {
             ...commonOptions,
@@ -312,7 +333,7 @@ describe("HttpConnection", () => {
     });
 
     it("does not select WebSockets transport when not available in environment", async (done) => {
-        const webSocketsTransport = { transport: "WebSockets", transferFormats: [ "Text" ] };
+        const webSocketsTransport = { transport: "WebSockets", transferFormats: ["Text"] };
 
         const options: IHttpConnectionOptions = {
             ...commonOptions,

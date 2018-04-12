@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -8,11 +9,23 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public class TestHttpMessageHandler : HttpMessageHandler
     {
+        private List<HttpRequestMessage> _receivedRequests = new List<HttpRequestMessage>();
         private Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _handler;
+
+        public IReadOnlyList<HttpRequestMessage> ReceivedRequests
+        {
+            get
+            {
+                lock (_receivedRequests)
+                {
+                    return _receivedRequests.ToArray();
+                }
+            }
+        }
 
         public TestHttpMessageHandler(bool autoNegotiate = true)
         {
-            _handler = (request, cancellationToken) => BaseHandler(request, cancellationToken);
+            _handler = BaseHandler;
 
             if (autoNegotiate)
             {
@@ -24,6 +37,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             await Task.Yield();
 
+            lock (_receivedRequests)
+            {
+                _receivedRequests.Add(request);
+            }
+
             return await _handler(request, cancellationToken);
         }
 
@@ -31,16 +49,30 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var testHttpMessageHandler = new TestHttpMessageHandler();
 
+            var deleteCts = new CancellationTokenSource();
+
             testHttpMessageHandler.OnSocketSend((_, __) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
             testHttpMessageHandler.OnLongPoll(async cancellationToken =>
             {
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deleteCts.Token);
+
                 // Just block until canceled
                 var tcs = new TaskCompletionSource<object>();
-                using (cancellationToken.Register(() => tcs.TrySetResult(null)))
+                using (cts.Token.Register(() => tcs.TrySetResult(null)))
                 {
                     await tcs.Task;
                 }
                 return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
+            });
+            testHttpMessageHandler.OnRequest((request, next, cancellationToken) =>
+            {
+                if (request.Method.Equals(HttpMethod.Delete) && request.RequestUri.PathAndQuery.StartsWith("/?id="))
+                {
+                    deleteCts.Cancel();
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+                }
+
+                return next();
             });
 
             return testHttpMessageHandler;

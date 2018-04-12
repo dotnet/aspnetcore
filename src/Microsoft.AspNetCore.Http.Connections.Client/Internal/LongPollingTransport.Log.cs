@@ -44,6 +44,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 LoggerMessage.Define<int, long?>(LogLevel.Trace, new EventId(10, "PollResponseReceived"),
                     "Poll response with status code {StatusCode} received from server. Content length: {ContentLength}.");
 
+            private static readonly Action<ILogger, Uri, Exception> _sendingDeleteRequest =
+                LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(11, "SendingDeleteRequest"), "Sending DELETE request to '{PollUrl}'.");
+
+            private static readonly Action<ILogger, Uri, Exception> _deleteRequestAccepted =
+                LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(12, "DeleteRequestAccepted"), "DELETE request to '{PollUrl}' accepted.");
+
+            private static readonly Action<ILogger, Uri, Exception> _errorSendingDeleteRequest =
+                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(13, "ErrorSendingDeleteRequest"), "Error sending DELETE request to '{PollUrl}'.");
+
             // EventIds 100 - 106 used in SendUtils
 
             public static void StartTransport(ILogger logger, TransferFormat transferFormat)
@@ -98,6 +107,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     _pollResponseReceived(logger, (int)response.StatusCode,
                         response.Content.Headers.ContentLength ?? -1, null);
                 }
+            }
+
+            public static void SendingDeleteRequest(ILogger logger, Uri pollUrl)
+            {
+                _sendingDeleteRequest(logger, pollUrl, null);
+            }
+
+            public static void DeleteRequestAccepted(ILogger logger, Uri pollUrl)
+            {
+                _deleteRequestAccepted(logger, pollUrl, null);
+            }
+
+            public static void ErrorSendingDeleteRequest(ILogger logger, Uri pollUrl, Exception ex)
+            {
+                _errorSendingDeleteRequest(logger, pollUrl, ex);
             }
         }
     }

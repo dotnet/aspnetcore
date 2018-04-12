@@ -3,9 +3,9 @@
 
 import { CloseMessage, CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, PingMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
+import { TransferFormat } from "./ITransport";
 import { NullLogger } from "./Loggers";
 import { TextMessageFormat } from "./TextMessageFormat";
-import { TransferFormat } from "./Transports";
 
 export const JSON_HUB_PROTOCOL_NAME: string = "json";
 

@@ -11,5 +11,5 @@ export * from "./IConnection";
 export * from "./IHubProtocol";
 export * from "./ILogger";
 export * from "./Loggers";
-export * from "./Transports";
+export * from "./ITransport";
 export * from "./Observable";

@@ -78,6 +78,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                     // GET /{path}
                     await ExecuteAsync(context, connectionDelegate, options, logScope);
                 }
+                else if (HttpMethods.IsDelete(context.Request.Method))
+                {
+                    // DELETE /{path}
+                    await ProcessDeleteAsync(context);
+                }
                 else
                 {
                     context.Response.ContentType = "text/plain";
@@ -121,7 +126,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             if (headers.Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true)
             {
                 // Connection must already exist
-                var connection = await GetConnectionAsync(context, options);
+                var connection = await GetConnectionAsync(context);
                 if (connection == null)
                 {
                     // No such connection, GetConnection already set the response status code
@@ -171,7 +176,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 // GET /{path} maps to long polling
 
                 // Connection must already exist
-                var connection = await GetConnectionAsync(context, options);
+                var connection = await GetConnectionAsync(context);
                 if (connection == null)
                 {
                     // No such connection, GetConnection already set the response status code
@@ -240,7 +245,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     context.Response.RegisterForDispose(timeoutSource);
                     context.Response.RegisterForDispose(tokenSource);
 
-                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, connection.ConnectionId, _loggerFactory);
+                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, _loggerFactory);
 
                     // Start the transport
                     connection.TransportTask = longPolling.ProcessRequestAsync(context, tokenSource.Token);
@@ -439,7 +444,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         private async Task ProcessSend(HttpContext context, HttpConnectionOptions options)
         {
-            var connection = await GetConnectionAsync(context, options);
+            var connection = await GetConnectionAsync(context);
             if (connection == null)
             {
                 // No such connection, GetConnection already set the response status code
@@ -485,6 +490,36 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 connection.Lock.Release();
             }
+        }
+
+        private async Task ProcessDeleteAsync(HttpContext context)
+        {
+            var connection = await GetConnectionAsync(context);
+            if (connection == null)
+            {
+                // No such connection, GetConnection already set the response status code
+                return;
+            }
+
+            // This end point only works for long polling
+            if (connection.TransportType != HttpTransportType.LongPolling)
+            {
+                Log.ReceivedDeleteRequestForUnsupportedTransport(_logger, connection.TransportType);
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.ContentType = "text/plain";
+                await context.Response.WriteAsync("Cannot terminate this connection using the DELETE endpoint.");
+                return;
+            }
+
+            Log.TerminatingConection(_logger);
+
+            // Complete the receiving end of the pipe
+            connection.Application.Output.Complete();
+
+            // Dispose the connection gracefully, but don't wait for it
+            _ = _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+            context.Response.StatusCode = StatusCodes.Status202Accepted;
+            context.Response.ContentType = "text/plain";
         }
 
         private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)
@@ -610,7 +645,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             return newHttpContext;
         }
 
-        private async Task<HttpConnectionContext> GetConnectionAsync(HttpContext context, HttpConnectionOptions options)
+        private async Task<HttpConnectionContext> GetConnectionAsync(HttpContext context)
         {
             var connectionId = GetConnectionId(context);
 
