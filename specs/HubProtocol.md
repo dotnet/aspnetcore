@@ -880,27 +880,3 @@ The encoding will be as follows, as a list of binary digits in hex (text in pare
 0x02                                                   (start of frame; VarInt value: 2)
 0x01 0x02                                              (body)
 ```
-
-#### Binary encoding over text protocols
-
-In case of sending messages using binary encoding over text transports (e.g. ServerSentEvents transport) messages should be Base64 encoded and use the following format:
-
-```
-([Length]:[Body];)([Length]:[Body];)... continues until end of the connection ...
-```
-* `[Length]` - Length of the `[Body]` field in bytes, specified as UTF-8 digits (`0`-`9`, terminated by `:`). indicating the number of Base64-encoded characters (not the number of bytes in the final decoded message).
-* `[Body]` - Base64-encoded message
-
-For example the following MsgPack payload (note: the payload consists of the length prefix and the MsgPack message):
-
-```
-0x10 0x95 0x01 0xa1 0x31 0xc3 0xa8 0x4d 0x79 0x4d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
-```
-
-will look like this:
-
-```
-24:EJUBoTHDqE15TWV0aG9kkSo=;
-```
-
-when sending over a text transport.
