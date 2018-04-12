@@ -135,7 +135,6 @@ Win32 error
             INFINITE);
 
         DBG_ASSERT(fSuccess);
-        DebugPrint(1, "FILE_WATCHER::ChangeNotificationThread");
         dwErrorStatus = fSuccess ? ERROR_SUCCESS : GetLastError();
 
         if (completionKey == FILE_WATCHER_SHUTDOWN_KEY)
@@ -186,7 +185,7 @@ None
 {
     FILE_WATCHER_ENTRY *     pMonitorEntry;
     pMonitorEntry = CONTAINING_RECORD(pOverlapped, FILE_WATCHER_ENTRY, _overlapped);
-    pMonitorEntry->DereferenceFileWatcherEntry();
+
     DBG_ASSERT(pMonitorEntry != NULL);
 
     pMonitorEntry->HandleChangeCompletion(dwCompletionStatus, cbCompletion);
@@ -198,14 +197,13 @@ None
         //
         pMonitorEntry->Monitor();
     }
-    else
-    {
-        //
-        // Marked by application distructor
-        // Deference the entry to delete it
-        // 
-        pMonitorEntry->DereferenceFileWatcherEntry();
-    }
+    //
+    // Deference the counter not matter whether the monitor is valid
+    // Valid: Monitor increases the counter, need to reduce one
+    // InValid: Reduce the counter to free the entry
+    //
+    pMonitorEntry->DereferenceFileWatcherEntry();
+
 }
 
 
@@ -279,9 +277,9 @@ HRESULT
     // From documentation it is not clear if that combination  
     // of return values is specific to closing handles or whether  
     // it could also mean an error condition. Hence we will maintain  
-    // explicit flag that will help us determine if entry   
-    // is being shutdown (StopMonitor() called)  
-    //  
+    // explicit flag that will help us determine if entry
+    // is being shutdown (StopMonitor() called)
+    //
     if (_lStopMonitorCalled)
     {
         goto Finished;
@@ -364,6 +362,7 @@ FILE_WATCHER_ENTRY::Monitor(VOID)
         NULL))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
+        DereferenceFileWatcherEntry();
     }
 
     ReleaseSRWLockExclusive(&_srwLock);
@@ -380,15 +379,17 @@ FILE_WATCHER_ENTRY::StopMonitor(VOID)
     //
     InterlockedExchange(&_lStopMonitorCalled, 1);
 
-    AcquireSRWLockExclusive(&_srwLock);
-
     if (_hDirectory != INVALID_HANDLE_VALUE)
     {
-        CloseHandle(_hDirectory);
-        _hDirectory = INVALID_HANDLE_VALUE;
+        AcquireSRWLockExclusive(&_srwLock);
+        if (_hDirectory != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(_hDirectory);
+            _hDirectory = INVALID_HANDLE_VALUE;
+            DereferenceFileWatcherEntry();
+        }
+        ReleaseSRWLockExclusive(&_srwLock);
     }
-
-    ReleaseSRWLockExclusive(&_srwLock);
 }
 
 HRESULT

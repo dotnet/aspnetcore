@@ -18,6 +18,7 @@ APPLICATION_INFO::~APPLICATION_INFO()
         // the entry will delete itself when processing this FCN 
         m_pFileWatcherEntry->MarkEntryInValid();
         m_pFileWatcherEntry->StopMonitor();
+        m_pFileWatcherEntry->DereferenceFileWatcherEntry();
         m_pFileWatcherEntry = NULL;
     }
 
@@ -586,6 +587,11 @@ APPLICATION_INFO::RecycleApplication()
                 g_fRecycleProcessCalled = TRUE;
                 g_pHttpServer->RecycleProcess(L"On Demand by AspNetCore Module for recycle application failure");
             }
+        }
+        else 
+        {
+            // Closing a thread handle does not terminate the associated thread or remove the thread object.
+            CloseHandle(hThread);
         }
 
         if (fLockAcquired)

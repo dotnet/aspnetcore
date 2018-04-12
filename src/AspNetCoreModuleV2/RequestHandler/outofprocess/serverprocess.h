@@ -99,7 +99,7 @@ public:
         _In_ BOOL
     );
 
-    HRESULT
+    VOID
     HandleProcessExit(
         VOID
     );

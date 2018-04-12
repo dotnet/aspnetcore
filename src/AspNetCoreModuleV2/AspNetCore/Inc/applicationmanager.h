@@ -79,17 +79,17 @@ public:
 
     ~APPLICATION_MANAGER()
     {
+        if (m_pFileWatcher != NULL)
+        {
+            delete m_pFileWatcher;
+            m_pFileWatcher = NULL;
+        }
+
         if(m_pApplicationInfoHash != NULL)
         {
             m_pApplicationInfoHash->Clear();
             delete m_pApplicationInfoHash;
             m_pApplicationInfoHash = NULL;
-        }
-
-        if( m_pFileWatcher!= NULL )
-        {
-            delete m_pFileWatcher;
-            m_pFileWatcher = NULL;
         }
     }
 

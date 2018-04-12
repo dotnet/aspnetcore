@@ -642,7 +642,7 @@ UTILITY::LogEventF(
 
     STACK_STRU ( strEventMsg, 256 );
 
-    if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+    if (SUCCEEDED(strEventMsg.SafeVsnwprintf(
         pstrMsg,
         argsList)))
     {
