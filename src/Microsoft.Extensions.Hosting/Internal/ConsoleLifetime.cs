@@ -11,8 +11,10 @@ namespace Microsoft.Extensions.Hosting.Internal
     /// <summary>
     /// Listens for Ctrl+C or SIGTERM and initiates shutdown.
     /// </summary>
-    public class ConsoleLifetime : IHostLifetime
+    public class ConsoleLifetime : IHostLifetime, IDisposable
     {
+        private readonly ManualResetEvent _shutdownBlock = new ManualResetEvent(false);
+
         public ConsoleLifetime(IOptions<ConsoleLifetimeOptions> options, IHostingEnvironment environment, IApplicationLifetime applicationLifetime)
         {
             Options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -38,7 +40,11 @@ namespace Microsoft.Extensions.Hosting.Internal
                 });
             }
 
-            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => ApplicationLifetime.StopApplication();
+            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
+            {
+                ApplicationLifetime.StopApplication();
+                _shutdownBlock.WaitOne();
+            };
             Console.CancelKeyPress += (sender, e) =>
             {
                 e.Cancel = true;
@@ -53,6 +59,11 @@ namespace Microsoft.Extensions.Hosting.Internal
         {
             // There's nothing to do here
             return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _shutdownBlock.Set();
         }
     }
 }

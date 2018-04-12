@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace GenericHostSample
 {
-    public class MyServiceB : IHostedService
+    public class MyServiceB : IHostedService, IDisposable
     {
         private bool _stopping;
         private Task _backgroundTask;
@@ -37,6 +37,11 @@ namespace GenericHostSample
                 // TODO: cancellation
                 await _backgroundTask;
             }
+        }
+
+        public void Dispose()
+        {
+            Console.WriteLine("MyServiceB is disposing.");
         }
     }
 }
