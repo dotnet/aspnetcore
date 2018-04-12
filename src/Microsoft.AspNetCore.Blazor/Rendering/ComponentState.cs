@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
-using System;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -73,11 +73,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
         }
 
-        public void DispatchEvent(UIEventHandler handler, UIEventArgs eventArgs)
+        public void DispatchEvent(EventHandlerInvoker binding, UIEventArgs eventArgs)
         {
             if (_component is IHandleEvent handleEventComponent)
             {
-                handleEventComponent.HandleEvent(handler, eventArgs);
+                handleEventComponent.HandleEvent(binding, eventArgs);
             }
             else
             {

@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         // so making sure it doesn't happen for each test.
         private static readonly CSharpCompilation BaseCompilation;
 
+        private static CSharpParseOptions CSharpParseOptions { get; }
+
         static RazorIntegrationTestBase()
         {
             var referenceAssemblyRoots = new[]
@@ -52,6 +54,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 Array.Empty<SyntaxTree>(),
                 referenceAssemblies,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
         }
 
         public RazorIntegrationTestBase()
@@ -59,6 +63,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             AdditionalSyntaxTrees = new List<SyntaxTree>();
             AdditionalRazorItems = new List<RazorProjectItem>();
 
+            
             Configuration = BlazorExtensionInitializer.DefaultConfiguration;
             FileSystem = new VirtualRazorProjectFileSystem();
             PathSeparator = Path.DirectorySeparatorChar.ToString();
@@ -162,7 +167,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     codeDocument = projectEngine.Process(item);
                     Assert.Empty(codeDocument.GetCSharpDocument().Diagnostics);
 
-                    var syntaxTree = CSharpSyntaxTree.ParseText(codeDocument.GetCSharpDocument().GeneratedCode, path: item.FilePath);
+                    var syntaxTree = Parse(codeDocument.GetCSharpDocument().GeneratedCode, path: item.FilePath);
                     AdditionalSyntaxTrees.Add(syntaxTree);
                 }
 
@@ -192,7 +197,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     Assert.Empty(codeDocument.GetCSharpDocument().Diagnostics);
 
                     // Replace the 'declaration' syntax tree
-                    var syntaxTree = CSharpSyntaxTree.ParseText(codeDocument.GetCSharpDocument().GeneratedCode, path: item.FilePath);
+                    var syntaxTree = Parse(codeDocument.GetCSharpDocument().GeneratedCode, path: item.FilePath);
                     AdditionalSyntaxTrees.RemoveAll(st => st.FilePath == item.FilePath);
                     AdditionalSyntaxTrees.Add(syntaxTree);
                 }
@@ -241,7 +246,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             var syntaxTrees = new[]
             {
-                CSharpSyntaxTree.ParseText(cSharpResult.Code),
+                Parse(cSharpResult.Code),
             };
 
             var compilation = cSharpResult.BaseCompilation.AddSyntaxTrees(syntaxTrees);
@@ -274,7 +279,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     Assembly = diagnostics.Any() ? null : Assembly.Load(peStream.ToArray())
                 };
             }
-
         }
 
         protected IComponent CompileToComponent(string cshtmlSource)
@@ -301,6 +305,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             }
 
             return (IComponent)Activator.CreateInstance(componentType);
+        }
+
+        protected static CSharpSyntaxTree Parse(string text, string path = null)
+        {
+            return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, CSharpParseOptions, path: path);
         }
 
         protected static string FullTypeName<T>() => typeof(T).FullName.Replace('+', '.');

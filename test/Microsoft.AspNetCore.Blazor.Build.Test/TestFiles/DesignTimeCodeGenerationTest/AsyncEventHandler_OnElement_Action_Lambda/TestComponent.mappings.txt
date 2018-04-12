@@ -1,0 +1,10 @@
+Source Location: (1:0,1 [28] x:\dir\subdir\Test\TestComponent.cshtml)
+|using System.Threading.Tasks|
+Generated Location: (222:9,0 [28] )
+|using System.Threading.Tasks|
+
+Source Location: (32:1,1 [33] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Blazor|
+Generated Location: (335:14,0 [33] )
+|using Microsoft.AspNetCore.Blazor|
+

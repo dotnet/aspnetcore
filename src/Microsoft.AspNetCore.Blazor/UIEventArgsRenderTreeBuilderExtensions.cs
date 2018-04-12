@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor
@@ -35,11 +36,11 @@ namespace Microsoft.AspNetCore.Blazor
     /// </code>
     /// </para>
     /// </remarks>
-    public static class UIEventHandlerRenderTreeBuilderExtensions
+    public static class UIEventArgsRenderTreeBuilderExtensions
     {
         /// <summary>
         /// <para>
-        /// Appends a frame representing an <see cref="UIChangeEventArgs"/>-valued attribute.
+        /// Appends a frame representing an <see cref="Action{UIChangeEventArgs}"/>-valued attribute.
         /// </para>
         /// <para>
         /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Blazor
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, UIChangeEventHandler value)
+        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, Action<UIChangeEventArgs> value)
         {
             if (builder == null)
             {
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Blazor
 
         /// <summary>
         /// <para>
-        /// Appends a frame representing an <see cref="UIKeyboardEventHandler"/>-valued attribute.
+        /// Appends a frame representing an <see cref="Func{UIChangeEventArgs, Task}"/>-valued attribute.
         /// </para>
         /// <para>
         /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Blazor
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, UIKeyboardEventHandler value)
+        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, Func<UIChangeEventArgs, Task> value)
         {
             if (builder == null)
             {
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Blazor
 
         /// <summary>
         /// <para>
-        /// Appends a frame representing an <see cref="UIMouseEventHandler"/>-valued attribute.
+        /// Appends a frame representing an <see cref="Action{UIKeyboardEventArgs}"/>-valued attribute.
         /// </para>
         /// <para>
         /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
@@ -96,7 +97,76 @@ namespace Microsoft.AspNetCore.Blazor
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, UIMouseEventHandler value)
+        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, Action<UIKeyboardEventArgs> value)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.AddAttribute(sequence, name, (MulticastDelegate)value);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Appends a frame representing an <see cref="Func{UIKeyboardEventArgs, Task}"/>-valued attribute.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
+        /// current element is not a component, the frame will be omitted.
+        /// </para>
+        /// </summary>
+        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, Func<UIKeyboardEventArgs, Task> value)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.AddAttribute(sequence, name, (MulticastDelegate)value);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Appends a frame representing an <see cref="Action{UIMouseEventArgs}"/>-valued attribute.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
+        /// current element is not a component, the frame will be omitted.
+        /// </para>
+        /// </summary>
+        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, Action<UIMouseEventArgs> value)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.AddAttribute(sequence, name, (MulticastDelegate)value);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Appends a frame representing an <see cref="Func{UIMouseEventArgs, Task}"/>-valued attribute.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
+        /// current element is not a component, the frame will be omitted.
+        /// </para>
+        /// </summary>
+        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        public static void AddAttribute(this RenderTreeBuilder builder, int sequence, string name, Func<UIMouseEventArgs, Task> value)
         {
             if (builder == null)
             {

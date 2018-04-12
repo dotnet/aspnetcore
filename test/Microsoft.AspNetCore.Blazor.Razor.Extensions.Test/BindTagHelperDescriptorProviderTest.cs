@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor.Extensions
         public void Excecute_FindsBindTagHelperOnComponentType_CreatesDescriptor()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -128,7 +128,7 @@ namespace Test
         public void Excecute_NoMatchedPropertiesOnComponent_IgnoresComponent()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -170,7 +170,7 @@ namespace Test
         public void Excecute_BindOnElement_CreatesDescriptor()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -303,7 +303,7 @@ namespace Test
         public void Execute_BindOnElementWithSuffix_CreatesDescriptor()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -357,7 +357,7 @@ namespace Test
         public void Execute_BindOnInputElementWithoutTypeAttribute_CreatesDescriptor()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -412,7 +412,7 @@ namespace Test
         public void Execute_BindOnInputElementWithTypeAttribute_CreatesDescriptor()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -479,7 +479,7 @@ namespace Test
         public void Execute_BindOnInputElementWithTypeAttributeAndSuffix_CreatesDescriptor()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test

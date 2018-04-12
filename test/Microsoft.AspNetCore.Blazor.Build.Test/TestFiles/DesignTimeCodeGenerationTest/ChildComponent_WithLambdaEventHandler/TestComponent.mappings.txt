@@ -5,7 +5,7 @@ Generated Location: (468:14,38 [15] )
 
 Source Location: (55:1,24 [23] x:\dir\subdir\Test\TestComponent.cshtml)
 |(e) => { Increment(); }|
-Generated Location: (1037:28,24 [23] )
+Generated Location: (1049:28,24 [23] )
 |(e) => { Increment(); }|
 
 Source Location: (98:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -15,7 +15,7 @@ Source Location: (98:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
         counter++;
     }
 |
-Generated Location: (1368:39,12 [87] )
+Generated Location: (1380:39,12 [87] )
 |
     private int counter;
     private void Increment() {

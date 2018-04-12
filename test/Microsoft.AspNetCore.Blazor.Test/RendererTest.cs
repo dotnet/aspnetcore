@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
@@ -289,7 +290,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
-            UIEventHandler handler = args => throw new NotImplementedException();
+            Action<UIEventArgs> handler = args => throw new NotImplementedException();
             var component = new TestComponent(builder =>
             {
                 builder.OpenElement(0, "mybutton");
@@ -531,7 +532,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            UIEventHandler origEventHandler = args => { eventCount++; };
+            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignComponentId(component);
             component.TriggerRender();
@@ -568,7 +569,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            UIEventHandler origEventHandler = args => { eventCount++; };
+            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignComponentId(component);
             component.TriggerRender();
@@ -601,7 +602,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            UIEventHandler origEventHandler = args => { eventCount++; };
+            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
             var component = new ConditionalParentComponent<EventComponent>
             {
                 IncludeChild = true,
@@ -650,7 +651,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            UIEventHandler origEventHandler = args => { eventCount++; };
+            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignComponentId(component);
             component.TriggerRender();
@@ -1011,8 +1012,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class EventComponent : AutoRenderComponent, IComponent, IHandleEvent
         {
-            public UIEventHandler OnTest { get; set; }
-            public UIMouseEventHandler OnClick { get; set; }
+            public Action<UIEventArgs> OnTest { get; set; }
+            public Action<UIMouseEventArgs> OnClick { get; set; }
             public Action OnClickAction { get; set; }
 
             public bool SkipElement { get; set; }
@@ -1044,8 +1045,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.AddContent(6, $"Render count: {++renderCount}");
             }
 
-            public void HandleEvent(UIEventHandler handler, UIEventArgs args)
-                => handler(args);
+            public void HandleEvent(EventHandlerInvoker binding, UIEventArgs args)
+            {
+                binding.Invoke(args);
+            }
         }
 
         private class ConditionalParentComponent<T> : AutoRenderComponent where T : IComponent
@@ -1105,9 +1108,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 Render();
             }
 
-            public void HandleEvent(UIEventHandler handler, UIEventArgs args)
+            public void HandleEvent(EventHandlerInvoker binding, UIEventArgs args)
             {
-                handler(args);
+                var task = binding.Invoke(args);
                 Render();
             }
 
@@ -1149,9 +1152,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public bool CheckboxEnabled;
             public string SomeStringProperty;
 
-            public void HandleEvent(UIEventHandler handler, UIEventArgs args)
+            public void HandleEvent(EventHandlerInvoker binding, UIEventArgs args)
             {
-                handler(args);
+                binding.Invoke(args);
                 TriggerRender();
             }
 

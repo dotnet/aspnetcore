@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -23,8 +24,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private bool _isBatchInProgress;
 
         private int _lastEventHandlerId = 0;
-        private readonly Dictionary<int, UIEventHandler> _eventHandlersById
-            = new Dictionary<int, UIEventHandler>();
+        private readonly Dictionary<int, EventHandlerInvoker> _eventBindings = new Dictionary<int, EventHandlerInvoker>();
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
@@ -72,14 +72,14 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
         protected void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
         {
-            if (_eventHandlersById.TryGetValue(eventHandlerId, out var handler))
+            if (_eventBindings.TryGetValue(eventHandlerId, out var binding))
             {
                 // The event handler might request multiple renders in sequence. Capture them
                 // all in a single batch.
                 try
                 {
                     _isBatchInProgress = true;
-                    GetRequiredComponentState(componentId).DispatchEvent(handler, eventArgs);
+                    GetRequiredComponentState(componentId).DispatchEvent(binding, eventArgs);
                 }
                 finally
                 {
@@ -114,32 +114,9 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         {
             var id = ++_lastEventHandlerId;
 
-            // The attribute value might be a more specialized type like UIKeyboardEventHandler.
-            // In that case, it won't be a UIEventHandler, and it will go down the MulticastDelegate
-            // code path (MulticastDelegate is any delegate).
-            //
-            // In order to dispatch the event, we need a UIEventHandler, so we're going weakly
-            // typed here. The user will get a cast exception if they map the wrong type of
-            // delegate to the event.
-            if (frame.AttributeValue is UIEventHandler wrapper)
+            if (frame.AttributeValue is MulticastDelegate @delegate)
             {
-                _eventHandlersById.Add(id, wrapper);
-            }
-            // IMPORTANT: we're creating an additional delegate when necessary. This is
-            // going to get cached in _eventHandlersById, but the render tree diff
-            // will operate on 'AttributeValue' which means that we'll only create a new
-            // wrapper delegate when the underlying delegate changes.
-            //
-            // TLDR: If the component uses a method group or a non-capturing lambda
-            // we don't allocate much.
-            else if (frame.AttributeValue is Action action)
-            {
-                _eventHandlersById.Add(id, (UIEventArgs e) => action());
-            }
-            else if (frame.AttributeValue is MulticastDelegate @delegate)
-            {
-
-               _eventHandlersById.Add(id, (UIEventArgs e) => @delegate.DynamicInvoke(e));
+               _eventBindings.Add(id, new EventHandlerInvoker(@delegate));
             }
 
             frame = frame.WithAttributeEventHandlerId(id);
@@ -218,7 +195,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             var count = eventHandlerIds.Count;
             for (var i = 0; i < count; i++)
             {
-                _eventHandlersById.Remove(array[i]);
+                _eventBindings.Remove(array[i]);
             }
         }
     }

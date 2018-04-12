@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void ComponentDiscovery_CanFindComponent_DefinedinCSharp()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -41,7 +41,7 @@ namespace Test
         public void ComponentDiscovery_CanFindComponent_WithNamespace_DefinedinCSharp()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test.AnotherNamespace

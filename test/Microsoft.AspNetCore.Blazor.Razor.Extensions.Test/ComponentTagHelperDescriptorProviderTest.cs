@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor.Extensions
         {
             // Arrange
 
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -129,7 +129,7 @@ namespace Test
         {
             // Arrange
 
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -169,7 +169,7 @@ namespace Test
         {
             // Arrange
 
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -214,7 +214,7 @@ namespace Test
         {
             // Arrange
 
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -265,7 +265,8 @@ namespace Test
         {
             // Arrange
 
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System;
 using Microsoft.AspNetCore.Blazor;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -273,7 +274,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
-        public UIEventHandler OnClick { get; set; }
+        public Action<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 
@@ -298,7 +299,7 @@ namespace Test
 
             var attribute = Assert.Single(component.BoundAttributes);
             Assert.Equal("OnClick", attribute.Name);
-            Assert.Equal(BlazorApi.UIEventHandler.FullTypeName, attribute.TypeName);
+            Assert.Equal("System.Action<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>", attribute.TypeName);
 
             Assert.False(attribute.HasIndexer);
             Assert.False(attribute.IsBooleanProperty);

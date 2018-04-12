@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void ChildComponent_Simple()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -40,7 +40,7 @@ namespace Test
         public void ChildComponent_WithParameters()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -78,7 +78,7 @@ namespace Test
         public void ChildComponent_WithExplicitStringParameter()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -105,7 +105,7 @@ namespace Test
         public void ChildComponent_WithNonPropertyAttributes()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -132,7 +132,7 @@ namespace Test
         public void ChildComponent_WithLambdaEventHandler()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor;
 using Microsoft.AspNetCore.Blazor.Components;
@@ -141,7 +141,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
-        public UIEventHandler OnClick { get; set; }
+        public Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -168,7 +168,7 @@ namespace Test
         public void ChildComponent_WithExplicitEventHandler()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor;
 using Microsoft.AspNetCore.Blazor.Components;
@@ -177,7 +177,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
-        public UIEventHandler OnClick { get; set; }
+        public Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -205,7 +205,7 @@ namespace Test
         public void ChildComponent_WithChildContent()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -235,7 +235,7 @@ namespace Test
         public void ChildComponent_WithPageDirective()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -367,6 +367,88 @@ namespace Test
         }
 
         [Fact]
+        public void AsyncEventHandler_OnElement_Action_MethodGroup()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""@OnClick"" />
+@functions {
+    Task OnClick() 
+    {
+        return Task.CompletedTask;
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void AsyncEventHandler_OnElement_ActionEventArgs_MethodGroup()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""@OnClick"" />
+@functions {
+    Task OnClick(UIMouseEventArgs e) 
+    {
+        return Task.CompletedTask;
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void AsyncEventHandler_OnElement_Action_Lambda()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""async (e) => await Task.Delay(10)"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void AsyncEventHandler_OnElement_ActionEventArgs_Lambda()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Blazor
+<input onclick=""async (e) => await Task.Delay(10)"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ScriptTag_WithErrorSuppressed()
         {
             // Arrange/Act
@@ -421,7 +503,7 @@ namespace Test
         public void LeadingWhiteSpace_WithComponent()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -484,7 +566,7 @@ namespace Test
         public void TrailingWhiteSpace_WithComponent()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -514,7 +596,7 @@ namespace Test
         public void Regression_597()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Test
@@ -545,7 +627,7 @@ namespace Test
         public void BindToComponent_SpecifiesValue_WithMatchingProperties()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -577,7 +659,7 @@ namespace Test
         public void BindToComponent_SpecifiesValue_WithoutMatchingProperties()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -609,7 +691,7 @@ namespace Test
         public void BindToComponent_SpecifiesValueAndChangeEvent_WithMatchingProperties()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -640,7 +722,7 @@ namespace Test
         public void BindToComponent_SpecifiesValueAndChangeEvent_WithoutMatchingProperties()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -671,7 +753,7 @@ namespace Test
         public void BindToElement_WritesAttributes()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 
@@ -701,7 +783,7 @@ namespace Test
         public void BindToElementWithSuffix_WritesAttributes()
         {
             // Arrange
-            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+            AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor.Components;
 

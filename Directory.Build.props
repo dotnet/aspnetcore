@@ -15,6 +15,7 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
+    <LangVersion>7.3</LangVersion>
 
     <!-- Our customizations -->
     <SignAssembly>false</SignAssembly>

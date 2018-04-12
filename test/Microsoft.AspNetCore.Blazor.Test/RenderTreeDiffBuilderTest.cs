@@ -421,9 +421,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesAttributeEventHandlerValuesChanged()
         {
             // Arrange
-            UIEventHandler retainedHandler = _ => { };
-            UIEventHandler removedHandler = _ => { };
-            UIEventHandler addedHandler = _ => { };
+            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<UIEventArgs> removedHandler = _ => { };
+            Action<UIEventArgs> addedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "onfoo", retainedHandler);
             oldTree.AddAttribute(2, "onbar", removedHandler);
@@ -1159,7 +1159,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers()
         {
             // Arrange
-            UIEventHandler retainedHandler = _ => { };
+            Action<UIEventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -1185,7 +1185,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers_SlowPath()
         {
             // Arrange
-            UIEventHandler retainedHandler = _ => { };
+            Action<UIEventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(0, "ontest", retainedHandler);
             oldTree.CloseElement();

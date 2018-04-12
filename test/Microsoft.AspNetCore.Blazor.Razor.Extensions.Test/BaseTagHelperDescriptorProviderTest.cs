@@ -26,9 +26,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor.Extensions
                 Array.Empty<SyntaxTree>(),
                 metadataReferences,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
         }
 
         protected static Compilation BaseCompilation { get; }
+
+        protected static CSharpParseOptions CSharpParseOptions { get; }
+
+        protected static CSharpSyntaxTree Parse(string text)
+        {
+            return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, CSharpParseOptions);
+        }
 
         // For simplicity in testing, exclude the built-in components. We'll add more and we
         // don't want to update the tests when that happens.

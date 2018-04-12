@@ -8,6 +8,7 @@
       https://api.nuget.org/v3/index.json;
       https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
     </RestoreSources>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

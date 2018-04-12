@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor.Extensions
         public void Excecute_EventHandler_CreatesDescriptor()
         {
             // Arrange
-            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
 using Microsoft.AspNetCore.Blazor;
 using Microsoft.AspNetCore.Blazor.Components;

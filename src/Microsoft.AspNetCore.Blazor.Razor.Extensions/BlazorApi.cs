@@ -84,19 +84,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             public static readonly string GetEventHandlerValue = "Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue";
 
-            public static readonly string SetValue = "Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValue";
-
             public static readonly string SetValueHandler = "Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler";
         }
 
         public static class EventHandlerAttribute
         {
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Components.EventHandlerAttribute";
-        }
-
-        public static class UIEventHandler
-        {
-            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.UIEventHandler";
         }
     }
 }

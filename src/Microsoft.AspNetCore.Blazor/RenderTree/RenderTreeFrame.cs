@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         internal static RenderTreeFrame Text(int sequence, string textContent)
             => new RenderTreeFrame(sequence, textContent: textContent);
 
-        internal static RenderTreeFrame Attribute(int sequence, string name, UIEventHandler value)
+        internal static RenderTreeFrame Attribute(int sequence, string name, MulticastDelegate value)
              => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value);
 
         internal static RenderTreeFrame Attribute(int sequence, string name, object value)

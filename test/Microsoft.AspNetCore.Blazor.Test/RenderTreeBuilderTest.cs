@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
-            UIEventHandler eventHandler = eventInfo => { };
+            Action<UIEventArgs> eventHandler = eventInfo => { };
 
             // Act
             builder.OpenElement(0, "myelement");                    //  0: <myelement
@@ -498,12 +498,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_UIEventHandler_AddsFrame()
+        public void AddAttribute_Element_EventHandler_AddsFrame()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
-            var value = new UIEventHandler((e) => { });
+            var value = new Action<UIEventArgs>((e) => { });
 
             // Act
             builder.OpenElement(0, "elem");
@@ -518,14 +518,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_NullUIEventHandler_IgnoresFrame()
+        public void AddAttribute_Element_NullEventHandler_IgnoresFrame()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "attr", (UIEventHandler)null);
+            builder.AddAttribute(1, "attr", (Action<UIEventArgs>)null);
             builder.CloseElement();
 
             // Assert
@@ -571,15 +571,15 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
-        public static TheoryData<UIEventHandler> UIEventHandlerValues => new TheoryData<UIEventHandler>
+        public static TheoryData<Action<UIEventArgs>> EventHandlerValues => new TheoryData<Action<UIEventArgs>>
         {
             null,
             (e) => { },
         };
 
         [Theory]
-        [MemberData(nameof(UIEventHandlerValues))]
-        public void AddAttribute_Component_EventHandlerValue_SetsAttributeValue(UIEventHandler value)
+        [MemberData(nameof(EventHandlerValues))]
+        public void AddAttribute_Component_EventHandlerValue_SetsAttributeValue(Action<UIEventArgs> value)
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -688,12 +688,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectUIEventHandler_AddsFrame()
+        public void AddAttribute_Element_ObjectEventHandler_AddsFrame()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
-            var value = new UIEventHandler((e) => { });
+            var value = new Action<UIEventArgs>((e) => { });
 
             // Act
             builder.OpenElement(0, "elem");
@@ -713,7 +713,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
-            var value = new UIEventHandler((e) => { });
+            var value = new Action<UIEventArgs>((e) => { });
 
             // Act
             builder.OpenComponent<TestComponent>(0);

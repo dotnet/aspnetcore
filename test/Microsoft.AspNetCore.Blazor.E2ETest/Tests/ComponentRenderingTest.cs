@@ -64,6 +64,23 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         }
 
         [Fact]
+        public void CanTriggerAsyncEventHandlers()
+        {
+            // Initial state is stopped
+            var appElement = MountTestComponent<AsyncEventHandlerComponent>();
+            var stateElement = appElement.FindElement(By.Id("state"));
+            Assert.Equal("Stopped", stateElement.Text);
+
+            // Clicking 'tick' changes the state, and starts a task
+            appElement.FindElement(By.Id("tick")).Click();
+            Assert.Equal("Started", stateElement.Text);
+
+            // Clicking 'tock' completes the task, which updates the state
+            appElement.FindElement(By.Id("tock")).Click();
+            Assert.Equal("Stopped", stateElement.Text);
+        }
+
+        [Fact]
         public void CanTriggerKeyPressEvents()
         {
             // List is initially empty
