@@ -4,7 +4,7 @@
     "Source": {
       "Repository": "https://github.com/aspnet/SignalR.git",
       "BranchOrCommit": "dev",
-      "Project": "benchmarks/BenchmarkServer/BenchmarkServer.csproj"
+      "Project": "benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
     },
     "Connections": 10,
     "Duration": 20,

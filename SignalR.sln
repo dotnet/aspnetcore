@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27110.0
 MinimumVisualStudioVersion = 15.0.26730.03
@@ -9,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA69F624-539
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{83B2C3EB-A3D8-4E6F-9A3C-A380B005EF31}"
 	ProjectSection(SolutionItems) = preProject
+		benchmarkapps\BenchmarkServer\BenchmarkServer.csproj = benchmarkapps\BenchmarkServer\BenchmarkServer.csproj
 		build\dependencies.props = build\dependencies.props
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
@@ -81,11 +83,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "clients\ts\FunctionalTests\FunctionalTests.csproj", "{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkServer", "benchmarks\BenchmarkServer\BenchmarkServer.csproj", "{B5286020-C218-443C-91A9-B65751FB9B29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Protocols.Json", "src\Microsoft.AspNetCore.SignalR.Protocols.Json\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj", "{896FA5EE-63A5-4EAC-9F09-346584BB4830}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Protocols.Json", "src\Microsoft.AspNetCore.SignalR.Protocols.Json\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj", "{896FA5EE-63A5-4EAC-9F09-346584BB4830}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkServer", "benchmarkapps\BenchmarkServer\BenchmarkServer.csproj", "{8C75AC94-C980-4FE1-9F79-6CED3C8665CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crankier", "benchmarks\Crankier\Crankier.csproj", "{8D3E3E7D-452B-44F4-86CA-111003EA11ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crankier", "benchmarkapps\Crankier\Crankier.csproj", "{8D3E3E7D-452B-44F4-86CA-111003EA11ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarkapps", "benchmarkapps", "{43F352F3-4E2B-4ED7-901B-36E6671251F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -197,14 +201,14 @@ Global
 		{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B5286020-C218-443C-91A9-B65751FB9B29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5286020-C218-443C-91A9-B65751FB9B29}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B5286020-C218-443C-91A9-B65751FB9B29}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5286020-C218-443C-91A9-B65751FB9B29}.Release|Any CPU.Build.0 = Release|Any CPU
 		{896FA5EE-63A5-4EAC-9F09-346584BB4830}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{896FA5EE-63A5-4EAC-9F09-346584BB4830}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{896FA5EE-63A5-4EAC-9F09-346584BB4830}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{896FA5EE-63A5-4EAC-9F09-346584BB4830}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C75AC94-C980-4FE1-9F79-6CED3C8665CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C75AC94-C980-4FE1-9F79-6CED3C8665CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C75AC94-C980-4FE1-9F79-6CED3C8665CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C75AC94-C980-4FE1-9F79-6CED3C8665CE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8D3E3E7D-452B-44F4-86CA-111003EA11ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8D3E3E7D-452B-44F4-86CA-111003EA11ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D3E3E7D-452B-44F4-86CA-111003EA11ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -240,9 +244,9 @@ Global
 		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{55DB4B6F-12E5-4A27-97F4-E97E135470FF} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981} = {3A76C5A2-79ED-49BC-8BDC-6A3A766FFA1B}
-		{B5286020-C218-443C-91A9-B65751FB9B29} = {8A4582C8-DC59-4B61-BCE7-119FBAA99EFB}
 		{896FA5EE-63A5-4EAC-9F09-346584BB4830} = {DA69F624-5398-4884-87E4-B816698CDE65}
-		{8D3E3E7D-452B-44F4-86CA-111003EA11ED} = {8A4582C8-DC59-4B61-BCE7-119FBAA99EFB}
+		{8C75AC94-C980-4FE1-9F79-6CED3C8665CE} = {43F352F3-4E2B-4ED7-901B-36E6671251F5}
+		{8D3E3E7D-452B-44F4-86CA-111003EA11ED} = {43F352F3-4E2B-4ED7-901B-36E6671251F5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7945A4E4-ACDB-4F6E-95CA-6AC6E7C2CD59}
