@@ -243,6 +243,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                             if (nextToken.Type == HtmlTokenType.StartTag)
                             {
+                                RejectDisallowedHtmlTags(node, nextTag);
+
                                 _scopeStack.IncrementCurrentScopeChildCount(context);
 
                                 codeWriter
@@ -301,6 +303,26 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             if (originalHtmlContent.Length > nextToken.Position.Position)
             {
                 _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
+            }
+        }
+
+        private void RejectDisallowedHtmlTags(IntermediateNode node, HtmlTagToken tagToken)
+        {
+            // Disallow <script> in components as per #552
+            // Case-sensitive comparison is fine because AngleSharp always lowercases tag names
+            if (tagToken.Name.Equals("script", StringComparison.Ordinal))
+            {
+                const string suppressErrorAttributeName = "suppress-error";
+                if (string.Equals(tagToken.GetAttribute(suppressErrorAttributeName), "BL9992", StringComparison.Ordinal))
+                {
+                    tagToken.Attributes.RemoveAll(kvp => kvp.Key.Equals(suppressErrorAttributeName, StringComparison.Ordinal));
+                }
+                else
+                {
+                    var adjustedSpan = CalculateSourcePosition(node.Source, tagToken.Position);
+                    var diagnostic = BlazorDiagnosticFactory.Create_DisallowedScriptTag(adjustedSpan);
+                    throw new RazorCompilerException(diagnostic);
+                }
             }
         }
 

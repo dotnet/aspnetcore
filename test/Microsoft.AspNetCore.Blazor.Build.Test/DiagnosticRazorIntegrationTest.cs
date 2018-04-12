@@ -87,5 +87,28 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Equal("BL9979", diagnostic.Id);
         }
+
+        [Fact]
+        public void RejectsScriptTag()
+        {
+            // Arrange/Act
+            var result = CompileToCSharp(@"Hello
+<div>
+    <script src='anything'>
+        something
+    </script>
+</div>
+Goodbye");
+
+            // Assert
+            Assert.Collection(result.Diagnostics,
+                item =>
+                {
+                    Assert.Equal("BL9992", item.Id);
+                    Assert.Equal("Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information see http://some/link", item.GetMessage());
+                    Assert.Equal(2, item.Span.LineIndex);
+                    Assert.Equal(4, item.Span.CharacterIndex);
+                });
+        }
     }
 }

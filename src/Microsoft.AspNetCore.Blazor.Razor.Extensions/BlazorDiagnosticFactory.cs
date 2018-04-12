@@ -165,6 +165,17 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     "'bind', 'bind-value' or 'bind-value-change'",
             RazorDiagnosticSeverity.Error);
 
+        public static readonly RazorDiagnosticDescriptor DisallowedScriptTag = new RazorDiagnosticDescriptor(
+            "BL9992",
+            () => "Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information see http://some/link",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_DisallowedScriptTag(SourceSpan? source)
+        {
+            var diagnostic = RazorDiagnostic.Create(DisallowedScriptTag, source ?? SourceSpan.Undefined);
+            return diagnostic;
+        }
+
         public static RazorDiagnostic CreateBindAttribute_InvalidSyntax(SourceSpan? source, string attribute)
         {
             var diagnostic = RazorDiagnostic.Create(

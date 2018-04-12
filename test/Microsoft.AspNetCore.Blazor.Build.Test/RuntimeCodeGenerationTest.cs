@@ -365,5 +365,24 @@ namespace Test
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
         }
+
+        [Fact]
+        public void ScriptTag_WithErrorSuppressed()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<div>
+    <script src='some/url.js' anotherattribute suppress-error='BL9992'>
+        some text
+        some more text
+    </script>
+</div>
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
     }
 }
