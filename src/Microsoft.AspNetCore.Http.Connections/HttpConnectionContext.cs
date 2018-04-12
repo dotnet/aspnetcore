@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Http.Connections
                                          IConnectionIdFeature,
                                          IConnectionItemsFeature,
                                          IConnectionTransportFeature,
-                                         IApplicationTransportFeature,
                                          IConnectionUserFeature,
                                          IConnectionHeartbeatFeature,
                                          ITransferFormatFeature,
@@ -60,7 +59,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             Features.Set<IConnectionItemsFeature>(this);
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
-            Features.Set<IApplicationTransportFeature>(this);
             Features.Set<IConnectionHeartbeatFeature>(this);
             Features.Set<ITransferFormatFeature>(this);
             Features.Set<IHttpContextFeature>(this);
