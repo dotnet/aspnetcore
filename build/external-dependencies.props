@@ -147,6 +147,7 @@
     <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowPackageVersion)" />
     <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <ExternalDependency Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" />
+    <ExternalDependency Include="Utf8Json" Version="$(Utf8JsonPackageVersion)" />
     <ExternalDependency Include="WindowsAzure.Storage" Version="$(WindowsAzureStoragePackageVersion)" />
     <ExternalDependency Include="xunit" Version="$(XunitPackageVersion)" />
     <ExternalDependency Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
