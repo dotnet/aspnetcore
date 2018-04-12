@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithMvc_AddsConfigurationMetadata()
         {
+            var razorAssemblyInfo = Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -25,51 +26,26 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
+            Assert.FileExists(result, razorAssemblyInfo);
             Assert.FileContainsLine(
                 result,
-                Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs"),
+                razorAssemblyInfo,
                 "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"2.1\")]");
             Assert.FileContainsLine(
                 result,
-                Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs"),
+                razorAssemblyInfo,
                 "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-2.1\")]");
             Assert.FileContainsLine(
                 result,
-                Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs"),
+                razorAssemblyInfo,
                 "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-2.1\", \"Microsoft.AspNetCore.Mvc.Razor.Extensions\")]");
-        }
-
-        [Fact]
-        [InitializeTestProject("SimpleMvc")]
-        public async Task Build_WithGenerateRazorAssemblyInfo_False_SuppressesConfigurationMetadata()
-        {
-            var result = await DotnetMSBuild("Build", "/p:GenerateRazorAssemblyInfo=false");
-
-            Assert.BuildPassed(result);
-
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
-
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
-            Assert.FileDoesNotContainLine(
-                result,
-                Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs"),
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"2.1\")]");
-            Assert.FileDoesNotContainLine(
-                result,
-                Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs"),
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-2.1\")]");
-            Assert.FileDoesNotContainLine(
-                result,
-                Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs"),
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-2.1\", \"Microsoft.AspNetCore.Razor.Extensions\")]");
         }
 
         [Fact]
         [InitializeTestProject("ClassLibrary")]
         public async Task Build_ForClassLibrary_SuppressesConfigurationMetadata()
         {
+            var razorAssemblyInfo = Path.Combine(IntermediateOutputPath, "ClassLibrary.RazorAssemblyInfo.cs");
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -77,18 +53,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.Views.dll");
             Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.Views.pdb");
 
-            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.AssemblyInfo.cs");
+            Assert.FileExists(result, razorAssemblyInfo);
             Assert.FileDoesNotContainLine(
                 result,
-                Path.Combine(IntermediateOutputPath, "ClassLibrary.AssemblyInfo.cs"),
+                razorAssemblyInfo,
                 "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"2.1\")]");
             Assert.FileDoesNotContainLine(
                 result,
-                Path.Combine(IntermediateOutputPath, "ClassLibrary.AssemblyInfo.cs"),
+                razorAssemblyInfo,
                 "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-2.1\")]");
             Assert.FileDoesNotContainLine(
                 result,
-                Path.Combine(IntermediateOutputPath, "ClassLibrary.AssemblyInfo.cs"),
+                razorAssemblyInfo,
                 "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-2.1\", \"Microsoft.AspNetCore.Razor.Extensions\")]");
         }
     }

@@ -47,7 +47,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PrepareForRazorCompileDependsOn>
       RazorGenerate;
       ResolveRazorCompileInputs;
-      GenerateRazorAssemblyInfo
+      GenerateRazorTargetAssemblyInfo
     </PrepareForRazorCompileDependsOn>
 
     <ResolveRazorCompileInputsDependsOn>
@@ -230,7 +230,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
-    Generates assembly attributes in support for Razor runtime code generation. This is a set of standard
+    Gets assembly attributes in support for Razor runtime code generation. This is a set of standard
     metadata attributes (defined in Microsoft.AspNetCore.Razor.Runtime) that capture the build-time
     Razor configuration of an application to be used at runtime.
     
@@ -240,22 +240,25 @@ Copyright (c) .NET Foundation. All rights reserved.
     The SDK expects configurations that use runtime compilation to set $(GenerateRazorHostingAssemblyInfo) to true,
     it will be unset by default.
   -->
+  <PropertyGroup>
+    <_GenerateRazorAssemblyInfoDependsOn>RazorGetAssemblyAttributes;$(_GenerateRazorAssemblyInfoDependsOn)</_GenerateRazorAssemblyInfoDependsOn>
+  </PropertyGroup>
+
   <Target 
     Name="RazorGetAssemblyAttributes"
-    AfterTargets="GetAssemblyAttributes"
     Condition="'$(GenerateRazorHostingAssemblyInfo)'=='true' and '$(RazorDefaultConfiguration)'!=''"
     DependsOnTargets="ResolveRazorConfiguration">
     <ItemGroup>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute">
+      <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute">
         <_Parameter1>$(RazorLangVersion)</_Parameter1>
-      </AssemblyAttribute>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute">
+      </_RazorAssemblyAttribute>
+      <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute">
         <_Parameter1>$(RazorDefaultConfiguration)</_Parameter1>
-      </AssemblyAttribute>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute" Condition="'%(ResolvedRazorExtension.AssemblyName)'!=''">
+      </_RazorAssemblyAttribute>
+      <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute" Condition="'%(ResolvedRazorExtension.AssemblyName)'!=''">
         <_Parameter1>%(ResolvedRazorExtension.Identity)</_Parameter1>
         <_Parameter2>%(ResolvedRazorExtension.AssemblyName)</_Parameter2>
-      </AssemblyAttribute>
+      </_RazorAssemblyAttribute>
     </ItemGroup>
 
   </Target>

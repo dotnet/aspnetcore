@@ -1,11 +1,14 @@
 <Project>
   <PropertyGroup>
-
     <!--
-      MVC will generally want to add support for runtime compilation, but only for applications. 
+      Determines if the Sdk is allowed to add additional attributes to the project assembly.
+      For instance, MVC will generally want to add attributes to support view discovery and runtime compilation.
     -->
     <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'==''">true</GenerateRazorAssemblyInfo>
 
+    <!--
+      MVC will generally want to add support for runtime compilation, but only for applications.
+    -->
     <GenerateRazorHostingAssemblyInfo Condition="'$(GenerateRazorHostingAssemblyInfo)'=='' AND '$(OutputType)'=='exe'">$(GenerateRazorAssemblyInfo)</GenerateRazorHostingAssemblyInfo>
 
     <!--
@@ -20,14 +23,14 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true' AND '$(ResolvedRazorCompileToolset)'=='RazorSdk' AND ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' == 'true')">
-    <AssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
+    <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
       <_Parameter1>$(RazorTargetName)</_Parameter1>
-    </AssemblyAttribute>
+    </_RazorAssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup Condition="'$(GenerateProvideApplicationPartFactoryAttribute)' == 'true' AND '$(ProvideApplicationPartFactoryAttributeTypeName)'!=''">
-    <RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
+    <RazorTargetAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
       <_Parameter1>$(ProvideApplicationPartFactoryAttributeTypeName)</_Parameter1>
-    </RazorAssemblyAttribute>
+    </RazorTargetAssemblyAttribute>
   </ItemGroup>
 </Project>
