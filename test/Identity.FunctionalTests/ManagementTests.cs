@@ -196,18 +196,33 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task CanDownloadPersonalData()
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task CanDownloadPersonalData(bool twoFactor, bool social)
         {
             using (StartLog(out var loggerFactory))
             {
                 // Arrange
-                var client = ServerFactory.CreateDefaultClient(loggerFactory);
+                var server = ServerFactory.CreateServer(loggerFactory, builder =>
+                    builder.ConfigureTestServices(s => s.SetupTestThirdPartyLogin()));
+
+                var client = ServerFactory.CreateDefaultClient(server);
 
                 var userName = $"{Guid.NewGuid()}@example.com";
-                var password = $"!Test.Password1$";
+                var guid = Guid.NewGuid();
+                var email = userName;
 
-                var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+                var index = social 
+                    ? await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email)
+                    : await UserStories.RegisterNewUserAsync(client, email, "!TestPassword1");
+
+                if (twoFactor)
+                {
+                    await UserStories.EnableTwoFactorAuthentication(index);
+                }
 
                 // Act & Assert
                 var jsonData = await UserStories.DownloadPersonalData(index, userName);
@@ -217,7 +232,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 Assert.Contains($"\"EmailConfirmed\":\"False\"", jsonData);
                 Assert.Contains($"\"PhoneNumber\":\"null\"", jsonData);
                 Assert.Contains($"\"PhoneNumberConfirmed\":\"False\"", jsonData);
-                Assert.Contains($"\"TwoFactorEnabled\":\"False\"", jsonData);
+                Assert.Contains($"\"TwoFactorEnabled\":\"{twoFactor}\"", jsonData);
+                Assert.Equal(twoFactor, jsonData.Contains($"\"Authenticator Key\":\""));
+                Assert.Equal(social, jsonData.Contains($"\"Contoso external login provider key\":\"{userName}\""));
             }
         }
 

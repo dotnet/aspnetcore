@@ -87,8 +87,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var newName = Guid.NewGuid().ToString();
             Assert.Null(await manager.FindByNameAsync(newName));
             IdentityResultAssert.IsSuccess(await manager.SetPhoneNumberAsync(user, "123-456-7890"));
+            var login = new UserLoginInfo("loginProvider", "<key>", "display");
+            IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
 
             Assert.Equal(user, await manager.FindByEmailAsync("hao@hao.com"));
+            Assert.Equal(user, await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
 
             IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, newName));
             IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
@@ -97,6 +100,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             DefaultKeyRing.Current = "NewPad";
             Assert.NotNull(await manager.FindByNameAsync(newName));
             Assert.Equal(user, await manager.FindByEmailAsync("hao@hao.com"));
+            Assert.Equal(user, await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
             Assert.Equal("123-456-7890", await manager.GetPhoneNumberAsync(user));
         }
 
@@ -128,6 +132,26 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             using (var command = conn.CreateCommand())
             {
                 command.CommandText = $"SELECT u.{column} FROM AspNetUsers u WHERE u.Id = '{id}'";
+                command.CommandType = System.Data.CommandType.Text;
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader.GetString(0) == "Default:ink";
+                    }
+                }
+            }
+            return false;
+        }
+
+        private bool FindAuthenticatorKeyInk(DbConnection conn, string id)
+            => FindTokenInk(conn, id, "[AspNetUserStore]", "AuthenticatorKey");
+
+        private bool FindTokenInk(DbConnection conn, string id, string loginProvider, string tokenName)
+        {
+            using (var command = conn.CreateCommand())
+            {
+                command.CommandText = $"SELECT u.Value FROM AspNetUserTokens u WHERE u.LoginProvider = '{loginProvider}' AND u.Name = '{tokenName}' AND u.UserId = '{id}'";
                 command.CommandType = System.Data.CommandType.Text;
                 using (var reader = command.ExecuteReader())
                 {
@@ -188,6 +212,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 user.PhoneNumber = "12345678";
                 IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
 
+                IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
+                IdentityResultAssert.IsSuccess(await manager.SetAuthenticationTokenAsync(user, "loginProvider", "token", "value"));
+
                 var conn = dbContext.Database.GetDbConnection();
                 conn.Open();
                 if (protect)
@@ -197,6 +224,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                     Assert.True(FindInk(conn, "UserName", guid));
                     Assert.True(FindInk(conn, "PersonalData1", guid));
                     Assert.True(FindInk(conn, "PersonalData2", guid));
+                    Assert.True(FindAuthenticatorKeyInk(conn, guid));
+                    Assert.True(FindTokenInk(conn, guid, "loginProvider", "token"));
                 }
                 else
                 {
@@ -205,7 +234,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                     Assert.False(FindInk(conn, "UserName", guid));
                     Assert.False(FindInk(conn, "PersonalData1", guid));
                     Assert.False(FindInk(conn, "PersonalData2", guid));
-
+                    Assert.False(FindAuthenticatorKeyInk(conn, guid));
+                    Assert.False(FindTokenInk(conn, guid, "loginProvider", "token"));
                 }
                 Assert.False(FindInk(conn, "NonPersonalData1", guid));
                 Assert.False(FindInk(conn, "NonPersonalData2", guid));

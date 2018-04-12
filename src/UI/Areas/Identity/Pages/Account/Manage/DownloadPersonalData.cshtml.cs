@@ -51,13 +51,20 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 
             // Only include personal data for download
             var personalData = new Dictionary<string, string>();
-
             var personalDataProps = typeof(TUser).GetProperties().Where(
                             prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
             foreach (var p in personalDataProps)
             {
                 personalData.Add(p.Name, p.GetValue(user)?.ToString() ?? "null");
             }
+
+            var logins = await _userManager.GetLoginsAsync(user);
+            foreach (var l in logins)
+            {
+                personalData.Add($"{l.LoginProvider} external login provider key", l.ProviderKey);
+            }
+
+            personalData.Add($"Authenticator Key", await _userManager.GetAuthenticatorKeyAsync(user));
 
             Response.Headers.Add("Content-Disposition", "attachment; filename=PersonalData.json");
             return new FileContentResult(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(personalData)), "text/json");

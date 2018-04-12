@@ -119,6 +119,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             var storeOptions = GetStoreOptions();
             var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;
             var encryptPersonalData = storeOptions?.ProtectPersonalData ?? false;
+            PersonalDataConverter converter = null;
 
             builder.Entity<TUser>(b =>
             {
@@ -135,7 +136,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 
                 if (encryptPersonalData)
                 {
-                    var converter = new PersonalDataConverter(this.GetService<IPersonalDataProtector>());
+                    converter = new PersonalDataConverter(this.GetService<IPersonalDataProtector>());
                     var personalDataProps = typeof(TUser).GetProperties().Where(
                                     prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
                     foreach (var p in personalDataProps)
@@ -180,6 +181,20 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 {
                     b.Property(t => t.LoginProvider).HasMaxLength(maxKeyLength);
                     b.Property(t => t.Name).HasMaxLength(maxKeyLength);
+                }
+
+                if (encryptPersonalData)
+                {
+                    var tokenProps = typeof(TUserToken).GetProperties().Where(
+                                    prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
+                    foreach (var p in tokenProps)
+                    {
+                        if (p.PropertyType != typeof(string))
+                        {
+                            throw new InvalidOperationException(Resources.CanOnlyProtectStrings);
+                        }
+                        b.Property(typeof(string), p.Name).HasConversion(converter);
+                    }
                 }
 
                 b.ToTable("AspNetUserTokens");

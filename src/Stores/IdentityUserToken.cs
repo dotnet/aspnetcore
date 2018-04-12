@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets or sets the token value.
         /// </summary>
+        [ProtectedPersonalData]
         public virtual string Value { get; set; }
     }
 }
