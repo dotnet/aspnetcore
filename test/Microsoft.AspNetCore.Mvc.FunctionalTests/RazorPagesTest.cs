@@ -11,6 +11,8 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -1267,6 +1269,30 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
 
             // Assert
             Assert.Equal(expected, content);
+        }
+
+        [Theory]
+        [InlineData(nameof(IAuthorizationFilter.OnAuthorization))]
+        [InlineData(nameof(IAsyncAuthorizationFilter.OnAuthorizationAsync))]
+        public async Task PageResultSetAt_AuthorizationFilter_Works(string targetName)
+        {
+            // Act
+            var content = await Client.GetStringAsync("http://localhost/Pages/ShortCircuitPageAtAuthFilter?target=" + targetName);
+
+            // Assert
+            Assert.Equal("From ShortCircuitPageAtAuthFilter.cshtml", content);
+        }
+
+        [Theory]
+        [InlineData(nameof(IPageFilter.OnPageHandlerExecuting))]
+        [InlineData(nameof(IAsyncPageFilter.OnPageHandlerExecutionAsync))]
+        public async Task PageResultSetAt_PageFilter_Works(string targetName)
+        {
+            // Act
+            var content = await Client.GetStringAsync("http://localhost/Pages/ShortCircuitPageAtPageFilter?target=" + targetName);
+
+            // Assert
+            Assert.Equal("From ShortCircuitPageAtPageFilter.cshtml", content);
         }
 
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)

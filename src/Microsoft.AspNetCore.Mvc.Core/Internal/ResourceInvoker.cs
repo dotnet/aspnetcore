@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         protected abstract Task InvokeInnerFilterAsync();
 
-        protected async Task InvokeResultAsync(IActionResult result)
+        protected virtual async Task InvokeResultAsync(IActionResult result)
         {
             var actionContext = _actionContext;
 

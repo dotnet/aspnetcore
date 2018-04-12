@@ -106,6 +106,36 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
         }
 
+        protected override Task InvokeResultAsync(IActionResult result)
+        {
+            // We also have some special initialization we need to do for PageResult.
+            if (result is PageResult pageResult)
+            {
+                // If we used a PageModel then the Page isn't initialized yet.
+                if (_viewContext == null)
+                {
+                    _viewContext = new ViewContext(
+                        _pageContext,
+                        NullView.Instance,
+                        _pageContext.ViewData,
+                        _tempDataFactory.GetTempData(_pageContext.HttpContext),
+                        TextWriter.Null,
+                        _htmlHelperOptions);
+                    _viewContext.ExecutingFilePath = _pageContext.ActionDescriptor.RelativePath;
+                }
+
+                if (_page == null)
+                {
+                    _page = (PageBase)CacheEntry.PageFactory(_pageContext, _viewContext);
+                }
+
+                pageResult.Page = _page;
+                pageResult.ViewData = pageResult.ViewData ?? _pageContext.ViewData;
+            }
+
+            return base.InvokeResultAsync(result);
+        }
+
         private object CreateInstance()
         {
             if (HasPageModel)
@@ -247,31 +277,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             if (_result == null)
             {
                 _result = new PageResult();
-            }
-
-            // We also have some special initialization we need to do for PageResult.
-            if (_result is PageResult pageResult)
-            {
-                // If we used a PageModel then the Page isn't initialized yet.
-                if (_viewContext == null)
-                {
-                    _viewContext = new ViewContext(
-                        _pageContext,
-                        NullView.Instance,
-                        _pageContext.ViewData,
-                        _tempDataFactory.GetTempData(_pageContext.HttpContext),
-                        TextWriter.Null,
-                        _htmlHelperOptions);
-                    _viewContext.ExecutingFilePath = _pageContext.ActionDescriptor.RelativePath;
-                }
-
-                if (_page == null)
-                {
-                    _page = (PageBase)CacheEntry.PageFactory(_pageContext, _viewContext);
-                }
-
-                pageResult.Page = _page;
-                pageResult.ViewData = pageResult.ViewData ?? _pageContext.ViewData;
             }
         }
 

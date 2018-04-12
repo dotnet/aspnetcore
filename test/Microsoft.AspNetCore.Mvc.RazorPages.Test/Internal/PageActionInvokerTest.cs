@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 .Verifiable();
             filter1
                 .Setup(f => f.OnPageHandlerExecutionAsync(It.IsAny<PageHandlerExecutingContext>(), It.IsAny<PageHandlerExecutionDelegate>()))
-                .Returns<PageHandlerExecutingContext, PageHandlerExecutionDelegate>(async(c, next) =>
+                .Returns<PageHandlerExecutingContext, PageHandlerExecutionDelegate>(async (c, next) =>
                 {
                     Assert.Same(handler, c.HandlerMethod);
                     await next();
@@ -527,6 +527,284 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 Times.Once());
 
             Assert.Same(Result, result);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_AsyncAuthorizeFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
+            filter
+                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()))
+                .Returns<AuthorizationFilterContext>((context) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                    return Task.CompletedTask;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_SyncAuthorizeFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
+            filter
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
+                .Callback<AuthorizationFilterContext>((context) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_AsyncResourceFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            filter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>((context, next) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                    return Task.CompletedTask;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_SyncResourceFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IResourceFilter>(MockBehavior.Strict);
+            filter
+                .Setup(f => f.OnResourceExecuting(It.IsAny<ResourceExecutingContext>()))
+                .Callback<ResourceExecutingContext>((context) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnResourceExecuting(It.IsAny<ResourceExecutingContext>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_AsyncResultFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+            filter
+                .Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns<ResultExecutingContext, ResultExecutionDelegate>((context, next) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                    return next();
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_SyncResultFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IResultFilter>();
+            filter
+                .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Callback<ResultExecutingContext>((context) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_AsyncPageFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IAsyncPageFilter>(MockBehavior.Strict);
+            AllowSelector(filter);
+            filter
+                .Setup(f => f.OnPageHandlerExecutionAsync(It.IsAny<PageHandlerExecutingContext>(), It.IsAny<PageHandlerExecutionDelegate>()))
+                .Returns<PageHandlerExecutingContext, PageHandlerExecutionDelegate>((context, next) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                    return Task.CompletedTask;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnPageHandlerExecutionAsync(It.IsAny<PageHandlerExecutingContext>(), It.IsAny<PageHandlerExecutionDelegate>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
+        }
+
+        [Fact]
+        public async Task InvokeAction_PageResultSetAt_SyncPageFilter_PopulatesProperties()
+        {
+            // Arrange
+            var expectedResult = new PageResult();
+
+            IActionResult result = null;
+            var filter = new Mock<IPageFilter>(MockBehavior.Strict);
+            AllowSelector(filter);
+            filter
+                .Setup(f => f.OnPageHandlerExecuting(It.IsAny<PageHandlerExecutingContext>()))
+                .Callback<PageHandlerExecutingContext>((context) =>
+                {
+                    context.Result = expectedResult;
+                    result = context.Result;
+                })
+                .Verifiable();
+
+            var invoker = CreateInvoker(filter.Object);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter.Verify(
+                f => f.OnPageHandlerExecuting(It.IsAny<PageHandlerExecutingContext>()),
+                Times.Once());
+
+            var pageResult = Assert.IsType<PageResult>(result);
+            Assert.Same(expectedResult, pageResult);
+            Assert.NotNull(pageResult.Page);
+            Assert.NotNull(pageResult.ViewData);
+            Assert.NotNull(pageResult.Page.ViewContext);
         }
 
         [Fact]
