@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -193,12 +193,10 @@ namespace Microsoft.Extensions.Localization
             }
 
             var expectedMessage = $"{nameof(CookieRequestCultureProvider)} returned the following unsupported cultures '??'.";
-            var logMessages = sink.Writes;
-            var count = logMessages.Count;
 
-            Assert.Equal(1, count);
-            Assert.Equal(LogLevel.Warning, logMessages[0].LogLevel);
-            Assert.Equal(expectedMessage, logMessages[0].State.ToString());
+            var write = Assert.Single(sink.Writes);
+            Assert.Equal(LogLevel.Warning, write.LogLevel);
+            Assert.Equal(expectedMessage, write.State.ToString());
         }
 
         [Fact]
@@ -248,12 +246,9 @@ namespace Microsoft.Extensions.Localization
             }
 
             var expectedMessage = $"{nameof(CookieRequestCultureProvider)} returned the following unsupported UI Cultures '??'.";
-            var logMessages = sink.Writes;
-            var count = logMessages.Count;
-
-            Assert.Equal(1, count);
-            Assert.Equal(LogLevel.Warning, logMessages[0].LogLevel);
-            Assert.Equal(expectedMessage, logMessages[0].State.ToString());
+            var write = Assert.Single(sink.Writes);
+            Assert.Equal(LogLevel.Warning, write.LogLevel);
+            Assert.Equal(expectedMessage, write.State.ToString());
         }
     }
 }
