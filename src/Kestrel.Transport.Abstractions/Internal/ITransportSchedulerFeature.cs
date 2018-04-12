@@ -5,7 +5,7 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public interface ITransportSchedulerFeature
     {

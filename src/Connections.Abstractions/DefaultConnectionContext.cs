@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Connections
                                             IConnectionIdFeature,
                                             IConnectionItemsFeature,
                                             IConnectionTransportFeature,
-                                            IApplicationTransportFeature,
                                             IConnectionUserFeature
     {
         public DefaultConnectionContext() :
@@ -39,7 +38,6 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionItemsFeature>(this);
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
-            Features.Set<IApplicationTransportFeature>(this);
         }
 
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
