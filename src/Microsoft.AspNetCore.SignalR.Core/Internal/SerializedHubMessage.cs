@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
@@ -20,8 +19,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public HubMessage Message { get; }
 
-        private SerializedHubMessage()
+        public SerializedHubMessage(IReadOnlyList<SerializedMessage> messages)
         {
+            for (var i = 0; i < messages.Count; i++)
+            {
+                var message = messages[i];
+                SetCache(message.ProtocolName, message.Serialized);
+            }
         }
 
         public SerializedHubMessage(HubMessage message)
@@ -44,46 +48,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
 
             return serialized;
-        }
-
-        public static void WriteAllSerializedVersions(BinaryWriter writer, HubMessage message, IReadOnlyList<IHubProtocol> protocols)
-        {
-            // The serialization format is based on BinaryWriter
-            // * 1 byte number of protocols
-            // * For each protocol:
-            //   * Length-prefixed string using 7-bit variable length encoding (length depends on BinaryWriter's encoding)
-            //   * 4 byte length of the buffer
-            //   * N byte buffer
-
-            if (protocols.Count > byte.MaxValue)
-            {
-                throw new InvalidOperationException($"Can't serialize cache containing more than {byte.MaxValue} entries");
-            }
-
-            writer.Write((byte)protocols.Count);
-            foreach (var protocol in protocols)
-            {
-                writer.Write(protocol.Name);
-
-                var buffer = protocol.GetMessageBytes(message);
-                writer.Write(buffer.Length);
-                writer.Write(buffer);
-            }
-        }
-
-        public static SerializedHubMessage ReadAllSerializedVersions(BinaryReader reader)
-        {
-            var cache = new SerializedHubMessage();
-            var count = reader.ReadByte();
-            for (var i = 0; i < count; i++)
-            {
-                var protocol = reader.ReadString();
-                var length = reader.ReadInt32();
-                var serialized = reader.ReadBytes(length);
-                cache.SetCache(protocol, serialized);
-            }
-
-            return cache;
         }
 
         private void SetCache(string protocolName, byte[] serialized)
@@ -144,18 +108,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             result = default;
             return false;
-        }
-
-        private readonly struct SerializedMessage
-        {
-            public string ProtocolName { get; }
-            public byte[] Serialized { get; }
-
-            public SerializedMessage(string protocolName, byte[] serialized)
-            {
-                ProtocolName = protocolName;
-                Serialized = serialized;
-            }
         }
     }
 }

@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 {
                     RedisLog.ReceivedFromChannel(_logger, _channels.All);
 
-                    var invocation = _protocol.ReadInvocation(data);
+                    var invocation = _protocol.ReadInvocation((byte[])data);
 
                     var tasks = new List<Task>(_connections.Count);
 
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 try
                 {
-                    var groupMessage = _protocol.ReadGroupCommand(data);
+                    var groupMessage = _protocol.ReadGroupCommand((byte[])data);
 
                     var connection = _connections[groupMessage.ConnectionId];
                     if (connection == null)
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             // Create server specific channel in order to send an ack to a single server
             _bus.Subscribe(_channels.Ack(_serverName), (c, data) =>
             {
-                var ackId = _protocol.ReadAck(data);
+                var ackId = _protocol.ReadAck((byte[])data);
 
                 _ackHandler.TriggerAck(ackId);
             });
@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             RedisLog.Subscribing(_logger, connectionChannel);
             return _bus.SubscribeAsync(connectionChannel, async (c, data) =>
             {
-                var invocation = _protocol.ReadInvocation(data);
+                var invocation = _protocol.ReadInvocation((byte[])data);
                 await connection.WriteAsync(invocation.Message);
             });
         }
@@ -471,7 +471,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             // TODO: Look at optimizing (looping over connections checking for Name)
             return _bus.SubscribeAsync(userChannel, async (c, data) =>
             {
-                var invocation = _protocol.ReadInvocation(data);
+                var invocation = _protocol.ReadInvocation((byte[])data);
                 await connection.WriteAsync(invocation.Message);
             });
         }
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 try
                 {
-                    var invocation = _protocol.ReadInvocation(data);
+                    var invocation = _protocol.ReadInvocation((byte[])data);
 
                     var tasks = new List<Task>();
                     foreach (var groupConnection in group.Connections)

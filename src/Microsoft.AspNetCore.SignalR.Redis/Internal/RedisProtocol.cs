@@ -1,18 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
+using System.Runtime.InteropServices;
+using MessagePack;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 {
     public class RedisProtocol
     {
         private readonly IReadOnlyList<IHubProtocol> _protocols;
-        private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         public RedisProtocol(IReadOnlyList<IHubProtocol> protocols)
         {
@@ -35,136 +39,172 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 
         public byte[] WriteInvocation(string methodName, object[] args, IReadOnlyList<string> excludedIds)
         {
-            // Redis Invocation Format:
-            // * Variable length integer: Number of excluded Ids
-            // * For each excluded Id:
-            //   * Length prefixed string: ID
-            // * SerializedHubMessage encoded by the format described by that type.
+            // Written as a MessagePack 'arr' containing at least these items:
+            // * A MessagePack 'arr' of 'str's representing the excluded ids
+            // * [The output of WriteSerializedHubMessage, which is an 'arr']
+            // Any additional items are discarded.
 
-            using (var stream = new MemoryStream())
-            using (var writer = new BinaryWriterWithVarInt(stream, _utf8NoBom))
+            var writer = MemoryBufferWriter.Get();
+
+            try
             {
-                if (excludedIds != null)
+                MessagePackBinary.WriteArrayHeader(writer, 2);
+                if (excludedIds != null && excludedIds.Count > 0)
                 {
-                    writer.WriteVarInt(excludedIds.Count);
+                    MessagePackBinary.WriteArrayHeader(writer, excludedIds.Count);
                     foreach (var id in excludedIds)
                     {
-                        writer.Write(id);
+                        MessagePackBinary.WriteString(writer, id);
                     }
                 }
                 else
                 {
-                    writer.WriteVarInt(0);
+                    MessagePackBinary.WriteArrayHeader(writer, 0);
                 }
 
-                SerializedHubMessage.WriteAllSerializedVersions(writer, new InvocationMessage(methodName, null, args), _protocols);
-                return stream.ToArray();
+                WriteSerializedHubMessage(writer,
+                    new SerializedHubMessage(new InvocationMessage(methodName, null, args)));
+                return writer.ToArray();
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 
         public byte[] WriteGroupCommand(RedisGroupCommand command)
         {
-            // Group Command Format:
-            // * Variable length integer: Id
-            // * Length prefixed string: ServerName
-            // * 1 byte: Action
-            // * Length prefixed string: GroupName
-            // * Length prefixed string: ConnectionId
+            // Written as a MessagePack 'arr' containing at least these items:
+            // * An 'int': the Id of the command
+            // * A 'str': The server name
+            // * An 'int': The action (likely less than 0x7F and thus a single-byte fixnum)
+            // * A 'str': The group name
+            // * A 'str': The connection Id
+            // Any additional items are discarded.
 
-            using (var stream = new MemoryStream())
-            using (var writer = new BinaryWriterWithVarInt(stream, _utf8NoBom))
+            var writer = MemoryBufferWriter.Get();
+            try
             {
-                writer.WriteVarInt(command.Id);
-                writer.Write(command.ServerName);
-                writer.Write((byte)command.Action);
-                writer.Write(command.GroupName);
-                writer.Write(command.ConnectionId);
-                return stream.ToArray();
+                MessagePackBinary.WriteArrayHeader(writer, 5);
+                MessagePackBinary.WriteInt32(writer, command.Id);
+                MessagePackBinary.WriteString(writer, command.ServerName);
+                MessagePackBinary.WriteByte(writer, (byte)command.Action);
+                MessagePackBinary.WriteString(writer, command.GroupName);
+                MessagePackBinary.WriteString(writer, command.ConnectionId);
+
+                return writer.ToArray();
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 
         public byte[] WriteAck(int messageId)
         {
-            // Acknowledgement Format:
-            // * Variable length integer: Id
+            // Written as a MessagePack 'arr' containing at least these items:
+            // * An 'int': The Id of the command being acknowledged.
+            // Any additional items are discarded.
 
-            using (var stream = new MemoryStream())
-            using (var writer = new BinaryWriterWithVarInt(stream, _utf8NoBom))
+            var writer = MemoryBufferWriter.Get();
+            try
             {
-                writer.WriteVarInt(messageId);
-                return stream.ToArray();
+                MessagePackBinary.WriteArrayHeader(writer, 1);
+                MessagePackBinary.WriteInt32(writer, messageId);
+
+                return writer.ToArray();
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
             }
         }
 
-        public RedisInvocation ReadInvocation(byte[] data)
+        public RedisInvocation ReadInvocation(ReadOnlyMemory<byte> data)
         {
-            // See WriteInvocation for format.
+            // See WriteInvocation for the format
+            ValidateArraySize(ref data, 2, "Invocation");
 
-            using (var stream = new MemoryStream(data))
-            using (var reader = new BinaryReaderWithVarInt(stream, _utf8NoBom))
+            // Read excluded Ids
+            IReadOnlyList<string> excludedIds = null;
+            var idCount = MsgPackUtil.ReadArrayHeader(ref data);
+            if (idCount > 0)
             {
-                IReadOnlyList<string> excludedIds = null;
-
-                var idCount = reader.ReadVarInt();
-                if (idCount > 0)
+                var ids = new string[idCount];
+                for (var i = 0; i < idCount; i++)
                 {
-                    var ids = new string[idCount];
-                    for (var i = 0; i < idCount; i++)
-                    {
-                        ids[i] = reader.ReadString();
-                    }
-
-                    excludedIds = ids;
+                    ids[i] = MsgPackUtil.ReadString(ref data);
                 }
 
-                var message = SerializedHubMessage.ReadAllSerializedVersions(reader);
-                return new RedisInvocation(message, excludedIds);
+                excludedIds = ids;
             }
+
+            // Read payload
+            var message = ReadSerializedHubMessage(ref data);
+            return new RedisInvocation(message, excludedIds);
         }
 
-        public RedisGroupCommand ReadGroupCommand(byte[] data)
+        public RedisGroupCommand ReadGroupCommand(ReadOnlyMemory<byte> data)
         {
             // See WriteGroupCommand for format.
-            using (var stream = new MemoryStream(data))
-            using (var reader = new BinaryReaderWithVarInt(stream, _utf8NoBom))
-            {
-                var id = reader.ReadVarInt();
-                var serverName = reader.ReadString();
-                var action = (GroupAction)reader.ReadByte();
-                var groupName = reader.ReadString();
-                var connectionId = reader.ReadString();
+            ValidateArraySize(ref data, 5, "GroupCommand");
 
-                return new RedisGroupCommand(id, serverName, action, groupName, connectionId);
-            }
+            var id = MsgPackUtil.ReadInt32(ref data);
+            var serverName = MsgPackUtil.ReadString(ref data);
+            var action = (GroupAction)MsgPackUtil.ReadByte(ref data);
+            var groupName = MsgPackUtil.ReadString(ref data);
+            var connectionId = MsgPackUtil.ReadString(ref data);
+
+            return new RedisGroupCommand(id, serverName, action, groupName, connectionId);
         }
 
-        public int ReadAck(byte[] data)
+        public int ReadAck(ReadOnlyMemory<byte> data)
         {
             // See WriteAck for format
-            using (var stream = new MemoryStream(data))
-            using (var reader = new BinaryReaderWithVarInt(stream, _utf8NoBom))
+            ValidateArraySize(ref data, 1, "Ack");
+            return MsgPackUtil.ReadInt32(ref data);
+        }
+
+        private void WriteSerializedHubMessage(Stream stream, SerializedHubMessage message)
+        {
+            // Written as a MessagePack 'map' where the keys are the name of the protocol (as a MessagePack 'str')
+            // and the values are the serialized blob (as a MessagePack 'bin').
+
+            MessagePackBinary.WriteMapHeader(stream, _protocols.Count);
+
+            foreach (var protocol in _protocols)
             {
-                return reader.ReadVarInt();
+                MessagePackBinary.WriteString(stream, protocol.Name);
+
+                var serialized = message.GetSerializedMessage(protocol);
+                var isArray = MemoryMarshal.TryGetArray(serialized, out var array);
+                Debug.Assert(isArray);
+                MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
             }
         }
 
-        // Kinda cheaty way to get access to write the 7-bit varint format directly
-        private class BinaryWriterWithVarInt : BinaryWriter
+        public static SerializedHubMessage ReadSerializedHubMessage(ref ReadOnlyMemory<byte> data)
         {
-            public BinaryWriterWithVarInt(Stream output, Encoding encoding) : base(output, encoding)
+            var count = MsgPackUtil.ReadMapHeader(ref data);
+            var serializations = new SerializedMessage[count];
+            for (var i = 0; i < count; i++)
             {
+                var protocol = MsgPackUtil.ReadString(ref data);
+                var serialized = MsgPackUtil.ReadBytes(ref data);
+                serializations[i] = new SerializedMessage(protocol, serialized);
             }
 
-            public void WriteVarInt(int value) => Write7BitEncodedInt(value);
+            return new SerializedHubMessage(serializations);
         }
 
-        private class BinaryReaderWithVarInt : BinaryReader
+        private static void ValidateArraySize(ref ReadOnlyMemory<byte> data, int expectedLength, string messageType)
         {
-            public BinaryReaderWithVarInt(Stream input, Encoding encoding) : base(input, encoding)
-            {
-            }
+            var length = MsgPackUtil.ReadArrayHeader(ref data);
 
-            public int ReadVarInt() => Read7BitEncodedInt();
+            if (length < expectedLength)
+            {
+                throw new InvalidDataException($"Insufficient items in {messageType} array.");
+            }
         }
     }
 }
