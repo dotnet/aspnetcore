@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Features;
 
 namespace SignalRSamples.ConnectionHandlers
 {
@@ -18,7 +19,9 @@ namespace SignalRSamples.ConnectionHandlers
         {
             Connections.Add(connection);
 
-            await Broadcast($"{connection.ConnectionId} connected ({connection.Items[ConnectionMetadataNames.Transport]})");
+            var transportType = connection.Features.Get<IHttpTransportFeature>()?.TransportType;
+
+            await Broadcast($"{connection.ConnectionId} connected ({transportType})");
 
             try
             {
@@ -51,7 +54,7 @@ namespace SignalRSamples.ConnectionHandlers
             {
                 Connections.Remove(connection);
 
-                await Broadcast($"{connection.ConnectionId} disconnected ({connection.Items[ConnectionMetadataNames.Transport]})");
+                await Broadcast($"{connection.ConnectionId} disconnected ({transportType})");
             }
         }
 

@@ -13,16 +13,5 @@ namespace Microsoft.AspNetCore.Http.Connections
         {
             return connection.Features.Get<IHttpContextFeature>()?.HttpContext;
         }
-
-        public static void SetHttpContext(this ConnectionContext connection, HttpContext httpContext)
-        {
-            var feature = connection.Features.Get<IHttpContextFeature>();
-            if (feature == null)
-            {
-                feature = new HttpContextFeature();
-                connection.Features.Set(feature);
-            }
-            feature.HttpContext = httpContext;
-        }
     }
 }

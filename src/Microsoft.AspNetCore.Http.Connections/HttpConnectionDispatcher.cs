@@ -504,7 +504,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             if (connection.TransportType == HttpTransportType.None)
             {
                 connection.TransportType = transportType;
-                connection.Items[ConnectionMetadataNames.Transport] = transportType;
             }
             else if (connection.TransportType != transportType)
             {

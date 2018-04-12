@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                                          IConnectionUserFeature,
                                          IConnectionHeartbeatFeature,
                                          ITransferFormatFeature,
-                                         IHttpContextFeature
+                                         IHttpContextFeature,
+                                         IHttpTransportFeature
     {
         private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             Features.Set<IConnectionHeartbeatFeature>(this);
             Features.Set<ITransferFormatFeature>(this);
             Features.Set<IHttpContextFeature>(this);
+            Features.Set<IHttpTransportFeature>(this);
         }
 
         public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)

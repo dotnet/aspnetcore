@@ -13,6 +13,7 @@ using MessagePack.Formatters;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -1760,7 +1761,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 var httpContext = new DefaultHttpContext();
-                client.Connection.SetHttpContext(httpContext);
+                var feature = new TestHttpContextFeature
+                {
+                    HttpContext = httpContext
+                };
+                client.Connection.Features.Set<IHttpContextFeature>(feature);
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                 await client.Connected.OrTimeout();
@@ -1984,6 +1989,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             yield return new[] { typeof(DynamicTestHub) };
             yield return new[] { typeof(MethodHub) };
             yield return new[] { typeof(HubT) };
+        }
+
+        public class TestHttpContextFeature : IHttpContextFeature
+        {
+            public HttpContext HttpContext { get; set; }
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public string GetActiveTransportName()
         {
-            return Context.Items[ConnectionMetadataNames.Transport].ToString();
+            return Context.Features.Get<IHttpTransportFeature>().TransportType.ToString();
         }
     }
 

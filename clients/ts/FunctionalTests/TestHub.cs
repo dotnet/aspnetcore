@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR;
 
 namespace FunctionalTests
@@ -63,7 +64,7 @@ namespace FunctionalTests
 
         public string GetActiveTransportName()
         {
-            return Context.Items[ConnectionMetadataNames.Transport].ToString();
+            return Context.Features.Get<IHttpTransportFeature>().TransportType.ToString();
         }
 
         public ComplexObject EchoComplexObject(ComplexObject complexObject)
