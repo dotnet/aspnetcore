@@ -20,5 +20,11 @@ if (!Uint8Array.prototype.slice) {
         writable: true,
     });
 }
+if (!Uint8Array.prototype.forEach) {
+    Object.defineProperty(Uint8Array.prototype, "forEach", {
+        value: Array.prototype.forEach,
+        writable: true,
+    });
+}
 
 export * from "./index";
