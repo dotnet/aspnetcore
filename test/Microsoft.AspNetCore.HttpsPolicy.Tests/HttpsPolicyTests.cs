@@ -21,12 +21,12 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
     public class HttpsPolicyTests
     {
         [Theory]
-        [InlineData(302, null, 2592000, false, false, "max-age=2592000", "https://localhost/")]
+        [InlineData(302, 443, 2592000, false, false, "max-age=2592000", "https://localhost/")]
         [InlineData(301, 5050, 2592000, false, false, "max-age=2592000", "https://localhost:5050/")]
         [InlineData(301, 443, 2592000, false, false, "max-age=2592000", "https://localhost/")]
         [InlineData(301, 443, 2592000, true, false, "max-age=2592000; includeSubDomains", "https://localhost/")]
         [InlineData(301, 443, 2592000, false, true, "max-age=2592000; preload", "https://localhost/")]
-        [InlineData(301, null, 2592000, true, true, "max-age=2592000; includeSubDomains; preload", "https://localhost/")]
+        [InlineData(301, 443, 2592000, true, true, "max-age=2592000; includeSubDomains; preload", "https://localhost/")]
         [InlineData(302, 5050, 2592000, true, true, "max-age=2592000; includeSubDomains; preload", "https://localhost:5050/")]
         public async Task SetsBothHstsAndHttpsRedirection_RedirectOnFirstRequest_HstsOnSecondRequest(int statusCode, int? tlsPort, int maxAge, bool includeSubDomains, bool preload, string expectedHstsHeader, string expectedUrl)
         {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             client = server.CreateClient();
             client.BaseAddress = new Uri(response.Headers.Location.ToString());
-            request = new HttpRequestMessage(HttpMethod.Get, "");
+            request = new HttpRequestMessage(HttpMethod.Get, expectedUrl);
             response = await client.SendAsync(request);
 
             Assert.Equal(expectedHstsHeader, response.Headers.GetValues(HeaderNames.StrictTransportSecurity).FirstOrDefault());

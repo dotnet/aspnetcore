@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.HttpsPolicy.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
@@ -16,11 +18,13 @@ namespace Microsoft.AspNetCore.HttpsPolicy
     public class HttpsRedirectionMiddleware
     {
         private readonly RequestDelegate _next;
+        private bool _portEvaluated = false;
         private int? _httpsPort;
         private readonly int _statusCode;
 
         private readonly IServerAddressesFeature _serverAddressesFeature;
         private readonly IConfiguration _config;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes the HttpsRedirectionMiddleware
@@ -28,7 +32,8 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// <param name="next"></param>
         /// <param name="options"></param>
         /// <param name="config"></param>
-        public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config)
+        /// <param name="loggerFactory"></param>
+        public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, ILoggerFactory loggerFactory)
 
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
@@ -40,7 +45,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy
             }
             var httpsRedirectionOptions = options.Value;
             _httpsPort = httpsRedirectionOptions.HttpsPort;
+            _portEvaluated = _httpsPort.HasValue;
             _statusCode = httpsRedirectionOptions.RedirectStatusCode;
+            _logger = loggerFactory.CreateLogger<HttpsRedirectionMiddleware>();
         }
 
         /// <summary>
@@ -49,9 +56,11 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// <param name="next"></param>
         /// <param name="options"></param>
         /// <param name="config"></param>
+        /// <param name="loggerFactory"></param>
         /// <param name="serverAddressesFeature">The</param>
-        public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, IServerAddressesFeature serverAddressesFeature)
-            : this(next, options, config)
+        public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, ILoggerFactory loggerFactory,
+            IServerAddressesFeature serverAddressesFeature)
+            : this(next, options, config, loggerFactory)
         {
             _serverAddressesFeature = serverAddressesFeature ?? throw new ArgumentNullException(nameof(serverAddressesFeature));
         }
@@ -63,20 +72,15 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            if (context.Request.IsHttps)
+            if (context.Request.IsHttps || !TryGetHttpsPort(out var port))
             {
                 return _next(context);
             }
 
-            if (!_httpsPort.HasValue)
-            {
-                CheckForHttpsPorts();
-            }
-
             var host = context.Request.Host;
-            if (_httpsPort != 443)
+            if (port != 443)
             {
-                host = new HostString(host.Host, _httpsPort.Value);
+                host = new HostString(host.Host, port);
             }
             else
             {
@@ -94,28 +98,41 @@ namespace Microsoft.AspNetCore.HttpsPolicy
             context.Response.StatusCode = _statusCode;
             context.Response.Headers[HeaderNames.Location] = redirectUrl;
 
+            _logger.RedirectingToHttps(redirectUrl);
+
             return Task.CompletedTask;
         }
 
-        private void CheckForHttpsPorts()
+        private bool TryGetHttpsPort(out int port)
         {
             // The IServerAddressesFeature will not be ready until the middleware is Invoked,
             // Order for finding the HTTPS port:
             // 1. Set in the HttpsRedirectionOptions
             // 2. HTTPS_PORT environment variable
             // 3. IServerAddressesFeature
-            // 4. 443 (or not set)
+            // 4. Fail if not set
+
+            port = -1;
+
+            if (_portEvaluated)
+            {
+                port = _httpsPort ?? port;
+                return _httpsPort.HasValue;
+            }
+            _portEvaluated = true;
 
             _httpsPort = _config.GetValue<int?>("HTTPS_PORT");
             if (_httpsPort.HasValue)
             {
-                return;
+                port = _httpsPort.Value;
+                _logger.PortLoadedFromConfig(port);
+                return true;
             }
 
             if (_serverAddressesFeature == null)
             {
-                _httpsPort = 443;
-                return;
+                _logger.FailedToDeterminePort();
+                return false;
             }
 
             int? httpsPort = null;
@@ -127,8 +144,8 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                     // If we find multiple different https ports specified, throw
                     if (httpsPort.HasValue && httpsPort != bindingAddress.Port)
                     {
-                        throw new ArgumentException("Cannot determine the https port from IServerAddressesFeature, multiple values were found. " +
-                            "Please set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.");
+                        _logger.FailedMultiplePorts();
+                        return false;
                     }
                     else
                     {
@@ -136,7 +153,17 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                     }
                 }
             }
-            _httpsPort = httpsPort ?? 443;
+
+            if (httpsPort.HasValue)
+            {
+                _httpsPort = httpsPort;
+                port = _httpsPort.Value;
+                _logger.PortFromServer(port);
+                return true;
+            }
+
+            _logger.FailedToDeterminePort();
+            return false;
         }
     }
 }

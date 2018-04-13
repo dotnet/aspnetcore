@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace HttpsSample
 {
@@ -62,6 +63,11 @@ namespace HttpsSample
                     });
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory()) // for the cert file
+                .ConfigureLogging(factory =>
+                {
+                    factory.SetMinimumLevel(LogLevel.Debug);
+                    factory.AddConsole();
+                })
                 .UseStartup<Startup>()
                 .Build();
 
