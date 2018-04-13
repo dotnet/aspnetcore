@@ -24,9 +24,7 @@ namespace IISSample
 
         public void ConfigureJavaScript(IApplicationBuilder app)
         {
-            Console.WriteLine("ConfigureJavaScript 1");
             app.UseMvcWithDefaultRoute();
-            Console.WriteLine("ConfigureJavaScript 2");
         }
 
         public void ConfigureDefaultLogging(IApplicationBuilder app, ILoggerFactory loggerFactory)
@@ -75,12 +73,11 @@ namespace IISSample
 
         public static void Main(string[] args)
         {
-            Console.WriteLine("Main 1");
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddCommandLine(args)
                 .Build();
-            Console.WriteLine("Main 2");
+
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .ConfigureLogging((hostingContext, builder) =>
@@ -92,7 +89,7 @@ namespace IISSample
                 .UseStartup<Startup>()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Build();
-            Console.WriteLine("Main 3");
+
             host.Run();
         }
     }
