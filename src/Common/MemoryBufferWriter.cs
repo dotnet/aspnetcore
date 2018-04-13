@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Internal
 #if NETCOREAPP2_1
         public override void Write(ReadOnlySpan<byte> span)
         {
-            if (_currentSegment != null && span.TryCopyTo(_currentSegment.AsSpan().Slice(_position)))
+            if (_currentSegment != null && span.TryCopyTo(_currentSegment.AsSpan(_position)))
             {
                 _position += span.Length;
                 _bytesWritten += span.Length;

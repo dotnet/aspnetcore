@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var result = await ws.ReceiveAsync(buffer, CancellationToken.None).OrTimeout();
                     logger.LogInformation("Received {length} byte frame", result.Count);
 
-                    Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, result.Count).ToArray());
+                    Assert.Equal(bytes, buffer.Array.AsSpan(0, result.Count).ToArray());
 
                     logger.LogInformation("Closing socket");
                     await ws.CloseOutputAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var result = await ws.ReceiveAsync(buffer, CancellationToken.None).OrTimeout();
                     logger.LogInformation("Received {length} byte frame", result.Count);
 
-                    Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, result.Count).ToArray());
+                    Assert.Equal(bytes, buffer.Array.AsSpan(0, result.Count).ToArray());
 
                     logger.LogInformation("Closing socket");
                     await ws.CloseOutputAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
