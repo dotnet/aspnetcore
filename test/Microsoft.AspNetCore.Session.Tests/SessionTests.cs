@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes;
+            var sessionLogMessages = sink.Writes.ToList();
 
             Assert.Equal(2, sessionLogMessages.Count);
             Assert.Contains("started", sessionLogMessages[0].State.ToString());
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Session
                 result = await client.GetStringAsync("/second");
             }
 
-            var sessionLogMessages = sink.Writes;
+            var sessionLogMessages = sink.Writes.ToList();
 
             Assert.Equal("2", result);
             Assert.Equal(3, sessionLogMessages.Count);
@@ -591,11 +591,9 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes;
-
-            Assert.Single(sessionLogMessages);
-            Assert.Contains("Session cache read exception", sessionLogMessages[0].State.ToString());
-            Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
+            var message = Assert.Single(sink.Writes);
+            Assert.Contains("Session cache read exception", message.State.ToString());
+            Assert.Equal(LogLevel.Error, message.LogLevel);
         }
 
         [Fact]
@@ -634,11 +632,9 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes;
-
-            Assert.Single(sessionLogMessages);
-            Assert.Contains("Session cache read exception", sessionLogMessages[0].State.ToString());
-            Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
+            var message = Assert.Single(sink.Writes);
+            Assert.Contains("Session cache read exception", message.State.ToString());
+            Assert.Equal(LogLevel.Error, message.LogLevel);
         }
 
         [Fact]
@@ -677,11 +673,9 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes;
-
-            Assert.Single(sessionLogMessages);
-            Assert.Contains("Loading the session timed out.", sessionLogMessages[0].State.ToString());
-            Assert.Equal(LogLevel.Warning, sessionLogMessages[0].LogLevel);
+            var message = Assert.Single(sink.Writes);
+            Assert.Contains("Loading the session timed out.", message.State.ToString());
+            Assert.Equal(LogLevel.Warning, message.LogLevel);
         }
 
         [Fact]
@@ -720,8 +714,7 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes;
-            Assert.Empty(sessionLogMessages);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -924,11 +917,9 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes;
-
-            Assert.Single(sessionLogMessages);
-            Assert.Contains("Error closing the session.", sessionLogMessages[0].State.ToString());
-            Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
+            var message = Assert.Single(sink.Writes);
+            Assert.Contains("Error closing the session.", message.State.ToString());
+            Assert.Equal(LogLevel.Error, message.LogLevel);
         }
 
         private class TestClock : ISystemClock
