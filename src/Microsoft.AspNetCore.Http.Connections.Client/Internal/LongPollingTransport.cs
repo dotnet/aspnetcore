@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     public partial class LongPollingTransport : ITransport
     {
-        private static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(5);
-
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private IDuplexPipe _application;
@@ -32,8 +30,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         public PipeWriter Output => _transport.Output;
 
-        internal TimeSpan ShutdownTimeout { get; set; }
-
         public LongPollingTransport(HttpClient httpClient)
             : this(httpClient, null)
         { }
@@ -42,7 +38,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             _httpClient = httpClient;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
-            ShutdownTimeout = DefaultShutdownTimeout;
         }
 
         public Task StartAsync(Uri url, TransferFormat transferFormat)
@@ -85,6 +80,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                 // Cancel the application so that ReadAsync yields
                 _application.Input.CancelPendingRead();
+
+                await sending;
             }
             else
             {
@@ -95,12 +92,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // This will also cause the poll to return.
                 await SendDeleteRequest(url);
 
-                // This timeout is only to ensure the poll is cleaned up despite a misbehaving server.
-                // It doesn't need to be configurable.
-                _transportCts.CancelAfter(ShutdownTimeout);
+                _transportCts.Cancel();
 
                 // Cancel any pending flush so that we can quit
                 _application.Output.CancelPendingFlush();
+
+                await receiving;
             }
         }
 
@@ -199,18 +196,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
         }
 
-        private async Task SendDeleteRequest(Uri pollUrl)
+        private async Task SendDeleteRequest(Uri url)
         {
             try
             {
-                Log.SendingDeleteRequest(_logger, pollUrl);
-                var response = await _httpClient.DeleteAsync(pollUrl);
+                Log.SendingDeleteRequest(_logger, url);
+                var response = await _httpClient.DeleteAsync(url);
                 response.EnsureSuccessStatusCode();
-                Log.DeleteRequestAccepted(_logger, pollUrl);
+                Log.DeleteRequestAccepted(_logger, url);
             }
             catch (Exception ex)
             {
-                Log.ErrorSendingDeleteRequest(_logger, pollUrl, ex);
+                Log.ErrorSendingDeleteRequest(_logger, url, ex);
             }
         }
     }

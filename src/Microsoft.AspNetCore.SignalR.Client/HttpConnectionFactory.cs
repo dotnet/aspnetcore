@@ -37,5 +37,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             await connection.StartAsync(transferFormat);
             return connection;
         }
+
+        public Task DisposeAsync(ConnectionContext connection)
+        {
+            return ((HttpConnection)connection).DisposeAsync();
+        }
     }
 }

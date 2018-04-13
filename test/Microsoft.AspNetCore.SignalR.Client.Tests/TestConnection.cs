@@ -58,8 +58,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application.Input.OnWriterCompleted((ex, _) =>
             {
                 Application.Output.Complete();
-
-                _ = DisposeAsync();
             }, 
             null);
         }

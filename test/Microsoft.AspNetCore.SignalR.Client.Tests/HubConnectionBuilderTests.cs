@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return Task.FromResult<ConnectionContext>(null);
             };
 
-            var serviceProvider = new HubConnectionBuilder().WithConnectionFactory(connectionFactory).Services.BuildServiceProvider();
+            var serviceProvider = new HubConnectionBuilder().WithConnectionFactory(connectionFactory, connection => Task.CompletedTask).Services.BuildServiceProvider();
 
             var factory = serviceProvider.GetService<IConnectionFactory>();
             Assert.NotNull(factory);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public void BuildCanOnlyBeCalledOnce()
         {
-            var builder = new HubConnectionBuilder().WithConnectionFactory(format => null);
+            var builder = new HubConnectionBuilder().WithConnectionFactory(format => null, connection => Task.CompletedTask);
 
             Assert.NotNull(builder.Build());
 

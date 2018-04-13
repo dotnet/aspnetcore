@@ -9,5 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public interface IConnectionFactory
     {
         Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat);
+
+        Task DisposeAsync(ConnectionContext connection);
     }
 }

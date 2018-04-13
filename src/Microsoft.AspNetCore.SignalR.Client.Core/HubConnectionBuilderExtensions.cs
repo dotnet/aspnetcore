@@ -13,13 +13,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {
     public static class HubConnectionBuilderExtensions
     {
-        public static IHubConnectionBuilder WithConnectionFactory(this IHubConnectionBuilder hubConnectionBuilder, Func<TransferFormat, Task<ConnectionContext>> connectionFactory)
+        public static IHubConnectionBuilder WithConnectionFactory(this IHubConnectionBuilder hubConnectionBuilder, 
+                                                                 Func<TransferFormat, Task<ConnectionContext>> connectionFactory,
+                                                                 Func<ConnectionContext, Task> disposeCallback)
         {
             if (connectionFactory == null)
             {
                 throw new ArgumentNullException(nameof(connectionFactory));
             }
-            hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(new DelegateConnectionFactory(connectionFactory));
+            hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(new DelegateConnectionFactory(connectionFactory, disposeCallback));
             return hubConnectionBuilder;
         }
 
@@ -38,15 +40,22 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private class DelegateConnectionFactory : IConnectionFactory
         {
             private readonly Func<TransferFormat, Task<ConnectionContext>> _connectionFactory;
+            private readonly Func<ConnectionContext, Task> _disposeCallback;
 
-            public DelegateConnectionFactory(Func<TransferFormat, Task<ConnectionContext>> connectionFactory)
+            public DelegateConnectionFactory(Func<TransferFormat, Task<ConnectionContext>> connectionFactory, Func<ConnectionContext, Task> disposeCallback)
             {
                 _connectionFactory = connectionFactory;
+                _disposeCallback = disposeCallback;
             }
 
             public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat)
             {
                 return _connectionFactory(transferFormat);
+            }
+
+            public Task DisposeAsync(ConnectionContext connection)
+            {
+                return _disposeCallback(connection);
             }
         }
     }

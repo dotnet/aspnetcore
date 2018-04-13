@@ -27,14 +27,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             private HubConnection CreateHubConnection(TestConnection testConnection)
             {
                 var builder = new HubConnectionBuilder();
-                builder.WithConnectionFactory(format => testConnection.StartAsync(format));
+                builder.WithConnectionFactory(format => testConnection.StartAsync(format), connection => ((TestConnection)connection).DisposeAsync());
                 return builder.Build();
             }
 
-            private HubConnection CreateHubConnection(Func<TransferFormat, Task<ConnectionContext>> connectionFactory)
+            private HubConnection CreateHubConnection(Func<TransferFormat, Task<ConnectionContext>> connectionFactory, Func<ConnectionContext, Task> disposeCallback)
             {
                 var builder = new HubConnectionBuilder();
-                builder.WithConnectionFactory(format => connectionFactory(format));
+                builder.WithConnectionFactory(format => connectionFactory(format), disposeCallback);
                 return builder.Build();
             }
 
@@ -86,7 +86,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return new TestConnection().StartAsync(format);
                 }
 
-                await AsyncUsing(CreateHubConnection(ConnectionFactory), async connection =>
+                Task DisposeAsync(ConnectionContext connection)
+                {
+                    return ((TestConnection)connection).DisposeAsync();
+                }
+
+                await AsyncUsing(CreateHubConnection(ConnectionFactory, DisposeAsync), async connection =>
                 {
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(1, createCount);
@@ -94,6 +99,41 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(2, createCount);
+                });
+            }
+
+            [Fact]
+            public async Task StartingDuringStopCreatesANewConnection()
+            {
+                // Set up StartAsync to wait on the syncPoint when starting
+                var createCount = 0;
+                var onDisposeForFirstConnection = SyncPoint.Create(out var syncPoint);
+                Task<ConnectionContext> ConnectionFactory(TransferFormat format)
+                {
+                    createCount += 1;
+                    return new TestConnection(onDispose: createCount == 1 ? onDisposeForFirstConnection : null).StartAsync(format);
+                }
+
+                Task DisposeAsync(ConnectionContext connection) => ((TestConnection)connection).DisposeAsync();
+
+                await AsyncUsing(CreateHubConnection(ConnectionFactory, DisposeAsync), async connection =>
+                {
+                    await connection.StartAsync().OrTimeout();
+                    Assert.Equal(1, createCount);
+
+                    var stopTask = connection.StopAsync().OrTimeout();
+
+                    // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
+                    await syncPoint.WaitForSyncPoint();
+
+                    // We should be able to start now, and StopAsync hasn't completed, nor will it complete while Starting
+                    Assert.False(stopTask.IsCompleted);
+                    await connection.StartAsync().OrTimeout();
+                    Assert.False(stopTask.IsCompleted);
+
+                    // When we release the sync point, the StopAsync task will finish
+                    syncPoint.Continue();
+                    await stopTask;
                 });
             }
 

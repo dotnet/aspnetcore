@@ -31,7 +31,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public static IHubConnectionBuilder WithEndPoint(this IHubConnectionBuilder builder, EndPoint endPoint)
         {
-            builder.WithConnectionFactory(format => new TcpConnection(endPoint).StartAsync());
+            builder.WithConnectionFactory(
+                format => new TcpConnection(endPoint).StartAsync(),
+                connection => ((TcpConnection)connection).DisposeAsync()
+            );
 
             return builder;
         }

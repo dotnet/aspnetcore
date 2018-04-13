@@ -46,6 +46,12 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
                 connection.Transport = _pipe;
                 return Task.FromResult<ConnectionContext>(connection);
+            },
+            connection =>
+            {
+                connection.Transport.Output.Complete();
+                connection.Transport.Input.Complete();
+                return Task.CompletedTask;
             });
 
             _hubConnection = hubConnectionBuilder.Build();
