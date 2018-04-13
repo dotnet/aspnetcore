@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -304,10 +305,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
-            Assert.Equal("The request is a preflight request.", sink.Writes[0].State.ToString());
-            Assert.Equal(logData.OriginLogMessage, sink.Writes[1].State.ToString());
-            Assert.Equal(logData.PolicyLogMessage, sink.Writes[2].State.ToString());
-            Assert.Equal(logData.FailureReason, sink.Writes[3].State.ToString());
+            var writeList = sink.Writes.ToList();
+            Assert.Equal("The request is a preflight request.", writeList[0].State.ToString());
+            Assert.Equal(logData.OriginLogMessage, writeList[1].State.ToString());
+            Assert.Equal(logData.PolicyLogMessage, writeList[2].State.ToString());
+            Assert.Equal(logData.FailureReason, writeList[3].State.ToString());
         }
 
         [Fact]
@@ -325,9 +327,10 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
-            Assert.Equal("The request is a preflight request.", sink.Writes[0].State.ToString());
-            Assert.Equal("The request has an origin header: 'http://allowed.example.com'.", sink.Writes[1].State.ToString());
-            Assert.Equal("Policy execution successful.", sink.Writes[2].State.ToString());
+            var writeList = sink.Writes.ToList();
+            Assert.Equal("The request is a preflight request.", writeList[0].State.ToString());
+            Assert.Equal("The request has an origin header: 'http://allowed.example.com'.", writeList[1].State.ToString());
+            Assert.Equal("Policy execution successful.", writeList[2].State.ToString());
         }
 
         [Fact]
@@ -345,8 +348,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
-            Assert.Equal("The request is a preflight request.", sink.Writes[0].State.ToString());
-            Assert.Equal("The request does not have an origin header.", sink.Writes[1].State.ToString());
+            var writeList = sink.Writes.ToList();
+            Assert.Equal("The request is a preflight request.", writeList[0].State.ToString());
+            Assert.Equal("The request does not have an origin header.", writeList[1].State.ToString());
         }
 
         [Fact]
@@ -363,9 +367,10 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
-            Assert.Equal("The request has an origin header: 'http://example.com'.", sink.Writes[0].State.ToString());
-            Assert.Equal("Policy execution failed.", sink.Writes[1].State.ToString());
-            Assert.Equal("Request origin http://example.com does not have permission to access the resource.", sink.Writes[2].State.ToString());
+            var writeList = sink.Writes.ToList();
+            Assert.Equal("The request has an origin header: 'http://example.com'.", writeList[0].State.ToString());
+            Assert.Equal("Policy execution failed.", writeList[1].State.ToString());
+            Assert.Equal("Request origin http://example.com does not have permission to access the resource.", writeList[2].State.ToString());
         }
 
         [Fact]
@@ -382,8 +387,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
-            Assert.Equal("The request has an origin header: 'http://allowed.example.com'.", sink.Writes[0].State.ToString());
-            Assert.Equal("Policy execution successful.", sink.Writes[1].State.ToString());            
+            var writeList = sink.Writes.ToList();
+            Assert.Equal("The request has an origin header: 'http://allowed.example.com'.", writeList[0].State.ToString());
+            Assert.Equal("Policy execution successful.", writeList[1].State.ToString());
         }
 
         [Fact]
