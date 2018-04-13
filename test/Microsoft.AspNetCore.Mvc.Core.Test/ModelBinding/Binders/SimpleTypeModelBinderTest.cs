@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.Equal(ModelBindingResult.Failed(), bindingContext.Result);
             Assert.Empty(bindingContext.ModelState);
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count());
         }
 
         [Theory]
@@ -283,7 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.Result.IsModelSet);
             Assert.Equal(42, bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count());
         }
 
         public static TheoryData<Type> BiggerNumericTypes

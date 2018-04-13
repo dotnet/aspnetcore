@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(expectedKey, modelState.Key);
             var error = Assert.Single(modelState.Value.Errors);
             Assert.Equal(attribute.FormatErrorMessage(expectedFieldName), error.ErrorMessage);
-            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal(4, sink.Writes.Count());
         }
 
         [Fact]

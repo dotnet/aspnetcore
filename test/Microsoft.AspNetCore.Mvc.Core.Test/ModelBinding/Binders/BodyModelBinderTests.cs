@@ -647,10 +647,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Act
             await binder.BindModelAsync(bindingContext);
 
+            var writeList = sink.Writes.ToList();
+
             // Assert
-            Assert.Equal($"Attempting to bind model of type '{typeof(Person)}' using the name 'someName' in request data ...", sink.Writes[0].State.ToString());
-            Assert.Equal($"Rejected input formatter '{typeof(TestInputFormatter)}' for content type 'application/json'.", sink.Writes[1].State.ToString());
-            Assert.Equal($"Selected input formatter '{typeof(TestInputFormatter)}' for content type 'application/json'.", sink.Writes[2].State.ToString());
+            Assert.Equal($"Attempting to bind model of type '{typeof(Person)}' using the name 'someName' in request data ...", writeList[0].State.ToString());
+            Assert.Equal($"Rejected input formatter '{typeof(TestInputFormatter)}' for content type 'application/json'.", writeList[1].State.ToString());
+            Assert.Equal($"Selected input formatter '{typeof(TestInputFormatter)}' for content type 'application/json'.", writeList[2].State.ToString());
         }
 
         [Fact]

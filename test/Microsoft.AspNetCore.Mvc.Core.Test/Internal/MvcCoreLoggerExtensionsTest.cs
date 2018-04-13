@@ -91,8 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             logger.AuthorizationFiltersExecutionPlan(filters);
 
             // Assert
-            Assert.Single(testSink.Writes);
-            var write = testSink.Writes[0];
+            var write = Assert.Single(testSink.Writes);
             Assert.Equal(
                 "Execution plan of authorization filters (in the following order): " +
                 $"{authFilter.GetType()}, {asyncAuthFilter.GetType()}, {orderedAuthFilter.GetType()} (Order: -100)",
@@ -138,8 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             logger.ResourceFiltersExecutionPlan(filters);
 
             // Assert
-            Assert.Single(testSink.Writes);
-            var write = testSink.Writes[0];
+            var write = Assert.Single(testSink.Writes);
             Assert.Equal(
                 "Execution plan of resource filters (in the following order): " +
                 $"{resourceFilter.GetType()}, {asyncResourceFilter.GetType()}, {orderedResourceFilter.GetType()} (Order: -100)",
@@ -185,8 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             logger.ActionFiltersExecutionPlan(filters);
 
             // Assert
-            Assert.Single(testSink.Writes);
-            var write = testSink.Writes[0];
+            var write = Assert.Single(testSink.Writes);
             Assert.Equal(
                 "Execution plan of action filters (in the following order): " +
                 $"{actionFilter.GetType()}, {asyncActionFilter.GetType()}, {orderedActionFilter.GetType()} (Order: -100)",
@@ -232,8 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             logger.ExceptionFiltersExecutionPlan(filters);
 
             // Assert
-            Assert.Single(testSink.Writes);
-            var write = testSink.Writes[0];
+            var write = Assert.Single(testSink.Writes);
             Assert.Equal(
                 "Execution plan of exception filters (in the following order): " +
                 $"{exceptionFilter.GetType()}, {asyncExceptionFilter.GetType()}, {orderedExceptionFilter.GetType()} (Order: -100)",
@@ -279,8 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             logger.ResultFiltersExecutionPlan(filters);
 
             // Assert
-            Assert.Single(testSink.Writes);
-            var write = testSink.Writes[0];
+            var write = Assert.Single(testSink.Writes);
             Assert.Equal(
                 "Execution plan of result filters (in the following order): " +
                 $"{resultFilter.GetType()}, {asyncResultFilter.GetType()}, {orderedResultFilter.GetType()} (Order: -100)",

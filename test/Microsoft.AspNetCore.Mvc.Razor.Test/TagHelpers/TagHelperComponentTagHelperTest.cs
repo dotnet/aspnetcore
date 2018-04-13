@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         [Fact]
         public void Init_InvokesComponentsInitInCorrectOrder()
         {
-            // Arrange            
+            // Arrange
             var tagHelperContext = new TagHelperContext(
                 "head",
                 allAttributes: new TagHelperAttributeList(
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         [Fact]
         public async void ProcessAsync_InvokesComponentsProcessAsyncInCorrectOrder()
         {
-            // Arrange            
+            // Arrange
             var tagHelperContext = new TagHelperContext(
                 "head",
                 allAttributes: new TagHelperAttributeList(
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         [Fact]
         public void Init_InvokesTagHelperComponentInit()
         {
-            // Arrange            
+            // Arrange
             var tagHelperContext = new TagHelperContext(
                 "head",
                 allAttributes: new TagHelperAttributeList(
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             // Act
             await testTagHelperComponentTagHelper.ProcessAsync(tagHelperContext, output);
 
-            // Assert           
+            // Assert
             Assert.Equal("Processed1", output.PostContent.GetContent());
         }
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             // Act
             await testTagHelperComponentTagHelper.ProcessAsync(tagHelperContext, output);
 
-            // Assert           
+            // Assert
             Assert.Equal("Processed0Processed1Processed2", output.PostContent.GetContent());
         }
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             testTagHelperComponentTagHelper.Init(tagHelperContext);
 
             // Assert
-            Assert.Equal($"Tag helper component '{typeof(TestTagHelperComponent)}' initialized.", sink.Writes[0].State.ToString(), StringComparer.Ordinal);
+            Assert.Equal($"Tag helper component '{typeof(TestTagHelperComponent)}' initialized.", sink.Writes.First().State.ToString(), StringComparer.Ordinal);
         }
 
         [Fact]
@@ -282,14 +282,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             // Act
             await testTagHelperComponentTagHelper.ProcessAsync(tagHelperContext, output);
 
-            // Assert           
-            Assert.Equal($"Tag helper component '{typeof(TestTagHelperComponent)}' processed.", sink.Writes[0].State.ToString(), StringComparer.Ordinal);
+            // Assert
+            Assert.Equal($"Tag helper component '{typeof(TestTagHelperComponent)}' processed.", sink.Writes.First().State.ToString(), StringComparer.Ordinal);
         }
 
         [Fact]
         public void Init_GetsTagHelperComponentPropertyActivator_FromRequestServices()
         {
-            // Arrange            
+            // Arrange
             var tagHelperContext = new TagHelperContext(
                 "head",
                 allAttributes: new TagHelperAttributeList(

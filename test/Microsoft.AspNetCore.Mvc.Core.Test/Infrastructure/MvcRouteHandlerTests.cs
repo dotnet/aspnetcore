@@ -45,8 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             Assert.Empty(sink.Scopes);
-            Assert.Single(sink.Writes);
-            Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
+            var write = Assert.Single(sink.Writes);
+            Assert.Equal(expectedMessage, write.State?.ToString());
         }
 
         private MvcRouteHandler CreateMvcRouteHandler(
