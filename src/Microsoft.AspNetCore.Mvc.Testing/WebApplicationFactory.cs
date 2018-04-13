@@ -95,7 +95,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 CreateServer,
                 CreateWebHostBuilder,
                 GetTestAssemblies,
-                CreateDefaultClient,
                 builder =>
                 {
                     _configuration(builder);
@@ -301,11 +300,20 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="handlers">A list of <see cref="DelegatingHandler"/> instances to set up on the
         /// <see cref="HttpClient"/>.</param>
         /// <returns>The <see cref="HttpClient"/>.</returns>
-        public virtual HttpClient CreateDefaultClient(params DelegatingHandler[] handlers)
+        public HttpClient CreateDefaultClient(params DelegatingHandler[] handlers) =>
+            CreateDefaultClient(new Uri("http://localhost"), handlers);
+
+        /// <summary>
+        /// Creates a new instance of an <see cref="HttpClient"/> that can be used to
+        /// send <see cref="HttpRequestMessage"/> to the server.
+        /// </summary>
+        /// <param name="baseAddress">The base address of the <see cref="HttpClient"/> instance.</param>
+        /// <param name="handlers">A list of <see cref="DelegatingHandler"/> instances to set up on the
+        /// <see cref="HttpClient"/>.</param>
+        /// <returns>The <see cref="HttpClient"/>.</returns>
+        public HttpClient CreateDefaultClient(Uri baseAddress, params DelegatingHandler[] handlers)
         {
             EnsureServer();
-
-            var baseAddress = new Uri("http://localhost");
             if (handlers == null || handlers.Length == 0)
             {
                 var client = _server.CreateClient();
@@ -332,22 +340,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
                 return client;
             }
-        }
-
-        /// <summary>
-        /// Creates a new instance of an <see cref="HttpClient"/> that can be used to
-        /// send <see cref="HttpRequestMessage"/> to the server.
-        /// </summary>
-        /// <param name="baseAddress">The base address of the <see cref="HttpClient"/> instance.</param>
-        /// <param name="handlers">A list of <see cref="DelegatingHandler"/> instances to set up on the
-        /// <see cref="HttpClient"/>.</param>
-        /// <returns>The <see cref="HttpClient"/>.</returns>
-        public HttpClient CreateDefaultClient(Uri baseAddress, params DelegatingHandler[] handlers)
-        {
-            var client = CreateDefaultClient(handlers);
-            client.BaseAddress = baseAddress;
-
-            return client;
         }
 
         /// <inheritdoc />
@@ -394,21 +386,18 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             private readonly Func<IWebHostBuilder, TestServer> _createServer;
             private readonly Func<IWebHostBuilder> _createWebHostBuilder;
             private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
-            private readonly Func<DelegatingHandler[], HttpClient> _createDefaultClient;
 
             public DelegatedWebApplicationFactory(
                 WebApplicationFactoryClientOptions options,
                 Func<IWebHostBuilder, TestServer> createServer,
                 Func<IWebHostBuilder> createWebHostBuilder,
                 Func<IEnumerable<Assembly>> getTestAssemblies,
-                Func<DelegatingHandler[], HttpClient> createClient,
                 Action<IWebHostBuilder> configureWebHost)
             {
                 ClientOptions = new WebApplicationFactoryClientOptions(options);
                 _createServer = createServer;
                 _createWebHostBuilder = createWebHostBuilder;
                 _getTestAssemblies = getTestAssemblies;
-                _createDefaultClient = createClient;
                 _configuration = configureWebHost;
             }
 
@@ -419,8 +408,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             protected override IEnumerable<Assembly> GetTestAssemblies() => _getTestAssemblies();
 
             protected override void ConfigureWebHost(IWebHostBuilder builder) => _configuration(builder);
-
-            public override HttpClient CreateDefaultClient(params DelegatingHandler[] handlers) => _createDefaultClient(handlers);
         }
     }
 }
