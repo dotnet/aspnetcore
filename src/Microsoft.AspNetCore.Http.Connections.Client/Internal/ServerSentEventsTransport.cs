@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private IDuplexPipe _transport;
         private IDuplexPipe _application;
 
-        public Task Running { get; private set; } = Task.CompletedTask;
+        internal Task Running { get; private set; } = Task.CompletedTask;
 
         public PipeReader Input => _transport.Input;
 

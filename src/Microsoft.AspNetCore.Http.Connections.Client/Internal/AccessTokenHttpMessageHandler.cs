@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public class AccessTokenHttpMessageHandler : DelegatingHandler
+    internal class AccessTokenHttpMessageHandler : DelegatingHandler
     {
         private readonly Func<Task<string>> _accessTokenProvider;
 
