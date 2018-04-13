@@ -39,6 +39,7 @@
 
       <ThirdPartyBinaries Include="
         $(UnsignedSharedFxPath)**\MsgPack.dll;
+        $(UnsignedSharedFxPath)**\MessagePack.dll;
         $(UnsignedSharedFxPath)**\newtonsoft*.dll;
         $(UnsignedSharedFxPath)**\remotion*.dll;
         $(UnsignedSharedFxPath)**\sqlitepclraw*.dll;
