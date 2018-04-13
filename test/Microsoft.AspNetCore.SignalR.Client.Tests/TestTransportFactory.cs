@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    public class TestTransportFactory : ITransportFactory
+    internal class TestTransportFactory : ITransportFactory
     {
         private readonly ITransport _transport;
 

@@ -112,6 +112,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _transportFactory = transportFactory;
         }
 
+        public async Task StartAsync()
+        {
+            await StartAsync(TransferFormat.Binary);
+        }
+
         public async Task StartAsync(TransferFormat transferFormat)
         {
             await StartAsyncCore(transferFormat).ForceAsync();
@@ -394,9 +399,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
 
                 // Apply the authorization header in a handler instead of a default header because it can change with each request
-                if (_httpConnectionOptions.AccessTokenFactory != null)
+                if (_httpConnectionOptions.AccessTokenProvider != null)
                 {
-                    httpMessageHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, _httpConnectionOptions.AccessTokenFactory);
+                    httpMessageHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, _httpConnectionOptions.AccessTokenProvider);
                 }
             }
 

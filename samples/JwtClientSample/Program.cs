@@ -35,7 +35,7 @@ namespace JwtClientSample
                 .WithUrl(ServerUrl + "/broadcast", options =>
                 {
                     options.Transports = transportType;
-                    options.AccessTokenFactory = () => _tokens[userId];
+                    options.AccessTokenProvider = () => _tokens[userId];
                 })
                 .Build();
 

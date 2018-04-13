@@ -6,9 +6,9 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Http.Connections.Client
+namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public static class Constants
+    internal static class Constants
     {
         public static readonly ProductInfoHeaderValue UserAgentHeader;
 

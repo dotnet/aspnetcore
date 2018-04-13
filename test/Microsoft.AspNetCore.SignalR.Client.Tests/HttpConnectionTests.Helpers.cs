@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 Transports = transportType ?? HttpTransportType.LongPolling,
                 HttpMessageHandlerFactory = (httpMessageHandler) => httpHandler ?? TestHttpMessageHandler.CreateDefault(),
-                AccessTokenFactory = accessTokenFactory,
+                AccessTokenProvider = accessTokenFactory,
             };
             if (url != null)
             {

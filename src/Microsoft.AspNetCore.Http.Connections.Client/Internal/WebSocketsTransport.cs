@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
                 }
 
-                if (httpConnectionOptions.AccessTokenFactory != null)
+                if (httpConnectionOptions.AccessTokenProvider != null)
                 {
-                    _accessTokenFactory = httpConnectionOptions.AccessTokenFactory;
+                    _accessTokenFactory = httpConnectionOptions.AccessTokenProvider;
                 }
 
                 httpConnectionOptions.WebSocketOptions?.Invoke(_webSocket.Options);

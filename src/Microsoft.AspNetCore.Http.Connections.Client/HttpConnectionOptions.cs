@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         public Uri Url { get; set; }
         public HttpTransportType Transports { get; set; }
-        public Func<Task<string>> AccessTokenFactory { get; set; }
+        public Func<Task<string>> AccessTokenProvider { get; set; }
         public TimeSpan CloseTimeout { get; set; } = TimeSpan.FromSeconds(5);
         public ICredentials Credentials { get; set; }
         public IWebProxy Proxy { get; set; }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// to configure the WebSocket when using the WebSockets transport.
         /// </summary>
         /// <remarks>
-        /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenFactory"/>
+        /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenProvider"/>
         /// has been applied.
         /// </remarks>
         public Action<ClientWebSocketOptions> WebSocketOptions { get; set; }
