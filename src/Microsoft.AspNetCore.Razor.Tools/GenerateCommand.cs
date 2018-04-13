@@ -49,6 +49,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         protected override Task<int> ExecuteCoreAsync()
         {
+            if (!Parent.Checker.Check(ExtensionFilePaths.Values))
+            {
+                Error.WriteLine($"Extensions could not be loaded. See output for details.");
+                return Task.FromResult(ExitCodeFailure);
+            }
+
             // Loading all of the extensions should succeed as the dependency checker will have already
             // loaded them.
             var extensions = new RazorExtension[ExtensionNames.Values.Count];
@@ -125,12 +131,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
             }
 
-            if (!Parent.Checker.Check(ExtensionFilePaths.Values))
-            {
-                Error.WriteLine($"Extensions could not be loaded. See output for details.");
-                return false;
-            }
-
             return true;
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
             }
 
-            return success ? 0 : -1;
+            return success ? ExitCodeSuccess : ExitCodeFailureRazorError;
         }
 
         private VirtualRazorProjectFileSystem GetVirtualRazorProjectSystem(SourceItem[] inputItems)

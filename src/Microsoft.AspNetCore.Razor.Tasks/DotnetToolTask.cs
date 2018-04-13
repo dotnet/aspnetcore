@@ -161,11 +161,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                     if (result == 0)
                     {
+                        // Server execution succeeded.
                         Log.LogMessage(StandardOutputLoggingImportance, $"Server execution completed with return code {result}.");
                         return true;
                     }
-                    else
+                    else if (result == 2)
                     {
+                        // Server execution completed with a legit error. No need to fallback to cli execution.
                         Log.LogMessage(StandardOutputLoggingImportance, $"Server execution completed with return code {result}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");
 
                         if (LogStandardErrorAsError)
@@ -179,9 +181,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                         return true;
                     }
+                    else
+                    {
+                        // Server execution completed with an error but we still want to fallback to cli execution.
+                        Log.LogMessage(StandardOutputLoggingImportance, $"Server execution completed with return code {result}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");
+                    }
                 }
                 else
                 {
+                    // Server execution failed. Fallback to cli execution.
                     Log.LogMessage(
                         StandardOutputLoggingImportance,
                         $"Server execution failed with response {response.Type}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");

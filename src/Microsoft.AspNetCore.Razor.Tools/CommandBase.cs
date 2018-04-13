@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal abstract class CommandBase : CommandLineApplication
     {
+        public const int ExitCodeSuccess = 0;
+        public const int ExitCodeFailure = 1;
+        public const int ExitCodeFailureRazorError = 2;
+
         protected CommandBase(Application parent, string name)
             : base(throwOnUnexpectedArg: true)
         {
@@ -46,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             if (!ValidateArguments())
             {
                 ShowHelp();
-                return 1;
+                return ExitCodeFailureRazorError;
             }
 
             return await ExecuteCoreAsync();

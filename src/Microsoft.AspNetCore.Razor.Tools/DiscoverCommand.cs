@@ -95,17 +95,17 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
             }
 
-            if (!Parent.Checker.Check(ExtensionFilePaths.Values))
-            {
-                Error.WriteLine($"Extenions could not be loaded. See output for details.");
-                return false;
-            }
-
             return true;
         }
 
         protected override Task<int> ExecuteCoreAsync()
         {
+            if (!Parent.Checker.Check(ExtensionFilePaths.Values))
+            {
+                Error.WriteLine($"Extenions could not be loaded. See output for details.");
+                return Task.FromResult(ExitCodeFailure);
+            }
+
             // Loading all of the extensions should succeed as the dependency checker will have already
             // loaded them.
             var extensions = new RazorExtension[ExtensionNames.Values.Count];
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
             }
 
-            return 0;
+            return ExitCodeSuccess;
         }
 
         private static byte[] Hash(string path)
