@@ -40,7 +40,7 @@ namespace Company.WebApplication1
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Error");
 #if (!NoHttps)
                 app.UseHsts();
             }
