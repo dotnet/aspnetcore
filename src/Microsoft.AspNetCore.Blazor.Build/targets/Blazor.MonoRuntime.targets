@@ -236,6 +236,9 @@
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.index.cache -->
       <BlazorBuildIndexInputsCache>$(BlazorIntermediateOutputPath)inputs.index.cache</BlazorBuildIndexInputsCache>
 
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/embedded.resources.txt -->
+      <BlazorEmbeddedResourcesConfigFilePath>$(BlazorIntermediateOutputPath)embedded.resources.txt</BlazorEmbeddedResourcesConfigFilePath>
+
     </PropertyGroup>
 
     <PropertyGroup Label="Final output paths">
@@ -597,9 +600,16 @@
     </ItemGroup>
     <PropertyGroup>
       <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
+      <_EmbeddedResourcesArg Condition="'@(_UnlinkedAppReferencesPaths)' != ''">--embedded-resources &quot;$(BlazorEmbeddedResourcesConfigFilePath)&quot;</_EmbeddedResourcesArg>
     </PropertyGroup>
 
-    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') @(_UnlinkedAppReferencesPaths->'--embedded-resources-source &quot;%(Identity)&quot;', ' ') $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
+    <WriteLinesToFile
+      Condition="'@(_UnlinkedAppReferencesPaths)' != ''"
+      File="$(BlazorEmbeddedResourcesConfigFilePath)"
+      Lines="@(_UnlinkedAppReferencesPaths)"
+      Overwrite="true" />
+
+    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
 
     <ItemGroup Condition="Exists('$(BlazorIndexHtmlOutputPath)')">
       <_BlazorIndex Include="$(BlazorIndexHtmlOutputPath)" />
