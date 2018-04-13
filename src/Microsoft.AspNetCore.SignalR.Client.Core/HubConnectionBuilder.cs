@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;

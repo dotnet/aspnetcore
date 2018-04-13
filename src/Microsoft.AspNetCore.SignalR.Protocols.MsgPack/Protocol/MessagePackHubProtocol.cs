@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
+namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     public class MessagePackHubProtocol : IHubProtocol
     {

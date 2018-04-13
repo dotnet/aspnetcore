@@ -6,16 +6,16 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
+namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     public class JsonHubProtocol : IHubProtocol
     {

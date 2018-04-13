@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR

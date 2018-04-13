@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 

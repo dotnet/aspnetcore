@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR

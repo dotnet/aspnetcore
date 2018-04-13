@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
+namespace Microsoft.AspNetCore.SignalR
 {
     public interface IInvocationBinder
     {

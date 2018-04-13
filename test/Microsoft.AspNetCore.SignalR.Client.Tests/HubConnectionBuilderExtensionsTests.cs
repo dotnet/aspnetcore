@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -3,7 +3,7 @@
 
 using System;
 using System.Runtime.ExceptionServices;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests

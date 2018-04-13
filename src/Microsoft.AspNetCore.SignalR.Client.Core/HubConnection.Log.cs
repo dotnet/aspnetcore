@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client

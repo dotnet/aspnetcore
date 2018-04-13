@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks

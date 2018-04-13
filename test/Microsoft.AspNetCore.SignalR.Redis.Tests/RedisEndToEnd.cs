@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;

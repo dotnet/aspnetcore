@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Internal

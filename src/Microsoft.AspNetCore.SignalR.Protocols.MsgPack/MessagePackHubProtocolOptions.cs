@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using MessagePack;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR
 {

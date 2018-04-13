@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection

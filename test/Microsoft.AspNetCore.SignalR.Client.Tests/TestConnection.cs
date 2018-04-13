@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests

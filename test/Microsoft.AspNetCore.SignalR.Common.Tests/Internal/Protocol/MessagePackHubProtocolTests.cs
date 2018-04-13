@@ -9,11 +9,11 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 {
+    using Microsoft.AspNetCore.SignalR.Protocol;
     using static HubMessageHelpers;
 
     public class MessagePackHubProtocolTests

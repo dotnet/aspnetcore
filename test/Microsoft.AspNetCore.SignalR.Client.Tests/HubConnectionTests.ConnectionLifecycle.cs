@@ -4,8 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json.Linq;
 using Xunit;
 

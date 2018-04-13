@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
+namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     public abstract class HubInvocationMessage : HubMessage
     {

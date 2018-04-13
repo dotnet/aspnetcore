@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Redis.Internal;
 using Xunit;
 

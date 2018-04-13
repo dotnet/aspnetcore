@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;

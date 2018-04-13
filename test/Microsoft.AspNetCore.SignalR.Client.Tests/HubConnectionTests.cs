@@ -3,12 +3,9 @@
 
 using System;
 using System.Buffers;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Moq;
 using Xunit;
 

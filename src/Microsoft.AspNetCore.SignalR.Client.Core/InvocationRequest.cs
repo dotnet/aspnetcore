@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client

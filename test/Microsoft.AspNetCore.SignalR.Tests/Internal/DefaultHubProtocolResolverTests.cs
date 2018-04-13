@@ -4,13 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests

@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
