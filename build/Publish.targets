@@ -151,7 +151,7 @@
     <ItemGroup>
       <PackageToPublish Include="%(_PackageArtifactInfoWithCategory.ArtifactPath)" Category="%(_PackageArtifactInfoWithCategory.Category)" />
       <PackageToPublish Include="%(_PackageArtifactInfo.ArtifactPath)" Category="%(_PackageArtifactInfo.Category)" Condition="'%(_PackageArtifactInfo.Category)' != ''" />
-      <PackageToPublish Include="%(_SymbolsPackageArtifactInfo.ArtifactPath)" Category="symbols" />
+      <PackageToPublish Include="%(_SymbolsPackageArtifactInfo.ArtifactPath)" Category="symbols" IsSymbolsPackage="true" />
     </ItemGroup>
 
     <ItemGroup>
@@ -174,19 +174,20 @@
           Condition="'$(PublishToMyget)' == 'true'">
 
     <Error Text="Missing required property: PublishMyGetFeedUrl"  Condition=" '$(PublishMyGetFeedUrl)' == '' "/>
+    <Error Text="Missing required property: PublishMyGetSymbolsFeedUrl"  Condition=" '$(PublishMyGetSymbolsFeedUrl)' == '' "/>
     <Error Text="Missing required property: PublishMyGetNpmRegistryUrl"  Condition=" '$(PublishMyGetNpmRegistryUrl)' == '' "/>
     <Error Text="Missing required property: PublishMyGetFeedKey"  Condition=" '$(PublishMyGetFeedKey)' == '' "/>
 
-    <!-- Contains the super set of packages that we'd like to publish to MyGet and Azure blob -->
-    <ItemGroup>
-      <PackageToPublishToMyGet Include="@(PackageToPublish)" />
-    </ItemGroup>
+    <Error Message="No packages found to publish" Condition="@(PackageToPublish->Count()) == 0" />
 
-    <Error Message="No packages found to publish" Condition="@(PackageToPublishToMyGet->Count()) == 0" />
-
-    <PushNuGetPackages
-      Packages="@(PackageToPublishToMyGet)"
+    <PushNuGetPackages Condition="'%(PackageToPublish.IsSymbolsPackage)' != 'true' AND @(PackageToPublish->Count()) != 0"
+      Packages="@(PackageToPublish)"
       Feed="$(PublishMyGetFeedUrl)"
+      ApiKey="$(PublishMyGetFeedKey)" />
+
+    <PushNuGetPackages Condition="'%(PackageToPublish.IsSymbolsPackage)' == 'true' AND @(PackageToPublish->Count()) != 0"
+      Packages="@(PackageToPublish)"
+      Feed="$(PublishMyGetSymbolsFeedUrl)"
       ApiKey="$(PublishMyGetFeedKey)" />
 
     <PropertyGroup>
