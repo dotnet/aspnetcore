@@ -48,5 +48,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 config.Filters.Add(new AuthorizeFilter(policy));
             })
             .Services;
+
+        public static IServiceCollection SetupMaxFailedAccessAttempts(this IServiceCollection services) =>
+            services.Configure<IdentityOptions>(o => o.Lockout.MaxFailedAccessAttempts = 0);
     }
 }

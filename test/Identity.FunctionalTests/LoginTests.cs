@@ -228,5 +228,60 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await UserStories.ResetPasswordAsync(resetPasswordClient, email, userName, newPassword);
             await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
         }
+
+        [Fact]
+        public async Task CanResetPassword_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            var emailSender = new ContosoEmailSender();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupGlobalAuthorizeFilter().SetupTestEmailSender(emailSender);
+
+            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var resetPasswordClient = server.CreateClient();
+            var newClient = server.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+            var newPassword = $"!New.Password1$";
+
+            await UserStories.RegisterNewUserAsync(client, userName, password);
+            var registrationEmail = Assert.Single(emailSender.SentEmails);
+            await UserStories.ConfirmEmailAsync(registrationEmail, client);
+
+            // Act & Assert
+            await UserStories.ForgotPasswordAsync(resetPasswordClient, userName);
+            Assert.Equal(2, emailSender.SentEmails.Count);
+            var email = emailSender.SentEmails[1];
+            await UserStories.ResetPasswordAsync(resetPasswordClient, email, userName, newPassword);
+            await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
+        }
+
+        [Fact]
+        public async Task UserLockedOut_AfterMaxFailedAccessAttempts_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            var emailSender = new ContosoEmailSender();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupGlobalAuthorizeFilter().SetupMaxFailedAccessAttempts().SetupTestEmailSender(emailSender);
+
+            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+            var wrongPassword = $"!Wrong.Password1$";
+
+            await UserStories.RegisterNewUserAsync(client, userName, password);
+            var registrationEmail = Assert.Single(emailSender.SentEmails);
+            await UserStories.ConfirmEmailAsync(registrationEmail, client);
+
+            // Act & Assert
+            await UserStories.LockoutExistingUserAsync(newClient, userName, wrongPassword);
+        }
     }
 }

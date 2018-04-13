@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
@@ -16,7 +16,7 @@
     <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
     <None Remove="wwwroot/**/.bower.json" />
     <None Remove="wwwroot/**/LICENSE*" />
-    <None Include="THIRD-PARTY-NOTICES" Pack="true" />
+    <None Include="THIRD-PARTY-NOTICES" Pack="true" PackagePath="/"/>
   </ItemGroup>
     
   <ItemGroup>

@@ -64,6 +64,18 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
                 Context.WithAuthenticatedUser());
         }
 
+        public async Task<DefaultUIPage> LockoutUserAsync(string userName, string password)
+        {
+            var loginAttempt = await SendLoginForm(userName, password);
+
+            var lockedOut = ResponseAssert.IsRedirect(loginAttempt);
+            Assert.Equal("/Identity/Account/Lockout", lockedOut.ToString());
+
+            var lockedOutResponse = await Client.GetAsync(lockedOut);
+            var lockout = await ResponseAssert.IsHtmlDocumentAsync(lockedOutResponse);
+            return new DefaultUIPage(Client, lockout, Context);
+        }
+
         private async Task<HttpResponseMessage> SendLoginForm(string userName, string password)
         {
             return await Client.SendAsync(_loginForm, new Dictionary<string, string>()
