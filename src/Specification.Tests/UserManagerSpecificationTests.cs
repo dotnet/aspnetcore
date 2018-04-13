@@ -1885,13 +1885,18 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            const string error = "No IUserTokenProvider named 'bogus' is registered.";
-            var ex = await
-                Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.GenerateTwoFactorTokenAsync(user, "bogus"));
+            var error = $"No IUserTwoFactorTokenProvider<{nameof(TUser)}> named 'bogus' is registered.";
+            var ex = await Assert.ThrowsAsync<NotSupportedException>(
+                () => manager.GenerateTwoFactorTokenAsync(user, "bogus"));
             Assert.Equal(error, ex.Message);
             ex = await Assert.ThrowsAsync<NotSupportedException>(
                 () => manager.VerifyTwoFactorTokenAsync(user, "bogus", "bogus"));
+            Assert.Equal(error, ex.Message);
+            ex = await Assert.ThrowsAsync<NotSupportedException>(
+                () => manager.VerifyUserTokenAsync(user, "bogus", "bogus", "bogus"));
+            Assert.Equal(error, ex.Message);
+            ex = await Assert.ThrowsAsync<NotSupportedException>(
+                () => manager.GenerateUserTokenAsync(user, "bogus", "bogus"));
             Assert.Equal(error, ex.Message);
         }
 

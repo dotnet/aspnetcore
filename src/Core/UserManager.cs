@@ -1702,7 +1702,7 @@ namespace Microsoft.AspNetCore.Identity
 
             if (!_tokenProviders.ContainsKey(tokenProvider))
             {
-                throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Resources.NoTokenProvider, tokenProvider));
+                throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
             }
             // Make sure the token is valid
             var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user);
@@ -1737,7 +1737,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (!_tokenProviders.ContainsKey(tokenProvider))
             {
-                throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Resources.NoTokenProvider, tokenProvider));
+                throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
             }
 
             return _tokenProviders[tokenProvider].GenerateAsync(purpose, this, user);
@@ -1804,8 +1804,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (!_tokenProviders.ContainsKey(tokenProvider))
             {
-                throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
-                    Resources.NoTokenProvider, tokenProvider));
+                throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
             }
 
             // Make sure the token is valid
@@ -1835,8 +1834,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (!_tokenProviders.ContainsKey(tokenProvider))
             {
-                throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
-                    Resources.NoTokenProvider, tokenProvider));
+                throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
             }
 
             return _tokenProviders[tokenProvider].GenerateAsync("TwoFactor", this, user);

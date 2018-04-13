@@ -207,7 +207,7 @@ namespace Microsoft.Extensions.Identity.Core
             => GetString("MustCallAddIdentity");
 
         /// <summary>
-        /// No IUserTokenProvider named '{0}' is registered.
+        /// No IUserTwoFactorTokenProvider&lt;{0}&gt; named '{1}' is registered.
         /// </summary>
         internal static string NoTokenProvider
         {
@@ -215,10 +215,10 @@ namespace Microsoft.Extensions.Identity.Core
         }
 
         /// <summary>
-        /// No IUserTokenProvider named '{0}' is registered.
+        /// No IUserTwoFactorTokenProvider&lt;{0}&gt; named '{1}' is registered.
         /// </summary>
-        internal static string FormatNoTokenProvider(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("NoTokenProvider"), p0);
+        internal static string FormatNoTokenProvider(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("NoTokenProvider"), p0, p1);
 
         /// <summary>
         /// User security stamp cannot be null.
