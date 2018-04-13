@@ -243,22 +243,13 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// array as arguments.
         /// </remarks>
         /// <returns>A <see cref="IWebHostBuilder"/> instance.</returns>
-        protected virtual IWebHostBuilder CreateWebHostBuilder()
-        {
-            var builder = WebHostBuilderFactory.CreateFromTypesAssemblyEntryPoint<TEntryPoint>(Array.Empty<string>());
-            if (builder == null)
-            {
-                throw new InvalidOperationException(Resources.FormatMissingCreateWebHostBuilderMethod(
-                    nameof(IWebHostBuilder),
-                    typeof(TEntryPoint).Assembly.EntryPoint.DeclaringType.FullName,
-                    typeof(WebApplicationFactory<TEntryPoint>).Name,
-                    nameof(CreateWebHostBuilder)));
-            }
-            else
-            {
-                return builder.UseEnvironment("Development");
-            }
-        }
+        protected virtual IWebHostBuilder CreateWebHostBuilder() =>
+            WebHostBuilderFactory.CreateFromTypesAssemblyEntryPoint<TEntryPoint>(Array.Empty<string>()) ??
+            throw new InvalidOperationException(Resources.FormatMissingCreateWebHostBuilderMethod(
+                nameof(IWebHostBuilder),
+                typeof(TEntryPoint).Assembly.EntryPoint.DeclaringType.FullName,
+                typeof(WebApplicationFactory<TEntryPoint>).Name,
+                nameof(CreateWebHostBuilder)));
 
         /// <summary>
         /// Creates the <see cref="TestServer"/> with the bootstrapped application in <paramref name="builder"/>.
