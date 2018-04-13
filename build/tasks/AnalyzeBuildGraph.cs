@@ -130,7 +130,10 @@ namespace RepoTasks
                             message: $"Undefined external dependency on {dependency.Key}/{dependency.Value.Version}");
                     }
 
-                    externalVersions[idx].IsReferenced = true;
+                    if (idx >= 0)
+                    {
+                        externalVersions[idx].IsReferenced = true;
+                    }
                     continue;
                 }
 
