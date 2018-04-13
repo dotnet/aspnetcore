@@ -164,11 +164,11 @@
     <!-- SignalR Redis support is not part of the .App meta-package -->
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="ship" AllMetapackage="true" />
 
-    <!-- SignalR Client and MsgPack Protocol support are not part of any meta-packages -->
+    <!-- SignalR Client and MessagePack Protocol support are not part of any meta-packages -->
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Client" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MsgPack" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Category="ship" />
 
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
