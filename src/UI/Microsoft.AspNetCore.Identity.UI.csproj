@@ -41,6 +41,11 @@
       <_Parameter1>BuildNumber</_Parameter1>
       <_Parameter2>$(BuildNumber)</_Parameter2>
     </RazorAssemblyAttribute>
+
+    <RazorTargetAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+      <_Parameter1>BuildNumber</_Parameter1>
+      <_Parameter2>$(BuildNumber)</_Parameter2>
+    </RazorTargetAssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
