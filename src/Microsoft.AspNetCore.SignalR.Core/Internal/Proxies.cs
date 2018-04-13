@@ -4,9 +4,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public class UserProxy<THub> : IClientProxy where THub : Hub
+    internal class UserProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _userId;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class MultipleUserProxy<THub> : IClientProxy where THub : Hub
+    internal class MultipleUserProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly IReadOnlyList<string> _userIds;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class GroupProxy<THub> : IClientProxy where THub : Hub
+    internal class GroupProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _groupName;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class MultipleGroupProxy<THub> : IClientProxy where THub : Hub
+    internal class MultipleGroupProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IReadOnlyList<string> _groupNames;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class GroupExceptProxy<THub> : IClientProxy where THub : Hub
+    internal class GroupExceptProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _groupName;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class AllClientProxy<THub> : IClientProxy where THub : Hub
+    internal class AllClientProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
 
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
+    internal class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IReadOnlyList<string> _excludedIds;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class SingleClientProxy<THub> : IClientProxy where THub : Hub
+    internal class SingleClientProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly string _connectionId;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class MultipleClientProxy<THub> : IClientProxy where THub : Hub
+    internal class MultipleClientProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IReadOnlyList<string> _connectionIds;
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class GroupManager<THub> : IGroupManager where THub : Hub
+    internal class GroupManager<THub> : IGroupManager where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
 
