@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.SignalR.Internal;
-
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public class HubContext<THub> : IHubContext<THub> where THub : Hub
+    internal class HubContext<THub> : IHubContext<THub> where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IHubClients _clients;

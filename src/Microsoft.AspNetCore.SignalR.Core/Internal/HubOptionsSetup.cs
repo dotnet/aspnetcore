@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public class HubOptionsSetup : IConfigureOptions<HubOptions>
     {

@@ -7,9 +7,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<string, HubConnectionContext>>
+    internal class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<string, HubConnectionContext>>
     {
         private readonly ConcurrentDictionary<string, GroupConnectionList> _groups =
             new ConcurrentDictionary<string, GroupConnectionList>(StringComparer.Ordinal);

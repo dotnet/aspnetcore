@@ -3,9 +3,9 @@
 
 using System.Dynamic;
 
-namespace Microsoft.AspNetCore.SignalR
-{ 
-    public class DynamicClientProxy : DynamicObject
+namespace Microsoft.AspNetCore.SignalR.Internal
+{
+    internal class DynamicClientProxy : DynamicObject
     {
         private readonly IClientProxy _clientProxy;
 

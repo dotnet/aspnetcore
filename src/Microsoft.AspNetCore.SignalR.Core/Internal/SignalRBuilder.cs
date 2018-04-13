@@ -1,15 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public class SignalRServerBuilder : ISignalRServerBuilder
+    internal class SignalRServerBuilder : ISignalRServerBuilder
     {
         public SignalRServerBuilder(IServiceCollection services)
         {
