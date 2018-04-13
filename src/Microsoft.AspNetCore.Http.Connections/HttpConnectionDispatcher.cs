@@ -516,8 +516,9 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Complete the receiving end of the pipe
             connection.Application.Output.Complete();
 
-            // Dispose the connection gracefully, but don't wait for it
-            _ = _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+            // Dispose the connection gracefully, but don't wait for it. We assign it here so we can wait in tests
+            connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+
             context.Response.StatusCode = StatusCodes.Status202Accepted;
             context.Response.ContentType = "text/plain";
         }

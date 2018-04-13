@@ -1709,13 +1709,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
 
+                // Verify the response from the DELETE request
+                Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
+                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+
                 // Verify that everything shuts down
                 await connection.ApplicationTask.OrTimeout();
                 await connection.TransportTask.OrTimeout();
 
-                // Verify the response from the DELETE request
-                Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
-                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+                Assert.NotNull(connection.DisposeAndRemoveTask);
+
+                await connection.DisposeAndRemoveTask.OrTimeout();
 
                 // Verify the connection was removed from the manager
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out _));

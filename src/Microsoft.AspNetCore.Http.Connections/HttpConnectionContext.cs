@@ -79,6 +79,9 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         public SemaphoreSlim Lock { get; } = new SemaphoreSlim(1, 1);
 
+        // Used for testing only
+        internal Task DisposeAndRemoveTask { get; set; }
+
         public Task TransportTask { get; set; }
 
         public Task ApplicationTask { get; set; }
