@@ -25,6 +25,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// </summary>
     public abstract class BlazorComponent : IComponent, IHandleEvent
     {
+        /// <summary>
+        /// Specifies the name of the <see cref="RenderTree"/>-building method.
+        /// </summary>
         public const string BuildRenderTreeMethodName = nameof(BuildRenderTree);
 
         private readonly RenderFragment _renderFragment;
@@ -33,6 +36,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
 
+        /// <summary>
+        /// Constructs an instance of <see cref="BlazorComponent"/>.
+        /// </summary>
         public BlazorComponent()
         {
             _renderFragment = BuildRenderTree;

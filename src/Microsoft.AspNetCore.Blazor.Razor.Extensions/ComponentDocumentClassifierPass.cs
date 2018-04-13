@@ -11,32 +11,48 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
+    /// <summary>
+    /// A <see cref="DocumentClassifierPassBase"/> that recognizes Blazor components.
+    /// </summary>
     public class ComponentDocumentClassifierPass : DocumentClassifierPassBase, IRazorDocumentClassifierPass
     {
+        /// <summary>
+        /// The component document kind.
+        /// </summary>
         public static readonly string ComponentDocumentKind = "Blazor.Component";
 
         private static readonly char[] PathSeparators = new char[] { '/', '\\' };
 
+        /// <summary>
+        /// The base namespace.
+        /// </summary>
         // This is a fallback value and will only be used if we can't compute
         // a reasonable namespace.
         public string BaseNamespace { get; set; } = "__BlazorGenerated";
 
-        // Set to true in the IDE so we can generated mangled class names. This is needed
-        // to avoid conflicts between generated design-time code and the code in the editor.
-        //
-        // A better workaround for this would be to create a singlefilegenerator that overrides
-        // the codegen process when a document is open, but this is more involved, so hacking
-        // it for now.
+        /// <summary>
+        /// Gets or sets whether to mangle class names.
+        /// 
+        /// Set to true in the IDE so we can generated mangled class names. This is needed
+        /// to avoid conflicts between generated design-time code and the code in the editor.
+        ///
+        /// A better workaround for this would be to create a singlefilegenerator that overrides
+        /// the codegen process when a document is open, but this is more involved, so hacking
+        /// it for now.
+        /// </summary>
         public bool MangleClassNames { get; set; } = false;
 
+        /// <inheritdoc />
         protected override string DocumentKind => ComponentDocumentKind;
 
+        /// <inheritdoc />
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             // Treat everything as a component by default if Blazor is part of the configuration.
             return true;
         }
 
+        /// <inheritdoc />
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument, 
             NamespaceDeclarationIntermediateNode @namespace, 
@@ -145,6 +161,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             documentNode.Target = new BlazorCodeTarget(documentNode.Options, _targetExtensions);
         }
 
+        /// <inheritdoc />
         protected override void OnInitialized()
         {
             base.OnInitialized();

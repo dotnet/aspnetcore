@@ -12,11 +12,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     public class RazorCompilerException : Exception
     {
+        /// <summary>
+        /// Constructs an instance of <see cref="RazorCompilerException"/>.
+        /// </summary>
+        /// <param name="diagnostic"></param>
         public RazorCompilerException(RazorDiagnostic diagnostic)
         {
             Diagnostic = diagnostic;
         }
 
+        /// <summary>
+        /// Gets the diagnostic value.
+        /// </summary>
         public RazorDiagnostic Diagnostic { get; }
     }
 }

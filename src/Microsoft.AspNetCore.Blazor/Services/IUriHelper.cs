@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// Converts a relative URI into an absolute one (by resolving it
         /// relative to the current absolute URI).
         /// </summary>
-        /// <param name="relativeUri">The relative URI.</param>
+        /// <param name="href">The relative URI.</param>
         /// <returns>The absolute URI.</returns>
         Uri ToAbsoluteUri(string href);
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// converts an absolute URI into one relative to the base URI prefix.
         /// </summary>
         /// <param name="baseUriPrefix">The base URI prefix (e.g., previously returned by <see cref="GetBaseUriPrefix"/>).</param>
-        /// <param name="absoluteUri">An absolute URI that is within the space of the base URI prefix.</param>
+        /// <param name="locationAbsolute">An absolute URI that is within the space of the base URI prefix.</param>
         /// <returns>A relative URI path.</returns>
         string ToBaseRelativePath(string baseUriPrefix, string locationAbsolute);
 

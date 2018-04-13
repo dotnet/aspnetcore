@@ -5,9 +5,16 @@ using System;
 
 namespace Microsoft.AspNetCore.Blazor.Components
 {
+    /// <summary>
+    /// Indicates that the associated component should match the specified route template pattern.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class RouteAttribute : Attribute
     {
+        /// <summary>
+        /// Constructs an instance of <see cref="RouteAttribute"/>.
+        /// </summary>
+        /// <param name="template">The route template.</param>
         public RouteAttribute(string template)
         {
             if (template == null)
@@ -18,6 +25,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
             Template = template;
         }
 
+        /// <summary>
+        /// Gets the route template.
+        /// </summary>
         public string Template { get; }
     }
 }

@@ -29,6 +29,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
         static IDictionary<int, TaskCompletionSource<HttpResponseMessage>> _pendingRequests
             = new Dictionary<int, TaskCompletionSource<HttpResponseMessage>>();
 
+        /// <summary>
+        /// The name of a well-known property that can be added to <see cref="HttpRequestMessage.Properties"/>
+        /// to control the arguments passed to the underlying JavaScript <code>fetch</code> API.
+        /// </summary>
         public const string FetchArgs = "BrowserHttpMessageHandler.FetchArgs";
 
         /// <inheritdoc />

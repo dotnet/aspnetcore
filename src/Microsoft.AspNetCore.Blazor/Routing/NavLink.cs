@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             _renderHandle.Render(Render);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             // To avoid leaking memory, it's important to detach any event handlers in Dispose()

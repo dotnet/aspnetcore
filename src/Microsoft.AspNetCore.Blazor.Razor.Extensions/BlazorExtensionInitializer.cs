@@ -3,16 +3,24 @@
 
 using System;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
+    /// <summary>
+    /// Initializes the Blazor extension.
+    /// </summary>
     public class BlazorExtensionInitializer : RazorExtensionInitializer
     {
+        /// <summary>
+        /// Specifies the declaration configuration.
+        /// </summary>
         public static readonly RazorConfiguration DeclarationConfiguration;
 
+        /// <summary>
+        /// Specifies the default configuration.
+        /// </summary>
         public static readonly RazorConfiguration DefaultConfiguration;
 
         static BlazorExtensionInitializer()
@@ -29,6 +37,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 Array.Empty<RazorExtension>());
         }
 
+        /// <summary>
+        /// Registers the Blazor extension.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
         public static void Register(RazorProjectEngineBuilder builder)
         {
             if (builder == null)
@@ -71,6 +83,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
+        /// <summary>
+        /// Initializes the Blazor extension.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
         public override void Initialize(RazorProjectEngineBuilder builder)
         {
             if (builder == null)

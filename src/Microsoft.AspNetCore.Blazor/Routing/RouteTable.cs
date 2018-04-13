@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// * For literals with different values (case insensitive) we choose the lexical order
         /// * For parameters with different numbers of constraints, the one with more wins
         /// If we get to the end of the comparison routing we've detected an ambiguous pair of routes.
+        /// </summary>
         internal static int RouteComparison(RouteEntry x, RouteEntry y)
         {
             var xTemplate = x.Template;

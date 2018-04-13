@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Interop
 {
+    /// <summary>
+    /// Represents errors that occur during an interop call from .NET to JavaScript.
+    /// </summary>
     public class JavaScriptException : Exception
     {
         internal JavaScriptException(string message) : base(message)

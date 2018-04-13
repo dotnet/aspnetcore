@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         /// <summary>
         /// Marks a previously appended element frame as closed. Calls to this method
-        /// must be balanced with calls to <see cref="OpenElement(string)"/>.
+        /// must be balanced with calls to <see cref="OpenElement(int, string)"/>.
         /// </summary>
         public void CloseElement()
         {
@@ -157,7 +157,6 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// current element is not a component, the frame will be omitted.
         /// </para>
         /// </summary>
-        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
@@ -175,7 +174,6 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// current element is not a component, the frame will be omitted.
         /// </para>
         /// </summary>
-        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
@@ -271,8 +269,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </para>
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="name">The name of the attribute.</param>
-        /// <param name="value">The value of the attribute.</param>
+        /// <param name="frame">A <see cref="RenderTreeFrame"/> holding the name and value of the attribute.</param>
         public void AddAttribute(int sequence, RenderTreeFrame frame)
         {
             if (frame.FrameType != RenderTreeFrameType.Attribute)

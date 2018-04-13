@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
-    public class PageDirective
+    internal class PageDirective
     {
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "page",

@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Blazor
         /// Sends a POST request to the specified URI, including the specified <paramref name="content"/>
         /// in JSON-encoded format, and parses the JSON response body to create an object of the generic type.
         /// </summary>
-        /// <typeparam name="T">A type into which the response body can be JSON-deserialized.</typeparam>
         /// <param name="httpClient">The <see cref="HttpClient"/>.</param>
         /// <param name="requestUri">The URI that the request will be sent to.</param>
         /// <param name="content">Content for the request body. This will be JSON-encoded and sent as a string.</param>

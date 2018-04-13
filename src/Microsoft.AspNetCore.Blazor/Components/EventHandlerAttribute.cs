@@ -5,9 +5,17 @@ using System;
 
 namespace Microsoft.AspNetCore.Blazor.Components
 {
+    /// <summary>
+    /// Associates an event argument type with an event attribute name.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public sealed class EventHandlerAttribute : Attribute
     {
+        /// <summary>
+        /// Constructs an instance of <see cref="EventHandlerAttribute"/>.
+        /// </summary>
+        /// <param name="attributeName"></param>
+        /// <param name="eventArgsType"></param>
         public EventHandlerAttribute(string attributeName, Type eventArgsType)
         {
             if (attributeName == null)
@@ -24,8 +32,14 @@ namespace Microsoft.AspNetCore.Blazor.Components
             EventArgsType = eventArgsType;
         }
 
+        /// <summary>
+        /// Gets the attribute name.
+        /// </summary>
         public string AttributeName { get; }
 
+        /// <summary>
+        /// Gets the event argument type.
+        /// </summary>
         public Type EventArgsType { get; }
     }
 }

@@ -225,6 +225,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         internal RenderTreeFrame WithRegionSubtreeLength(int regionSubtreeLength)
             => new RenderTreeFrame(Sequence, regionSubtreeLength: regionSubtreeLength);
 
+        /// <inheritdoc />
         // Just to be nice for debugging and unit tests.
         public override string ToString()
         {
