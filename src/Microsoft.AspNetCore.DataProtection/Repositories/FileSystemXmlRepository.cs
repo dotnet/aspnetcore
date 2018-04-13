@@ -230,7 +230,9 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 // Once the file has been fully written, perform the rename.
                 // Renames are atomic operations on the file systems we support.
                 _logger.WritingDataToFile(finalFilename);
-                File.Move(tempFilename, finalFilename);
+
+                // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
+                File.Copy(tempFilename, finalFilename);
             }
             finally
             {
