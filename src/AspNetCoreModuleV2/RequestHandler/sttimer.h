@@ -22,9 +22,7 @@ public:
         if ( _pTimer )
         {
             CancelTimer();
-
             CloseThreadpoolTimer( _pTimer );
-
             _pTimer = NULL;
         }
     }
@@ -107,9 +105,10 @@ public:
         // have completed.
         //
         if (_pTimer != NULL)
-            WaitForThreadpoolTimerCallbacks( _pTimer, TRUE );
+        {
+            WaitForThreadpoolTimerCallbacks(_pTimer, TRUE);
+        }
 
-        _pTimer = NULL;
         fInCanel = FALSE;
     }
 
