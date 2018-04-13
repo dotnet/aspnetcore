@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.AspNetCore.Razor.Language;
@@ -12,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public static class PageDirectiveFeature
     {
-        private static readonly RazorEngine PageDirectiveEngine = RazorEngine.Create(builder =>
+        private static readonly RazorProjectEngine PageDirectiveEngine = RazorProjectEngine.Create(RazorConfiguration.Default, new EmptyRazorProjectFileSystem(), builder =>
         {
             for (var i = builder.Phases.Count - 1; i >= 0; i--)
             {
@@ -35,24 +38,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
-            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
-            return TryGetPageDirective(logger, sourceDocument, out template);
-        }
-
-        static bool TryGetPageDirective(
-            ILogger logger,
-            RazorSourceDocument sourceDocument,
-            out string template)
-        {
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            PageDirectiveEngine.Process(codeDocument);
+            var codeDocument = PageDirectiveEngine.Process(projectItem);
 
             var documentIRNode = codeDocument.GetDocumentIntermediateNode();
             if (PageDirective.TryGetPageDirective(documentIRNode, out var pageDirective))
             {
                 if (pageDirective.DirectiveNode is MalformedDirectiveIntermediateNode malformedNode)
                 {
-                    logger.MalformedPageDirective(sourceDocument.FilePath, malformedNode.Diagnostics);
+                    logger.MalformedPageDirective(projectItem.FilePath, malformedNode.Diagnostics);
                 }
 
                 template = pageDirective.RouteTemplate;
@@ -70,6 +63,48 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             public void Configure(RazorParserOptionsBuilder options)
             {
                 options.ParseLeadingDirectives = true;
+            }
+        }
+
+        private class EmptyRazorProjectFileSystem : RazorProjectFileSystem
+        {
+            public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
+            {
+                return Enumerable.Empty<RazorProjectItem>();
+            }
+
+            public override IEnumerable<RazorProjectItem> FindHierarchicalItems(string basePath, string path, string fileName)
+            {
+                return Enumerable.Empty<RazorProjectItem>();
+            }
+
+            public override RazorProjectItem GetItem(string path)
+            {
+                return new NotFoundProjectItem(string.Empty, path);
+            }
+
+            private class NotFoundProjectItem : RazorProjectItem
+            {
+                public NotFoundProjectItem(string basePath, string path)
+                {
+                    BasePath = basePath;
+                    FilePath = path;
+                }
+
+                /// <inheritdoc />
+                public override string BasePath { get; }
+
+                /// <inheritdoc />
+                public override string FilePath { get; }
+
+                /// <inheritdoc />
+                public override bool Exists => false;
+
+                /// <inheritdoc />
+                public override string PhysicalPath => throw new NotSupportedException();
+
+                /// <inheritdoc />
+                public override Stream Read() => throw new NotSupportedException();
             }
         }
     }

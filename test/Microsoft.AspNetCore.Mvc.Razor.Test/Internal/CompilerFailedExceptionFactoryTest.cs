@@ -18,10 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var viewPath = "/Views/Home/Index.cshtml";
-            var razorEngine = RazorEngine.Create();
 
             var fileSystem = new VirtualRazorProjectFileSystem();
             fileSystem.Add(new TestRazorProjectItem(viewPath, "<span name=\"@(User.Id\">"));
+
+            var razorEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem).Engine;
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var fileSystem = new VirtualRazorProjectFileSystem();
             fileSystem.Add(new TestRazorProjectItem(viewPath, "<span name=\"@(User.Id\">", physicalPath: physicalPath));
 
-            var razorEngine = RazorEngine.Create();
+            var razorEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem).Engine;
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
 
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
@@ -79,9 +80,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 }
 </span>";
 
-            var razorEngine = RazorEngine.Create();
             var fileSystem = new VirtualRazorProjectFileSystem();
             fileSystem.Add(new TestRazorProjectItem(viewPath, fileContent));
+
+            var razorEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem).Engine;
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
 
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
@@ -108,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             fileSystem.Add(new TestRazorProjectItem(viewPath, fileContent));
             fileSystem.Add(new TestRazorProjectItem("/Views/_MyImports.cshtml", importsContent));
 
-            var razorEngine = RazorEngine.Create();
+            var razorEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem).Engine;
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem)
             {
                 Options =
