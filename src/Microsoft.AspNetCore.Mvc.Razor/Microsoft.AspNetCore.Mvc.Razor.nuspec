@@ -39,5 +39,6 @@
   <files>
     <file src="$OutputBinary$" target="lib\$targetframework$\" />
     <file src="$OutputDocumentation$" target="lib\$targetframework$\" />
+    <file src="$OutputSymbol$" target="lib\$targetframework$\" />
   </files>
 </package>
