@@ -17,16 +17,16 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         {
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
         public Task ScriptIsInjected_ForNetCoreApp20_Standalone() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.0", ApplicationType.Standalone);
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
         public Task ScriptIsInjected_ForNetCoreApp20_Portable() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.0", ApplicationType.Portable);
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
         public Task ScriptIsInjected_ForNetCoreApp21_Standalone() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.1", ApplicationType.Standalone);
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
         public Task ScriptIsInjected_ForNetCoreApp21_Portable() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.1", ApplicationType.Portable);
 
         private async Task JavaScriptSnippetInjectionTestSuite(string targetFramework, ApplicationType applicationType)
