@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -19,7 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 using Resources = Microsoft.AspNetCore.Mvc.ViewFeatures.Test.Resources;
@@ -698,7 +696,7 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp =>
                 {
                     Assert.Equal("data-val-remote-url", kvp.Key);
-                    Assert.Equal("/UrlEncode[[Controller]]/UrlEncode[[Action]]", kvp.Value);
+                    Assert.Equal("/Controller/Action", kvp.Value);
                 });
         }
 
@@ -723,7 +721,7 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp =>
                 {
                     Assert.Equal("data-val-remote-url", kvp.Key);
-                    Assert.Equal("/UrlEncode[[Test]]/UrlEncode[[Controller]]/UrlEncode[[Action]]", kvp.Value);
+                    Assert.Equal("/Test/Controller/Action", kvp.Value);
                 });
         }
 
@@ -749,7 +747,7 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp =>
                 {
                     Assert.Equal("data-val-remote-url", kvp.Key);
-                    Assert.Equal("/UrlEncode[[Controller]]/UrlEncode[[Action]]", kvp.Value);
+                    Assert.Equal("/Controller/Action", kvp.Value);
                 });
         }
 
@@ -775,7 +773,7 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp =>
                 {
                     Assert.Equal("data-val-remote-url", kvp.Key);
-                    Assert.Equal("/UrlEncode[[Controller]]/UrlEncode[[Action]]", kvp.Value);
+                    Assert.Equal("/Controller/Action", kvp.Value);
                 });
         }
 
@@ -800,7 +798,7 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp =>
                 {
                     Assert.Equal("data-val-remote-url", kvp.Key);
-                    Assert.Equal("/UrlEncode[[Test]]/UrlEncode[[Controller]]/UrlEncode[[Action]]", kvp.Value);
+                    Assert.Equal("/Test/Controller/Action", kvp.Value);
                 });
         }
 
@@ -825,7 +823,7 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp =>
                 {
                     Assert.Equal("data-val-remote-url", kvp.Key);
-                    Assert.Equal("/UrlEncode[[Test]]/UrlEncode[[Controller]]/UrlEncode[[Action]]", kvp.Value);
+                    Assert.Equal("/Test/Controller/Action", kvp.Value);
                 });
         }
 
@@ -850,7 +848,7 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp =>
                 {
                     Assert.Equal("data-val-remote-url", kvp.Key);
-                    Assert.Equal("/UrlEncode[[AnotherArea]]/UrlEncode[[Controller]]/UrlEncode[[Action]]", kvp.Value);
+                    Assert.Equal("/AnotherArea/Controller/Action", kvp.Value);
                 });
         }
 
@@ -1041,8 +1039,7 @@ namespace Microsoft.AspNetCore.Mvc
             var serviceCollection = new ServiceCollection();
             serviceCollection
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
-                .AddSingleton<ILoggerFactory>(new NullLoggerFactory())
-                .AddSingleton<UrlEncoder>(new UrlTestEncoder());
+                .AddSingleton<ILoggerFactory>(new NullLoggerFactory());
 
             serviceCollection.AddOptions();
             serviceCollection.AddRouting();

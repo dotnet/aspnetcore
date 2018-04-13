@@ -22,7 +22,6 @@ namespace SimpleWebSite
                 .AddAuthorization()
                 .AddFormatterMappings(m => m.SetMediaTypeMappingForFormat("js", new MediaTypeHeaderValue("application/json")))
                 .AddJsonFormatters(j => j.Formatting = Formatting.Indented);
-            services.AddSingleton<UrlEncoder, UrlTestEncoder>();
         }
 
         public void Configure(IApplicationBuilder app)
