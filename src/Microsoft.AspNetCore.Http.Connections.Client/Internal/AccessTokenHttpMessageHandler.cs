@@ -11,16 +11,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     public class AccessTokenHttpMessageHandler : DelegatingHandler
     {
-        private readonly Func<Task<string>> _accessTokenFactory;
+        private readonly Func<Task<string>> _accessTokenProvider;
 
-        public AccessTokenHttpMessageHandler(HttpMessageHandler inner, Func<Task<string>> accessTokenFactory) : base(inner)
+        public AccessTokenHttpMessageHandler(HttpMessageHandler inner, Func<Task<string>> accessTokenProvider) : base(inner)
         {
-            _accessTokenFactory = accessTokenFactory ?? throw new ArgumentNullException(nameof(accessTokenFactory));
+            _accessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var accessToken = await _accessTokenFactory();
+            var accessToken = await _accessTokenProvider();
             request.Headers.Authorization =  new AuthenticationHeaderValue("Bearer", accessToken);
 
             return await base.SendAsync(request, cancellationToken);

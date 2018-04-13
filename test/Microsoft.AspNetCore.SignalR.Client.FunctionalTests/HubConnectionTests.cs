@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             using (StartLog(out var loggerFactory, $"{nameof(ClientCanUseJwtBearerTokenForAuthentication)}_{transportType}"))
             {
-                async Task<string> AccessTokenFactory()
+                async Task<string> AccessTokenProvider()
                 {
                     var httpResponse = await new HttpClient().GetAsync(_serverFixture.Url + "/generateJwtToken");
                     httpResponse.EnsureSuccessStatusCode();
@@ -717,7 +717,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     .WithLoggerFactory(loggerFactory)
                     .WithUrl(_serverFixture.Url + "/authorizedhub", transportType, options =>
                     {
-                        options.AccessTokenProvider = AccessTokenFactory;
+                        options.AccessTokenProvider = AccessTokenProvider;
                     })
                     .Build();
                 try
@@ -784,7 +784,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     .WithLoggerFactory(loggerFactory)
                     .WithUrl(_serverFixture.Url + "/default", HttpTransportType.WebSockets, options =>
                     {
-                        options.WebSocketOptions = o => o.Cookies = cookieJar;
+                        options.WebSocketConfiguration = o => o.Cookies = cookieJar;
                     })
                     .Build();
                 try

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             httpOptions.UseDefaultCredentials = false;
             httpOptions.Credentials = Mock.Of<ICredentials>();
             httpOptions.Proxy = Mock.Of<IWebProxy>();
-            httpOptions.WebSocketOptions = options => webSocketsOptions = options;
+            httpOptions.WebSocketConfiguration = options => webSocketsOptions = options;
 
             var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null);
             Assert.NotNull(webSocketsTransport);

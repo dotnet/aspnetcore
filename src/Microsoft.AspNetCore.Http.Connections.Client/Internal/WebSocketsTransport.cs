@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     public partial class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket;
-        private readonly Func<Task<string>> _accessTokenFactory;
+        private readonly Func<Task<string>> _accessTokenProvider;
         private IDuplexPipe _application;
         private WebSocketMessageType _webSocketMessageType;
         private readonly ILogger _logger;
@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                 if (httpConnectionOptions.AccessTokenProvider != null)
                 {
-                    _accessTokenFactory = httpConnectionOptions.AccessTokenProvider;
+                    _accessTokenProvider = httpConnectionOptions.AccessTokenProvider;
                 }
 
-                httpConnectionOptions.WebSocketOptions?.Invoke(_webSocket.Options);
+                httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
 
                 _closeTimeout = httpConnectionOptions.CloseTimeout;
             }
@@ -116,9 +116,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
-            if (_accessTokenFactory != null)
+            if (_accessTokenProvider != null)
             {
-                var accessToken = await _accessTokenFactory();
+                var accessToken = await _accessTokenProvider();
                 _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
             }
 

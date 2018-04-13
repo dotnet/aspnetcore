@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return await next();
                 });
 
-                Task<string> AccessTokenFactory()
+                Task<string> AccessTokenProvider()
                 {
                     callCount++;
                     return Task.FromResult(callCount.ToString());
                 }
 
                 await WithConnectionAsync(
-                    CreateConnection(testHttpHandler, transportType: transportType, accessTokenFactory: AccessTokenFactory),
+                    CreateConnection(testHttpHandler, transportType: transportType, accessTokenProvider: AccessTokenProvider),
                     async (connection) =>
                     {
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();

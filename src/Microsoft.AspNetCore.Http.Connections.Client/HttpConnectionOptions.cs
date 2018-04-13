@@ -67,6 +67,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenProvider"/>
         /// has been applied.
         /// </remarks>
-        public Action<ClientWebSocketOptions> WebSocketOptions { get; set; }
+        public Action<ClientWebSocketOptions> WebSocketConfiguration { get; set; }
     }
 }

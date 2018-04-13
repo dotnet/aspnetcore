@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             ITransport transport = null,
             ITransportFactory transportFactory = null,
             HttpTransportType? transportType = null,
-            Func<Task<string>> accessTokenFactory = null)
+            Func<Task<string>> accessTokenProvider = null)
         {
             var httpOptions = new HttpConnectionOptions
             {
                 Transports = transportType ?? HttpTransportType.LongPolling,
                 HttpMessageHandlerFactory = (httpMessageHandler) => httpHandler ?? TestHttpMessageHandler.CreateDefault(),
-                AccessTokenProvider = accessTokenFactory,
+                AccessTokenProvider = accessTokenProvider,
             };
             if (url != null)
             {
