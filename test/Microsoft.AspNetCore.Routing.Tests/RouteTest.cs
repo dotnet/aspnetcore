@@ -653,6 +653,8 @@ namespace Microsoft.AspNetCore.Routing
         public void GetVirtualPath_AlwaysUsesDefaultUrlEncoder()
         {
             // Arrange
+            var nameRouteValue = "name with %special #characters Jörn";
+            var expected = "/Home/Index?name=" + UrlEncoder.Default.Encode(nameRouteValue);
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
@@ -666,7 +668,7 @@ namespace Microsoft.AspNetCore.Routing
 
             var context = new VirtualPathContext(
                 httpContext,
-                values: new RouteValueDictionary(new { name = "name with %special #characters Jörn" }),
+                values: new RouteValueDictionary(new { name = nameRouteValue }),
                 ambientValues: new RouteValueDictionary(new { controller = "Home", action = "Index" }));
 
             var route = CreateRoute("{controller}/{action}");
@@ -675,7 +677,7 @@ namespace Microsoft.AspNetCore.Routing
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("/Home/Index?name=name%20with%20%25special%20%23characters%20J%C3%B6rn", pathData.VirtualPath);
+            Assert.Equal(expected, pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
