@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task PartialHandshakeResponseWorks()
             {
-                var connection = new TestConnection(synchronousCallbacks: true, autoHandshake: false);
+                var connection = new TestConnection(autoHandshake: false);
                 var hubConnection = CreateHubConnection(connection);
                 try
                 {
@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public async Task HandshakeAndInvocationInSameBufferWorks()
             {
                 var payload = "{}\u001e{\"type\":1, \"target\": \"Echo\", \"arguments\":[\"hello\"]}\u001e";
-                var connection = new TestConnection(synchronousCallbacks: true, autoHandshake: false);
+                var connection = new TestConnection(autoHandshake: false);
                 var hubConnection = CreateHubConnection(connection);
                 try
                 {
@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task PartialInvocationWorks()
             {                
-                var connection = new TestConnection(synchronousCallbacks: true);
+                var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection);
                 try
                 {
