@@ -3,9 +3,7 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal

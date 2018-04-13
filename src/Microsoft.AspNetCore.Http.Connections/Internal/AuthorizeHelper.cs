@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public static class AuthorizeHelper
+    internal static class AuthorizeHelper
     {
         public static async Task<bool> AuthorizeAsync(HttpContext context, IList<IAuthorizeData> policies)
         {
