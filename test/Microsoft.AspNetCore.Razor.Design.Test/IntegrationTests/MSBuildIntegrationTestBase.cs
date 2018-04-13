@@ -79,7 +79,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 buildArgumentList.Add($"/p:_RazorSuppressCurrentUserOnlyPipeOptions=true");
             }
 
-            buildArgumentList.Add($"/t:{target} /p:Configuration={Configuration} {args}");
+            if (!string.IsNullOrEmpty(target))
+            {
+                buildArgumentList.Add($"/t:{target}");
+            }
+
+            buildArgumentList.Add($"/p:Configuration={Configuration} {args}");
             var buildArguments = string.Join(" ", buildArgumentList);
 
             return MSBuildProcessManager.RunProcessAsync(

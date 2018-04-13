@@ -69,6 +69,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       _RazorAddDebugSymbolsProjectOutputGroupOutput
     </DebugSymbolsProjectOutputGroupDependsOn>
 
+    <PrepareForRunDependsOn>
+      _RazorPrepareForRun;
+      $(PrepareForRunDependsOn)
+    </PrepareForRunDependsOn>
+
   </PropertyGroup>
 
   <!-- 
@@ -362,13 +367,21 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
+    Set up RazorCompile to run before PrepareForRun. This should ensure that the Razor dll and pdbs are available to be copied
+    as part of GetCopyToOutputDirectoryItems which is invoked during PrepareForRun.
+  -->
+  <Target
+    Name="_RazorPrepareForRun"
+    DependsOnTargets="RazorCompile"
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'" />
+
+  <!--
     Called as part of GetCopyToOutputDirectoryItems - this target populates the list of items that get
     copied to the output directory when building as a project reference.
   -->
   <Target 
     Name="_RazorGetCopyToOutputDirectoryItems"
     BeforeTargets="GetCopyToOutputDirectoryItems"
-    DependsOnTargets="RazorCompile"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
     <!-- 

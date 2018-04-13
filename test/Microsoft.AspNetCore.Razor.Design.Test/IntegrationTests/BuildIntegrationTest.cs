@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -470,6 +471,41 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.dll");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
+        public async Task Build_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
+        {
+            // Simulates building the same way VS does by setting BuildProjectReferences=false.
+            // With this flag, P2P references aren't resolved during GetCopyToOutputDirectoryItems. This test ensures that
+            // no Razor work is done in such a scenario and the build succeeds.
+            var additionalProjectContent = @"
+<ItemGroup>
+  <ProjectReference Include=""..\ClassLibrary2\ClassLibrary2.csproj"" />
+</ItemGroup>
+";
+            AddProjectFileContent(additionalProjectContent);
+
+            var result = await DotnetMSBuild(target: default);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary2.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary2.Views.dll");
+
+            // Force a rebuild of ClassLibrary2 by changing a file
+            var class2Path = Path.Combine(Project.SolutionPath, "ClassLibrary2", "Class2.cs");
+            File.AppendAllText(class2Path, Environment.NewLine + "// Some changes");
+
+            // dotnet msbuild /p:BuildProjectReferences=false
+            result = await DotnetMSBuild(target: default, "/p:BuildProjectReferences=false", suppressRestore: true);
+
+            Assert.BuildPassed(result);
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)
