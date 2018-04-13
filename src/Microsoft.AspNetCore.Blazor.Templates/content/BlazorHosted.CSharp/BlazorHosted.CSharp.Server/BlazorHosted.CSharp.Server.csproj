@@ -1,19 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-
-    <!-- This custom package feed is required only when using nightly builds of Blazor -->
-    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/f/blazor-dev/api/v3/index.json</RestoreSources>
+    <RestoreSources Condition="'$(IncludeCustomRestoreSourcesSymbol)'=='true'">
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+      https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
+    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Framework)' == 'netcoreapp2.1'">
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0-preview2-final" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="0.2.0-preview1-10195" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="$(TemplateBlazorPackageVersion)" />
   </ItemGroup>
   <ItemGroup Condition="'$(Framework)' == 'netcoreapp2.0'">
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="0.2.0-preview1-10195" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="$(TemplateBlazorPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

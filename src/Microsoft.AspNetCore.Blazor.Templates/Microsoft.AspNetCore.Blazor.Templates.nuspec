@@ -19,7 +19,7 @@
   <files>
     <file
       src="content/**/*"
-      exclude="content/BlazorHosted.CSharp.Client/Properties/launchSettings.json;content/BlazorHosted.CSharp.Server/Properties/launchSettings.json;**/node_modules/**;**/bin/**;**/obj/**;**/*.user;**/.vs/**;**/.vscode/**;content/Directory.Build.*"
+      exclude="content/BlazorHosted.CSharp.Client/Properties/launchSettings.json;content/BlazorHosted.CSharp.Server/Properties/launchSettings.json;**/node_modules/**;**/bin/**;**/obj/**;**/*.user;**/.vs/**;**/.vscode/**;content/Directory.Build.*;**/.template.config.src/**"
       target="Content" />
   </files>
 </package>

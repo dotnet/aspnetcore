@@ -1,8 +1,7 @@
 <Project>
-  <!--
-    Left mostly blank to avoid sharing config with the build for the main repo.
-    For example, we want the templates to declare their own independent package restore sources.
-  -->
+  <PropertyGroup>
+    <TemplateBlazorPackageVersion>0.2.0-preview1-10195</TemplateBlazorPackageVersion>
+  </PropertyGroup>
 
-  <Import Project="../../version.props" />
+  <Import Project="..\..\Directory.Build.props" />
 </Project>

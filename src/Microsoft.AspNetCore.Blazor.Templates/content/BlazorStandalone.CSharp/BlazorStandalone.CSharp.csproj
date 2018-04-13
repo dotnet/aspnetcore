@@ -1,19 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RunCommand>dotnet</RunCommand>
     <RunArguments>blazor serve</RunArguments>
-    
-    <!-- This custom package feed is required only when using nightly builds of Blazor -->
-    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/f/blazor-dev/api/v3/index.json</RestoreSources>
+    <RestoreSources Condition="'$(IncludeCustomRestoreSourcesSymbol)'=='true'">
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+      https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
+    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0-preview2-final" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.2.0-preview1-10195" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.2.0-preview1-10195" />
-    <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.2.0-preview1-10195" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="$(TemplateBlazorPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="$(TemplateBlazorPackageVersion)" />
+    <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="$(TemplateBlazorPackageVersion)" />
   </ItemGroup>
 
 </Project>
