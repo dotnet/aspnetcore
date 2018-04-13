@@ -78,14 +78,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]));
         }
 
-        public static void On<T1, T2, T3, T4, T5>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3, T4, T5> handler)
+        public static IDisposable On<T1, T2, T3, T4, T5>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3, T4, T5> handler)
         {
             if (hubConnection == null)
             {
                 throw new ArgumentNullException(nameof(hubConnection));
             }
 
-            hubConnection.On(methodName,
+            return hubConnection.On(methodName,
                 new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) },
                 args => handler((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3], (T5)args[4]));
         }
