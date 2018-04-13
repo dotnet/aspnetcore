@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http.Connections
@@ -21,13 +22,10 @@ namespace Microsoft.AspNetCore.Http.Connections
             _dispatcher = dispatcher;
         }
 
-        public void MapConnections(string path, Action<IConnectionBuilder> configure) =>
-            MapConnections(new PathString(path), new HttpConnectionOptions(), configure);
-
         public void MapConnections(PathString path, Action<IConnectionBuilder> configure) =>
-            MapConnections(path, new HttpConnectionOptions(), configure);
+            MapConnections(path, new HttpConnectionDispatcherOptions(), configure);
 
-        public void MapConnections(PathString path, HttpConnectionOptions options, Action<IConnectionBuilder> configure)
+        public void MapConnections(PathString path, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
         {
             var connectionBuilder = new ConnectionBuilder(_routes.ServiceProvider);
             configure(connectionBuilder);
@@ -36,20 +34,15 @@ namespace Microsoft.AspNetCore.Http.Connections
             _routes.MapRoute(path + "/negotiate", c => _dispatcher.ExecuteNegotiateAsync(c, options));
         }
 
-        public void MapConnectionHandler<TConnectionHandler>(string path) where TConnectionHandler : ConnectionHandler
-        {
-            MapConnectionHandler<TConnectionHandler>(new PathString(path), configureOptions: null);
-        }
-
         public void MapConnectionHandler<TConnectionHandler>(PathString path) where TConnectionHandler : ConnectionHandler
         {
             MapConnectionHandler<TConnectionHandler>(path, configureOptions: null);
         }
 
-        public void MapConnectionHandler<TConnectionHandler>(PathString path, Action<HttpConnectionOptions> configureOptions) where TConnectionHandler : ConnectionHandler
+        public void MapConnectionHandler<TConnectionHandler>(PathString path, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             var authorizeAttributes = typeof(TConnectionHandler).GetCustomAttributes<AuthorizeAttribute>(inherit: true);
-            var options = new HttpConnectionOptions();
+            var options = new HttpConnectionDispatcherOptions();
             foreach (var attribute in authorizeAttributes)
             {
                 options.AuthorizationData.Add(attribute);

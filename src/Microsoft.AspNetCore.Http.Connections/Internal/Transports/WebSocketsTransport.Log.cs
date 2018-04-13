@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
     {
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _socketOpened =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(1, "SocketOpened"), "Socket opened.");
+            private static readonly Action<ILogger, string, Exception> _socketOpened =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "SocketOpened"), "Socket opened using Sub-Protocol: '{SubProtocol}'.");
 
             private static readonly Action<ILogger, Exception> _socketClosed =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "SocketClosed"), "Socket closed.");
@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             private static readonly Action<ILogger, Exception> _sendFailed =
                 LoggerMessage.Define(LogLevel.Error, new EventId(13, "SendFailed"), "Socket failed to send.");
 
-            public static void SocketOpened(ILogger logger)
+            public static void SocketOpened(ILogger logger, string subProtocol)
             {
-                _socketOpened(logger, null);
+                _socketOpened(logger, subProtocol, null);
             }
 
             public static void SocketClosed(ILogger logger)

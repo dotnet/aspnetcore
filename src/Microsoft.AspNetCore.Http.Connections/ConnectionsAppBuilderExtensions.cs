@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 

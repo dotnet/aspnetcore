@@ -8,14 +8,13 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Connections
+namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
     public class HttpConnectionContext : ConnectionContext,
                                          IConnectionIdFeature,
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         public DateTime LastSeenUtc { get; set; }
 
-        public ConnectionStatus Status { get; set; } = ConnectionStatus.Inactive;
+        public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
 
         public override string ConnectionId { get; set; }
 
@@ -161,13 +160,13 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 await Lock.WaitAsync();
 
-                if (Status == ConnectionStatus.Disposed)
+                if (Status == HttpConnectionStatus.Disposed)
                 {
                     disposeTask = _disposeTcs.Task;
                 }
                 else
                 {
-                    Status = ConnectionStatus.Disposed;
+                    Status = HttpConnectionStatus.Disposed;
 
                     Log.DisposingConnection(_logger, ConnectionId);
 
@@ -280,13 +279,6 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                 throw;
             }
-        }
-
-        public enum ConnectionStatus
-        {
-            Inactive,
-            Active,
-            Disposed
         }
 
         private static class Log

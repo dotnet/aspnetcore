@@ -4,14 +4,18 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -343,6 +347,58 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await transport.OrTimeout();
 
                     Assert.Equal(WebSocketCloseStatus.NormalClosure, serverSocket.CloseStatus);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SubProtocolSelectorIsUsedToSelectSubProtocol()
+        {
+            const string ExpectedSubProtocol = "expected";
+            var providedSubProtocols = new[] {"provided1", "provided2"};
+
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
+
+                using (var feature = new TestWebSocketConnectionFeature())
+                {
+                    var options = new WebSocketOptions
+                    {
+                        // We want to verify behavior without timeout affecting it
+                        CloseTimeout = TimeSpan.FromSeconds(20),
+                        SubProtocolSelector = protocols => {
+                            Assert.Equal(providedSubProtocols, protocols.ToArray());
+                            return ExpectedSubProtocol;
+                        },
+                    };
+
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
+                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
+
+                    // Create an HttpContext
+                    var context = new DefaultHttpContext();
+                    context.Request.Headers.Add(HeaderNames.WebSocketSubProtocols, providedSubProtocols.ToArray());
+                    context.Features.Set<IHttpWebSocketFeature>(feature);
+                    var transport = ws.ProcessRequestAsync(context, CancellationToken.None);
+
+                    await feature.Accepted.OrThrowIfOtherFails(transport);
+
+                    // Assert the feature got the right subprotocol
+                    Assert.Equal(ExpectedSubProtocol, feature.SubProtocol);
+
+                    // Run the client socket
+                    var client = feature.Client.ExecuteAndCaptureFramesAsync();
+
+                    await feature.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None).OrTimeout();
+
+                    // close the client to server channel
+                    connection.Transport.Output.Complete();
+
+                    _ = await client.OrTimeout();
+
+                    await transport.OrTimeout();
                 }
             }
         }

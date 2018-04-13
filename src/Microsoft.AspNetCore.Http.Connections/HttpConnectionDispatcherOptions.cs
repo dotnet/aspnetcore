@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Http.Connections.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
-    public class HttpConnectionOptions
+    public class HttpConnectionDispatcherOptions
     {
         // Selected because this is the default value of PipeWriter.PauseWriterThreshold.
         // There maybe the opportunity for performance gains by tuning this default.
         private const int DefaultPipeBufferSize = 32768;
 
-        public HttpConnectionOptions()
+        public HttpConnectionDispatcherOptions()
         {
             AuthorizationData = new List<IAuthorizeData>();
             Transports = HttpTransports.All;

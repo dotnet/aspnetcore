@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public void CheckLongPollingTimeoutValue()
         {
-            var options = new HttpConnectionOptions();
+            var options = new HttpConnectionDispatcherOptions();
             Assert.Equal(options.LongPolling.PollTimeout, TimeSpan.FromSeconds(90));
         }
     }

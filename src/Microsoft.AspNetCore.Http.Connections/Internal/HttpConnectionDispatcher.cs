@@ -12,14 +12,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
-using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Http.Connections
+namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
     public partial class HttpConnectionDispatcher
     {
@@ -55,7 +54,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
         }
 
-        public async Task ExecuteAsync(HttpContext context, HttpConnectionOptions options, ConnectionDelegate connectionDelegate)
+        public async Task ExecuteAsync(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionDelegate connectionDelegate)
         {
             // Create the log scope and attempt to pass the Connection ID to it so as many logs as possible contain
             // the Connection ID metadata. If this is the negotiate request then the Connection ID for the scope will
@@ -91,7 +90,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        public async Task ExecuteNegotiateAsync(HttpContext context, HttpConnectionOptions options)
+        public async Task ExecuteNegotiateAsync(HttpContext context, HttpConnectionDispatcherOptions options)
         {
             // Create the log scope and the scope connectionId param will be set when the connection is created.
             var logScope = new ConnectionLogScope(connectionId: string.Empty);
@@ -115,7 +114,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionOptions options, ConnectionLogScope logScope)
+        private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
         {
             var supportedTransports = options.Transports;
 
@@ -193,7 +192,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 {
                     await connection.Lock.WaitAsync();
 
-                    if (connection.Status == HttpConnectionContext.ConnectionStatus.Disposed)
+                    if (connection.Status == HttpConnectionStatus.Disposed)
                     {
                         Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
@@ -203,7 +202,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                         return;
                     }
 
-                    if (connection.Status == HttpConnectionContext.ConnectionStatus.Active)
+                    if (connection.Status == HttpConnectionStatus.Active)
                     {
                         var existing = connection.GetHttpContext();
                         Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, existing.TraceIdentifier);
@@ -221,7 +220,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     }
 
                     // Mark the connection as active
-                    connection.Status = HttpConnectionContext.ConnectionStatus.Active;
+                    connection.Status = HttpConnectionStatus.Active;
 
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (connection.ApplicationTask == null)
@@ -295,12 +294,12 @@ namespace Microsoft.AspNetCore.Http.Connections
                     {
                         await connection.Lock.WaitAsync();
 
-                        if (connection.Status == HttpConnectionContext.ConnectionStatus.Active)
+                        if (connection.Status == HttpConnectionStatus.Active)
                         {
                             // Mark the connection as inactive
                             connection.LastSeenUtc = DateTime.UtcNow;
 
-                            connection.Status = HttpConnectionContext.ConnectionStatus.Inactive;
+                            connection.Status = HttpConnectionStatus.Inactive;
 
                             // Dispose the cancellation token
                             connection.Cancellation.Dispose();
@@ -325,7 +324,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 await connection.Lock.WaitAsync();
 
-                if (connection.Status == HttpConnectionContext.ConnectionStatus.Disposed)
+                if (connection.Status == HttpConnectionStatus.Disposed)
                 {
                     Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
@@ -335,7 +334,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 }
 
                 // There's already an active request
-                if (connection.Status == HttpConnectionContext.ConnectionStatus.Active)
+                if (connection.Status == HttpConnectionStatus.Active)
                 {
                     Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
 
@@ -345,7 +344,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 }
 
                 // Mark the connection as active
-                connection.Status = HttpConnectionContext.ConnectionStatus.Active;
+                connection.Status = HttpConnectionStatus.Active;
 
                 // Call into the end point passing the connection
                 connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
@@ -380,7 +379,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             await connectionDelegate(connection);
         }
 
-        private async Task ProcessNegotiate(HttpContext context, HttpConnectionOptions options, ConnectionLogScope logScope)
+        private async Task ProcessNegotiate(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
         {
             context.Response.ContentType = "application/json";
 
@@ -411,7 +410,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionOptions options)
+        private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
         {
             var response = new NegotiationResponse();
             response.ConnectionId = connectionId;
@@ -442,7 +441,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         private static string GetConnectionId(HttpContext context) => context.Request.Query["id"];
 
-        private async Task ProcessSend(HttpContext context, HttpConnectionOptions options)
+        private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
         {
             var connection = await GetConnectionAsync(context);
             if (connection == null)
@@ -469,7 +468,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
             try
             {
-                if (connection.Status == HttpConnectionContext.ConnectionStatus.Disposed)
+                if (connection.Status == HttpConnectionStatus.Disposed)
                 {
                     Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
@@ -523,7 +522,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             context.Response.ContentType = "text/plain";
         }
 
-        private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionOptions options)
+        private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionDispatcherOptions options)
         {
             if ((supportedTransports & transportType) == 0)
             {
@@ -672,7 +671,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         }
 
         // This is only used for WebSockets connections, which can connect directly without negotiating
-        private async Task<HttpConnectionContext> GetOrCreateConnectionAsync(HttpContext context, HttpConnectionOptions options)
+        private async Task<HttpConnectionContext> GetOrCreateConnectionAsync(HttpContext context, HttpConnectionDispatcherOptions options)
         {
             var connectionId = GetConnectionId(context);
             HttpConnectionContext connection;
@@ -693,7 +692,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             return connection;
         }
 
-        private HttpConnectionContext CreateConnection(HttpConnectionOptions options)
+        private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options)
         {
             var transportPipeOptions = new PipeOptions(pauseWriterThreshold: options.TransportMaxBufferSize, resumeWriterThreshold: options.TransportMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
             var appPipeOptions = new PipeOptions(pauseWriterThreshold: options.ApplicationMaxBufferSize, resumeWriterThreshold: options.ApplicationMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);

@@ -13,11 +13,10 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Connections
+namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
     public partial class HttpConnectionManager
     {
@@ -139,7 +138,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
-                HttpConnectionContext.ConnectionStatus status;
+                HttpConnectionStatus status;
                 DateTimeOffset lastSeenUtc;
                 var connection = c.Value.Connection;
 
@@ -159,7 +158,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && status == HttpConnectionContext.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
+                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);

@@ -73,7 +73,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public async Task MapConnectionHandlerWithWebSocketSubProtocolSetsProtocol()
         {
             var host = BuildWebHost<MyConnectionHandler>("/socket",
-                options => options.WebSockets.SubProtocol = "protocol1");
+                options => options.WebSockets.SubProtocolSelector = subprotocols =>
+                {
+                    Assert.Equal(new [] { "protocol1", "protocol2" }, subprotocols.ToArray());
+                    return "protocol1";
+                });
 
             await host.StartAsync();
 
@@ -131,7 +135,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private IWebHost BuildWebHost<TConnectionHandler>(string path, Action<HttpConnectionOptions> configureOptions) where TConnectionHandler : ConnectionHandler
+        private IWebHost BuildWebHost<TConnectionHandler>(string path, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             return new WebHostBuilder()
                 .UseUrls("http://127.0.0.1:0")

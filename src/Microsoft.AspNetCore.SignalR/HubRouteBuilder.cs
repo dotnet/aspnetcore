@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.SignalR
             MapHub<THub>(path, configureOptions: null);
         }
 
-        public void MapHub<THub>(PathString path, Action<HttpConnectionOptions> configureOptions) where THub : Hub
+        public void MapHub<THub>(PathString path, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
         {
             // find auth attributes
             var authorizeAttributes = typeof(THub).GetCustomAttributes<AuthorizeAttribute>(inherit: true);
-            var options = new HttpConnectionOptions();
+            var options = new HttpConnectionDispatcherOptions();
             foreach (var attribute in authorizeAttributes)
             {
                 options.AuthorizationData.Add(attribute);

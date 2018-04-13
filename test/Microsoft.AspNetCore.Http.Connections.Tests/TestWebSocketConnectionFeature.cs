@@ -10,9 +10,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
     internal class TestWebSocketConnectionFeature : IHttpWebSocketFeature, IDisposable
     {
+        private readonly TaskCompletionSource<object> _accepted = new TaskCompletionSource<object>();
+
         public bool IsWebSocketRequest => true;
 
         public WebSocketChannel Client { get; private set; }
+
+        public string SubProtocol { get; private set; }
+
+        public Task Accepted => _accepted.Task;
 
         public Task<WebSocket> AcceptAsync() => AcceptAsync(new WebSocketAcceptContext());
 
@@ -25,6 +31,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var serverSocket = new WebSocketChannel(clientToServer.Reader, serverToClient.Writer);
 
             Client = clientSocket;
+            SubProtocol = context.SubProtocol;
+
+            _accepted.TrySetResult(null);
             return Task.FromResult<WebSocket>(serverSocket);
         }
 

@@ -49,9 +49,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         {
             Debug.Assert(context.WebSockets.IsWebSocketRequest, "Not a websocket request");
 
-            using (var ws = await context.WebSockets.AcceptWebSocketAsync(_options.SubProtocol))
+            var subProtocol = _options.SubProtocolSelector?.Invoke(context.WebSockets.WebSocketRequestedProtocols);
+
+            using (var ws = await context.WebSockets.AcceptWebSocketAsync(subProtocol))
             {
-                Log.SocketOpened(_logger);
+                Log.SocketOpened(_logger, subProtocol);
 
                 try
                 {
