@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Xunit;
 
-
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ShortFormDictionaryValidationStrategyTest
@@ -28,14 +27,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var valueMetadata = metadataProvider.GetMetadataForType(typeof(string));
             var strategy = new ShortFormDictionaryValidationStrategy<int, string>(new Dictionary<string, int>()
             {
-                { "2", 2 },
-                { "3", 3 },
-                { "5", 5 },
+                { "prefix[2]", 2 },
+                { "prefix[3]", 3 },
+                { "prefix[5]", 5 },
             },
             valueMetadata);
 
             // Act
-            var enumerator = strategy.GetChildren(metadata, "prefix", model);
+            var enumerator = strategy.GetChildren(metadata, "ignored prefix", model);
 
             // Assert
             Assert.Collection(
@@ -76,13 +75,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var valueMetadata = metadataProvider.GetMetadataForType(typeof(string));
             var strategy = new ShortFormDictionaryValidationStrategy<int, string>(new Dictionary<string, int>()
             {
-                { "2", 2 },
-                { "3", 3 },
+                { "prefix[2]", 2 },
+                { "prefix[3]", 3 },
             },
             valueMetadata);
 
             // Act
-            var enumerator = strategy.GetChildren(metadata, "prefix", model);
+            var enumerator = strategy.GetChildren(metadata, "ignored prefix", model);
 
             // Assert
             Assert.Collection(
@@ -116,14 +115,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var valueMetadata = metadataProvider.GetMetadataForType(typeof(string));
             var strategy = new ShortFormDictionaryValidationStrategy<int, string>(new Dictionary<string, int>()
             {
-                { "2", 2 },
-                { "3", 3 },
-                { "5", 5 },
+                { "prefix[2]", 2 },
+                { "prefix[3]", 3 },
+                { "prefix[5]", 5 },
             },
             valueMetadata);
 
             // Act
-            var enumerator = strategy.GetChildren(metadata, "prefix", model);
+            var enumerator = strategy.GetChildren(metadata, "ignored prefix", model);
 
             // Assert
             Assert.Collection(

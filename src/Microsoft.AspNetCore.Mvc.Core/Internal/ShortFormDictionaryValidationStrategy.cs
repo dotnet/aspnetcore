@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// <remarks>
     /// This implementation handles cases like:
     /// <example>
-    ///     Model: IDictionary&lt;string, Student&gt; 
+    ///     Model: IDictionary&lt;string, Student&gt;
     ///     Query String: ?students[Joey].Age=8&amp;students[Katherine].Age=9
-    /// 
+    ///
     ///     In this case, 'Joey' and 'Katherine' are the keys of the dictionary, used to bind two 'Student'
     ///     objects. The enumerator returned from this class will yield two 'Student' objects with corresponding
     ///     keys 'students[Joey]' and 'students[Katherine]'
     /// </example>
-    /// 
+    ///
     /// Using this key format, the enumerator enumerates model objects of type <typeparamref name="TValue"/>. The
     /// keys of the dictionary are not validated as they must be simple types.
     /// </remarks>
@@ -35,7 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// <summary>
         /// Creates a new <see cref="ShortFormDictionaryValidationStrategy{TKey, TValue}"/>.
         /// </summary>
-        /// <param name="keyMappings">The mapping from model prefix key to dictionary key.</param>
+        /// <param name="keyMappings">
+        /// The mapping from <see cref="ModelStateDictionary"/> key to dictionary key.
+        /// </param>
         /// <param name="valueMetadata">
         /// The <see cref="ModelMetadata"/> associated with <typeparamref name="TValue"/>.
         /// </param>
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         /// <summary>
-        /// Gets the mapping from model prefix key to dictionary key.
+        /// Gets the mapping from <see cref="ModelStateDictionary"/> key to dictionary key.
         /// </summary>
         public IEnumerable<KeyValuePair<string, TKey>> KeyMappings { get; }
 
@@ -58,12 +60,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             string key,
             object model)
         {
-            return new Enumerator(_valueMetadata, key, KeyMappings, (IDictionary<TKey, TValue>)model);
+            // key is not needed because KeyMappings maps from full ModelState keys to dictionary keys.
+            return new Enumerator(_valueMetadata, KeyMappings, (IDictionary<TKey, TValue>)model);
         }
 
         private class Enumerator : IEnumerator<ValidationEntry>
         {
-            private readonly string _key;
             private readonly ModelMetadata _metadata;
             private readonly IDictionary<TKey, TValue> _model;
             private readonly IEnumerator<KeyValuePair<string, TKey>> _keyMappingEnumerator;
@@ -72,14 +74,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public Enumerator(
                 ModelMetadata metadata,
-                string key,
                 IEnumerable<KeyValuePair<string, TKey>> keyMappings,
                 IDictionary<TKey, TValue> model)
             {
                 _metadata = metadata;
-                _key = key;
                 _model = model;
-
                 _keyMappingEnumerator = keyMappings.GetEnumerator();
             }
 
@@ -104,10 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                 }
 
-                var key = ModelNames.CreateIndexModelName(_key, _keyMappingEnumerator.Current.Key);
-                var model = value;
-
-                _entry = new ValidationEntry(_metadata, key, model);
+                _entry = new ValidationEntry(_metadata, _keyMappingEnumerator.Current.Key, value);
 
                 return true;
             }

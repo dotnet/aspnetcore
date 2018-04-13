@@ -86,7 +86,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 else
                 {
                     // Field name. Convert to dot notation.
-                    builder.Append('.');
+                    if (builder.Length != 0)
+                    {
+                        // Was x[field], not [field] or [][field].
+                        builder.Append('.');
+                    }
+
                     builder.Append(key, indexOpen + 1, indexClose - indexOpen - 1);
                 }
 

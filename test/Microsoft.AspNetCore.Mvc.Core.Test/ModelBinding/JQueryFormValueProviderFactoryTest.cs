@@ -89,12 +89,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                     "[14]property1[15]property2",
                     "prefix.property1[13]",
                     "prefix[14][15]",
-                    ".property5",
-                    ".property6Value",
+                    "property5",
+                    "property6Value",
                     "prefix.property2",
                     "prefix.propertyValue",
-                    ".property7.property8",
-                    ".property9.property10Value",
+                    "property7.property8",
+                    "property9.property10Value",
                 };
             }
         }

@@ -450,15 +450,26 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
+        public static TheoryData<string> ComplexType_ImpliedPrefixData
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    "?[key0].Id=10",
+                    "?[0].Key=key0&[0].Value.Id=10",
+                    "?index=low&[low].Key=key0&[low].Value.Id=10",
+                    "?parameter[key0].Id=10",
+                    "?parameter[0].Key=key0&parameter[0].Value.Id=10",
+                    "?parameter.index=low&parameter[low].Key=key0&parameter[low].Value.Id=10",
+                    "?parameter.index=index&parameter[index].Key=key0&parameter[index].Value.Id=10",
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("?[key0].Id=10")]
-        [InlineData("?[0].Key=key0&[0].Value.Id=10")]
-        [InlineData("?index=low&[low].Key=key0&[low].Value.Id=10")]
-        [InlineData("?parameter[key0].Id=10")]
-        [InlineData("?parameter[0].Key=key0&parameter[0].Value.Id=10")]
-        [InlineData("?parameter.index=low&parameter[low].Key=key0&parameter[low].Value.Id=10")]
-        [InlineData("?parameter.index=index&parameter[index].Key=key0&parameter[index].Value.Id=10")]
-        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_ImpliedPrefix_Success(string queryString)
+        [MemberData(nameof(ComplexType_ImpliedPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithImpliedPrefix(string queryString)
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -490,11 +501,168 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Theory]
-        [InlineData("?prefix[key0].Id=10")]
-        [InlineData("?prefix[0].Key=key0&prefix[0].Value.Id=10")]
-        [InlineData("?prefix.index=low&prefix[low].Key=key0&prefix[low].Value.Id=10")]
-        [InlineData("?prefix.index=index&prefix[index].Key=key0&prefix[index].Value.Id=10")]
-        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_ExplicitPrefix_Success(
+        [InlineData("?[key0][Id]=10")] // Both key segments will be rewritten.
+        [InlineData("?[0][Key]=key0&[0][Value][Id]=10")]
+        [InlineData("?parameter[key0][Id]=10")]
+        [InlineData("?parameter[0][Key]=key0&parameter[0][Value][Id]=10")]
+        [MemberData(nameof(ComplexType_ImpliedPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithImpliedPrefixAndJQuery(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, Person> { { "key0", new Person { Id = 10 } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory after default factories.
+                options => options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, Person>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, Person>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData("?[key0][Id]=10")] // Both key segments will be rewritten.
+        [InlineData("?[0][Key]=key0&[0][Value][Id]=10")]
+        [InlineData("?parameter[key0][Id]=10")]
+        [InlineData("?parameter[0][Key]=key0&parameter[0][Value][Id]=10")]
+        [MemberData(nameof(ComplexType_ImpliedPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithImpliedPrefixAndJQueryFirst(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, Person> { { "key0", new Person { Id = 10 } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory before default factories.
+                options => options.ValueProviderFactories.Insert(0, new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, Person>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, Person>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData("?[42][Id]=10")] // Only Id segment will be rewritten.
+        [InlineData("?parameter[42][Id]=10")]
+        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithImpliedPrefixIntegralKeysAndJQuery(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, Person> { { "42", new Person { Id = 10 } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory after default factories.
+                options => options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, Person>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, Person>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData("?[42][Id]=10")] // Only Id segment will be rewritten.
+        [InlineData("?parameter[42][Id]=10")]
+        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithImpliedPrefixIntegralKeysAndJQueryFirst(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, Person> { { "42", new Person { Id = 10 } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory before default factories.
+                options => options.ValueProviderFactories.Insert(0, new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, Person>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, Person>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        public static TheoryData<string> ComplexType_ExplicitPrefixData
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    "?prefix[key0].Id=10",
+                    "?prefix[0].Key=key0&prefix[0].Value.Id=10",
+                    "?prefix.index=low&prefix[low].Key=key0&prefix[low].Value.Id=10",
+                    "?prefix.index=index&prefix[index].Key=key0&prefix[index].Value.Id=10",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ComplexType_ExplicitPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithExplicitPrefix(
             string queryString)
         {
             // Arrange
@@ -513,6 +681,45 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             {
                 request.QueryString = new QueryString(queryString);
             });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, Person>>(modelBindingResult.Model);
+            Assert.Equal(new Dictionary<string, Person> { { "key0", new Person { Id = 10 } }, }, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData("?prefix[key0][Id]=10")]
+        [MemberData(nameof(ComplexType_ExplicitPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithExplicitPrefixAndJQuery(
+            string queryString)
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory after default factories.
+                options => options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory()));
+
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                BindingInfo = new BindingInfo()
+                {
+                    BinderModelName = "prefix",
+                },
+                ParameterType = typeof(Dictionary<string, Person>)
+            };
 
             var modelState = testContext.ModelState;
 
@@ -606,6 +813,202 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(model);
 
             Assert.Empty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        public static TheoryData<string> CollectionType_ImpliedPrefixData
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    "?[key0]=10&[key0]=11",
+                    "?[key0][0]=10&[key0][1]=11",
+                    "?[0].Key=key0&[0].Value[0]=10&[0].Value[1]=11",
+                    "?index=low&[low].Key=key0&[low].Value[0]=10&[low].Value[1]=11",
+                    "?parameter[key0]=10&parameter[key0]=11",
+                    "?parameter[key0][0]=10&parameter[key0][1]=11",
+                    "?parameter[0].Key=key0&parameter[0].Value[0]=10&parameter[0].Value[1]=11",
+                    "?parameter.index=low&parameter[low].Key=key0&parameter[low].Value[0]=10&parameter[low].Value[1]=11",
+                    "?parameter.index=index&parameter[index].Key=key0&parameter[index].Value[0]=10&parameter[index].Value[1]=11",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CollectionType_ImpliedPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfCollectionType_WithImpliedPrefix(string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, string[]> { { "key0", new[] { "10", "11" } } };
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, string[]>)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString));
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, string[]>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [MemberData(nameof(CollectionType_ImpliedPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfCollectionType_WithImpliedPrefixAndJQuery(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, string[]> { { "key0", new[] { "10", "11" } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory after default factories.
+                options => options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, string[]>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, string[]>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [MemberData(nameof(CollectionType_ImpliedPrefixData))]
+        public async Task DictionaryModelBinder_BindsDictionaryOfCollectionType_WithImpliedPrefixAndJQueryFirst(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, string[]> { { "key0", new[] { "10", "11" } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory before default factories.
+                options => options.ValueProviderFactories.Insert(0, new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, string[]>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, string[]>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData("?[42]=10&[42]=11")]
+        [InlineData("?[42][]=10&[42][]=11")]
+        [InlineData("?[42][0]=10&[42][1]=11")]
+        [InlineData("?parameter[42]=10&parameter[42]=11")]
+        [InlineData("?parameter[42][]=10&parameter[42][]=11")]
+        [InlineData("?parameter[42][0]=10&parameter[42][1]=11")]
+        public async Task DictionaryModelBinder_BindsDictionaryOfCollectionType_WithImpliedPrefixIntegralKeysAndJQuery(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, string[]> { { "42", new[] { "10", "11" } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory after default factories.
+                options => options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, string[]>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, string[]>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData("?[42]=10&[42]=11")]
+        [InlineData("?[42][]=10&[42][]=11")]
+        [InlineData("?[42][0]=10&[42][1]=11")]
+        [InlineData("?parameter[42]=10&parameter[42]=11")]
+        [InlineData("?parameter[42][]=10&parameter[42][]=11")]
+        [InlineData("?parameter[42][0]=10&parameter[42][1]=11")]
+        public async Task DictionaryModelBinder_BindsDictionaryOfCollectionType_WithImpliedPrefixIntegralKeysAndJQueryFirst(
+            string queryString)
+        {
+            // Arrange
+            var expectedDictionary = new Dictionary<string, string[]> { { "42", new[] { "10", "11" } } };
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = new QueryString(queryString),
+                // Add JQueryQueryStringValueProviderFactory before default factories.
+                options => options.ValueProviderFactories.Insert(0, new JQueryQueryStringValueProviderFactory()));
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, string[]>)
+            };
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, string[]>>(modelBindingResult.Model);
+            Assert.Equal(expectedDictionary, model);
+
+            Assert.NotEmpty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }

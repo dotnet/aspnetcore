@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
     {
         private static readonly Dictionary<string, StringValues> _backingStore = new Dictionary<string, StringValues>
         {
+            // Reviewers: A fair number of cases in the following dataset seem impossible for jQuery.ajax() to send
+            // given how $.ajax() and $.param() are defined i.e. $.param() won't add a bare name after ']'. Also, the
+            // names we generate for <input/> elements are always valid. Should we remove these weird / invalid cases
+            // e.g. normalizing "property[]Value"? (That normalizes to "propertyValue".) See also
+            // https://github.com/jquery/jquery/blob/1ea092a54b00aa4d902f4e22ada3854d195d4a18/src/serialize.js#L13-L92
+            // The alternative is to handle "[]name" and "[index]name" cases while normalizing keys.
             { "[]", new[] { "found" } },
             { "[]property1", new[] { "found" } },
             { "property2[]", new[] { "found" } },
@@ -57,12 +63,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                     "[14]property1[15]property2",
                     "prefix.property1[13]",
                     "prefix[14][15]",
-                    ".property5",
-                    ".property6Value",
+                    "property5",
+                    "property6Value",
                     "prefix.property2",
                     "prefix.propertyValue",
-                    ".property7.property8",
-                    ".property9.property10Value",
+                    "property7.property8",
+                    "property9.property10Value",
                 };
             }
         }

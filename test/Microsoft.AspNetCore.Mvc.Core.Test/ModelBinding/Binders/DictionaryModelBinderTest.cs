@@ -302,8 +302,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal(
                 new KeyValuePair<string, int>[]
                 {
-                    new KeyValuePair<string, int>("23", 23),
-                    new KeyValuePair<string, int>("27", 27),
+                    new KeyValuePair<string, int>("prefix[23]", 23),
+                    new KeyValuePair<string, int>("prefix[27]", 27),
                 }.OrderBy(kvp => kvp.Key),
                 strategy.KeyMappings.OrderBy(kvp => kvp.Key));
         }
@@ -532,15 +532,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             public override bool Equals(object obj)
             {
-                var other = obj as ModelWithProperties;
-                return other != null &&
+                return obj is ModelWithProperties other &&
                     Id == other.Id &&
                     string.Equals(Name, other.Name, StringComparison.Ordinal);
             }
 
             public override int GetHashCode()
             {
-                int nameCode = Name == null ? 0 : Name.GetHashCode();
+                var nameCode = Name == null ? 0 : Name.GetHashCode();
                 return nameCode ^ Id.GetHashCode();
             }
 
