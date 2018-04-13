@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return serialized;
         }
 
-        private void SetCache(string protocolName, byte[] serialized)
+        private void SetCache(string protocolName, ReadOnlyMemory<byte> serialized)
         {
             if (_cachedItem1.ProtocolName == null)
             {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private bool TryGetCached(string protocolName, out byte[] result)
+        private bool TryGetCached(string protocolName, out ReadOnlyMemory<byte> result)
         {
             if (string.Equals(_cachedItem1.ProtocolName, protocolName, StringComparison.Ordinal))
             {

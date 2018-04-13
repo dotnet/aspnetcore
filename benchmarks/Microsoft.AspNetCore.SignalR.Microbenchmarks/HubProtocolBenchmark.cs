@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     public class HubProtocolBenchmark
     {
         private IHubProtocol _hubProtocol;
-        private byte[] _binaryInput;
+        private ReadOnlyMemory<byte> _binaryInput;
         private TestBinder _binder;
         private HubMessage _hubMessage;
 

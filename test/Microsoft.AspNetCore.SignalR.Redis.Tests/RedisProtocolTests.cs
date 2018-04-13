@@ -202,10 +202,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             {
-                output.Write(GetMessageBytes(message));
+                output.Write(GetMessageBytes(message).Span);
             }
 
-            public byte[] GetMessageBytes(HubMessage message)
+            public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
             {
                 SerializationCount += 1;
 

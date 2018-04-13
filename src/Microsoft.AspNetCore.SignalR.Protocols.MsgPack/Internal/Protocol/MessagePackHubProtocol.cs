@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        public byte[] GetMessageBytes(HubMessage message)
+        public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
             var writer = MemoryBufferWriter.Get();
 

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
-        private byte[] _cachedPingMessage;
+        private ReadOnlyMemory<byte> _cachedPingMessage;
 
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
         {
@@ -223,11 +223,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
-                Debug.Assert(_cachedPingMessage != null);
-
-                _connectionContext.Transport.Output.Write(_cachedPingMessage);
-
-                await _connectionContext.Transport.Output.FlushAsync();
+                await _connectionContext.Transport.Output.WriteAsync(_cachedPingMessage);
 
                 Log.SentPing(_logger);
             }

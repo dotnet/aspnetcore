@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
             }
 
-            public byte[] GetMessageBytes(HubMessage message)
+            public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
             {
                 return HubProtocolExtensions.GetMessageBytes(this, message);
             }
