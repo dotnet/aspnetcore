@@ -255,7 +255,7 @@
     <PackageArtifact Include="Microsoft.Extensions.Hosting.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Hosting" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Http" Category="ship" AppMetapackage="true" AllMetapackage="true"  />
-    <PackageArtifact Include="Microsoft.Extensions.Http.Polly" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Http.Polly" Category="ship" AppMetapackage="false" AllMetapackage="false" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" AppMetapackage="true" AllMetapackage="true" />
