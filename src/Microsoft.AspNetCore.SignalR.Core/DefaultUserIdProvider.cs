@@ -3,11 +3,11 @@
 
 using System.Security.Claims;
 
-namespace Microsoft.AspNetCore.SignalR.Core
+namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultUserIdProvider : IUserIdProvider
     {
-        public string GetUserId(HubConnectionContext connection)
+        public virtual string GetUserId(HubConnectionContext connection)
         {
             return connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
