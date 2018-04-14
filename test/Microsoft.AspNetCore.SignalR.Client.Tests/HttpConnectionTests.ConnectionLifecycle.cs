@@ -19,9 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests
     {
-        private static readonly Version Windows8Version = new Version(6, 2);
-
-        public class ConnectionLifecycle : LoggedTest
+        public class ConnectionLifecycle : VerifiableLoggedTest
         {
             public ConnectionLifecycle(ITestOutputHelper output) : base(output)
             {
@@ -30,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanStartStartedConnection()
             {
-                using (StartLog(out var loggerFactory))
+                using (StartVerifableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(CreateConnection(loggerFactory: loggerFactory), async (connection) =>
                     {
@@ -43,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanStartStartingConnection()
             {
-                using (StartLog(out var loggerFactory))
+                using (StartVerifableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory, transport: new TestTransport(onTransportStart: SyncPoint.Create(out var syncPoint))),
@@ -63,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CannotStartConnectionOnceDisposed()
             {
-                using (StartLog(out var loggerFactory))
+                using (StartVerifableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory),
@@ -85,7 +83,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [InlineData(3)]
             public async Task TransportThatFailsToStartFallsBack(int passThreshold)
             {
-                using (StartLog(out var loggerFactory))
+                bool ExpectedErrors(WriteContext writeContext)
+                {
+                    return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                           writeContext.EventId.Name == "ErrorStartingTransport";
+                }
+
+                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var startCounter = 0;
                     var expected = new Exception("Transport failed to start");
@@ -130,7 +134,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task StartThrowsAfterAllTransportsFail()
             {
-                using (StartLog(out var loggerFactory))
+                bool ExpectedErrors(WriteContext writeContext)
+                {
+                    return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                           writeContext.EventId.Name == "ErrorStartingTransport";
+                }
+
+                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var startCounter = 0;
                     var availableTransports = 3;
@@ -165,7 +175,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeUnstartedConnection()
             {
-                using (StartLog(out var loggerFactory))
+                using (StartVerifableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory),
@@ -180,7 +190,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeStartingConnection()
             {
-                using (StartLog(out var loggerFactory))
+                using (StartVerifableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(
@@ -214,7 +224,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeDisposingConnection()
             {
-                using (StartLog(out var loggerFactory))
+                using (StartVerifableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(
@@ -273,7 +283,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task TransportPipeIsCompletedWhenErrorOccursInTransport()
             {
-                using (StartLog(out var loggerFactory))
+                bool ExpectedErrors(WriteContext writeContext)
+                {
+                    return writeContext.LoggerName == typeof(LongPollingTransport).FullName &&
+                           writeContext.EventId.Name == "ErrorSending";
+                }
+
+                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
@@ -286,6 +302,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         });
                         return longPollResult.Task;
                     });
+                    httpHandler.OnLongPollDelete(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
 
                     httpHandler.OnSocketSend((data, _) =>
                     {
@@ -309,7 +326,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task SSEWontStartIfSuccessfulConnectionIsNotEstablished()
             {
-                using (StartLog(out var loggerFactory))
+                bool ExpectedErrors(WriteContext writeContext)
+                {
+                    return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                           writeContext.EventId.Name == "ErrorStartingTransport";
+                }
+
+                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
@@ -333,7 +356,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task SSEWaitsForResponseToStart()
             {
-                using (StartLog(out var loggerFactory))
+                using (StartVerifableLog(out var loggerFactory))
                 {
                     var httpHandler = new TestHttpMessageHandler();
 

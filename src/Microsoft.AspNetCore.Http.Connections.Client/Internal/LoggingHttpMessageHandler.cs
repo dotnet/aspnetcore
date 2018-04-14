@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Log.SendingHttpRequest(_logger, request.RequestUri);
+            Log.SendingHttpRequest(_logger, request.Method, request.RequestUri);
 
             var response = await base.SendAsync(request, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                Log.UnsuccessfulHttpResponse(_logger, request.RequestUri, response.StatusCode);
+                Log.UnsuccessfulHttpResponse(_logger, response.StatusCode, request.Method, request.RequestUri);
             }
 
             return response;
@@ -40,19 +40,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private static class Log
         {
-            private static readonly Action<ILogger, Uri, Exception> _sendingHttpRequest =
-                LoggerMessage.Define<Uri>(LogLevel.Trace, new EventId(1, "SendingHttpRequest"), "Sending HTTP request to '{RequestUrl}'.");
+            private static readonly Action<ILogger, HttpMethod, Uri, Exception> _sendingHttpRequest =
+                LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Trace, new EventId(1, "SendingHttpRequest"), "Sending HTTP request {RequestMethod} '{RequestUrl}'.");
 
-            private static readonly Action<ILogger, Uri, HttpStatusCode, Exception> _unsuccessfulHttpResponse =
-                LoggerMessage.Define<Uri, HttpStatusCode>(LogLevel.Warning, new EventId(2, "UnsuccessfulHttpResponse"), "Unsuccessful HTTP response status code of {StatusCode} return from '{RequestUrl}'.");
+            private static readonly Action<ILogger, HttpStatusCode, HttpMethod, Uri, Exception> _unsuccessfulHttpResponse =
+                LoggerMessage.Define<HttpStatusCode, HttpMethod, Uri>(LogLevel.Warning, new EventId(2, "UnsuccessfulHttpResponse"), "Unsuccessful HTTP response status code of {StatusCode} return from {RequestMethod} '{RequestUrl}'.");
 
-            public static void SendingHttpRequest(ILogger logger, Uri requestUrl)
+            public static void SendingHttpRequest(ILogger logger, HttpMethod requestMethod, Uri requestUrl)
             {
-                _sendingHttpRequest(logger, requestUrl, null);
+                _sendingHttpRequest(logger, requestMethod, requestUrl, null);
             }
-            public static void UnsuccessfulHttpResponse(ILogger logger, Uri requestUrl, HttpStatusCode statusCode)
+            public static void UnsuccessfulHttpResponse(ILogger logger, HttpStatusCode statusCode, HttpMethod requestMethod, Uri requestUrl)
             {
-                _unsuccessfulHttpResponse(logger, requestUrl, statusCode, null);
+                _unsuccessfulHttpResponse(logger, statusCode, requestMethod, requestUrl, null);
             }
         }
     }

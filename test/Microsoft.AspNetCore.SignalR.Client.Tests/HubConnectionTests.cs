@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    public partial class HubConnectionTests : LoggedTest
+    public partial class HubConnectionTests : VerifiableLoggedTest
     {
         public HubConnectionTests(ITestOutputHelper output)
             : base(output)
@@ -120,7 +120,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task PendingInvocationsAreTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
         {
-            using (StartLog(out var loggerFactory, LogLevel.Trace))
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ShutdownWithError";
+            }
+
+            using (StartVerifableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
             {
                 var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: loggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(2000);

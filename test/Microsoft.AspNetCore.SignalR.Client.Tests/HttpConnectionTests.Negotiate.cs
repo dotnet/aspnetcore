@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -60,6 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var negotiateUrlTcs = new TaskCompletionSource<string>();
                 testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnLongPollDelete(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
                 testHttpHandler.OnNegotiate((request, cancellationToken) =>
                 {
                     negotiateUrlTcs.TrySetResult(request.RequestUri.ToString());
@@ -67,12 +69,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         ResponseUtils.CreateNegotiationContent());
                 });
 
-                await WithConnectionAsync(
-                    CreateConnection(testHttpHandler, url: requestedUrl),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                    });
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                { 
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, url: requestedUrl, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        });
+                }
 
                 Assert.Equal(expectedNegotiate, await negotiateUrlTcs.Task.OrTimeout());
             }
@@ -115,12 +120,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling))
                     .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
-                await WithConnectionAsync(
-                    CreateConnection(testHttpHandler, transportFactory: transportFactory.Object),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync(TransferFormat.Binary).OrTimeout();
-                    });
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, transportFactory: transportFactory.Object, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                        });
+                }
             }
 
             [Fact]

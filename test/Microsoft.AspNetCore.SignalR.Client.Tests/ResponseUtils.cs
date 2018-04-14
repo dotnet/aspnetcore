@@ -43,6 +43,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                    (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
         }
 
+        public static bool IsLongPollDeleteRequest(HttpRequestMessage request)
+        {
+            return request.Method == HttpMethod.Delete &&
+                   (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
+        }
+
         public static bool IsSocketSendRequest(HttpRequestMessage request)
         {
             return request.Method == HttpMethod.Post &&

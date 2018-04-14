@@ -124,6 +124,23 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             });
         }
 
+        public void OnLongPollDelete(Func<CancellationToken, HttpResponseMessage> handler) => OnLongPollDelete((cancellationToken) => Task.FromResult(handler(cancellationToken)));
+
+        public void OnLongPollDelete(Func<CancellationToken, Task<HttpResponseMessage>> handler)
+        {
+            OnRequest((request, next, cancellationToken) =>
+            {
+                if (ResponseUtils.IsLongPollDeleteRequest(request))
+                {
+                    return handler(cancellationToken);
+                }
+                else
+                {
+                    return next();
+                }
+            });
+        }
+
         public void OnLongPoll(Func<CancellationToken, HttpResponseMessage> handler) => OnLongPoll(cancellationToken => Task.FromResult(handler(cancellationToken)));
 
         public void OnLongPoll(Func<CancellationToken, Task<HttpResponseMessage>> handler)

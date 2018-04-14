@@ -149,6 +149,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         // just want to start a new poll.
                         continue;
                     }
+                    catch (WebException ex) when (ex.Status == WebExceptionStatus.RequestCanceled)
+                    {
+                        // SendAsync on .NET Framework doesn't reliably throw OperationCanceledException.
+                        // Catch the WebException and test it.
+                        // https://github.com/dotnet/corefx/issues/26335
+                        continue;
+                    }
 
                     Log.PollResponseReceived(_logger, response);
 
