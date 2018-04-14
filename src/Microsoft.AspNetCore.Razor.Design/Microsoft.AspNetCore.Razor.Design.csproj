@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <!-- Using explicit SDK imports here because the default way conflicts with the AfterBuild target -->
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -9,6 +9,8 @@
 
     <!-- This project doesn't have any code, so don't include it in the .nupkg -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 
   <!-- 
@@ -18,14 +20,6 @@
     We then need to include the output of those projects in our output directory (where it will be used
     by tests) and in the nukpg.
   -->
-  <ItemGroup>
-
-    <!-- These are just normal MSBuild files that we want to include in the package -->
-    <Content Include="build\**\*.props" PackagePath="build\" />
-    <Content Include="build\**\*.targets" PackagePath="build\" />
-    <Content Include="buildMultiTargeting\*.props" PackagePath="buildMultiTargeting\" />
-    <Content Include="buildMultiTargeting\*.targets" PackagePath="buildMultiTargeting\" />
-  </ItemGroup>
 
   <!-- This is the tasks project that needs to be included in the package. -->
   <ItemGroup>
@@ -57,12 +51,20 @@
     -->
     <MSBuild Projects="@(TaskProject)" />
 
-    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=net46" Targets="GetTargetPath">
+    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=net46" Targets="BuiltProjectOutputGroup">
       <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNet46" />
     </MSBuild>
 
-    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=netstandard2.0" Targets="GetTargetPath">
+    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=net46" Targets="DebugSymbolsProjectOutputGroup">
+      <Output TaskParameter="TargetOutputs" ItemName="TaskSymbolNet46" />
+    </MSBuild>
+
+    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=netstandard2.0" Targets="BuiltProjectOutputGroup">
       <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNetStandard" />
+    </MSBuild>
+
+    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=netstandard2.0" Targets="DebugSymbolsProjectOutputGroup">
+      <Output TaskParameter="TargetOutputs" ItemName="TaskSymbolNetStandard" />
     </MSBuild>
 
     <Copy SourceFiles="@(TaskAssemblyNet46)" DestinationFolder="$(OutputPath)\tasks\net46\">
@@ -71,11 +73,6 @@
     <Copy SourceFiles="@(TaskAssemblyNetStandard)" DestinationFolder="$(OutputPath)\tasks\netstandard2.0\">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
-
-    <ItemGroup>
-      <None Include="@(TaskAssemblyNet46)" PackagePath="tasks\net46\" Pack="true" />
-      <None Include="@(TaskAssemblyNetStandard)" PackagePath="tasks\netstandard2.0\" Pack="true" />
-    </ItemGroup>
 
     <Error Text="TaskAssemblyNet46 is empty. This is a bug" Condition="'@(TaskAssemblyNet46)'==''" />
     <Error Text="TaskAssemblyNetStandard is empty. This is a bug" Condition="'@(TaskAssemblyNetStandard)'==''" />
@@ -89,16 +86,40 @@
     <MSBuild Projects="@(ToolProject)" Properties="PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)tools\" Targets="Publish" />
 
     <ItemGroup>
-      <_RazorTool Include="$(OutputPath)tools\**\*" Exclude="$(OutputPath)tools\**\*.xml;$(OutputPath)tools\**\*.pdb" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Include="@(_RazorTool)">
-        <PackagePath>tools\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
-        <Pack>true</Pack>
-      </None>
+      <_RazorTool Include="$(OutputPath)tools\**\*" />
     </ItemGroup>
 
     <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''" />
+  </Target>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;_BuildDependencyProjects">
+
+    <PropertyGroup>
+      <!-- Make sure we create a symbols.nupkg. -->
+      <IncludeSymbols>true</IncludeSymbols>
+
+      <NuspecProperties>
+        id=$(PackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        description=$(Description);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        copyright=$(Copyright);
+
+        <!-- Include the assembly and symbols from the tasks project -->
+        TaskAssemblyNet46=@(TaskAssemblyNet46);
+        TaskSymbolNet46=@(TaskSymbolNet46);
+        TaskAssemblyNetStandard=@(TaskAssemblyNetStandard);
+        TaskSymbolNetStandard=@(TaskSymbolNetStandard);
+
+        <!-- Include the assembly and symbols from the tools project -->
+        ToolAssembly=$(OutputPath)tools\**\*;
+      </NuspecProperties>
+    </PropertyGroup>
   </Target>
 </Project>
