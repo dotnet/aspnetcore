@@ -45,7 +45,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     ThrowHeadersReadOnlyException();
                 }
-                SetValueFast(key, value);
+                if (value.Count == 0)
+                {
+                    RemoveFast(key);
+                }
+                else
+                {
+                    SetValueFast(key, value);
+                }
             }
         }
 
@@ -164,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ThrowHeadersReadOnlyException();
             }
 
-            if (!AddValueFast(key, value))
+            if (value.Count > 0 && !AddValueFast(key, value))
             {
                 ThrowDuplicateKeyException();
             }

@@ -360,9 +360,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // request message that contains more than one Host header field or a
             // Host header field with an invalid field-value.
 
-            var host = HttpRequestHeaders.HeaderHost;
-            var hostText = host.ToString();
-            if (host.Count <= 0)
+            var hostCount = HttpRequestHeaders.HostCount;
+            var hostText = HttpRequestHeaders.HeaderHost.ToString();
+            if (hostCount <= 0)
             {
                 if (_httpVersion == Http.HttpVersion.Http10)
                 {
@@ -370,13 +370,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 BadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
             }
-            else if (host.Count > 1)
+            else if (hostCount > 1)
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.MultipleHostHeaders);
             }
-            else if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
+            else if (_requestTargetForm != HttpRequestTarget.OriginForm)
             {
-                if (!host.Equals(RawTarget))
+                // Tail call
+                ValidateNonOrginHostHeader(hostText);
+            }
+            else
+            {
+                // Tail call
+                HttpUtilities.ValidateHostHeader(hostText);
+            }
+        }
+
+        private void ValidateNonOrginHostHeader(string hostText)
+        {
+            if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
+            {
+                if (hostText != RawTarget)
                 {
                     BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                 }
@@ -390,20 +404,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // System.Uri doesn't not tell us if the port was in the original string or not.
                 // When IsDefaultPort = true, we will allow Host: with or without the default port
-                if (host != _absoluteRequestTarget.Authority)
+                if (hostText != _absoluteRequestTarget.Authority)
                 {
                     if (!_absoluteRequestTarget.IsDefaultPort
-                        || host != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
+                        || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
                     {
                         BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                     }
                 }
             }
 
-            if (!HttpUtilities.IsValidHostHeader(hostText))
-            {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
-            }
+            // Tail call
+            HttpUtilities.ValidateHostHeader(hostText);
         }
 
         protected override void OnReset()
@@ -454,8 +466,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason
-                        .MalformedRequestInvalidHeaders);
+                    BadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
                 }
                 throw;
             }

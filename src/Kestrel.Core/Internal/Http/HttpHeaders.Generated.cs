@@ -17,6 +17,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private long _bits = 0;
         private HeaderReferences _headers;
+
+        public bool HasConnection => (_bits & 2L) != 0;
+        public bool HasTransferEncoding => (_bits & 64L) != 0;
+
+        public int HostCount => _headers._Host.Count;
         
         public StringValues HeaderCacheControl
         {
@@ -4794,6 +4799,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private long _bits = 0;
         private HeaderReferences _headers;
+
+        public bool HasConnection => (_bits & 2L) != 0;
+        public bool HasDate => (_bits & 4L) != 0;
+        public bool HasTransferEncoding => (_bits & 64L) != 0;
+        public bool HasServer => (_bits & 33554432L) != 0;
+
         
         public StringValues HeaderCacheControl
         {

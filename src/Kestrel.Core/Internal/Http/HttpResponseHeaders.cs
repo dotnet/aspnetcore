@@ -17,14 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
         private static readonly byte[] _colonSpace = new[] { (byte)':', (byte)' ' };
 
-        public bool HasConnection => HeaderConnection.Count != 0;
-
-        public bool HasTransferEncoding => HeaderTransferEncoding.Count != 0;
-
-        public bool HasServer => HeaderServer.Count != 0;
-
-        public bool HasDate => HeaderDate.Count != 0;
-
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);

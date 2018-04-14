@@ -213,11 +213,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // see also http://tools.ietf.org/html/rfc2616#section-4.4
             var keepAlive = httpVersion != HttpVersion.Http10;
 
-            var connection = headers.HeaderConnection;
             var upgrade = false;
-            if (connection.Count > 0)
+            if (headers.HasConnection)
             {
-                var connectionOptions = HttpHeaders.ParseConnection(connection);
+                var connectionOptions = HttpHeaders.ParseConnection(headers.HeaderConnection);
 
                 upgrade = (connectionOptions & ConnectionOptions.Upgrade) == ConnectionOptions.Upgrade;
                 keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
@@ -233,10 +232,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return new ForUpgrade(context);
             }
 
-            var transferEncoding = headers.HeaderTransferEncoding;
-            if (transferEncoding.Count > 0)
+            if (headers.HasTransferEncoding)
             {
-                var transferCoding = HttpHeaders.GetFinalTransferCoding(headers.HeaderTransferEncoding);
+                var transferEncoding = headers.HeaderTransferEncoding;
+                var transferCoding = HttpHeaders.GetFinalTransferCoding(transferEncoding);
 
                 // https://tools.ietf.org/html/rfc7230#section-3.3.3
                 // If a Transfer-Encoding header field

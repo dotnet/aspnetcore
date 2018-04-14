@@ -426,45 +426,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static bool IsValidHostHeader(string hostText)
+        public static void ValidateHostHeader(string hostText)
         {
-            // The spec allows empty values
             if (string.IsNullOrEmpty(hostText))
             {
-                return true;
+                // The spec allows empty values
+                return;
             }
 
-            if (hostText[0] == '[')
+            var firstChar = hostText[0];
+            if (firstChar == '[')
             {
-                return IsValidIPv6Host(hostText);
+                // Tail call
+                ValidateIPv6Host(hostText);
             }
-
-            if (hostText[0] == ':')
+            else
             {
-                // Only a port
-                return false;
-            }
-
-            var i = 0;
-            for (; i < hostText.Length; i++)
-            {
-                if (!IsValidHostChar(hostText[i]))
+                if (firstChar == ':')
                 {
-                    break;
+                    // Only a port
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                }
+
+                // Enregister array
+                var hostCharValidity = HostCharValidity;
+                for (var i = 0; i < hostText.Length; i++)
+                {
+                    if (!hostCharValidity[hostText[i]])
+                    {
+                        // Tail call
+                        ValidateHostPort(hostText, i); 
+                        return;
+                    }
                 }
             }
-            return IsValidHostPort(hostText, i);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsValidHostChar(char ch)
-        {
-            return ch < HostCharValidity.Length && HostCharValidity[ch];
         }
 
         // The lead '[' was already checked
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsValidIPv6Host(string hostText)
+        private static void ValidateIPv6Host(string hostText)
         {
             for (var i = 1; i < hostText.Length; i++)
             {
@@ -474,58 +473,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     // [::1] is the shortest valid IPv6 host
                     if (i < 4)
                     {
-                        return false;
+                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                     }
-                    return IsValidHostPort(hostText, i + 1);
+                    else if (i + 1 < hostText.Length)
+                    {
+                        // Tail call
+                        ValidateHostPort(hostText, i + 1);
+                    }
+                    return;
                 }
 
                 if (!IsHex(ch) && ch != ':' && ch != '.')
                 {
-                    return false;
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                 }
             }
 
             // Must contain a ']'
-            return false;
+            BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsValidHostPort(string hostText, int offset)
+        private static void ValidateHostPort(string hostText, int offset)
         {
-            if (offset == hostText.Length)
-            {
-                return true;
-            }
-
-            if (hostText[offset] != ':' || hostText.Length == offset + 1)
+            var firstChar = hostText[offset];
+            offset++;
+            if (firstChar != ':' || offset == hostText.Length)
             {
                 // Must have at least one number after the colon if present.
-                return false;
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
             }
 
-            for (var i = offset + 1; i < hostText.Length; i++)
+            for (var i = offset; i < hostText.Length; i++)
             {
                 if (!IsNumeric(hostText[i]))
                 {
-                    return false;
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                 }
             }
-
-            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNumeric(char ch)
         {
-            return '0' <= ch && ch <= '9';
+            // '0' <= ch && ch <= '9'
+            // (uint)(ch - '0') <= (uint)('9' - '0')
+
+            // Subtract start of range '0'
+            // Cast to uint to change negative numbers to large numbers
+            // Check if less than 10 representing chars '0' - '9'
+            return (uint)(ch - '0') < 10u;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsHex(char ch)
         {
             return IsNumeric(ch)
-                || ('a' <= ch && ch <= 'f')
-                || ('A' <= ch && ch <= 'F');
+                // || ('a' <= ch && ch <= 'f')
+                // || ('A' <= ch && ch <= 'F');
+
+                // Lowercase indiscriminately (or with 32)
+                // Subtract start of range 'a'
+                // Cast to uint to change negative numbers to large numbers
+                // Check if less than 6 representing chars 'a' - 'f'
+                || (uint)((ch | 32) - 'a') < 6u;
         }
     }
 }

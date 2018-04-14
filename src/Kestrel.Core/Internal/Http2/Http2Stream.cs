@@ -110,10 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             var hostText = host.ToString();
-            if (!HttpUtilities.IsValidHostHeader(hostText))
-            {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
-            }
+            HttpUtilities.ValidateHostHeader(hostText);
 
             endConnection = false;
             return true;

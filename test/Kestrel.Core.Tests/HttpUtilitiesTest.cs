@@ -170,7 +170,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(HostHeaderData))]
         public void ValidHostHeadersParsed(string host)
         {
-            Assert.True(HttpUtilities.IsValidHostHeader(host));
+            HttpUtilities.ValidateHostHeader(host);
+            // Shouldn't throw
         }
 
         public static TheoryData<string> HostHeaderInvalidData
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(HostHeaderInvalidData))]
         public void InvalidHostHeadersRejected(string host)
         {
-            Assert.False(HttpUtilities.IsValidHostHeader(host));
+            Assert.Throws<BadHttpRequestException>(() => HttpUtilities.ValidateHostHeader(host));
         }
     }
 }
