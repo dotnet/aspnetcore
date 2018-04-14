@@ -20,54 +20,51 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task HelloWorld_HttpSys(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
+        public Task HelloWorld_WebListener(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.InProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.InProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task HelloWorld_IISExpress(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType, HostingModel hostingModel)
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, "/p:ANCMVersion=V2")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, "/p:ANCMVersion=V2")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType, hostingModel: hostingModel);
+            return HelloWorld(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, applicationType, hostingModel: hostingModel, additionalPublishParameters: additionalPublishParameters);
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task HelloWorld_Kestrel_Clr(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
+        public Task HelloWorld_Kestrel_Clr(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601")]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task HelloWorld_Kestrel(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
+        public Task HelloWorld_Kestrel(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task HelloWorld_Nginx(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
+        public Task HelloWorld_Nginx(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(ServerType.Nginx, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
         }
 
 
@@ -76,7 +73,8 @@ namespace ServerComparison.FunctionalTests
             RuntimeArchitecture architecture, 
             ApplicationType applicationType, 
             [CallerMemberName] string testName = null, 
-            HostingModel hostingModel = HostingModel.OutOfProcess)
+            HostingModel hostingModel = HostingModel.OutOfProcess,
+            string additionalPublishParameters = "")
         {
             testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -90,7 +88,8 @@ namespace ServerComparison.FunctionalTests
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
                     ApplicationType = applicationType,
-                    HostingModel = hostingModel
+                    HostingModel = hostingModel,
+                    AdditionalPublishParameters = additionalPublishParameters
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

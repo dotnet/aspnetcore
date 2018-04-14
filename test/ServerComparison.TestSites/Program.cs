@@ -24,7 +24,6 @@ namespace ServerComparison.TestSites
                     factory.AddConsole();
                     factory.AddFilter("Console", level => level >= LogLevel.Warning);
                 })
-                .UseIISIntegration()
                 .UseStartup("ServerComparison.TestSites");
 
             // Switch between Kestrel, IIS, and HttpSys for different tests. Default to Kestrel for normal app execution.
@@ -49,11 +48,13 @@ namespace ServerComparison.TestSites
                     builder.UseHttpSys();
                 }
             }
-            else if (!string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.IIS", StringComparison.Ordinal))
+            else
             {
                 // Check that we are not using IIS inproc before we add Kestrel.
                 builder.UseKestrel();
             }
+            
+            builder.UseIISIntegration();
 
             var host = builder.Build();
 

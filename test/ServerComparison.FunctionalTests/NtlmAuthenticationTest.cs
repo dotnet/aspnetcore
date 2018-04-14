@@ -21,17 +21,18 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, "net461", RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.InProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.InProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, "net461", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.InProcess, "/p:ANCMVersion=V2")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.InProcess, "/p:ANCMVersion=V2")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, "netcoreapp2.0", RuntimeArchitecture.x64, ApplicationType.Standalone)]
@@ -41,7 +42,8 @@ namespace ServerComparison.FunctionalTests
             string targetFramework, 
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
-            HostingModel hostingModel = HostingModel.OutOfProcess)
+            HostingModel hostingModel = HostingModel.OutOfProcess,
+            string additionalPublishParameters = "")
         {
             var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -55,7 +57,8 @@ namespace ServerComparison.FunctionalTests
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
                     TargetFramework = targetFramework,
                     ApplicationType = applicationType,
-                    HostingModel = hostingModel
+                    HostingModel = hostingModel,
+                    AdditionalPublishParameters = additionalPublishParameters
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
