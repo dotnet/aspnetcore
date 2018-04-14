@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, IHubConnectionOptions, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
@@ -396,7 +396,7 @@ describe("hubConnection", () => {
                     })
                     .then((value) => {
                         if (protocol.name === "messagepack") {
-                            // msgpack creates a Buffer for byte arrays and jasmine fails to compare a Buffer
+                            // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
                             // and a Uint8Array even though Buffer instances are also Uint8Array instances
                             value.ByteArray = new Uint8Array(value.ByteArray);
                         }
@@ -440,7 +440,7 @@ describe("hubConnection", () => {
                     })
                     .then((value) => {
                         if (protocol.name === "messagepack") {
-                            // msgpack creates a Buffer for byte arrays and jasmine fails to compare a Buffer
+                            // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
                             // and a Uint8Array even though Buffer instances are also Uint8Array instances
                             value.ByteArray = new Uint8Array(value.ByteArray);
                         }
@@ -632,7 +632,7 @@ describe("hubConnection", () => {
         });
     }
 
-    it("skips Server-Sent Events when negotiating for MsgPack protocol", async (done) => {
+    it("skips Server-Sent Events when negotiating for MessagePack protocol", async (done) => {
         const hubConnection = new HubConnection(TESTHUB_NOWEBSOCKETS_ENDPOINT_URL, {
             ...commonOptions,
             protocol: new MessagePackHubProtocol(),

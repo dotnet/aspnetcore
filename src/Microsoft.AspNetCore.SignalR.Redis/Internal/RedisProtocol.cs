@@ -127,13 +127,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 
             // Read excluded Ids
             IReadOnlyList<string> excludedIds = null;
-            var idCount = MsgPackUtil.ReadArrayHeader(ref data);
+            var idCount = MessagePackUtil.ReadArrayHeader(ref data);
             if (idCount > 0)
             {
                 var ids = new string[idCount];
                 for (var i = 0; i < idCount; i++)
                 {
-                    ids[i] = MsgPackUtil.ReadString(ref data);
+                    ids[i] = MessagePackUtil.ReadString(ref data);
                 }
 
                 excludedIds = ids;
@@ -149,11 +149,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
             // See WriteGroupCommand for format.
             ValidateArraySize(ref data, 5, "GroupCommand");
 
-            var id = MsgPackUtil.ReadInt32(ref data);
-            var serverName = MsgPackUtil.ReadString(ref data);
-            var action = (GroupAction)MsgPackUtil.ReadByte(ref data);
-            var groupName = MsgPackUtil.ReadString(ref data);
-            var connectionId = MsgPackUtil.ReadString(ref data);
+            var id = MessagePackUtil.ReadInt32(ref data);
+            var serverName = MessagePackUtil.ReadString(ref data);
+            var action = (GroupAction)MessagePackUtil.ReadByte(ref data);
+            var groupName = MessagePackUtil.ReadString(ref data);
+            var connectionId = MessagePackUtil.ReadString(ref data);
 
             return new RedisGroupCommand(id, serverName, action, groupName, connectionId);
         }
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
         {
             // See WriteAck for format
             ValidateArraySize(ref data, 1, "Ack");
-            return MsgPackUtil.ReadInt32(ref data);
+            return MessagePackUtil.ReadInt32(ref data);
         }
 
         private void WriteSerializedHubMessage(Stream stream, SerializedHubMessage message)
@@ -185,12 +185,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 
         public static SerializedHubMessage ReadSerializedHubMessage(ref ReadOnlyMemory<byte> data)
         {
-            var count = MsgPackUtil.ReadMapHeader(ref data);
+            var count = MessagePackUtil.ReadMapHeader(ref data);
             var serializations = new SerializedMessage[count];
             for (var i = 0; i < count; i++)
             {
-                var protocol = MsgPackUtil.ReadString(ref data);
-                var serialized = MsgPackUtil.ReadBytes(ref data);
+                var protocol = MessagePackUtil.ReadString(ref data);
+                var serialized = MessagePackUtil.ReadBytes(ref data);
                 serializations[i] = new SerializedMessage(protocol, serialized);
             }
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 
         private static void ValidateArraySize(ref ReadOnlyMemory<byte> data, int expectedLength, string messageType)
         {
-            var length = MsgPackUtil.ReadArrayHeader(ref data);
+            var length = MessagePackUtil.ReadArrayHeader(ref data);
 
             if (length < expectedLength)
             {

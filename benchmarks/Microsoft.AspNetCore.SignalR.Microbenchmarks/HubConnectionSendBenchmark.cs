@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Params(0, 1, 10, 100)]
         public int ArgumentCount;
 
-        [Params("json", "msgpack")]
+        [Params("json", "messagepack")]
         public string Protocol;
 
         [GlobalCleanup]

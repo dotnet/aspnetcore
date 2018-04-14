@@ -5,7 +5,7 @@ using MessagePack;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 {
-    internal static class MsgPackUtil
+    internal static class MessagePackUtil
     {
         public static int ReadArrayHeader(ref ReadOnlyMemory<byte> data)
         {

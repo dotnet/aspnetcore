@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
                 yield return ((i % 2) == 0)
                     ? new WrappedHubProtocol($"json_{i}", new JsonHubProtocol())
-                    : new WrappedHubProtocol($"msgpack_{i}", new MessagePackHubProtocol());
+                    : new WrappedHubProtocol($"messagepack_{i}", new MessagePackHubProtocol());
             }
         }
 
