@@ -8,13 +8,21 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    public partial class HubConnectionTests
+    public partial class HubConnectionTests : LoggedTest
     {
+        public HubConnectionTests(ITestOutputHelper output)
+            : base(output)
+        {
+        }
+
         [Fact]
         public async Task InvokeThrowsIfSerializingMessageFails()
         {
@@ -112,16 +120,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task PendingInvocationsAreTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
         {
-            var hubConnection = CreateHubConnection(new TestConnection());
-            hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(500);
+            using (StartLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: loggerFactory);
+                hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(2000);
 
-            await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().OrTimeout();
 
-            // Start an invocation (but we won't complete it)
-            var invokeTask = hubConnection.InvokeAsync("Method").OrTimeout();
+                // Start an invocation (but we won't complete it)
+                var invokeTask = hubConnection.InvokeAsync("Method").OrTimeout();
 
-            var exception = await Assert.ThrowsAsync<TimeoutException>(() => invokeTask);
-            Assert.Equal("Server timeout (500.00ms) elapsed without receiving a message from the server.", exception.Message);
+                var exception = await Assert.ThrowsAsync<TimeoutException>(() => invokeTask);
+                Assert.Equal("Server timeout (2000.00ms) elapsed without receiving a message from the server.", exception.Message);
+            }
         }
 
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse
