@@ -29,5 +29,14 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisHubLifetimeManager<>));
             return builder;
         }
+
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, string redisConnectionString, Action<RedisOptions> configure)
+        {
+            return AddRedis(builder, o =>
+            {
+                o.Options = ConfigurationOptions.Parse(redisConnectionString);
+                configure(o);
+            });
+        }
     }
 }
