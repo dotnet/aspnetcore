@@ -1608,7 +1608,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Order11)
             };
 
-            MvcOptions testOptions = null;
             var input = "{\"Zip\":\"47\"}";
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
@@ -1621,10 +1620,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 options =>
                 {
                     options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Address)));
-                    testOptions = options;
                 });
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testOptions);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var modelState = testContext.ModelState;
 
             // Act

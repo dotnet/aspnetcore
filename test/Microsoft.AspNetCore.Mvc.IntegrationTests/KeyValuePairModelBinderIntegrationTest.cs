@@ -104,17 +104,20 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                         () => $"Hurts when nothing is provided.");
                 }));
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?parameter.Value=10");
+                },
+                metadataProvider: metadataProvider);
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter",
                 ParameterType = typeof(KeyValuePair<string, int>)
             };
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.QueryString = new QueryString("?parameter.Value=10");
-            });
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -188,18 +191,20 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                         () => $"Hurts when nothing is provided.");
                 }));
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?parameter.Key=10");
+                },
+                metadataProvider: metadataProvider);
 
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter",
                 ParameterType = typeof(KeyValuePair<string, int>)
             };
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.QueryString = new QueryString("?parameter.Key=10");
-            });
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);

@@ -176,7 +176,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var attributes = new object[] { new ModelBinderAttribute(typeof(object)), new ControllerAttribute(), new BindNeverAttribute(), };
-            var modelAttributes = new ModelAttributes(Enumerable.Empty<object>(), null, null);
             var propertyFilterProvider = Mock.Of<IPropertyFilterProvider>();
             var modelType = typeof(Guid);
             var provider = new TestModelMetadataProvider();

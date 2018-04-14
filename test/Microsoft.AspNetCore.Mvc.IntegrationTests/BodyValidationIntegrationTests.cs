@@ -377,15 +377,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                   request.ContentType = "application/json";
               });
+            testContext.MvcOptions.AllowEmptyInputInBodyModelBinding = true;
 
             var modelState = testContext.ModelState;
-
             var addressRequired = ValidationAttributeUtil.GetRequiredErrorMessage("Address");
-
-            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
-            optionsAccessor.Value.AllowEmptyInputInBodyModelBinding = true;
-
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -422,14 +418,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                     request.ContentType = "application/json";
                 });
+            testContext.MvcOptions.AllowEmptyInputInBodyModelBinding = true;
 
-            var httpContext = testContext.HttpContext;
             var modelState = testContext.ModelState;
-
-            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
-            optionsAccessor.Value.AllowEmptyInputInBodyModelBinding = true;
-
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -626,10 +618,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
                 options => options.AllowEmptyInputInBodyModelBinding = allowEmptyInputInBodyModelBindingSetting);
 
-            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
             var modelState = testContext.ModelState;
-
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -793,22 +783,22 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .ForProperty<Person6>(nameof(Person6.Address))
                 .BindingDetails(binding => binding.BindingSource = BindingSource.Body);
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
+                    request.ContentType = "application/json";
+                },
+                metadataProvider: metadataProvider);
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
                 BindingInfo = bindingInfo,
                 ParameterType = typeof(Person6),
             };
-
-            var testContext = ModelBindingTestHelper.GetTestContext(
-                request =>
-                {
-                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
-                    request.ContentType = "application/json";
-                });
-            testContext.MetadataProvider = metadataProvider;
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -839,22 +829,22 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .ForType<Address6>()
                 .BindingDetails(binding => binding.BindingSource = BindingSource.Body);
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
+                    request.ContentType = "application/json";
+                },
+                metadataProvider: metadataProvider);
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
                 BindingInfo = bindingInfo,
                 ParameterType = typeof(Address6),
             };
-
-            var testContext = ModelBindingTestHelper.GetTestContext(
-                request =>
-                {
-                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
-                    request.ContentType = "application/json";
-                });
-            testContext.MetadataProvider = metadataProvider;
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);

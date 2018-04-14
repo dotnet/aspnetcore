@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -148,13 +147,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 request.ContentType = "application/json";
             });
 
-            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
-            optionsAccessor.Value.AllowEmptyInputInBodyModelBinding = true;
+            testContext.MvcOptions.AllowEmptyInputInBodyModelBinding = true;
 
             var modelState = testContext.ModelState;
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
-
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);
@@ -1607,7 +1604,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var model = Assert.IsType<Order8>(modelBindingResult.Model);
             Assert.Equal("bill", model.Name);
-            Assert.Equal(default(KeyValuePair<string, int>), model.ProductId);
+            Assert.Equal(default, model.ProductId);
 
             Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
@@ -1646,7 +1643,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var model = Assert.IsType<Order8>(modelBindingResult.Model);
             Assert.Null(model.Name);
-            Assert.Equal(default(KeyValuePair<string, int>), model.ProductId);
+            Assert.Equal(default, model.ProductId);
 
             Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);

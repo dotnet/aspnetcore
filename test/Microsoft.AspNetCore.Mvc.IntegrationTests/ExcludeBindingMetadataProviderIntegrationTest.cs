@@ -67,12 +67,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var options = new MvcOptions();
-            var setup = new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory());
             var modelBinderProvider = new TypeModelBinderProvider();
 
             // Adding a custom model binder for Type to ensure it doesn't get called
             options.ModelBinderProviders.Insert(0, modelBinderProvider);
 
+            var setup = new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory());
             setup.Configure(options);
 
             // Remove the ExcludeBindingMetadataProvider
@@ -84,22 +84,26 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 }
             }
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(options);
+            var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.Form = new FormCollection(new Dictionary<string, StringValues>
+                    {
+                        { "name", new[] { "Fred" } },
+                        { "type", new[] { "SomeType" } },
+                    });
+                },
+                metadataProvider: metadataProvider,
+                mvcOptions: options);
+
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
                 BindingInfo = new BindingInfo(),
                 ParameterType = typeof(TypesBundle),
             };
-
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.Form = new FormCollection(new Dictionary<string, StringValues>
-                {
-                    { "name", new[] { "Fred" } },
-                    { "type", new[] { "SomeType" } },
-                });
-            });
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);

@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 stringLocalizerFactory: null);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(new object[] { attribute }, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(new object[] { attribute }));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new[] { dataType, };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { dataType, displayFormat, };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { editable };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateBindingMetadata(context);
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { editable };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateBindingMetadata(context);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display, displayName };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display, displayName };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display, displayName };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { displayName };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(DataAnnotationsMetadataProviderTest));
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -671,7 +671,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -805,7 +805,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -833,7 +833,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attributes = new object[0];
 
             var key = ModelMetadataIdentity.ForType(type);
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             var stringLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
             stringLocalizer
@@ -985,7 +985,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var key = ModelMetadataIdentity.ForType(typeof(EnumWithDisplayOrder));
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
 
             // Act
             provider.CreateDisplayMetadata(context);
@@ -1119,7 +1119,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { required };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -1141,7 +1141,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.ValidationMetadata.IsRequired = initialValue;
 
             // Act
@@ -1164,7 +1164,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { new RequiredAttribute() };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.BindingMetadata.IsBindingRequired = initialValue;
 
             // Act
@@ -1187,7 +1187,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var attributes = new Attribute[] { };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.BindingMetadata.IsReadOnly = initialValue;
 
             // Act
@@ -1208,7 +1208,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -1229,7 +1229,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.ValidationMetadata.ValidatorMetadata.Add(attribute);
 
             // Act
@@ -1248,7 +1248,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var key = ModelMetadataIdentity.ForType(typeof(EnumWithLocalizedDisplayNames));
             var attributes = new object[0];
 
-            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
+            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
             provider.CreateDisplayMetadata(context);
 
             return context.DisplayMetadata.EnumGroupedDisplayNamesAndValues;
@@ -1272,6 +1272,26 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             return new DataAnnotationsMetadataProvider(
                 Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 useStringLocalizer ? stringLocalizerFactory.Object : null);
+        }
+
+        private ModelAttributes GetModelAttributes(IEnumerable<object> typeAttributes)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var modelAttributes = new ModelAttributes(typeAttributes);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            return modelAttributes;
+        }
+
+        private ModelAttributes GetModelAttributes(
+            IEnumerable<object> typeAttributes,
+            IEnumerable<object> propertyAttributes)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var modelAttributes = new ModelAttributes(propertyAttributes, typeAttributes);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            return modelAttributes;
         }
 
         private class KVPEnumGroupAndNameComparer : IEqualityComparer<KeyValuePair<EnumGroupAndName, string>>
