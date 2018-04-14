@@ -117,11 +117,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             {
                 foreach (var transport in TransportTypes())
                 {
-                    yield return new object[] { transport, JsonHubProtocol.ProtocolName };
+                    yield return new object[] { transport, "json" };
 
                     if (transport != HttpTransportType.ServerSentEvents)
                     {
-                        yield return new object[] { transport, MessagePackHubProtocol.ProtocolName };
+                        yield return new object[] { transport, "messagepack" };
                     }
                 }
             }

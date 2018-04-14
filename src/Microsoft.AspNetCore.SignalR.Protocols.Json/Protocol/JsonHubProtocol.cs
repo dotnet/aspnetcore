@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string ArgumentsPropertyName = "arguments";
         private const string HeadersPropertyName = "headers";
 
-        public static readonly string ProtocolName = "json";
-        public static readonly int ProtocolVersion = 1;
+        private static readonly string ProtocolName = "json";
+        private static readonly int ProtocolVersion = 1;
 
         // ONLY to be used for application payloads (args, return values, etc.)
         public JsonSerializer PayloadSerializer { get; }

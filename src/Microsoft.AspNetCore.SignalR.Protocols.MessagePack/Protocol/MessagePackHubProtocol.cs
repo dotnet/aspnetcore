@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private IFormatterResolver _resolver;
 
-        public static readonly string ProtocolName = "messagepack";
-        public static readonly int ProtocolVersion = 1;
+        private static readonly string ProtocolName = "messagepack";
+        private static readonly int ProtocolVersion = 1;
 
         public string Name => ProtocolName;
 
