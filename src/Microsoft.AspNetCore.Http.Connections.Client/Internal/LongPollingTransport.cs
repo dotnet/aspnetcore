@@ -88,16 +88,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // Set the sending error so we communicate that to the application
                 _error = sending.IsFaulted ? sending.Exception.InnerException : null;
 
-                // Send the DELETE request to clean-up the connection on the server.
-                // This will also cause the poll to return.
-                await SendDeleteRequest(url);
-
+                // Cancel the poll request
                 _transportCts.Cancel();
 
                 // Cancel any pending flush so that we can quit
                 _application.Output.CancelPendingFlush();
 
                 await receiving;
+
+                // Send the DELETE request to clean-up the connection on the server.
+                await SendDeleteRequest(url);
             }
         }
 

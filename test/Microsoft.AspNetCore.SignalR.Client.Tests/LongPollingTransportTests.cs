@@ -380,12 +380,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     else if (request.Method == HttpMethod.Get)
                     {
+                        cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
                         // This is the poll task
                         return await tcs.Task;
                     }
                     else if (request.Method == HttpMethod.Delete)
                     {
-                        tcs.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                        return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
                     }
                     return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
@@ -416,6 +417,57 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await longPollingTransport.StopAsync();
                 }
+            }
+        }
+
+        [Fact]
+        public async Task LongPollingTransportSendsDeleteAfterPollEnds()
+        {
+            var sentRequests = new List<byte[]>();
+            var pollTcs = new TaskCompletionSource<HttpResponseMessage>();
+            var deleteTcs = new TaskCompletionSource<object>();
+
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    if (request.Method == HttpMethod.Post)
+                    {
+                        // Build a new request object, but convert the entire payload to string
+                        sentRequests.Add(await request.Content.ReadAsByteArrayAsync());
+                    }
+                    else if (request.Method == HttpMethod.Get)
+                    {
+                        cancellationToken.Register(() => pollTcs.TrySetCanceled(cancellationToken));
+                        // This is the poll task
+                        return await pollTcs.Task;
+                    }
+                    else if (request.Method == HttpMethod.Delete)
+                    {
+                        // The poll task should have been completed
+                        Assert.True(pollTcs.Task.IsCompleted);
+
+                        deleteTcs.TrySetResult(null);
+
+                        return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
+                    }
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var longPollingTransport = new LongPollingTransport(httpClient);
+
+                // Start the transport
+                await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
+
+                var task = longPollingTransport.StopAsync();
+
+                await deleteTcs.Task.OrTimeout();
+
+                await task.OrTimeout();
             }
         }
 
