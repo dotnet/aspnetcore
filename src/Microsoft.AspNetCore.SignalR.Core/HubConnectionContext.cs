@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.SignalR
             Task.Factory.StartNew(_abortedCallback, this);
         }
 
-        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
+        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
             IUserIdProvider userIdProvider, bool enableDetailedErrors)
         {
             try

@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _instance = instance;
         }
 
-        public IHubProtocol GetProtocol(string protocolName, IList<string> supportedProtocols)
+        public IHubProtocol GetProtocol(string protocolName, IReadOnlyList<string> supportedProtocols)
         {
             return _instance;
         }

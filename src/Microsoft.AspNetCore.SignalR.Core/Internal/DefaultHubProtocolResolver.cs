@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        public IHubProtocol GetProtocol(string protocolName, IList<string> supportedProtocols)
+        public virtual IHubProtocol GetProtocol(string protocolName, IReadOnlyList<string> supportedProtocols)
         {
             protocolName = protocolName ?? throw new ArgumentNullException(nameof(protocolName));
 

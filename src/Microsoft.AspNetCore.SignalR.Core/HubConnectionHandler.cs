@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Core;
@@ -61,7 +63,8 @@ namespace Microsoft.AspNetCore.SignalR
 
             var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory);
 
-            if (!await connectionContext.HandshakeAsync(handshakeTimeout, supportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
+            var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
+            if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
             {
                 return;
             }
