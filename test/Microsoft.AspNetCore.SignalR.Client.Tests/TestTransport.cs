@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     else if (result.IsCanceled)
                     {
                         // This is useful for detecting that the connection tried to gracefully terminate.
-                        // If the Receiving task is faulted/cancelled, it means StopAsync was the thing that
+                        // If the Receiving task is faulted/canceled, it means StopAsync was the thing that
                         // actually terminated the connection (not ideal, we want the transport pipe to
                         // shut down gracefully)
                         throw new OperationCanceledException();

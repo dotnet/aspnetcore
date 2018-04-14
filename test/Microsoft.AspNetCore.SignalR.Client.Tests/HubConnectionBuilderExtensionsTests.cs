@@ -68,21 +68,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public void WithHubProtocolAddsProtocol()
-        {
-            var hubProtocol = Mock.Of<IHubProtocol>();
-
-            var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.WithHubProtocol(hubProtocol);
-
-            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
-
-            var resolvedHubProtocol = serviceProvider.GetService<IHubProtocol>();
-
-            Assert.Same(hubProtocol, resolvedHubProtocol);
-        }
-
-        [Fact]
         public void AddJsonProtocolAddsProtocol()
         {
             var connectionBuilder = new HubConnectionBuilder();

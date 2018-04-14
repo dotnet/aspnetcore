@@ -1,7 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -10,16 +9,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private static HubConnection CreateHubConnection(TestConnection connection, IHubProtocol protocol = null)
         {
             var builder = new HubConnectionBuilder();
-            builder.WithConnectionFactory(async format =>
-            {
-                await connection.StartAsync(format);
-                return connection;
-            },
-            connecton => ((TestConnection)connection).DisposeAsync());
-            
+
+            var delegateConnectionFactory = new DelegateConnectionFactory(
+                connection.StartAsync,
+                c => ((TestConnection)c).DisposeAsync());
+
+            builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
             if (protocol != null)
             {
-                builder.WithHubProtocol(protocol);
+                builder.Services.AddSingleton(protocol);
             }
 
             return builder.Build();

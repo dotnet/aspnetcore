@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 }
 
                 // We're intentionally not checking cancellation here because we need to drain messages we've got so far,
-                // but it's too late to emit the 204 required by being cancelled.
+                // but it's too late to emit the 204 required by being canceled.
 
                 Log.LongPollingWritingMessage(_logger, buffer.Length);
 

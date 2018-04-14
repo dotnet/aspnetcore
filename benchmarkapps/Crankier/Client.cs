@@ -36,6 +36,8 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                     Trace.WriteLine($"Connection terminated with error: {ex.GetType()}: {ex.Message}");
                     _connectionState = ConnectionState.Faulted;
                 }
+
+                return Task.CompletedTask;
             };
 
             _sendCts = new CancellationTokenSource();

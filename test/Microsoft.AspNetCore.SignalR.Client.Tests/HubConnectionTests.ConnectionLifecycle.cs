@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -17,9 +19,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             // This tactic (using names and a dictionary) allows non-serializable data (like a Func) to be used in a theory AND get it to show in the new hierarchical view in Test Explorer as separate tests you can run individually.
             private static readonly IDictionary<string, Func<HubConnection, Task>> MethodsThatRequireActiveConnection = new Dictionary<string, Func<HubConnection, Task>>()
             {
-                { nameof(HubConnection.InvokeAsync), (connection) => connection.InvokeAsync("Foo") },
-                { nameof(HubConnection.SendAsync), (connection) => connection.SendAsync("Foo") },
-                { nameof(HubConnection.StreamAsChannelAsync), (connection) => connection.StreamAsChannelAsync<object>("Foo") },
+                { nameof(HubConnection.InvokeCoreAsync), (connection) => connection.InvokeAsync("Foo") },
+                { nameof(HubConnection.SendCoreAsync), (connection) => connection.SendAsync("Foo") },
+                { nameof(HubConnection.StreamAsChannelCoreAsync), (connection) => connection.StreamAsChannelAsync<object>("Foo") },
             };
 
             public static IEnumerable<object[]> MethodsNamesThatRequireActiveConnection => MethodsThatRequireActiveConnection.Keys.Select(k => new object[] { k });
@@ -27,14 +29,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             private HubConnection CreateHubConnection(TestConnection testConnection)
             {
                 var builder = new HubConnectionBuilder();
-                builder.WithConnectionFactory(format => testConnection.StartAsync(format), connection => ((TestConnection)connection).DisposeAsync());
+
+                var delegateConnectionFactory = new DelegateConnectionFactory(
+                    testConnection.StartAsync,
+                    connection => ((TestConnection)connection).DisposeAsync());
+                builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+				
                 return builder.Build();
             }
 
-            private HubConnection CreateHubConnection(Func<TransferFormat, Task<ConnectionContext>> connectionFactory, Func<ConnectionContext, Task> disposeCallback)
+            private HubConnection CreateHubConnection(Func<TransferFormat, Task<ConnectionContext>> connectDelegate, Func<ConnectionContext, Task> disposeDelegate)
             {
                 var builder = new HubConnectionBuilder();
-                builder.WithConnectionFactory(format => connectionFactory(format), disposeCallback);
+
+                var delegateConnectionFactory = new DelegateConnectionFactory(connectDelegate, disposeDelegate);
+                builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
                 return builder.Build();
             }
 
@@ -195,7 +205,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await startTask;
 
                     // We need some special logic to ensure InvokeAsync completes.
-                    if (string.Equals(name, nameof(HubConnection.InvokeAsync)))
+                    if (string.Equals(name, nameof(HubConnection.InvokeCoreAsync)))
                     {
                         await ForceLastInvocationToComplete(testConnection);
                     }
@@ -253,7 +263,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var closed = new TaskCompletionSource<object>();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    connection.Closed += (e) => closed.TrySetResult(null);
+                    connection.Closed += (e) =>
+                    {
+                        closed.TrySetResult(null);
+                        return Task.CompletedTask;
+                    };
                     await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
 
@@ -263,7 +277,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     // We should be stopped now
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo").OrTimeout());
-                    Assert.Equal($"The '{nameof(HubConnection.SendAsync)}' method cannot be called if the connection is not active", ex.Message);
+                    Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
 
@@ -277,7 +291,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     // We're hooking the TestConnection shutting down here because the HubConnection one will be blocked on the lock
                     testConnection.Transport.Input.OnWriterCompleted((_, __) => testConnectionClosed.TrySetResult(null), null);
-                    connection.Closed += (e) => connectionClosed.TrySetResult(null);
+                    connection.Closed += (e) =>
+                    {
+                        connectionClosed.TrySetResult(null);
+                        return Task.CompletedTask;
+                    };
 
                     await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
@@ -297,7 +315,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     // We should be stopped now
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo").OrTimeout());
-                    Assert.Equal($"The '{nameof(HubConnection.SendAsync)}' method cannot be called if the connection is not active", ex.Message);
+                    Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
 
                     await testConnection.Disposed.OrTimeout();
 
@@ -312,7 +330,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connectionClosed = new TaskCompletionSource<object>();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    connection.Closed += (e) => connectionClosed.TrySetResult(null);
+                    connection.Closed += (e) =>
+                    {
+                        connectionClosed.TrySetResult(null);
+                        return Task.CompletedTask;
+                    };
 
                     await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
@@ -331,7 +353,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     // We should be stopped now
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo").OrTimeout());
-                    Assert.Equal($"The '{nameof(HubConnection.SendAsync)}' method cannot be called if the connection is not active", ex.Message);
+                    Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
 

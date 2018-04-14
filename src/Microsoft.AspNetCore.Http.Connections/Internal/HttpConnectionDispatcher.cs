@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
                 else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                 {
-                    // Don't poll if the transport task was cancelled
+                    // Don't poll if the transport task was canceled
                     pollAgain = false;
                 }
 

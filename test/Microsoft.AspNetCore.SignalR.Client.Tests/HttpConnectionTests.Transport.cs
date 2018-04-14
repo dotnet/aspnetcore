@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await connection.DisposeAsync().OrTimeout();
 
-                        // This will throw OperationCancelledException if it's forcibly terminated
+                        // This will throw OperationCanceledException if it's forcibly terminated
                         // which we don't want
                         await transport.Receiving.OrTimeout();
                     });

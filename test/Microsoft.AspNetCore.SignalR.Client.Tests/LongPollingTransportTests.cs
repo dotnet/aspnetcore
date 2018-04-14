@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task LongPollingTransportRePollsIfRequestCancelled()
+        public async Task LongPollingTransportRePollsIfRequestCanceled()
         {
             var numPolls = 0;
             var completionTcs = new TaskCompletionSource<object>();

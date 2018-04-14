@@ -40,7 +40,11 @@ namespace JwtClientSample
                 .Build();
 
             var closedTcs = new TaskCompletionSource<object>();
-            hubConnection.Closed += e => closedTcs.SetResult(null);
+            hubConnection.Closed += e =>
+            {
+                closedTcs.SetResult(null);
+                return Task.CompletedTask;
+            };
 
             hubConnection.On<string, string>("Message", (sender, message) => Console.WriteLine($"[{userId}] {sender}: {message}"));
             await hubConnection.StartAsync();

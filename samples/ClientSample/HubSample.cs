@@ -32,7 +32,7 @@ namespace ClientSample
             var uri = baseUrl == null ? new Uri("net.tcp://127.0.0.1:9001") : new Uri(baseUrl);
             Console.WriteLine("Connecting to {0}", uri);
             var connectionBuilder = new HubConnectionBuilder()
-                .WithLogging(logging =>
+                .ConfigureLogging(logging =>
                 {
                     logging.AddConsole();
                 });
@@ -65,6 +65,7 @@ namespace ClientSample
                 closedTokenSource.Cancel();
 
                 Console.WriteLine("Connection closed...");
+                return Task.CompletedTask;
             };
 
             while (true)

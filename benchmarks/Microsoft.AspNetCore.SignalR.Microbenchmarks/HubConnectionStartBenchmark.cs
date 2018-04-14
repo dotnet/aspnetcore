@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
+using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -38,8 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe = new TestDuplexPipe();
 
             var hubConnectionBuilder = new HubConnectionBuilder();
-            hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
-            hubConnectionBuilder.WithConnectionFactory(format =>
+            var delegateConnectionFactory = new DelegateConnectionFactory(format =>
             {
                 var connection = new DefaultConnectionContext();
                 // prevents keep alive time being activated
@@ -53,6 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 connection.Transport.Input.Complete();
                 return Task.CompletedTask;
             });
+            hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             _hubConnection = hubConnectionBuilder.Build();
         }

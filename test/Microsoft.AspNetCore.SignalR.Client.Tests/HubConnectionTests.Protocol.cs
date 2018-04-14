@@ -92,7 +92,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection);
-                hubConnection.Closed += e => closedTcs.SetResult(e);
+                hubConnection.Closed += e =>
+                {
+                    closedTcs.SetResult(e);
+                    return Task.CompletedTask;
+                };
 
                 try
                 {
@@ -117,7 +121,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection);
-                hubConnection.Closed += e => closedTcs.SetResult(e);
+                hubConnection.Closed += e =>
+                {
+                    closedTcs.SetResult(e);
+                    return Task.CompletedTask;
+                };
 
                 try
                 {

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -91,11 +92,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private static HubConnection CreateConnection(string url, HttpTransportType transportType, IHubProtocol protocol, ILoggerFactory loggerFactory)
         {
-            return new HubConnectionBuilder()
-                .WithHubProtocol(protocol)
+            var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithLoggerFactory(loggerFactory)
-                .WithUrl(url, transportType)
-                .Build();
+                .WithUrl(url, transportType);
+
+            hubConnectionBuilder.Services.AddSingleton(protocol);
+
+            return hubConnectionBuilder.Build();
         }
 
         private static IEnumerable<HttpTransportType> TransportTypes()

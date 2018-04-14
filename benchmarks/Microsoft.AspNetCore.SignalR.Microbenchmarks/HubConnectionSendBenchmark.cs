@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -44,12 +45,17 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _tcs = new TaskCompletionSource<ReadResult>();
             _pipe.AddReadResult(new ValueTask<ReadResult>(_tcs.Task));
 
-
-            var protocol = Protocol == "json" ? (IHubProtocol)new JsonHubProtocol() : new MessagePackHubProtocol();
-
             var hubConnectionBuilder = new HubConnectionBuilder();
-            hubConnectionBuilder.WithHubProtocol(protocol);
-            hubConnectionBuilder.WithConnectionFactory(format =>
+            if (Protocol == "json")
+            {
+                // JSON protocol added by default
+            }
+            else
+            {
+                hubConnectionBuilder.AddMessagePackProtocol();
+            }
+
+            var delegateConnectionFactory = new DelegateConnectionFactory(format =>
             {
                 var connection = new DefaultConnectionContext();
                 // prevents keep alive time being activated
@@ -63,6 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 connection.Transport.Input.Complete();
                 return Task.CompletedTask;
             });
+            hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             _hubConnection = hubConnectionBuilder.Build();
             _hubConnection.StartAsync().GetAwaiter().GetResult();
@@ -90,7 +97,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public Task SendAsync()
         {
-            return _hubConnection.SendAsync("Dummy", _arguments);
+            return _hubConnection.SendCoreAsync("Dummy", _arguments);
         }
     }
 }
