@@ -29,6 +29,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         private readonly LogSinkProvider _logSinkProvider;
 
+        internal event Action<LogRecord> ServerLogged
+        {
+            add => _logSinkProvider.RecordLogged += value;
+            remove => _logSinkProvider.RecordLogged -= value;
+        }
+
         public string WebSocketsUrl => Url.Replace("http", "ws");
 
         public string Url { get; private set; }
@@ -146,10 +152,41 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
+    //internal class ForwardingLoggerProvider : ILoggerProvider
+    //{
+    //    private readonly HashSet<ILoggerFactory> _loggerFactories;
+
+    //    public ForwardingLoggerProvider()
+    //    {
+    //        _loggerFactories = new HashSet<ILoggerFactory>();
+    //    }
+
+    //    public void AddFactory(ILoggerFactory loggerFactory)
+    //    {
+    //        _loggerFactories.Add(loggerFactory);
+    //    }
+
+    //    public void RemoveFactory(ILoggerFactory loggerFactory)
+    //    {
+    //        _loggerFactories.Remove(loggerFactory);
+    //    }
+
+    //    public void Dispose()
+    //    {
+    //    }
+
+    //    public ILogger CreateLogger(string categoryName)
+    //    {
+    //        return _loggerFactory.CreateLogger(categoryName);
+    //    }
+    //}
+
     // TestSink doesn't seem to be thread-safe :(.
     internal class LogSinkProvider : ILoggerProvider
     {
         private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
+
+        public event Action<LogRecord> RecordLogged;
 
         public ILogger CreateLogger(string categoryName)
         {
@@ -176,6 +213,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Formatter = (o, e) => formatter((TState)o, e),
                 });
             _logs.Enqueue(record);
+
+            RecordLogged?.Invoke(record);
         }
 
         private class LogSinkLogger : ILogger

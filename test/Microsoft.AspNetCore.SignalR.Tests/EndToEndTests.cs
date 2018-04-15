@@ -34,11 +34,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     }
 
     [Collection(EndToEndTestsCollection.Name)]
-    public class EndToEndTests : VerifiableLoggedTest
+    public class EndToEndTests : VerifiableServerLoggedTest<Startup>
     {
         private readonly ServerFixture<Startup> _serverFixture;
 
-        public EndToEndTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(output)
+        public EndToEndTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(serverFixture, output)
         {
             if (serverFixture == null)
             {
