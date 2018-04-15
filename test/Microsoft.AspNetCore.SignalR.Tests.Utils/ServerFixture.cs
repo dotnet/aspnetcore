@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             _host = new WebHostBuilder()
                 .ConfigureLogging(builder => builder
-                    .SetMinimumLevel(LogLevel.Debug)
+                    .SetMinimumLevel(LogLevel.Trace)
                     .AddProvider(_logSinkProvider)
                     .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))
@@ -163,35 +163,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
     }
-
-    //internal class ForwardingLoggerProvider : ILoggerProvider
-    //{
-    //    private readonly HashSet<ILoggerFactory> _loggerFactories;
-
-    //    public ForwardingLoggerProvider()
-    //    {
-    //        _loggerFactories = new HashSet<ILoggerFactory>();
-    //    }
-
-    //    public void AddFactory(ILoggerFactory loggerFactory)
-    //    {
-    //        _loggerFactories.Add(loggerFactory);
-    //    }
-
-    //    public void RemoveFactory(ILoggerFactory loggerFactory)
-    //    {
-    //        _loggerFactories.Remove(loggerFactory);
-    //    }
-
-    //    public void Dispose()
-    //    {
-    //    }
-
-    //    public ILogger CreateLogger(string categoryName)
-    //    {
-    //        return _loggerFactory.CreateLogger(categoryName);
-    //    }
-    //}
 
     // TestSink doesn't seem to be thread-safe :(.
     internal class LogSinkProvider : ILoggerProvider
