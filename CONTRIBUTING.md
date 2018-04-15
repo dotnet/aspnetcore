@@ -8,7 +8,7 @@ To better foster an open, innovative and inclusive community please refer to our
 
 ## Provide feedback
 
-Since Blazor is currently an experimental project, it's primary focus at this time is to explore potential long term directions and to collect feedback. We rely on feedback from users and the community to help us determine if Blazor is heading in the right direction. We want to hear about your experience, scenarios, and requirements.
+Since Blazor is currently an experimental project, its primary focus at this time is to explore potential long term directions and to collect feedback. We rely on feedback from users and the community to help us determine if Blazor is heading in the right direction. We want to hear about your experience, scenarios, and requirements.
 
 ### Report a bug
 
