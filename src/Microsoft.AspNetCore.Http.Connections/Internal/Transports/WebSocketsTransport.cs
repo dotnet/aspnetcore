@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 while (true)
                 {
 #if NETCOREAPP2_1
-                    // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
+// Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
                     if (result.MessageType == WebSocketMessageType.Close)
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                     var memory = _application.Output.GetMemory();
 
 #if NETCOREAPP2_1
-                    // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
+// Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
 #else
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
@@ -181,6 +181,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                         break;
                     }
                 }
+            }
+            catch (WebSocketException ex) when (ex.ErrorCode == 997)
+            {
+                // The remote party closed the WebSocket connection without completing the close handshake
+                // Don't long an error for this exception
             }
             catch (OperationCanceledException)
             {
