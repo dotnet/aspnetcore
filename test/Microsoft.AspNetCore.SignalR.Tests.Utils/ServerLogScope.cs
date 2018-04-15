@@ -6,13 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class ServerLogScope<TStartup> : IDisposable where TStartup : class
+    public class ServerLogScope : IDisposable
     {
-        private readonly ServerFixture<TStartup> _serverFixture;
+        private readonly ServerFixture _serverFixture;
         private readonly IDisposable _wrappedDisposable;
         //private readonly ILogger _logger;
 
-        public ServerLogScope(ServerFixture<TStartup> serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
+        public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
             _serverFixture = serverFixture;
             _wrappedDisposable = wrappedDisposable;

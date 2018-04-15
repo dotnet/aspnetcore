@@ -18,7 +18,18 @@ using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class ServerFixture<TStartup> : IDisposable
+    public abstract class ServerFixture : IDisposable
+    {
+        internal abstract event Action<LogRecord> ServerLogged;
+
+        public abstract string WebSocketsUrl { get; }
+
+        public abstract string Url { get; }
+
+        public abstract void Dispose();
+    }
+
+    public class ServerFixture<TStartup> : ServerFixture
         where TStartup : class
     {
         private readonly ILoggerFactory _loggerFactory;
@@ -28,16 +39,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly IDisposable _logToken;
 
         private readonly LogSinkProvider _logSinkProvider;
+        private string _url;
 
-        internal event Action<LogRecord> ServerLogged
+        internal override event Action<LogRecord> ServerLogged
         {
             add => _logSinkProvider.RecordLogged += value;
             remove => _logSinkProvider.RecordLogged -= value;
         }
 
-        public string WebSocketsUrl => Url.Replace("http", "ws");
+        public override string WebSocketsUrl => Url.Replace("http", "ws");
 
-        public string Url { get; private set; }
+        public override string Url => _url;
 
         public ServerFixture() : this(loggerFactory: null)
         {
@@ -98,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _logger.LogInformation("Test Server started");
 
             // Get the URL from the server
-            Url = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Single();
+            _url = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Single();
 
             _lifetime.ApplicationStopped.Register(() =>
             {
@@ -125,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return builder.ToString();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _logger.LogInformation("Shutting down test server");
             _host.Dispose();

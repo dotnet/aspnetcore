@@ -8,11 +8,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class VerifiableServerLoggedTest<TStartup> : VerifiableLoggedTest where TStartup : class 
+    public class VerifiableServerLoggedTest : VerifiableLoggedTest
     {
-        public ServerFixture<TStartup> ServerFixture { get; }
+        public ServerFixture ServerFixture { get; }
 
-        public VerifiableServerLoggedTest(ServerFixture<TStartup> serverFixture, ITestOutputHelper output) : base(output)
+        public VerifiableServerLoggedTest(ServerFixture serverFixture, ITestOutputHelper output) : base(output)
         {
             ServerFixture = serverFixture;
         }
@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public override IDisposable StartVerifableLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null)
         {
             var disposable = base.StartVerifableLog(out loggerFactory, minLogLevel, testName, expectedErrorsFilter);
-            return new ServerLogScope<TStartup>(ServerFixture, loggerFactory, disposable);
+            return new ServerLogScope(ServerFixture, loggerFactory, disposable);
         }
 
         public override IDisposable StartVerifableLog(out ILoggerFactory loggerFactory, string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null)
         {
             var disposable = base.StartVerifableLog(out loggerFactory, testName, expectedErrorsFilter);
-            return new ServerLogScope<TStartup>(ServerFixture, loggerFactory, disposable);
+            return new ServerLogScope(ServerFixture, loggerFactory, disposable);
         }
     }
 }

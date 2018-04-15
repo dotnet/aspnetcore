@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
     }
 
     [Collection(HubConnectionTestsCollection.Name)]
-    public class HubConnectionTests : VerifiableServerLoggedTest<Startup>
+    public class HubConnectionTests : VerifiableServerLoggedTest
     {
         private readonly ServerFixture<Startup> _serverFixture;
         public HubConnectionTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(serverFixture, output)

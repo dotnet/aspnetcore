@@ -22,7 +22,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
     [Collection(EndToEndTestsCollection.Name)]
-    public class WebSocketsTransportTests : VerifiableServerLoggedTest<Startup>
+    public class WebSocketsTransportTests : VerifiableServerLoggedTest
     {
         private readonly ServerFixture<Startup> _serverFixture;
 

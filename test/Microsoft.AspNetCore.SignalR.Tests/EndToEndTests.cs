@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     }
 
     [Collection(EndToEndTestsCollection.Name)]
-    public class EndToEndTests : VerifiableServerLoggedTest<Startup>
+    public class EndToEndTests : VerifiableServerLoggedTest
     {
         private readonly ServerFixture<Startup> _serverFixture;
 
@@ -43,6 +43,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             if (serverFixture == null)
             {
                 throw new ArgumentNullException(nameof(serverFixture));
+            }
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
             }
 
             _serverFixture = serverFixture;
