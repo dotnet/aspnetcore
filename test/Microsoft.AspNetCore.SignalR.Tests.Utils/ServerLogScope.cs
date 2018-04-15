@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -9,21 +10,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class ServerLogScope : IDisposable
     {
         private readonly ServerFixture _serverFixture;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly IDisposable _wrappedDisposable;
-        private readonly ILogger _logger;
+        private readonly ConcurrentDictionary<string, ILogger> _loggers;
 
         public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
             _serverFixture = serverFixture;
+            _loggerFactory = loggerFactory;
             _wrappedDisposable = wrappedDisposable;
-            _logger = loggerFactory.CreateLogger(typeof(ServerLogScope));
+            _loggers = new ConcurrentDictionary<string, ILogger>(StringComparer.Ordinal);
 
             _serverFixture.ServerLogged += ServerFixtureOnServerLogged;
         }
 
         private void ServerFixtureOnServerLogged(LogRecord logRecord)
         {
-            _logger.Log(logRecord.Write.LogLevel, logRecord.Write.EventId, logRecord.Write.State, logRecord.Write.Exception, logRecord.Write.Formatter);
+            var logger = _loggers.GetOrAdd(logRecord.Write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
+            logger.Log(logRecord.Write.LogLevel, logRecord.Write.EventId, logRecord.Write.State, logRecord.Write.Exception, logRecord.Write.Formatter);
         }
 
         public void Dispose()
