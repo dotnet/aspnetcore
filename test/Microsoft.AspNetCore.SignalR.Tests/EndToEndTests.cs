@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(TransportTypes))]
         public async Task CanStartAndStopConnectionUsingGivenTransport(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifableLog(out var loggerFactory, minLogLevel: LogLevel.Trace))
             {
                 var url = _serverFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
