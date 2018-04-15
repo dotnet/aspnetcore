@@ -13,11 +13,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly ILoggerFactory _loggerFactory;
         private readonly IDisposable _wrappedDisposable;
         private readonly ConcurrentDictionary<string, ILogger> _loggers;
+        private readonly ILogger _logger;
 
         public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
             _serverFixture = serverFixture;
             _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger(typeof(ServerLogScope));
             _wrappedDisposable = wrappedDisposable;
             _loggers = new ConcurrentDictionary<string, ILogger>(StringComparer.Ordinal);
 
@@ -28,6 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var logger = _loggers.GetOrAdd(logRecord.Write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
             logger.Log(logRecord.Write.LogLevel, logRecord.Write.EventId, logRecord.Write.State, logRecord.Write.Exception, logRecord.Write.Formatter);
+            _logger.Log(logRecord.Write.LogLevel, logRecord.Write.EventId, logRecord.Write.State, logRecord.Write.Exception, logRecord.Write.Formatter);
         }
 
         public void Dispose()

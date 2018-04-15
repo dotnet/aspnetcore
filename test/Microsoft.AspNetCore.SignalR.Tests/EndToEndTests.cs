@@ -36,26 +36,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     [Collection(EndToEndTestsCollection.Name)]
     public class EndToEndTests : VerifiableServerLoggedTest
     {
-        private readonly ServerFixture<Startup> _serverFixture;
-
         public EndToEndTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(serverFixture, output)
         {
-            if (serverFixture == null)
-            {
-                throw new ArgumentNullException(nameof(serverFixture));
-            }
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
-
-            _serverFixture = serverFixture;
         }
 
         [Fact]
         public async Task CanStartAndStopConnectionUsingDefaultTransport()
         {
-            var url = _serverFixture.Url + "/echo";
+            var url = ServerFixture.Url + "/echo";
             // The test should connect to the server using WebSockets transport on Windows 8 and newer.
             // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
             var connection = new HttpConnection(new Uri(url));
@@ -66,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task TransportThatFallsbackCreatesNewConnection()
         {
-            var url = _serverFixture.Url + "/echo";
+            var url = ServerFixture.Url + "/echo";
             // The test should connect to the server using WebSockets transport on Windows 8 and newer.
             // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
 
@@ -82,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifableLog(out var loggerFactory, testName: $"CanStartAndStopConnectionUsingGivenTransport_{transportType}", minLogLevel: LogLevel.Trace))
             {
-                var url = _serverFixture.Url + "/echo";
+                var url = ServerFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
                 await connection.StartAsync(TransferFormat.Text).OrTimeout();
                 await connection.DisposeAsync().OrTimeout();
@@ -100,7 +88,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 const string message = "Hello, World!";
                 using (var ws = new ClientWebSocket())
                 {
-                    var socketUrl = _serverFixture.WebSocketsUrl + "/echo";
+                    var socketUrl = ServerFixture.WebSocketsUrl + "/echo";
 
                     logger.LogInformation("Connecting WebSocket to {socketUrl}", socketUrl);
                     await ws.ConnectAsync(new Uri(socketUrl), CancellationToken.None).OrTimeout();
@@ -137,7 +125,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 const string message = "Hello, World!";
                 using (var ws = new ClientWebSocket())
                 {
-                    var socketUrl = _serverFixture.WebSocketsUrl + "/echo";
+                    var socketUrl = ServerFixture.WebSocketsUrl + "/echo";
 
                     logger.LogInformation("Connecting WebSocket to {socketUrl}", socketUrl);
                     await ws.ConnectAsync(new Uri(socketUrl), CancellationToken.None).OrTimeout();
@@ -171,7 +159,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartVerifableLog(out var loggerFactory))
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
-                var url = _serverFixture.Url + "/echo";
+                var url = ServerFixture.Url + "/echo";
 
                 var mockHttpHandler = new Mock<HttpMessageHandler>();
                 mockHttpHandler.Protected()
@@ -222,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 const string message = "Major Key";
 
-                var url = _serverFixture.Url + "/echo";
+                var url = ServerFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
                 try
                 {
@@ -284,7 +272,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                var url = _serverFixture.Url + "/echo";
+                var url = ServerFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), HttpTransportType.WebSockets, loggerFactory);
 
                 try
@@ -332,7 +320,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                var url = _serverFixture.Url + "/auth";
+                var url = ServerFixture.Url + "/auth";
                 var connection = new HttpConnection(new Uri(url), HttpTransportType.WebSockets, loggerFactory);
 
                 try
@@ -371,7 +359,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                var url = _serverFixture.Url + "/auth";
+                var url = ServerFixture.Url + "/auth";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
 
                 try
@@ -428,7 +416,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                var url = _serverFixture.Url + "/uncreatable";
+                var url = ServerFixture.Url + "/uncreatable";
                 var connection = new HubConnectionBuilder()
                         .WithLoggerFactory(loggerFactory)
                         .WithUrl(url, transportType)

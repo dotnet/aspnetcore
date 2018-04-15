@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -33,15 +31,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
     [Collection(HubConnectionTestsCollection.Name)]
     public class HubConnectionTests : VerifiableServerLoggedTest
     {
-        private readonly ServerFixture<Startup> _serverFixture;
         public HubConnectionTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(serverFixture, output)
         {
-            if (serverFixture == null)
-            {
-                throw new ArgumentNullException(nameof(serverFixture));
-            }
-
-            _serverFixture = serverFixture;
         }
 
         private HubConnection CreateHubConnection(
@@ -66,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             return async format =>
             {
-                var connection = new HttpConnection(new Uri(_serverFixture.Url + path), transportType, loggerFactory);
+                var connection = new HttpConnection(new Uri(ServerFixture.Url + path), transportType, loggerFactory);
                 await connection.StartAsync(format);
                 return connection;
             };
@@ -81,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 var connectionBuilder = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
-                    .WithUrl(_serverFixture.Url + path, transportType);
+                    .WithUrl(ServerFixture.Url + path, transportType);
                 connectionBuilder.Services.AddSingleton(protocol);
 
                 var connection = connectionBuilder.Build();
@@ -438,7 +429,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -472,7 +463,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "UnknownHubMethod";
             }
 
@@ -505,7 +496,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -538,7 +529,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -571,7 +562,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "UnknownHubMethod";
             }
 
@@ -605,7 +596,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -640,7 +631,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -674,7 +665,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "NonStreamingMethodCalledWithStream";
             }
 
@@ -707,7 +698,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "StreamingMethodCalledWithInvoke";
             }
 
@@ -740,7 +731,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return //writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
                        writeContext.EventId.Name == "InvalidReturnValueFromStreamingMethod";
             }
 
@@ -775,14 +766,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 async Task<string> AccessTokenProvider()
                 {
-                    var httpResponse = await new HttpClient().GetAsync(_serverFixture.Url + "/generateJwtToken");
+                    var httpResponse = await new HttpClient().GetAsync(ServerFixture.Url + "/generateJwtToken");
                     httpResponse.EnsureSuccessStatusCode();
                     return await httpResponse.Content.ReadAsStringAsync();
                 };
 
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
-                    .WithUrl(_serverFixture.Url + "/authorizedhub", transportType, options =>
+                    .WithUrl(ServerFixture.Url + "/authorizedhub", transportType, options =>
                     {
                         options.AccessTokenProvider = AccessTokenProvider;
                     })
@@ -813,7 +804,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
-                    .WithUrl(_serverFixture.Url + "/default", transportType, options =>
+                    .WithUrl(ServerFixture.Url + "/default", transportType, options =>
                     {
                         options.Headers["X-test"] = "42";
                         options.Headers["X-42"] = "test";
@@ -845,11 +836,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 // System.Net has a HttpTransportType type which means we need to fully-qualify this rather than 'use' the namespace
                 var cookieJar = new System.Net.CookieContainer();
-                cookieJar.Add(new System.Net.Cookie("Foo", "Bar", "/", new Uri(_serverFixture.Url).Host));
+                cookieJar.Add(new System.Net.Cookie("Foo", "Bar", "/", new Uri(ServerFixture.Url).Host));
 
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
-                    .WithUrl(_serverFixture.Url + "/default", HttpTransportType.WebSockets, options =>
+                    .WithUrl(ServerFixture.Url + "/default", HttpTransportType.WebSockets, options =>
                     {
                         options.WebSocketConfiguration = o => o.Cookies = cookieJar;
                     })
@@ -880,7 +871,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
-                    .WithUrl(_serverFixture.Url + "/default", transportType)
+                    .WithUrl(ServerFixture.Url + "/default", transportType)
                     .Build();
                 try
                 {
@@ -917,7 +908,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var hubConnectionBuilder = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
                     .AddMessagePackProtocol()
-                    .WithUrl(_serverFixture.Url + "/default-nowebsockets");
+                    .WithUrl(ServerFixture.Url + "/default-nowebsockets");
 
                 var hubConnection = hubConnectionBuilder.Build();
                 try
@@ -947,7 +938,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 PollTrackingMessageHandler pollTracker = null;
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
-                    .WithUrl(_serverFixture.Url + "/default", options =>
+                    .WithUrl(ServerFixture.Url + "/default", options =>
                     {
                         options.Transports = HttpTransportType.LongPolling;
                         options.HttpMessageHandlerFactory = handler =>
