@@ -26,11 +26,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IHttpContextFeature,
                                          IHttpTransportFeature
     {
+        private readonly object _itemsLock = new object();
         private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
         private readonly ILogger _logger;
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
+        private IDictionary<object, object> _items;
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
@@ -95,7 +97,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public ClaimsPrincipal User { get; set; }
 
-        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems(new ConcurrentDictionary<object, object>());
+        public override IDictionary<object, object> Items
+        {
+            get
+            {
+                if (_items == null)
+                {
+                    lock (_itemsLock)
+                    {
+                        if (_items == null)
+                        {
+                            _items = new ConnectionItems(new ConcurrentDictionary<object, object>());
+                        }
+                    }
+                }
+                return _items;
+            }
+            set => _items = value ?? throw new ArgumentNullException(nameof(value));
+        }
 
         public IDuplexPipe Application
         {
