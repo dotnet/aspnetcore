@@ -464,6 +464,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var excludeAssemblies = new string[]
             {
                 "Microsoft.AspNetCore.Mvc.Core.Test",
+                "Microsoft.AspNetCore.Mvc.Razor.Extensions.Reference",
                 "Microsoft.AspNetCore.Mvc.TestCommon",
                 "Microsoft.AspNetCore.Mvc.TestDiagnosticListener",
                 "Microsoft.AspNetCore.Mvc.WebApiCompatShim",

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class RazorProjectPageRouteModelProvider : IPageRouteModelProvider
     {
-        private const string AreaRootDirectory = "/Areas/";
+        private const string AreaRootDirectory = "/Areas";
         private readonly RazorProjectFileSystem _razorFileSystem;
         private readonly RazorPagesOptions _pagesOptions;
         private readonly PageRouteModelFactory _routeModelFactory;
