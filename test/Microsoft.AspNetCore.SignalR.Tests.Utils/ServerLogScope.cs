@@ -10,20 +10,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         private readonly ServerFixture _serverFixture;
         private readonly IDisposable _wrappedDisposable;
-        //private readonly ILogger _logger;
+        private readonly ILogger _logger;
 
         public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
             _serverFixture = serverFixture;
             _wrappedDisposable = wrappedDisposable;
-            //_logger = loggerFactory.CreateLogger(typeof(ServerLogScope<TStartup>));
+            _logger = loggerFactory.CreateLogger(typeof(ServerLogScope));
 
             _serverFixture.ServerLogged += ServerFixtureOnServerLogged;
         }
 
         private void ServerFixtureOnServerLogged(LogRecord logRecord)
         {
-            //_logger.Log(logRecord.Write.LogLevel, logRecord.Write.EventId, logRecord.Write.State, logRecord.Write.Exception, logRecord.Write.Formatter);
+            _logger.Log(logRecord.Write.LogLevel, logRecord.Write.EventId, logRecord.Write.State, logRecord.Write.Exception, logRecord.Write.Formatter);
         }
 
         public void Dispose()
