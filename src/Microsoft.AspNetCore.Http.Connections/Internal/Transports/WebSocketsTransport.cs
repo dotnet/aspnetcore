@@ -182,13 +182,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                     }
                 }
             }
-            catch (WebSocketException ex) when (
-                ex.ErrorCode == 997 ||
-                // Sometimes this error is raised without the ErrorCode
-                ex.Message == "The remote party closed the WebSocket connection without completing the close handshake.")
+            catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
             {
-                // The remote party closed the WebSocket connection without completing the close handshake
-                // Don't long an error for this exception
+                // Client has closed the WebSocket connection without completing the close handshake
+                Log.ClosedPrematurely(_logger, ex);
             }
             catch (OperationCanceledException)
             {
