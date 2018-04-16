@@ -86,9 +86,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            // Initialize data with random bytes
-            (new Random()).NextBytes(data);
-
             var startReadingRequestBody = new TaskCompletionSource<object>();
             var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
             var lastBytesWritten = DateTime.MaxValue;
@@ -298,17 +295,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                         await context.Response.WriteAsync("Client sent more bytes than expectedBody.Length");
                         return;
-                    }
-
-                    // Verify bytes received match expectedBody
-                    for (int i = 0; i < expectedBody.Length; i++)
-                    {
-                        if (buffer[i] != expectedBody[i])
-                        {
-                            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                            await context.Response.WriteAsync($"Bytes received do not match expectedBody at position {i}");
-                            return;
-                        }
                     }
 
                     await context.Response.WriteAsync($"bytesRead: {bytesRead.ToString()}");

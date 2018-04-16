@@ -4,6 +4,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
         {
-            var adapted = new AdaptedConnection(new LoggingStream(context.ConnectionStream, new TestApplicationErrorLogger()));
+            var adapted = new AdaptedConnection(new LoggingStream(context.ConnectionStream, NullLogger.Instance));
             return Task.FromResult<IAdaptedConnection>(adapted);
         }
 
