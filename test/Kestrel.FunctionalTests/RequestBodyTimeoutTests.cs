@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information && w.Exception is BadHttpRequestException
-                && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status408RequestTimeout);
+            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 32 && w.LogLevel == LogLevel.Information);
+            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 33 && w.LogLevel == LogLevel.Information);
         }
 
         [Fact(Skip="https://github.com/aspnet/KestrelHttpServer/issues/2464")]

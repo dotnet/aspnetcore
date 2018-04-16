@@ -3,12 +3,11 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -125,9 +124,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _pumpTask;
         }
 
-        protected override async Task OnConsumeAsync()
+        protected override Task OnConsumeAsync()
         {
-            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.SendTimeoutResponse);
+            try
+            {
+                if (_context.RequestBodyPipe.Reader.TryRead(out var readResult))
+                {
+                    _context.RequestBodyPipe.Reader.AdvanceTo(readResult.Buffer.End);
+
+                    if (readResult.IsCompleted)
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+            }
+            catch (BadHttpRequestException ex)
+            {
+                // At this point, the response has already been written, so this won't result in a 4XX response;
+                // however, we still need to stop the request processing loop and log.
+                _context.SetBadRequestState(ex);
+                return Task.CompletedTask;
+            }
+
+            return OnConsumeAsyncAwaited();
+        }
+
+        private async Task OnConsumeAsyncAwaited()
+        {
+            Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
+
+            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.AbortConnection);
 
             try
             {
@@ -137,6 +163,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     result = await _context.RequestBodyPipe.Reader.ReadAsync();
                     _context.RequestBodyPipe.Reader.AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                _context.SetBadRequestState(ex);
+            }
+            catch (ConnectionAbortedException)
+            {
+                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
             }
             finally
             {

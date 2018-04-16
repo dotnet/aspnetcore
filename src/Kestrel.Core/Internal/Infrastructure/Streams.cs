@@ -54,13 +54,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public void Pause()
-        {
-            _request.PauseAcceptingReads();
-            _emptyRequest.PauseAcceptingReads();
-            _response.PauseAcceptingWrites();
-        }
-
         public void Stop()
         {
             _request.StopAcceptingReads();

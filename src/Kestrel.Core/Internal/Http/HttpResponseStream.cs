@@ -129,11 +129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void PauseAcceptingWrites()
-        {
-            _state = HttpStreamState.Closed;
-        }
-
         public void StopAcceptingWrites()
         {
             // Can't use dispose (or close) as can be disposed too early by user code

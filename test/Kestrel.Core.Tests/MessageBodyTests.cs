@@ -599,13 +599,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ConsumeAsyncThrowsOnTimeout()
+        public async Task ConsumeAsyncCompletesAndDoesNotThrowOnTimeout()
         {
             using (var input = new TestInput())
             {
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
-
                 input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
+
+                var mockLogger = new Mock<IKestrelTrace>();
+                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
 
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
@@ -616,8 +618,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
 
-                var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.ConsumeAsync());
-                Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
+                await body.ConsumeAsync();
+
+                mockLogger.Verify(logger => logger.ConnectionBadRequest(
+                    It.IsAny<string>(),
+                    It.Is<BadHttpRequestException>(ex => ex.Reason == RequestRejectionReason.RequestBodyTimeout)));
 
                 await body.StopAsync();
             }

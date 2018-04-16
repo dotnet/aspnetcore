@@ -300,8 +300,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             (RequestBody, ResponseBody) = _streams.Start(messageBody);
         }
 
-        public void PauseStreams() => _streams.Pause();
-
         public void StopStreams() => _streams.Stop();
 
         // For testing
@@ -493,7 +491,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
             _keepAlive = true;
-            do
+
+            while (_keepAlive)
             {
                 BeginRequestProcessing();
 
@@ -525,7 +524,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var httpContext = application.CreateContext(this);
 
-                BadHttpRequestException badRequestException = null;
                 try
                 {
                     KestrelEventSource.Log.RequestStart(this);
@@ -538,11 +536,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         VerifyResponseContentLength();
                     }
                 }
+                catch (BadHttpRequestException ex)
+                {
+                    // Capture BadHttpRequestException for further processing
+                    // This has to be caught here so StatusCode is set properly before disposing the HttpContext
+                    // (DisposeContext logs StatusCode).
+                    SetBadRequestState(ex);
+                    ReportApplicationError(ex);
+                }
                 catch (Exception ex)
                 {
                     ReportApplicationError(ex);
-                    // Capture BadHttpRequestException for further processing
-                    badRequestException = ex as BadHttpRequestException;
                 }
 
                 KestrelEventSource.Log.RequestStop(this);
@@ -556,9 +560,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     await FireOnStarting();
                 }
 
-                PauseStreams();
+                // At this point all user code that needs use to the request or response streams has completed.
+                // Using these streams in the OnCompleted callback is not allowed.
+                StopStreams();
 
-                if (badRequestException == null)
+                // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
+                if (_requestRejectedException == null)
                 {
                     // If _requestAbort is set, the connection has already been closed.
                     if (_requestAborted == 0)
@@ -576,21 +583,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // HttpContext.Response.StatusCode is correctly set when
                         // IHttpContextFactory.Dispose(HttpContext) is called.
                         await ProduceEnd();
-
-                        // ForZeroContentLength does not complete the reader nor the writer
-                        if (!messageBody.IsEmpty)
-                        {
-                            try
-                            {
-                                // Finish reading the request body in case the app did not.
-                                await messageBody.ConsumeAsync();
-                            }
-                            catch (BadHttpRequestException ex)
-                            {
-                                // Capture BadHttpRequestException for further processing
-                                badRequestException = ex;
-                            }
-                        }
                     }
                     else if (!HasResponseStarted)
                     {
@@ -605,19 +597,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     await FireOnCompleted();
                 }
 
-                if (badRequestException != null)
-                {
-                    // Handle BadHttpRequestException thrown during app execution or remaining message body consumption.
-                    // This has to be caught here so StatusCode is set properly before disposing the HttpContext
-                    // (DisposeContext logs StatusCode).
-                    SetBadRequestState(badRequestException);
-                }
-
                 application.DisposeContext(httpContext, _applicationException);
 
-                // StopStreams should be called before the end of the "if (!_requestProcessingStopping)" block
-                // to ensure InitializeStreams has been called.
-                StopStreams();
+                // Even for non-keep-alive requests, try to consume the entire body to avoid RSTs.
+                if (_requestAborted == 0 && _requestRejectedException == null && !messageBody.IsEmpty)
+                {
+                    await messageBody.ConsumeAsync();
+                }
 
                 if (HasStartedConsumingRequestBody)
                 {
@@ -629,14 +615,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // At this point both the request body pipe reader and writer should be completed.
                     RequestBodyPipe.Reset();
                 }
-
-                if (badRequestException != null)
-                {
-                    // Bad request reported, stop processing requests
-                    return;
-                }
-
-            } while (_keepAlive);
+            }
         }
 
         public void OnStarting(Func<object, Task> callback, object state)

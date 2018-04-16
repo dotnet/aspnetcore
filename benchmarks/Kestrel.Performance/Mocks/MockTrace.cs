@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void ApplicationNeverCompleted(string connectionId) { }
         public void RequestBodyStart(string connectionId, string traceIdentifier) { }
         public void RequestBodyDone(string connectionId, string traceIdentifier) { }
+        public void RequestBodyNotEntirelyRead(string connectionId, string traceIdentifier) { }
+        public void RequestBodyDrainTimedOut(string connectionId, string traceIdentifier) { }
         public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate) { }
         public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier) { }
         public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex) { }

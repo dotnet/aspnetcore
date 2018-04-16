@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task OnCompletedShouldNotBlockAResponse()
         {
-            var delay = Task.Delay(TestConstants.DefaultTimeout);
+            var delayTcs = new TaskCompletionSource<object>();
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://127.0.0.1:0/")
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         context.Response.OnCompleted(async () =>
                         {
-                            await delay;
+                            await delayTcs.Task;
                         });
                         await context.Response.WriteAsync("hello, world");
                     });
@@ -366,8 +366,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    Assert.False(delay.IsCompleted);
                 }
+
+                delayTcs.SetResult(null);
             }
         }
 
