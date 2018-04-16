@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
+namespace Microsoft.AspNetCore.SignalR
 {
     public readonly struct SerializedMessage
     {
