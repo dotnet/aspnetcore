@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             await connection.DisposeAsync().OrTimeout();
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/2031")]
         [MemberData(nameof(TransportTypes))]
         public async Task CanStartAndStopConnectionUsingGivenTransport(HttpTransportType transportType)
         {
