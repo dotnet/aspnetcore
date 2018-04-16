@@ -36,6 +36,7 @@
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview3-32233</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26413-05</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.1.0-preview3-32233</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.0-preview3-26413-02</SystemDataSqlClientPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
