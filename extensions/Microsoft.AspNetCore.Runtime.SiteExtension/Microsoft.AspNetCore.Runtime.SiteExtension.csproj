@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Title>ASP.NET Core Runtime Extensions</Title>
+    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
+    <Title>ASP.NET Core $(TrimmedVersion) ($(RuntimeArch)) Runtime </Title>
     <Description>This site extension installs Microsoft.AspNetCore.All, Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
-    <PackageId>AspNetCoreRuntime</PackageId>
+    <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(RuntimeArch)</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +13,7 @@
     <Content Include="install.cmd" />
     <Content Include="$(OutputPath)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
 
-    <Content Include="$(DotnetHomeDirectory)**\*.*" Condition="$(DotnetHomeDirectory) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Content Include="$(DotnetHomeDirectory)\$(RuntimeArch)\**\*.*" Condition="$(DotnetHomeDirectory) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
