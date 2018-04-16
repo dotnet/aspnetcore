@@ -2,7 +2,8 @@
   <Import Project="dependencies.props" />
 
   <PropertyGroup>
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>`n    <LineupPackageVersion>2.1.0-rc1-*</LineupPackageVersion>
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageVersion>2.1.0-rc1-*</LineupPackageVersion>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 
