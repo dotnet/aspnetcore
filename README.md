@@ -76,7 +76,7 @@ When installing Visual Studio choose the following workloads:
 - ASP.NET and Web Development
 - Visual Studio extension development features
 
-If you have problems using Visual Studio with `Blazor.sln` please refer to the [developer documention](https://github.com/aspnet/Home/wiki/Building-from-source).
+If you have problems using Visual Studio with `Blazor.sln` please refer to the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source).
 
 ## Developing the Blazor VS Tooling
 
@@ -87,7 +87,7 @@ The Blazor Visual Studio tooling will build as part of the command line build wh
 
 ## Using CI Builds of Blazor
 
-To use a nightly or developer CI build of the Blazor package, ensure that you have the Blazor package feed configured, and update your package version numbers. You should use developer builds only with the expectation that things will break and change without any sort of announcment.
+To use a nightly or developer CI build of the Blazor package, ensure that you have the Blazor package feed configured, and update your package version numbers. You should use developer builds only with the expectation that things will break and change without any sort of announcement.
 
 Update your projects to include the Blazor developer feed (`https://dotnet.myget.org/f/blazor-dev/api/v3/index.json`) and ASP.NET Core developer feed (`https://dotnet.myget.org/F/dotnet-core/api/v3/index.json`). You can do this in a project file with MSBuild:
 ```
@@ -99,7 +99,7 @@ Update your projects to include the Blazor developer feed (`https://dotnet.myget
     </RestoreSources>
 ```
 
-Or in a NuGet.config in the same director as the solution file:
+Or in a NuGet.config in the same directory as the solution file:
 
 ```
 <?xml version="1.0" encoding="utf-8"?>
