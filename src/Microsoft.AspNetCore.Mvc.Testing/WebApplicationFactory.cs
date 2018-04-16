@@ -88,13 +88,17 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// An <see cref="Action{IWebHostBuilder}"/> to configure the <see cref="IWebHostBuilder"/>.
         /// </param>
         /// <returns>A new <see cref="WebApplicationFactory{TEntryPoint}"/>.</returns>
-        public WebApplicationFactory<TEntryPoint> WithWebHostBuilder(Action<IWebHostBuilder> configuration)
+        public WebApplicationFactory<TEntryPoint> WithWebHostBuilder(Action<IWebHostBuilder> configuration) =>
+            WithWebHostBuilderCore(configuration);
+
+        internal virtual WebApplicationFactory<TEntryPoint> WithWebHostBuilderCore(Action<IWebHostBuilder> configuration)
         {
             var factory = new DelegatedWebApplicationFactory(
                 ClientOptions,
                 CreateServer,
                 CreateWebHostBuilder,
                 GetTestAssemblies,
+                ConfigureClient,
                 builder =>
                 {
                     _configuration(builder);
@@ -300,26 +304,14 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="handlers">A list of <see cref="DelegatingHandler"/> instances to set up on the
         /// <see cref="HttpClient"/>.</param>
         /// <returns>The <see cref="HttpClient"/>.</returns>
-        public HttpClient CreateDefaultClient(params DelegatingHandler[] handlers) =>
-            CreateDefaultClient(new Uri("http://localhost"), handlers);
-
-        /// <summary>
-        /// Creates a new instance of an <see cref="HttpClient"/> that can be used to
-        /// send <see cref="HttpRequestMessage"/> to the server.
-        /// </summary>
-        /// <param name="baseAddress">The base address of the <see cref="HttpClient"/> instance.</param>
-        /// <param name="handlers">A list of <see cref="DelegatingHandler"/> instances to set up on the
-        /// <see cref="HttpClient"/>.</param>
-        /// <returns>The <see cref="HttpClient"/>.</returns>
-        public HttpClient CreateDefaultClient(Uri baseAddress, params DelegatingHandler[] handlers)
+        public HttpClient CreateDefaultClient(params DelegatingHandler[] handlers)
         {
             EnsureServer();
+
+            HttpClient client;
             if (handlers == null || handlers.Length == 0)
             {
-                var client = _server.CreateClient();
-                client.BaseAddress = baseAddress;
-
-                return client;
+                client = _server.CreateClient();
             }
             else
             {
@@ -331,15 +323,44 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 var serverHandler = _server.CreateHandler();
                 handlers[handlers.Length - 1].InnerHandler = serverHandler;
 
-                var client = new HttpClient(handlers[0])
-                {
-                    BaseAddress = baseAddress
-                };
-
-                _clients.Add(client);
-
-                return client;
+                client = new HttpClient(handlers[0]);
             }
+
+            _clients.Add(client);
+
+            ConfigureClient(client);
+
+            return client;
+        }
+
+        /// <summary>
+        /// Configures <see cref="HttpClient"/> instances created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
+        /// </summary>
+        /// <param name="client">The <see cref="HttpClient"/> instance getting configured.</param>
+        protected virtual void ConfigureClient(HttpClient client)
+        {
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
+            client.BaseAddress = new Uri("http://localhost");
+        }
+
+        /// <summary>
+        /// Creates a new instance of an <see cref="HttpClient"/> that can be used to
+        /// send <see cref="HttpRequestMessage"/> to the server.
+        /// </summary>
+        /// <param name="baseAddress">The base address of the <see cref="HttpClient"/> instance.</param>
+        /// <param name="handlers">A list of <see cref="DelegatingHandler"/> instances to set up on the
+        /// <see cref="HttpClient"/>.</param>
+        /// <returns>The <see cref="HttpClient"/>.</returns>
+        public HttpClient CreateDefaultClient(Uri baseAddress, params DelegatingHandler[] handlers)
+        {
+            var client = CreateDefaultClient(handlers);
+            client.BaseAddress = baseAddress;
+
+            return client;
         }
 
         /// <inheritdoc />
@@ -377,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
                 _server?.Dispose();
             }
-            
+
             _disposed = true;
         }
 
@@ -386,18 +407,21 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             private readonly Func<IWebHostBuilder, TestServer> _createServer;
             private readonly Func<IWebHostBuilder> _createWebHostBuilder;
             private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
+            private readonly Action<HttpClient> _configureClient;
 
             public DelegatedWebApplicationFactory(
                 WebApplicationFactoryClientOptions options,
                 Func<IWebHostBuilder, TestServer> createServer,
                 Func<IWebHostBuilder> createWebHostBuilder,
                 Func<IEnumerable<Assembly>> getTestAssemblies,
+                Action<HttpClient> configureClient,
                 Action<IWebHostBuilder> configureWebHost)
             {
                 ClientOptions = new WebApplicationFactoryClientOptions(options);
                 _createServer = createServer;
                 _createWebHostBuilder = createWebHostBuilder;
                 _getTestAssemblies = getTestAssemblies;
+                _configureClient = configureClient;
                 _configuration = configureWebHost;
             }
 
@@ -408,6 +432,23 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             protected override IEnumerable<Assembly> GetTestAssemblies() => _getTestAssemblies();
 
             protected override void ConfigureWebHost(IWebHostBuilder builder) => _configuration(builder);
+
+            protected override void ConfigureClient(HttpClient client) => _configureClient(client);
+
+            internal override WebApplicationFactory<TEntryPoint> WithWebHostBuilderCore(Action<IWebHostBuilder> configuration)
+            {
+                return new DelegatedWebApplicationFactory(
+                    ClientOptions,
+                    _createServer,
+                    _createWebHostBuilder,
+                    _getTestAssemblies,
+                    _configureClient,
+                    builder =>
+                    {
+                        _configuration(builder);
+                        configuration(builder);
+                    });
+            }
         }
     }
 }
