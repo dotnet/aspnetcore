@@ -105,6 +105,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             // connection then it's not ready. We keep trying forever because this is dev-mode
             // only, and only a single startup attempt will be made, and there's a further level
             // of timeouts enforced on a per-request basis.
+            var timeoutMilliseconds = 1000;
             using (var client = new HttpClient())
             {
                 while (true)
@@ -114,12 +115,23 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                         // If we get any HTTP response, the CLI server is ready
                         await client.SendAsync(
                             new HttpRequestMessage(HttpMethod.Head, cliServerUri),
-                            new CancellationTokenSource(1000).Token);
+                            new CancellationTokenSource(timeoutMilliseconds).Token);
                         return;
                     }
                     catch (Exception)
                     {
-                        await Task.Delay(1000); // 1 second
+                        await Task.Delay(500);
+
+                        // Depending on the host's networking configuration, the requests can take a while
+                        // to go through, most likely due to the time spent resolving 'localhost'.
+                        // Each time we have a failure, allow a bit longer next time (up to a maximum).
+                        // This only influences the time until we regard the dev server as 'ready', so it
+                        // doesn't affect the runtime perf (even in dev mode) once the first connection is made.
+                        // Resolves https://github.com/aspnet/JavaScriptServices/issues/1611
+                        if (timeoutMilliseconds < 10000)
+                        {
+                            timeoutMilliseconds += 3000;
+                        }
                     }
                 }
             }
