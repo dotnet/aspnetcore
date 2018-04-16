@@ -173,14 +173,14 @@ namespace ChatSample
             return _wrappedHubLifetimeManager.SendUserAsync(userId, methodName, args);
         }
 
-        public override Task AddGroupAsync(string connectionId, string groupName)
+        public override Task AddToGroupAsync(string connectionId, string groupName)
         {
-            return _wrappedHubLifetimeManager.AddGroupAsync(connectionId, groupName);
+            return _wrappedHubLifetimeManager.AddToGroupAsync(connectionId, groupName);
         }
 
-        public override Task RemoveGroupAsync(string connectionId, string groupName)
+        public override Task RemoveFromGroupAsync(string connectionId, string groupName)
         {
-            return _wrappedHubLifetimeManager.RemoveGroupAsync(connectionId, groupName);
+            return _wrappedHubLifetimeManager.RemoveFromGroupAsync(connectionId, groupName);
         }
 
         public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)

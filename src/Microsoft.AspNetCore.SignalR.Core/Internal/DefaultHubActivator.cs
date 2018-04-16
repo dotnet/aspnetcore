@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public class DefaultHubActivator<THub> : IHubActivator<THub> where THub: Hub
     {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR
             _serviceProvider = serviceProvider;
         }
 
-        public THub Create()
+        public virtual THub Create()
         {
             Debug.Assert(!_created.HasValue, "hub activators must not be reused.");
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR
             return hub;
         }
 
-        public void Release(THub hub)
+        public virtual void Release(THub hub)
         {
             if (hub == null)
             {

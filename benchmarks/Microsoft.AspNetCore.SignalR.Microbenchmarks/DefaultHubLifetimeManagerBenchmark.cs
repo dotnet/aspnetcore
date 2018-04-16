@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 hubConnectionContext.Protocol = jsonHubProtocol;
 
                 _hubLifetimeManager.OnConnectedAsync(hubConnectionContext).GetAwaiter().GetResult();
-                _hubLifetimeManager.AddGroupAsync(connectionId, groupName);
+                _hubLifetimeManager.AddToGroupAsync(connectionId, groupName);
             }
         }
 

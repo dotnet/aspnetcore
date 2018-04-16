@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _manager1 = new RedisHubLifetimeManager<TestHub>(logger, options, resolver);
             _manager2 = new RedisHubLifetimeManager<TestHub>(logger, options, resolver);
 
-            async Task ConnectClient(TestClient client, IHubProtocol protocol, string userId, string group)
+            async Task ConnectClient(TestClient client, IHubProtocol protocol, string userId, string groupName)
             {
                 await _manager2.OnConnectedAsync(HubConnectionContextUtils.Create(client.Connection, protocol, userId));
-                await _manager2.AddGroupAsync(client.Connection.ConnectionId, "Everyone");
-                await _manager2.AddGroupAsync(client.Connection.ConnectionId, group);
+                await _manager2.AddToGroupAsync(client.Connection.ConnectionId, "Everyone");
+                await _manager2.AddToGroupAsync(client.Connection.ConnectionId, groupName);
             }
 
             // Connect clients

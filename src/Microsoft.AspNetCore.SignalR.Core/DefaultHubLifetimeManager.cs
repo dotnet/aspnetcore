@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR
             _logger = logger;
         }
 
-        public override Task AddGroupAsync(string connectionId, string groupName)
+        public override Task AddToGroupAsync(string connectionId, string groupName)
         {
             if (connectionId == null)
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task RemoveGroupAsync(string connectionId, string groupName)
+        public override Task RemoveFromGroupAsync(string connectionId, string groupName)
         {
             if (connectionId == null)
             {

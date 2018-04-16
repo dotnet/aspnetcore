@@ -18,11 +18,6 @@ namespace Microsoft.AspNetCore.SignalR
             _routes = routes;
         }
 
-        public void MapHub<THub>(string path) where THub : Hub
-        {
-            MapHub<THub>(new PathString(path), configureOptions: null);
-        }
-
         public void MapHub<THub>(PathString path) where THub : Hub
         {
             MapHub<THub>(path, configureOptions: null);

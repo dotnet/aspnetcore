@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public IClientProxy All { get; }
 
-        public IClientProxy AllExcept(IReadOnlyList<string> excludedIds)
+        public IClientProxy AllExcept(IReadOnlyList<string> excludedConnectionIds)
         {
-            return new AllClientsExceptProxy<THub>(_lifetimeManager, excludedIds);
+            return new AllClientsExceptProxy<THub>(_lifetimeManager, excludedConnectionIds);
         }
 
         public IClientProxy Client(string connectionId)
@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return new GroupProxy<THub>(_lifetimeManager, groupName);
         }
 
-        public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
+        public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds)
         {
-            return new GroupExceptProxy<THub>(_lifetimeManager, groupName, excludeIds);
+            return new GroupExceptProxy<THub>(_lifetimeManager, groupName, excludedConnectionIds);
         }
 
         public IClientProxy Clients(IReadOnlyList<string> connectionIds)

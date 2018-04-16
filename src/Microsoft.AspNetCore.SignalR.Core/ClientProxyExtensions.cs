@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public static class IClientProxyExtensions
+    public static class ClientProxyExtensions
     {
         /// <summary>
         /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.

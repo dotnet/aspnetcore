@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 var hubConnection = new HubConnectionContext(connection, Timeout.InfiniteTimeSpan, NullLoggerFactory.Instance);
                 hubConnection.Protocol = protocol;
                 _hubLifetimeManager.OnConnectedAsync(hubConnection).GetAwaiter().GetResult();
-                _hubLifetimeManager.AddGroupAsync(connection.ConnectionId, TestGroupName).GetAwaiter().GetResult();
+                _hubLifetimeManager.AddToGroupAsync(connection.ConnectionId, TestGroupName).GetAwaiter().GetResult();
 
                 _ = ConsumeAsync(connection.Application);
             }

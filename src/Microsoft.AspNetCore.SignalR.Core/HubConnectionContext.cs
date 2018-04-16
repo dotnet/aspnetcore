@@ -52,7 +52,8 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual IDictionary<object, object> Items => _connectionContext.Items;
 
-        public virtual PipeReader Input => _connectionContext.Transport.Input;
+        // Used by HubConnectionHandler
+        internal PipeReader Input => _connectionContext.Transport.Input;
 
         public string UserIdentifier { get; set; }
 

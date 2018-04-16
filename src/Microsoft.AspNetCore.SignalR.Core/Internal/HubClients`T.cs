@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public T All { get; }
 
-        public T AllExcept(IReadOnlyList<string> excludedIds)
+        public T AllExcept(IReadOnlyList<string> excludedConnectionIds)
         {
-            return TypedClientBuilder<T>.Build(new AllClientsExceptProxy<THub>(_lifetimeManager, excludedIds));
+            return TypedClientBuilder<T>.Build(new AllClientsExceptProxy<THub>(_lifetimeManager, excludedConnectionIds));
         }
 
         public virtual T Client(string connectionId)
@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return TypedClientBuilder<T>.Build(new GroupProxy<THub>(_lifetimeManager, groupName));
         }
 
-        public T GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
+        public T GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds)
         {
-            return TypedClientBuilder<T>.Build(new GroupExceptProxy<THub>(_lifetimeManager, groupName, excludeIds));
+            return TypedClientBuilder<T>.Build(new GroupExceptProxy<THub>(_lifetimeManager, groupName, excludedConnectionIds));
         }
 
         public T Groups(IReadOnlyList<string> groupNames)

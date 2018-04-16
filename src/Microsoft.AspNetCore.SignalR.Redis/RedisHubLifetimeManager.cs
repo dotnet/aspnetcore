@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             if (groupNames != null)
             {
                 // Copy the groups to an array here because they get removed from this collection
-                // in RemoveGroupAsync
+                // in RemoveFromGroupAsync
                 foreach (var group in groupNames.ToArray())
                 {
                     // Use RemoveGroupAsyncCore because the connection is local and we don't want to
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channels.User(userId), message);
         }
 
-        public override async Task AddGroupAsync(string connectionId, string groupName)
+        public override async Task AddToGroupAsync(string connectionId, string groupName)
         {
             if (connectionId == null)
             {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Add);
         }
 
-        public override async Task RemoveGroupAsync(string connectionId, string groupName)
+        public override async Task RemoveFromGroupAsync(string connectionId, string groupName)
         {
             if (connectionId == null)
             {

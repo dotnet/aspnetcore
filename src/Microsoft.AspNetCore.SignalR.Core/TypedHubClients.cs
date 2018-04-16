@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public T Others => TypedClientBuilder<T>.Build(_hubClients.Others);
 
-        public T AllExcept(IReadOnlyList<string> excludedIds) => TypedClientBuilder<T>.Build(_hubClients.AllExcept(excludedIds));
+        public T AllExcept(IReadOnlyList<string> excludedConnectionIds) => TypedClientBuilder<T>.Build(_hubClients.AllExcept(excludedConnectionIds));
 
         public T Client(string connectionId)
         {
@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.SignalR
             return TypedClientBuilder<T>.Build(_hubClients.Group(groupName));
         }
 
-        public T GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
+        public T GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds)
         {
-            return TypedClientBuilder<T>.Build(_hubClients.GroupExcept(groupName, excludeIds));
+            return TypedClientBuilder<T>.Build(_hubClients.GroupExcept(groupName, excludedConnectionIds));
         }
 
         public T Clients(IReadOnlyList<string> connectionIds)
