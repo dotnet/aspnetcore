@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IConnectionHeartbeatFeature,
                                          ITransferFormatFeature,
                                          IHttpContextFeature,
-                                         IHttpTransportFeature
+                                         IHttpTransportFeature,
+                                         IConnectionInherentKeepAliveFeature
     {
         private readonly object _itemsLock = new object();
         private readonly object _heartbeatLock = new object();
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<ITransferFormatFeature>(this);
             Features.Set<IHttpContextFeature>(this);
             Features.Set<IHttpTransportFeature>(this);
+            Features.Set<IConnectionInherentKeepAliveFeature>(this);
         }
 
         public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
@@ -96,6 +98,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public override IFeatureCollection Features { get; }
 
         public ClaimsPrincipal User { get; set; }
+
+        public bool HasInherentKeepAlive { get; set; }
 
         public override IDictionary<object, object> Items
         {

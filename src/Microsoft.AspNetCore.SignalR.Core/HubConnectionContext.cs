@@ -339,7 +339,8 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     UserIdentifier = userIdProvider.GetUserId(this);
 
-                                    if (Features.Get<IConnectionInherentKeepAliveFeature>() == null)
+                                    // != true needed because it could be null (which we treat as false)
+                                    if (Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive != true)
                                     {
                                         // Only register KeepAlive after protocol handshake otherwise KeepAliveTick could try to write without having a ProtocolReaderWriter
                                         Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);

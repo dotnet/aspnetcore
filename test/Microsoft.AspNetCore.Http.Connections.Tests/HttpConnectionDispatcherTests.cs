@@ -1587,12 +1587,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var options = new HttpConnectionDispatcherOptions();
                 options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1); // We don't care about the poll itself
 
-                Assert.Null(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
-
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-                Assert.NotNull(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
-                Assert.Equal(options.LongPolling.PollTimeout, connection.Features.Get<IConnectionInherentKeepAliveFeature>().KeepAliveInterval);
+                Assert.True(connection.HasInherentKeepAlive);
+
+                // Check via the feature as well to make sure it's there.
+                Assert.True(connection.Features.Get<IConnectionInherentKeepAliveFeature>().HasInherentKeepAlive);
             }
         }
 

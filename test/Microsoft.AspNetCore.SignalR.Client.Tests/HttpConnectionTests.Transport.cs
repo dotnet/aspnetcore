@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
@@ -67,6 +68,35 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     });
                 // Fail safe in case the code is modified and some requests don't execute as a result
                 Assert.True(requestsExecuted);
+            }
+
+            [Theory]
+            [InlineData(HttpTransportType.LongPolling, true)]
+            [InlineData(HttpTransportType.ServerSentEvents, false)]
+            public async Task HttpConnectionSetsInherentKeepAliveFeature(HttpTransportType transportType, bool expectedValue)
+            {
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+
+                testHttpHandler.OnRequest((request, next, token) =>
+                {
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                });
+
+                testHttpHandler.OnNegotiate((_, cancellationToken) =>
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+                });
+
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, transportType: transportType),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+
+                        var feature = connection.Features.Get<IConnectionInherentKeepAliveFeature>();
+                        Assert.NotNull(feature);
+                        Assert.Equal(expectedValue, feature.HasInherentKeepAlive);
+                    });
             }
 
             [Theory]

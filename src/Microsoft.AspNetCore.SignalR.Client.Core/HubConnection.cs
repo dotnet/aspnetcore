@@ -720,7 +720,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             // Check if we need keep-alive
             Timer timeoutTimer = null;
-            if (connectionState.Connection.Features.Get<IConnectionInherentKeepAliveFeature>() == null)
+
+            // We use '!== true' because it could be null, which we treat as false.
+            if (connectionState.Connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive != true)
             {
                 Log.StartingServerTimeoutTimer(_logger, ServerTimeout);
                 timeoutTimer = new Timer(
