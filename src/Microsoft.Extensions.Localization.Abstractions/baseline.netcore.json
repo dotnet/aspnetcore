@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Localization.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Localization.Abstractions, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Localization.IStringLocalizer",
@@ -165,6 +165,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_SearchedLocation",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "ToString",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -204,6 +212,30 @@
             {
               "Name": "resourceNotFound",
               "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "resourceNotFound",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "searchedLocation",
+              "Type": "System.String"
             }
           ],
           "Visibility": "Public",
