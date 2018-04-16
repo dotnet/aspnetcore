@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\Common\MemoryBufferWriter.cs" Link="MemoryBufferWriter.cs" />
+    <Compile Include="..\..\src\Common\TextMessageFormatter.cs" Link="TextMessageFormatter.cs" />
+    <Compile Include="..\..\src\Common\TextMessageParser.cs" Link="TextMessageParser.cs" />
   </ItemGroup>
 
   <ItemGroup>

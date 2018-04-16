@@ -12,7 +12,6 @@ using MessagePack;
 using MessagePack.Formatters;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol

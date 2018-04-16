@@ -4,9 +4,9 @@
 using System;
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
+namespace Microsoft.AspNetCore.Internal
 {
-    public static class BinaryMessageParser
+    internal static class BinaryMessageParser
     {
         private const int MaxLengthPrefixSize = 5;
 

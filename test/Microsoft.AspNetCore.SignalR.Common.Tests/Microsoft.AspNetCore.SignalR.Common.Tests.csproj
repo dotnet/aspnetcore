@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\Common\BinaryMessageFormatter.cs" Link="BinaryMessageFormatter.cs" />
+    <Compile Include="..\..\src\Common\BinaryMessageParser.cs" Link="BinaryMessageParser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\xunit.runner.json" Link="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol

@@ -4,9 +4,9 @@
 using System;
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
+namespace Microsoft.AspNetCore.Internal
 {
-    public static class TextMessageParser
+    internal static class TextMessageParser
     {
         public static bool TryParseMessage(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> payload)
         {

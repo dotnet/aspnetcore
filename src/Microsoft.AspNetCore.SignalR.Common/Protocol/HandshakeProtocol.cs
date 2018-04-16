@@ -6,7 +6,6 @@ using System.Buffers;
 using System.IO;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
