@@ -19,6 +19,6 @@ namespace Microsoft.AspNetCore.Connections.Features
     /// </remarks>
     public interface IConnectionInherentKeepAliveFeature
     {
-        TimeSpan KeepAliveInterval { get; }
+        bool HasInherentKeepAlive { get; }
     }
 }
