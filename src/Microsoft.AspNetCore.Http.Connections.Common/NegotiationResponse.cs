@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Http.Connections
     public class NegotiationResponse
     {
         public string ConnectionId { get; set; }
-        public List<AvailableTransport> AvailableTransports { get; set; }
+        public IList<AvailableTransport> AvailableTransports { get; set; }
     }
 }
