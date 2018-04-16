@@ -126,6 +126,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.Equal(contentLength, httpResponse.ContentLength);
             Assert.Equal(expectedString, body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Fact]
@@ -174,6 +175,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.Equal(5, httpResponse.ContentLength);
             Assert.Equal("Hello", body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Fact]
@@ -217,6 +219,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
             Assert.Equal("Hello World", body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Fact]
@@ -261,6 +264,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
             Assert.Equal("Hello World", body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Theory]
@@ -303,6 +307,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
             Assert.Equal("Hello World", body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Theory]
@@ -346,6 +351,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.Equal(11, httpResponse.ContentLength);
             Assert.Empty(body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Fact]
@@ -389,6 +395,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Empty(body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Fact]
@@ -432,6 +439,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Empty(body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Theory]
@@ -480,6 +488,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.Empty(body);
+            Assert.False(readStream.CanSeek);
         }
 
         [Fact]
@@ -541,6 +550,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             var outBytes = outStream.ToArray();
             Assert.True(originalBytes.SequenceEqual(outBytes));
+            Assert.False(originalStream.CanSeek);
         }
 
         [Fact]
@@ -570,6 +580,31 @@ namespace Microsoft.AspNetCore.Mvc
             var outBytes = outStream.ToArray();
             Assert.True(originalBytes.SequenceEqual(outBytes));
             Assert.Equal(expectedContentType, httpContext.Response.ContentType);
+            Assert.False(originalStream.CanSeek);
+        }
+
+        [Fact]
+        public async Task HeadRequest_DoesNotWriteToBody_AndClosesReadStream()
+        {
+            // Arrange
+            var readStream = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
+
+            var httpContext = GetHttpContext();
+            httpContext.Request.Method = "HEAD";
+            var outStream = new MemoryStream();
+            httpContext.Response.Body = outStream;
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var result = new FileStreamResult(readStream, "text/plain");
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.False(readStream.CanSeek);
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.Equal(0, httpContext.Response.Body.Length);
         }
 
         private static IServiceCollection CreateServices()
