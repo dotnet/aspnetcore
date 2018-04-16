@@ -1,9 +1,9 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <FunctionalTestsProject>$(RepositoryRoot)test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\Microsoft.AspNetCore.AzureAppServices.FunctionalTests.csproj</FunctionalTestsProject>
 
     <!-- These properties are use by the automation that updates dependencies.props -->
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>`n    <LineupPackageVersion>2.1.0-rc1-*</LineupPackageVersion>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 
