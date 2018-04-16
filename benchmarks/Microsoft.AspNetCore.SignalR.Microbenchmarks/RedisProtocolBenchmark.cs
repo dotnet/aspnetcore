@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         private RedisGroupCommand _groupCommand;
         private object[] _args;
         private string _methodName;
-        private IReadOnlyList<string> _excludedIdsSmall;
-        private IReadOnlyList<string> _excludedIdsLarge;
+        private IReadOnlyList<string> _excludedConnectionIdsSmall;
+        private IReadOnlyList<string> _excludedConnectionIdsLarge;
         private byte[] _writtenAck;
         private byte[] _writtenGroupCommand;
         private byte[] _writtenInvocationNoExclusions;
@@ -39,14 +39,14 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _args = Array.Empty<object>();
             _methodName = "Method";
 
-            _excludedIdsSmall = GenerateIds(2);
-            _excludedIdsLarge = GenerateIds(20);
+            _excludedConnectionIdsSmall = GenerateIds(2);
+            _excludedConnectionIdsLarge = GenerateIds(20);
 
             _writtenAck = _protocol.WriteAck(42);
             _writtenGroupCommand = _protocol.WriteGroupCommand(_groupCommand);
             _writtenInvocationNoExclusions = _protocol.WriteInvocation(_methodName, _args, null);
-            _writtenInvocationSmallExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedIdsSmall);
-            _writtenInvocationLargeExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedIdsLarge);
+            _writtenInvocationSmallExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsSmall);
+            _writtenInvocationLargeExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsLarge);
         }
 
         [Benchmark]
@@ -70,13 +70,13 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void WriteInvocationSmallExclusions()
         {
-            _protocol.WriteInvocation(_methodName, _args, _excludedIdsSmall);
+            _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsSmall);
         }
 
         [Benchmark]
         public void WriteInvocationLargeExclusions()
         {
-            _protocol.WriteInvocation(_methodName, _args, _excludedIdsLarge);
+            _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsLarge);
         }
 
         [Benchmark]

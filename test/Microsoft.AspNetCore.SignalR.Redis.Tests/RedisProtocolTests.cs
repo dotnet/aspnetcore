@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             var decoded = protocol.ReadInvocation(testData.Encoded);
 
-            Assert.Equal(testData.Decoded.ExcludedIds, decoded.ExcludedIds);
+            Assert.Equal(testData.Decoded.ExcludedConnectionIds, decoded.ExcludedConnectionIds);
 
             // Verify the deserialized object has the necessary serialized forms
             foreach (var hubProtocol in hubProtocols)
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             // Actual invocation doesn't matter because we're using a dummy hub protocol.
             // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
-            var encoded = protocol.WriteInvocation(_testMessage.Target, _testMessage.Arguments, testData.Decoded.ExcludedIds);
+            var encoded = protocol.WriteInvocation(_testMessage.Target, _testMessage.Arguments, testData.Decoded.ExcludedConnectionIds);
 
             Assert.Equal(testData.Encoded, encoded);
         }

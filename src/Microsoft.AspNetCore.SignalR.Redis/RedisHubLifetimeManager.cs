@@ -112,9 +112,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channels.All, message);
         }
 
-        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
         {
-            var message = _protocol.WriteInvocation(methodName, args, excludedIds);
+            var message = _protocol.WriteInvocation(methodName, args, excludedConnectionIds);
             return PublishAsync(_channels.All, message);
         }
 
@@ -148,14 +148,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channels.Group(groupName), message);
         }
 
-        public override async Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override async Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
         {
             if (groupName == null)
             {
                 throw new ArgumentNullException(nameof(groupName));
             }
 
-            var message = _protocol.WriteInvocation(methodName, args, excludedIds);
+            var message = _protocol.WriteInvocation(methodName, args, excludedConnectionIds);
             await PublishAsync(_channels.Group(groupName), message);
         }
 
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
                     foreach (var connection in _connections)
                     {
-                        if (invocation.ExcludedIds == null || !invocation.ExcludedIds.Contains(connection.ConnectionId))
+                        if (invocation.ExcludedConnectionIds == null || !invocation.ExcludedConnectionIds.Contains(connection.ConnectionId))
                         {
                             tasks.Add(connection.WriteAsync(invocation.Message).AsTask());
                         }
@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     var tasks = new List<Task>();
                     foreach (var groupConnection in group.Connections)
                     {
-                        if (invocation.ExcludedIds?.Contains(groupConnection.ConnectionId) == true)
+                        if (invocation.ExcludedConnectionIds?.Contains(groupConnection.ConnectionId) == true)
                         {
                             continue;
                         }

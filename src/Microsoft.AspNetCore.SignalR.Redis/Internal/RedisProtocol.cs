@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
         //   * A 7-bit variable length integer encodes the length in bytes, followed by the encoded string in UTF-8.
 
         public byte[] WriteInvocation(string methodName, object[] args) =>
-            WriteInvocation(methodName, args, excludedIds: null);
+            WriteInvocation(methodName, args, excludedConnectionIds: null);
 
-        public byte[] WriteInvocation(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public byte[] WriteInvocation(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
         {
             // Written as a MessagePack 'arr' containing at least these items:
             // * A MessagePack 'arr' of 'str's representing the excluded ids
@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
             try
             {
                 MessagePackBinary.WriteArrayHeader(writer, 2);
-                if (excludedIds != null && excludedIds.Count > 0)
+                if (excludedConnectionIds != null && excludedConnectionIds.Count > 0)
                 {
-                    MessagePackBinary.WriteArrayHeader(writer, excludedIds.Count);
-                    foreach (var id in excludedIds)
+                    MessagePackBinary.WriteArrayHeader(writer, excludedConnectionIds.Count);
+                    foreach (var id in excludedConnectionIds)
                     {
                         MessagePackBinary.WriteString(writer, id);
                     }
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
             ValidateArraySize(ref data, 2, "Invocation");
 
             // Read excluded Ids
-            IReadOnlyList<string> excludedIds = null;
+            IReadOnlyList<string> excludedConnectionIds = null;
             var idCount = MessagePackUtil.ReadArrayHeader(ref data);
             if (idCount > 0)
             {
@@ -135,12 +135,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
                     ids[i] = MessagePackUtil.ReadString(ref data);
                 }
 
-                excludedIds = ids;
+                excludedConnectionIds = ids;
             }
 
             // Read payload
             var message = ReadSerializedHubMessage(ref data);
-            return new RedisInvocation(message, excludedIds);
+            return new RedisInvocation(message, excludedConnectionIds);
         }
 
         public RedisGroupCommand ReadGroupCommand(ReadOnlyMemory<byte> data)

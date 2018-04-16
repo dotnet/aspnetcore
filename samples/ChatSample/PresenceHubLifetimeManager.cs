@@ -143,9 +143,9 @@ namespace ChatSample
             return _wrappedHubLifetimeManager.SendAllAsync(methodName, args);
         }
 
-        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
         {
-            return _wrappedHubLifetimeManager.SendAllExceptAsync(methodName, args, excludedIds);
+            return _wrappedHubLifetimeManager.SendAllExceptAsync(methodName, args, excludedConnectionIds);
         }
 
         public override Task SendConnectionAsync(string connectionId, string methodName, object[] args)
@@ -183,9 +183,9 @@ namespace ChatSample
             return _wrappedHubLifetimeManager.RemoveFromGroupAsync(connectionId, groupName);
         }
 
-        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
         {
-            return _wrappedHubLifetimeManager.SendGroupExceptAsync(groupName, methodName, args, excludedIds);
+            return _wrappedHubLifetimeManager.SendGroupExceptAsync(groupName, methodName, args, excludedConnectionIds);
         }
 
         public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)

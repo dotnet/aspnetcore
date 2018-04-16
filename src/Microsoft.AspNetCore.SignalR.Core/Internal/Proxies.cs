@@ -78,18 +78,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     {
         private readonly string _groupName;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private readonly IReadOnlyList<string> _excludedIds;
+        private readonly IReadOnlyList<string> _excludedConnectionIds;
 
-        public GroupExceptProxy(HubLifetimeManager<THub> lifetimeManager, string groupName, IReadOnlyList<string> excludedIds)
+        public GroupExceptProxy(HubLifetimeManager<THub> lifetimeManager, string groupName, IReadOnlyList<string> excludedConnectionIds)
         {
             _lifetimeManager = lifetimeManager;
             _groupName = groupName;
-            _excludedIds = excludedIds;
+            _excludedConnectionIds = excludedConnectionIds;
         }
 
         public Task SendCoreAsync(string method, object[] args)
         {
-            return _lifetimeManager.SendGroupExceptAsync(_groupName, method, args, _excludedIds);
+            return _lifetimeManager.SendGroupExceptAsync(_groupName, method, args, _excludedConnectionIds);
         }
     }
 
@@ -111,17 +111,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     internal class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private readonly IReadOnlyList<string> _excludedIds;
+        private readonly IReadOnlyList<string> _excludedConnectionIds;
 
-        public AllClientsExceptProxy(HubLifetimeManager<THub> lifetimeManager, IReadOnlyList<string> excludedIds)
+        public AllClientsExceptProxy(HubLifetimeManager<THub> lifetimeManager, IReadOnlyList<string> excludedConnectionIds)
         {
             _lifetimeManager = lifetimeManager;
-            _excludedIds = excludedIds;
+            _excludedConnectionIds = excludedConnectionIds;
         }
 
         public Task SendCoreAsync(string method, object[] args)
         {
-            return _lifetimeManager.SendAllExceptAsync(method, args, _excludedIds);
+            return _lifetimeManager.SendAllExceptAsync(method, args, _excludedConnectionIds);
         }
     }
 

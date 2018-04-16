@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var o = new Mock<HubLifetimeManager<FakeHub>>();
             o.Setup(m => m.SendGroupExceptAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<IReadOnlyList<string>>()))
-                .Callback<string, string, object[], IReadOnlyList<string>>((groupName, methodName, args, excludedIds) => { resultArgs = args; })
+                .Callback<string, string, object[], IReadOnlyList<string>>((groupName, methodName, args, excludedConnectionIds) => { resultArgs = args; })
                 .Returns(Task.CompletedTask);
 
             var proxy = new GroupExceptProxy<FakeHub>(o.Object, string.Empty, new List<string>());
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var o = new Mock<HubLifetimeManager<FakeHub>>();
             o.Setup(m => m.SendAllExceptAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<IReadOnlyList<string>>()))
-                .Callback<string, object[], IReadOnlyList<string>>((methodName, args, excludedIds) => { resultArgs = args; })
+                .Callback<string, object[], IReadOnlyList<string>>((methodName, args, excludedConnectionIds) => { resultArgs = args; })
                 .Returns(Task.CompletedTask);
 
             var proxy = new AllClientsExceptProxy<FakeHub>(o.Object, new List<string>());

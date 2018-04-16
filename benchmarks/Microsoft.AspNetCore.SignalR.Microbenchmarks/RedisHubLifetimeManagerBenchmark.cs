@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         private RedisHubLifetimeManager<TestHub> _manager2;
         private TestClient[] _clients;
         private object[] _args;
-        private readonly List<string> _excludedIds = new List<string>();
+        private readonly List<string> _excludedConnectionIds = new List<string>();
         private readonly List<string> _sendIds = new List<string>();
         private readonly List<string> _groups = new List<string>();
         private readonly List<string> _users = new List<string>();
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 {
                     group = "Evens";
                     user = "EvenUser";
-                    _excludedIds.Add(_clients[i].Connection.ConnectionId);
+                    _excludedConnectionIds.Add(_clients[i].Connection.ConnectionId);
                 }
                 else
                 {
@@ -144,13 +144,13 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public async Task SendAllExcept()
         {
-            await _manager1.SendAllExceptAsync("Test", _args, _excludedIds);
+            await _manager1.SendAllExceptAsync("Test", _args, _excludedConnectionIds);
         }
 
         [Benchmark]
         public async Task SendGroupExcept()
         {
-            await _manager1.SendGroupExceptAsync("Everyone", "Test", _args, _excludedIds);
+            await _manager1.SendGroupExceptAsync("Everyone", "Test", _args, _excludedConnectionIds);
         }
 
         [Benchmark]
