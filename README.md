@@ -37,14 +37,14 @@ To get setup with Blazor:
 
 You're now ready to start building web apps with Blazor! To build your first Blazor web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
 
-## Build
+## Building the Repo
 
 Prerequisites:
 - [Node.js](https://nodejs.org/) (>8.3)
 
-The build script will acquire the required version of the .NET runtime and .NET SDK on first run.
+The Blazor repository uses the same set of build tools as the other ASP.NET Core projects. The [developer documention](https://github.com/aspnet/Home/wiki/Building-from-source) for building is the authoritative guide. **Please read this document and check your PATH setup if you have trouble building or using Visual Studio**
 
-Run `build.cmd` or `build.sh` from the solution directory.
+To build at the command line, run `build.cmd` or `build.sh` from the solution directory.
 
 ## Run unit tests
 
@@ -65,6 +65,7 @@ Run `build.cmd /t:Test /p:BlazorAllTests=true` or `build.sh /t:Test /p:BlazorAll
 ## Opening in Visual Studio
 
 Prerequisites:
+- Follow the steps [here](https://github.com/aspnet/Home/wiki/Building-from-source) to set up a local copy of dotnet
 - Visual Studio 2017 15.7 latest preview - [download](https://www.visualstudio.com/thank-you-downloading-visual-studio/?ch=pre&sku=Enterprise&rel=15)
 
 We recommend getting the latest preview version of Visual Studio and updating it frequently. The Blazor
@@ -75,12 +76,54 @@ When installing Visual Studio choose the following workloads:
 - ASP.NET and Web Development
 - Visual Studio extension development features
 
+If you have problems using Visual Studio with `Blazor.sln` please refer to the [developer documention](https://github.com/aspnet/Home/wiki/Building-from-source).
+
 ## Developing the Blazor VS Tooling
 
 To do local development of the Blazor tooling experience in VS, select the `Microsoft.VisualStudio.BlazorExtension`
 project and launch the debugger.
 
 The Blazor Visual Studio tooling will build as part of the command line build when on Windows.
+
+## Using CI Builds of Blazor
+
+To use a nightly or developer CI build of the Blazor package, ensure that you have the Blazor package feed configured, and update your package version numbers. You should use developer builds only with the expectation that things will break and change without any sort of announcment.
+
+Update your projects to include the Blazor developer feed (`https://dotnet.myget.org/f/blazor-dev/api/v3/index.json`) and ASP.NET Core developer feed (`https://dotnet.myget.org/F/dotnet-core/api/v3/index.json`). You can do this in a project file with MSBuild:
+```
+    <RestoreSources>
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
+      https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
+    </RestoreSources>
+```
+
+Or in a NuGet.config in the same director as the solution file:
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+ <packageSources>
+    <clear />
+    <add key="blazor" value="https://dotnet.myget.org/f/blazor-dev/api/v3/index.json" />
+    <add key="aspnet" value="dotnet.myget.org/F/dotnet-core/api/v3/index.json" />
+    <add key="nuget" value="https://api.nuget.org/v3/index.json" />
+ </packageSources>
+</configuration>
+```
+
+You can browse https://dotnet.myget.org/gallery/blazor-dev to find the current versions of packages. We recommend picking a specific version of the packages and using it across your projects. 
+
+```
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0-preview2-final" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.3.0-preview1-10220" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.3.0-preview1-10220" />
+    <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.3.0-preview1-10220" />
+  </ItemGroup>
+```
+
 
 ## Contributing
 
