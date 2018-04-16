@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Cors, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Cors, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.CorsMiddlewareExtensions",
@@ -425,6 +425,27 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_IsOriginAllowed",
+          "Parameters": [],
+          "ReturnType": "System.Func<System.String, System.Boolean>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IsOriginAllowed",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<System.String, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_ExposedHeaders",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IList<System.String>",
@@ -628,6 +649,27 @@
               "Type": "System.TimeSpan"
             }
           ],
+          "ReturnType": "Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetIsOriginAllowed",
+          "Parameters": [
+            {
+              "Name": "isOriginAllowed",
+              "Type": "System.Func<System.String, System.Boolean>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetIsOriginAllowedToAllowWildcardSubdomains",
+          "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder",
           "Visibility": "Public",
           "GenericParameter": []
@@ -917,6 +959,22 @@
             {
               "Name": "options",
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             }
           ],
           "Visibility": "Public",
