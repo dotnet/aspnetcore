@@ -76,29 +76,28 @@ namespace Microsoft.AspNetCore.Blazor.Server.AutoRebuild
             }
 
             var candidateProcess = Process.GetCurrentProcess();
-            while (candidateProcess != null && !candidateProcess.HasExited)
+            try
             {
-                // It's unlikely that anyone's going to have a non-VS process in the process
-                // hierarchy called 'devenv', but if that turns out to be a scenario, we could
-                // (for example) write the VS PID to the obj directory during build, and then
-                // only consider processes with that ID. We still want to be sure there really
-                // is such a process in our ancestor chain, otherwise if you did "dotnet run"
-                // in a command prompt, we'd be confused and think it was launched from VS.
-                if (candidateProcess.ProcessName.Equals("devenv", StringComparison.OrdinalIgnoreCase))
+                while (candidateProcess != null && !candidateProcess.HasExited)
                 {
-                    return candidateProcess;
-                }
+                    // It's unlikely that anyone's going to have a non-VS process in the process
+                    // hierarchy called 'devenv', but if that turns out to be a scenario, we could
+                    // (for example) write the VS PID to the obj directory during build, and then
+                    // only consider processes with that ID. We still want to be sure there really
+                    // is such a process in our ancestor chain, otherwise if you did "dotnet run"
+                    // in a command prompt, we'd be confused and think it was launched from VS.
+                    if (candidateProcess.ProcessName.Equals("devenv", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return candidateProcess;
+                    }
 
-                try
-                {
                     candidateProcess = ProcessUtils.GetParent(candidateProcess);
                 }
-                catch (Exception)
-                {
-                    // There's probably some permissions issue that prevents us from seeing
-                    // further up the ancestor list, so we have to stop looking here.
-                    break;
-                }
+            }
+            catch (Exception)
+            {
+                // There's probably some permissions issue that prevents us from seeing
+                // further up the ancestor list, so we have to stop looking here.
             }
 
             return null;
