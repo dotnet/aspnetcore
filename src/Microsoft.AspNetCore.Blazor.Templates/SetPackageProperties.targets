@@ -12,7 +12,7 @@
   <Target Name="SetTemplateJsonSymbolReplacements">
     <PropertyGroup>
       <IncludeCustomRestoreSourcesValue>true</IncludeCustomRestoreSourcesValue>
-      <IncludeCustomRestoreSourcesValue Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm'">false</IncludeCustomRestoreSourcesValue>
+      <IncludeCustomRestoreSourcesValue Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm-$(BuildNumber)'">false</IncludeCustomRestoreSourcesValue>
 
       <!--
         Properties here will be injected into the template config *.json files
