@@ -9,7 +9,7 @@
       <_SdkFeed Condition="'$(_SdkFeed)' == ''">$(DefaultDotNetAssetFeed)</_SdkFeed>
       <TestDotNetPath>$(RepositoryRoot).test-dotnet\</TestDotNetPath>
       <AppsArtifactDirectory>$(RepositoryRoot)artifacts\apps</AppsArtifactDirectory>
-      <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\</SiteExtensionWorkingDirectory>
+      <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\$(SiteExtensionArch)\</SiteExtensionWorkingDirectory>
       <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\build</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-dev/</SiteExtensionFeed>
@@ -28,7 +28,7 @@
 
   <Target Name="_AddSiteExtensionSdk">
     <ItemGroup>
-      <DotNetCoreSdk Include="$(_SdkVersion)" Feed="$(_SdkFeed)" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+      <DotNetCoreSdk Include="$(_SdkVersion)" Feed="$(_SdkFeed)" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="$(SiteExtensionArch)" />
     </ItemGroup>
   </Target>
 
@@ -37,7 +37,7 @@
       <DotNetCoreRuntime
         Include="$(MicrosoftNETCoreApp21PackageVersion)"
         InstallDir="$(SiteExtensionWorkingDirectory)"
-        Arch="x86"
+        Arch="$(SiteExtensionArch)"
         Feed="$(DotNetAssetRootUrl)"
         FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
     </ItemGroup>
@@ -76,13 +76,21 @@
     <Message Text="Removing %(_CleanupFiles.Identity)" Importance="High" />
     <RemoveDir Directories="@(_CleanupFiles)" />
 
-    <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
+    <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-internal-$(PackageVersion)-win-$(SiteExtensionArch).zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
     <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
 
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;ComposeSiteExtensions;_AddSiteExtensionSdk;InstallDotNet">
+  <Target Name="PrepareSiteExtensionSdk" DependsOnTargets="ComposeSiteExtensions;_AddSiteExtensionSdk;InstallDotNet">
+  </Target>
+
+  <Target Name="PrepareSiteExtensionSdks">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="PrepareSiteExtensionSdk" Properties="SiteExtensionArch=x86" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="PrepareSiteExtensionSdk" Properties="SiteExtensionArch=x64" />
+  </Target>
+
+  <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;PrepareSiteExtensionSdks">
     <!-- Strip LZMA from sdk -->
     <Delete Files="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
     <MSBuild Projects="%(SiteExtensions.Identity)"
@@ -91,7 +99,7 @@
 
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Pack"
-      Properties="DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
+      Properties="%(SiteExtensions.BuildProperties);DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
 
   </Target>
 
