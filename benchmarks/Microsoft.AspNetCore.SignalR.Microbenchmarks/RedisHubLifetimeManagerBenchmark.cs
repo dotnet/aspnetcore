@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var protocols = GenerateProtocols(ProtocolCount).ToArray();
             var options = Options.Create(new RedisOptions()
             {
-                Factory = _ => Task.FromResult<IConnectionMultiplexer>(new TestConnectionMultiplexer(server))
+                ConnectionFactory = _ => Task.FromResult<IConnectionMultiplexer>(new TestConnectionMultiplexer(server))
             });
             var resolver = new DefaultHubProtocolResolver(protocols, NullLogger<DefaultHubProtocolResolver>.Instance);
 

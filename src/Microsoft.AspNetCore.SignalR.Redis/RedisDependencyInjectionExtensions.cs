@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return AddRedis(builder, o =>
             {
-                o.Options = ConfigurationOptions.Parse(redisConnectionString);
+                o.Configuration = ConfigurationOptions.Parse(redisConnectionString);
             });
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return AddRedis(builder, o =>
             {
-                o.Options = ConfigurationOptions.Parse(redisConnectionString);
+                o.Configuration = ConfigurationOptions.Parse(redisConnectionString);
                 configure(o);
             });
         }
