@@ -17,12 +17,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
-            _serverLoggers = new ConcurrentDictionary<string, ILogger>(StringComparer.Ordinal);
             _loggerFactory = loggerFactory;
-            _wrappedDisposable = wrappedDisposable;
-            _scopeLogger = loggerFactory.CreateLogger(nameof(ServerLogScope));
-
             _serverFixture = serverFixture;
+            _wrappedDisposable = wrappedDisposable;
+
+            _serverLoggers = new ConcurrentDictionary<string, ILogger>(StringComparer.Ordinal);
+            _scopeLogger = _loggerFactory.CreateLogger(nameof(ServerLogScope));
+
+            // Attach last after everything else is initialized because a logged error can happen at any time
             _serverFixture.ServerLogged += ServerFixtureOnServerLogged;
 
             _scopeLogger.LogInformation("Server log scope started.");
