@@ -32,7 +32,7 @@
     <MicrosoftNETCoreApp11PackageVersion>1.1.5</MicrosoftNETCoreApp11PackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.7</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
     <MicrosoftOwinSecurityPackageVersion>3.0.1</MicrosoftOwinSecurityPackageVersion>
     <MicrosoftOwinTestingPackageVersion>3.0.1</MicrosoftOwinTestingPackageVersion>

@@ -43,7 +43,9 @@ foreach ($repo in $Repos) {
 
     $versionPrefix = $xml.SelectSingleNode('/Project/PropertyGroup/VersionPrefix')
     $epxVersionPrefix = $xml.SelectSingleNode('/Project/PropertyGroup/ExperimentalProjectVersionPrefix')
+    $exVersionPrefix = $xml.SelectSingleNode('/Project/PropertyGroup/ExperimentalVersionPrefix')
     BumpPatch $epxVersionPrefix
+    BumpPatch $exVersionPrefix
     BumpPatch $versionPrefix
     SaveXml $xml $path
 }
