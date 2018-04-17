@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             builder
                 .UseRequestCulture<TStartup>("en-GB", "en-US")
+                .UseEnvironment("Production")
                 .ConfigureServices(
                     services => services.Configure<MvcCompatibilityOptions>(
                         options => options.CompatibilityVersion = CompatibilityVersion.Version_2_1));
