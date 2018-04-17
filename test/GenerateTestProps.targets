@@ -1,8 +1,24 @@
 <Project>
   <Target Name="GenerateTestProps" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <PropsProperties>RestoreSources=$([MSBuild]::Escape($(RestoreSources)))</PropsProperties>
+      <PropsProperties>$(PropsProperties);RuntimeFrameworkVersion=$(RuntimeFrameworkVersion)</PropsProperties>
+      <PropsProperties>$(PropsProperties);MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion)</PropsProperties>
+
+      <!-- These properties would normally be bundled in the CLI -->
+      <TargetsProperties>BundledAspNetCoreAllTargetFrameworkVersion=$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[1])</TargetsProperties>
+      <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion)</TargetsProperties>
+      <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppTargetFrameworkVersion=$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[1])</TargetsProperties>
+      <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion)</TargetsProperties>
+    </PropertyGroup>
+
     <Sdk_GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)TemplateTests.props.in"
-      Properties="RestoreSources=$([MSBuild]::Escape($(RestoreSources)));RuntimeFrameworkVersion=$(RuntimeFrameworkVersion);MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion)"
+      Properties="$(PropsProperties)"
       OutputPath="$(OutputPath)TemplateTests.props" />
+    <Sdk_GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)TemplateTests.targets.in"
+      Properties="$(TargetsProperties)"
+      OutputPath="$(OutputPath)TemplateTests.targets" />
   </Target>
 </Project>

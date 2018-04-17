@@ -42,14 +42,19 @@ namespace Templates.Test
             // Directory.Build.props/targets context
 
             var templatesTestsPropsFilePath = Path.Combine(basePath, "TemplateTests.props");
+            var templatesTestsTargetsFilePath = Path.Combine(basePath, "TemplateTests.targets");
             var directoryBuildPropsContent =
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
     <Import Project=""Directory.Build.After.props"" Condition=""Exists('Directory.Build.After.props')"" />
 </Project>";
-
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), directoryBuildPropsContent);
-            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), "<Project />");
+
+            var directoryBuildTargetsContent =
+$@"<Project>
+    <Import Project=""{templatesTestsTargetsFilePath}"" />
+</Project>";
+            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
         }
 
         protected void InstallTemplatePackages()
