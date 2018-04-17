@@ -28,14 +28,7 @@ To see Blazor in action, check out [Steve Sanderson's prototype demo at NDC Oslo
 
 ## Getting Started
 
-To get setup with Blazor:
-
-1. Install the [.NET Core 2.1 Preview 2 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300-preview2).
-1. Install the latest *preview* of [Visual Studio 2017 (15.7)](https://www.visualstudio.com/vs/preview) with the *ASP.NET and web development* workload.
-   - *Note:* You can install Visual Studio previews side-by-side with an existing Visual Studio installation without impacting your existing development environment.
-1. Install the [ASP.NET Core Blazor Language Services extension](https://go.microsoft.com/fwlink/?linkid=870389) from the Visual Studio Marketplace.
-
-You're now ready to start building web apps with Blazor! To build your first Blazor web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
+To get started with Blazor and build your first Blazor web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
 
 ## Building the Repo
 
