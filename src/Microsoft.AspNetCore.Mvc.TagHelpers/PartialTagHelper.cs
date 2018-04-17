@@ -22,6 +22,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     {
         private const string ForAttributeName = "for";
         private const string ModelAttributeName = "model";
+        private object _model;
+        private bool _hasModel;
+        private bool _hasFor;
+        private ModelExpression _for;
 
         private readonly ICompositeViewEngine _viewEngine;
         private readonly IViewBufferScope _viewBufferScope;
@@ -43,13 +47,29 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// An expression to be evaluated against the current model. Cannot be used together with <see cref="Model"/>.
         /// </summary>
         [HtmlAttributeName(ForAttributeName)]
-        public ModelExpression For { get; set; }
+        public ModelExpression For
+        {
+            get => _for;
+            set
+            {
+                _for = value ?? throw new ArgumentNullException(nameof(value));
+                _hasFor = true;
+            }
+        }
 
         /// <summary>
         /// The model to pass into the partial view. Cannot be used together with <see cref="For"/>.
         /// </summary>
         [HtmlAttributeName(ModelAttributeName)]
-        public object Model { get; set; }
+        public object Model
+        {
+            get => _model;
+            set
+            {
+                _model = value;
+                _hasModel = true;
+            }
+        }
 
         /// <summary>
         /// A <see cref="ViewDataDictionary"/> to pass into the partial view.
@@ -88,7 +108,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         // Internal for testing
         internal object ResolveModel()
         {
-            if (Model != null & For != null)
+            // 1. Disallow specifying values for both Model and For
+            // 2. If a Model was assigned, use it even if it's null.
+            // 3. For cannot have a null value. Use it if it was assigned to.
+            // 4. Fall back to using the Model property on ViewContext.ViewData if none of the above conditions are met.
+
+            if (_hasFor && _hasModel)
             {
                 throw new InvalidOperationException(
                     Resources.FormatPartialTagHelper_InvalidModelAttributes(
@@ -97,17 +122,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         ModelAttributeName));
             }
 
-            if (Model != null)
+            if (_hasModel)
             {
                 return Model;
             }
 
-            if (For != null)
+            if (_hasFor)
             {
                 return For.Model;
             }
 
-            // Model and For are null, fallback to the ViewContext's ViewData model.
+            // A value for Model or For was not specified, fallback to the ViewContext's ViewData model.
             return ViewContext.ViewData.Model;
         }
 
