@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.DataProtection
             Assert.NotNull(FileSystemXmlRepository.DefaultKeyStorageDirectory);
 
             var keysPath = FileSystemXmlRepository.DefaultKeyStorageDirectory.FullName;
-            var tempPath = FileSystemXmlRepository.DefaultKeyStorageDirectory.FullName + "Temp";
+            var tempPath = FileSystemXmlRepository.DefaultKeyStorageDirectory.FullName + Path.GetRandomFileName();
 
             try
             {
