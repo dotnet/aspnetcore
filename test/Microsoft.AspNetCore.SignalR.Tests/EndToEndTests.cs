@@ -51,32 +51,44 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CanStartAndStopConnectionUsingDefaultTransport()
         {
-            var url = _serverFixture.Url + "/echo";
-            // The test should connect to the server using WebSockets transport on Windows 8 and newer.
-            // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
-            var connection = new HttpConnection(new Uri(url));
-            await connection.StartAsync(TransferFormat.Binary).OrTimeout();
-            await connection.DisposeAsync().OrTimeout();
+            using (StartVerifableLog(out var loggerFactory))
+            {
+                var url = _serverFixture.Url + "/echo";
+                // The test should connect to the server using WebSockets transport on Windows 8 and newer.
+                // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
+                var connection = new HttpConnection(new Uri(url), HttpTransports.All, loggerFactory);
+                await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
         }
 
         [Fact]
         public async Task TransportThatFallsbackCreatesNewConnection()
         {
-            var url = _serverFixture.Url + "/echo";
-            // The test should connect to the server using WebSockets transport on Windows 8 and newer.
-            // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                       writeContext.EventId.Name == "ErrorStartingTransport";
+            }
 
-            // The test logic lives in the TestTransportFactory and FakeTransport.
-            var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url) }, null, new TestTransportFactory());
-            await connection.StartAsync(TransferFormat.Text).OrTimeout();
-            await connection.DisposeAsync().OrTimeout();
+            using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+            {
+                var url = _serverFixture.Url + "/echo";
+                // The test should connect to the server using WebSockets transport on Windows 8 and newer.
+                // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
+
+                // The test logic lives in the TestTransportFactory and FakeTransport.
+                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url) }, loggerFactory, new TestTransportFactory());
+                await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
         }
 
-        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/2031")]
+        [Theory]
         [MemberData(nameof(TransportTypes))]
         public async Task CanStartAndStopConnectionUsingGivenTransport(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, testName: $"CanStartAndStopConnectionUsingGivenTransport_{transportType}"))
+            using (StartVerifableLog(out var loggerFactory, minLogLevel: LogLevel.Trace, testName: $"CanStartAndStopConnectionUsingGivenTransport_{transportType}"))
             {
                 var url = _serverFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
@@ -532,7 +544,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 if (_tries < availableTransports)
                 {
-                    throw new Exception();
+                    return Task.FromException(new Exception());
                 }
                 else
                 {

@@ -31,7 +31,7 @@ export class LongPollingTransport implements ITransport {
         this.logMessageContent = logMessageContent;
     }
 
-    public connect(url: string, transferFormat: TransferFormat): Promise<void> {
+    public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
         Arg.isRequired(url, "url");
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
@@ -45,13 +45,6 @@ export class LongPollingTransport implements ITransport {
             throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
         }
 
-        this.poll(this.url, transferFormat);
-        return Promise.resolve();
-    }
-
-    private async poll(url: string, transferFormat: TransferFormat): Promise<void> {
-        this.running = true;
-
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
             headers: {},
@@ -62,15 +55,49 @@ export class LongPollingTransport implements ITransport {
             pollOptions.responseType = "arraybuffer";
         }
 
+        const token = await this.accessTokenFactory();
+        this.updateHeaderToken(pollOptions, token);
+
         let closeError: Error;
+
+        // Make initial long polling request
+        // Server uses first long polling request to finish initializing connection and it returns without data
+        const pollUrl = `${url}&_=${Date.now()}`;
+        this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}`);
+        const response = await this.httpClient.get(pollUrl, pollOptions);
+        if (response.statusCode !== 200) {
+            this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
+
+            // Mark running as false so that the poll immediately ends and runs the close logic
+            closeError = new HttpError(response.statusText, response.statusCode);
+            this.running = false;
+        } else {
+            this.running = true;
+        }
+
+        this.poll(this.url, pollOptions, closeError);
+        return Promise.resolve();
+    }
+
+    private updateHeaderToken(request: HttpRequest, token: string) {
+        if (token) {
+            // tslint:disable-next-line:no-string-literal
+            request.headers["Authorization"] = `Bearer ${token}`;
+            return;
+        }
+        // tslint:disable-next-line:no-string-literal
+        if (request.headers["Authorization"]) {
+            // tslint:disable-next-line:no-string-literal
+            delete request.headers["Authorization"];
+        }
+    }
+
+    private async poll(url: string, pollOptions: HttpRequest, closeError: Error): Promise<void> {
         try {
             while (this.running) {
                 // We have to get the access token on each poll, in case it changes
                 const token = await this.accessTokenFactory();
-                if (token) {
-                    // tslint:disable-next-line:no-string-literal
-                    pollOptions.headers["Authorization"] = `Bearer ${token}`;
-                }
+                this.updateHeaderToken(pollOptions, token);
 
                 try {
                     const pollUrl = `${url}&_=${Date.now()}`;
@@ -142,14 +169,11 @@ export class LongPollingTransport implements ITransport {
             this.running = false;
             this.logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this.url}.`);
 
-            const deleteOptions: HttpRequest = {};
+            const deleteOptions: HttpRequest = {
+                headers: {},
+            };
             const token = await this.accessTokenFactory();
-            if (token) {
-                // tslint:disable-next-line:no-string-literal
-                deleteOptions.headers = {
-                    ["Authorization"]: `Bearer ${token}`,
-                };
-            }
+            this.updateHeaderToken(deleteOptions, token);
             const response = await this.httpClient.delete(this.url, deleteOptions);
 
             this.logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request accepted.");

@@ -636,6 +636,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     // Start a poll
                     var task = dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+                    Assert.True(task.IsCompleted);
+                    Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+                    task = dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
 
                     // Send to the application
                     var buffer = Encoding.UTF8.GetBytes("Hello World");
@@ -745,7 +749,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Theory]
-        [InlineData(HttpTransportType.LongPolling, 204)]
+        [InlineData(HttpTransportType.LongPolling, 200)]
         [InlineData(HttpTransportType.WebSockets, 404)]
         [InlineData(HttpTransportType.ServerSentEvents, 404)]
         public async Task EndPointThatOnlySupportsLongPollingRejectsOtherTransports(HttpTransportType transportType, int status)
@@ -869,6 +873,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
                 var app = builder.Build();
+                // First poll will 200
+                await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
                 await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
 
                 Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
@@ -998,6 +1006,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 var request1 = dispatcher.ExecuteAsync(context1, options, app);
+                Assert.True(request1.IsCompleted);
+
+                request1 = dispatcher.ExecuteAsync(context1, options, app);
                 var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
                 await request1;
@@ -1132,7 +1143,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 builder.UseConnectionHandler<BlockingConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
+
+                // Initial poll
                 var task = dispatcher.ExecuteAsync(context, options, app);
+                Assert.True(task.IsCompleted);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+                // Real long running poll
+                task = dispatcher.ExecuteAsync(context, options, app);
 
                 var buffer = Encoding.UTF8.GetBytes("Hello World");
 
@@ -1166,7 +1184,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var options = new HttpConnectionDispatcherOptions();
 
                 var context1 = MakeRequest("/foo", connection);
+                // This is the initial poll to make sure things are setup
                 var task1 = dispatcher.ExecuteAsync(context1, options, app);
+                Assert.True(task1.IsCompleted);
+                task1 = dispatcher.ExecuteAsync(context1, options, app);
                 var context2 = MakeRequest("/foo", connection);
                 var task2 = dispatcher.ExecuteAsync(context2, options, app);
 
@@ -1363,10 +1384,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
                 var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
-
                 await connectionHandlerTask.OrTimeout();
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
+                connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
+                await connectionHandlerTask.OrTimeout();
+                
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
                 Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
             }
@@ -1444,7 +1468,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 new Claim(ClaimTypes.StreetAddress, "12345 123rd St. NW")
             }));
 
+                // First poll
                 var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
+                Assert.True(connectionHandlerTask.IsCompleted);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+                connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
                 await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
 
                 await connectionHandlerTask.OrTimeout();
@@ -1502,7 +1531,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // "authorize" user
                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
+                // Initial poll
                 var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
+                Assert.True(connectionHandlerTask.IsCompleted);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+                connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
                 await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
 
                 await connectionHandlerTask.OrTimeout();
@@ -1660,6 +1694,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var options = new HttpConnectionDispatcherOptions();
 
                 var pollTask = dispatcher.ExecuteAsync(context, options, app);
+                Assert.True(pollTask.IsCompleted);
+
+                // Now send the second poll
+                pollTask = dispatcher.ExecuteAsync(context, options, app);
 
                 // Issue the delete request and make sure the poll completes
                 var deleteContext = new DefaultHttpContext();
