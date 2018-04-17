@@ -35,8 +35,8 @@
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview3-32094</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
-    <SystemBuffersPackageVersion>4.5.0-preview2-26313-01</SystemBuffersPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26313-01</SystemIOPipelinesPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview3-26331-02</SystemBuffersPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.0-preview3-26331-02</SystemIOPipelinesPackageVersion>
     <SystemManagementAutomationPackageVersion>6.1.7601.17515</SystemManagementAutomationPackageVersion>
     <SystemMemoryPackageVersion>4.5.0-preview2-26313-01</SystemMemoryPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview2-26313-01</SystemNetWebSocketsWebSocketProtocolPackageVersion>
