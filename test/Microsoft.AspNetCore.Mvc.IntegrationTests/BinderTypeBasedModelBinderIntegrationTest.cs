@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -148,22 +149,69 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         // type. This should behave identically to such an attribute on an action parameter. (Tests such as
         // BindParameter_WithData_WithPrefix_GetsBound cover associating [ModelBinder] with an action parameter.)
         //
-        // This is a regression test for aspnet/Mvc#4652
+        // This is a regression test for aspnet/Mvc#4652 and aspnet/Mvc#7595
         [Theory]
         [MemberData(nameof(NullAndEmptyBindingInfo))]
         public async Task BinderTypeOnParameterType_WithData_EmptyPrefix_GetsBound(BindingInfo bindingInfo)
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameters = typeof(TestController).GetMethod(nameof(TestController.Action)).GetParameters();
+            var parameter = new ControllerParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = bindingInfo,
+                ParameterInfo = parameters[0],
+                ParameterType = typeof(Address),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var address = Assert.IsType<Address>(modelBindingResult.Model);
+            Assert.Equal("SomeStreet", address.Street);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            var kvp = Assert.Single(modelState);
+            Assert.Equal("Street", kvp.Key);
+            var entry = kvp.Value;
+            Assert.NotNull(entry);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.NotNull(entry.RawValue); // Value is set by test model binder, no need to validate it.
+        }
+
+        // Make sure the metadata is honored when a [ModelBinder] attribute is associated with an action parameter's
+        // type. This should behave identically to such an attribute on an action parameter. (Tests such as
+        // BindParameter_WithData_WithPrefix_GetsBound cover associating [ModelBinder] with an action parameter.)
+        //
+        // This is a regression test for aspnet/Mvc#4652
+        [Theory]
+        [MemberData(nameof(NullAndEmptyBindingInfo))]
+        public async Task BinderTypeOnParameterType_WithDataEmptyPrefixAndVersion20_GetsBound(
+            BindingInfo bindingInfo)
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                // ParameterBinder will use ModelMetadata for typeof(Address), not Parameter1's ParameterInfo.
+                updateOptions: options => options.AllowValidatingTopLevelNodes = false);
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
                 BindingInfo = bindingInfo,
                 ParameterType = typeof(Address),
             };
-
-            var testContext = ModelBindingTestHelper.GetTestContext();
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -417,6 +465,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
                 bindingContext.Result = ModelBindingResult.Failed();
                 return Task.CompletedTask;
+            }
+        }
+
+        private class TestController
+        {
+            public void Action(Address address)
+            {
             }
         }
     }

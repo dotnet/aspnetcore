@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -304,20 +303,22 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     binding.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
                         (value) => $"Hmm, '{ value }' is not a valid value.");
                 });
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = QueryString.Create("Parameter1", "abcd");
+                },
+                metadataProvider: metadataProvider);
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
                 BindingInfo = new BindingInfo(),
                 ParameterType = parameterType
             };
-
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.QueryString = QueryString.Create("Parameter1", "abcd");
-            });
-
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -405,8 +406,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     binding.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
                         value => $"Hurts when '{ value }' is provided.");
                 });
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
 
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = QueryString.Create("Parameter1", string.Empty);
+                },
+                metadataProvider: metadataProvider);
+
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -414,11 +423,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
                 ParameterType = parameterType
             };
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.QueryString = QueryString.Create("Parameter1", string.Empty);
-            });
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);

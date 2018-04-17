@@ -1067,7 +1067,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 {
                     return new DefaultMetadataDetails(
                         key,
-                        new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray(), null, null));
+#pragma warning disable CS0618 // Type or member is obsolete
+                        new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray()));
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
 
                 return entry;
@@ -1080,7 +1082,11 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 {
                     return new DefaultMetadataDetails(
                         e.Key,
-                        new ModelAttributes(e.ModelAttributes.TypeAttributes, _attributes.Concat(e.ModelAttributes.PropertyAttributes), null));
+#pragma warning disable CS0618 // Type or member is obsolete
+                        new ModelAttributes(
+                            _attributes.Concat(e.ModelAttributes.PropertyAttributes),
+                            e.ModelAttributes.TypeAttributes));
+#pragma warning restore CS0618 // Type or member is obsolete
                 })
                 .ToArray();
             }

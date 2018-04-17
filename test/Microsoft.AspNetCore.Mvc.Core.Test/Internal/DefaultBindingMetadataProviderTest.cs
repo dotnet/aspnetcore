@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
-                new ModelAttributes(null, null, parameterAttributes));
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
-                new ModelAttributes(null, null, parameterAttributes));
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
-                new ModelAttributes(null, null, parameterAttributes));
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
-                new ModelAttributes(null, null, parameterAttributes));
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
-                new ModelAttributes(null, null, parameterAttributes));
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
-                new ModelAttributes(null, null, parameterAttributes));
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
 
             var provider = new DefaultBindingMetadataProvider();
 

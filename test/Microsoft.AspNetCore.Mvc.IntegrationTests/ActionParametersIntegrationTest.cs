@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
@@ -469,14 +468,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ActionParameter_CustomModelBinder_CanCreateModels_ForParameterlessConstructorTypes()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(binderProvider: new CustomComplexTypeModelBinderProvider());
-            var parameter = new ParameterDescriptor()
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(
+                testContext.MvcOptions,
+                new CustomComplexTypeModelBinderProvider());
+
+            var parameter = new ParameterDescriptor
             {
                 Name = "prefix",
                 ParameterType = typeof(ClassWithNoDefaultConstructor)
             };
-            var testContext = ModelBindingTestHelper.GetTestContext();
-            var modelState = testContext.ModelState;
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -850,7 +852,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             public IEnumerator<T> GetEnumerator()
             {
-                foreach (T t in _original)
+                foreach (var t in _original)
                 {
                     yield return t;
                 }

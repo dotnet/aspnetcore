@@ -212,7 +212,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             // Assert
             var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
-            Assert.Empty(defaultMetadata.Attributes.Attributes);
+
+            // Not exactly "no attributes" due to SerializableAttribute on object.
+            Assert.IsType<SerializableAttribute>(Assert.Single(defaultMetadata.Attributes.Attributes));
         }
 
         [Fact]
@@ -229,11 +231,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             // Assert
             var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
-            Assert.Equal(2, defaultMetadata.Attributes.Attributes.Count);
-            var attribute1 = Assert.IsType<ModelAttribute>(defaultMetadata.Attributes.Attributes[0]);
-            Assert.Equal("ParamAttrib1", attribute1.Value);
-            var attribute2 = Assert.IsType<ModelAttribute>(defaultMetadata.Attributes.Attributes[1]);
-            Assert.Equal("ParamAttrib2", attribute2.Value);
+            Assert.Collection(
+                // Take(2) to ignore SerializableAttribute on object.
+                defaultMetadata.Attributes.Attributes.Take(2),
+                attribute =>
+                {
+                    var modelAttribute = Assert.IsType<ModelAttribute>(attribute);
+                    Assert.Equal("ParamAttrib1", modelAttribute.Value);
+                },
+                attribute =>
+                {
+                    var modelAttribute = Assert.IsType<ModelAttribute>(attribute);
+                    Assert.Equal("ParamAttrib2", modelAttribute.Value);
+                });
         }
 
         [Fact]

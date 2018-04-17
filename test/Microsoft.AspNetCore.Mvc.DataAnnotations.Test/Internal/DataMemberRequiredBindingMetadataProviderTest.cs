@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredTrue.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrue));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             // Act
             provider.CreateBindingMetadata(context);
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredFalse.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredFalse));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             };
 
             var key = ModelMetadataIdentity.ForType(typeof(ClassWithDataMemberIsRequiredTrue));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithoutAttributes.StringProperty),
                 typeof(ClassWithoutAttributes));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], new object[0]));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredTrueWithoutDataContract.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrueWithoutDataContract));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
+            var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -136,6 +137,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
+        }
+
+        private ModelAttributes GetModelAttributes(
+            IEnumerable<object> typeAttributes,
+            IEnumerable<object> propertyAttributes)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var modelAttributes = new ModelAttributes(propertyAttributes, typeAttributes);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            return modelAttributes;
         }
 
         [DataContract]

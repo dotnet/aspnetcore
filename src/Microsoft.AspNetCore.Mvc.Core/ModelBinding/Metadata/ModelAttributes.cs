@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -56,7 +54,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// If this instance represents a parameter, the set of attributes for that parameter.
         /// Otherwise, <c>null</c>.
         /// </param>
-        public ModelAttributes(IEnumerable<object> typeAttributes, IEnumerable<object> propertyAttributes, IEnumerable<object> parameterAttributes)
+        internal ModelAttributes(
+            IEnumerable<object> typeAttributes,
+            IEnumerable<object> propertyAttributes,
+            IEnumerable<object> parameterAttributes)
         {
             if (propertyAttributes != null)
             {
@@ -73,7 +74,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             else if (parameterAttributes != null)
             {
                 // Represents a parameter
-                Attributes = ParameterAttributes = parameterAttributes.ToArray();
+                if (typeAttributes == null)
+                {
+                    throw new ArgumentNullException(nameof(typeAttributes));
+                }
+
+                ParameterAttributes = parameterAttributes.ToArray();
+                TypeAttributes = typeAttributes.ToArray();
+                Attributes = ParameterAttributes.Concat(TypeAttributes).ToArray();
             }
             else if (typeAttributes != null)
             {
@@ -89,7 +97,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         /// <summary>
         /// Gets the set of all attributes. If this instance represents the attributes for a property, the attributes
-        /// on the property definition are before those on the property's <see cref="Type"/>.
+        /// on the property definition are before those on the property's <see cref="Type"/>. If this instance
+        /// represents the attributes for a parameter, the attributes on the parameter definition are before those on
+        /// the parameter's <see cref="Type"/>.
         /// </summary>
         public IReadOnlyList<object> Attributes { get; }
 
@@ -106,10 +116,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public IReadOnlyList<object> ParameterAttributes { get; }
 
         /// <summary>
-        /// Gets the set of attributes on the <see cref="Type"/>. If this instance represents a property,
-        /// then <see cref="TypeAttributes"/> contains attributes retrieved from
-        /// <see cref="PropertyInfo.PropertyType"/>. If this instance represents a parameter, then
-        /// the value is <c>null</c>.
+        /// Gets the set of attributes on the <see cref="Type"/>. If this instance represents a property, then
+        /// <see cref="TypeAttributes"/> contains attributes retrieved from <see cref="PropertyInfo.PropertyType"/>.
+        /// If this instance represents a parameter, then contains attributes retrieved from
+        /// <see cref="ParameterInfo.ParameterType"/>.
         /// </summary>
         public IReadOnlyList<object> TypeAttributes { get; }
 
@@ -120,7 +130,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </param>
         /// <param name="property">A <see cref="PropertyInfo"/> for which attributes need to be resolved.
         /// </param>
-        /// <returns>A <see cref="ModelAttributes"/> instance with the attributes of the property.</returns>
+        /// <returns>
+        /// A <see cref="ModelAttributes"/> instance with the attributes of the property and its <see cref="Type"/>.
+        /// </returns>
         public static ModelAttributes GetAttributesForProperty(Type type, PropertyInfo property)
         {
             if (type == null)
@@ -146,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            return new ModelAttributes(typeAttributes, propertyAttributes, null);
+            return new ModelAttributes(typeAttributes, propertyAttributes, parameterAttributes: null);
         }
 
         /// <summary>
@@ -170,18 +182,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 attributes = attributes.Concat(metadataType.GetTypeInfo().GetCustomAttributes());
             }
 
-            return new ModelAttributes(attributes, null, null);
+            return new ModelAttributes(attributes, propertyAttributes: null, parameterAttributes: null);
         }
 
         /// <summary>
         /// Gets the attributes for the given <paramref name="parameterInfo"/>.
         /// </summary>
-        /// <param name="parameterInfo">The <see cref="ParameterInfo"/> for which attributes need to be resolved.
+        /// <param name="parameterInfo">
+        /// The <see cref="ParameterInfo"/> for which attributes need to be resolved.
         /// </param>
-        /// <returns>A <see cref="ModelAttributes"/> instance with the attributes of the <see cref="ParameterInfo"/>.</returns>
+        /// <returns>
+        /// A <see cref="ModelAttributes"/> instance with the attributes of the parameter and its <see cref="Type"/>.
+        /// </returns>
         public static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo)
         {
-            return new ModelAttributes(null, null, parameterInfo.GetCustomAttributes());
+            // Prior versions called IModelMetadataProvider.GetMetadataForType(...) and therefore
+            // GetAttributesForType(...) for parameters. Maintain that set of attributes (including those from an
+            // ModelMetadataTypeAttribute reference) for back-compatibility.
+            var typeAttributes = GetAttributesForType(parameterInfo.ParameterType).TypeAttributes;
+            var parameterAttributes = parameterInfo.GetCustomAttributes();
+
+            return new ModelAttributes(typeAttributes, propertyAttributes: null, parameterAttributes);
         }
 
         private static Type GetMetadataType(Type type)

@@ -26,17 +26,21 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public static ModelBindingTestContext GetTestContext(
             Action<HttpRequest> updateRequest = null,
             Action<MvcOptions> updateOptions = null,
-            ControllerActionDescriptor actionDescriptor = null)
+            ControllerActionDescriptor actionDescriptor = null,
+            IModelMetadataProvider metadataProvider = null,
+            MvcOptions mvcOptions = null)
         {
-            var httpContext = GetHttpContext(updateRequest, updateOptions);
+            var httpContext = GetHttpContext(metadataProvider, updateRequest, updateOptions, mvcOptions);
             var services = httpContext.RequestServices;
+            metadataProvider = metadataProvider ?? services.GetRequiredService<IModelMetadataProvider>();
             var options = services.GetRequiredService<IOptions<MvcOptions>>();
 
-            var context = new ModelBindingTestContext()
+            var context = new ModelBindingTestContext
             {
                 ActionDescriptor = actionDescriptor ?? new ControllerActionDescriptor(),
                 HttpContext = httpContext,
-                MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
+                MetadataProvider = metadataProvider,
+                MvcOptions = options.Value,
                 RouteData = new RouteData(),
                 ValueProviderFactories = new List<IValueProviderFactory>(options.Value.ValueProviderFactories),
             };
@@ -80,10 +84,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             IModelBinderProvider binderProvider = null,
             MvcOptions mvcOptions = null)
         {
-            var services = GetServices();
-            var options = mvcOptions != null
-                ? Options.Create(mvcOptions)
-                : services.GetRequiredService<IOptions<MvcOptions>>();
+            var services = GetServices(metadataProvider, mvcOptions: mvcOptions);
+            var options = services.GetRequiredService<IOptions<MvcOptions>>();
 
             if (binderProvider != null)
             {
@@ -102,14 +104,14 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         public static IModelBinderFactory GetModelBinderFactory(
             IModelMetadataProvider metadataProvider,
-            IOptions<MvcOptions> options = null)
+            IServiceProvider services = null)
         {
-            var services = GetServices();
-
-            if (options == null)
+            if (services == null)
             {
-                options = services.GetRequiredService<IOptions<MvcOptions>>();
+                services = GetServices(metadataProvider);
             }
+
+            var options = services.GetRequiredService<IOptions<MvcOptions>>();
 
             return new ModelBinderFactory(metadataProvider, options, services);
         }
@@ -136,23 +138,52 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         private static HttpContext GetHttpContext(
+            IModelMetadataProvider metadataProvider,
             Action<HttpRequest> updateRequest = null,
-            Action<MvcOptions> updateOptions = null)
+            Action<MvcOptions> updateOptions = null,
+            MvcOptions mvcOptions = null)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new CancellableRequestLifetimeFeature());
 
             updateRequest?.Invoke(httpContext.Request);
 
-            httpContext.RequestServices = GetServices(updateOptions);
+            httpContext.RequestServices = GetServices(metadataProvider, updateOptions, mvcOptions);
             return httpContext;
         }
 
-        public static IServiceProvider GetServices(Action<MvcOptions> updateOptions = null)
+        public static IServiceProvider GetServices(
+            IModelMetadataProvider metadataProvider,
+            Action<MvcOptions> updateOptions = null,
+            MvcOptions mvcOptions = null)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddAuthorization();
             serviceCollection.AddSingleton(new ApplicationPartManager());
+            if (metadataProvider != null)
+            {
+                serviceCollection.AddSingleton(metadataProvider);
+            }
+            else if (updateOptions != null || mvcOptions != null)
+            {
+                serviceCollection.AddSingleton(services =>
+                {
+                    var optionsAccessor = services.GetRequiredService<IOptions<MvcOptions>>();
+                    return TestModelMetadataProvider.CreateProvider(optionsAccessor.Value.ModelMetadataDetailsProviders);
+                });
+            }
+            else
+            {
+                serviceCollection.AddSingleton<IModelMetadataProvider>(services =>
+                {
+                    return TestModelMetadataProvider.CreateDefaultProvider();
+                });
+            }
+
+            if (mvcOptions != null)
+            {
+                serviceCollection.AddSingleton(Options.Create(mvcOptions));
+            }
+
             serviceCollection
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
