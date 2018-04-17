@@ -8,7 +8,7 @@ import commonjs from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
 
 export default {
-    input: path.join(__dirname, "obj", "js", "index.js"),
+    input: path.join(__dirname, "obj", "js", "FunctionalTests", "ts", "index.js"),
     output: {
         file: path.join(__dirname, "wwwroot", "dist", "signalr-functional-tests.js"),
         format: "iife",

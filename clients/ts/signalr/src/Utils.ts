@@ -3,6 +3,8 @@
 
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
+import { NullLogger } from "./Loggers";
+import { IStreamResult, IStreamSubscriber, ISubscription } from "./Stream";
 
 export class Arg {
     public static isRequired(val: any, name: string): void {
@@ -66,4 +68,110 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
     });
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
+}
+
+export function createLogger(logger?: ILogger | LogLevel) {
+    if (logger === undefined) {
+        return new ConsoleLogger(LogLevel.Information);
+    }
+
+    if (logger === null) {
+        return NullLogger.instance;
+    }
+
+    if ((logger as ILogger).log) {
+        return logger as ILogger;
+    }
+
+    return new ConsoleLogger(logger as LogLevel);
+}
+
+export class Subject<T> implements IStreamResult<T> {
+    public observers: Array<IStreamSubscriber<T>>;
+    public cancelCallback: () => Promise<void>;
+
+    constructor(cancelCallback: () => Promise<void>) {
+        this.observers = [];
+        this.cancelCallback = cancelCallback;
+    }
+
+    public next(item: T): void {
+        for (const observer of this.observers) {
+            observer.next(item);
+        }
+    }
+
+    public error(err: any): void {
+        for (const observer of this.observers) {
+            if (observer.error) {
+                observer.error(err);
+            }
+        }
+    }
+
+    public complete(): void {
+        for (const observer of this.observers) {
+            if (observer.complete) {
+                observer.complete();
+            }
+        }
+    }
+
+    public subscribe(observer: IStreamSubscriber<T>): ISubscription<T> {
+        this.observers.push(observer);
+        return new SubjectSubscription(this, observer);
+    }
+}
+
+export class SubjectSubscription<T> implements ISubscription<T> {
+    private subject: Subject<T>;
+    private observer: IStreamSubscriber<T>;
+
+    constructor(subject: Subject<T>, observer: IStreamSubscriber<T>) {
+        this.subject = subject;
+        this.observer = observer;
+    }
+
+    public dispose(): void {
+        const index: number = this.subject.observers.indexOf(this.observer);
+        if (index > -1) {
+            this.subject.observers.splice(index, 1);
+        }
+
+        if (this.subject.observers.length === 0) {
+            this.subject.cancelCallback().catch((_) => { });
+        }
+    }
+}
+
+export class ConsoleLogger implements ILogger {
+    private readonly minimumLogLevel: LogLevel;
+
+    constructor(minimumLogLevel: LogLevel) {
+        this.minimumLogLevel = minimumLogLevel;
+    }
+
+    public log(logLevel: LogLevel, message: string): void {
+        if (logLevel >= this.minimumLogLevel) {
+            switch (logLevel) {
+                case LogLevel.Critical:
+                case LogLevel.Error:
+                    console.error(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+                case LogLevel.Warning:
+                    console.warn(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+                case LogLevel.Information:
+                    console.info(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+                case LogLevel.Trace:
+                case LogLevel.Debug:
+                    console.debug(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+                default:
+                    console.log(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+            }
+        }
+    }
 }

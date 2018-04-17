@@ -103,8 +103,6 @@
         return document.getElementById(id).value;
     }
 
-    let logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
-
     let connectButton = document.getElementById('connect');
     let disconnectButton = document.getElementById('disconnect');
     let broadcastButton = document.getElementById('broadcast');
@@ -141,10 +139,10 @@
             new signalR.protocols.msgpack.MessagePackHubProtocol() :
             new signalR.JsonHubProtocol();
 
-        let options = { logger: logger, protocol: protocol };
+        let options = { logger: signalR.LogLevel.Trace, protocol: protocol };
 
         if (transportDropdown.value !== "Automatic") {
-            options.transport = signalR.TransportType[transportDropdown.value];
+            options.transport = signalR.HttpTransportType[transportDropdown.value];
         }
 
         console.log('http://' + document.location.host + '/' + hubRoute);

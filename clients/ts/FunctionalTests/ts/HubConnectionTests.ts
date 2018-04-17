@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, IHubConnectionOptions, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
+import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, IHubConnectionOptions, IStreamSubscriber, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol } from "./Common";
@@ -114,15 +114,15 @@ describe("hubConnection", () => {
                 const received = [];
                 hubConnection.start().then(() => {
                     hubConnection.stream("Stream").subscribe({
-                        complete: function complete() {
+                        complete() {
                             expect(received).toEqual(["a", "b", "c"]);
                             hubConnection.stop();
                         },
-                        error: function error(err) {
+                        error(err) {
                             fail(err);
                             hubConnection.stop();
                         },
-                        next: function next(item) {
+                        next(item) {
                             received.push(item);
                         },
                     });
@@ -215,16 +215,16 @@ describe("hubConnection", () => {
 
                 hubConnection.start().then(() => {
                     hubConnection.stream("StreamThrowException", "An error occurred.").subscribe({
-                        complete: function complete() {
+                        complete() {
                             hubConnection.stop();
                             fail();
                         },
-                        error: function error(err) {
+                        error(err) {
                             expect(err.message).toEqual(errorMessage);
                             hubConnection.stop();
                             done();
                         },
-                        next: function next(item) {
+                        next(item) {
                             hubConnection.stop();
                             fail();
                         },
@@ -244,16 +244,16 @@ describe("hubConnection", () => {
 
                 hubConnection.start().then(() => {
                     hubConnection.stream("Echo", "42").subscribe({
-                        complete: function complete() {
+                        complete() {
                             hubConnection.stop();
                             fail();
                         },
-                        error: function error(err) {
+                        error(err) {
                             expect(err.message).toEqual("The client attempted to invoke the non-streaming 'Echo' method with a streaming invocation.");
                             hubConnection.stop();
                             done();
                         },
-                        next: function next(item) {
+                        next(item) {
                             hubConnection.stop();
                             fail();
                         },

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -94,8 +94,8 @@
             });
     }
 
-    [signalR.TransportType.WebSockets, signalR.TransportType.ServerSentEvents, signalR.TransportType.LongPolling].forEach(function(transportType) {
-        var clientId = 'browser ' + signalR.TransportType[transportType];
+    [signalR.HttpTransportType.WebSockets, signalR.HttpTransportType.ServerSentEvents, signalR.HttpTransportType.LongPolling].forEach(function(transportType) {
+        var clientId = 'browser ' + signalR.HttpTransportType[transportType];
         createLog(clientId);
         appendLog(clientId, 'Log for user: ' + clientId);
         runConnection(clientId, transportType);

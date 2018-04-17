@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortController } from "./AbortController";
-import { DataReceived, TransportClosed } from "./Common";
 import { HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
@@ -188,6 +187,6 @@ export class LongPollingTransport implements ITransport {
         }
     }
 
-    public onreceive: DataReceived;
-    public onclose: TransportClosed;
+    public onreceive: (data: string | ArrayBuffer) => void;
+    public onclose: (error?: Error) => void;
 }
