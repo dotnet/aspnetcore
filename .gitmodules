@@ -9,7 +9,7 @@
 [submodule "modules/BasicMiddleware"]
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git
-	branch = release/2.0-msrc
+	branch = release/2.0
 [submodule "modules/BrowserLink"]
 	path = modules/BrowserLink
 	url = https://github.com/aspnet/BrowserLink.git
@@ -57,7 +57,7 @@
 [submodule "modules/KestrelHttpServer"]
 	path = modules/KestrelHttpServer
 	url = https://github.com/aspnet/KestrelHttpServer.git
-	branch = release/2.0-msrc
+	branch = release/2.0
 [submodule "modules/Localization"]
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
