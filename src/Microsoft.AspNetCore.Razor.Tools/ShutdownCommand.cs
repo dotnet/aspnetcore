@@ -44,8 +44,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             try
             {
-                using (var client = await Client.ConnectAsync(Pipe.Value(), timeout: null, cancellationToken: Cancelled))
+                using (var client = await Client.ConnectAsync(Pipe.Value(), timeout: TimeSpan.FromSeconds(5), cancellationToken: Cancelled))
                 {
+                    if (client == null)
+                    {
+                        throw new InvalidOperationException("Couldn't connect to the server.");
+                    }
+
                     var request = ServerRequest.CreateShutdown();
                     await request.WriteAsync(client.Stream, Cancelled).ConfigureAwait(false);
 

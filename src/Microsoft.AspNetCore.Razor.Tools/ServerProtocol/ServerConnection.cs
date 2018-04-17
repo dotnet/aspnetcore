@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         // Spend up to 20s connecting to a new process, to allow time for it to start.
         private const int TimeOutMsNewProcess = 20000;
+
+        // Custom delegate that contains an out param to use with TryCreateServerCore method.
+        private delegate TResult TryCreateServerCoreDelegate<T1, T2, T3, T4, out TResult>(T1 arg1, T2 arg2, out T3 arg3, T4 arg4);
 
         public static bool WasServerMutexOpen(string mutexName)
         {
@@ -118,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             string pipeName,
             string keepAlive,
             int? timeoutOverride,
-            Func<string, string, bool, bool> tryCreateServerFunc,
+            TryCreateServerCoreDelegate<string, string, int?, bool, bool> tryCreateServerFunc,
             CancellationToken cancellationToken,
             bool debug)
         {
@@ -181,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var wasServerRunning = WasServerMutexOpen(serverMutexName);
                 var timeout = wasServerRunning ? timeoutExistingProcess : timeoutNewProcess;
 
-                if (wasServerRunning || tryCreateServerFunc(clientDir, pipeName, debug))
+                if (wasServerRunning || tryCreateServerFunc(clientDir, pipeName, out var _, debug))
                 {
                     pipeTask = Client.ConnectAsync(pipeName, TimeSpan.FromMilliseconds(timeout), cancellationToken);
                 }
@@ -277,10 +281,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         // Internal for testing.
-        internal static bool TryCreateServerCore(string clientDir, string pipeName, bool debug = false)
+        internal static bool TryCreateServerCore(string clientDir, string pipeName, out int? processId, bool debug = false)
         {
             string expectedPath;
             string processArguments;
+            processId = null;
 
             // The server should be in the same directory as the client
             var expectedCompilerPath = Path.Combine(clientDir, ServerName);
@@ -328,6 +333,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     ServerLogger.Log("Successfully created process with process id {0}", processInfo.dwProcessId);
                     NativeMethods.CloseHandle(processInfo.hProcess);
                     NativeMethods.CloseHandle(processInfo.hThread);
+                    processId = processInfo.dwProcessId;
                 }
                 else
                 {
@@ -351,7 +357,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
                         CreateNoWindow = true
                     };
 
-                    Process.Start(startInfo);
+                    var process = Process.Start(startInfo);
+                    processId = process.Id;
+
                     return true;
                 }
                 catch
