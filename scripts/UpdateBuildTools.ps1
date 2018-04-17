@@ -13,6 +13,8 @@
     Additional arguments to pass into git-commit
 .PARAMETER NoCommit
     Make changes without executing git-commit
+.PARAMETER ToolsSource
+    The location of the build tools
 .PARAMETER Force
     Specified this to make a commit with any changes
 #>
@@ -22,6 +24,7 @@ param(
     [string]$GitAuthorName = $null,
     [string]$GitAuthorEmail = $null,
     [string[]]$GitCommitArgs = @(),
+    [string]$ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools',
     [switch]$NoCommit,
     [switch]$Force
 )
@@ -54,7 +57,7 @@ try {
 
     $oldVersion = Get-KoreBuildVersion
 
-    & "$RepoRoot/run.ps1" -Update -Command noop | Out-Null
+    & "$RepoRoot/run.ps1" -Update -ToolsSource $ToolsSource -Command noop | Out-Null
 
     $newVersion = Get-KoreBuildVersion
 

@@ -28,12 +28,13 @@
     <PackageArtifact Include="dotnet-watch" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" LZMA="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" LZMA="true" />
@@ -156,19 +157,18 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Common" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
 
     <!-- SignalR Redis support is not part of the .App meta-package -->
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="ship" AllMetapackage="true" />
 
-    <!-- SignalR Client and MsgPack Protocol support are not part of any meta-packages -->
+    <!-- SignalR Client and MessagePack Protocol support are not part of any meta-packages -->
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Client" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.MsgPack" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MsgPack" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.MsgPack" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Category="ship" />
 
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -255,7 +255,7 @@
     <PackageArtifact Include="Microsoft.Extensions.Hosting.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Hosting" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Http" Category="ship" AppMetapackage="true" AllMetapackage="true"  />
-    <PackageArtifact Include="Microsoft.Extensions.Http.Polly" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Http.Polly" Category="ship" AppMetapackage="false" AllMetapackage="false" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" AppMetapackage="true" AllMetapackage="true" />

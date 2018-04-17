@@ -55,6 +55,7 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [win-x86-zip]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
 [win-x86-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
 [linux-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
+[linux-arm-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm.tar.gz
 [osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
 [debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
 [redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
@@ -77,6 +78,7 @@ Windows (x64)         | [Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x6
 Windows (x86)         | [Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]   | [Installer (exe)][win-x86-exe-rel-21]<br>[Archive (zip)][win-x86-zip-rel-21]
 macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                                  | [Archive (tar.gz)][osx-x64-tar-rel-21]
 Linux (x64)           | [Archive (tar.gz)][linux-x64-tar]                                | [Archive (tar.gz)][linux-x64-tar-rel-21]
+Linux (arm32)         | [Archive (tar.gz)][linux-arm-tar]                                | (not available yet)
 Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-21]
 RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-21]
 Alpine Linux 3.6 (x64)| [Archive (tar.gz)][alpine.3.6-x64-tar]                           | [Archive (tar.gz)][alpine.3.6-x64-tar-rel-21]
