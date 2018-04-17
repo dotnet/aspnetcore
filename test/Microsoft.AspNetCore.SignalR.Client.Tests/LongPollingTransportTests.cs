@@ -109,15 +109,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     if (requests == 0)
                     {
                         requests++;
-                        return ResponseUtils.CreateResponse(HttpStatusCode.OK, "Hello");
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                     }
                     else if (requests == 1)
+                    {
+                        requests++;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK, "Hello");
+                    }
+                    else if (requests == 2)
                     {
                         requests++;
                         // Time out
                         return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                     }
-                    else if (requests == 2)
+                    else if (requests == 3)
                     {
                         requests++;
                         return ResponseUtils.CreateResponse(HttpStatusCode.OK, "World");
@@ -147,7 +152,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task LongPollingTransportStopsWhenPollRequestFails()
+        public async Task LongPollingTransportStartAsyncFailsIfFirstRequestFails()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -155,6 +160,39 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
+                    return ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError);
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var longPollingTransport = new LongPollingTransport(httpClient);
+                try
+                {
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(() => longPollingTransport.StartAsync(TestUri, TransferFormat.Binary));
+                    Assert.Contains(" 500 ", exception.Message);
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task LongPollingTransportStopsWhenPollRequestFails()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            var firstPoll = true;
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    if (firstPoll)
+                    {
+                        firstPoll = false;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    }
                     return ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError);
                 });
 
@@ -314,7 +352,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var message1Payload = new[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o' };
 
-            var firstCall = true;
+            var requests = 0;
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             var sentRequests = new List<HttpRequestMessage>();
             mockHttpHandler.Protected()
@@ -325,9 +363,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await Task.Yield();
 
-                    if (firstCall)
+                    if (requests == 0)
                     {
-                        firstCall = false;
+                        requests++;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    }
+                    else if (requests == 1)
+                    {
+                        requests++;
                         return ResponseUtils.CreateResponse(HttpStatusCode.OK, message1Payload);
                     }
 
@@ -349,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var message = await longPollingTransport.Input.ReadAllAsync();
 
                     // Check the provided request
-                    Assert.Equal(2, sentRequests.Count);
+                    Assert.Equal(3, sentRequests.Count);
 
                     // Check the messages received
                     Assert.Equal(message1Payload, message);
@@ -366,6 +409,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var sentRequests = new List<byte[]>();
             var tcs = new TaskCompletionSource<HttpResponseMessage>();
+            var firstPoll = true;
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -380,6 +424,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     else if (request.Method == HttpMethod.Get)
                     {
+                        // First poll completes immediately
+                        if (firstPoll)
+                        {
+                            firstPoll = false;
+                            return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                        }
+
                         cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
                         // This is the poll task
                         return await tcs.Task;
@@ -426,6 +477,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var sentRequests = new List<byte[]>();
             var pollTcs = new TaskCompletionSource<HttpResponseMessage>();
             var deleteTcs = new TaskCompletionSource<object>();
+            var firstPoll = true;
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -440,6 +492,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     else if (request.Method == HttpMethod.Get)
                     {
+                        // First poll completes immediately
+                        if (firstPoll)
+                        {
+                            firstPoll = false;
+                            return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                        }
+
                         cancellationToken.Register(() => pollTcs.TrySetCanceled(cancellationToken));
                         // This is the poll task
                         return await pollTcs.Task;
@@ -538,7 +597,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await Task.Yield();
 
-                    if (Interlocked.Increment(ref numPolls) < 3)
+                    if (numPolls == 0)
+                    {
+                        numPolls++;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    }
+
+                    if (numPolls++ < 3)
                     {
                         throw new OperationCanceledException();
                     }

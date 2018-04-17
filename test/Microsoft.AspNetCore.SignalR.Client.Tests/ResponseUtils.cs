@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public static bool IsLongPollRequest(HttpRequestMessage request)
         {
             return request.Method == HttpMethod.Get &&
+                   !IsServerSentEventsRequest(request) && 
                    (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
         }
 
@@ -46,6 +48,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             return request.Method == HttpMethod.Delete &&
                    (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
+        }
+
+        public static bool IsServerSentEventsRequest(HttpRequestMessage request)
+        {
+            return request.Method == HttpMethod.Get && request.Headers.Accept.Any(h => h.MediaType == "text/event-stream");
         }
 
         public static bool IsSocketSendRequest(HttpRequestMessage request)
