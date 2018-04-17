@@ -103,7 +103,7 @@ Write-Host "Loading deps from $depsPath"
 [xml] $dependencies = LoadXml $depsPath
 
 $remote = "origin"
-$baseBranch = "dev"
+$baseBranch = "release/2.1"
 
 $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
 $destinationBranch = "rybrande/UpgradeDepsTest"
