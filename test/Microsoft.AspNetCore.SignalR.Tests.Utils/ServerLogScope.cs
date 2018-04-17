@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -19,12 +18,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
             _serverFixture = serverFixture;
+            _serverFixture.ServerLogged += ServerFixtureOnServerLogged;
+
             _loggerFactory = loggerFactory;
             _wrappedDisposable = wrappedDisposable;
-            _scopeLogger = loggerFactory.CreateLogger(typeof(ServerLogScope));
             _serverLoggers = new ConcurrentDictionary<string, ILogger>(StringComparer.Ordinal);
-
-            _serverFixture.ServerLogged += ServerFixtureOnServerLogged;
+            _scopeLogger = loggerFactory.CreateLogger(nameof(ServerLogScope));
 
             _scopeLogger.LogInformation("Server log scope started.");
         }
@@ -38,9 +37,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Dispose()
         {
-            _scopeLogger.LogInformation("Server log scope disposing.");
-
             _serverFixture.ServerLogged -= ServerFixtureOnServerLogged;
+
+            _scopeLogger.LogInformation("Server log scope stopped.");
 
             _wrappedDisposable?.Dispose();
         }
