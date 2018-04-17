@@ -116,9 +116,9 @@
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Metapackage="true" RuntimeStore="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="ship" />
+    <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" Metapackage="true" RuntimeStore="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="ship" />
+    <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Watcher.Tools" LZMATools="true" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.0" Category="shipoob" />
@@ -173,7 +173,7 @@
     <PackageArtifact Include="Microsoft.Extensions.WebEncoders" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.BrowserLink" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Category="ship" />
@@ -184,7 +184,7 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" />
-    <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="ship" />
+    <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
   </ItemGroup>
 
