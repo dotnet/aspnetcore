@@ -113,6 +113,32 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(1, simpleError.NullableIntProperty);
         }
 
+        [Fact]
+        public void NonEmptyConstructorThrowsUsefulException()
+        {
+            // Arrange
+            var json = "{\"Property\":1}";
+            var type = typeof(NonEmptyConstructorPoco);
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+            {
+                JsonUtil.Deserialize<NonEmptyConstructorPoco>(json); 
+            });
+
+            // Assert
+            Assert.Equal(
+                $"Cannot deserialize JSON into type '{type.FullName}' because it does not have a public parameterless constructor.", 
+                exception.Message);
+        }
+
+        class NonEmptyConstructorPoco
+        {
+            public NonEmptyConstructorPoco(int parameter) {}
+
+            public int Property { get; set; }
+        }
+
         struct SimpleStruct
         {
             public string StringProperty { get; set; }

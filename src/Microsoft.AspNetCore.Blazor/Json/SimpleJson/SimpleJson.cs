@@ -1430,7 +1430,10 @@ namespace SimpleJson
                             obj = value;
                         else
                         {
-                            obj = ConstructorCache[type]();
+                            var constructorDelegate = ConstructorCache[type]
+                                ?? throw new InvalidOperationException($"Cannot deserialize JSON into type '{type.FullName}' because it does not have a public parameterless constructor.");
+                            obj = constructorDelegate();
+
                             foreach (KeyValuePair<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> setter in SetCache[type])
                             {
                                 object jsonValue;
