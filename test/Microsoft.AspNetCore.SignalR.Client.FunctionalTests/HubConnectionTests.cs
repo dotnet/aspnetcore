@@ -814,8 +814,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await hubConnection.StartAsync().OrTimeout();
-                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "X-test", "X-42" }).OrTimeout();
-                    Assert.Equal(new[] { "42", "test" }, headerValues);
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] {"X-test", "X-42"}).OrTimeout();
+                    Assert.Equal(new[] {"42", "test"}, headerValues);
                 }
                 catch (Exception ex)
                 {

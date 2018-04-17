@@ -30,9 +30,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         private void ServerFixtureOnServerLogged(LogRecord logRecord)
         {
+            var write = logRecord.Write;
+
+            if (write == null)
+            {
+                _scopeLogger.LogWarning("Server log has no data.");
+                return;
+            }
+
             // Create (or get) a logger with the same name as the server logger
-            var logger = _serverLoggers.GetOrAdd(logRecord.Write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
-            logger.Log(logRecord.Write.LogLevel, logRecord.Write.EventId, logRecord.Write.State, logRecord.Write.Exception, logRecord.Write.Formatter);
+            var logger = _serverLoggers.GetOrAdd(write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
+            logger.Log(write.LogLevel, write.EventId, write.State, write.Exception, write.Formatter);
         }
 
         public void Dispose()
