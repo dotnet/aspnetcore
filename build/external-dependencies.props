@@ -35,6 +35,7 @@
     <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" Private="true" />
     <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion)" Private="true" />
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Azure.Services.AppAuthentication" Version="$(MicrosoftAzureServicesAppAuthenticationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" />
     <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
