@@ -27,10 +27,11 @@ using HttpConnectionOptions = Microsoft.AspNetCore.Http.Connections.Client.HttpC
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    [CollectionDefinition(Name)]
+    // Disable running server tests in parallel so server logs can accurately be captured per test
+    [CollectionDefinition(Name, DisableParallelization = true)]
     public class EndToEndTestsCollection : ICollectionFixture<ServerFixture<Startup>>
     {
-        public const string Name = "EndToEndTests";
+        public const string Name = nameof(EndToEndTestsCollection);
     }
 
     [Collection(EndToEndTestsCollection.Name)]

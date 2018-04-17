@@ -22,10 +22,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
-    [CollectionDefinition(Name)]
+    // Disable running server tests in parallel so server logs can accurately be captured per test
+    [CollectionDefinition(Name, DisableParallelization = true)]
     public class HubConnectionTestsCollection : ICollectionFixture<ServerFixture<Startup>>
     {
-        public const string Name = "EndToEndTests";
+        public const string Name = nameof(HubConnectionTestsCollection);
     }
 
     [Collection(HubConnectionTestsCollection.Name)]

@@ -17,13 +17,14 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 {
-    [CollectionDefinition(Name)]
-    public class EndToEndTestsCollection : ICollectionFixture<RedisServerFixture<Startup>>
+    // Disable running server tests in parallel so server logs can accurately be captured per test
+    [CollectionDefinition(Name, DisableParallelization = true)]
+    public class RedisEndToEndTestsCollection : ICollectionFixture<RedisServerFixture<Startup>>
     {
-        public const string Name = "RedisEndToEndTests";
+        public const string Name = nameof(RedisEndToEndTestsCollection);
     }
 
-    [Collection(EndToEndTestsCollection.Name)]
+    [Collection(RedisEndToEndTestsCollection.Name)]
     public class RedisEndToEndTests : VerifiableLoggedTest
     {
         private readonly RedisServerFixture<Startup> _serverFixture;
