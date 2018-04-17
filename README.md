@@ -35,7 +35,7 @@ To get started with Blazor and build your first Blazor web app check out our [ge
 Prerequisites:
 - [Node.js](https://nodejs.org/) (>8.3)
 
-The Blazor repository uses the same set of build tools as the other ASP.NET Core projects. The [developer documention](https://github.com/aspnet/Home/wiki/Building-from-source) for building is the authoritative guide. **Please read this document and check your PATH setup if you have trouble building or using Visual Studio**
+The Blazor repository uses the same set of build tools as the other ASP.NET Core projects. The [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source) for building is the authoritative guide. **Please read this document and check your PATH setup if you have trouble building or using Visual Studio**
 
 To build at the command line, run `build.cmd` or `build.sh` from the solution directory.
 
