@@ -16,7 +16,7 @@ describe("JsonHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -29,7 +29,7 @@ describe("JsonHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -44,7 +44,7 @@ describe("JsonHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -58,7 +58,7 @@ describe("JsonHubProtocol", () => {
         } as InvocationMessage;
 
         const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), new NullLogger());
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
         expect(parsedMessages).toEqual([invocation]);
     });
 
@@ -106,7 +106,7 @@ describe("JsonHubProtocol", () => {
         } as CompletionMessage],
     ] as Array<[string, CompletionMessage]>).forEach(([payload, expectedMessage]) =>
         it("can read Completion message", () => {
-            const messages = new JsonHubProtocol().parseMessages(payload, new NullLogger());
+            const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
             expect(messages).toEqual([expectedMessage]);
         }));
 
@@ -127,7 +127,7 @@ describe("JsonHubProtocol", () => {
         } as StreamItemMessage],
     ] as Array<[string, StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
         it("can read StreamItem message", () => {
-            const messages = new JsonHubProtocol().parseMessages(payload, new NullLogger());
+            const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
             expect(messages).toEqual([expectedMessage]);
         }));
 
@@ -143,7 +143,7 @@ describe("JsonHubProtocol", () => {
         } as StreamItemMessage],
     ] as Array<[string, StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
         it("can read message with headers", () => {
-            const messages = new JsonHubProtocol().parseMessages(payload, new NullLogger());
+            const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
             expect(messages).toEqual([expectedMessage]);
         }));
 
@@ -160,13 +160,13 @@ describe("JsonHubProtocol", () => {
         ["Completion message with non-string error", `{"type":3,"invocationId":"1","error":21}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Completion message.")],
     ] as Array<[string, string, Error]>).forEach(([name, payload, expectedError]) =>
         it("throws for " + name, () => {
-            expect(() => new JsonHubProtocol().parseMessages(payload, new NullLogger()))
+            expect(() => new JsonHubProtocol().parseMessages(payload, NullLogger.instance))
                 .toThrow(expectedError);
         }));
 
     it("can read multiple messages", () => {
         const payload = `{"type":2, "invocationId": "abc", "headers": {}, "item": 8}${TextMessageFormat.RecordSeparator}{"type":3, "invocationId": "abc", "headers": {}, "result": "OK", "error": null}${TextMessageFormat.RecordSeparator}`;
-        const messages = new JsonHubProtocol().parseMessages(payload, new NullLogger());
+        const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
         expect(messages).toEqual([
             {
                 headers: {},
@@ -186,7 +186,7 @@ describe("JsonHubProtocol", () => {
 
     it("can read ping message", () => {
         const payload = `{"type":6}${TextMessageFormat.RecordSeparator}`;
-        const messages = new JsonHubProtocol().parseMessages(payload, new NullLogger());
+        const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
         expect(messages).toEqual([
             {
                 type: MessageType.Ping,

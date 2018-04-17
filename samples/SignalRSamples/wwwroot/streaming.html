@@ -37,12 +37,11 @@
             let connectButton = document.getElementById('connectButton');
             let disconnectButton = document.getElementById('disconnectButton');
 
-            let logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
-            let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
+            let transportType = signalR.HttpTransportType[getParameterByName('transport')] || signalR.HttpTransportType.WebSockets;
 
             let invocationCounter = 0;
 
-            document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
+            document.getElementById('transportName').innerHTML = signalR.HttpTransportType[transportType];
             let connection = null;
 
             click('clearButton', function () {
@@ -54,7 +53,7 @@
             });
 
             click('connectButton', function () {
-                connection = new signalR.HubConnection('/streaming', { transport: transportType, logger: logger });
+                connection = new signalR.HubConnection('/streaming', { transport: transportType, logger: signalR.LogLevel.Trace });
 
                 connection.onclose(function () {
                     channelButton.disabled = true;
@@ -76,11 +75,11 @@
             });
 
             click('observableButton', function () {
-                run('ObservableCounter')
+                run('ObservableCounter');
             });
 
             click('channelButton', function () {
-                run('ChannelCounter')
+                run('ChannelCounter');
             });
 
             function run(method) {

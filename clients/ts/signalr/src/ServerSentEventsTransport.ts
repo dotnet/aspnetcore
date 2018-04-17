@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DataReceived, TransportClosed } from "./Common";
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
@@ -106,6 +105,6 @@ export class ServerSentEventsTransport implements ITransport {
         }
     }
 
-    public onreceive: DataReceived;
-    public onclose: TransportClosed;
+    public onreceive: (data: string | ArrayBuffer) => void;
+    public onclose: (error?: Error) => void;
 }

@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DataReceived, TransportClosed } from "../src/Common";
 import { HttpConnection } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/HttpConnection";
 import { HttpResponse } from "../src/index";
-import { ITransport, TransferFormat, HttpTransportType } from "../src/ITransport";
+import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 import { eachEndpointUrl, eachTransport } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 
@@ -423,13 +422,6 @@ describe("HttpConnection", () => {
     });
 
     describe("startAsync", () => {
-        it("throws if no TransferFormat is provided", async () => {
-            // Force TypeScript to let us call start incorrectly
-            const connection: any = new HttpConnection("http://tempuri.org", commonOptions);
-
-            expect(() => connection.start()).toThrowError("The 'transferFormat' argument is required.");
-        });
-
         it("throws if an unsupported TransferFormat is provided", async () => {
             // Force TypeScript to let us call start incorrectly
             const connection: any = new HttpConnection("http://tempuri.org", commonOptions);

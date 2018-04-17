@@ -1,15 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { ConnectionClosed, DataReceived } from "./Common";
 import { DefaultHttpClient, HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
-import { LoggerFactory } from "./Loggers";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
-import { Arg } from "./Utils";
+import { Arg, createLogger } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
 
 export interface IHttpConnectionOptions {
@@ -49,11 +47,13 @@ export class HttpConnection implements IConnection {
     private stopError?: Error;
 
     public readonly features: any = {};
+    public onreceive: (data: string | ArrayBuffer) => void;
+    public onclose: (e?: Error) => void;
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         Arg.isRequired(url, "url");
 
-        this.logger = LoggerFactory.createLogger(options.logger);
+        this.logger = createLogger(options.logger);
         this.baseUrl = this.resolveUrl(url);
 
         options = options || {};
@@ -65,11 +65,14 @@ export class HttpConnection implements IConnection {
         this.options = options;
     }
 
-    public start(transferFormat: TransferFormat): Promise<void> {
-        Arg.isRequired(transferFormat, "transferFormat");
+    public start(): Promise<void>;
+    public start(transferFormat: TransferFormat): Promise<void>;
+    public start(transferFormat?: TransferFormat): Promise<void> {
+        transferFormat = transferFormat || TransferFormat.Binary;
+
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
 
-        this.logger.log(LogLevel.Trace, `Starting connection with transfer format '${TransferFormat[transferFormat]}'.`);
+        this.logger.log(LogLevel.Debug, `Starting connection with transfer format '${TransferFormat[transferFormat]}'.`);
 
         if (this.connectionState !== ConnectionState.Disconnected) {
             return Promise.reject(new Error("Cannot start a connection that is not in the 'Disconnected' state."));
@@ -79,6 +82,31 @@ export class HttpConnection implements IConnection {
 
         this.startPromise = this.startInternal(transferFormat);
         return this.startPromise;
+    }
+
+    public send(data: string | ArrayBuffer): Promise<void> {
+        if (this.connectionState !== ConnectionState.Connected) {
+            throw new Error("Cannot send data if the connection is not in the 'Connected' State.");
+        }
+
+        return this.transport.send(data);
+    }
+
+    public async stop(error?: Error): Promise<void> {
+        this.connectionState = ConnectionState.Disconnected;
+
+        try {
+            await this.startPromise;
+        } catch (e) {
+            // this exception is returned to the user as a rejected Promise from the start method
+        }
+
+        // The transport's onclose will trigger stopConnection which will run our onclose event.
+        if (this.transport) {
+            this.stopError = error;
+            await this.transport.stop();
+            this.transport = null;
+        }
     }
 
     private async startInternal(transferFormat: TransferFormat): Promise<void> {
@@ -127,7 +155,7 @@ export class HttpConnection implements IConnection {
 
     private async getNegotiationResponse(headers: any): Promise<INegotiateResponse> {
         const negotiateUrl = this.resolveNegotiateUrl(this.baseUrl);
-        this.logger.log(LogLevel.Trace, `Sending negotiation request: ${negotiateUrl}`);
+        this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}`);
         try {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
@@ -148,7 +176,7 @@ export class HttpConnection implements IConnection {
     private async createTransport(requestedTransport: HttpTransportType | ITransport, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat, headers: any): Promise<void> {
         this.updateConnectionId(negotiateResponse);
         if (this.isITransport(requestedTransport)) {
-            this.logger.log(LogLevel.Trace, "Connection was provided an instance of ITransport, using that directly.");
+            this.logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
             this.transport = requestedTransport;
             await this.transport.connect(this.url, requestedTransferFormat);
 
@@ -199,23 +227,23 @@ export class HttpConnection implements IConnection {
     private resolveTransport(endpoint: IAvailableTransport, requestedTransport: HttpTransportType, requestedTransferFormat: TransferFormat): HttpTransportType | null {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
-            this.logger.log(LogLevel.Trace, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
+            this.logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
         } else {
             const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
             if (!requestedTransport || transport === requestedTransport) {
                 if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
                     if ((transport === HttpTransportType.WebSockets && typeof WebSocket === "undefined") ||
                         (transport === HttpTransportType.ServerSentEvents && typeof EventSource === "undefined")) {
-                        this.logger.log(LogLevel.Trace, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
+                        this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
                     } else {
-                        this.logger.log(LogLevel.Trace, `Selecting transport '${HttpTransportType[transport]}'`);
+                        this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'`);
                         return transport;
                     }
                 } else {
-                    this.logger.log(LogLevel.Trace, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
+                    this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
                 }
             } else {
-                this.logger.log(LogLevel.Trace, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
+                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
             }
         }
         return null;
@@ -231,31 +259,6 @@ export class HttpConnection implements IConnection {
             return true;
         }
         return false;
-    }
-
-    public send(data: any): Promise<void> {
-        if (this.connectionState !== ConnectionState.Connected) {
-            throw new Error("Cannot send data if the connection is not in the 'Connected' State.");
-        }
-
-        return this.transport.send(data);
-    }
-
-    public async stop(error?: Error): Promise<void> {
-        this.connectionState = ConnectionState.Disconnected;
-
-        try {
-            await this.startPromise;
-        } catch (e) {
-            // this exception is returned to the user as a rejected Promise from the start method
-        }
-
-        // The transport's onclose will trigger stopConnection which will run our onclose event.
-        if (this.transport) {
-            this.stopError = error;
-            await this.transport.stop();
-            this.transport = null;
-        }
     }
 
     private async stopConnection(error?: Error): Promise<void> {
@@ -309,7 +312,4 @@ export class HttpConnection implements IConnection {
         negotiateUrl += index === -1 ? "" : url.substring(index);
         return negotiateUrl;
     }
-
-    public onreceive: DataReceived;
-    public onclose: ConnectionClosed;
 }

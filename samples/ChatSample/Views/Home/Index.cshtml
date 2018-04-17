@@ -16,9 +16,8 @@
 </div>
 <script src="lib/signalr-client/signalr.js"></script>
 <script>
-let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
-let logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
-let connection = new signalR.HubConnection('/chat', { transport: transportType, logger: logger });
+let transportType = signalR.HttpTransportType[getParameterByName('transport')] || signalR.HttpTransportType.WebSockets;
+let connection = new signalR.HubConnection('/chat', { transport: transportType, logger: signalR.LogLevel.Information });
 
 connection.onclose(e => {
     if (e) {

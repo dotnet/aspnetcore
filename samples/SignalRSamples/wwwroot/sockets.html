@@ -19,12 +19,12 @@
     <script src="utils.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
+            let transportType = signalR.HttpTransportType[getParameterByName('transport')] || signalR.HttpTransportType.WebSockets;
 
-            document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
+            document.getElementById('transportName').innerHTML = signalR.HttpTransportType[transportType];
 
             let url = 'http://' + document.location.host + '/chat';
-            let connection = new signalR.HttpConnection(url, { transport: transportType, logger: new signalR.ConsoleLogger(signalR.LogLevel.Trace) });
+            let connection = new signalR.HttpConnection(url, { transport: transportType, logger: signalR.LogLevel.Trace });
 
             connection.onreceive = function (data) {
                 let child = document.createElement('li');

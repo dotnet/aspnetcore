@@ -1,16 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { ConnectionClosed, DataReceived } from "../src/Common";
 import { HubConnection } from "../src/HubConnection";
+import { IHubConnectionOptions } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
 import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
-import { Observer } from "../src/Observable";
+import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
+import { IStreamSubscriber } from "../src/Stream";
 import { TextMessageFormat } from "../src/TextMessageFormat";
-import { ITransport, TransferFormat, HttpTransportType } from "../src/ITransport";
 
-import { IHubConnectionOptions } from "../src/HubConnection";
 import { asyncit as it, captureException, delay, PromiseSource } from "./Utils";
 
 const commonOptions: IHubConnectionOptions = {
@@ -124,7 +123,7 @@ describe("HubConnection", () => {
             let receivedProcotolData: ArrayBuffer;
 
             const mockProtocol = new TestProtocol(TransferFormat.Binary);
-            mockProtocol.onreceive = (d) => receivedProcotolData = d;
+            mockProtocol.onreceive = (d) => receivedProcotolData = d as ArrayBuffer;
 
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
@@ -136,7 +135,7 @@ describe("HubConnection", () => {
                 0x69, 0x6e, 0x76, 0x6f, 0x6b, 0x65, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x69,
                 0x6e, 0x67, 0x20, 0x27, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x27, 0x20, 0x6d,
                 0x65, 0x74, 0x68, 0x6f, 0x64, 0x20, 0x69, 0x6e, 0x20, 0x61, 0x20, 0x6e, 0x6f, 0x6e, 0x2d, 0x73, 0x74, 0x72,
-                0x65, 0x61, 0x6d, 0x69, 0x6e, 0x67, 0x20, 0x66, 0x61, 0x73, 0x68, 0x69, 0x6f, 0x6e, 0x2e
+                0x65, 0x61, 0x6d, 0x69, 0x6e, 0x67, 0x20, 0x66, 0x61, 0x73, 0x68, 0x69, 0x6f, 0x6e, 0x2e,
             ];
 
             connection.receiveBinary(new Uint8Array(data).buffer);
@@ -149,7 +148,7 @@ describe("HubConnection", () => {
             let receivedProcotolData: string;
 
             const mockProtocol = new TestProtocol(TransferFormat.Text);
-            mockProtocol.onreceive = (d) => receivedProcotolData = d;
+            mockProtocol.onreceive = (d) => receivedProcotolData = d as string;
 
             const connection = new TestConnection();
             const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
@@ -256,8 +255,8 @@ describe("HubConnection", () => {
             connection.receiveHandshakeResponse();
 
             const handler = () => { };
-            hubConnection.on('message', handler);
-            hubConnection.off('message', handler);
+            hubConnection.on("message", handler);
+            hubConnection.off("message", handler);
 
             connection.receive({
                 arguments: ["test"],
@@ -648,9 +647,7 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
 
             const hubConnection = new HubConnection(connection, commonOptions);
-            const observer = hubConnection.stream("testMethod").subscribe({
-                next: (val) => { },
-            });
+            const observer = hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
             // Typically this would be called by the transport
             // triggers observer.error()
@@ -661,9 +658,7 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
 
             const hubConnection = new HubConnection(connection, commonOptions);
-            const observer = hubConnection.stream("testMethod").subscribe({
-                next: (val) => { },
-            });
+            const observer = hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
             // Send completion to trigger observer.complete()
             // Expectation is connection.receive will not to throw
@@ -843,7 +838,7 @@ class TestConnection implements IConnection {
     }
 
     public receiveHandshakeResponse(error?: string): void {
-        this.receive({error: error});
+        this.receive({ error });
     }
 
     public receive(data: any): void {
@@ -859,8 +854,8 @@ class TestConnection implements IConnection {
         this.onreceive(data);
     }
 
-    public onreceive: DataReceived;
-    public onclose: ConnectionClosed;
+    public onreceive: (data: string | ArrayBuffer) => void;
+    public onclose: (error?: Error) => void;
     public sentData: any[];
     public lastInvocationId: string;
 }
@@ -871,7 +866,7 @@ class TestProtocol implements IHubProtocol {
 
     public readonly transferFormat: TransferFormat;
 
-    public onreceive: DataReceived;
+    public onreceive: (data: string | ArrayBuffer) => void;
 
     constructor(transferFormat: TransferFormat) {
         this.transferFormat = transferFormat;
@@ -890,7 +885,8 @@ class TestProtocol implements IHubProtocol {
     }
 }
 
-class TestObserver implements Observer<any> {
+class TestObserver implements IStreamSubscriber<any> {
+    public readonly closed: boolean;
     public itemsReceived: [any];
     private itemsSource: PromiseSource<[any]>;
 
@@ -913,5 +909,19 @@ class TestObserver implements Observer<any> {
 
     public complete() {
         this.itemsSource.resolve(this.itemsReceived);
+    }
+}
+
+class NullSubscriber<T> implements IStreamSubscriber<T> {
+    public static instance: NullSubscriber<any> = new NullSubscriber();
+
+    private constructor() {
+    }
+
+    public next(value: T): void {
+    }
+    public error(err: any): void {
+    }
+    public complete(): void {
     }
 }

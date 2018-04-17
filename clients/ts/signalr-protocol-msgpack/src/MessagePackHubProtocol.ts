@@ -15,7 +15,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     public parseMessages(input: ArrayBuffer, logger: ILogger): HubMessage[] {
         if (logger === null) {
-            logger = new NullLogger();
+            logger = NullLogger.instance;
         }
         return BinaryMessageFormat.parse(input).map((m) => this.parseMessage(m, logger));
     }
