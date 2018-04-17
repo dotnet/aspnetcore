@@ -474,6 +474,33 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         #region Page Filters
 
         [Fact]
+        public async Task ViewDataIsSet_AfterHandlerMethodIsExecuted()
+        {
+            // Arrange
+            var pageHandlerExecutedCalled = false;
+            var pageFilter = new Mock<IPageFilter>();
+            AllowSelector(pageFilter);
+            pageFilter
+                .Setup(f => f.OnPageHandlerExecuted(It.IsAny<PageHandlerExecutedContext>()))
+                .Callback<PageHandlerExecutedContext>(c =>
+                {
+                    pageHandlerExecutedCalled = true;
+                    var result = c.Result;
+                    var pageResult = Assert.IsType<PageResult>(result);
+                    Assert.IsType<ViewDataDictionary<TestPage>>(pageResult.ViewData);
+                    Assert.IsType<TestPage>(pageResult.Model);
+                    Assert.Null(pageResult.Page);
+                });
+            var invoker = CreateInvoker(new IFilterMetadata[] { pageFilter.Object }, result: new PageResult());
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.True(pageHandlerExecutedCalled);
+        }
+
+        [Fact]
         public async Task InvokeAction_InvokesPageFilter()
         {
             // Arrange

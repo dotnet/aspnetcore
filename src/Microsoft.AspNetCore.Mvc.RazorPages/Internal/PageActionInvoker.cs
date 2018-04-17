@@ -128,7 +128,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     _page = (PageBase)CacheEntry.PageFactory(_pageContext, _viewContext);
                 }
-
                 pageResult.Page = _page;
                 pageResult.ViewData = pageResult.ViewData ?? _pageContext.ViewData;
             }
@@ -277,6 +276,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             if (_result == null)
             {
                 _result = new PageResult();
+            }
+
+            // Ensure ViewData is set on PageResult for backwards compatibility (For example, Identity UI accesses
+            // ViewData in a PageFilter's PageHandlerExecutedMethod)
+            if (_result is PageResult pageResult)
+            {
+                pageResult.ViewData = pageResult.ViewData ?? _pageContext.ViewData;
             }
         }
 
