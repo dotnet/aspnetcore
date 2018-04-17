@@ -56,8 +56,8 @@
 	branch = release/2.0
 [submodule "modules/KestrelHttpServer"]
 	path = modules/KestrelHttpServer
-	url = https://github.com/aspnet/KestrelHttpServer.git
-	branch = release/2.0
+	url = https://github.com/aspnet/KestrelHttpServer-Private.git
+	branch = release/2.0-msrc
 [submodule "modules/Localization"]
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
