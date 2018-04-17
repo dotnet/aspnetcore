@@ -22,7 +22,7 @@ export class JsonHubProtocol implements IHubProtocol {
         }
 
         if (logger === null) {
-            logger = new NullLogger();
+            logger = NullLogger.instance;
         }
 
         // Parse the messages

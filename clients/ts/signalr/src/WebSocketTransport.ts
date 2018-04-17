@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DataReceived, TransportClosed } from "./Common";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { Arg, getDataDetail } from "./Utils";
@@ -90,6 +89,6 @@ export class WebSocketTransport implements ITransport {
         return Promise.resolve();
     }
 
-    public onreceive: DataReceived;
-    public onclose: TransportClosed;
+    public onreceive: (data: string | ArrayBuffer) => void;
+    public onclose: (error?: Error) => void;
 }

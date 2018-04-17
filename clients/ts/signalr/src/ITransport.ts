@@ -1,8 +1,7 @@
-import { DataReceived, TransportClosed } from "./Common";
-import { IConnection } from "./IConnection";
-
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+import { IConnection } from "./IConnection";
 
 export enum HttpTransportType {
     WebSockets,
@@ -19,6 +18,6 @@ export interface ITransport {
     connect(url: string, transferFormat: TransferFormat): Promise<void>;
     send(data: any): Promise<void>;
     stop(): Promise<void>;
-    onreceive: DataReceived;
-    onclose: TransportClosed;
+    onreceive: (data: string | ArrayBuffer) => void;
+    onclose: (error?: Error) => void;
 }
