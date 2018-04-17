@@ -41,7 +41,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     DotnetPublish();
                 }
 
-                var hintUrl = TestUriHelper.BuildTestUri(DeploymentParameters.ApplicationBaseUriHint);
+                var hintUrl = TestUriHelper.BuildTestUri(
+                    DeploymentParameters.ApplicationBaseUriHint,
+                    DeploymentParameters.ServerType,
+                    DeploymentParameters.StatusMessagesEnabled);
 
                 // Launch the host process.
                 var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
