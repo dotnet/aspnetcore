@@ -14,12 +14,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly IDisposable _wrappedDisposable;
         private readonly ConcurrentDictionary<string, ILogger> _serverLoggers;
         private readonly ILogger _scopeLogger;
+        private readonly object _lock;
 
         public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
             _loggerFactory = loggerFactory;
             _serverFixture = serverFixture;
             _wrappedDisposable = wrappedDisposable;
+
+            _lock = new object();
 
             _serverLoggers = new ConcurrentDictionary<string, ILogger>(StringComparer.Ordinal);
             _scopeLogger = _loggerFactory.CreateLogger(nameof(ServerLogScope));
@@ -40,8 +43,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return;
             }
 
-            // Create (or get) a logger with the same name as the server logger
-            var logger = _serverLoggers.GetOrAdd(write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
+            ILogger logger;
+
+            // There maybe thready safety issues in logging when creating multiple threads at the same time
+            // https://github.com/aspnet/Logging/issues/810
+            lock (_lock)
+            {
+                // Create (or get) a logger with the same name as the server logger
+                logger = _serverLoggers.GetOrAdd(write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
+            }
+
             logger.Log(write.LogLevel, write.EventId, write.State, write.Exception, write.Formatter);
         }
 
