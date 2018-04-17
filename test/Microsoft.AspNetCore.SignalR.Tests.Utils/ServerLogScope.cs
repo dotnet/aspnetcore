@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             ILogger logger;
 
-            // There maybe thready safety issues in logging when creating multiple threads at the same time
+            // There maybe thready safety issues in logging when creating multiple loggers at the same time
             // https://github.com/aspnet/Logging/issues/810
             lock (_lock)
             {
