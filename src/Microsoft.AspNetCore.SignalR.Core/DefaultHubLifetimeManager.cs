@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR
             _logger = logger;
         }
 
-        public override Task AddGroupAsync(string connectionId, string groupName)
+        public override Task AddToGroupAsync(string connectionId, string groupName)
         {
             if (connectionId == null)
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task RemoveGroupAsync(string connectionId, string groupName)
+        public override Task RemoveFromGroupAsync(string connectionId, string groupName)
         {
             if (connectionId == null)
             {
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
         {
             if (groupName == null)
             {
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR
                 List<Task> tasks = null;
                 SerializedHubMessage message = null;
 
-                SendToGroupConnections(methodName, args, group, connection => !excludedIds.Contains(connection.ConnectionId), ref tasks, ref message);
+                SendToGroupConnections(methodName, args, group, connection => !excludedConnectionIds.Contains(connection.ConnectionId), ref tasks, ref message);
 
                 if (tasks != null)
                 {
@@ -271,9 +271,9 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
         {
-            return SendToAllConnections(methodName, args, connection => !excludedIds.Contains(connection.ConnectionId));
+            return SendToAllConnections(methodName, args, connection => !excludedConnectionIds.Contains(connection.ConnectionId));
         }
 
         public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)

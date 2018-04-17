@@ -9,17 +9,24 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests
     {
-        public class Transport
+        public class Transport : VerifiableLoggedTest
         {
+            public Transport(ITestOutputHelper output) : base(output)
+            {
+            }
+
             [Theory]
             [InlineData(HttpTransportType.LongPolling)]
             [InlineData(HttpTransportType.ServerSentEvents)]
@@ -28,11 +35,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
                 var requestsExecuted = false;
                 var callCount = 0;
-
-                testHttpHandler.OnRequest((request, next, token) =>
-                {
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
-                });
 
                 testHttpHandler.OnNegotiate((_, cancellationToken) =>
                 {
@@ -49,6 +51,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     requestsExecuted = true;
 
                     return await next();
+                });
+
+                testHttpHandler.OnRequest((request, next, token) =>
+                {
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
                 });
 
                 Task<string> AccessTokenProvider()
@@ -70,6 +77,32 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Theory]
+            [InlineData(HttpTransportType.LongPolling, true)]
+            [InlineData(HttpTransportType.ServerSentEvents, false)]
+            public async Task HttpConnectionSetsInherentKeepAliveFeature(HttpTransportType transportType, bool expectedValue)
+            {
+                using (StartVerifableLog(out var loggerFactory, testName: $"HttpConnectionSetsInherentKeepAliveFeature_{transportType}_{expectedValue}"))
+                {
+                    var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+
+                    testHttpHandler.OnNegotiate((_, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent()));
+
+                    testHttpHandler.OnRequest((request, next, token) => Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent)));
+
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: loggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+
+                            var feature = connection.Features.Get<IConnectionInherentKeepAliveFeature>();
+                            Assert.NotNull(feature);
+                            Assert.Equal(expectedValue, feature.HasInherentKeepAlive);
+                        });
+                }
+            }
+
+            [Theory]
             [InlineData(HttpTransportType.LongPolling)]
             [InlineData(HttpTransportType.ServerSentEvents)]
             public async Task HttpConnectionSetsUserAgentOnAllRequests(HttpTransportType transportType)
@@ -77,10 +110,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
                 var requestsExecuted = false;
 
-                testHttpHandler.OnRequest((request, next, token) =>
-                {
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
-                });
 
                 testHttpHandler.OnNegotiate((_, cancellationToken) =>
                 {
@@ -105,6 +134,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return await next();
                 });
 
+                testHttpHandler.OnRequest((request, next, token) =>
+                {
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                });
+
                 await WithConnectionAsync(
                     CreateConnection(testHttpHandler, transportType: transportType),
                     async (connection) =>
@@ -124,11 +158,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
                 var requestsExecuted = false;
 
-                testHttpHandler.OnRequest((request, next, token) =>
-                {
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
-                });
-
                 testHttpHandler.OnNegotiate((_, cancellationToken) =>
                 {
                     return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
@@ -143,6 +172,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     requestsExecuted = true;
 
                     return await next();
+                });
+
+                testHttpHandler.OnRequest((request, next, token) =>
+                {
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
                 });
 
                 await WithConnectionAsync(

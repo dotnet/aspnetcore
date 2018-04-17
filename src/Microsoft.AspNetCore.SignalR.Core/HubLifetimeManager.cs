@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public abstract Task SendAllAsync(string methodName, object[] args);
 
-        public abstract Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds);
+        public abstract Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds);
 
         public abstract Task SendConnectionAsync(string connectionId, string methodName, object[] args);
 
@@ -24,15 +24,15 @@ namespace Microsoft.AspNetCore.SignalR
 
         public abstract Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args);
 
-        public abstract Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds);
+        public abstract Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds);
 
         public abstract Task SendUserAsync(string userId, string methodName, object[] args);
 
         public abstract Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args);
 
-        public abstract Task AddGroupAsync(string connectionId, string groupName);
+        public abstract Task AddToGroupAsync(string connectionId, string groupName);
 
-        public abstract Task RemoveGroupAsync(string connectionId, string groupName);
+        public abstract Task RemoveFromGroupAsync(string connectionId, string groupName);
     }
 
 }

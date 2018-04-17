@@ -169,16 +169,18 @@ namespace Microsoft.AspNetCore.SignalR
 
             try
             {
+                var input = connection.Input;
+                var protocol = connection.Protocol;
                 while (true)
                 {
-                    var result = await connection.Input.ReadAsync(connection.ConnectionAborted);
+                    var result = await input.ReadAsync(connection.ConnectionAborted);
                     var buffer = result.Buffer;
 
                     try
                     {
                         if (!buffer.IsEmpty)
                         {
-                            while (connection.Protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
+                            while (protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
                             {
                                 // Don't wait on the result of execution, continue processing other
                                 // incoming messages on this connection.
@@ -195,7 +197,7 @@ namespace Microsoft.AspNetCore.SignalR
                         // The buffer was sliced up to where it was consumed, so we can just advance to the start.
                         // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
                         // before yielding the read again.
-                        connection.Input.AdvanceTo(buffer.Start, buffer.End);
+                        input.AdvanceTo(buffer.Start, buffer.End);
                     }
                 }
             }

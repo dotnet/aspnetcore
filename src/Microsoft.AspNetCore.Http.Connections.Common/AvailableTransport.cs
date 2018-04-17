@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Http.Connections.Internal
+namespace Microsoft.AspNetCore.Http.Connections
 {
     public class AvailableTransport
     {
         public string Transport { get; set; }
-        public List<string> TransferFormats { get; set; }
+        public IList<string> TransferFormats { get; set; }
     }
 }

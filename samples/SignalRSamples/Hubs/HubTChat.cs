@@ -41,7 +41,7 @@ namespace SignalRSamples.Hubs
 
         public async Task JoinGroup(string groupName)
         {
-            await Groups.AddAsync(Context.ConnectionId, groupName);
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
             await Clients.Group(groupName).Send($"{Context.ConnectionId} joined {groupName}");
         }
@@ -50,7 +50,7 @@ namespace SignalRSamples.Hubs
         {
             await Clients.Group(groupName).Send($"{Context.ConnectionId} left {groupName}");
 
-            await Groups.RemoveAsync(Context.ConnectionId, groupName);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
 
         public Task Echo(string message)

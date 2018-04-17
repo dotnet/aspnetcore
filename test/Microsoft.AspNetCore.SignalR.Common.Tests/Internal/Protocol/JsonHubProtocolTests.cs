@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;

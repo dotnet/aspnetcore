@@ -1156,9 +1156,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "testGroup").OrTimeout();
                 await secondClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "testGroup").OrTimeout();
 
-                var excludedIds = new List<string> { firstClient.Connection.ConnectionId };
+                var excludedConnectionIds = new List<string> { firstClient.Connection.ConnectionId };
 
-                await firstClient.SendInvocationAsync("GroupExceptSendMethod", "testGroup", "test", excludedIds).OrTimeout();
+                await firstClient.SendInvocationAsync("GroupExceptSendMethod", "testGroup", "test", excludedConnectionIds).OrTimeout();
 
                 // check that 'secondConnection' has received the group send
                 var hubMessage = await secondClient.ReadAsync().OrTimeout();

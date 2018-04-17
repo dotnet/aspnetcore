@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -719,7 +720,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             // Check if we need keep-alive
             Timer timeoutTimer = null;
-            if (connectionState.Connection.Features.Get<IConnectionInherentKeepAliveFeature>() == null)
+
+            // We use '!== true' because it could be null, which we treat as false.
+            if (connectionState.Connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive != true)
             {
                 Log.StartingServerTimeoutTimer(_logger, ServerTimeout);
                 timeoutTimer = new Timer(

@@ -26,16 +26,16 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             var options = provider.GetService<IOptions<RedisOptions>>();
             Assert.NotNull(options.Value);
-            Assert.NotNull(options.Value.Options);
-            Assert.Equal(password, options.Value.Options.Password);
-            Assert.Collection(options.Value.Options.EndPoints,
+            Assert.NotNull(options.Value.Configuration);
+            Assert.Equal(password, options.Value.Configuration.Password);
+            Assert.Collection(options.Value.Configuration.EndPoints,
                 endpoint =>
                 {
                     var dnsEndpoint = Assert.IsType<DnsEndPoint>(endpoint);
                     Assert.Equal(host, dnsEndpoint.Host);
                     Assert.Equal(port, dnsEndpoint.Port);
                 });
-            Assert.Equal(useSsl, options.Value.Options.Ssl);
+            Assert.Equal(useSsl, options.Value.Configuration.Ssl);
         }
     }
 }

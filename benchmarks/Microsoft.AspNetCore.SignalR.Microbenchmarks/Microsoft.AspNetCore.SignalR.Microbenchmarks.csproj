@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\Common\BinaryMessageFormatter.cs" Link="BinaryMessageFormatter.cs" />
+    <Compile Include="..\..\src\Common\BinaryMessageParser.cs" Link="BinaryMessageParser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Http.Connections.Client\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Http.Connections\Microsoft.AspNetCore.Http.Connections.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Core\Microsoft.AspNetCore.SignalR.Core.csproj" />

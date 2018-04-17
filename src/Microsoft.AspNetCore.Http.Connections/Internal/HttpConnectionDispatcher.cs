@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         using (connection.Cancellation)
                         {
                             // Cancel the previous request
-                            connection.Cancellation.Cancel();
+                            connection.Cancellation?.Cancel();
 
                             // Wait for the previous request to drain
                             await connection.TransportTask;
@@ -228,29 +228,38 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         Log.EstablishedConnection(_logger);
 
                         connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
+
+                        context.Response.ContentType = "application/octet-stream";
+
+                        // This request has no content
+                        context.Response.ContentLength = 0;
+
+                        // On the first poll, we flush the response immediately to mark the poll as "initialized" so future
+                        // requests can be made safely
+                        connection.TransportTask = context.Response.Body.FlushAsync();
                     }
                     else
                     {
                         Log.ResumingConnection(_logger);
+
+                        // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
+                        connection.Cancellation = new CancellationTokenSource();
+
+                        var timeoutSource = new CancellationTokenSource();
+                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(connection.Cancellation.Token, context.RequestAborted, timeoutSource.Token);
+
+                        // Dispose these tokens when the request is over
+                        context.Response.RegisterForDispose(timeoutSource);
+                        context.Response.RegisterForDispose(tokenSource);
+
+                        var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, _loggerFactory);
+
+                        // Start the transport
+                        connection.TransportTask = longPolling.ProcessRequestAsync(context, tokenSource.Token);
+
+                        // Start the timeout after we return from creating the transport task
+                        timeoutSource.CancelAfter(options.LongPolling.PollTimeout);
                     }
-
-                    // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
-                    connection.Cancellation = new CancellationTokenSource();
-
-                    var timeoutSource = new CancellationTokenSource();
-                    var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(connection.Cancellation.Token, context.RequestAborted, timeoutSource.Token);
-
-                    // Dispose these tokens when the request is over
-                    context.Response.RegisterForDispose(timeoutSource);
-                    context.Response.RegisterForDispose(tokenSource);
-
-                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, _loggerFactory);
-
-                    // Start the transport
-                    connection.TransportTask = longPolling.ProcessRequestAsync(context, tokenSource.Token);
-
-                    // Start the timeout after we return from creating the transport task
-                    timeoutSource.CancelAfter(options.LongPolling.PollTimeout);
                 }
                 finally
                 {
@@ -302,7 +311,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                             connection.Status = HttpConnectionStatus.Inactive;
 
                             // Dispose the cancellation token
-                            connection.Cancellation.Dispose();
+                            connection.Cancellation?.Dispose();
 
                             connection.Cancellation = null;
                         }
@@ -366,10 +375,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private async Task ExecuteApplication(ConnectionDelegate connectionDelegate, HttpConnectionContext connection)
         {
             // Verify some initialization invariants
-            // We want to be positive that the IConnectionInherentKeepAliveFeature is initialized before invoking the application, if the long polling transport is in use.
             Debug.Assert(connection.TransportType != HttpTransportType.None, "Transport has not been initialized yet");
-            Debug.Assert(connection.TransportType != HttpTransportType.LongPolling ||
-                connection.Features.Get<IConnectionInherentKeepAliveFeature>() != null, "Long-polling transport is in use but IConnectionInherentKeepAliveFeature as not configured");
 
             // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
             // connection and transport
@@ -477,7 +483,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     context.Response.ContentType = "text/plain";
                     return;
                 }
-                
+
                 await context.Request.Body.CopyToAsync(connection.ApplicationStream, bufferSize);
 
                 Log.ReceivedBytes(_logger, connection.ApplicationStream.Length);
@@ -555,7 +561,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Configure transport-specific features.
             if (transportType == HttpTransportType.LongPolling)
             {
-                connection.Features.Set<IConnectionInherentKeepAliveFeature>(new ConnectionInherentKeepAliveFeature(options.LongPolling.PollTimeout));
+                connection.HasInherentKeepAlive = true;
 
                 // For long polling, the requests come and go but the connection is still alive.
                 // To make the IHttpContextFeature work well, we make a copy of the relevant properties

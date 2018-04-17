@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public IClientProxy All => _hubClients.All;
 
-        public IClientProxy AllExcept(IReadOnlyList<string> excludedIds)
+        public IClientProxy AllExcept(IReadOnlyList<string> excludedConnectionIds)
         {
-            return _hubClients.AllExcept(excludedIds);
+            return _hubClients.AllExcept(excludedConnectionIds);
         }
 
         public IClientProxy Client(string connectionId)
@@ -49,9 +49,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return _hubClients.GroupExcept(groupName, _currentConnectionId);
         }
 
-        public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
+        public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds)
         {
-            return _hubClients.GroupExcept(groupName, excludeIds);
+            return _hubClients.GroupExcept(groupName, excludedConnectionIds);
         }
 
         public IClientProxy User(string userId)

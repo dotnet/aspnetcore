@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         private RedisHubLifetimeManager<TestHub> _manager2;
         private TestClient[] _clients;
         private object[] _args;
-        private readonly List<string> _excludedIds = new List<string>();
+        private readonly List<string> _excludedConnectionIds = new List<string>();
         private readonly List<string> _sendIds = new List<string>();
         private readonly List<string> _groups = new List<string>();
         private readonly List<string> _users = new List<string>();
@@ -42,18 +42,18 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var protocols = GenerateProtocols(ProtocolCount).ToArray();
             var options = Options.Create(new RedisOptions()
             {
-                Factory = _ => Task.FromResult<IConnectionMultiplexer>(new TestConnectionMultiplexer(server))
+                ConnectionFactory = _ => Task.FromResult<IConnectionMultiplexer>(new TestConnectionMultiplexer(server))
             });
             var resolver = new DefaultHubProtocolResolver(protocols, NullLogger<DefaultHubProtocolResolver>.Instance);
 
             _manager1 = new RedisHubLifetimeManager<TestHub>(logger, options, resolver);
             _manager2 = new RedisHubLifetimeManager<TestHub>(logger, options, resolver);
 
-            async Task ConnectClient(TestClient client, IHubProtocol protocol, string userId, string group)
+            async Task ConnectClient(TestClient client, IHubProtocol protocol, string userId, string groupName)
             {
                 await _manager2.OnConnectedAsync(HubConnectionContextUtils.Create(client.Connection, protocol, userId));
-                await _manager2.AddGroupAsync(client.Connection.ConnectionId, "Everyone");
-                await _manager2.AddGroupAsync(client.Connection.ConnectionId, group);
+                await _manager2.AddToGroupAsync(client.Connection.ConnectionId, "Everyone");
+                await _manager2.AddToGroupAsync(client.Connection.ConnectionId, groupName);
             }
 
             // Connect clients
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 {
                     group = "Evens";
                     user = "EvenUser";
-                    _excludedIds.Add(_clients[i].Connection.ConnectionId);
+                    _excludedConnectionIds.Add(_clients[i].Connection.ConnectionId);
                 }
                 else
                 {
@@ -144,13 +144,13 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public async Task SendAllExcept()
         {
-            await _manager1.SendAllExceptAsync("Test", _args, _excludedIds);
+            await _manager1.SendAllExceptAsync("Test", _args, _excludedConnectionIds);
         }
 
         [Benchmark]
         public async Task SendGroupExcept()
         {
-            await _manager1.SendGroupExceptAsync("Everyone", "Test", _args, _excludedIds);
+            await _manager1.SendGroupExceptAsync("Everyone", "Test", _args, _excludedConnectionIds);
         }
 
         [Benchmark]

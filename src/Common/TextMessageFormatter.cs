@@ -4,9 +4,9 @@
 using System.Buffers;
 using System.IO;
 
-namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
+namespace Microsoft.AspNetCore.Internal
 {
-    public static class TextMessageFormatter
+    internal static class TextMessageFormatter
     {
         // This record separator is supposed to be used only for JSON payloads where 0x1e character
         // will not occur (is not a valid character) and therefore it is safe to not escape it

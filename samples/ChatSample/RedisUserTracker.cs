@@ -65,7 +65,7 @@ namespace ChatSample
         {
             // TODO: handle connection failures
             _redisConnection = await ConnectToRedis(_options, _logger);
-            _redisDatabase = _redisConnection.GetDatabase(_options.Options.DefaultDatabase.GetValueOrDefault());
+            _redisDatabase = _redisConnection.GetDatabase(_options.Configuration.DefaultDatabase.GetValueOrDefault());
 
             // Register connection
             _redisDatabase.SetAdd(ServerIndexRedisKey, ServerId);
@@ -103,14 +103,14 @@ namespace ChatSample
         private static async Task<IConnectionMultiplexer> ConnectToRedis(RedisOptions options, ILogger logger)
         {
             var loggerTextWriter = new LoggerTextWriter(logger);
-            if (options.Factory != null)
+            if (options.ConnectionFactory != null)
             {
-                return await options.Factory(loggerTextWriter);
+                return await options.ConnectionFactory(loggerTextWriter);
             }
 
-            if (options.Options.EndPoints.Any())
+            if (options.Configuration.EndPoints.Any())
             {
-                return await ConnectionMultiplexer.ConnectAsync(options.Options, loggerTextWriter);
+                return await ConnectionMultiplexer.ConnectAsync(options.Configuration, loggerTextWriter);
             }
 
             var configurationOptions = new ConfigurationOptions();

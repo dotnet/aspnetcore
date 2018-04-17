@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             return message;
         }
 
-        public Task EchoGroup(string group, string message)
+        public Task EchoGroup(string groupName, string message)
         {
-            return Clients.Group(group).SendAsync("Echo", message);
+            return Clients.Group(groupName).SendAsync("Echo", message);
         }
 
-        public Task AddSelfToGroup(string group)
+        public Task AddSelfToGroup(string groupName)
         {
-            return Groups.AddAsync(Context.ConnectionId, group);
+            return Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         }
     }
 }

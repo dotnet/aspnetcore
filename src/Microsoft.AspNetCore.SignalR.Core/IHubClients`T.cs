@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR
     {
         T All { get; }
 
-        T AllExcept(IReadOnlyList<string> excludedIds);
+        T AllExcept(IReadOnlyList<string> excludedConnectionIds);
 
         T Client(string connectionId);
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         T Groups(IReadOnlyList<string> groupNames);
 
-        T GroupExcept(string groupName, IReadOnlyList<string> excludeIds);
+        T GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds);
 
         T User(string userId);
 

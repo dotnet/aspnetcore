@@ -8,7 +8,7 @@ using System.IO;
 using Microsoft.AspNetCore.Internal;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Http.Connections.Internal
+namespace Microsoft.AspNetCore.Http.Connections
 {
     public static class NegotiateProtocol
     {

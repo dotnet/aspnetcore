@@ -207,6 +207,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             Log.TransportStopping(_logger);
 
+            if (_application == null)
+            {
+                // We never started
+                return;
+            }
+
             _transport.Output.Complete();
             _transport.Input.Complete();
 

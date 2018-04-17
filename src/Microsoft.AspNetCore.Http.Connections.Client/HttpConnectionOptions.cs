@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Connections.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {

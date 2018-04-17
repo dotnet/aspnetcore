@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.SignalR.Internal.Formatters;
+using Microsoft.AspNetCore.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters

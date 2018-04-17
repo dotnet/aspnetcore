@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat)
         {
             if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
             {
@@ -48,6 +48,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
 
             Log.StartTransport(_logger, transferFormat);
+
+            // Make initial long polling request
+            // Server uses first long polling request to finish initializing connection and it returns without data
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            using (var response = await _httpClient.SendAsync(request))
+            {
+                response.EnsureSuccessStatusCode();
+            }
 
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
             var options = ClientPipeOptions.DefaultOptions;
@@ -57,8 +65,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _application = pair.Application;
 
             Running = ProcessAsync(url);
-
-            return Task.CompletedTask;
         }
 
         private async Task ProcessAsync(Uri url)
@@ -104,6 +110,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public async Task StopAsync()
         {
             Log.TransportStopping(_logger);
+
+            if (_application == null)
+            {
+                // We never started
+                return;
+            }
 
             _application.Input.CancelPendingRead();
 

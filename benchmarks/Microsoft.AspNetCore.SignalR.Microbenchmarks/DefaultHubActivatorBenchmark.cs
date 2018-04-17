@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks

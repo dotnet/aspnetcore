@@ -76,6 +76,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
     public class TestConnectionInherentKeepAliveFeature : IConnectionInherentKeepAliveFeature
     {
-        public TimeSpan KeepAliveInterval { get; } = TimeSpan.Zero;
+        public bool HasInherentKeepAlive { get; } = true;
     }
 }

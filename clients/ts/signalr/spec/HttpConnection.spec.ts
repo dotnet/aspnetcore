@@ -288,13 +288,73 @@ describe("HttpConnection", () => {
         }
     });
 
-    it("sets inherentKeepAlive feature when using LongPolling", async (done) => {
+    it("authorization header removed when token factory returns null and using LongPolling", async (done) => {
         const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
 
+        var httpClientGetCount = 0;
+        var accessTokenFactoryCount = 0;
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
-                .on("POST", (r) => ({ connectionId: "42", availableTransports: [availableTransport] })),
+                .on("POST", (r) => ({ connectionId: "42", availableTransports: [availableTransport] }))
+                .on("GET", (r) => {
+                    httpClientGetCount++;
+                    const authorizationValue = r.headers["Authorization"];
+                    if (httpClientGetCount == 1) {
+                        if (authorizationValue) {
+                            fail("First long poll request should have a authorization header.");
+                        }
+                        // First long polling request must succeed so start completes
+                        return "";
+                    } else {
+                        // Check second long polling request has its header removed
+                        if (authorizationValue) {
+                            fail("Second long poll request should have no authorization header.");
+                        }
+                        throw new Error("fail");
+                    }
+                }),
+            accessTokenFactory: () => {
+                accessTokenFactoryCount++;
+                if (accessTokenFactoryCount == 1) {
+                    return "A token value";
+                } else {
+                    // Return a null value after the first call to test the header being removed
+                    return null;
+                }
+            },
+        } as IHttpConnectionOptions;
+
+        const connection = new HttpConnection("http://tempuri.org", options);
+
+        try {
+            await connection.start(TransferFormat.Text);
+            expect(httpClientGetCount).toBeGreaterThanOrEqual(2);
+            expect(accessTokenFactoryCount).toBeGreaterThanOrEqual(2);
+            done();
+        } catch (e) {
+            fail(e);
+            done();
+        }
+    });
+
+    it("sets inherentKeepAlive feature when using LongPolling", async (done) => {
+        const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
+
+        var httpClientGetCount = 0;
+        const options: IHttpConnectionOptions = {
+            ...commonOptions,
+            httpClient: new TestHttpClient()
+                .on("POST", (r) => ({ connectionId: "42", availableTransports: [availableTransport] }))
+                .on("GET", (r) => {
+                    httpClientGetCount++;
+                    if (httpClientGetCount == 1) {
+                        // First long polling request must succeed so start completes
+                        return "";
+                    } else {
+                        throw new Error("fail");
+                    }
+                }),
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);

@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal static class TypedClientBuilder<T>
     {
