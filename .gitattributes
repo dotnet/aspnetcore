@@ -1,2 +1,5 @@
 # Force LF for package-lock files - not all version of NPM detect line endings.
 package-lock.json text eol=lf
+
+# Use windows line endings in baselines to minimize churn to baseline files
+TestFiles/** text eol=crlf

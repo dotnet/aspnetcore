@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             {
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFilePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(baselineFullPath));
-                File.WriteAllText(baselineFullPath, IntermediateNodeSerializer.Serialize(document));
+                WriteBaseline(IntermediateNodeSerializer.Serialize(document), baselineFullPath);
 
                 return;
             }
@@ -86,13 +86,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             {
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFilePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(baselineFullPath));
-                File.WriteAllText(baselineFullPath, document.GeneratedCode);
+                WriteBaseline(document.GeneratedCode, baselineFullPath);
 
                 var baselineDiagnosticsFullPath = Path.Combine(TestProjectRoot, baselineDiagnosticsFilePath);
                 var lines = document.Diagnostics.Select(RazorDiagnosticSerializer.Serialize).ToArray();
                 if (lines.Any())
                 {
-                    File.WriteAllLines(baselineDiagnosticsFullPath, lines);
+                    WriteBaseline(lines, baselineDiagnosticsFullPath);
                 }
                 else if (File.Exists(baselineDiagnosticsFullPath))
                 {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 var text = SourceMappingsSerializer.Serialize(document, codeDocument.Source);
                 if (!string.IsNullOrEmpty(text))
                 {
-                    File.WriteAllText(baselineMappingsFullPath, text);
+                    WriteBaseline(text, baselineMappingsFullPath);
                 }
                 else if (File.Exists(baselineMappingsFullPath))
                 {
@@ -174,6 +174,28 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             }
 
             return Path.Combine(DirectoryPath, Path.ChangeExtension(fileName, extension));
+        }
+
+
+        private static void WriteBaseline(string text, string filePath)
+        {
+            var lines = text.Split(new char[]{ '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            WriteBaseline(lines, filePath);
+        }
+
+        private static void WriteBaseline(string[] lines, string filePath)
+        {
+            using (var writer = new StreamWriter(File.Open(filePath, FileMode.Create)))
+            {
+                // Force windows-style line endings so that we're consistent. This isn't
+                // required for correctness, but will prevent churcn when developing on OSX.
+                writer.NewLine = "\r\n";
+
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    writer.WriteLine(lines[i]);
+                }
+            }
         }
     }
 }
