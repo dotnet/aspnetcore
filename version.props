@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>7</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>8</AspNetCorePatchVersion>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
     <VersionSuffix>$(PrereleaseVersionLabel)</VersionSuffix>
@@ -16,7 +16,7 @@
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
 
     <!-- Chains in the previous runtime store installer and files. This must be updated with every patch. -->
-    <PreviousRuntimeStoreArchiveVersion>2.0.6-10011</PreviousRuntimeStoreArchiveVersion>
-    <RuntimeStoreInstallerDependencyVersion>2.0.6</RuntimeStoreInstallerDependencyVersion>
+    <RuntimeStoreInstallerDependencyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$([MSBuild]::Subtract($(AspNetCorePatchVersion), 1))</RuntimeStoreInstallerDependencyVersion>
+    <PreviousRuntimeStoreArchiveVersion>$(RuntimeStoreInstallerDependencyVersion)-231</PreviousRuntimeStoreArchiveVersion>
   </PropertyGroup>
 </Project>
