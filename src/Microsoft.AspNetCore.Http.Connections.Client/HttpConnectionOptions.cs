@@ -52,6 +52,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         public Uri Url { get; set; }
         public HttpTransportType Transports { get; set; }
+
+        public bool SkipNegotiation { get; set; }
+
         public Func<Task<string>> AccessTokenProvider { get; set; }
         public TimeSpan CloseTimeout { get; set; } = TimeSpan.FromSeconds(5);
         public ICredentials Credentials { get; set; }

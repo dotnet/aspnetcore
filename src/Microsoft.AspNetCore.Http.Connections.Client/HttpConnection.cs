@@ -20,6 +20,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 {
     public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
     {
+        // Not configurable on purpose, high enough that if we reach here, it's likely
+        // a buggy server
+        private static readonly int _maxRedirects = 100;
+        private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
+
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
 #if !NETCOREAPP2_1
         private static readonly Version Windows8Version = new Version(6, 2);
@@ -40,6 +45,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private readonly ConnectionLogScope _logScope;
         private readonly IDisposable _scopeDisposable;
         private readonly ILoggerFactory _loggerFactory;
+        private Func<Task<string>> _accessTokenProvider;
 
         public override IDuplexPipe Transport
         {
@@ -96,7 +102,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpConnectionOptions = httpConnectionOptions;
 
-            if (httpConnectionOptions.Transports != HttpTransportType.WebSockets)
+            if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
             {
                 _httpClient = CreateHttpClient();
             }
@@ -210,17 +216,54 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task SelectAndStartTransport(TransferFormat transferFormat)
         {
-            if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
+            var uri = _httpConnectionOptions.Url;
+            // Set the initial access token provider back to the original one from options
+            _accessTokenProvider = _httpConnectionOptions.AccessTokenProvider;
+
+            if (_httpConnectionOptions.SkipNegotiation)
             {
-                Log.StartingTransport(_logger, _httpConnectionOptions.Transports, _httpConnectionOptions.Url);
-                await StartTransport(_httpConnectionOptions.Url, _httpConnectionOptions.Transports, transferFormat);
+                if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
+                {
+                    Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
+                    await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Negotiation can only be skipped when using the WebSocket transport directly.");
+                }
             }
             else
             {
-                var negotiationResponse = await GetNegotiationResponse();
+                NegotiationResponse negotiationResponse;
+                var redirects = 0;
+
+                do
+                {
+                    negotiationResponse = await GetNegotiationResponseAsync(uri);
+
+                    if (negotiationResponse.Url != null)
+                    {
+                        uri = new Uri(negotiationResponse.Url);
+                    }
+
+                    if (negotiationResponse.AccessToken != null)
+                    {
+                        string accessToken = negotiationResponse.AccessToken;
+                        // Set the current access token factory so that future requests use this access token
+                        _accessTokenProvider = () => Task.FromResult(accessToken);
+                    }
+
+                    redirects++;
+                }
+                while (negotiationResponse.Url != null && redirects < _maxRedirects);
+
+                if (redirects == _maxRedirects && negotiationResponse.Url != null)
+                {
+                    throw new InvalidOperationException("Negotiate redirection limit exceeded.");
+                }
 
                 // This should only need to happen once
-                var connectUrl = CreateConnectUrl(_httpConnectionOptions.Url, negotiationResponse.ConnectionId);
+                var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
 
                 // We're going to search for the transfer format as a string because we don't want to parse
                 // all the transfer formats in the negotiation response, and we want to allow transfer formats
@@ -256,8 +299,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             // The negotiation response gets cleared in the fallback scenario.
                             if (negotiationResponse == null)
                             {
-                                negotiationResponse = await GetNegotiationResponse();
-                                connectUrl = CreateConnectUrl(_httpConnectionOptions.Url, negotiationResponse.ConnectionId);
+                                negotiationResponse = await GetNegotiationResponseAsync(uri);
+                                connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
                             }
 
                             Log.StartingTransport(_logger, transportType, connectUrl);
@@ -281,7 +324,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
         }
 
-        private async Task<NegotiationResponse> Negotiate(Uri url, HttpClient httpClient, ILogger logger)
+        private async Task<NegotiationResponse> NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger)
         {
             try
             {
@@ -399,10 +442,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
 
                 // Apply the authorization header in a handler instead of a default header because it can change with each request
-                if (_httpConnectionOptions.AccessTokenProvider != null)
-                {
-                    httpMessageHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, _httpConnectionOptions.AccessTokenProvider);
-                }
+                httpMessageHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, this);
             }
 
             // Wrap message handler after HttpMessageHandlerFactory to ensure not overriden
@@ -428,6 +468,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
 
             return httpClient;
+        }
+
+        internal Task<string> GetAccessTokenAsync()
+        {
+            if (_accessTokenProvider == null)
+            {
+                return _noAccessToken;
+            }
+            return _accessTokenProvider();
         }
 
         private void CheckDisposed()
@@ -458,9 +507,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 #endif
         }
 
-        private async Task<NegotiationResponse> GetNegotiationResponse()
+        private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri)
         {
-            var negotiationResponse = await Negotiate(_httpConnectionOptions.Url, _httpClient, _logger);
+            var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger);
             _connectionId = negotiationResponse.ConnectionId;
             _logScope.ConnectionId = _connectionId;
             return negotiationResponse;

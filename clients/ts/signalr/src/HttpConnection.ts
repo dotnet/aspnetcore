@@ -16,6 +16,7 @@ export interface IHttpConnectionOptions {
     logger?: ILogger | LogLevel;
     accessTokenFactory?: () => string | Promise<string>;
     logMessageContent?: boolean;
+    skipNegotiation?: boolean;
 }
 
 const enum ConnectionState {
@@ -27,6 +28,8 @@ const enum ConnectionState {
 interface INegotiateResponse {
     connectionId: string;
     availableTransports: IAvailableTransport[];
+    url: string;
+    accessToken: string;
 }
 
 interface IAvailableTransport {
@@ -34,17 +37,18 @@ interface IAvailableTransport {
     transferFormats: Array<keyof typeof TransferFormat>;
 }
 
+const MAX_REDIRECTS = 100;
+
 export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
     private baseUrl: string;
-    private url: string;
     private readonly httpClient: HttpClient;
     private readonly logger: ILogger;
     private readonly options: IHttpConnectionOptions;
     private transport: ITransport;
-    private connectionId: string;
     private startPromise: Promise<void>;
     private stopError?: Error;
+    private accessTokenFactory?: () => string | Promise<string>;
 
     public readonly features: any = {};
     public onreceive: (data: string | ArrayBuffer) => void;
@@ -110,29 +114,53 @@ export class HttpConnection implements IConnection {
     }
 
     private async startInternal(transferFormat: TransferFormat): Promise<void> {
+        // Store the original base url and the access token factory since they may change
+        // as part of negotiating
+        let url = this.baseUrl;
+        this.accessTokenFactory = this.options.accessTokenFactory;
+
         try {
-            if (this.options.transport === HttpTransportType.WebSockets) {
-                // No need to add a connection ID in this case
-                this.url = this.baseUrl;
-                this.transport = this.constructTransport(HttpTransportType.WebSockets);
-                // We should just call connect directly in this case.
-                // No fallback or negotiate in this case.
-                await this.transport.connect(this.url, transferFormat);
+            if (this.options.skipNegotiation) {
+                if (this.options.transport === HttpTransportType.WebSockets) {
+                    // No need to add a connection ID in this case
+                    this.transport = this.constructTransport(HttpTransportType.WebSockets);
+                    // We should just call connect directly in this case.
+                    // No fallback or negotiate in this case.
+                    await this.transport.connect(url, transferFormat);
+                } else {
+                    throw Error("Negotiation can only be skipped when using the WebSocket transport directly.");
+                }
             } else {
-                const token = await this.options.accessTokenFactory();
-                let headers;
-                if (token) {
-                    headers = {
-                        ["Authorization"]: `Bearer ${token}`,
-                    };
+                let negotiateResponse: INegotiateResponse = null;
+                let redirects = 0;
+
+                do {
+                    negotiateResponse = await this.getNegotiationResponse(url);
+                    // the user tries to stop the connection when it is being started
+                    if (this.connectionState === ConnectionState.Disconnected) {
+                        return;
+                    }
+
+                    if (negotiateResponse.url) {
+                        url = negotiateResponse.url;
+                    }
+
+                    if (negotiateResponse.accessToken) {
+                        // Replace the current access token factory with one that uses
+                        // the returned access token
+                        const accessToken = negotiateResponse.accessToken;
+                        this.accessTokenFactory = () => accessToken;
+                    }
+
+                    redirects++;
+                }
+                while (negotiateResponse.url && redirects < MAX_REDIRECTS);
+
+                if (redirects === MAX_REDIRECTS && negotiateResponse.url) {
+                    throw Error("Negotiate redirection limit exceeded.");
                 }
 
-                const negotiateResponse = await this.getNegotiationResponse(headers);
-                // the user tries to stop the the connection when it is being started
-                if (this.connectionState === ConnectionState.Disconnected) {
-                    return;
-                }
-                await this.createTransport(this.options.transport, negotiateResponse, transferFormat, headers);
+                await this.createTransport(url, this.options.transport, negotiateResponse, transferFormat);
             }
 
             if (this.transport instanceof LongPollingTransport) {
@@ -153,32 +181,44 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private async getNegotiationResponse(headers: any): Promise<INegotiateResponse> {
-        const negotiateUrl = this.resolveNegotiateUrl(this.baseUrl);
+    private async getNegotiationResponse(url: string): Promise<INegotiateResponse> {
+        const token = await this.accessTokenFactory();
+        let headers;
+        if (token) {
+            headers = {
+                ["Authorization"]: `Bearer ${token}`,
+            };
+        }
+
+        const negotiateUrl = this.resolveNegotiateUrl(url);
         this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}`);
         try {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
                 headers,
             });
-            return JSON.parse(response.content as string);
+
+            if (response.statusCode !== 200) {
+                throw Error(`Unexpected status code returned from negotiate ${response.statusCode}`);
+            }
+
+            return JSON.parse(response.content as string) as INegotiateResponse;
         } catch (e) {
             this.logger.log(LogLevel.Error, "Failed to complete negotiation with the server: " + e);
             throw e;
         }
     }
 
-    private updateConnectionId(negotiateResponse: INegotiateResponse) {
-        this.connectionId = negotiateResponse.connectionId;
-        this.url = this.baseUrl + (this.baseUrl.indexOf("?") === -1 ? "?" : "&") + `id=${this.connectionId}`;
+    private createConnectUrl(url: string, connectionId: string) {
+        return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionId}`;
     }
 
-    private async createTransport(requestedTransport: HttpTransportType | ITransport, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat, headers: any): Promise<void> {
-        this.updateConnectionId(negotiateResponse);
+    private async createTransport(url: string, requestedTransport: HttpTransportType | ITransport, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
+        let connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
         if (this.isITransport(requestedTransport)) {
             this.logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
             this.transport = requestedTransport;
-            await this.transport.connect(this.url, requestedTransferFormat);
+            await this.transport.connect(connectUrl, requestedTransferFormat);
 
             // only change the state if we were connecting to not overwrite
             // the state if the connection is already marked as Disconnected
@@ -193,11 +233,11 @@ export class HttpConnection implements IConnection {
             if (typeof transport === "number") {
                 this.transport = this.constructTransport(transport);
                 if (negotiateResponse.connectionId === null) {
-                    negotiateResponse = await this.getNegotiationResponse(headers);
-                    this.updateConnectionId(negotiateResponse);
+                    negotiateResponse = await this.getNegotiationResponse(url);
+                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
                 }
                 try {
-                    await this.transport.connect(this.url, requestedTransferFormat);
+                    await this.transport.connect(connectUrl, requestedTransferFormat);
                     this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
                     return;
                 } catch (ex) {
@@ -214,11 +254,11 @@ export class HttpConnection implements IConnection {
     private constructTransport(transport: HttpTransportType) {
         switch (transport) {
             case HttpTransportType.WebSockets:
-                return new WebSocketTransport(this.options.accessTokenFactory, this.logger, this.options.logMessageContent);
+                return new WebSocketTransport(this.accessTokenFactory, this.logger, this.options.logMessageContent);
             case HttpTransportType.ServerSentEvents:
-                return new ServerSentEventsTransport(this.httpClient, this.options.accessTokenFactory, this.logger, this.options.logMessageContent);
+                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent);
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this.httpClient, this.options.accessTokenFactory, this.logger, this.options.logMessageContent);
+                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent);
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }

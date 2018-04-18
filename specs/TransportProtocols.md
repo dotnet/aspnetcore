@@ -18,32 +18,49 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 ## `POST [endpoint-base]/negotiate` request
 
-The `POST [endpoint-base]/negotiate` request is used to establish connection between the client and the server. The response to the `POST [endpoint-base]/negotiate` request contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server. The content type of the response is `application/json`. The following is a sample response to the `POST [endpoint-base]/negotiate` request
+The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of two types of responses:
 
-```
-{
-  "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
-  "availableTransports":[
-    {
-      "transport": "WebSockets",
-      "transferFormats": [ "Text", "Binary" ]
-    },
-    {
-      "transport": "ServerSentEvents",
-      "transferFormats": [ "Text" ]
-    },
-    {
-      "transport": "LongPolling",
-      "transferFormats": [ "Text", "Binary" ]
-    }
-  ]
-}
-```
+1. A response that contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server.
 
-The payload returned from this endpoint provides the following data:
+  ```
+  {
+    "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
+    "availableTransports":[
+      {
+        "transport": "WebSockets",
+        "transferFormats": [ "Text", "Binary" ]
+      },
+      {
+        "transport": "ServerSentEvents",
+        "transferFormats": [ "Text" ]
+      },
+      {
+        "transport": "LongPolling",
+        "transferFormats": [ "Text", "Binary" ]
+      }
+    ]
+  }
+  ```
 
-* The `connectionId` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
-* The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
+  The payload returned from this endpoint provides the following data:
+
+  * The `connectionId` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
+
+
+2. A redirect response which tells the client which URL and optionally access token to use as a result.
+
+  ```
+  {
+    "url": "https://myapp.com/chat",
+    "accessToken": "accessToken"
+  }
+  ```
+
+  The payload returned from this endpoint provides the following data:
+
+  * The `url` which is the URL the client should connect to.
+  * The `accessToken` which is an optional bearer token for accessing the specified url.
 
 ## Transfer Formats
 

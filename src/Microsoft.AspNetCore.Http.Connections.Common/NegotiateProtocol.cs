@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Http.Connections
     public static class NegotiateProtocol
     {
         private const string ConnectionIdPropertyName = "connectionId";
+        private const string UrlPropertyName = "url";
+        private const string AccessTokenPropertyName = "accessToken";
         private const string AvailableTransportsPropertyName = "availableTransports";
         private const string TransportPropertyName = "transport";
         private const string TransferFormatsPropertyName = "transferFormats";
@@ -25,8 +27,25 @@ namespace Microsoft.AspNetCore.Http.Connections
                 using (var jsonWriter = JsonUtils.CreateJsonTextWriter(textWriter))
                 {
                     jsonWriter.WriteStartObject();
-                    jsonWriter.WritePropertyName(ConnectionIdPropertyName);
-                    jsonWriter.WriteValue(response.ConnectionId);
+
+                    if (!string.IsNullOrEmpty(response.Url))
+                    {
+                        jsonWriter.WritePropertyName(UrlPropertyName);
+                        jsonWriter.WriteValue(response.Url);
+                    }
+
+                    if (!string.IsNullOrEmpty(response.AccessToken))
+                    {
+                        jsonWriter.WritePropertyName(AccessTokenPropertyName);
+                        jsonWriter.WriteValue(response.AccessToken);
+                    }
+
+                    if (!string.IsNullOrEmpty(response.ConnectionId))
+                    {
+                        jsonWriter.WritePropertyName(ConnectionIdPropertyName);
+                        jsonWriter.WriteValue(response.ConnectionId);
+                    }
+
                     jsonWriter.WritePropertyName(AvailableTransportsPropertyName);
                     jsonWriter.WriteStartArray();
 
@@ -69,6 +88,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                     JsonUtils.EnsureObjectStart(reader);
 
                     string connectionId = null;
+                    string url = null;
+                    string accessToken = null;
                     List<AvailableTransport> availableTransports = null;
 
                     var completed = false;
@@ -81,6 +102,12 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                                 switch (memberName)
                                 {
+                                    case UrlPropertyName:
+                                        url = JsonUtils.ReadAsString(reader, UrlPropertyName);
+                                        break;
+                                    case AccessTokenPropertyName:
+                                        accessToken = JsonUtils.ReadAsString(reader, AccessTokenPropertyName);
+                                        break;
                                     case ConnectionIdPropertyName:
                                         connectionId = JsonUtils.ReadAsString(reader, ConnectionIdPropertyName);
                                         break;
@@ -114,19 +141,25 @@ namespace Microsoft.AspNetCore.Http.Connections
                         }
                     }
 
-                    if (connectionId == null)
+                    if (url == null)
                     {
-                        throw new InvalidDataException($"Missing required property '{ConnectionIdPropertyName}'.");
-                    }
+                        // if url isn't specified, connectionId and available transports are required
+                        if (connectionId == null)
+                        {
+                            throw new InvalidDataException($"Missing required property '{ConnectionIdPropertyName}'.");
+                        }
 
-                    if (availableTransports == null)
-                    {
-                        throw new InvalidDataException($"Missing required property '{AvailableTransportsPropertyName}'.");
+                        if (availableTransports == null)
+                        {
+                            throw new InvalidDataException($"Missing required property '{AvailableTransportsPropertyName}'.");
+                        }
                     }
 
                     return new NegotiationResponse
                     {
                         ConnectionId = connectionId,
+                        Url = url,
+                        AccessToken = accessToken,
                         AvailableTransports = availableTransports
                     };
                 }
