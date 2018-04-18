@@ -442,8 +442,35 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Element(frame, "input", 5, 0),
-                frame => AssertFrame.Attribute(frame, "visible", 1), // This gets reordered in the node writer
-                frame => AssertFrame.Attribute(frame, "type", "text", 2),
+                frame => AssertFrame.Attribute(frame, "type", "text", 1),
+                frame => AssertFrame.Attribute(frame, "visible", 2),
+                frame => AssertFrame.Attribute(frame, "value", "42", 3),
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 4));
+        }
+
+        [Fact] // See https://github.com/aspnet/Blazor/issues/703
+        public void Workaround_703()
+        {
+            // Arrange
+            var component = CompileToComponent(@"
+@addTagHelper *, TestAssembly
+<input bind-value-onchange=""@ParentValue"" type=""text"" visible />
+@functions {
+    public int ParentValue { get; set; } = 42;
+}");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            //
+            // The workaround for 703 is that the value attribute MUST be after the type
+            // attribute.
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "input", 5, 0),
+                frame => AssertFrame.Attribute(frame, "type", "text", 1),
+                frame => AssertFrame.Attribute(frame, "visible", 2),
                 frame => AssertFrame.Attribute(frame, "value", "42", 3),
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 4));
         }

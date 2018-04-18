@@ -72,12 +72,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 builder.Features.Add(new TrimWhitespacePass());
             }
             builder.Features.Add(new ComponentDocumentClassifierPass());
+            builder.Features.Add(new ComponentDocumentRewritePass());
+            builder.Features.Add(new ScriptTagPass());
             builder.Features.Add(new ComplexAttributeContentPass());
-            builder.Features.Add(new BindLoweringPass());
-            builder.Features.Add(new EventHandlerLoweringPass());
             builder.Features.Add(new ComponentLoweringPass());
+            builder.Features.Add(new EventHandlerLoweringPass());
             builder.Features.Add(new RefLoweringPass());
-            builder.Features.Add(new OrphanTagHelperLoweringPass());
+            builder.Features.Add(new BindLoweringPass());
 
             builder.Features.Add(new ComponentTagHelperDescriptorProvider());
             builder.Features.Add(new BindTagHelperDescriptorProvider());

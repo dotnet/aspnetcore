@@ -23,55 +23,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 });
         }
 
-        [Fact]
-        public void RejectsEndTagWithDifferentNameToStartTag()
-        {
-            // Arrange/Act
-            var result = CompileToCSharp(
-                $"@{{\n" +
-                $"   var abc = 123;\n" +
-                $"}}\n" +
-                $"<root>\n" +
-                $"    <other />\n" +
-                $"    text\n" +
-                $"    <child>more text</root>\n" +
-                $"</child>\n");
-
-            // Assert
-            Assert.Collection(result.Diagnostics,
-                item =>
-                {
-                    Assert.Equal("BL9982", item.Id);
-                    Assert.Equal("Mismatching closing tag. Found 'child' but expected 'root'.", item.GetMessage());
-                    Assert.Equal(6, item.Span.LineIndex);
-                    Assert.Equal(20, item.Span.CharacterIndex);
-                });
-        }
-
-        // This is the old syntax used by @bind and @onclick, it's explicitly unsupported
-        // and has its own diagnostic.
-        [Fact]
-        public void OldEventHandlerSyntax_ReportsError()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
-<elem @foo(MyHandler) />
-@functions {
-    void MyHandler()
-    {
-    }
-
-    string foo(Action action)
-    {
-        return action.ToString();
-    }
-}");
-
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9980", diagnostic.Id);
-        }
-
         // This used to be a sugar syntax for lambdas, but we don't support that anymore
         [Fact]
         public void OldCodeBlockAttributeSyntax_ReportsError()

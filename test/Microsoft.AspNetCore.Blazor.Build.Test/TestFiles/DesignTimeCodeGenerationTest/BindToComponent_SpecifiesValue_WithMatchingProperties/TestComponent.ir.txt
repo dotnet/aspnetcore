@@ -20,8 +20,7 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                TagHelper - (31:1,0 [40] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.MyComponent
+                ComponentExtensionNode - (31:1,0 [40] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
                     ComponentAttributeExtensionNode - (56:1,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
@@ -30,8 +29,6 @@ Document -
                     ComponentAttributeExtensionNode - (56:1,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - ValueChanged
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => ParentValue = __value
-                    ComponentBodyExtensionNode - 
-                    ComponentCloseExtensionNode - 
                 HtmlContent - (71:1,40 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (71:1,40 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (85:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)

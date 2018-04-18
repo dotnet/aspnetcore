@@ -8,23 +8,19 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - 
-                    IntermediateToken -  - Html - <input 
-                HtmlContent - 
-                    IntermediateToken -  - Html - type="
-                    IntermediateToken - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
-                    IntermediateToken -  - Html - " 
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
-                        IntermediateToken - (72:1,41 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
-                        IntermediateToken -  - CSharp - , 
-                        IntermediateToken -  - CSharp - "MM/dd"
-                        IntermediateToken -  - CSharp - )
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, "MM/dd")
-                HtmlContent - 
-                    IntermediateToken -  - Html - />
+                HtmlElement - (31:1,0 [77] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute -  - type=" - "
+                        HtmlAttributeValue - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
+                    HtmlAttribute - (71:1,40 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
+                            IntermediateToken - (72:1,41 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
+                            IntermediateToken -  - CSharp - , 
+                            IntermediateToken -  - CSharp - "MM/dd"
+                            IntermediateToken -  - CSharp - )
+                    HtmlAttribute - (71:1,40 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, "MM/dd")
             CSharpCode - (122:2,12 [77] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (122:2,12 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n

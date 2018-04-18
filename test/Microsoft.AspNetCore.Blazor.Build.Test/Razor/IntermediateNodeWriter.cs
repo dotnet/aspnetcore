@@ -14,10 +14,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     // Serializes single IR nodes (shallow).
     public class IntermediateNodeWriter :
         IntermediateNodeVisitor,
+        IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>,
+        IExtensionIntermediateNodeVisitor<ComponentExtensionNode>,
         IExtensionIntermediateNodeVisitor<ComponentAttributeExtensionNode>,
-        IExtensionIntermediateNodeVisitor<ComponentBodyExtensionNode>,
-        IExtensionIntermediateNodeVisitor<ComponentCloseExtensionNode>,
-        IExtensionIntermediateNodeVisitor<ComponentOpenExtensionNode>,
         IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>,
         IExtensionIntermediateNodeVisitor<RefExtensionNode>
     {
@@ -265,24 +264,19 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             _writer.Write(content.Replace("\r", string.Empty).Replace("\n", "\\n").Replace(" - ", "\\-"));
         }
 
-        void IExtensionIntermediateNodeVisitor<ComponentOpenExtensionNode>.VisitExtension(ComponentOpenExtensionNode node)
+        void IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>.VisitExtension(HtmlElementIntermediateNode node)
         {
-            WriteContentNode(node, node.TypeName);
+            WriteContentNode(node, node.TagName);
+        }
+
+        void IExtensionIntermediateNodeVisitor<ComponentExtensionNode>.VisitExtension(ComponentExtensionNode node)
+        {
+            WriteContentNode(node, node.TagName, node.TypeName);
         }
 
         void IExtensionIntermediateNodeVisitor<ComponentAttributeExtensionNode>.VisitExtension(ComponentAttributeExtensionNode node)
         {
             WriteContentNode(node, node.AttributeName, node.PropertyName);
-        }
-
-        void IExtensionIntermediateNodeVisitor<ComponentBodyExtensionNode>.VisitExtension(ComponentBodyExtensionNode node)
-        {
-            WriteBasicNode(node);
-        }
-
-        void IExtensionIntermediateNodeVisitor<ComponentCloseExtensionNode>.VisitExtension(ComponentCloseExtensionNode node)
-        {
-            WriteBasicNode(node);
         }
 
         void IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>.VisitExtension(RouteAttributeExtensionNode node)

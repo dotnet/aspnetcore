@@ -39,8 +39,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         node.Children.RemoveAt(i);
                         continue;
                     }
-
-                    node.Children[i] = new ComponentAttributeExtensionNode(propertyNode);
                 }
                 else if (node.Children[i] is TagHelperHtmlAttributeIntermediateNode htmlNode)
                 {

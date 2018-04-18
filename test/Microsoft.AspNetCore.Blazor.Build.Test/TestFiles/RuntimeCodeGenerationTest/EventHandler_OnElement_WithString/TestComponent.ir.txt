@@ -8,12 +8,9 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - 
-                    IntermediateToken -  - Html - <input 
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
-                        IntermediateToken -  - CSharp - "foo"
-                        IntermediateToken -  - CSharp - )
-                HtmlContent - 
-                    IntermediateToken -  - Html - />
+                HtmlElement - (0:0,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (16:0,16 [3] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
+                            IntermediateToken -  - CSharp - "foo"
+                            IntermediateToken -  - CSharp - )

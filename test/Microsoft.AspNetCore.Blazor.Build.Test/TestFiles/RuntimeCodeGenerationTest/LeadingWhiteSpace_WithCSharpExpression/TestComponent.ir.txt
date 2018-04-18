@@ -10,8 +10,8 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 CSharpExpression - (2:0,2 [10] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (2:0,2 [10] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "My value"
-                HtmlContent - (13:0,13 [18] x:\dir\subdir\Test\TestComponent.cshtml)
+                HtmlContent - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                    IntermediateToken - (17:2,0 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <h1>
-                    IntermediateToken - (21:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
-                    IntermediateToken - (26:2,9 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - </h1>
+                HtmlElement - (17:2,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (21:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (21:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello

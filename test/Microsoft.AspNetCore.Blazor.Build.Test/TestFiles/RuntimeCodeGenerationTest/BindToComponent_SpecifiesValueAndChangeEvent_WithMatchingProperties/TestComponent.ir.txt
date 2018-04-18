@@ -8,8 +8,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                TagHelper - (31:1,0 [50] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.MyComponent
+                ComponentExtensionNode - (31:1,0 [50] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
                     ComponentAttributeExtensionNode - (66:1,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
@@ -18,7 +17,5 @@ Document -
                     ComponentAttributeExtensionNode - (66:1,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - OnChanged - OnChanged
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => ParentValue = __value
-                    ComponentBodyExtensionNode - 
-                    ComponentCloseExtensionNode - 
             CSharpCode - (95:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (95:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

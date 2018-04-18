@@ -20,10 +20,7 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                TagHelper - (31:1,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.MyComponent
+                ComponentExtensionNode - (31:1,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
                     ComponentAttributeExtensionNode - (60:1,29 [16] x:\dir\subdir\Test\TestComponent.cshtml) - StringProperty - StringProperty
                         CSharpExpression - (62:1,31 [13] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (62:1,31 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 42.ToString()
-                    ComponentBodyExtensionNode - 
-                    ComponentCloseExtensionNode - 

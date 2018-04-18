@@ -17,6 +17,21 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private readonly static string DesignTimeVariable = "__o";
 
+        public override void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            context.RenderChildren(node);
+        }
+
         public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
         {
             if (context == null)
@@ -194,7 +209,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
-            context.RenderChildren(node);
+            // Do nothing, this can't contain code.
         }
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
@@ -264,60 +279,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
-        public override void WriteCSharpCodeAttributeValue(CodeRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
-                {
-                    IDisposable linePragmaScope = null;
-                    var isWhitespaceStatement = string.IsNullOrWhiteSpace(token.Content);
-
-                    if (token.Source != null)
-                    {
-                        if (!isWhitespaceStatement)
-                        {
-                            linePragmaScope = context.CodeWriter.BuildLinePragma(token.Source.Value);
-                        }
-
-                        context.CodeWriter.WritePadding(0, token.Source.Value, context);
-                    }
-                    else if (isWhitespaceStatement)
-                    {
-                        // Don't write whitespace if there is no line mapping for it.
-                        continue;
-                    }
-
-                    context.AddSourceMappingFor(token);
-                    context.CodeWriter.Write(token.Content);
-
-                    if (linePragmaScope != null)
-                    {
-                        linePragmaScope.Dispose();
-                    }
-                    else
-                    {
-                        context.CodeWriter.WriteLine();
-                    }
-                }
-                else
-                {
-                    // There may be something else inside the statement like an extension node.
-                    context.RenderNode(node.Children[i]);
-                }
-            }
-        }
-
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
         {
             if (context == null)
@@ -335,6 +296,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public override void BeginWriteAttribute(CodeWriter codeWriter, string key)
         {
+            if (codeWriter == null)
+            {
+                throw new ArgumentNullException(nameof(codeWriter));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             codeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
                 .Write("-1")
@@ -343,7 +314,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 .WriteParameterSeparator();
         }
 
-        public override void WriteComponentOpen(CodeRenderingContext context, ComponentOpenExtensionNode node)
+        public override void WriteComponent(CodeRenderingContext context, ComponentExtensionNode node)
         {
             if (context == null)
             {
@@ -355,34 +326,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // Do nothing
-        }
-
-        public override void WriteComponentClose(CodeRenderingContext context, ComponentCloseExtensionNode node)
-        {
-            if (context == null)
+            foreach (var attribute in node.Attributes)
             {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            // Do nothing
-        }
-
-        public override void WriteComponentBody(CodeRenderingContext context, ComponentBodyExtensionNode node)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
+                context.RenderNode(attribute);
             }
 
             // We need to be aware of the blazor scope-tracking concept in design-time code generation
@@ -391,8 +337,17 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // We're hacking it a bit here by just forcing every component to have an empty lambda
             _scopeStack.OpenScope(node.TagName, isComponent: true);
             _scopeStack.IncrementCurrentScopeChildCount(context);
-            context.RenderChildren(node);
-            _scopeStack.CloseScope(context, node.TagName, isComponent: true, source: node.Source);
+
+            foreach (var child in node.Body)
+            {
+                context.RenderNode(child);
+            }
+            _scopeStack.CloseScope(context);
+
+            foreach (var capture in node.Captures)
+            {
+                context.RenderNode(capture);
+            }
         }
 
         public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node)
@@ -440,7 +395,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 context.CodeWriter.Write(node.BoundAttribute.TypeName);
                 context.CodeWriter.Write("(");
                 context.CodeWriter.WriteLine();
-            
+
                 for (var i = 0; i < tokens.Count; i++)
                 {
                     WriteCSharpToken(context, (IntermediateToken)tokens[i]);

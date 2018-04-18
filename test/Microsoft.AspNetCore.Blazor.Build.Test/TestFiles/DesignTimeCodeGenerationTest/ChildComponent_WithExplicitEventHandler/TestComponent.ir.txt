@@ -23,13 +23,10 @@ Document -
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (65:1,34 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (65:1,34 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                TagHelper - (67:2,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.MyComponent
+                ComponentExtensionNode - (67:2,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
                     ComponentAttributeExtensionNode - (89:2,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - OnClick
                         CSharpExpression - (90:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (90:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
-                    ComponentBodyExtensionNode - 
-                    ComponentCloseExtensionNode - 
                 HtmlContent - (102:2,35 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (102:2,35 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
             CSharpCode - (118:4,12 [100] x:\dir\subdir\Test\TestComponent.cshtml)

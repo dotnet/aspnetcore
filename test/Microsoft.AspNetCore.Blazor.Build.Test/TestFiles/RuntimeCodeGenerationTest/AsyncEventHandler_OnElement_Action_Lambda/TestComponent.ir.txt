@@ -9,12 +9,9 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - 
-                    IntermediateToken -  - Html - <input 
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
-                        IntermediateToken -  - CSharp - "async (e) => await Task.Delay(10)"
-                        IntermediateToken -  - CSharp - )
-                HtmlContent - 
-                    IntermediateToken -  - Html - />
+                HtmlElement - (67:2,0 [53] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (83:2,16 [33] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
+                            IntermediateToken -  - CSharp - "async (e) => await Task.Delay(10)"
+                            IntermediateToken -  - CSharp - )

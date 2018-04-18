@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using AngleSharp;
-using AngleSharp.Html;
-using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
@@ -20,24 +18,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     internal class BlazorRuntimeNodeWriter : BlazorNodeWriter
     {
-        // Per the HTML spec, the following elements are inherently self-closing
-        // For example, <img> is the same as <img /> (and therefore it cannot contain descendants)
-        private readonly static HashSet<string> htmlVoidElementsLookup
-            = new HashSet<string>(
-                new[] { "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr" },
-                StringComparer.OrdinalIgnoreCase);
-
+        private readonly List<IntermediateToken> _currentAttributeValues = new List<IntermediateToken>();
         private readonly ScopeStack _scopeStack = new ScopeStack();
-        private string _unconsumedHtml;
-        private List<IntermediateToken> _currentAttributeValues;
-        private IDictionary<string, PendingAttribute> _currentElementAttributes = new Dictionary<string, PendingAttribute>();
-        private List<RefExtensionNode> _currentElementRefCaptures = new List<RefExtensionNode>();
         private int _sourceSequence = 0;
-
-        private struct PendingAttribute
-        {
-            public List<IntermediateToken> Values { get; set; }
-        }
 
         public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
         {
@@ -102,34 +85,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
-        public override void WriteCSharpCodeAttributeValue(CodeRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
-        {
-            if (_currentAttributeValues == null)
-            {
-                throw new InvalidOperationException($"Invoked {nameof(WriteCSharpCodeAttributeValue)} while {nameof(_currentAttributeValues)} was null.");
-            }
-
-            // We used to support syntaxes like <elem onsomeevent=@{ /* some C# code */ } /> but this is no longer the 
-            // case.
-            //
-            // We provide an error for this case just to be friendly.
-            var content = string.Join("", node.Children.OfType<IntermediateToken>().Select(t => t.Content));
-            context.Diagnostics.Add(BlazorDiagnosticFactory.Create_CodeBlockInAttribute(node.Source, content));
-            return;
-        }
-
         public override void WriteCSharpExpression(CodeRenderingContext context, CSharpExpressionIntermediateNode node)
         {
-            // We used to support syntaxes like <elem @completeAttributePair /> but this is no longer the case.
-            // The APIs that a user would need to do this correctly aren't accessible outside of Blazor's core
-            // anyway.
-            // 
-            // We provide an error for this case just to be friendly.
-            if (_unconsumedHtml != null)
+            if (context == null)
             {
-                var content = string.Join("", node.Children.OfType<IntermediateToken>().Select(t => t.Content));
-                context.Diagnostics.Add(BlazorDiagnosticFactory.Create_ExpressionInAttributeList(node.Source, content));
-                return;
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
             }
 
             // Since we're not in the middle of writing an element, this must evaluate as some
@@ -153,15 +118,19 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
             }
 
-            context.CodeWriter
-                .WriteEndMethodInvocation();
+            context.CodeWriter.WriteEndMethodInvocation();
         }
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
-            if (_currentAttributeValues == null)
+            if (context == null)
             {
-                throw new InvalidOperationException($"Invoked {nameof(WriteCSharpCodeAttributeValue)} while {nameof(_currentAttributeValues)} was null.");
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
             }
 
             // In cases like "somestring @variable", Razor tokenizes it as:
@@ -179,22 +148,80 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
+        public override void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            context.CodeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
+                .Write((_sourceSequence++).ToString())
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.TagName)
+                .WriteEndMethodInvocation();
+
+            // Render Attributes before creating the scope.
+            foreach (var attribute in node.Attributes)
+            {
+                context.RenderNode(attribute);
+            }
+
+            foreach (var capture in node.Captures)
+            {
+                context.RenderNode(capture);
+            }
+
+            _scopeStack.OpenScope(tagName: node.TagName, isComponent: false);
+
+            // Render body of the tag inside the scope
+            foreach (var child in node.Body)
+            {
+                context.RenderNode(child);
+            }
+
+            _scopeStack.CloseScope(context);
+
+            context.CodeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{BlazorApi.RenderTreeBuilder.CloseElement}")
+                .WriteEndMethodInvocation();
+        }
+
         public override void WriteHtmlAttribute(CodeRenderingContext context, HtmlAttributeIntermediateNode node)
         {
-            _currentAttributeValues = new List<IntermediateToken>();
-            context.RenderChildren(node);
-            _currentElementAttributes[node.AttributeName] = new PendingAttribute
+            if (context == null)
             {
-                Values = _currentAttributeValues,
-            };
-            _currentAttributeValues = null;
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            Debug.Assert(_currentAttributeValues.Count == 0);
+            context.RenderChildren(node);
+
+            WriteAttribute(context.CodeWriter, node.AttributeName, _currentAttributeValues);
+            _currentAttributeValues.Clear();
         }
 
         public override void WriteHtmlAttributeValue(CodeRenderingContext context, HtmlAttributeValueIntermediateNode node)
         {
-            if (_currentAttributeValues == null)
+            if (context == null)
             {
-                throw new InvalidOperationException($"Invoked {nameof(WriteHtmlAttributeValue)} while {nameof(_currentAttributeValues)} was null.");
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
             }
 
             var stringContent = ((IntermediateToken)node.Children.Single()).Content;
@@ -203,179 +230,43 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
         {
-            var originalHtmlContent = GetContent(node);
-            if (_unconsumedHtml != null)
+            if (context == null)
             {
-                originalHtmlContent = _unconsumedHtml + originalHtmlContent;
-                _unconsumedHtml = null;
+                throw new ArgumentNullException(nameof(context));
             }
 
-            var tokenizer = new HtmlTokenizer(
-                new TextSource(originalHtmlContent),
-                HtmlEntityService.Resolver);
-            var codeWriter = context.CodeWriter;
-
-            // TODO: As an optimization, identify static subtrees (i.e., HTML elements in the Razor source
-            // that contain no C#) and represent them as a new RenderTreeFrameType called StaticElement or
-            // similar. This means you can have arbitrarily deep static subtrees without paying any per-
-            // node cost during rendering or diffing.
-            HtmlToken nextToken;
-            while ((nextToken = tokenizer.Get()).Type != HtmlTokenType.EndOfFile)
+            if (node == null)
             {
-                switch (nextToken.Type)
-                {
-                    case HtmlTokenType.Character:
-                        {
-                            // Text node
-                            _scopeStack.IncrementCurrentScopeChildCount(context);
-                            codeWriter
-                                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
-                                .Write((_sourceSequence++).ToString())
-                                .WriteParameterSeparator()
-                                .WriteStringLiteral(nextToken.Data)
-                                .WriteEndMethodInvocation();
-                            break;
-                        }
-
-                    case HtmlTokenType.StartTag:
-                    case HtmlTokenType.EndTag:
-                        {
-                            var nextTag = nextToken.AsTag();
-                            var tagNameOriginalCase = GetTagNameWithOriginalCase(originalHtmlContent, nextTag);
-
-                            if (nextToken.Type == HtmlTokenType.StartTag)
-                            {
-                                RejectDisallowedHtmlTags(node, nextTag);
-
-                                _scopeStack.IncrementCurrentScopeChildCount(context);
-
-                                codeWriter
-                                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
-                                    .Write((_sourceSequence++).ToString())
-                                    .WriteParameterSeparator()
-                                    .WriteStringLiteral(nextTag.Data)
-                                    .WriteEndMethodInvocation();
- 
-                                foreach (var attribute in nextTag.Attributes)
-                                {
-                                    var token = new IntermediateToken() { Kind = TokenKind.Html, Content = attribute.Value };
-                                    WriteAttribute(codeWriter, attribute.Key, new[] { token });
-                                }
-
-                                if (_currentElementAttributes.Count > 0)
-                                {
-                                    foreach (var pair in _currentElementAttributes)
-                                    {
-                                        WriteAttribute(codeWriter, pair.Key, pair.Value.Values);
-                                    }
-                                    _currentElementAttributes.Clear();
-                                }
-
-                                if (_currentElementRefCaptures.Count > 0)
-                                {
-                                    foreach (var refNode in _currentElementRefCaptures)
-                                    {
-                                        WriteAddReferenceCaptureCall(context, refNode);
-                                    }
-                                    _currentElementRefCaptures.Clear();
-                                }
-
-                                _scopeStack.OpenScope( tagName: nextTag.Data, isComponent: false);
-                            }
-
-                            if (nextToken.Type == HtmlTokenType.EndTag
-                                || nextTag.IsSelfClosing
-                                || htmlVoidElementsLookup.Contains(nextTag.Data))
-                            {
-                                _scopeStack.CloseScope(
-                                    context: context,
-                                    tagName: nextTag.Data,
-                                    isComponent: false,
-                                    source: CalculateSourcePosition(node.Source, nextToken.Position));
-                                codeWriter
-                                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{BlazorApi.RenderTreeBuilder.CloseElement}")
-                                    .WriteEndMethodInvocation();
-                            }
-                            break;
-                        }
-
-                    case HtmlTokenType.Comment:
-                        break;
-
-                    default:
-                        throw new InvalidCastException($"Unsupported token type: {nextToken.Type.ToString()}");
-                }
+                throw new ArgumentNullException(nameof(node));
             }
 
-            // If we got an EOF in the middle of an HTML element, it's probably because we're
-            // about to receive some attribute name/value pairs. Store the unused HTML content
-            // so we can prepend it to the part that comes after the attributes to make
-            // complete valid markup.
-            if (originalHtmlContent.Length > nextToken.Position.Position)
-            {
-                _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
-            }
-        }
-
-        private void WriteAddReferenceCaptureCall(CodeRenderingContext context, RefExtensionNode refNode)
-        {
-            var codeWriter = context.CodeWriter;
-
-            var methodName = refNode.IsComponentCapture
-                ? nameof(BlazorApi.RenderTreeBuilder.AddComponentReferenceCapture)
-                : nameof(BlazorApi.RenderTreeBuilder.AddElementReferenceCapture);
-            codeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{methodName}")
+            // Text node
+            var content = GetHtmlContent(node);
+            _scopeStack.IncrementCurrentScopeChildCount(context);
+            context.CodeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
-                .WriteParameterSeparator();
-
-            const string refCaptureParamName = "__value";
-            using (var lambdaScope = codeWriter.BuildLambda(refCaptureParamName))
-            {
-                var typecastIfNeeded = refNode.IsComponentCapture ? $"({refNode.ComponentCaptureTypeName})" : string.Empty;
-                WriteCSharpCode(context, new CSharpCodeIntermediateNode
-                {
-                    Source = refNode.Source,
-                    Children =
-                    {
-                        refNode.IdentifierToken,
-                        new IntermediateToken {
-                            Kind = TokenKind.CSharp,
-                            Content = $" = {typecastIfNeeded}{refCaptureParamName};"
-                        }
-                    }
-                });
-            }
-
-            codeWriter.WriteEndMethodInvocation();
-        }
-
-        private void RejectDisallowedHtmlTags(IntermediateNode node, HtmlTagToken tagToken)
-        {
-            // Disallow <script> in components as per #552
-            // Case-sensitive comparison is fine because AngleSharp always lowercases tag names
-            if (tagToken.Name.Equals("script", StringComparison.Ordinal))
-            {
-                const string suppressErrorAttributeName = "suppress-error";
-                if (string.Equals(tagToken.GetAttribute(suppressErrorAttributeName), "BL9992", StringComparison.Ordinal))
-                {
-                    tagToken.Attributes.RemoveAll(kvp => kvp.Key.Equals(suppressErrorAttributeName, StringComparison.Ordinal));
-                }
-                else
-                {
-                    var adjustedSpan = CalculateSourcePosition(node.Source, tagToken.Position);
-                    var diagnostic = BlazorDiagnosticFactory.Create_DisallowedScriptTag(adjustedSpan);
-                    throw new RazorCompilerException(diagnostic);
-                }
-            }
+                .WriteParameterSeparator()
+                .WriteStringLiteral(content)
+                .WriteEndMethodInvocation();
         }
 
         public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
             context.CodeWriter.WriteUsing(node.Content, endLine: true);
         }
 
-        public override void WriteComponentOpen(CodeRenderingContext context, ComponentOpenExtensionNode node)
+        public override void WriteComponent(CodeRenderingContext context, ComponentExtensionNode node)
         {
             if (context == null)
             {
@@ -400,18 +291,22 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             context.CodeWriter.Write((_sourceSequence++).ToString());
             context.CodeWriter.Write(");");
             context.CodeWriter.WriteLine();
-        }
 
-        public override void WriteComponentClose(CodeRenderingContext context, ComponentCloseExtensionNode node)
-        {
-            if (context == null)
+            foreach (var attribute in node.Attributes)
             {
-                throw new ArgumentNullException(nameof(context));
+                context.RenderNode(attribute);
             }
 
-            if (node == null)
+            _scopeStack.OpenScope(node.TagName, isComponent: true);
+            foreach (var child in node.Body)
             {
-                throw new ArgumentNullException(nameof(node));
+                context.RenderNode(child);
+            }
+            _scopeStack.CloseScope(context);
+
+            foreach (var capture in node.Captures)
+            {
+                context.RenderNode(capture);
             }
 
             // The close tag counts as a child from a markup point of view.
@@ -423,23 +318,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.CloseComponent);
             context.CodeWriter.Write("();");
             context.CodeWriter.WriteLine();
-        }
-
-        public override void WriteComponentBody(CodeRenderingContext context, ComponentBodyExtensionNode node)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            _scopeStack.OpenScope(node.TagName, isComponent: true);
-            context.RenderChildren(node);
-            _scopeStack.CloseScope(context, node.TagName, isComponent: true, source: node.Source);
         }
 
         public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node)
@@ -523,57 +401,42 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 throw new InvalidOperationException("Unexpected node type " + node.Children[0].GetType().FullName);
             }
-            
+
             context.CodeWriter.Write(");");
             context.CodeWriter.WriteLine();
         }
 
         public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node)
         {
-            if (node.IsComponentCapture)
-            {
-                // AddComponentReferenceCapture calls can be inserted directly because they are
-                // already in the desired place in the IR
-                WriteAddReferenceCaptureCall(context, node);
-            }
-            else
-            {
-                // AddElementReferenceCapture calls must appear in the RenderTree as children of the element
-                // being captured, so store the RefCapture until we're ready to write its children.
-                // We could instead modify RefLoweringPass to insert the RefExtensionNode at the right
-                // place, but this is harder because it would involve understanding which HtmlContent
-                // node represents the end of the tag. It's simpler to do it here because here we are
-                // already doing HTML parsing to understand the structure.
-                _currentElementRefCaptures.Add(node);
-            }
-        }
+            var codeWriter = context.CodeWriter;
 
-        private SourceSpan? CalculateSourcePosition(
-            SourceSpan? razorTokenPosition,
-            TextPosition htmlNodePosition)
-        {
-            if (razorTokenPosition.HasValue)
-            {
-                var razorPos = razorTokenPosition.Value;
-                return new SourceSpan(
-                    razorPos.FilePath,
-                    razorPos.AbsoluteIndex + htmlNodePosition.Position,
-                    razorPos.LineIndex + htmlNodePosition.Line - 1,
-                    htmlNodePosition.Line == 1
-                        ? razorPos.CharacterIndex + htmlNodePosition.Column - 1
-                        : htmlNodePosition.Column - 1,
-                    length: 1);
-            }
-            else
-            {
-                return null;
-            }
-        }
+            var methodName = node.IsComponentCapture
+                ? nameof(BlazorApi.RenderTreeBuilder.AddComponentReferenceCapture)
+                : nameof(BlazorApi.RenderTreeBuilder.AddElementReferenceCapture);
+            codeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{methodName}")
+                .Write((_sourceSequence++).ToString())
+                .WriteParameterSeparator();
 
-        private static string GetTagNameWithOriginalCase(string document, HtmlTagToken tagToken)
-        {
-            var offset = tagToken.Type == HtmlTokenType.EndTag ? 1 : 0; // For end tags, skip the '/'
-            return document.Substring(tagToken.Position.Position + offset, tagToken.Name.Length);
+            const string refCaptureParamName = "__value";
+            using (var lambdaScope = codeWriter.BuildLambda(refCaptureParamName))
+            {
+                var typecastIfNeeded = node.IsComponentCapture ? $"({node.ComponentCaptureTypeName})" : string.Empty;
+                WriteCSharpCode(context, new CSharpCodeIntermediateNode
+                {
+                    Source = node.Source,
+                    Children =
+                    {
+                        node.IdentifierToken,
+                        new IntermediateToken {
+                            Kind = TokenKind.CSharp,
+                            Content = $" = {typecastIfNeeded}{refCaptureParamName};"
+                        }
+                    }
+                });
+            }
+
+            codeWriter.WriteEndMethodInvocation();
         }
 
         private void WriteAttribute(CodeWriter codeWriter, string key, IList<IntermediateToken> value)
@@ -602,7 +465,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 .WriteParameterSeparator();
         }
 
-        private static string GetContent(HtmlContentIntermediateNode node)
+        private static string GetHtmlContent(HtmlContentIntermediateNode node)
         {
             var builder = new StringBuilder();
             var htmlTokens = node.Children.OfType<IntermediateToken>().Where(t => t.IsHtml);
@@ -696,6 +559,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             else if (hasHtml)
             {
                 writer.WriteStringLiteral(string.Join("", tokens.Select(t => t.Content)));
+            }
+            else
+            {
+                // Minimized attributes always map to 'true'
+                writer.Write("true");
             }
         }
     }

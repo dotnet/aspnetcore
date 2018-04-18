@@ -8,17 +8,14 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - 
-                    IntermediateToken -  - Html - <div 
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
-                        IntermediateToken - (43:1,12 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
-                        IntermediateToken -  - CSharp - )
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue)
-                HtmlContent - 
-                    IntermediateToken -  - Html - />
+                HtmlElement - (31:1,0 [27] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    HtmlAttribute - (42:1,11 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
+                            IntermediateToken - (43:1,12 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            IntermediateToken -  - CSharp - )
+                    HtmlAttribute - (42:1,11 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue)
             CSharpCode - (72:2,12 [55] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (72:2,12 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n

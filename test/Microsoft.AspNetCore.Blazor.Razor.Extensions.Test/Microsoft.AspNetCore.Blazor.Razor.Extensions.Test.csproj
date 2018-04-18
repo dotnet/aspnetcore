@@ -10,6 +10,7 @@
       used to compile this assembly.
     -->
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

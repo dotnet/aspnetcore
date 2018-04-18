@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class ComponentLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
-        // Run after our *special* tag helpers get lowered.
-        public override int Order => 1000;
+        // This pass runs earlier than our other passes that 'lower' specific kinds of attributes.
+        public override int Order => 0;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
@@ -24,111 +24,264 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // For each component *usage* we need to rewrite the tag helper node to map to the relevant component
             // APIs.
-            var nodes = documentNode.FindDescendantNodes<TagHelperIntermediateNode>();
-            for (var i = 0; i < nodes.Count; i++)
+            var references = documentNode.FindDescendantReferences<TagHelperIntermediateNode>();
+            for (var i = 0; i < references.Count; i++)
             {
+                var reference = references[i];
+                var node = (TagHelperIntermediateNode)reference.Node;
+
                 var count = 0;
-                var node = nodes[i];
                 for (var j = 0; j < node.TagHelpers.Count; j++)
                 {
                     if (node.TagHelpers[j].IsComponentTagHelper())
                     {
-                        // Only allow a single component tag helper per element. We also have some *special* tag helpers
-                        // and they should have already been processed by now.
+                        // Only allow a single component tag helper per element. If there are multiple, we'll just consider
+                        // the first one and ignore the others.
                         if (count++ > 1)
                         {
                             node.Diagnostics.Add(BlazorDiagnosticFactory.Create_MultipleComponents(node.Source, node.TagName, node.TagHelpers));
                             break;
                         }
-
-                        RewriteUsage(node, node.TagHelpers[j]);
                     }
+                }
+
+                if (count >= 1)
+                {
+                    reference.Replace(RewriteAsComponent(node, node.TagHelpers.First(t => t.IsComponentTagHelper())));
+                }
+                else
+                {
+                    reference.Replace(RewriteAsElement(node));
                 }
             }
         }
 
-        private void RewriteUsage(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
+        private ComponentExtensionNode RewriteAsComponent(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
         {
-            // We need to surround the contents of the node with open and close nodes to ensure the component
-            // is scoped correctly.
-            node.Children.Insert(0, new ComponentOpenExtensionNode()
+            var result = new ComponentExtensionNode()
             {
-                TypeName = tagHelper.GetTypeName(),
-            });
+                Component = tagHelper,
+                Source = node.Source,
+                TagName = node.TagName,
+            };
 
-            for (var i = node.Children.Count - 1; i >= 0; i--)
+            for (var i = 0; i < node.Diagnostics.Count; i++)
             {
-                if (node.Children[i] is TagHelperBodyIntermediateNode bodyNode)
+                result.Diagnostics.Add(node.Diagnostics[i]);
+            }
+
+            var visitor = new ComponentRewriteVisitor(result.Children);
+            visitor.Visit(node);
+
+            return result;
+        }
+
+        private HtmlElementIntermediateNode RewriteAsElement(TagHelperIntermediateNode node)
+        {
+            var result = new HtmlElementIntermediateNode()
+            {
+                Source = node.Source,
+                TagName = node.TagName,
+            };
+
+            for (var i = 0; i < node.Diagnostics.Count; i++)
+            {
+                result.Diagnostics.Add(node.Diagnostics[i]);
+            }
+
+            var visitor = new ElementRewriteVisitor(result.Children);
+            visitor.Visit(node);
+
+            return result;
+        }
+
+        private class ComponentRewriteVisitor : IntermediateNodeWalker
+        {
+            private readonly IntermediateNodeCollection _children;
+
+            public ComponentRewriteVisitor(IntermediateNodeCollection children)
+            {
+                _children = children;
+            }
+
+            public override void VisitTagHelper(TagHelperIntermediateNode node)
+            {
+                // Visit children, we're replacing this node.
+                for (var i = 0; i < node.Children.Count; i++)
                 {
-                    // Replace with a node that we recognize so that it we can do proper scope tracking.
-                    //
-                    // Note that we force the body node to be last, this is done to push it after the
-                    // attribute nodes. This gives us the ordering we want for the render tree.
-                    node.Children.RemoveAt(i);
-                    node.Children.Add(new ComponentBodyExtensionNode(bodyNode)
-                    {
-                        TagMode = node.TagMode,
-                        TagName = node.TagName,
-                    });
+                    Visit(node.Children[i]);
                 }
             }
 
-            node.Children.Add(new ComponentCloseExtensionNode());
-
-            // Now we need to rewrite any set property or HTML nodes to call the appropriate AddAttribute api.
-            for (var i = node.Children.Count - 1; i >= 0; i--)
+            public override void VisitTagHelperBody(TagHelperBodyIntermediateNode node)
             {
-                if (node.Children[i] is TagHelperPropertyIntermediateNode propertyNode &&
-                    propertyNode.TagHelper == tagHelper)
+                for (var i = 0; i < node.Children.Count; i++)
                 {
-                    node.Children[i] = new ComponentAttributeExtensionNode(propertyNode);
+                    _children.Add(node.Children[i]);
                 }
-                else if (node.Children[i] is TagHelperHtmlAttributeIntermediateNode htmlNode)
-                {
-                    // For any nodes that don't map to a component property we won't have type information
-                    // but these should follow the same path through the runtime.
-                    var attributeNode = new ComponentAttributeExtensionNode(htmlNode);
-                    node.Children[i] = attributeNode;
+            }
 
-                    // Since we don't support complex content, we can rewrite the inside of this
-                    // node to the rather simpler form that property nodes usually have.
-                    for (var j = 0; j < attributeNode.Children.Count; j++)
+            public override void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
+            {
+                var attribute = new ComponentAttributeExtensionNode(node);
+                _children.Add(attribute);
+
+                // Since we don't support complex content, we can rewrite the inside of this
+                // node to the rather simpler form that property nodes usually have.
+                for (var i = 0; i < attribute.Children.Count; i++)
+                {
+                    if (attribute.Children[i] is HtmlAttributeValueIntermediateNode htmlValue)
                     {
-                        if (attributeNode.Children[j] is HtmlAttributeValueIntermediateNode htmlValue)
+                        attribute.Children[i] = new HtmlContentIntermediateNode()
                         {
-                            attributeNode.Children[j] = new HtmlContentIntermediateNode()
+                            Children =
                             {
-                                Children =
-                                {
-                                    htmlValue.Children.Single(),
-                                },
-                                Source = htmlValue.Source,
-                            };
-                        }
-                        else if (attributeNode.Children[j] is CSharpExpressionAttributeValueIntermediateNode expressionValue)
+                                htmlValue.Children.Single(),
+                            },
+                            Source = htmlValue.Source,
+                        };
+                    }
+                    else if (attribute.Children[i] is CSharpExpressionAttributeValueIntermediateNode expressionValue)
+                    {
+                        attribute.Children[i] = new CSharpExpressionIntermediateNode()
                         {
-                            attributeNode.Children[j] = new CSharpExpressionIntermediateNode()
+                            Children =
                             {
-                                Children =
-                                {
-                                    expressionValue.Children.Single(),
-                                },
-                                Source = expressionValue.Source,
-                            };
-                        }
-                        else if (attributeNode.Children[j] is CSharpCodeAttributeValueIntermediateNode codeValue)
+                                expressionValue.Children.Single(),
+                            },
+                            Source = expressionValue.Source,
+                        };
+                    }
+                    else if (attribute.Children[i] is CSharpCodeAttributeValueIntermediateNode codeValue)
+                    {
+                        attribute.Children[i] = new CSharpExpressionIntermediateNode()
                         {
-                            attributeNode.Children[j] = new CSharpExpressionIntermediateNode()
+                            Children =
                             {
-                                Children =
-                                {
-                                    codeValue.Children.Single(),
-                                },
-                                Source = codeValue.Source,
-                            };
-                        }
+                                codeValue.Children.Single(),
+                            },
+                            Source = codeValue.Source,
+                        };
                     }
                 }
+            }
+
+            public override void VisitTagHelperProperty(TagHelperPropertyIntermediateNode node)
+            {
+                // Each 'tag helper property' belongs to a specific tag helper. We want to handle
+                // the cases for components, but leave others alone. This allows our other passes
+                // to handle those cases.
+                _children.Add(node.TagHelper.IsComponentTagHelper() ? (IntermediateNode)new ComponentAttributeExtensionNode(node) : node);
+            }
+
+            public override void VisitDefault(IntermediateNode node)
+            {
+                _children.Add(node);
+            }
+        }
+
+        private class ElementRewriteVisitor : IntermediateNodeWalker
+        {
+            private readonly IntermediateNodeCollection _children;
+
+            public ElementRewriteVisitor(IntermediateNodeCollection children)
+            {
+                _children = children;
+            }
+
+            public override void VisitTagHelper(TagHelperIntermediateNode node)
+            {
+                // Visit children, we're replacing this node.
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    Visit(node.Children[i]);
+                }
+            }
+
+            public override void VisitTagHelperBody(TagHelperBodyIntermediateNode node)
+            {
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    _children.Add(node.Children[i]);
+                }
+            }
+
+            public override void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
+            {
+                var attribute = new HtmlAttributeIntermediateNode()
+                {
+                    AttributeName = node.AttributeName,
+                    Source = node.Source,
+                };
+                _children.Add(attribute);
+
+                for (var i = 0; i < node.Diagnostics.Count; i++)
+                {
+                    attribute.Diagnostics.Add(node.Diagnostics[i]);
+                }
+
+                switch (node.AttributeStructure)
+                {
+                    case AttributeStructure.Minimized:
+
+                        attribute.Prefix = node.AttributeName;
+                        attribute.Suffix = string.Empty;
+                        break;
+
+                    case AttributeStructure.NoQuotes:
+                    case AttributeStructure.SingleQuotes:
+                    case AttributeStructure.DoubleQuotes:
+
+                        // We're ignoring attribute structure here for simplicity, it doesn't effect us.
+                        attribute.Prefix = node.AttributeName + "=\"";
+                        attribute.Suffix = "\"";
+
+                        for (var i = 0; i < node.Children.Count; i++)
+                        {
+                            attribute.Children.Add(RewriteAttributeContent(node.Children[i]));
+                        }
+
+                        break;
+                }
+
+                IntermediateNode RewriteAttributeContent(IntermediateNode content)
+                {
+                    if (content is HtmlContentIntermediateNode html)
+                    {
+                        var value = new HtmlAttributeValueIntermediateNode()
+                        {
+                            Source = content.Source,
+                        };
+
+                        for (var i = 0; i < html.Children.Count; i++)
+                        {
+                            value.Children.Add(html.Children[i]);
+                        }
+
+                        for (var i = 0; i < html.Diagnostics.Count; i++)
+                        {
+                            value.Diagnostics.Add(html.Diagnostics[i]);
+                        }
+
+                        return value;
+                    }
+
+
+                    return content;
+                }
+            }
+
+            public override void VisitTagHelperProperty(TagHelperPropertyIntermediateNode node)
+            {
+                // Each 'tag helper property' belongs to a specific tag helper. We want to handle
+                // the cases for components, but leave others alone. This allows our other passes
+                // to handle those cases.
+                _children.Add(node.TagHelper.IsComponentTagHelper() ? (IntermediateNode)new ComponentAttributeExtensionNode(node) : node);
+            }
+
+            public override void VisitDefault(IntermediateNode node)
+            {
+                _children.Add(node);
             }
         }
     }

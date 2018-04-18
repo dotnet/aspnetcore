@@ -20,17 +20,14 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                TagHelper - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.MyComponent
+                ComponentExtensionNode - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
                     ComponentAttributeExtensionNode -  - ParamBefore - 
                         HtmlContent - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                    RefExtensionNode - (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
                     ComponentAttributeExtensionNode -  - ParamAfter - 
                         HtmlContent - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-                    ComponentBodyExtensionNode - 
-                    RefExtensionNode - (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
-                    ComponentCloseExtensionNode - 
                 HtmlContent - (103:1,72 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (103:1,72 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 HtmlContent - (253:7,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)

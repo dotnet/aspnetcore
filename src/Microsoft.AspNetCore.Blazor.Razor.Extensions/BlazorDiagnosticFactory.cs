@@ -30,23 +30,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return diagnostic;
         }
 
-        public static readonly RazorDiagnosticDescriptor ExpressionInAttributeList =
-            new RazorDiagnosticDescriptor(
+        public static readonly RazorDiagnosticDescriptor UnclosedTag = new RazorDiagnosticDescriptor(
             "BL9980",
-            () =>
-                "Expressions like '{0}' inside of a tag must be part of an attribute. " +
-                "Previous releases of Blazor supported constructs like '@onclick(...)' or '@bind(...)'." +
-                "These features have been changed to use attribute syntax. " +
-                "Use 'onclick=\"@...\"' or 'bind=\"...\" respectively.",
+            () => "Unclosed tag '{0}' with no matching end tag.",
             RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic Create_ExpressionInAttributeList(SourceSpan? source, string expression)
+        public static RazorDiagnostic Create_UnclosedTag(SourceSpan? span, string tagName)
         {
-            var diagnostic = RazorDiagnostic.Create(
-                ExpressionInAttributeList,
-                source ?? SourceSpan.Undefined,
-                expression);
-            return diagnostic;
+            return RazorDiagnostic.Create(UnclosedTag, span ?? SourceSpan.Undefined, tagName);
         }
 
         public static readonly RazorDiagnosticDescriptor UnexpectedClosingTag = new RazorDiagnosticDescriptor(
@@ -69,14 +60,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return RazorDiagnostic.Create(MismatchedClosingTag, span ?? SourceSpan.Undefined, expectedTagName, tagName);
         }
 
-        public static readonly RazorDiagnosticDescriptor MismatchedClosingTagKind = new RazorDiagnosticDescriptor(
+        public static readonly RazorDiagnosticDescriptor InvalidHtmlContent = new RazorDiagnosticDescriptor(
             "BL9984",
-            () => "Mismatching closing tag. Found '{0}' of type '{1}' but expected type '{2}'.",
+            () => "Found invalid HTML content. Text '{0}'",
             RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic Create_MismatchedClosingTagKind(SourceSpan? span, string tagName, string kind, string expectedKind)
+        public static RazorDiagnostic Create_InvalidHtmlContent(SourceSpan? span, string text)
         {
-            return RazorDiagnostic.Create(MismatchedClosingTagKind, span ?? SourceSpan.Undefined, tagName, kind, expectedKind);
+            return RazorDiagnostic.Create(InvalidHtmlContent, span ?? SourceSpan.Undefined, text);
         }
 
         public static readonly RazorDiagnosticDescriptor MultipleComponents = new RazorDiagnosticDescriptor(
@@ -132,7 +123,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             () => "The attribute '{0}' was matched by multiple bind attributes. Duplicates:{1}",
             RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic CreateBindAttribute_Duplicates(SourceSpan? source, string attribute, ComponentAttributeExtensionNode[] attributes)
+        public static RazorDiagnostic CreateBindAttribute_Duplicates(SourceSpan? source, string attribute, TagHelperPropertyIntermediateNode[] attributes)
         {
             var diagnostic = RazorDiagnostic.Create(
                 BindAttribute_Duplicates,
@@ -148,7 +139,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             () => "The attribute '{0}' was matched by multiple event handlers attributes. Duplicates:{1}",
             RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic CreateEventHandler_Duplicates(SourceSpan? source, string attribute, ComponentAttributeExtensionNode[] attributes)
+        public static RazorDiagnostic CreateEventHandler_Duplicates(SourceSpan? source, string attribute, TagHelperPropertyIntermediateNode[] attributes)
         {
             var diagnostic = RazorDiagnostic.Create(
                 EventHandler_Duplicates,

@@ -20,24 +20,20 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - 
-                    IntermediateToken -  - Html - <input 
-                HtmlContent - 
-                    IntermediateToken -  - Html - type="
-                    IntermediateToken - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
-                    IntermediateToken -  - Html - " 
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
-                        IntermediateToken - (72:1,41 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
-                        IntermediateToken -  - CSharp - , 
-                        IntermediateToken -  - CSharp - "MM/dd"
-                        IntermediateToken -  - CSharp - )
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, "MM/dd")
-                HtmlContent - 
-                    IntermediateToken -  - Html - />
+                HtmlElement - (31:1,0 [77] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute -  - type=" - "
+                        HtmlAttributeValue - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
+                    HtmlAttribute - (71:1,40 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
+                            IntermediateToken - (72:1,41 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
+                            IntermediateToken -  - CSharp - , 
+                            IntermediateToken -  - CSharp - "MM/dd"
+                            IntermediateToken -  - CSharp - )
+                    HtmlAttribute - (71:1,40 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, "MM/dd")
                 HtmlContent - (108:1,77 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (108:1,77 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (122:2,12 [77] x:\dir\subdir\Test\TestComponent.cshtml)

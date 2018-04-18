@@ -8,10 +8,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                TagHelper - (31:1,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.MyComponent
+                ComponentExtensionNode - (31:1,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
                     ComponentAttributeExtensionNode - (60:1,29 [16] x:\dir\subdir\Test\TestComponent.cshtml) - StringProperty - StringProperty
                         CSharpExpression - (62:1,31 [13] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (62:1,31 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 42.ToString()
-                    ComponentBodyExtensionNode - 
-                    ComponentCloseExtensionNode - 

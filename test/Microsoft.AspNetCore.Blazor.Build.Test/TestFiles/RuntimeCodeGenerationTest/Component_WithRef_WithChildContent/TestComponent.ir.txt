@@ -8,19 +8,17 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                TagHelper - (31:1,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - TagMode.StartTagAndEndTag
-                    ComponentOpenExtensionNode -  - Test.MyComponent
+                ComponentExtensionNode - (31:1,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                    HtmlContent - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
+                    HtmlElement - (87:2,9 [16] x:\dir\subdir\Test\TestComponent.cshtml) - el
+                        HtmlContent - (91:2,13 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (91:2,13 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - further
+                    HtmlContent - (103:2,25 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (103:2,25 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  content\n
+                    RefExtensionNode - (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
                     ComponentAttributeExtensionNode -  - SomeProp - 
                         HtmlContent - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
-                    ComponentBodyExtensionNode - 
-                        HtmlContent - (76:1,45 [37] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
-                            IntermediateToken - (87:2,9 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <el>
-                            IntermediateToken - (91:2,13 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - further
-                            IntermediateToken - (98:2,20 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - </el>
-                            IntermediateToken - (103:2,25 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  content\n
-                    RefExtensionNode - (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
-                    ComponentCloseExtensionNode - 
             CSharpCode - (143:5,12 [44] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (143:5,12 [44] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n

@@ -26,31 +26,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             _stack.Push(new ScopeEntry(tagName, isComponent));
         }
 
-        public void CloseScope(CodeRenderingContext context, string tagName, bool isComponent, SourceSpan? source)
+        public void CloseScope(CodeRenderingContext context)
         {
-            if (_stack.Count == 0)
-            {
-                var diagnostic = BlazorDiagnosticFactory.Create_UnexpectedClosingTag(source ?? SourceSpan.Undefined, tagName);
-                throw new RazorCompilerException(diagnostic);
-            }
-
             var currentScope = _stack.Pop();
-            if (!tagName.Equals(currentScope.TagName, StringComparison.Ordinal))
-            {
-                var diagnostic = BlazorDiagnosticFactory.Create_MismatchedClosingTag(source, currentScope.TagName, tagName);
-                throw new RazorCompilerException(diagnostic);
-            }
-
-            // Note: there's no unit test to cover the following, because there's no known way of
-            // triggering it from user code (i.e., Razor source code). But the check is here anyway
-            // just in case one day it turns out there is some way of causing this error.
-            if (isComponent != currentScope.IsComponent)
-            {
-                var kind = isComponent ? "component" : "element";
-                var expectedKind = currentScope.IsComponent ? "component" : "element";
-                var diagnostic = BlazorDiagnosticFactory.Create_MismatchedClosingTagKind(source, tagName, kind, expectedKind);
-                throw new RazorCompilerException(diagnostic);
-            }
 
             // When closing the scope for a component with children, it's time to close the lambda
             if (currentScope.LambdaScope != null)

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     internal class BindLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         // Run after event handler pass
-        public override int Order => base.Order + 50;
+        public override int Order => 100;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
@@ -24,28 +25,45 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             // For each bind *usage* we need to rewrite the tag helper node to map to basic constructs.
-            var nodes = documentNode.FindDescendantNodes<TagHelperIntermediateNode>();
-            for (var i = 0; i < nodes.Count; i++)
+            var references = documentNode.FindDescendantReferences<TagHelperPropertyIntermediateNode>();
+
+            var parents = new HashSet<IntermediateNode>();
+            for (var i = 0; i < references.Count; i++)
             {
-                var node = nodes[i];
+                parents.Add(references[i].Parent);
+            }
 
-                ProcessDuplicates(node);
+            foreach (var parent in parents)
+            {
+                ProcessDuplicates(parent);
+            }
 
-                for (var j = node.Children.Count - 1; j >= 0; j--)
+            for (var i = 0; i < references.Count; i++)
+            {
+                var reference = references[i];
+                var node = (TagHelperPropertyIntermediateNode)reference.Node;
+
+                if (!reference.Parent.Children.Contains(node))
                 {
-                    var attributeNode = node.Children[j] as ComponentAttributeExtensionNode;
-                    if (attributeNode != null &&
-                        attributeNode.TagHelper != null &&
-                        attributeNode.TagHelper.IsBindTagHelper() &&
-                        attributeNode.AttributeName.StartsWith("bind"))
+                    // This node was removed as a duplicate, skip it.
+                    continue;
+                }
+
+                if (node.TagHelper.IsBindTagHelper() && node.AttributeName.StartsWith("bind"))
+                {
+                    // Workaround for https://github.com/aspnet/Blazor/issues/703
+                    var rewritten = RewriteUsage(reference.Parent, node);
+                    reference.Remove();
+
+                    for (var j = 0; j < rewritten.Length; j++)
                     {
-                        RewriteUsage(node, j, attributeNode);
+                        reference.Parent.Children.Add(rewritten[j]);
                     }
                 }
             }
         }
 
-        private void ProcessDuplicates(TagHelperIntermediateNode node)
+        private void ProcessDuplicates(IntermediateNode node)
         {
             // Reverse order because we will remove nodes.
             //
@@ -56,24 +74,23 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 // For each usage of the general 'fallback' bind tag helper, it could duplicate
                 // the usage of a more specific one. Look for duplicates and remove the fallback.
-                var attributeNode = node.Children[i] as ComponentAttributeExtensionNode;
-                if (attributeNode != null &&
-                    attributeNode.TagHelper != null &&
-                    attributeNode.TagHelper.IsFallbackBindTagHelper())
+                var attribute = node.Children[i] as TagHelperPropertyIntermediateNode;
+                if (attribute != null &&
+                    attribute.TagHelper != null &&
+                    attribute.TagHelper.IsFallbackBindTagHelper())
                 {
                     for (var j = 0; j < node.Children.Count; j++)
                     {
-                        var duplicate = node.Children[j] as ComponentAttributeExtensionNode;
+                        var duplicate = node.Children[j] as TagHelperPropertyIntermediateNode;
                         if (duplicate != null &&
                             duplicate.TagHelper != null &&
                             duplicate.TagHelper.IsBindTagHelper() &&
-                            duplicate.AttributeName == attributeNode.AttributeName &&
-                            !object.ReferenceEquals(attributeNode, duplicate))
+                            duplicate.AttributeName == attribute.AttributeName &&
+                            !object.ReferenceEquals(attribute, duplicate))
                         {
                             // Found a duplicate - remove the 'fallback' in favor of the
                             // more specific tag helper.
                             node.Children.RemoveAt(i);
-                            node.TagHelpers.Remove(attributeNode.TagHelper);
                             break;
                         }
                     }
@@ -82,23 +99,22 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // Also treat the general <input bind="..." /> as a 'fallback' for that case and remove it.
                 // This is a workaround for a limitation where you can't write a tag helper that binds only
                 // when a specific attribute is **not** present.
-                if (attributeNode != null &&
-                    attributeNode.TagHelper != null &&
-                    attributeNode.TagHelper.IsInputElementFallbackBindTagHelper())
+                if (attribute != null &&
+                    attribute.TagHelper != null &&
+                    attribute.TagHelper.IsInputElementFallbackBindTagHelper())
                 {
                     for (var j = 0; j < node.Children.Count; j++)
                     {
-                        var duplicate = node.Children[j] as ComponentAttributeExtensionNode;
+                        var duplicate = node.Children[j] as TagHelperPropertyIntermediateNode;
                         if (duplicate != null &&
                             duplicate.TagHelper != null &&
                             duplicate.TagHelper.IsInputElementBindTagHelper() &&
-                            duplicate.AttributeName == attributeNode.AttributeName &&
-                            !object.ReferenceEquals(attributeNode, duplicate))
+                            duplicate.AttributeName == attribute.AttributeName &&
+                            !object.ReferenceEquals(attribute, duplicate))
                         {
                             // Found a duplicate - remove the 'fallback' input tag helper in favor of the
                             // more specific tag helper.
                             node.Children.RemoveAt(i);
-                            node.TagHelpers.Remove(attributeNode.TagHelper);
                             break;
                         }
                     }
@@ -107,7 +123,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // If we still have duplicates at this point then they are genuine conflicts.
             var duplicates = node.Children
-                .OfType<ComponentAttributeExtensionNode>()
+                .OfType<TagHelperPropertyIntermediateNode>()
                 .GroupBy(p => p.AttributeName)
                 .Where(g => g.Count() > 1);
 
@@ -124,7 +140,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
-        private void RewriteUsage(TagHelperIntermediateNode node, int index, ComponentAttributeExtensionNode attributeNode)
+        private IntermediateNode[] RewriteUsage(IntermediateNode parent, TagHelperPropertyIntermediateNode node)
         {
             // Bind works similarly to a macro, it always expands to code that the user could have written.
             //
@@ -146,8 +162,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // multiple passes handle 'special' tag helpers. We have another pass that translates
             // a tag helper node back into 'regular' element when it doesn't have an associated component
             if (!TryComputeAttributeNames(
+                parent,
                 node,
-                attributeNode.AttributeName,
+                node.AttributeName,
                 out var valueAttributeName,
                 out var changeAttributeName,
                 out var valueAttribute,
@@ -156,82 +173,59 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // Skip anything we can't understand. It's important that we don't crash, that will bring down
                 // the build.
                 node.Diagnostics.Add(BlazorDiagnosticFactory.CreateBindAttribute_InvalidSyntax(
-                    attributeNode.Source, 
-                    attributeNode.AttributeName));
-                return;
+                    node.Source, 
+                    node.AttributeName));
+                return new[] { node };
             }
 
-            var original = GetAttributeContent(attributeNode);
+            var original = GetAttributeContent(node);
             if (string.IsNullOrEmpty(original.Content))
             {
                 // This can happen in error cases, the parser will already have flagged this
                 // as an error, so ignore it.
-                return;
+                return new[] { node };
             }
 
             // Look for a matching format node. If we find one then we need to pass the format into the
             // two nodes we generate.
             IntermediateToken format = null;
-            if (TryGetFormatNode(node,
-                attributeNode,
+            if (TryGetFormatNode(
+                parent,
+                node,
                 valueAttributeName,
                 out var formatNode))
             {
                 // Don't write the format out as its own attribute, just capture it as a string
                 // or expression.
-                node.Children.Remove(formatNode);
+                parent.Children.Remove(formatNode);
                 format = GetAttributeContent(formatNode);
             }
-
-            var valueAttributeNode = new ComponentAttributeExtensionNode(attributeNode)
-            {
-                AttributeName = valueAttributeName,
-                BoundAttribute = valueAttribute, // Might be null if it doesn't match a component attribute
-                PropertyName = valueAttribute?.GetPropertyName(),
-                TagHelper = valueAttribute == null ? null : attributeNode.TagHelper,
-            };
-            node.Children.Insert(index, valueAttributeNode);
 
             // Now rewrite the content of the value node to look like:
             //
             // BindMethods.GetValue(<code>) OR
             // BindMethods.GetValue(<code>, <format>)
-            valueAttributeNode.Children.Clear();
-
-            var expression = new CSharpExpressionIntermediateNode();
-            valueAttributeNode.Children.Add(expression);
-
-            expression.Children.Add(new IntermediateToken()
+            var valueExpressionTokens = new List<IntermediateToken>();
+            valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = $"{BlazorApi.BindMethods.GetValue}(",
                 Kind = TokenKind.CSharp
             });
-            expression.Children.Add(original);
-
+            valueExpressionTokens.Add(original);
             if (!string.IsNullOrEmpty(format?.Content))
             {
-                expression.Children.Add(new IntermediateToken()
+                valueExpressionTokens.Add(new IntermediateToken()
                 {
                     Content = ", ",
                     Kind = TokenKind.CSharp,
                 });
-                expression.Children.Add(format);
+                valueExpressionTokens.Add(format);
             }
-
-            expression.Children.Add(new IntermediateToken()
+            valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = ")",
                 Kind = TokenKind.CSharp,
             });
-
-            var changeAttributeNode = new ComponentAttributeExtensionNode(attributeNode)
-            {
-                AttributeName = changeAttributeName,
-                BoundAttribute = changeAttribute, // Might be null if it doesn't match a component attribute
-                PropertyName = changeAttribute?.GetPropertyName(),
-                TagHelper = changeAttribute == null ? null : attributeNode.TagHelper,
-            };
-            node.Children[index + 1] = changeAttributeNode;
 
             // Now rewrite the content of the change-handler node. There are two cases we care about
             // here. If it's a component attribute, then don't use the 'BindMethods wrapper. We expect
@@ -246,32 +240,102 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // BindMethods.SetValueHandler(__value => <code> = __value, <code>, <format>)
             //
             // Note that the linemappings here are applied to the value attribute, not the change attribute.
-            string changeAttributeContent = null;
-            if (changeAttributeNode.BoundAttribute == null && format == null)
+            
+            string changeExpressionContent = null;
+            if (changeAttribute == null && format == null)
             {
-                changeAttributeContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content})";
+                changeExpressionContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content})";
             }
-            else if (changeAttributeNode.BoundAttribute == null && format != null)
+            else if (changeAttribute == null && format != null)
             {
-                changeAttributeContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content}, {format.Content})";
+                changeExpressionContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content}, {format.Content})";
             }
             else
             {
-                changeAttributeContent = $"__value => {original.Content} = __value";
+                changeExpressionContent = $"__value => {original.Content} = __value";
             }
-
-            changeAttributeNode.Children.Clear();
-            changeAttributeNode.Children.Add(new CSharpExpressionIntermediateNode()
+            var changeExpressionTokens = new List<IntermediateToken>()
             {
-                Children =
+                new IntermediateToken()
                 {
-                    new IntermediateToken()
-                    {
-                        Content = changeAttributeContent,
-                        Kind = TokenKind.CSharp
-                    },
-                },
-            });
+                    Content = changeExpressionContent,
+                    Kind = TokenKind.CSharp
+                }
+            };
+
+            if (parent is HtmlElementIntermediateNode)
+            {
+                var valueNode = new HtmlAttributeIntermediateNode()
+                {
+                    AttributeName = valueAttributeName,
+                    Source = node.Source,
+
+                    Prefix = valueAttributeName + "=\"",
+                    Suffix = "\"",
+                };
+
+                for (var i = 0; i < node.Diagnostics.Count; i++)
+                {
+                    valueNode.Diagnostics.Add(node.Diagnostics[i]);
+                }
+
+                valueNode.Children.Add(new CSharpExpressionAttributeValueIntermediateNode());
+                for (var i = 0; i < valueExpressionTokens.Count; i++)
+                {
+                    valueNode.Children[0].Children.Add(valueExpressionTokens[i]);
+                }
+
+                var changeNode = new HtmlAttributeIntermediateNode()
+                {
+                    AttributeName = changeAttributeName,
+                    Source = node.Source,
+
+                    Prefix = changeAttributeName + "=\"",
+                    Suffix = "\"",
+                };
+
+                changeNode.Children.Add(new CSharpExpressionAttributeValueIntermediateNode());
+                for (var i = 0; i < changeExpressionTokens.Count; i++)
+                {
+                    changeNode.Children[0].Children.Add(changeExpressionTokens[i]);
+                }
+
+                return  new[] { valueNode, changeNode };
+            }
+            else
+            {
+                var valueNode = new ComponentAttributeExtensionNode(node)
+                {
+                    AttributeName = valueAttributeName,
+                    BoundAttribute = valueAttribute, // Might be null if it doesn't match a component attribute
+                    PropertyName = valueAttribute?.GetPropertyName(),
+                    TagHelper = valueAttribute == null ? null : node.TagHelper,
+                };
+
+                valueNode.Children.Clear();
+                valueNode.Children.Add(new CSharpExpressionIntermediateNode());
+                for (var i = 0; i < valueExpressionTokens.Count; i++)
+                {
+                    valueNode.Children[0].Children.Add(valueExpressionTokens[i]);
+                }
+
+                var changeNode = new ComponentAttributeExtensionNode(node)
+                {
+                    AttributeName = changeAttributeName,
+                    BoundAttribute = changeAttribute, // Might be null if it doesn't match a component attribute
+                    PropertyName = changeAttribute?.GetPropertyName(),
+                    TagHelper = changeAttribute == null ? null : node.TagHelper,
+                };
+
+                changeNode.Children.Clear();
+                changeNode.Children.Add(new CSharpExpressionIntermediateNode());
+                for (var i = 0; i < changeExpressionTokens.Count; i++)
+                {
+                    changeNode.Children[0].Children.Add(changeExpressionTokens[i]);
+                }
+
+                return new[] { valueNode, changeNode };
+            }
         }
 
         private bool TryParseBindAttribute(
@@ -319,7 +383,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         // Attempts to compute the attribute names that should be used for an instance of 'bind'.
         private bool TryComputeAttributeNames(
-            TagHelperIntermediateNode node,
+            IntermediateNode parent,
+            TagHelperPropertyIntermediateNode node,
             string attributeName,
             out string valueAttributeName,
             out string changeAttributeName,
@@ -342,12 +407,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // generated to match a specific tag and has metadata that identify the attributes.
             //
             // We expect 1 bind tag helper per-node.
-            var bindTagHelper = node.TagHelpers.Single(t => t.IsBindTagHelper());
-            valueAttributeName = bindTagHelper.GetValueAttributeName() ?? valueAttributeName;
-            changeAttributeName = bindTagHelper.GetChangeAttributeName() ?? changeAttributeName;
+            valueAttributeName = node.TagHelper.GetValueAttributeName() ?? valueAttributeName;
+            changeAttributeName = node.TagHelper.GetChangeAttributeName() ?? changeAttributeName;
 
             // We expect 0-1 components per-node.
-            var componentTagHelper = node.TagHelpers.FirstOrDefault(t => t.IsComponentTagHelper());
+            var componentTagHelper = (parent as ComponentExtensionNode)?.Component;
             if (componentTagHelper == null)
             {
                 // If it's not a component node then there isn't too much else to figure out.
@@ -386,14 +450,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         }
 
         private bool TryGetFormatNode(
-            TagHelperIntermediateNode node,
-            ComponentAttributeExtensionNode attributeNode,
+            IntermediateNode node,
+            TagHelperPropertyIntermediateNode attributeNode,
             string valueAttributeName,
-            out ComponentAttributeExtensionNode formatNode)
+            out TagHelperPropertyIntermediateNode formatNode)
         {
             for (var i = 0; i < node.Children.Count; i++)
             {
-                var child = node.Children[i] as ComponentAttributeExtensionNode;
+                var child = node.Children[i] as TagHelperPropertyIntermediateNode;
                 if (child != null &&
                     child.TagHelper != null &&
                     child.TagHelper == attributeNode.TagHelper &&
@@ -408,7 +472,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             return false;
         }
 
-        private static IntermediateToken GetAttributeContent(ComponentAttributeExtensionNode node)
+        private static IntermediateToken GetAttributeContent(TagHelperPropertyIntermediateNode node)
         {
             if (node.Children[0] is HtmlContentIntermediateNode htmlContentNode)
             {

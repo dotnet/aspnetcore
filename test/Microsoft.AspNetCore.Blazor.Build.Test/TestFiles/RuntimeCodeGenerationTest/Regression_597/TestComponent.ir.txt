@@ -8,8 +8,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                TagHelper - (31:1,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - Counter - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.Counter
+                ComponentExtensionNode - (31:1,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - Counter - Test.Counter
                     ComponentAttributeExtensionNode - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - 
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
@@ -18,7 +17,5 @@ Document -
                     ComponentAttributeExtensionNode - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - 
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => y = __value, y)
-                    ComponentBodyExtensionNode - 
-                    ComponentCloseExtensionNode - 
             CSharpCode - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n

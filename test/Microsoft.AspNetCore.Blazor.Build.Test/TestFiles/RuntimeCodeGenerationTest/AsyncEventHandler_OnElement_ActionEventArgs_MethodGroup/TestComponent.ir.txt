@@ -9,14 +9,11 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - 
-                    IntermediateToken -  - Html - <input 
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
-                        IntermediateToken - (84:2,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
-                        IntermediateToken -  - CSharp - )
-                HtmlContent - 
-                    IntermediateToken -  - Html - />
+                HtmlElement - (67:2,0 [28] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (83:2,16 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
+                            IntermediateToken - (84:2,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
+                            IntermediateToken -  - CSharp - )
             CSharpCode - (109:3,12 [91] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (109:3,12 [91] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Task OnClick(UIMouseEventArgs e) \n    {\n        return Task.CompletedTask;\n    }\n

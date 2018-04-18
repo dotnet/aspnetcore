@@ -8,22 +8,15 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - 
-                    IntermediateToken -  - Html - <elem 
-                HtmlContent - 
-                    IntermediateToken -  - Html - attributebefore="
-                    IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
-                    IntermediateToken -  - Html - " 
-                HtmlContent - 
-                    IntermediateToken -  - Html - attributeafter="
-                    IntermediateToken - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-                    IntermediateToken -  - Html - " 
-                RefExtensionNode - (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem - Element
-                HtmlContent - 
-                    IntermediateToken -  - Html - >
-                HtmlContent - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
-                HtmlContent - 
-                    IntermediateToken -  - Html - </elem>
+                HtmlElement - (0:0,0 [79] x:\dir\subdir\Test\TestComponent.cshtml) - elem
+                    HtmlContent - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                    HtmlAttribute -  - attributebefore=" - "
+                        HtmlAttributeValue - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                    RefExtensionNode - (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem - Element
+                    HtmlAttribute -  - attributeafter=" - "
+                        HtmlAttributeValue - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
             CSharpCode - (95:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (95:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Blazor.ElementRef myElem;\n

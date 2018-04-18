@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
@@ -10,6 +11,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class EventHandlerLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
+        public override int Order => 50;
+
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var @namespace = documentNode.FindPrimaryNamespace();
@@ -21,52 +24,63 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             // For each event handler *usage* we need to rewrite the tag helper node to map to basic constructs.
-            var nodes = documentNode.FindDescendantNodes<TagHelperIntermediateNode>();
-            for (var i = 0; i < nodes.Count; i++)
+            // Each usage will be represented by a tag helper property that is a descendant of either
+            // a component or element.
+            var references = documentNode.FindDescendantReferences<TagHelperPropertyIntermediateNode>();
+
+            var parents = new HashSet<IntermediateNode>();
+            for (var i = 0; i < references.Count; i++)
             {
-                var node = nodes[i];
+                parents.Add(references[i].Parent);
+            }
 
-                ProcessDuplicates(node);
+            foreach (var parent in parents)
+            {
+                ProcessDuplicates(parent);
+            }
 
-                for (var j = node.Children.Count - 1; j >= 0; j--)
+            for (var i = 0; i < references.Count; i++)
+            {
+                var reference = references[i];
+                var node = (TagHelperPropertyIntermediateNode)reference.Node;
+
+                if (!reference.Parent.Children.Contains(node))
                 {
-                    var attributeNode = node.Children[j] as ComponentAttributeExtensionNode;
-                    if (attributeNode != null &&
-                        attributeNode.TagHelper != null &&
-                        attributeNode.TagHelper.IsEventHandlerTagHelper())
-                    {
-                        RewriteUsage(node, j, attributeNode);
-                    }
+                    // This node was removed as a duplicate, skip it.
+                    continue;
+                }
+
+                if (node.TagHelper.IsEventHandlerTagHelper())
+                {
+                    reference.Replace(RewriteUsage(reference.Parent, node));
                 }
             }
         }
 
-        private void ProcessDuplicates(TagHelperIntermediateNode node)
+        private void ProcessDuplicates(IntermediateNode parent)
         {
             // Reverse order because we will remove nodes.
             //
             // Each 'property' node could be duplicated if there are multiple tag helpers that match that
             // particular attribute. This is likely to happen when a component also defines something like
             // OnClick. We want to remove the 'onclick' and let it fall back to be handled by the component.
-            for (var i = node.Children.Count - 1; i >= 0; i--)
+            for (var i = parent.Children.Count - 1; i >= 0; i--)
             {
-                var attributeNode = node.Children[i] as ComponentAttributeExtensionNode;
-                if (attributeNode != null &&
-                    attributeNode.TagHelper != null &&
-                    attributeNode.TagHelper.IsEventHandlerTagHelper())
+                var eventHandler = parent.Children[i] as TagHelperPropertyIntermediateNode;
+                if (eventHandler != null &&
+                    eventHandler.TagHelper != null &&
+                    eventHandler.TagHelper.IsEventHandlerTagHelper())
                 {
-                    for (var j = 0; j < node.Children.Count; j++)
+                    for (var j = 0; j < parent.Children.Count; j++)
                     {
-                        var duplicate = node.Children[j] as ComponentAttributeExtensionNode;
-                        if (duplicate != null &&
-                            duplicate.TagHelper != null &&
-                            duplicate.TagHelper.IsComponentTagHelper() &&
-                            duplicate.AttributeName == attributeNode.AttributeName)
+                        var componentAttribute = parent.Children[j] as ComponentAttributeExtensionNode;
+                        if (componentAttribute != null &&
+                            componentAttribute.TagHelper != null &&
+                            componentAttribute.TagHelper.IsComponentTagHelper() &&
+                            componentAttribute.AttributeName == eventHandler.AttributeName)
                         {
-                            // Found a duplicate - remove the 'fallback' in favor of the
-                            // more specific tag helper.
-                            node.Children.RemoveAt(i);
-                            node.TagHelpers.Remove(attributeNode.TagHelper);
+                            // Found a duplicate - remove the 'fallback' in favor of the component's own handling.
+                            parent.Children.RemoveAt(i);
                             break;
                         }
                     }
@@ -74,37 +88,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             // If we still have duplicates at this point then they are genuine conflicts.
-            var duplicates = node.Children
-                .OfType<ComponentAttributeExtensionNode>()
+            var duplicates = parent.Children
+                .OfType<TagHelperPropertyIntermediateNode>()
                 .Where(p => p.TagHelper?.IsEventHandlerTagHelper() ?? false)
                 .GroupBy(p => p.AttributeName)
                 .Where(g => g.Count() > 1);
 
             foreach (var duplicate in duplicates)
             {
-                node.Diagnostics.Add(BlazorDiagnosticFactory.CreateEventHandler_Duplicates(
-                    node.Source,
+                parent.Diagnostics.Add(BlazorDiagnosticFactory.CreateEventHandler_Duplicates(
+                    parent.Source,
                     duplicate.Key,
                     duplicate.ToArray()));
                 foreach (var property in duplicate)
                 {
-                    node.Children.Remove(property);
+                    parent.Children.Remove(property);
                 }
             }
         }
 
-        private void RewriteUsage(TagHelperIntermediateNode node, int index, ComponentAttributeExtensionNode attributeNode)
+        private IntermediateNode RewriteUsage(IntermediateNode parent, TagHelperPropertyIntermediateNode node)
         {
-            var original = GetAttributeContent(attributeNode);
-            if (string.IsNullOrEmpty(original.Content))
-            {
-                // This can happen in error cases, the parser will already have flagged this
-                // as an error, so ignore it.
-                return;
-            }
-
-            var rewrittenNode = new ComponentAttributeExtensionNode(attributeNode);
-            node.Children[index] = rewrittenNode;
+            var original = GetAttributeContent(node);
 
             // Now rewrite the content of the value node to look like:
             //
@@ -112,29 +117,62 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             //
             // This method is overloaded on string and TDelegate, which means that it will put the code in the
             // correct context for intellisense when typing in the attribute.
-            var eventArgsType = attributeNode.TagHelper.GetEventArgsType();
-
-            rewrittenNode.Children.Clear();
-            rewrittenNode.Children.Add(new CSharpExpressionIntermediateNode()
+            var eventArgsType = node.TagHelper.GetEventArgsType();
+            var tokens = new List<IntermediateToken>()
             {
-                Children =
+                new IntermediateToken()
                 {
-                    new IntermediateToken()
-                    {
-                        Content = $"{BlazorApi.BindMethods.GetEventHandlerValue}<{eventArgsType}>(",
-                        Kind = TokenKind.CSharp
-                    },
-                    original,
-                    new IntermediateToken()
-                    {
-                        Content = $")",
-                        Kind = TokenKind.CSharp
-                    }
+                    Content = $"{BlazorApi.BindMethods.GetEventHandlerValue}<{eventArgsType}>(",
+                    Kind = TokenKind.CSharp
                 },
-            });
+                original,
+                new IntermediateToken()
+                {
+                    Content = $")",
+                    Kind = TokenKind.CSharp
+                }
+            };
+
+            if (parent is HtmlElementIntermediateNode)
+            {
+                var result = new HtmlAttributeIntermediateNode()
+                {
+                    AttributeName = node.AttributeName,
+                    Source = node.Source,
+
+                    Prefix = node.AttributeName + "=\"",
+                    Suffix = "\"",
+                };
+
+                for (var i = 0; i < node.Diagnostics.Count; i++)
+                {
+                    result.Diagnostics.Add(node.Diagnostics[i]);
+                }
+
+                result.Children.Add(new CSharpExpressionAttributeValueIntermediateNode());
+                for (var i = 0; i < tokens.Count; i++)
+                {
+                    result.Children[0].Children.Add(tokens[i]);
+                }
+
+                return result;
+            }
+            else
+            {
+                var result = new ComponentAttributeExtensionNode(node);
+
+                result.Children.Clear();
+                result.Children.Add(new CSharpExpressionIntermediateNode());
+                for (var i = 0; i < tokens.Count; i++)
+                {
+                    result.Children[0].Children.Add(tokens[i]);
+                }
+
+                return result;
+            }
         }
 
-        private static IntermediateToken GetAttributeContent(ComponentAttributeExtensionNode node)
+        private static IntermediateToken GetAttributeContent(TagHelperPropertyIntermediateNode node)
         {
             if (node.Children[0] is HtmlContentIntermediateNode htmlContentNode)
             {

@@ -20,15 +20,12 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (34:0,34 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (34:0,34 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - 
-                    IntermediateToken -  - Html - <input 
-                HtmlAttribute -  - =" - "
-                    CSharpExpressionAttributeValue -  - 
-                        IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
-                        IntermediateToken - (53:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
-                        IntermediateToken -  - CSharp - )
-                HtmlContent - 
-                    IntermediateToken -  - Html - />
+                HtmlElement - (36:1,0 [28] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (52:1,16 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                        CSharpExpressionAttributeValue -  - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
+                            IntermediateToken - (53:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
+                            IntermediateToken -  - CSharp - )
                 HtmlContent - (64:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (64:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (78:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)

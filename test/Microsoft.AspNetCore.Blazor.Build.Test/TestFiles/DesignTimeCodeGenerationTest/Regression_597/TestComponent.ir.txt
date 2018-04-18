@@ -20,8 +20,7 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                TagHelper - (31:1,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - Counter - TagMode.SelfClosing
-                    ComponentOpenExtensionNode -  - Test.Counter
+                ComponentExtensionNode - (31:1,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - Counter - Test.Counter
                     ComponentAttributeExtensionNode - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - 
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
@@ -30,8 +29,6 @@ Document -
                     ComponentAttributeExtensionNode - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - 
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => y = __value, y)
-                    ComponentBodyExtensionNode - 
-                    ComponentCloseExtensionNode - 
                 HtmlContent - (53:1,22 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (53:1,22 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (92:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
