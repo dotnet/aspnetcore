@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 var contentRoot = DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath;
 
-                var testUri = TestUriHelper.BuildTestUri(DeploymentParameters.ApplicationBaseUriHint);
+                var testUri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
 
                 // Launch the host process.
                 var (actualUri, hostExitToken) = await StartIISExpressAsync(testUri, contentRoot);

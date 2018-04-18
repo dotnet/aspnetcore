@@ -29,4 +29,8 @@
     <PackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Hosting.Abstractions\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>

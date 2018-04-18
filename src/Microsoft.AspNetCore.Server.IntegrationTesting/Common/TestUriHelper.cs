@@ -7,22 +7,20 @@ using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
 {
-    public static class TestUriHelper
+    internal static class TestUriHelper
     {
-        public static Uri BuildTestUri()
+        internal static Uri BuildTestUri(ServerType serverType)
         {
-            return BuildTestUri(null);
+            return BuildTestUri(serverType, hint: null);
         }
 
-        public static Uri BuildTestUri(string hint)
+        internal static Uri BuildTestUri(ServerType serverType, string hint)
         {
-            // If this method is called directly, there is no way to know the server type or whether status messages
-            // are enabled.  It's safest to assume the server is WebListener (which doesn't support binding to dynamic
-            // port "0") and status messages are not enabled (so the assigned port cannot be scraped from console output).
-            return BuildTestUri(hint, serverType: ServerType.WebListener, statusMessagesEnabled: false);
+            // Assume status messages are enabled for Kestrel and disabled for all other servers.
+            return BuildTestUri(serverType, hint, statusMessagesEnabled: serverType == ServerType.Kestrel);
         }
 
-        internal static Uri BuildTestUri(string hint, ServerType serverType, bool statusMessagesEnabled)
+        internal static Uri BuildTestUri(ServerType serverType, string hint, bool statusMessagesEnabled)
         {
             if (string.IsNullOrEmpty(hint))
             {
@@ -73,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
         // (with status messages enabled) should directly bind to dynamic port "0" and scrape 
         // the assigned port from the status message, which should be 100% reliable since the port
         // is bound once and never released.
-        public static int GetNextPort()
+        internal static int GetNextPort()
         {
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {

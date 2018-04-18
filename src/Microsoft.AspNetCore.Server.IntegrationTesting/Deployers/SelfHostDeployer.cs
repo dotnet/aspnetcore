@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
 
                 var hintUrl = TestUriHelper.BuildTestUri(
-                    DeploymentParameters.ApplicationBaseUriHint,
                     DeploymentParameters.ServerType,
+                    DeploymentParameters.ApplicationBaseUriHint,
                     DeploymentParameters.StatusMessagesEnabled);
 
                 // Launch the host process.

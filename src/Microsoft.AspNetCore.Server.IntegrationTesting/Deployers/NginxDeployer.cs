@@ -30,10 +30,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 _configFile = Path.GetTempFileName();
                 var uri = string.IsNullOrEmpty(DeploymentParameters.ApplicationBaseUriHint) ?
-                    TestUriHelper.BuildTestUri() :
+                    TestUriHelper.BuildTestUri(ServerType.Nginx) :
                     new Uri(DeploymentParameters.ApplicationBaseUriHint);
 
-                var redirectUri = TestUriHelper.BuildTestUri();
+                var redirectUri = TestUriHelper.BuildTestUri(ServerType.Nginx);
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
