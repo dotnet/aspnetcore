@@ -1295,6 +1295,16 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
             Assert.Equal("From ShortCircuitPageAtPageFilter.cshtml", content);
         }
 
+        [Fact]
+        public async Task ViewDataAvaialableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
+        {
+            // Act
+            var content = await Client.GetStringAsync("http://localhost/Pages/ViewDataAvailableAfterHandlerExecuted");
+
+            // Assert
+            Assert.Equal("ViewData: Bar", content);
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

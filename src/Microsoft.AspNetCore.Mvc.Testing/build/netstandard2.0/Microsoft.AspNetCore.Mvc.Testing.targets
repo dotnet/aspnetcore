@@ -17,7 +17,9 @@
 
     <Target Name="_ResolveMvcTestProjectReferences" DependsOnTargets="ResolveReferences">
       <ItemGroup>
-        <_ContentRootProjectReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference'" />
+        <_ContentRootProjectReferences
+          Include="@(ReferencePath)"
+          Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' and '%(ReferencePath.TargetFrameworkIdentifier)' != '.NETStandard'" />
       </ItemGroup>
     </Target>
 

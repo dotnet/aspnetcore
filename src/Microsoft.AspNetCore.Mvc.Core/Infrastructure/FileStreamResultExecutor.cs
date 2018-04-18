@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         /// <inheritdoc />
-        public virtual Task ExecuteAsync(ActionContext context, FileStreamResult result)
+        public virtual async Task ExecuteAsync(ActionContext context, FileStreamResult result)
         {
             if (context == null)
             {
@@ -29,31 +29,38 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(result));
             }
 
-            Logger.ExecutingFileResult(result);
-
-            long? fileLength = null;
-            if (result.FileStream.CanSeek)
+            using (result.FileStream)
             {
-                fileLength = result.FileStream.Length;
+                Logger.ExecutingFileResult(result);
+
+                long? fileLength = null;
+                if (result.FileStream.CanSeek)
+                {
+                    fileLength = result.FileStream.Length;
+                }
+
+                var (range, rangeLength, serveBody) = SetHeadersAndLog(
+                    context,
+                    result,
+                    fileLength,
+                    result.EnableRangeProcessing,
+                    result.LastModified,
+                    result.EntityTag);
+
+                if (!serveBody)
+                {
+                    return;
+                }
+
+                await WriteFileAsync(context, result, range, rangeLength);
             }
-
-            var (range, rangeLength, serveBody) = SetHeadersAndLog(
-                context,
-                result,
-                fileLength,
-                result.EnableRangeProcessing,
-                result.LastModified,
-                result.EntityTag);
-
-            if (!serveBody)
-            {
-                return Task.CompletedTask;
-            }
-
-            return WriteFileAsync(context, result, range, rangeLength);
         }
 
-        protected virtual Task WriteFileAsync(ActionContext context, FileStreamResult result, RangeItemHeaderValue range, long rangeLength)
+        protected virtual Task WriteFileAsync(
+            ActionContext context,
+            FileStreamResult result,
+            RangeItemHeaderValue range,
+            long rangeLength)
         {
             if (context == null)
             {
