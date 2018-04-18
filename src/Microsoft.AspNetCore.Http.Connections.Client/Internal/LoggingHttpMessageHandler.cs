@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             private static readonly Action<ILogger, HttpMethod, Uri, Exception> _sendingHttpRequest =
                 LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Trace, new EventId(1, "SendingHttpRequest"), "Sending HTTP request {RequestMethod} '{RequestUrl}'.");
 
-            private static readonly Action<ILogger, HttpStatusCode, HttpMethod, Uri, Exception> _unsuccessfulHttpResponse =
-                LoggerMessage.Define<HttpStatusCode, HttpMethod, Uri>(LogLevel.Warning, new EventId(2, "UnsuccessfulHttpResponse"), "Unsuccessful HTTP response status code of {StatusCode} return from {RequestMethod} '{RequestUrl}'.");
+            private static readonly Action<ILogger, int, HttpMethod, Uri, Exception> _unsuccessfulHttpResponse =
+                LoggerMessage.Define<int, HttpMethod, Uri>(LogLevel.Warning, new EventId(2, "UnsuccessfulHttpResponse"), "Unsuccessful HTTP response {StatusCode} return from {RequestMethod} '{RequestUrl}'.");
 
             public static void SendingHttpRequest(ILogger logger, HttpMethod requestMethod, Uri requestUrl)
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
             public static void UnsuccessfulHttpResponse(ILogger logger, HttpStatusCode statusCode, HttpMethod requestMethod, Uri requestUrl)
             {
-                _unsuccessfulHttpResponse(logger, statusCode, requestMethod, requestUrl, null);
+                _unsuccessfulHttpResponse(logger, (int)statusCode, requestMethod, requestUrl, null);
             }
         }
     }

@@ -182,6 +182,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                     }
                 }
             }
+            catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+            {
+                // Client has closed the WebSocket connection without completing the close handshake
+                Log.ClosedPrematurely(_logger, ex);
+            }
             catch (OperationCanceledException)
             {
                 // Ignore aborts, don't treat them like transport errors
