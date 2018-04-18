@@ -164,13 +164,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public Task<string> SendInvocationAsync(string methodName, bool nonBlocking, params object[] args)
         {
             var invocationId = nonBlocking ? null : GetInvocationId();
-            return SendHubMessageAsync(new InvocationMessage(invocationId, methodName, null, args));
+            return SendHubMessageAsync(new InvocationMessage(invocationId, methodName, args));
         }
 
         public Task<string> SendStreamInvocationAsync(string methodName, params object[] args)
         {
             var invocationId = GetInvocationId();
-            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, null, args));
+            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args));
         }
 
         public async Task<string> SendHubMessageAsync(HubMessage message)

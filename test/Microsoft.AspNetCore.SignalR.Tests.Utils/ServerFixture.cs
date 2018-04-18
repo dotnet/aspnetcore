@@ -18,7 +18,18 @@ using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class ServerFixture<TStartup> : IDisposable
+    public abstract class ServerFixture : IDisposable
+    {
+        internal abstract event Action<LogRecord> ServerLogged;
+
+        public abstract string WebSocketsUrl { get; }
+
+        public abstract string Url { get; }
+
+        public abstract void Dispose();
+    }
+
+    public class ServerFixture<TStartup> : ServerFixture
         where TStartup : class
     {
         private readonly ILoggerFactory _loggerFactory;
@@ -28,10 +39,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly IDisposable _logToken;
 
         private readonly LogSinkProvider _logSinkProvider;
+        private string _url;
 
-        public string WebSocketsUrl => Url.Replace("http", "ws");
+        internal override event Action<LogRecord> ServerLogged
+        {
+            add => _logSinkProvider.RecordLogged += value;
+            remove => _logSinkProvider.RecordLogged -= value;
+        }
 
-        public string Url { get; private set; }
+        public override string WebSocketsUrl => Url.Replace("http", "ws");
+
+        public override string Url => _url;
 
         public ServerFixture() : this(loggerFactory: null)
         {
@@ -64,7 +82,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             _host = new WebHostBuilder()
                 .ConfigureLogging(builder => builder
-                    .SetMinimumLevel(LogLevel.Debug)
+                    .SetMinimumLevel(LogLevel.Trace)
                     .AddProvider(_logSinkProvider)
                     .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))
@@ -92,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _logger.LogInformation("Test Server started");
 
             // Get the URL from the server
-            Url = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Single();
+            _url = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Single();
 
             _lifetime.ApplicationStopped.Register(() =>
             {
@@ -119,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return builder.ToString();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _logger.LogInformation("Shutting down test server");
             _host.Dispose();
@@ -151,6 +169,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
 
+        public event Action<LogRecord> RecordLogged;
+
         public ILogger CreateLogger(string categoryName)
         {
             return new LogSinkLogger(categoryName, this);
@@ -176,6 +196,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Formatter = (o, e) => formatter((TState)o, e),
                 });
             _logs.Enqueue(record);
+
+            RecordLogged?.Invoke(record);
         }
 
         private class LogSinkLogger : ILogger

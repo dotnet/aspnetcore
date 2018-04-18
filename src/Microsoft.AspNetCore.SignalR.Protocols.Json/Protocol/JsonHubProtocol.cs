@@ -237,6 +237,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                         {
                             if (argumentsToken != null)
                             {
+                                // We weren't able to bind the arguments because they came before the 'target', so try to bind now that we've read everything.
                                 try
                                 {
                                     var paramTypes = binder.GetParameterTypes(target);
@@ -248,13 +249,16 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 }
                             }
 
-                            message = BindInvocationMessage(invocationId, target, argumentBindingException, arguments, hasArguments, binder);
+                            message = argumentBindingException != null
+                                ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
+                                : BindInvocationMessage(invocationId, target, arguments, hasArguments, binder);
                         }
                         break;
                     case HubProtocolConstants.StreamInvocationMessageType:
                         {
                             if (argumentsToken != null)
                             {
+                                // We weren't able to bind the arguments because they came before the 'target', so try to bind now that we've read everything.
                                 try
                                 {
                                     var paramTypes = binder.GetParameterTypes(target);
@@ -266,7 +270,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 }
                             }
 
-                            message = BindStreamInvocationMessage(invocationId, target, argumentBindingException, arguments, hasArguments, binder);
+                            message = argumentBindingException != null
+                                ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
+                                : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, binder);
                         }
                         break;
                     case HubProtocolConstants.StreamItemMessageType:
@@ -539,7 +545,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new StreamItemMessage(invocationId, item);
         }
 
-        private HubMessage BindStreamInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments, bool hasArguments, IInvocationBinder binder)
+        private HubMessage BindStreamInvocationMessage(string invocationId, string target, object[] arguments, bool hasArguments, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
@@ -556,10 +562,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 throw new InvalidDataException($"Missing required property '{TargetPropertyName}'.");
             }
 
-            return new StreamInvocationMessage(invocationId, target, argumentBindingException, arguments);
+            return new StreamInvocationMessage(invocationId, target, arguments);
         }
 
-        private HubMessage BindInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments, bool hasArguments, IInvocationBinder binder)
+        private HubMessage BindInvocationMessage(string invocationId, string target, object[] arguments, bool hasArguments, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(target))
             {
@@ -571,7 +577,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 throw new InvalidDataException($"Missing required property '{ArgumentsPropertyName}'.");
             }
 
-            return new InvocationMessage(invocationId, target, argumentBindingException, arguments);
+            return new InvocationMessage(invocationId, target, arguments);
         }
 
         private object[] BindArguments(JsonTextReader reader, IReadOnlyList<Type> paramTypes)

@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var connection = _connections[connectionId];
             if (connection != null)
             {
-                return connection.WriteAsync(new InvocationMessage(methodName, null, args)).AsTask();
+                return connection.WriteAsync(new InvocationMessage(methodName, args)).AsTask();
             }
 
             var message = _protocol.WriteInvocation(methodName, args);

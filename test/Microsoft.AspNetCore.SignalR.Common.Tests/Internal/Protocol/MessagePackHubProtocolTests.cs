@@ -57,39 +57,39 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             // Invocation messages
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersAndNoArgs",
-                message: new InvocationMessage("xyz", "method", null, Array.Empty<object>()),
+                message: new InvocationMessage("xyz", "method", Array.Empty<object>()),
                 binary: "lQGAo3h5eqZtZXRob2SQ"),
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdAndNoArgs",
-                message: new InvocationMessage("method", null, Array.Empty<object>()),
+                message: new InvocationMessage("method", Array.Empty<object>()),
                 binary: "lQGAwKZtZXRob2SQ"),
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdAndSingleNullArg",
-                message: new InvocationMessage("method", null, new object[] { null }),
+                message: new InvocationMessage("method", new object[] { null }),
                 binary: "lQGAwKZtZXRob2SRwA=="),
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdAndSingleIntArg",
-                message: new InvocationMessage("method", null, new object[] { 42 }),
+                message: new InvocationMessage("method", new object[] { 42 }),
                 binary: "lQGAwKZtZXRob2SRKg=="),
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdIntAndStringArgs",
-                message: new InvocationMessage("method", null, new object[] { 42, "string" }),
+                message: new InvocationMessage("method", new object[] { 42, "string" }),
                 binary: "lQGAwKZtZXRob2SSKqZzdHJpbmc="),
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdIntAndEnumArgs",
-                message: new InvocationMessage("method", null, new object[] { 42, TestEnum.One }),
+                message: new InvocationMessage("method", new object[] { 42, TestEnum.One }),
                 binary: "lQGAwKZtZXRob2SSKqNPbmU="),
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdAndCustomObjectArg",
-                message: new InvocationMessage("method", null, new object[] { 42, "string", new CustomObject() }),
+                message: new InvocationMessage("method", new object[] { 42, "string", new CustomObject() }),
                 binary: "lQGAwKZtZXRob2STKqZzdHJpbmeGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgM="),
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdAndArrayOfCustomObjectArgs",
-                message: new InvocationMessage("method", null, new object[] { new CustomObject(), new CustomObject() }),
+                message: new InvocationMessage("method", new object[] { new CustomObject(), new CustomObject() }),
                 binary: "lQGAwKZtZXRob2SShqpTdHJpbmdQcm9wqFNpZ25hbFIhqkRvdWJsZVByb3DLQBkh+1RCzxKnSW50UHJvcCqsRGF0ZVRpbWVQcm9w1v9Y7ByAqE51bGxQcm9wwKtCeXRlQXJyUHJvcMQDAQIDhqpTdHJpbmdQcm9wqFNpZ25hbFIhqkRvdWJsZVByb3DLQBkh+1RCzxKnSW50UHJvcCqsRGF0ZVRpbWVQcm9w1v9Y7ByAqE51bGxQcm9wwKtCeXRlQXJyUHJvcMQDAQID"),
             new ProtocolTestData(
                 name: "InvocationWithHeadersNoIdAndArrayOfCustomObjectArgs",
-                message: AddHeaders(TestHeaders, new InvocationMessage("method", null, new object[] { new CustomObject(), new CustomObject() })),
+                message: AddHeaders(TestHeaders, new InvocationMessage("method", new object[] { new CustomObject(), new CustomObject() })),
                 binary: "lQGDo0Zvb6NCYXKyS2V5V2l0aApOZXcNCkxpbmVzq1N0aWxsIFdvcmtzsVZhbHVlV2l0aE5ld0xpbmVzsEFsc28KV29ya3MNCkZpbmXApm1ldGhvZJKGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgOGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgM="),
 
             // StreamItem Messages
@@ -187,35 +187,35 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             // StreamInvocation Messages
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndNoArgs",
-                message: new StreamInvocationMessage("xyz", "method", null, Array.Empty<object>()),
+                message: new StreamInvocationMessage("xyz", "method", Array.Empty<object>()),
                 binary: "lQSAo3h5eqZtZXRob2SQ"),
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndNullArg",
-                message: new StreamInvocationMessage("xyz", "method", null, new object[] { null }),
+                message: new StreamInvocationMessage("xyz", "method", new object[] { null }),
                 binary: "lQSAo3h5eqZtZXRob2SRwA=="),
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndIntArg",
-                message: new StreamInvocationMessage("xyz", "method", null, new object[] { 42 }),
+                message: new StreamInvocationMessage("xyz", "method", new object[] { 42 }),
                 binary: "lQSAo3h5eqZtZXRob2SRKg=="),
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndEnumArg",
-                message: new StreamInvocationMessage("xyz", "method", null, new object[] { TestEnum.One }),
+                message: new StreamInvocationMessage("xyz", "method", new object[] { TestEnum.One }),
                 binary: "lQSAo3h5eqZtZXRob2SRo09uZQ=="),
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndIntAndStringArgs",
-                message: new StreamInvocationMessage("xyz", "method", null, new object[] { 42, "string" }),
+                message: new StreamInvocationMessage("xyz", "method", new object[] { 42, "string" }),
                 binary: "lQSAo3h5eqZtZXRob2SSKqZzdHJpbmc="),
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndIntStringAndCustomObjectArgs",
-                message: new StreamInvocationMessage("xyz", "method", null, new object[] { 42, "string", new CustomObject() }),
+                message: new StreamInvocationMessage("xyz", "method", new object[] { 42, "string", new CustomObject() }),
                 binary: "lQSAo3h5eqZtZXRob2STKqZzdHJpbmeGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgM="),
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndCustomObjectArrayArg",
-                message: new StreamInvocationMessage("xyz", "method", null, new object[] { new CustomObject(), new CustomObject() }),
+                message: new StreamInvocationMessage("xyz", "method", new object[] { new CustomObject(), new CustomObject() }),
                 binary: "lQSAo3h5eqZtZXRob2SShqpTdHJpbmdQcm9wqFNpZ25hbFIhqkRvdWJsZVByb3DLQBkh+1RCzxKnSW50UHJvcCqsRGF0ZVRpbWVQcm9w1v9Y7ByAqE51bGxQcm9wwKtCeXRlQXJyUHJvcMQDAQIDhqpTdHJpbmdQcm9wqFNpZ25hbFIhqkRvdWJsZVByb3DLQBkh+1RCzxKnSW50UHJvcCqsRGF0ZVRpbWVQcm9w1v9Y7ByAqE51bGxQcm9wwKtCeXRlQXJyUHJvcMQDAQID"),
             new ProtocolTestData(
                 name: "StreamInvocationWithHeadersAndCustomObjectArrayArg",
-                message: AddHeaders(TestHeaders, new StreamInvocationMessage("xyz", "method", null, new object[] { new CustomObject(), new CustomObject() })),
+                message: AddHeaders(TestHeaders, new StreamInvocationMessage("xyz", "method", new object[] { new CustomObject(), new CustomObject() })),
                 binary: "lQSDo0Zvb6NCYXKyS2V5V2l0aApOZXcNCkxpbmVzq1N0aWxsIFdvcmtzsVZhbHVlV2l0aE5ld0xpbmVzsEFsc28KV29ya3MNCkZpbmWjeHl6pm1ldGhvZJKGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgOGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgM="),
 
             // CancelInvocation Messages
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ParseMessageWithExtraData()
         {
-            var expectedMessage = new InvocationMessage("xyz", "method", null, Array.Empty<object>());
+            var expectedMessage = new InvocationMessage("xyz", "method", Array.Empty<object>());
 
             // Verify that the input binary string decodes to the expected MsgPack primitives
             var bytes = new byte[] { ArrayBytes(6), 1, 0x80, StringBytes(3), (byte)'x', (byte)'y', (byte)'z', StringBytes(6), (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d', ArrayBytes(0), StringBytes(2), (byte)'e', (byte)'x' };
@@ -422,9 +422,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
             var data = new ReadOnlySequence<byte>(buffer);
             _hubProtocol.TryParseMessage(ref data, binder, out var message);
-            var exception = Assert.Throws<InvalidDataException>(() => ((HubMethodInvocationMessage)message).Arguments);
-
-            Assert.Equal(testData.ErrorMessage, exception.Message);
+            var bindingFailure = Assert.IsType<InvocationBindingFailureMessage>(message);
+            Assert.Equal(testData.ErrorMessage, bindingFailure.BindingFailure.SourceException.Message);
         }
 
         [Theory]
