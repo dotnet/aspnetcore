@@ -76,6 +76,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             var document = codeDocument.GetCSharpDocument();
 
+            // Normalize newlines to match those in the baseline.
+            var actualCode = document.GeneratedCode.Replace("\r", "").Replace("\n", "\r\n");
+
             var baselineFilePath = GetBaselineFilePath(codeDocument, ".codegen.cs");
             var baselineDiagnosticsFilePath = GetBaselineFilePath(codeDocument, ".diagnostics.txt");
             var baselineMappingsFilePath = GetBaselineFilePath(codeDocument, ".mappings.txt");
@@ -86,7 +89,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             {
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFilePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(baselineFullPath));
-                WriteBaseline(document.GeneratedCode, baselineFullPath);
+                WriteBaseline(actualCode, baselineFullPath);
 
                 var baselineDiagnosticsFullPath = Path.Combine(TestProjectRoot, baselineDiagnosticsFilePath);
                 var lines = document.Diagnostics.Select(RazorDiagnosticSerializer.Serialize).ToArray();
@@ -120,9 +123,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             }
 
             var baseline = codegenFile.ReadAllText();
-
-            // Normalize newlines to match those in the baseline.
-            var actualCode = document.GeneratedCode.Replace("\r", "").Replace("\n", "\r\n");
             Assert.Equal(baseline, actualCode);
 
             var baselineDiagnostics = string.Empty;
@@ -176,11 +176,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             return Path.Combine(DirectoryPath, Path.ChangeExtension(fileName, extension));
         }
 
-
         private static void WriteBaseline(string text, string filePath)
         {
-            var lines = text.Split(new char[]{ '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            WriteBaseline(lines, filePath);
+            var lines = text.Replace("\r", "").Replace("\n", "\r\n");
+            File.WriteAllText(filePath, text);
         }
 
         private static void WriteBaseline(string[] lines, string filePath)

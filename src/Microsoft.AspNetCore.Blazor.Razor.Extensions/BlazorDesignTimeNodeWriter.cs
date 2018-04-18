@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -411,44 +412,41 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // to handle here, since there are a few different cases for how an attribute might be structured.
             //
             // This roughly follows the design of the runtime writer for simplicity.
+            HtmlContentIntermediateNode htmlNode;
+            CSharpExpressionIntermediateNode cSharpNode;
             if (node.AttributeStructure == AttributeStructure.Minimized)
             {
                 // Do nothing
             }
-            else if (
-                node.Children.Count != 1 ||
-                node.Children[0] is HtmlContentIntermediateNode htmlNode && htmlNode.Children.Count != 1 ||
-                node.Children[0] is CSharpExpressionIntermediateNode cSharpNode && cSharpNode.Children.Count != 1)
+            else if (node.Children.Count != 1)
             {
                 // We don't expect this to happen, we just want to know if it can.
-                throw new InvalidOperationException("Attribute nodes should either be minimized or a single content node.");
+                throw new InvalidOperationException("Attribute nodes should either be minimized or a single type of content." + node.Children[0].ToString());
             }
             else if (node.BoundAttribute?.IsDelegateProperty() ?? false)
             {
-                // We always surround the expression with the delegate constructor. This makes type
-                // inference inside lambdas, and method group conversion do the right thing.
-                IntermediateToken token = null;
+                var tokens = node.Children;
                 if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
                 {
-                    token = cSharpNode.Children[0] as IntermediateToken;
-                }
-                else
-                {
-                    token = node.Children[0] as IntermediateToken;
+                    tokens = node.Children[0].Children;
                 }
 
-                if (token != null)
+                // We always surround the expression with the delegate constructor. This makes type
+                // inference inside lambdas, and method group conversion do the right thing.
+                context.CodeWriter.Write(DesignTimeVariable);
+                context.CodeWriter.Write(" = ");
+                context.CodeWriter.Write("new ");
+                context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                context.CodeWriter.Write("(");
+                context.CodeWriter.WriteLine();
+            
+                for (var i = 0; i < tokens.Count; i++)
                 {
-                    context.CodeWriter.Write(DesignTimeVariable);
-                    context.CodeWriter.Write(" = ");
-                    context.CodeWriter.Write("new ");
-                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
-                    context.CodeWriter.Write("(");
-                    context.CodeWriter.WriteLine();
-                    WriteCSharpToken(context, token);
-                    context.CodeWriter.Write(");");
-                    context.CodeWriter.WriteLine();
+                    WriteCSharpToken(context, (IntermediateToken)tokens[i]);
                 }
+
+                context.CodeWriter.Write(");");
+                context.CodeWriter.WriteLine();
             }
             else if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
             {
@@ -456,7 +454,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // <MyComponent Foo="@bar" />
                 context.CodeWriter.Write(DesignTimeVariable);
                 context.CodeWriter.Write(" = ");
-                WriteCSharpToken(context, ((IntermediateToken)cSharpNode.Children[0]));
+
+                for (var i = 0; i < cSharpNode.Children.Count; i++)
+                {
+                    WriteCSharpToken(context, (IntermediateToken)cSharpNode.Children[i]);
+                }
+
                 context.CodeWriter.Write(";");
                 context.CodeWriter.WriteLine();
             }
@@ -468,7 +471,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 context.CodeWriter.Write(DesignTimeVariable);
                 context.CodeWriter.Write(" = ");
-                WriteCSharpToken(context, token);
+
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    WriteCSharpToken(context, (IntermediateToken)node.Children[i]);
+                }
+
                 context.CodeWriter.Write(";");
                 context.CodeWriter.WriteLine();
             }

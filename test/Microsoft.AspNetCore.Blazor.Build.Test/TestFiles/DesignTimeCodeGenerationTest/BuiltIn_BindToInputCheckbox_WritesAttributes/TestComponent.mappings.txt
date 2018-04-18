@@ -1,0 +1,19 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (468:14,38 [15] )
+|*, TestAssembly|
+
+Source Location: (61:1,30 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+|Enabled|
+Generated Location: (973:26,78 [7] )
+|Enabled|
+
+Source Location: (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public bool Enabled { get; set; }
+|
+Generated Location: (1222:31,12 [41] )
+|
+    public bool Enabled { get; set; }
+|
+
