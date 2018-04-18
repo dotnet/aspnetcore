@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
@@ -15,6 +19,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             Pipe = Option("-p|--pipe", "name of named pipe", CommandOptionType.SingleValue);
             KeepAlive = Option("-k|--keep-alive", "sets the default idle timeout for the server in seconds", CommandOptionType.SingleValue);
+        }
+
+        // For testing purposes only.
+        internal ServerCommand(Application parent, string pipeName, int? keepAlive = null)
+            : this(parent)
+        {
+            Pipe.Values.Add(pipeName);
+
+            if (keepAlive.HasValue)
+            {
+                KeepAlive.Values.Add(keepAlive.Value.ToString());
+            }
         }
 
         public CommandOption Pipe { get; }
@@ -61,8 +77,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 return Task.FromResult(1);
             }
 
+            FileStream pidFileStream = null;
             try
             {
+                try
+                {
+                    // Write the process and pipe information to a file in a well-known location.
+                    pidFileStream = WritePidFile();
+                }
+                catch (Exception ex)
+                {
+                    // Something happened when trying to write to the pid file. Log and move on.
+                    ServerLogger.LogException(ex, "Failed to create PID file.");
+                }
+
                 TimeSpan? keepAlive = null;
                 if (KeepAlive.HasValue() && int.TryParse(KeepAlive.Value(), out var result))
                 {
@@ -79,6 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 serverMutex.ReleaseMutex();
                 serverMutex.Dispose();
+                pidFileStream?.Close();
             }
 
             return Task.FromResult(0);
@@ -88,6 +117,50 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             var dispatcher = RequestDispatcher.Create(host, compilerHost, cancellationToken, eventBus, keepAlive);
             dispatcher.Run();
+        }
+
+        internal FileStream WritePidFile()
+        {
+            // To make all the running rzc servers more discoverable, We want to write the process Id and pipe name to a file.
+            // The file contents will be in the following format,
+            //
+            // <PID>
+            // rzc
+            // path/to/rzc.dll
+            // <pipename>
+
+            const int DefaultBufferSize = 4096;
+            var processId = Process.GetCurrentProcess().Id;
+            var fileName = $"rzc-{processId}";
+
+            var path = Environment.GetEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY");
+            if (string.IsNullOrEmpty(path))
+            {
+                var homeEnvVariable = PlatformInformation.IsWindows ? "USERPROFILE" : "HOME";
+                var homePath = Environment.GetEnvironmentVariable(homeEnvVariable);
+                if (string.IsNullOrEmpty(homePath))
+                {
+                    // Couldn't locate the user profile directory. Bail.
+                    return null;
+                }
+
+                path = Path.Combine(homePath, ".dotnet", "pids", "build");
+            }
+
+            // Make sure the directory exists.
+            Directory.CreateDirectory(path);
+
+            path = Path.Combine(path, fileName);
+            var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize, FileOptions.DeleteOnClose);
+
+            using (var writer = new StreamWriter(fileStream, Encoding.UTF8, DefaultBufferSize, leaveOpen: true))
+            {
+                var rzcPath = Assembly.GetExecutingAssembly().Location;
+                var content = $"{processId}{Environment.NewLine}rzc{Environment.NewLine}{rzcPath}{Environment.NewLine}{Pipe.Value()}";
+                writer.Write(content);
+            }
+
+            return fileStream;
         }
     }
 }

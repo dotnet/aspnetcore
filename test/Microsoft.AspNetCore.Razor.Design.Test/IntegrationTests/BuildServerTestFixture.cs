@@ -18,13 +18,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             PipeName = Guid.NewGuid().ToString();
 
-            if (!ServerConnection.TryCreateServerCore(Environment.CurrentDirectory, PipeName))
+            if (!ServerConnection.TryCreateServerCore(Environment.CurrentDirectory, PipeName, out var processId))
             {
                 throw new InvalidOperationException($"Failed to start the build server at pipe {PipeName}.");
             }
+
+            ProcessId = processId;
         }
 
         public string PipeName { get; }
+
+        public int? ProcessId { get; }
 
         public void Dispose()
         {
