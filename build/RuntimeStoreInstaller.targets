@@ -462,13 +462,14 @@
       -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
       -e INSTALLER_NAME=$(DebPrefix)-$(DebVersion)
       -e INSTALLER_VERSION=$(DebVersion)
-      -e 'KOREBUILD_DOTNET_VERSION=$(KOREBUILD_DOTNET_VERSION)'
-      -e 'KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION=$(KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION)'
-      -e 'KOREBUILD_DOTNET_FEED_CDN=$(KOREBUILD_DOTNET_FEED_CDN)'
-      -e 'KOREBUILD_DOTNET_FEED_UNCACHED=$(KOREBUILD_DOTNET_FEED_UNCACHED)'
-      -e &quot;KOREBUILD_DOTNET_FEED_CREDENTIAL=$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot;
+      -e KOREBUILD_DOTNET_VERSION
+      -e KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION
+      -e KOREBUILD_DOTNET_FEED_CDN
+      -e KOREBUILD_DOTNET_FEED_UNCACHED
+      -e KOREBUILD_DOTNET_FEED_CREDENTIAL
+      -e DotNetAssetRootAccessTokenSuffix
       docker-image-$(Image)
-      ./build.sh /t:RunDebTool '/p:DotNetAssetRootUrl=$(DotNetAssetRootUrl)' '/p:DotNetAssetRootAccessTokenSuffix=$(DotNetAssetRootAccessTokenSuffix)'"
+      ./build.sh /t:RunDebTool '/p:DotNetAssetRootUrl=$(DotNetAssetRootUrl)'"
       ContinueOnError="WarnAndContinue" />
 
     <!-- Copy Runtime Store and Hosting Bundle packages to output -->
