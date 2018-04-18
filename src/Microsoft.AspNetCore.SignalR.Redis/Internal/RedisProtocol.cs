@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
                 }
 
                 WriteSerializedHubMessage(writer,
-                    new SerializedHubMessage(new InvocationMessage(methodName, null, args)));
+                    new SerializedHubMessage(new InvocationMessage(methodName, args)));
                 return writer.ToArray();
             }
             finally

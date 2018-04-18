@@ -168,6 +168,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             private static readonly Action<ILogger, long, Exception> _processingMessage =
                 LoggerMessage.Define<long>(LogLevel.Debug, new EventId(56, "ProcessingMessage"), "Processing {MessageLength} byte message from server.");
 
+            private static readonly Action<ILogger, string, string, Exception> _argumentBindingFailure =
+                LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(57, "ArgumentBindingFailure"), "Failed to bind arguments received in invocation '{InvocationId}' of '{MethodName}'.");
+
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
                 _preparingNonBlockingInvocation(logger, target, count, null);
@@ -443,6 +446,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public static void UnableToSendCancellation(ILogger logger, string invocationId)
             {
                 _unableToSendCancellation(logger, invocationId, null);
+            }
+
+            public static void ArgumentBindingFailure(ILogger logger, string invocationId, string target, Exception exception)
+            {
+                _argumentBindingFailure(logger, invocationId, target, exception);
             }
         }
     }

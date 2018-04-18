@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private static InvocationMessage CreateInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage CreateInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
         {
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
@@ -147,15 +147,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             try
             {
                 var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
-                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, null, arguments));
+                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, arguments));
             }
             catch (Exception ex)
             {
-                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex), null));
+                return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
         }
 
-        private static StreamInvocationMessage CreateStreamInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage CreateStreamInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
         {
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
@@ -165,11 +165,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             try
             {
                 var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
-                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, null, arguments));
+                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, arguments));
             }
             catch (Exception ex)
             {
-                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex), null));
+                return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
         }
 

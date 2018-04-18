@@ -77,6 +77,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             switch (hubMessage)
             {
+                case InvocationBindingFailureMessage bindingFailureMessage:
+                    await ProcessBindingFailure(connection, bindingFailureMessage);
+                    break;
+
                 case InvocationMessage invocationMessage:
                     Log.ReceivedHubInvocation(_logger, invocationMessage);
                     await ProcessInvocation(connection, invocationMessage, isStreamedInvocation: false);
@@ -111,6 +115,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     Log.UnsupportedMessageReceived(_logger, hubMessage.GetType().FullName);
                     throw new NotSupportedException($"Received unsupported message: {hubMessage}");
             }
+        }
+
+        private Task ProcessBindingFailure(HubConnectionContext connection, InvocationBindingFailureMessage bindingFailureMessage)
+        {
+            Log.FailedInvokingHubMethod(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
+            var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
+                bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
+            return SendInvocationError(bindingFailureMessage.InvocationId, connection, errorMessage);
         }
 
         public override Type GetReturnType(string invocationId)
@@ -163,22 +175,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection.User, descriptor.Policies))
                 {
                     Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
-                    await SendInvocationError(hubMethodInvocationMessage, connection,
+                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                         $"Failed to invoke '{hubMethodInvocationMessage.Target}' because user is unauthorized");
                     return;
                 }
 
                 if (!await ValidateInvocationMode(descriptor, isStreamedInvocation, hubMethodInvocationMessage, connection))
                 {
-                    return;
-                }
-
-                if (hubMethodInvocationMessage.ArgumentBindingException != null)
-                {
-                    Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.ArgumentBindingException);
-                    var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{hubMethodInvocationMessage.Target}' due to an error on the server.",
-                        hubMethodInvocationMessage.ArgumentBindingException, _enableDetailedErrors);
-                    await SendInvocationError(hubMethodInvocationMessage, connection, errorMessage);
                     return;
                 }
 
@@ -197,7 +200,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
 
-                            await SendInvocationError(hubMethodInvocationMessage, connection,
+                            await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                 $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is not a ChannelReader<>.");
                             return;
                         }
@@ -215,13 +218,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 catch (TargetInvocationException ex)
                 {
                     Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                    await SendInvocationError(hubMethodInvocationMessage, connection,
+                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                         ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex.InnerException, _enableDetailedErrors));
                 }
                 catch (Exception ex)
                 {
                     Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                    await SendInvocationError(hubMethodInvocationMessage, connection,
+                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                         ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
                 }
                 finally
@@ -294,15 +297,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return null;
         }
 
-        private async Task SendInvocationError(HubMethodInvocationMessage hubMethodInvocationMessage,
+        private async Task SendInvocationError(string invocationId,
             HubConnectionContext connection, string errorMessage)
         {
-            if (string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
+            if (string.IsNullOrEmpty(invocationId))
             {
                 return;
             }
 
-            await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId, errorMessage));
+            await connection.WriteAsync(CompletionMessage.WithError(invocationId, errorMessage));
         }
 
         private void InitializeHub(THub hub, HubConnectionContext connection)

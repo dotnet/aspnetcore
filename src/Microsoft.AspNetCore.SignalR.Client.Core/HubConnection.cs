@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.PreparingBlockingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
             // Client invocations are always blocking
-            var invocationMessage = new InvocationMessage(irq.InvocationId, methodName, null, args);
+            var invocationMessage = new InvocationMessage(irq.InvocationId, methodName, args);
 
             Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
 
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             Log.PreparingStreamingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
-            var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName, null, args);
+            var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName, args);
 
             // I just want an excuse to use 'irq' as a variable name...
             Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
 
-                var invocationMessage = new InvocationMessage(null, methodName, null, args);
+                var invocationMessage = new InvocationMessage(null, methodName, args);
 
                 await SendHubMessage(invocationMessage, cancellationToken);
             }
@@ -390,9 +390,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             InvocationRequest irq;
             switch (message)
             {
+                case InvocationBindingFailureMessage bindingFailure:
+                    // The server can't receive a response, so we just drop the message and log
+                    // REVIEW: Is this the right approach?
+                    Log.ArgumentBindingFailure(_logger, bindingFailure.InvocationId, bindingFailure.Target, bindingFailure.BindingFailure.SourceException);
+                    break;
                 case InvocationMessage invocation:
-                    Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target,
-                        invocation.ArgumentBindingException != null ? null : invocation.Arguments);
+                    Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
                     await DispatchInvocationAsync(invocation);
                     break;
                 case CompletionMessage completion:

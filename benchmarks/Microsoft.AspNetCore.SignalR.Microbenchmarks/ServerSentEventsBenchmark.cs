@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
@@ -44,16 +44,16 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             switch (Input)
             {
                 case Message.NoArguments:
-                    hubMessage = new InvocationMessage("Target", null, Array.Empty<object>());
+                    hubMessage = new InvocationMessage("Target", Array.Empty<object>());
                     break;
                 case Message.FewArguments:
-                    hubMessage = new InvocationMessage("Target", null, new object[] { 1, "Foo", 2.0f });
+                    hubMessage = new InvocationMessage("Target", new object[] { 1, "Foo", 2.0f });
                     break;
                 case Message.ManyArguments:
-                    hubMessage = new InvocationMessage("Target", null, new object[] { 1, "string", 2.0f, true, (byte)9, new[] { 5, 4, 3, 2, 1 }, 'c', 123456789101112L });
+                    hubMessage = new InvocationMessage("Target", new object[] { 1, "string", 2.0f, true, (byte)9, new[] { 5, 4, 3, 2, 1 }, 'c', 123456789101112L });
                     break;
                 case Message.LargeArguments:
-                    hubMessage = new InvocationMessage("Target", null, new object[] { new string('F', 10240), new string('B', 10240) });
+                    hubMessage = new InvocationMessage("Target", new object[] { new string('F', 10240), new string('B', 10240) });
                     break;
             }
 

@@ -84,12 +84,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         }
 
         // The actual invocation message doesn't matter
-        private static InvocationMessage _testMessage = new InvocationMessage("target", null, Array.Empty<object>());
-        private static Dictionary<string, ProtocolTestData<RedisInvocation>> _invocationTestData = new[]
+        private static InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
+
+        // We use a func so we are guaranteed to get a new SerializedHubMessage for each test
+        private static Dictionary<string, ProtocolTestData<Func<RedisInvocation>>> _invocationTestData = new[]
         {
-            CreateTestData(
+            CreateTestData<Func<RedisInvocation>>(
                 "NoExcludedIds",
-                new RedisInvocation(new SerializedHubMessage(_testMessage), null),
+                () => new RedisInvocation(new SerializedHubMessage(_testMessage), null),
                 0x92,
                     0x90,
                     0x82,
@@ -97,9 +99,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                         0xC4, 0x01, 0x2A,
                         0xA2, (byte)'p', (byte)'2',
                         0xC4, 0x01, 0x2A),
-            CreateTestData(
+            CreateTestData<Func<RedisInvocation>>(
                 "OneExcludedId",
-                new RedisInvocation(new SerializedHubMessage(_testMessage), new [] { "a" }),
+                () => new RedisInvocation(new SerializedHubMessage(_testMessage), new [] { "a" }),
                 0x92,
                     0x91,
                         0xA1, (byte)'a',
@@ -108,9 +110,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                         0xC4, 0x01, 0x2A,
                         0xA2, (byte)'p', (byte)'2',
                         0xC4, 0x01, 0x2A),
-            CreateTestData(
+            CreateTestData<Func<RedisInvocation>>(
                 "ManyExcludedIds",
-                new RedisInvocation(new SerializedHubMessage(_testMessage), new [] { "a", "b", "c", "d", "e", "f" }),
+                () => new RedisInvocation(new SerializedHubMessage(_testMessage), new [] { "a", "b", "c", "d", "e", "f" }),
                 0x92,
                     0x96,
                         0xA1, (byte)'a',
@@ -136,15 +138,17 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             var hubProtocols = new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") };
             var protocol = new RedisProtocol(hubProtocols);
 
+            var expected = testData.Decoded();
+
             var decoded = protocol.ReadInvocation(testData.Encoded);
 
-            Assert.Equal(testData.Decoded.ExcludedConnectionIds, decoded.ExcludedConnectionIds);
+            Assert.Equal(expected.ExcludedConnectionIds, decoded.ExcludedConnectionIds);
 
             // Verify the deserialized object has the necessary serialized forms
             foreach (var hubProtocol in hubProtocols)
             {
                 Assert.Equal(
-                    testData.Decoded.Message.GetSerializedMessage(hubProtocol).ToArray(),
+                    expected.Message.GetSerializedMessage(hubProtocol).ToArray(),
                     decoded.Message.GetSerializedMessage(hubProtocol).ToArray());
                 Assert.Equal(1, hubProtocol.SerializationCount);
             }
@@ -159,7 +163,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             // Actual invocation doesn't matter because we're using a dummy hub protocol.
             // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
-            var encoded = protocol.WriteInvocation(_testMessage.Target, _testMessage.Arguments, testData.Decoded.ExcludedConnectionIds);
+            var expected = testData.Decoded();
+            var encoded = protocol.WriteInvocation(_testMessage.Target, _testMessage.Arguments, expected.ExcludedConnectionIds);
 
             Assert.Equal(testData.Encoded, encoded);
         }

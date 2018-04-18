@@ -3,33 +3,16 @@
 
 using System;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     public abstract class HubMethodInvocationMessage : HubInvocationMessage
     {
-        private readonly ExceptionDispatchInfo _argumentBindingException;
-        private readonly object[] _arguments;
-
         public string Target { get; }
 
-        public object[] Arguments
-        {
-            get
-            {
-                if (_argumentBindingException != null)
-                {
-                    _argumentBindingException.Throw();
-                }
+        public object[] Arguments { get; }
 
-                return _arguments;
-            }
-        }
-
-        public Exception ArgumentBindingException => _argumentBindingException?.SourceException;
-
-        protected HubMethodInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
+        protected HubMethodInvocationMessage(string invocationId, string target, object[] arguments)
             : base(invocationId)
         {
             if (string.IsNullOrEmpty(target))
@@ -37,26 +20,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 throw new ArgumentNullException(nameof(target));
             }
 
-            if ((arguments == null && argumentBindingException == null) || (arguments?.Length > 0 && argumentBindingException != null))
-            {
-                throw new ArgumentException($"'{nameof(argumentBindingException)}' and '{nameof(arguments)}' are mutually exclusive");
-            }
-
             Target = target;
-            _arguments = arguments;
-            _argumentBindingException = argumentBindingException;
+            Arguments = arguments;
         }
     }
 
     public class InvocationMessage : HubMethodInvocationMessage
     {
-        public InvocationMessage(string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
-            : this(null, target, argumentBindingException, arguments)
+        public InvocationMessage(string target, object[] arguments)
+            : this(null, target, arguments)
         {
         }
 
-        public InvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
-            : base(invocationId, target, argumentBindingException, arguments)
+        public InvocationMessage(string invocationId, string target, object[] arguments)
+            : base(invocationId, target, arguments)
         {
         }
 
@@ -77,8 +54,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
     public class StreamInvocationMessage : HubMethodInvocationMessage
     {
-        public StreamInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
-            : base(invocationId, target, argumentBindingException, arguments)
+        public StreamInvocationMessage(string invocationId, string target, object[] arguments)
+            : base(invocationId, target, arguments)
         {
             if (string.IsNullOrEmpty(invocationId))
             {
