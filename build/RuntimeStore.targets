@@ -191,7 +191,7 @@
       <Output TaskParameter="HostingStartupArtifacts" ItemName="HostingStartupArtifacts" />
     </RepoTasks.ResolveHostingStartupPackages>
 
-    <MSBuild
+    <MSBuild Condition="@(HostingStartupArtifacts->Count()) != 0"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_BuildHostingDeps"
       Properties="HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version)" />
@@ -200,7 +200,8 @@
       <DepsFiles Include="$(_DepsOutputDirectory)**\*.deps.json" />
     </ItemGroup>
 
-    <RepoTasks.TrimDeps DepsFiles="@(DepsFiles)" />
+    <RepoTasks.TrimDeps Condition="@(DepsFiles->Count()) != 0"
+      DepsFiles="@(DepsFiles)" />
   </Target>
 
   <Target Name="PackRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID">
@@ -228,7 +229,9 @@
       SymbolsDestination="$(_SymbolsZipDirectory)"/>
 
     <!-- Insert deps files -->
-    <Copy SourceFiles="@(DepsFiles)" DestinationFolder="$(_StoreZipDirectory)additionalDeps\%(RecursiveDir)" />
+    <Copy Condition="@(DepsFiles->Count()) != 0"
+      SourceFiles="@(DepsFiles)"
+      DestinationFolder="$(_StoreZipDirectory)additionalDeps\%(RecursiveDir)" />
 
     <ItemGroup>
       <OutputZipFiles Include="$(_StoreZipDirectory)**\*" />
