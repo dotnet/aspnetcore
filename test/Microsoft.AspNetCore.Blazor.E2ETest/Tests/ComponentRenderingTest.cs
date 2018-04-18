@@ -116,12 +116,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("Parent component",
                 appElement.FindElement(By.CssSelector("fieldset > legend")).Text);
 
-            // TODO: Once we remove the wrapper elements from around child components,
-            // assert that the child component text node is directly inside the <fieldset>
-            var childComponentWrapper = appElement.FindElement(By.CssSelector("fieldset > blazor-component"));
-            Assert.Single(childComponentWrapper.FindElements(By.CssSelector("*")));
-
-            var styledElement = childComponentWrapper.FindElement(By.TagName("h1"));
+            var styledElement = appElement.FindElement(By.CssSelector("fieldset > h1"));
             Assert.Equal("Hello, world!", styledElement.Text);
             Assert.Equal("color: red;", styledElement.GetAttribute("style"));
             Assert.Equal("somevalue", styledElement.GetAttribute("customattribute"));
@@ -131,13 +126,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         public void CanTriggerEventsOnChildComponents()
         {
             // Counter is displayed as child component. Initial count is zero.
-            var childComponentWrapper = MountTestComponent<CounterComponentWrapper>()
-                .FindElements(By.CssSelector("blazor-component")).Single();
-            var counterDisplay = childComponentWrapper.FindElement(By.TagName("p"));
-            Assert.Equal("Current count: 0", counterDisplay.Text);
+            var appElement = MountTestComponent<CounterComponentWrapper>();
+            var counterDisplay = appElement
+                .FindElements(By.TagName("p"))
+                .Single(element => element.Text == "Current count: 0");
 
             // Clicking increments count in child component
-            childComponentWrapper.FindElement(By.TagName("button")).Click();
+            appElement.FindElement(By.TagName("button")).Click();
             Assert.Equal("Current count: 1", counterDisplay.Text);
         }
 

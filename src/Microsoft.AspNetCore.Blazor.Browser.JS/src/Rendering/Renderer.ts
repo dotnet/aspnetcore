@@ -17,8 +17,8 @@ export function attachRootComponentToElement(browserRendererId: number, elementS
   if (!browserRenderer) {
     browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
   }
-  browserRenderer.attachRootComponentToElement(componentId, element);
   clearElement(element);
+  browserRenderer.attachRootComponentToElement(componentId, element);
 }
 
 export function renderBatch(browserRendererId: number, batch: RenderBatchPointer) {
