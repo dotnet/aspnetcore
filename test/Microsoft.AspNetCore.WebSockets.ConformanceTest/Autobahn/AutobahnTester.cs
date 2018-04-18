@@ -129,7 +129,6 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
         public async Task DeployTestAndAddToSpec(ServerType server, bool ssl, string environment, CancellationToken cancellationToken, Action<AutobahnExpectations> expectationConfig = null)
         {
-            var baseUrl = ssl ? "https://localhost:0" : "http://localhost:0";
             var sslNamePart = ssl ? "SSL" : "NoSSL";
             var name = $"{server}|{sslNamePart}|{environment}";
             var logger = _loggerFactory.CreateLogger($"AutobahnTestApp:{server}:{sslNamePart}:{environment}");
@@ -146,7 +145,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 #endif
             var parameters = new DeploymentParameters(appPath, server, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                ApplicationBaseUriHint = baseUrl,
+                Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 ApplicationType = ApplicationType.Portable,
                 TargetFramework = targetFramework,
                 EnvironmentName = environment,
