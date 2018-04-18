@@ -80,9 +80,9 @@ if (configuration) {
     args.push("--configuration");
     args.push(configuration);
 }
-
+if (verbose) {
     args.push("--verbose");
-
+}
 
 let command = "npm";
 
