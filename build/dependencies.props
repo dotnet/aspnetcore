@@ -9,7 +9,7 @@
     <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreServerHttpSysPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview2-32233</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-a-preview3-build-test-uri-16975</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreTestingPackageVersion>

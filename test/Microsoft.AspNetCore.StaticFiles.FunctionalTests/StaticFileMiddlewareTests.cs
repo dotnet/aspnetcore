@@ -13,8 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -26,14 +28,13 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
-            var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
                 .UseKestrel()
                 .Configure(app => app.UseStaticFiles());
 
-            using (var server = builder.Start(baseAddress))
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                using (var client = new HttpClient() { BaseAddress = new Uri(baseAddress) })
+                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var response = await client.GetAsync("TestDocument.txt");
 
@@ -45,15 +46,14 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task FoundFile_LastModifiedTrimsSeconds()
         {
-            var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
                 .UseKestrel()
                 .UseWebRoot(AppContext.BaseDirectory)
                 .Configure(app => app.UseStaticFiles());
 
-            using (var server = builder.Start(baseAddress))
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                using (var client = new HttpClient() { BaseAddress = new Uri(baseAddress) })
+                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var last = File.GetLastWriteTimeUtc(Path.Combine(AppContext.BaseDirectory, "TestDocument.txt"));
                     var response = await client.GetAsync("TestDocument.txt");
@@ -86,7 +86,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
                 .UseKestrel()
                 .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
@@ -95,11 +94,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                     RequestPath = new PathString(baseUrl),
                 }));
 
-            using (var server = builder.Start(baseAddress))
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
                 var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
 
-                using (var client = new HttpClient() { BaseAddress = new Uri(baseAddress) })
+                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var fileInfo = hostingEnvironment.WebRootFileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                     var response = await client.GetAsync(requestUrl);
@@ -124,7 +123,6 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(ExistingFiles))]
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
                 .UseKestrel()
                 .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
@@ -133,11 +131,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                     RequestPath = new PathString(baseUrl),
                 }));
 
-            using (var server = builder.Start(baseAddress))
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
                 var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
 
-                using (var client = new HttpClient() { BaseAddress = new Uri(baseAddress) })
+                using (var client = new HttpClient() { BaseAddress = new Uri(server.GetAddress()) })
                 {
                     var fileInfo = hostingEnvironment.WebRootFileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                     var request = new HttpRequestMessage(HttpMethod.Head, requestUrl);
@@ -178,7 +176,6 @@ namespace Microsoft.AspNetCore.StaticFiles
         private void ClientDisconnect_NoWriteExceptionThrown(ServerType serverType)
         {
             var interval = TimeSpan.FromSeconds(15);
-            var baseAddress = "http://localhost:12345";
             var requestReceived = new ManualResetEvent(false);
             var requestCacelled = new ManualResetEvent(false);
             var responseComplete = new ManualResetEvent(false);
@@ -214,10 +211,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                 builder.UseKestrel();
             }
 
-            using (var server = builder.Start(baseAddress))
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(serverType)))
             {
                 // We don't use HttpClient here because it's disconnect behavior varies across platforms.
-                var socket = SendSocketRequestAsync(baseAddress, "/TestDocument1MB.txt");
+                var socket = SendSocketRequestAsync(server.GetAddress(), "/TestDocument1MB.txt");
                 Assert.True(requestReceived.WaitOne(interval), "not received");
 
                 socket.LingerState = new LingerOption(true, 0);
