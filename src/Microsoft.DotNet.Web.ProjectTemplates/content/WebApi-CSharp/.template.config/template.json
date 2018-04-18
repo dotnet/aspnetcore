@@ -12,7 +12,6 @@
   "precedence": "3000",
   "identity": "Microsoft.Web.WebApi.CSharp.2.1",
   "shortName": "webapi",
-  "thirdPartyNotices": "https://aka.ms/template-3pn",
   "tags": {
     "language": "C#",
     "type": "project"
