@@ -17,10 +17,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
         internal static Uri BuildTestUri(ServerType serverType, string hint)
         {
             // Assume status messages are enabled for Kestrel and disabled for all other servers.
-            return BuildTestUri(serverType, hint, statusMessagesEnabled: serverType == ServerType.Kestrel);
+            var statusMessagesEnabled = (serverType == ServerType.Kestrel);
+
+            return BuildTestUri(serverType, Uri.UriSchemeHttp, hint, statusMessagesEnabled);
         }
 
-        internal static Uri BuildTestUri(ServerType serverType, string hint, bool statusMessagesEnabled)
+        internal static Uri BuildTestUri(ServerType serverType, string scheme, string hint, bool statusMessagesEnabled)
         {
             if (string.IsNullOrEmpty(hint))
             {
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                     // once and never released.  Binding to dynamic port "0" on "localhost" (both IPv4 and IPv6) is not
                     // supported, so the port is only bound on "127.0.0.1" (IPv4).  If a test explicitly requires IPv6,
                     // it should provide a hint URL with "localhost" (IPv4 and IPv6) or "[::1]" (IPv6-only).
-                    return new UriBuilder("http", "127.0.0.1", 0).Uri;
+                    return new UriBuilder(scheme, "127.0.0.1", 0).Uri;
                 }
                 else
                 {
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                     // from which to scrape the assigned port, so the less reliable GetNextPort() must be used.  The
                     // port is bound on "localhost" (both IPv4 and IPv6), since this is supported when using a specific
                     // (non-zero) port.
-                    return new UriBuilder("http", "localhost", GetNextPort()).Uri;
+                    return new UriBuilder(scheme, "localhost", GetNextPort()).Uri;
                 }
             }
             else

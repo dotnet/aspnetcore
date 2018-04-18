@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 var hintUrl = TestUriHelper.BuildTestUri(
                     DeploymentParameters.ServerType,
+                    DeploymentParameters.Scheme,
                     DeploymentParameters.ApplicationBaseUriHint,
                     DeploymentParameters.StatusMessagesEnabled);
 
