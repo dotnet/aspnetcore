@@ -1675,7 +1675,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Called after the handler method executes, before the action method is invoked.
+        /// Called after the handler method executes, before the action result executes.
         /// </summary>
         /// <param name="context">The <see cref="PageHandlerExecutedContext"/>.</param>
         public virtual void OnPageHandlerExecuted(PageHandlerExecutedContext context)

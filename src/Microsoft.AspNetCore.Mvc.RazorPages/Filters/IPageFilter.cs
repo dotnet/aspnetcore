@@ -4,7 +4,8 @@
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
     /// <summary>
-    /// A filter that surrounds execution of a page handler method.
+    /// A filter that surrounds execution of a page handler method. This filter is executed only when decorated on a
+    /// handler's type and not on individual handler methods.
     /// </summary>
     public interface IPageFilter : IFilterMetadata
     {
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         void OnPageHandlerExecuting(PageHandlerExecutingContext context);
 
         /// <summary>
-        /// Called after the handler method executes, before the action method is invoked.
+        /// Called after the handler method executes, before the action result executes.
         /// </summary>
         /// <param name="context">The <see cref="PageHandlerExecutedContext"/>.</param>
         void OnPageHandlerExecuted(PageHandlerExecutedContext context);
