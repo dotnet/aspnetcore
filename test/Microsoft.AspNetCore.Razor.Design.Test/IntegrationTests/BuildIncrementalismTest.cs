@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine(directoryPath, "SimpleMvc.csproj.FileListAbsolute.txt"),
             };
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                // There is some quirkiness with MsBuild in osx high sierra where it regenerates this file
+                // There is some quirkiness with MsBuild in unix where it regenerates this file
                 // even though it shouldn't. This is tracked here https://github.com/aspnet/Razor/issues/2219.
                 filesToIgnore.Add(Path.Combine(directoryPath, "SimpleMvc.TagHelpers.input.cache"));
             }
