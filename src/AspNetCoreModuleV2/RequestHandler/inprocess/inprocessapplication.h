@@ -100,7 +100,7 @@ public:
 
 private:
     static
-    VOID
+    DWORD
     DoShutDown(
         LPVOID lpParam
     );

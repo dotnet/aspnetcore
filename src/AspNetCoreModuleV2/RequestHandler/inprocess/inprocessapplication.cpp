@@ -43,7 +43,7 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 }
 
 //static
-VOID
+DWORD
 IN_PROCESS_APPLICATION::DoShutDown(
     LPVOID lpParam
 )
@@ -51,6 +51,7 @@ IN_PROCESS_APPLICATION::DoShutDown(
     IN_PROCESS_APPLICATION* pApplication = static_cast<IN_PROCESS_APPLICATION*>(lpParam);
     DBG_ASSERT(pApplication);
     pApplication->ShutDownInternal();
+    return 0;
 }
 
 __override
