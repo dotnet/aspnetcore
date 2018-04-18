@@ -109,7 +109,6 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                 var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel,
                     RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
-                    ApplicationBaseUriHint = "http://localhost:0",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
                     TargetFramework = "netcoreapp2.0",
