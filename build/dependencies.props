@@ -21,6 +21,7 @@
     <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreIdentityPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreIdentityPackageVersion>
+    <MicrosoftAspNetCoreIdentityUIPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreIdentityUIPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
     <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreMvcTestingPackageVersion>
