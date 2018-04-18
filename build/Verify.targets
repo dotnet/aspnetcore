@@ -20,8 +20,8 @@
           $(UnsignedPackagesPath)runtime.*.symbols\**\*.dll;
           $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\any\any\runtimes\**\native\sni.dll;
           $(UnsignedPackagesPath)Microsoft.AspNetCore.Server.IIS*\runtimes\**\aspnetcorerh.dll;
-          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\**\aspnetcore.dll;
-          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\**\aspnetcorerh.dll;
+          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule*\**\aspnetcore.dll;
+          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule*\**\aspnetcorerh.dll;
           " />
     </ItemGroup>
 

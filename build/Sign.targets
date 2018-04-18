@@ -17,6 +17,7 @@
     <ItemGroup>
       <ThirdPartyBinaries Include="
         $(UnsignedPackagesPath)**\MsgPack.dll;
+        $(UnsignedPackagesPath)**\MessagePack.dll;
         $(UnsignedPackagesPath)**\newtonsoft*.dll;
         $(UnsignedPackagesPath)**\remotion*.dll;
         $(UnsignedPackagesPath)**\sqlitepclraw*.dll;
@@ -38,6 +39,7 @@
 
       <ThirdPartyBinaries Include="
         $(UnsignedSharedFxPath)**\MsgPack.dll;
+        $(UnsignedSharedFxPath)**\MessagePack.dll;
         $(UnsignedSharedFxPath)**\newtonsoft*.dll;
         $(UnsignedSharedFxPath)**\remotion*.dll;
         $(UnsignedSharedFxPath)**\sqlitepclraw*.dll;

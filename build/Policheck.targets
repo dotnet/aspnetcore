@@ -38,8 +38,7 @@
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Sockets.Http\ConnectionManager.cs;
-        src\Microsoft.AspNetCore.Sockets.Http\HttpConnectionManager.cs">
+        src\Microsoft.AspNetCore.Http.Connections\HttpConnectionManager.cs">
         <term>hung</term>
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
