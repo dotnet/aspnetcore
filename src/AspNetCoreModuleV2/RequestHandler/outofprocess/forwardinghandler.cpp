@@ -1098,6 +1098,7 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
     HRESULT         hr = S_OK;
     PCWSTR          pszVersion = NULL;
     PCSTR           pszVerb;
+    DWORD           dwTimeout = INFINITE;
     STACK_STRU(strVerb, 32);
 
     //
@@ -1138,11 +1139,16 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
         goto Finished;
     }
 
+    if (!pServerProcess->IsDebuggerAttached())
+    {
+        dwTimeout = pProtocol->QueryTimeout();
+    }
+    
     if (!WinHttpSetTimeouts(m_hRequest,
-        pProtocol->QueryTimeout(),
-        pProtocol->QueryTimeout(),
-        pProtocol->QueryTimeout(),
-        pProtocol->QueryTimeout()))
+                            dwTimeout, //resolve timeout
+                            dwTimeout, // connect timeout
+                            dwTimeout, // send timeout
+                            dwTimeout)) // receive timeout
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
         goto Finished;

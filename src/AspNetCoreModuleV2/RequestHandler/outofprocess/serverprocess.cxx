@@ -40,6 +40,7 @@ SERVER_PROCESS::Initialize(
     m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
     m_fWebsocketsEnabled = fWebsocketsEnabled;
     m_pProcessManager->ReferenceProcessManager();
+    m_fDebuggerAttached = FALSE;
 
     if (FAILED(hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
         FAILED(hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
@@ -719,6 +720,8 @@ SERVER_PROCESS::PostStartCheck(
     m_fReady = TRUE;
 
 Finished:
+    m_fDebuggerAttached = fDebuggerAttached;
+
     if (FAILED(hr))
     {
         if (m_pForwarderConnection != NULL)
@@ -1277,7 +1280,12 @@ SERVER_PROCESS::SendSignal(
         goto Finished;
     }
 
-    if (WaitForSingleObject(m_hShutdownHandle, m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0)
+    //
+    // Reset the shutdown timeout if debugger is attached.
+    // Do it only for the case that debugger is attached during process creation
+    // as IsDebuggerIsAttached call is too heavy
+    //
+    if (WaitForSingleObject(m_hShutdownHandle, m_fDebuggerAttached ? INFINITE : m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0)
     {
         hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
         goto Finished;

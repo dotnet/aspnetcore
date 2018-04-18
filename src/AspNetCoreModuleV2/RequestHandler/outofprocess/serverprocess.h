@@ -57,6 +57,14 @@ public:
         return m_fReady;
     }
 
+    BOOL
+    IsDebuggerAttached(
+            VOID
+    )
+    {
+        return m_fDebuggerAttached;
+    }
+
     VOID
     StopProcess(
         VOID
@@ -230,6 +238,7 @@ private:
     BOOL                    m_fBasicAuthEnabled;
     BOOL                    m_fAnonymousAuthEnabled;
     BOOL                    m_fWebsocketsEnabled;
+    BOOL                    m_fDebuggerAttached;
 
     STTIMER                 m_Timer;
     SOCKET                  m_socket;
