@@ -13,6 +13,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
         }
 
+        public SocketAwaitableEventArgs WaitForDataAsync()
+        {
+            _awaitableEventArgs.SetBuffer(Array.Empty<byte>(), 0, 0);
+
+            if (!_socket.ReceiveAsync(_awaitableEventArgs))
+            {
+                _awaitableEventArgs.Complete();
+            }
+
+            return _awaitableEventArgs;
+        }
+
         public SocketAwaitableEventArgs ReceiveAsync(Memory<byte> buffer)
         {
 #if NETCOREAPP2_1
