@@ -5,6 +5,7 @@
       SignFiles;
       RebuildOobArchives;
       RebuildPackages;
+      SignNupkgs;
       RebuildVSIXes;
       RebuildSharedFxs;
       RepackMPacks;
@@ -108,8 +109,39 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="ZipFile"
-      Properties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath);Extension=.nupkg"
+      Properties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(UnsignedPackagesWithSignedBinariesPath);Extension=.nupkg"
       Condition="'@(NuSpec)'!=''" />
+  </Target>
+
+  <Target Name="SignNupkgs">
+    <PropertyGroup>
+      <_ManifestOutputPath>$(IntermediateDir)esrp-package-sign.json</_ManifestOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_UnsignedNupkgs Include="$(UnsignedPackagesWithSignedBinariesPath)**\*.nupkg" />
+    </ItemGroup>
+
+    <Microsoft.Build.OOB.ESRP.CreateSignManifests
+       ApplicationId="$(ESRPApplicationId)"
+       DestinationRootDirectory="$(PackagesOutputPath)"
+       Files="@(_UnsignedNupkgs)"
+       ManifestOutputPath="$(_ManifestOutputPath)"
+       KeyCodes="$(MicrosoftNuGet)">
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+    </Microsoft.Build.OOB.ESRP.CreateSignManifests>
+
+    <Exec
+      Command="$(ESRPClientExe) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress"
+      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
+
+    <Copy
+      Files="@(_UnsignedNupkgs)"
+      DestinationFolder="$(PackagesOutputPath)"
+      Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'" />
   </Target>
 
   <!-- Repacks MPacks with their signed binaries -->
