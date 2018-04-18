@@ -8,15 +8,18 @@ export type TestHttpHandler = (request: HttpRequest, next?: (request: HttpReques
 
 export class TestHttpClient extends HttpClient {
     private handler: (request: HttpRequest) => Promise<HttpResponse>;
+    public sentRequests: HttpRequest[];
 
     constructor() {
         super();
+        this.sentRequests = [];
         this.handler = (request: HttpRequest) =>
             Promise.reject(`Request has no handler: ${request.method} ${request.url}`);
 
     }
 
     public send(request: HttpRequest): Promise<HttpResponse> {
+        this.sentRequests.push(request);
         return this.handler(request);
     }
 
@@ -59,7 +62,7 @@ export class TestHttpClient extends HttpClient {
                 if (typeof val === "string") {
                     // string payload
                     return new HttpResponse(200, "OK", val);
-                } else if(typeof val === "object" && val.statusCode) {
+                } else if (typeof val === "object" && val.statusCode) {
                     // HttpResponse payload
                     return val as HttpResponse;
                 } else {

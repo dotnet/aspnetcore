@@ -186,11 +186,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         public void OnLongPoll(Func<CancellationToken, Task<HttpResponseMessage>> handler)
         {
+            OnLongPoll((request, token) => handler(token));
+        }
+
+        public void OnLongPoll(Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> handler)
+        {
+            OnLongPoll((request, token) => Task.FromResult(handler(request, token)));
+        }
+
+        public void OnLongPoll(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler)
+        {
             OnRequest((request, next, cancellationToken) =>
             {
                 if (ResponseUtils.IsLongPollRequest(request))
                 {
-                    return handler(cancellationToken);
+                    return handler(request, cancellationToken);
                 }
                 else
                 {

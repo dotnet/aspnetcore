@@ -9,21 +9,28 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     public class NegotiateProtocolTests
     {
         [Theory]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0])]
-        [InlineData("{\"connectionId\":\"\",\"availableTransports\":[]}", "", new string[0])]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new [] { "test"})]
-        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports)
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null)]
+        [InlineData("{\"connectionId\":\"\",\"availableTransports\":[]}", "", new string[0], null, null)]
+        [InlineData("{\"url\": \"http://foo.com/chat\"}", null, null, "http://foo.com/chat", null)]
+        [InlineData("{\"url\": \"http://foo.com/chat\", \"accessToken\": \"token\"}", null, null, "http://foo.com/chat", "token")]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null)]
+        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken)
         {
             var responseData = Encoding.UTF8.GetBytes(json);
             var ms = new MemoryStream(responseData);
             var response = NegotiateProtocol.ParseResponse(ms);
 
             Assert.Equal(connectionId, response.ConnectionId);
-            Assert.Equal(availableTransports.Length, response.AvailableTransports.Count);
+            Assert.Equal(availableTransports?.Length, response.AvailableTransports?.Count);
+            Assert.Equal(url, response.Url);
+            Assert.Equal(accessToken, response.AccessToken);
 
-            var responseTransports = response.AvailableTransports.Select(t => t.Transport).ToList();
+            if (response.AvailableTransports != null)
+            {
+                var responseTransports = response.AvailableTransports.Select(t => t.Transport).ToList();
 
-            Assert.Equal(availableTransports, responseTransports);
+                Assert.Equal(availableTransports, responseTransports);
+            }
         }
 
         [Theory]
