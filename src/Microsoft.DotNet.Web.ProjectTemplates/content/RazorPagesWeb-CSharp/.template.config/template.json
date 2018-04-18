@@ -13,7 +13,7 @@
   "precedence": "3000",
   "identity": "Microsoft.Web.RazorPages.CSharp.2.1",
   "shortName": [ "razor", "webapp" ],
-  "thirdPartyNotices": "https://aka.ms/template-3pn",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore-template-3pn-210",
   "tags": {
     "language": "C#",
     "type": "project"

@@ -11,7 +11,6 @@
   "precedence": "3000",
   "identity": "Microsoft.Web.Empty.FSharp.2.1",
   "shortName": "web",
-  "thirdPartyNotices": "https://aka.ms/template-3pn",
   "tags": {
     "language": "F#",
     "type": "project"
