@@ -39,7 +39,7 @@
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
 
     <!-- Microsoft.NetCore.DotNetAppHost for global tools-->
-    <ExternalDependency Include="Microsoft.NetCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" Private="true" />
 
     <!-- Razor uses a custom version of roslyn packages -->
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
