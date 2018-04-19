@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <OutputType>library</OutputType>
+    <OutputType>Library</OutputType>
     <IsPackable>true</IsPackable>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
     <RestoreSources Condition="'$(IncludeCustomRestoreSourcesSymbol)'=='true'">
