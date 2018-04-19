@@ -19,6 +19,7 @@
     <!-- Working directories -->
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
+    <UnsignedPackagesWithSignedBinariesPath>$(IntermediateDir)UnsignedPackagesWithSignedBinaries\</UnsignedPackagesWithSignedBinariesPath>
     <UnsignedVSIXPath>$(IntermediateDir)UnsignedVSIX\</UnsignedVSIXPath>
     <UnsignedSharedFxPath>$(IntermediateDir)SharedFx\</UnsignedSharedFxPath>
     <UnsignedOobArchivePath>$(IntermediateDir)UnsignedOobArchives\</UnsignedOobArchivePath>
@@ -39,6 +40,12 @@
     <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
     <SkipArtifactVerification>true</SkipArtifactVerification>
     <SkipBillOfMaterials>true</SkipBillOfMaterials>
+  </PropertyGroup>
+
+  <!-- Properties for ESRP signing -->
+  <PropertyGroup>
+    <ESRPClientExe>\\aspnetci\share\esrpclient.1.0.23\tools\EsrpClient.exe</ESRPClientExe>
+    <ESRPApplicationId>c60f7964-1143-48c1-8b20-3d8132073adb</ESRPApplicationId>
   </PropertyGroup>
 
   <PropertyGroup>
