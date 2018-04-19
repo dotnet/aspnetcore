@@ -1390,7 +1390,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
                 await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
                 await connectionHandlerTask.OrTimeout();
-                
+
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
                 Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
             }
@@ -1794,6 +1794,58 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var availableTransports = (JArray)negotiateResponse["availableTransports"];
 
                 Assert.Empty(availableTransports);
+            }
+        }
+
+        [Fact]
+        public async Task LongPollingCanPollIfWritePipeHasBackpressure()
+        {
+            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
+                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                using (var responseBody = new MemoryStream())
+                using (var requestBody = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Request.Body = requestBody;
+                    context.Response.Body = responseBody;
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = connection.ConnectionId;
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
+                    var buffer = Encoding.UTF8.GetBytes("Hello, world");
+                    requestBody.Write(buffer, 0, buffer.Length);
+                    requestBody.Seek(0, SeekOrigin.Begin);
+
+                    // Write some data to the pipe to fill it up and make the next write wait
+                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+
+                    // This will block until the pipe is unblocked
+                    var sendTask = dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                    Assert.False(sendTask.IsCompleted);
+
+                    var pollContext = MakeRequest("/foo", connection);
+                    // This should unblock the send that is waiting because of backpressure
+                    // Testing deadlock regression where pipe backpressure would hold the same lock that poll would use
+                    await dispatcher.ExecuteAsync(pollContext, options, app).OrTimeout();
+
+                    await sendTask.OrTimeout();
+                }
             }
         }
 
