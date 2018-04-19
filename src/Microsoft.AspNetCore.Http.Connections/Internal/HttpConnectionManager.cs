@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 DateTimeOffset lastSeenUtc;
                 var connection = c.Value.Connection;
 
-                await connection.Lock.WaitAsync();
+                await connection.StateLock.WaitAsync();
 
                 try
                 {
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
                 finally
                 {
-                    connection.Lock.Release();
+                    connection.StateLock.Release();
                 }
 
                 // Once the decision has been made to dispose we don't check the status again
