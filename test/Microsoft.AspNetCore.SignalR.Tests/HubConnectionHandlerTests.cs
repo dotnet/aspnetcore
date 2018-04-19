@@ -13,6 +13,7 @@ using MessagePack.Formatters;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -1979,6 +1980,153 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
 
                 await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task StreamingInvocationsDoNotBlockOtherInvocations()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+
+            using (var client = new TestClient(new JsonHubProtocol()))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                // Blocking streaming invocation to test that other invocations can still run
+                await client.SendHubMessageAsync(new StreamInvocationMessage("1", nameof(StreamingHub.BlockingStream), Array.Empty<object>())).OrTimeout();
+
+                var completion = await client.InvokeAsync(nameof(StreamingHub.NonStream)).OrTimeout();
+                Assert.Equal(42L, completion.Result);
+
+                // Shut down
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task InvocationsRunInOrder()
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+            // Because we use PipeScheduler.Inline the hub invocations will run inline until they wait, which happens inside the LongRunningMethod call
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                // Long running hub invocation to test that other invocations will not run until it is completed
+                await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod), nonBlocking: false).OrTimeout();
+                // Wait for the long running method to start
+                await tcsService.StartedMethod.Task.OrTimeout();
+
+                // Invoke another hub method which will wait for the first method to finish
+                await client.SendInvocationAsync(nameof(LongRunningHub.SimpleMethod), nonBlocking: false).OrTimeout();
+                // Both invocations should be waiting now
+                Assert.Null(client.TryRead());
+
+                // Release the long running hub method
+                tcsService.EndMethod.TrySetResult(null);
+
+                // Long running hub method result
+                var firstResult = await client.ReadAsync().OrTimeout();
+
+                var longRunningCompletion = Assert.IsType<CompletionMessage>(firstResult);
+                Assert.Equal(12L, longRunningCompletion.Result);
+
+                // simple hub method result
+                var secondResult = await client.ReadAsync().OrTimeout();
+
+                var simpleCompletion = Assert.IsType<CompletionMessage>(secondResult);
+                Assert.Equal(21L, simpleCompletion.Result);
+
+                // Shut down
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task StreamInvocationsBlockOtherInvocationsUntilTheyStartStreaming()
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+                builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+            // Because we use PipeScheduler.Inline the hub invocations will run inline until they wait, which happens inside the LongRunningMethod call
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                // Long running hub invocation to test that other invocations will not run until it is completed
+                var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.LongRunningStream)).OrTimeout();
+                // Wait for the long running method to start
+                await tcsService.StartedMethod.Task.OrTimeout();
+
+                // Invoke another hub method which will wait for the first method to finish
+                await client.SendInvocationAsync(nameof(LongRunningHub.SimpleMethod), nonBlocking: false).OrTimeout();
+                // Both invocations should be waiting now
+                Assert.Null(client.TryRead());
+
+                // Release the long running hub method
+                tcsService.EndMethod.TrySetResult(null);
+
+                // simple hub method result
+                var result = await client.ReadAsync().OrTimeout();
+
+                var simpleCompletion = Assert.IsType<CompletionMessage>(result);
+                Assert.Equal(21L, simpleCompletion.Result);
+
+                var hubActivator = serviceProvider.GetService<IHubActivator<LongRunningHub>>() as CustomHubActivator<LongRunningHub>;
+
+                // OnConnectedAsync and SimpleMethod hubs have been disposed at this point
+                Assert.Equal(2, hubActivator.ReleaseCount);
+
+                await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
+
+                // Completion message for canceled Stream
+                await client.ReadAsync().OrTimeout();
+
+                // Stream method is now disposed
+                Assert.Equal(3, hubActivator.ReleaseCount);
+
+                // Shut down
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
+        {
+            public int ReleaseCount;
+            private IServiceProvider _serviceProvider;
+
+            public CustomHubActivator(IServiceProvider serviceProvider)
+            {
+                _serviceProvider = serviceProvider;
+            }
+
+            public THub Create()
+            {
+                return new DefaultHubActivator<THub>(_serviceProvider).Create();
+            }
+
+            public void Release(THub hub)
+            {
+                ReleaseCount++;
+                hub.Dispose();
             }
         }
 
