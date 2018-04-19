@@ -6,7 +6,6 @@
     <Description>This site extension installs Microsoft.AspNetCore.All, Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
     <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(RuntimeArch)</PackageId>
-    <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

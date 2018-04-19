@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\..\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\applicationHost.xdt" Link="applicationHost.xdt">
+    <Content Include="..\..\extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\applicationHost.xdt" Link="applicationHost.xdt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="config_empty.xml">
