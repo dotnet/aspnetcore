@@ -41,6 +41,28 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        public void ResolveModel_ReturnsModelWhenNullValueIsProvided()
+        {
+            // Regression test for https://github.com/aspnet/Mvc/issues/7667.
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            {
+                Model = new object(),
+            };
+            var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
+            {
+                Model = null,
+                ViewData = viewData,
+            };
+
+            // Act
+            var model = tagHelper.ResolveModel();
+
+            // Assert
+            Assert.Null(model);
+        }
+
+        [Fact]
         public void ResolveModel_ReturnsForModelWhenProvided()
         {
             // Arrange
@@ -67,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public void ResolveModel_ReturnsViewContextsViewDataModelWhenModelAndForAreNull()
+        public void ResolveModel_ReturnsViewContextsViewDataModelWhenModelAndForAreNotSet()
         {
             // Arrange
             var expectedModel = new object();
@@ -98,6 +120,28 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
             {
                 Model = new object(),
+                For = new ModelExpression("Property", propertyModelExplorer),
+            };
+            var expectedMessage = Resources.FormatPartialTagHelper_InvalidModelAttributes(typeof(PartialTagHelper).FullName, "for", "model");
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => tagHelper.ResolveModel());
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public void ResolveModel_ThrowsWhenNullModelAndForProvided()
+        {
+            // Arrange
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var containerModel = new TestModel();
+            var containerModelExplorer = modelMetadataProvider.GetModelExplorerForType(
+                typeof(TestModel),
+                containerModel);
+            var propertyModelExplorer = containerModelExplorer.GetExplorerForProperty(nameof(TestModel.Property));
+            var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
+            {
+                Model = null,
                 For = new ModelExpression("Property", propertyModelExplorer),
             };
             var expectedMessage = Resources.FormatPartialTagHelper_InvalidModelAttributes(typeof(PartialTagHelper).FullName, "for", "model");

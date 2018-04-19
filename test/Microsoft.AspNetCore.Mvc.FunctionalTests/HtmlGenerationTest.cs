@@ -9,6 +9,8 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AngleSharp.Dom;
+using AngleSharp.Dom.Html;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -552,6 +554,46 @@ Products: Music Systems, Televisions (3)";
             Assert.Contains("Hello, Field World!", response);
             Assert.Contains("Hello, Static World!", response);
             Assert.Contains("Hello, Private World!", response);
+        }
+
+        [Fact]
+        public async Task PartialTagHelper_AllowsPassingModelValue()
+        {
+            // Arrange
+            var url = "/HtmlGeneration_Home/StatusMessage";
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var banner = QuerySelector(document, ".banner");
+            Assert.Equal("Some status message", banner.TextContent);
+        }
+
+        [Fact]
+        public async Task PartialTagHelper_AllowsPassingNullModelValue()
+        {
+            // Regression test for https://github.com/aspnet/Mvc/issues/7667.
+            // Arrange
+            var url = "/HtmlGeneration_Home/NullStatusMessage";
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync(url);
+
+            // Assert
+            var banner = QuerySelector(document, ".banner");
+            Assert.Empty(banner.TextContent);
+        }
+
+        private static IElement QuerySelector(IHtmlDocument document, string selector)
+        {
+            var element = document.QuerySelector(selector);
+            if (element == null)
+            {
+                throw new ArgumentException($"Document does not contain element that matches the selector {selector}: " + Environment.NewLine + document.DocumentElement.OuterHtml);
+            }
+
+            return element;
         }
 
         private static HttpRequestMessage RequestWithLocale(string url, string locale)

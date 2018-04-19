@@ -239,5 +239,9 @@ namespace HtmlGenerationWebSite.Controllers
         }
 
         public IActionResult PartialTagHelperWithoutModel() => View();
+
+        public IActionResult StatusMessage() => View(new StatusMessageModel { Message = "Some status message"});
+
+        public IActionResult NullStatusMessage() => View("StatusMessage", new StatusMessageModel());
     }
 }
