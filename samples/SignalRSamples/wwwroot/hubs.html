@@ -139,14 +139,17 @@
             new signalR.protocols.msgpack.MessagePackHubProtocol() :
             new signalR.JsonHubProtocol();
 
-        let options = { logger: signalR.LogLevel.Trace, protocol: protocol };
-
+        var options = {};
         if (transportDropdown.value !== "Automatic") {
             options.transport = signalR.HttpTransportType[transportDropdown.value];
         }
 
         console.log('http://' + document.location.host + '/' + hubRoute);
-        connection = new signalR.HubConnection(hubRoute, options);
+        connection = new signalR.HubConnectionBuilder()
+            .configureLogging(signalR.LogLevel.Trace)
+            .withUrl(hubRoute, options)
+            .withHubProtocol(protocol)
+            .build();
         connection.on('Send', function (msg) {
             addLine('message-list', msg);
         });

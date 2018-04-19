@@ -53,7 +53,10 @@
             });
 
             click('connectButton', function () {
-                connection = new signalR.HubConnection('/streaming', { transport: transportType, logger: signalR.LogLevel.Trace });
+                connection = new signalR.HubConnectionBuilder()
+                    .configureLogging(signalR.LogLevel.Trace)
+                    .withUrl("/streaming", transportType)
+                    .build();
 
                 connection.onclose(function () {
                     channelButton.disabled = true;

@@ -16,12 +16,14 @@ export interface HttpRequest {
 }
 
 export class HttpResponse {
+    constructor(statusCode: number);
+    constructor(statusCode: number, statusText: string);
     constructor(statusCode: number, statusText: string, content: string);
     constructor(statusCode: number, statusText: string, content: ArrayBuffer);
     constructor(
         public readonly statusCode: number,
-        public readonly statusText: string,
-        public readonly content: string | ArrayBuffer) {
+        public readonly statusText?: string,
+        public readonly content?: string | ArrayBuffer) {
     }
 }
 

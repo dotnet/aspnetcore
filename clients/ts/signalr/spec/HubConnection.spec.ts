@@ -1,27 +1,27 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HubConnection } from "../src/HubConnection";
-import { IHubConnectionOptions } from "../src/HubConnection";
+import { HubConnection, JsonHubProtocol } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
 import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
+import { NullLogger } from "../src/Loggers";
 import { IStreamSubscriber } from "../src/Stream";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 import { asyncit as it, captureException, delay, PromiseSource } from "./Utils";
 
-const commonOptions: IHubConnectionOptions = {
-    logger: null,
-};
+function createHubConnection(connection: IConnection, logger?: ILogger, protocol?: IHubProtocol) {
+    return new HubConnection(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol());
+}
 
 describe("HubConnection", () => {
 
     describe("start", () => {
         it("sends negotiation message", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             await hubConnection.start();
             expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
@@ -36,7 +36,7 @@ describe("HubConnection", () => {
         it("sends a non blocking invocation", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const invokePromise = hubConnection.send("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -60,7 +60,7 @@ describe("HubConnection", () => {
         it("sends an invocation", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const invokePromise = hubConnection.invoke("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -89,7 +89,7 @@ describe("HubConnection", () => {
             };
 
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+            const hubConnection = createHubConnection(connection, null, mockProtocol);
 
             const data = "{}" + TextMessageFormat.RecordSeparator;
 
@@ -108,7 +108,7 @@ describe("HubConnection", () => {
             };
 
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+            const hubConnection = createHubConnection(connection, null, mockProtocol);
 
             // handshake response + message separator
             const data = [0x7b, 0x7d, 0x1e];
@@ -126,7 +126,7 @@ describe("HubConnection", () => {
             mockProtocol.onreceive = (d) => receivedProcotolData = d as ArrayBuffer;
 
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+            const hubConnection = createHubConnection(connection, null, mockProtocol);
 
             // handshake response + message separator + message pack message
             const data = [
@@ -151,7 +151,7 @@ describe("HubConnection", () => {
             mockProtocol.onreceive = (d) => receivedProcotolData = d as string;
 
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { logger: null, protocol: mockProtocol });
+            const hubConnection = createHubConnection(connection, null, mockProtocol);
 
             const data = "{}" + TextMessageFormat.RecordSeparator + "{\"type\":6}" + TextMessageFormat.RecordSeparator;
 
@@ -162,7 +162,7 @@ describe("HubConnection", () => {
 
         it("rejects the promise when an error is received", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             connection.receiveHandshakeResponse();
 
             const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
@@ -175,7 +175,7 @@ describe("HubConnection", () => {
 
         it("resolves the promise when a result is received", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             connection.receiveHandshakeResponse();
 
             const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
@@ -188,7 +188,7 @@ describe("HubConnection", () => {
         it("completes pending invocations when stopped", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -202,7 +202,7 @@ describe("HubConnection", () => {
         it("completes pending invocations when connection is lost", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -226,7 +226,7 @@ describe("HubConnection", () => {
                 },
             } as ILogger;
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { logger });
+            const hubConnection = createHubConnection(connection, logger);
 
             connection.receiveHandshakeResponse();
 
@@ -250,7 +250,7 @@ describe("HubConnection", () => {
                 },
             } as ILogger;
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { logger });
+            const hubConnection = createHubConnection(connection, logger);
 
             connection.receiveHandshakeResponse();
 
@@ -271,7 +271,7 @@ describe("HubConnection", () => {
 
         it("all handlers can be unregistered with just the method name", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -304,7 +304,7 @@ describe("HubConnection", () => {
 
         it("a single handler can be unregistered with the method name and handler", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -337,7 +337,7 @@ describe("HubConnection", () => {
 
         it("can't register the same handler multiple times", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -359,7 +359,7 @@ describe("HubConnection", () => {
 
         it("callback invoked when servers invokes a method on the client", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -379,7 +379,7 @@ describe("HubConnection", () => {
 
         it("stop on handshake error", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             let closeError: Error = null;
             hubConnection.onclose((e) => closeError = e);
@@ -391,7 +391,7 @@ describe("HubConnection", () => {
 
         it("stop on close message", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             let isClosed = false;
             let closeError: Error = null;
@@ -412,7 +412,7 @@ describe("HubConnection", () => {
 
         it("stop on error close message", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             let isClosed = false;
             let closeError: Error = null;
@@ -434,7 +434,7 @@ describe("HubConnection", () => {
 
         it("can have multiple callbacks", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -457,7 +457,7 @@ describe("HubConnection", () => {
 
         it("can unsubscribe from on", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -488,7 +488,7 @@ describe("HubConnection", () => {
 
         it("unsubscribing from non-existing callbacks no-ops", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             hubConnection.off("_", () => { });
             hubConnection.on("message", (t) => { });
@@ -507,7 +507,7 @@ describe("HubConnection", () => {
             } as ILogger;
 
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { logger });
+            const hubConnection = createHubConnection(connection, logger);
 
             connection.receiveHandshakeResponse();
 
@@ -542,7 +542,7 @@ describe("HubConnection", () => {
         it("sends an invocation", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const invokePromise = hubConnection.stream("testStream", "arg", 42);
 
             // Verify the message is sent
@@ -563,7 +563,7 @@ describe("HubConnection", () => {
 
         it("completes with an error when an error is yielded", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -579,7 +579,7 @@ describe("HubConnection", () => {
 
         it("completes the observer when a completion is received", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -595,7 +595,7 @@ describe("HubConnection", () => {
         it("completes pending streams when stopped", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
@@ -608,7 +608,7 @@ describe("HubConnection", () => {
         it("completes pending streams when connection is lost", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
@@ -622,7 +622,7 @@ describe("HubConnection", () => {
 
         it("yields items as they arrive", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -646,7 +646,7 @@ describe("HubConnection", () => {
         it("does not require error function registered", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const observer = hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
             // Typically this would be called by the transport
@@ -657,7 +657,7 @@ describe("HubConnection", () => {
         it("does not require complete function registered", async () => {
             const connection = new TestConnection();
 
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const observer = hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
             // Send completion to trigger observer.complete()
@@ -667,7 +667,7 @@ describe("HubConnection", () => {
 
         it("can be canceled", () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
 
             connection.receiveHandshakeResponse();
 
@@ -696,7 +696,7 @@ describe("HubConnection", () => {
     describe("onClose", () => {
         it("can have multiple callbacks", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             let invocations = 0;
             hubConnection.onclose((e) => invocations++);
             hubConnection.onclose((e) => invocations++);
@@ -707,7 +707,7 @@ describe("HubConnection", () => {
 
         it("callbacks receive error", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             let error: Error;
             hubConnection.onclose((e) => error = e);
 
@@ -718,7 +718,7 @@ describe("HubConnection", () => {
 
         it("ignores null callbacks", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             hubConnection.onclose(null);
             hubConnection.onclose(undefined);
             // Typically this would be called by the transport
@@ -732,7 +732,7 @@ describe("HubConnection", () => {
             // Receive the ping mid-invocation so we can see that the rest of the flow works fine
 
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, commonOptions);
+            const hubConnection = createHubConnection(connection);
             const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Ping });
@@ -743,7 +743,8 @@ describe("HubConnection", () => {
 
         it("does not terminate if messages are received", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
+            const hubConnection = createHubConnection(connection);
+            hubConnection.serverTimeoutInMilliseconds = 100;
 
             const p = new PromiseSource<Error>();
             hubConnection.onclose((e) => p.resolve(e));
@@ -768,7 +769,8 @@ describe("HubConnection", () => {
 
         it("does not timeout if message was received before HubConnection.start", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
+            const hubConnection = createHubConnection(connection);
+            hubConnection.serverTimeoutInMilliseconds = 100;
 
             const p = new PromiseSource<Error>();
             hubConnection.onclose((e) => p.resolve(e));
@@ -795,7 +797,8 @@ describe("HubConnection", () => {
 
         it("terminates if no messages received within timeout interval", async () => {
             const connection = new TestConnection();
-            const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
+            const hubConnection = createHubConnection(connection);
+            hubConnection.serverTimeoutInMilliseconds = 100;
 
             const p = new PromiseSource<Error>();
             hubConnection.onclose((e) => p.resolve(e));

@@ -70,8 +70,11 @@
                     transport: transportType,
                     accessTokenFactory: function () { return tokens[clientId]; }
                 };
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/broadcast", options)
+                    .configureLogging(signalR.LogLevel.Information)
+                    .build();
 
-                connection = new signalR.HubConnection('/broadcast', options);
                 connection.on('Message', function (from, message) {
                     appendLog(clientId, from + ': ' + message);
                 });
