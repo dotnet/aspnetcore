@@ -1153,15 +1153,15 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         }
 
         [Fact]
-        public async Task BindPropertyAttribute_CanBeAppliedToModelType()
+        public async Task BindPropertiesAttribute_CanBeAppliedToModelType()
         {
             // Arrange
             var expected = "Property1 = 123, Property2 = 25,";
-            var request = new HttpRequestMessage(HttpMethod.Post, "/Pages/PropertyBinding/BindPropertyOnModel?Property1=123")
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Pages/PropertyBinding/BindPropertiesOnModel?Property1=123")
             {
-                Content = new FormUrlEncodedContent(new[]
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    new KeyValuePair<string, string>("Property2", "25"),
+                    { "Property2", "25" },
                 }),
             };
             await AddAntiforgeryHeaders(request);
@@ -1176,11 +1176,26 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         }
 
         [Fact]
+        public async Task BindPropertiesAttribute_CanBeAppliedToModelType_AllowsBindingOnGet()
+        {
+            // Arrange
+            var url = "/Pages/PropertyBinding/BindPropertiesWithSupportsGetOnModel?Property=Property-Value";
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Property-Value", content.Trim());
+        }
+
+        [Fact]
         public async Task BindingInfoOnPropertiesIsPreferredToBindingInfoOnType()
         {
             // Arrange
             var expected = "Property1 = 123, Property2 = 25,";
-            var request = new HttpRequestMessage(HttpMethod.Post, "/Pages/PropertyBinding/BindPropertyOnModel?Property1=123")
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Pages/PropertyBinding/BindPropertiesOnModel?Property1=123")
             {
                 Content = new FormUrlEncodedContent(new[]
                 {

@@ -1127,7 +1127,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(typeInfo, action.ActionMethod.DeclaringType.GetTypeInfo());
         }
 
-        [BindProperty]
+        [BindProperties]
         public class BindPropertyController
         {
             public string Property { get; set; }
@@ -1140,7 +1140,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void CreatePropertyModel_AddsBindingInfoToProperty_IfDeclaringTypeHasBindPropertyAttribute()
+        public void CreatePropertyModel_AddsBindingInfoToProperty_IfDeclaringTypeHasBindPropertiesAttribute()
         {
             // Arrange
             var propertyInfo = typeof(BindPropertyController).GetProperty(nameof(BindPropertyController.Property));
@@ -1155,7 +1155,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Null(bindingInfo.BinderType);
             Assert.Null(bindingInfo.BindingSource);
             Assert.Null(bindingInfo.PropertyFilterProvider);
-            Assert.Null(bindingInfo.RequestPredicate);
+            Assert.NotNull(bindingInfo.RequestPredicate);
         }
 
         [Fact]
@@ -1206,7 +1206,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.NotNull(property.BindingInfo);
         }
 
-        [BindProperty]
+        [BindProperties]
         public class UserController : ControllerBase
         {
             public string DerivedProperty { get; set; }

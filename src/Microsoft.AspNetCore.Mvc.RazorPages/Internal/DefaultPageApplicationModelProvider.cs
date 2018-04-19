@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly PageHandlerResultFilter _pageHandlerResultFilter = new PageHandlerResultFilter();
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly MvcOptions _options;
+        private readonly Func<ActionContext, bool> _supportsAllRequests;
+        private readonly Func<ActionContext, bool> _supportsNonGetRequests;
+
 
         public DefaultPageApplicationModelProvider(
             IModelMetadataProvider modelMetadataProvider,
@@ -27,6 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             _modelMetadataProvider = modelMetadataProvider;
             _options = options.Value;
+
+            _supportsAllRequests = _ => true;
+            _supportsNonGetRequests = context => !string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -262,17 +268,25 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var propertyAttributes = property.GetCustomAttributes(inherit: true);
 
+            // BindingInfo for properties can be either specified by decorating the property with binding-specific attributes.
+            // ModelMetadata also adds information from the property's type and any configured IBindingMetadataProvider.
             var propertyMetadata = _modelMetadataProvider.GetMetadataForProperty(property.DeclaringType, property.Name);
             var bindingInfo = BindingInfo.GetBindingInfo(propertyAttributes, propertyMetadata);
 
             if (bindingInfo == null)
             {
-                // Look for binding info on the handler if nothing is specified on the property.
-                // This allows BindProperty attributes on handlers to apply to properties.
-                var handlerType = property.DeclaringType;
-                var handlerAttributes = handlerType.GetCustomAttributes(inherit: true);
-                var handlerMetadata = _modelMetadataProvider.GetMetadataForType(property.DeclaringType);
-                bindingInfo = BindingInfo.GetBindingInfo(handlerAttributes, handlerMetadata);
+                // Look for BindPropertiesAttribute on the handler type if no BindingInfo was inferred for the property.
+                // This allows a user to enable model binding on properties by decorating the controller type with BindPropertiesAttribute.
+                var declaringType = property.DeclaringType;
+                var bindPropertiesAttribute = declaringType.GetCustomAttribute<BindPropertiesAttribute>(inherit: true);
+                if (bindPropertiesAttribute != null)
+                {
+                    var requestPredicate = bindPropertiesAttribute.SupportsGet ? _supportsAllRequests : _supportsNonGetRequests;
+                    bindingInfo = new BindingInfo
+                    {
+                        RequestPredicate = requestPredicate,
+                    };
+                }
             }
 
             var model = new PagePropertyModel(property, propertyAttributes)

@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace BasicWebSite
 {
-    [BindProperty]
-    public class BindPropertyController : Controller
+    [BindProperties]
+    public class BindPropertiesController : Controller
     {
         public string Name { get; set; }
 
@@ -21,7 +21,10 @@ namespace BasicWebSite
         [ModelBinder(typeof(CustomBoundModelBinder))]
         public string CustomBound { get; set; }
 
-        public object Action() => new { Name, Id, IdFromRoute, CustomBound };
+        [BindNever]
+        public string BindNeverProperty { get; set; }
+
+        public object Action() => new { Name, Id, IdFromRoute, CustomBound, BindNeverProperty };
 
         private class CustomBoundModelBinder : IModelBinder
         {

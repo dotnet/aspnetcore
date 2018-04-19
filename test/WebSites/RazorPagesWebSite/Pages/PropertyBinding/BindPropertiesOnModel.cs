@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace RazorPagesWebSite
 {
-    [BindProperty]
-    public class BindPropertyOnModel : PageModel
+    [BindProperties]
+    public class BindPropertiesOnModel : PageModel
     {
         [FromQuery]
         public string Property1 { get; set; }

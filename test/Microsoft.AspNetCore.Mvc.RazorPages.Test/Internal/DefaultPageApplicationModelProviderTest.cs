@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public string Property1 { get; set; }
         }
 
-        [BindProperty]
+        [BindProperties]
         private class ModelLevel2 : ModelLevel1
         {
             public string Property2 { get; set; }
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public override Task ExecuteAsync() => null;
         }
 
-        [BindProperty]
+        [BindProperties]
         [PageModel]
         private class ModelWithBindProperty
         {
