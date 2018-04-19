@@ -8,7 +8,7 @@
       <UnsignedPackages Include="$(UnsignedPackagesDir)*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)build\*.vsix" />
       <UnsignedSharedFx Include="$(DepsDirectory)assets\Runtime\*\*.zip" />
-      <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip" />
+      <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip;$(DepsDirectory)build\runtime-site-extension-*.zip" />
       <PoliCheckPackages Include="@(UnsignedPackages)" />
       <UnsignedMPacks Include="$(DepsDirectory)build\**\*.mpack" />
 
