@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, IHubConnectionOptions, IStreamSubscriber, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
+import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, HubConnectionBuilder, IHttpConnectionOptions, IStreamSubscriber, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol } from "./Common";
@@ -10,13 +10,24 @@ import { TestLogger } from "./TestLogger";
 const TESTHUBENDPOINT_URL = "/testhub";
 const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = "/testhub-nowebsockets";
 
-const commonOptions: IHubConnectionOptions = {
-    logMessageContent: true,
-    logger: TestLogger.instance,
-};
-
 // On slower CI machines, these tests sometimes take longer than 5s
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
+
+const commonOptions: IHttpConnectionOptions = {
+    logMessageContent: true,
+};
+
+function getConnectionBuilder(transportType?: HttpTransportType, url?: string, options?: IHttpConnectionOptions): HubConnectionBuilder {
+    let actualOptions: IHttpConnectionOptions = options || {};
+    if (transportType) {
+        actualOptions.transport = transportType;
+    }
+    actualOptions = { ...actualOptions, ...commonOptions };
+
+    return new HubConnectionBuilder()
+        .configureLogging(TestLogger.instance)
+        .withUrl(url || TESTHUBENDPOINT_URL, actualOptions);
+}
 
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
@@ -24,11 +35,10 @@ describe("hubConnection", () => {
             it("can invoke server method and receive result", (done) => {
                 const message = "你好，世界！";
 
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
+
                 hubConnection.onclose((error) => {
                     expect(error).toBeUndefined();
                     done();
@@ -51,11 +61,10 @@ describe("hubConnection", () => {
             it("can invoke server method non-blocking and not receive result", (done) => {
                 const message = "你好，世界！";
 
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
+
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
                     done();
@@ -74,11 +83,9 @@ describe("hubConnection", () => {
             });
 
             it("can invoke server method structural object and receive structural result", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.on("CustomObject", (customObject) => {
                     expect(customObject.Name).toBe("test");
@@ -100,11 +107,9 @@ describe("hubConnection", () => {
             });
 
             it("can stream server method and receive result", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
@@ -134,11 +139,9 @@ describe("hubConnection", () => {
 
             it("rethrows an exception from the server when invoking", (done) => {
                 const errorMessage = "An unexpected error occurred invoking 'ThrowException' on the server. InvalidOperationException: An error occurred.";
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.start().then(() => {
                     hubConnection.invoke("ThrowException", "An error occurred.").then(() => {
@@ -158,11 +161,9 @@ describe("hubConnection", () => {
             });
 
             it("throws an exception when invoking streaming method with invoke", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.start().then(() => {
                     hubConnection.invoke("EmptyStream").then(() => {
@@ -182,11 +183,9 @@ describe("hubConnection", () => {
             });
 
             it("throws an exception when receiving a streaming result for method called with invoke", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.start().then(() => {
                     hubConnection.invoke("Stream").then(() => {
@@ -207,11 +206,9 @@ describe("hubConnection", () => {
 
             it("rethrows an exception from the server when streaming", (done) => {
                 const errorMessage = "An unexpected error occurred invoking 'StreamThrowException' on the server. InvalidOperationException: An error occurred.";
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.start().then(() => {
                     hubConnection.stream("StreamThrowException", "An error occurred.").subscribe({
@@ -236,11 +233,9 @@ describe("hubConnection", () => {
             });
 
             it("throws an exception when invoking hub method with stream", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.start().then(() => {
                     hubConnection.stream("Echo", "42").subscribe({
@@ -265,11 +260,9 @@ describe("hubConnection", () => {
             });
 
             it("can receive server calls", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 const message = "你好 SignalR！";
 
@@ -297,11 +290,9 @@ describe("hubConnection", () => {
             });
 
             it("can receive server calls without rebinding handler when restarted", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 const message = "你好 SignalR！";
 
@@ -354,11 +345,9 @@ describe("hubConnection", () => {
             });
 
             it("closed with error if hub cannot be created", (done) => {
-                const hubConnection = new HubConnection("http://" + document.location.host + "/uncreatable", {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType, "http://" + document.location.host + "/uncreatable")
+                    .withHubProtocol(protocol)
+                    .build();
 
                 hubConnection.onclose((error) => {
                     expect(error.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
@@ -368,11 +357,10 @@ describe("hubConnection", () => {
             });
 
             it("can handle different types", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
+
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
                     done();
@@ -412,11 +400,10 @@ describe("hubConnection", () => {
             });
 
             it("can receive different types", (done) => {
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
+
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
                     done();
@@ -458,11 +445,9 @@ describe("hubConnection", () => {
             it("can be restarted", (done) => {
                 const message = "你好，世界！";
 
-                const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                    ...commonOptions,
-                    protocol,
-                    transport: transportType,
-                });
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
 
                 let closeCount = 0;
                 hubConnection.onclose((error) => {
@@ -512,11 +497,11 @@ describe("hubConnection", () => {
 
                 try {
                     const jwtToken = await getJwtToken("http://" + document.location.host + "/generateJwtToken");
-                    const hubConnection = new HubConnection("/authorizedhub", {
+
+                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
                         accessTokenFactory: () => jwtToken,
-                        ...commonOptions,
-                        transport: transportType,
-                    });
+                    }).build();
+
                     hubConnection.onclose((error) => {
                         expect(error).toBe(undefined);
                         done();
@@ -539,11 +524,10 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 try {
-                    const hubConnection = new HubConnection("/authorizedhub", {
+                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
                         accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
-                        ...commonOptions,
-                        transport: transportType,
-                    });
+                    }).build();
+
                     hubConnection.onclose((error) => {
                         expect(error).toBe(undefined);
                         done();
@@ -566,11 +550,10 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 try {
-                    const hubConnection = new HubConnection("/authorizedhub", {
+                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
                         accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
-                        ...commonOptions,
-                        transport: transportType,
-                    });
+                    }).build();
+
                     hubConnection.onclose((error) => {
                         expect(error).toBe(undefined);
                         done();
@@ -591,11 +574,8 @@ describe("hubConnection", () => {
 
             if (transportType !== HttpTransportType.LongPolling) {
                 it("terminates if no messages received within timeout interval", (done) => {
-                    const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-                        ...commonOptions,
-                        timeoutInMilliseconds: 100,
-                        transport: transportType,
-                    });
+                    const hubConnection = getConnectionBuilder(transportType).build();
+                    hubConnection.serverTimeoutInMilliseconds = 100;
 
                     const timeout = setTimeout(200, () => {
                         fail("Server timeout did not fire within expected interval");
@@ -615,10 +595,9 @@ describe("hubConnection", () => {
 
     if (typeof EventSource !== "undefined") {
         it("allows Server-Sent Events when negotiating for JSON protocol", async (done) => {
-            const hubConnection = new HubConnection(TESTHUB_NOWEBSOCKETS_ENDPOINT_URL, {
-                ...commonOptions,
-                protocol: new JsonHubProtocol(),
-            });
+            const hubConnection = getConnectionBuilder(undefined, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
+                .withHubProtocol(new JsonHubProtocol())
+                .build();
 
             try {
                 await hubConnection.start();
@@ -633,10 +612,9 @@ describe("hubConnection", () => {
     }
 
     it("skips Server-Sent Events when negotiating for MessagePack protocol", async (done) => {
-        const hubConnection = new HubConnection(TESTHUB_NOWEBSOCKETS_ENDPOINT_URL, {
-            ...commonOptions,
-            protocol: new MessagePackHubProtocol(),
-        });
+        const hubConnection = getConnectionBuilder(undefined, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
+            .withHubProtocol(new MessagePackHubProtocol())
+            .build();
 
         try {
             await hubConnection.start();
@@ -657,10 +635,9 @@ describe("hubConnection", () => {
             throw new Error("Kick rocks");
         };
 
-        const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-            ...commonOptions,
-            protocol: new JsonHubProtocol(),
-        });
+        const hubConnection = getConnectionBuilder()
+            .withHubProtocol(new JsonHubProtocol())
+            .build();
 
         try {
             await hubConnection.start();
@@ -693,10 +670,10 @@ describe("hubConnection", () => {
         }
 
         const testClient = new TestClient();
-        const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
-            ...commonOptions,
+        const hubConnection = getConnectionBuilder(HttpTransportType.LongPolling, TESTHUBENDPOINT_URL, {
             httpClient: testClient,
-        });
+        }).build();
+
         try {
             await hubConnection.start();
 

@@ -164,11 +164,8 @@ export class ConsoleLogger implements ILogger {
                 case LogLevel.Information:
                     console.info(`${LogLevel[logLevel]}: ${message}`);
                     break;
-                case LogLevel.Trace:
-                case LogLevel.Debug:
-                    console.debug(`${LogLevel[logLevel]}: ${message}`);
-                    break;
                 default:
+                    // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
                     console.log(`${LogLevel[logLevel]}: ${message}`);
                     break;
             }

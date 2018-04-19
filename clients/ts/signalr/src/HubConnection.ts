@@ -10,14 +10,9 @@ import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
 import { IStreamResult } from "./Stream";
 import { TextMessageFormat } from "./TextMessageFormat";
-import { createLogger, Subject } from "./Utils";
+import { Arg, createLogger, Subject } from "./Utils";
 
 export { JsonHubProtocol };
-
-export interface IHubConnectionOptions extends IHttpConnectionOptions {
-    protocol?: IHubProtocol;
-    timeoutInMilliseconds?: number;
-}
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 
@@ -31,26 +26,21 @@ export class HubConnection {
     private id: number;
     private closedCallbacks: Array<(error?: Error) => void>;
     private timeoutHandle: NodeJS.Timer;
-    private timeoutInMilliseconds: number;
     private receivedHandshakeResponse: boolean;
 
-    constructor(url: string, options?: IHubConnectionOptions);
-    constructor(connection: IConnection, options?: IHubConnectionOptions);
-    constructor(urlOrConnection: string | IConnection, options: IHubConnectionOptions = {}) {
-        options = options || {};
+    public serverTimeoutInMilliseconds: number;
 
-        this.timeoutInMilliseconds = options.timeoutInMilliseconds || DEFAULT_TIMEOUT_IN_MS;
+    constructor(connection: IConnection, logger: ILogger, protocol: IHubProtocol) {
+        Arg.isRequired(connection, "connection");
+        Arg.isRequired(logger, "logger");
+        Arg.isRequired(protocol, "protocol");
 
-        this.protocol = options.protocol || new JsonHubProtocol();
+        this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
+
+        this.logger = logger;
+        this.protocol = protocol;
+        this.connection = connection;
         this.handshakeProtocol = new HandshakeProtocol();
-
-        if (typeof urlOrConnection === "string") {
-            this.connection = new HttpConnection(urlOrConnection, options);
-        } else {
-            this.connection = urlOrConnection;
-        }
-
-        this.logger = createLogger(options.logger);
 
         this.connection.onreceive = (data: any) => this.processIncomingData(data);
         this.connection.onclose = (error?: Error) => this.connectionClosed(error);
@@ -293,7 +283,7 @@ export class HubConnection {
     private configureTimeout() {
         if (!this.connection.features || !this.connection.features.inherentKeepAlive) {
             // Set the timeout timer
-            this.timeoutHandle = setTimeout(() => this.serverTimeout(), this.timeoutInMilliseconds);
+            this.timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
         }
     }
 

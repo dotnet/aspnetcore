@@ -22,8 +22,8 @@
     "build:rollup": "node ../node_modules/rollup/bin/rollup -c",
     "pretest": "npm run build",
     "test": "dotnet build && npm run test-only",
-    "test-only": "ts-node --project ./selenium/tsconfig.json ./selenium/run-tests.ts",
-    "ci-test": "ts-node --project ./selenium/tsconfig.json ./selenium/run-ci-tests.ts"
+    "test-only": "ts-node --project ./selenium/tsconfig-selenium.json ./selenium/run-tests.ts",
+    "ci-test": "ts-node --project ./selenium/tsconfig-selenium.json ./selenium/run-ci-tests.ts"
   },
   "author": "",
   "license": "Apache-2.0"

@@ -6,6 +6,7 @@ export * from "./Errors";
 export * from "./HttpClient";
 export * from "./HttpConnection";
 export * from "./HubConnection";
+export * from "./HubConnectionBuilder";
 export * from "./IConnection";
 export * from "./IHubProtocol";
 export * from "./ILogger";

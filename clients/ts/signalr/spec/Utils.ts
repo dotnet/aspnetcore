@@ -38,7 +38,7 @@ export function delay(durationInMilliseconds: number): Promise<void> {
     return source.promise;
 }
 
-export class PromiseSource<T> {
+export class PromiseSource<T = void> {
     public promise: Promise<T>;
 
     private resolver: (value?: T | PromiseLike<T>) => void;

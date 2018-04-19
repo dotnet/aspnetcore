@@ -13,6 +13,7 @@
         "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors": true,
         "noEmitOnError": true,
+        "stripInternal": true,
         "lib": [ "es5", "es2015.promise", "es2015.iterable", "dom" ]
     }
 }
