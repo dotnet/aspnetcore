@@ -2,5 +2,6 @@
   <PropertyGroup>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">$(MicrosoftNETCoreApp21PackageVersion)</RuntimeFrameworkVersion>
+    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 </Project>
