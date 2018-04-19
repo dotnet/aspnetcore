@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Redis.Internal;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Tests
@@ -150,7 +151,15 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 Assert.Equal(
                     expected.Message.GetSerializedMessage(hubProtocol).ToArray(),
                     decoded.Message.GetSerializedMessage(hubProtocol).ToArray());
-                Assert.Equal(1, hubProtocol.SerializationCount);
+
+                var writtenMessages = hubProtocol.GetWrittenMessages();
+                Assert.Collection(writtenMessages,
+                    actualMessage =>
+                    {
+                        var invocation = Assert.IsType<InvocationMessage>(actualMessage);
+                        Assert.Same(_testMessage.Target, invocation.Target);
+                        Assert.Same(_testMessage.Arguments, invocation.Arguments);
+                    });
             }
         }
 
@@ -184,47 +193,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 Name = name;
                 Decoded = decoded;
                 Encoded = encoded;
-            }
-        }
-
-        public class DummyHubProtocol : IHubProtocol
-        {
-            public int SerializationCount { get; private set; }
-
-            public string Name { get; }
-            public int Version => 1;
-            public TransferFormat TransferFormat => TransferFormat.Text;
-
-            public DummyHubProtocol(string name)
-            {
-                Name = name;
-            }
-
-            public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
-            {
-                output.Write(GetMessageBytes(message).Span);
-            }
-
-            public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
-            {
-                SerializationCount += 1;
-
-                // Assert that we got the test message
-                var invocation = Assert.IsType<InvocationMessage>(message);
-                Assert.Same(_testMessage.Target, invocation.Target);
-                Assert.Same(_testMessage.Arguments, invocation.Arguments);
-
-                return new byte[] { 0x2A };
-            }
-
-            public bool IsVersionSupported(int version)
-            {
-                throw new NotSupportedException();
             }
         }
     }
