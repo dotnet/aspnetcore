@@ -81,6 +81,7 @@
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview3-32233</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>2.1.0-preview3-32233</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview3-26413-02</SystemComponentModelAnnotationsPackageVersion>
