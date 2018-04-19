@@ -12,6 +12,7 @@
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26413-05</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview3-32233</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0-preview3-26413-02</MicrosoftWin32RegistryPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0-preview3-26413-02</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview3-26413-02</SystemSecurityPrincipalWindowsPackageVersion>
