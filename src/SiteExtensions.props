@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <PackageType>AzureSiteExtension</PackageType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+</Project>

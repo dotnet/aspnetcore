@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\SiteExtensions.props" />
+
   <PropertyGroup>
-    <title>ASP.NET Core Extensions</title>
+    <Title>ASP.NET Core Extensions</Title>
     <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
     <TargetFramework>net461</TargetFramework>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
-    <ContentTargetFolders>content</ContentTargetFolders>
     <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreApp21PackageVersion)</HostingStartupRuntimeFrameworkVersion>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
-    <Content Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(OutputPath)Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

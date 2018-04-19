@@ -38,7 +38,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsightsHostingS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions", "src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj", "{9B22E525-FEC9-4C7C-9F9C-598C15BD0250}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension", "extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj", "{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension", "src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj", "{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsights.HostingStartup.Tests", "test\ApplicationInsights.HostingStartup.Tests\ApplicationInsights.HostingStartup.Tests.csproj", "{0899A101-E451-40A4-81B0-7AA18202C25D}"
 EndProject

@@ -1,15 +1,7 @@
 <Project>
   <Import Project="..\Directory.Build.props" />
-  <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <PackageType>AzureSiteExtension</PackageType>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <IncludeSymbols>false</IncludeSymbols>
-    <IncludeSource>false</IncludeSource>
-    <ContentTargetFolders>content</ContentTargetFolders>
-  </PropertyGroup>
+  <Import Project="..\src\SiteExtensions.props" />
+
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
