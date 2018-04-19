@@ -12,7 +12,7 @@
     <copyright>$copyright$</copyright>
     <tags>$tags$</tags>
     <serviceable>$serviceable$</serviceable>
-    <repository type="git" url="$repositoryUrl$" />
+    <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
     <dependencies>
       <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.AspNetCore.Mvc.ViewFeatures" version="$version$" exclude="Build,Analyzers" />
