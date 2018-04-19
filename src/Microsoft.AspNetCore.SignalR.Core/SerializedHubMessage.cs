@@ -16,11 +16,13 @@ namespace Microsoft.AspNetCore.SignalR
         private SerializedMessage _cachedItem1;
         private SerializedMessage _cachedItem2;
         private IList<SerializedMessage> _cachedItems;
+        private readonly object _lock = new object();
 
         public HubMessage Message { get; }
 
         public SerializedHubMessage(IReadOnlyList<SerializedMessage> messages)
         {
+            // A lock isn't needed here because nobody has access to this type until the constructor finishes.
             for (var i = 0; i < messages.Count; i++)
             {
                 var message = messages[i];
@@ -35,23 +37,58 @@ namespace Microsoft.AspNetCore.SignalR
 
         public ReadOnlyMemory<byte> GetSerializedMessage(IHubProtocol protocol)
         {
-            if (!TryGetCached(protocol.Name, out var serialized))
+            lock (_lock)
             {
-                if (Message == null)
+                if (!TryGetCached(protocol.Name, out var serialized))
                 {
-                    throw new InvalidOperationException(
-                        "This message was received from another server that did not have the requested protocol available.");
+                    if (Message == null)
+                    {
+                        throw new InvalidOperationException(
+                            "This message was received from another server that did not have the requested protocol available.");
+                    }
+
+                    serialized = protocol.GetMessageBytes(Message);
+                    SetCache(protocol.Name, serialized);
                 }
 
-                serialized = protocol.GetMessageBytes(Message);
-                SetCache(protocol.Name, serialized);
+                return serialized;
             }
+        }
 
-            return serialized;
+        // Used for unit testing.
+        internal IReadOnlyList<SerializedMessage> GetAllSerializations()
+        {
+            // Even if this is only used in tests, let's do it right.
+            lock (_lock)
+            {
+                if (_cachedItem1.ProtocolName == null)
+                {
+                    return Array.Empty<SerializedMessage>();
+                }
+
+                var list = new List<SerializedMessage>(2);
+                list.Add(_cachedItem1);
+
+                if (_cachedItem2.ProtocolName != null)
+                {
+                    list.Add(_cachedItem2);
+
+                    if (_cachedItems != null)
+                    {
+                        list.AddRange(_cachedItems);
+                    }
+                }
+
+                return list;
+            }
         }
 
         private void SetCache(string protocolName, ReadOnlyMemory<byte> serialized)
         {
+            // We set the fields before moving on to the list, if we need it to hold more than 2 items.
+            // We have to read/write these fields under the lock because the structs might tear and another
+            // thread might observe them half-assigned
+
             if (_cachedItem1.ProtocolName == null)
             {
                 _cachedItem1 = new SerializedMessage(protocolName, serialized);
