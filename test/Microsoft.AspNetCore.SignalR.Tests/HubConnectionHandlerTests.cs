@@ -144,6 +144,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public void FailsToLoadInvalidTypedHubClient()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                serviceProvider.GetRequiredService<IHubContext<SimpleVoidReturningTypedHub, IVoidReturningTypedHubClient>>());
+            Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidReturningTypedHubClient).FullName}.{nameof(IVoidReturningTypedHubClient.Send)}'. All client proxy methods must return '{typeof(Task).FullName}'.", ex.Message);
+        }
+
+        [Fact]
         public async Task HandshakeFailureFromUnknownProtocolSendsResponseWithError()
         {
             var hubProtocolMock = new Mock<IHubProtocol>();
@@ -955,6 +964,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 secondClient.Dispose();
 
                 await Task.WhenAll(firstConnectionHandlerTask, secondConnectionHandlerTask).OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task FailsToInitializeInvalidTypedHub()
+        {
+            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(SimpleVoidReturningTypedHub));
+
+            using (var firstClient = new TestClient())
+            {
+                // ConnectAsync returns a Task<Task> and it's the INNER Task that will be faulted.
+                var connectionTask = await firstClient.ConnectAsync(connectionHandler);
+
+                // We should get a close frame now
+                var close = Assert.IsType<CloseMessage>(await firstClient.ReadAsync());
+                Assert.Equal("Connection closed with an error.", close.Error);
             }
         }
 

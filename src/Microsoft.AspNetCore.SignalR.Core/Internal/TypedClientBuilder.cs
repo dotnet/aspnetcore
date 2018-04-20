@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public static void Validate()
         {
             // The following will throw if T is not a valid type
-            _  = _builder.Value;
+            _ = _builder.Value;
         }
 
         private static Func<IClientProxy, T> GenerateClientBuilder()
@@ -151,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             for (var i = 0; i < paramTypes.Length; i++)
             {
                 generator.Emit(OpCodes.Ldloc_0); // Object array loaded
-                generator.Emit(OpCodes.Ldc_I4, i); 
+                generator.Emit(OpCodes.Ldc_I4, i);
                 generator.Emit(OpCodes.Ldarg, i + 1); // i + 1 
                 generator.Emit(OpCodes.Box, paramTypes[i]);
                 generator.Emit(OpCodes.Stelem_Ref);
@@ -161,13 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             generator.Emit(OpCodes.Ldloc_0);
             generator.Emit(OpCodes.Callvirt, invokeMethod);
 
-            if (interfaceMethodInfo.ReturnType == typeof(void))
-            {
-                // void return
-                generator.Emit(OpCodes.Pop);
-            }
-
-            generator.Emit(OpCodes.Ret); // Return 
+            generator.Emit(OpCodes.Ret); // Return the Task returned by 'invokeMethod'
         }
 
         private static void VerifyInterface(Type interfaceType)
@@ -184,7 +177,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             if (interfaceType.GetEvents().Length != 0)
             {
-                throw new InvalidOperationException("Type can not contain events.");
+                throw new InvalidOperationException("Type must not contain events.");
             }
 
             foreach (var method in interfaceType.GetMethods())
@@ -200,27 +193,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static void VerifyMethod(Type interfaceType, MethodInfo interfaceMethod)
         {
-            if (interfaceMethod.ReturnType != typeof(void) && interfaceMethod.ReturnType != typeof(Task))
+            if (interfaceMethod.ReturnType != typeof(Task))
             {
-                throw new InvalidOperationException("Method must return Void or Task.");
+                throw new InvalidOperationException(
+                    $"Cannot generate proxy implementation for '{typeof(T).FullName}.{interfaceMethod.Name}'. All client proxy methods must return '{typeof(Task).FullName}'.");
             }
 
             foreach (var parameter in interfaceMethod.GetParameters())
             {
-                VerifyParameter(interfaceType, interfaceMethod, parameter);
-            }
-        }
+                if (parameter.IsOut)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot generate proxy implementation for '{typeof(T).FullName}.{interfaceMethod.Name}'. Client proxy methods must not have 'out' parameters.");
+                }
 
-        private static void VerifyParameter(Type interfaceType, MethodInfo interfaceMethod, ParameterInfo parameter)
-        {
-            if (parameter.IsOut)
-            {
-                throw new InvalidOperationException("Method must not take out parameters.");
-            }
-
-            if (parameter.ParameterType.IsByRef)
-            {
-                throw new InvalidOperationException("Method must not take reference parameters.");
+                if (parameter.ParameterType.IsByRef)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot generate proxy implementation for '{typeof(T).FullName}.{interfaceMethod.Name}'. Client proxy methods must not have 'ref' parameters.");
+                }
             }
         }
     }
