@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     Assert.Equal("Method", send.Method);
                     Assert.Equal("foo", send.Arguments[0]);
                     Assert.Equal(42, send.Arguments[1]);
+                    Assert.Equal(CancellationToken.None, send.CancellationToken);
                     Assert.Same(objArg, send.Arguments[2]);
                     send.Complete();
                 });
@@ -58,6 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                         arg1 => Assert.Equal("foo", arg1),
                         arg2 => Assert.Equal(42, arg2),
                         arg3 => Assert.Same(objArg, arg3));
+                    Assert.Equal(CancellationToken.None, send1.CancellationToken);
                     send1.Complete();
                 },
                 send2 =>
@@ -65,6 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     Assert.Equal("SubMethod", send2.Method);
                     Assert.Collection(send2.Arguments,
                         arg1 => Assert.Equal("bar", arg1));
+                    Assert.Equal(CancellationToken.None, send2.CancellationToken);
                     send2.Complete();
                 });
 
@@ -190,11 +193,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         {
             public IList<SendContext> Sends { get; } = new List<SendContext>();
 
-            public Task SendCoreAsync(string method, object[] args)
+            public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken)
             {
                 var tcs = new TaskCompletionSource<object>();
 
-                Sends.Add(new SendContext(method, args, tcs));
+                Sends.Add(new SendContext(method, args, cancellationToken, tcs));
 
                 return tcs.Task;
             }
@@ -206,11 +209,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
 
             public string Method { get; }
             public object[] Arguments { get; }
+            public CancellationToken CancellationToken { get; }
 
-            public SendContext(string method, object[] arguments, TaskCompletionSource<object> tcs) : this()
+            public SendContext(string method, object[] arguments, CancellationToken cancellationToken, TaskCompletionSource<object> tcs) : this()
             {
                 Method = method;
                 Arguments = arguments;
+                CancellationToken = cancellationToken;
                 _tcs = tcs;
             }
 

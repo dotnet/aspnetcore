@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Redis.Internal;
 using Microsoft.Extensions.Logging;
@@ -106,19 +105,19 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(tasks);
         }
 
-        public override Task SendAllAsync(string methodName, object[] args)
+        public override Task SendAllAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args);
             return PublishAsync(_channels.All, message);
         }
 
-        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
+        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args, excludedConnectionIds);
             return PublishAsync(_channels.All, message);
         }
 
-        public override Task SendConnectionAsync(string connectionId, string methodName, object[] args)
+        public override Task SendConnectionAsync(string connectionId, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
             {
@@ -137,7 +136,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channels.Connection(connectionId), message);
         }
 
-        public override Task SendGroupAsync(string groupName, string methodName, object[] args)
+        public override Task SendGroupAsync(string groupName, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
             {
@@ -148,7 +147,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channels.Group(groupName), message);
         }
 
-        public override async Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
+        public override async Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
             {
@@ -159,13 +158,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await PublishAsync(_channels.Group(groupName), message);
         }
 
-        public override Task SendUserAsync(string userId, string methodName, object[] args)
+        public override Task SendUserAsync(string userId, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args);
             return PublishAsync(_channels.User(userId), message);
         }
 
-        public override async Task AddToGroupAsync(string connectionId, string groupName)
+        public override async Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
             {
@@ -188,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Add);
         }
 
-        public override async Task RemoveFromGroupAsync(string connectionId, string groupName)
+        public override async Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
             {
@@ -211,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Remove);
         }
 
-        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
+        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (connectionIds == null)
             {
@@ -229,7 +228,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(publishTasks);
         }
 
-        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args)
+        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (groupNames == null)
             {
@@ -249,7 +248,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(publishTasks);
         }
 
-        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)
+        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (userIds.Count > 0)
             {

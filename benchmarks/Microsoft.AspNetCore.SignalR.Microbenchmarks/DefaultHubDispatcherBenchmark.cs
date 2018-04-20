@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
             }
 
-            public override ValueTask WriteAsync(HubMessage message)
+            public override ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken)
             {
                 if (message is CompletionMessage completionMessage)
                 {

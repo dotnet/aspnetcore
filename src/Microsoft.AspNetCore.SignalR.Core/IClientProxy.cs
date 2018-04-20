@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -17,7 +18,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <param name="method">Name of the method to invoke.</param>
         /// <param name="args">A collection of arguments to pass to the client.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
         /// <returns>A task that represents when the data has been sent to the client.</returns>
-        Task SendCoreAsync(string method, object[] args);
+        Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default);
     }
 }

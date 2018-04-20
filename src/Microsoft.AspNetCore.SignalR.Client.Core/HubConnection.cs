@@ -14,9 +14,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -78,6 +76,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             await StopAsyncCore(disposing: false).ForceAsync();
         }
 
+        // Current plan for IAsyncDisposable is that DisposeAsync will NOT take a CancellationToken
+        // https://github.com/dotnet/csharplang/blob/195efa07806284d7b57550e7447dc8bd39c156bf/proposals/async-streams.md#iasyncdisposable
         public async Task DisposeAsync()
         {
             if (!_disposed)
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // Now stop the connection we captured
             if (connectionState != null)
             {
-                await connectionState.StopAsync(ServerTimeout);
+                await connectionState.StopAsync();
             }
         }
 
@@ -970,7 +970,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            public Task StopAsync(TimeSpan timeout)
+            public Task StopAsync()
             {
                 // We want multiple StopAsync calls on the same connection state
                 // to wait for the same "stop" to complete.
@@ -983,12 +983,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     else
                     {
                         _stopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                        return StopAsyncCore(timeout);
+                        return StopAsyncCore();
                     }
                 }
             }
 
-            private async Task StopAsyncCore(TimeSpan timeout)
+            private async Task StopAsyncCore()
             {
                 Log.Stopping(_hubConnection._logger);
 
