@@ -164,9 +164,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task DispatchMessagesAsync(HubConnectionContext connection)
         {
-            // Since we dispatch multiple hub invocations in parallel, we need a way to communicate failure back to the main processing loop.
-            // This is done by aborting the connection.
-
             try
             {
                 var input = connection.Input;
@@ -182,9 +179,9 @@ namespace Microsoft.AspNetCore.SignalR
                         {
                             while (protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
                             {
-                                // Don't wait on the result of execution, continue processing other
-                                // incoming messages on this connection.
-                                _ = _dispatcher.DispatchMessageAsync(connection, message);
+                                // Messages are dispatched sequentially and will block other messages from being processed until they complete.
+                                // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
+                                await _dispatcher.DispatchMessageAsync(connection, message);
                             }
                         }
                         else if (result.IsCompleted)
