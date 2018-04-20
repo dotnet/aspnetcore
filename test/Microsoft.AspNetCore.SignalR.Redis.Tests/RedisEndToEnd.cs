@@ -78,11 +78,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 var tcs2 = new TaskCompletionSource<string>();
                 secondConnection.On<string>("Echo", message => tcs2.TrySetResult(message));
 
+                var groupName = $"TestGroup_{transportType}_{protocolName}_{Guid.NewGuid()}";
+
                 await secondConnection.StartAsync().OrTimeout();
                 await connection.StartAsync().OrTimeout();
-                await connection.InvokeAsync("AddSelfToGroup", "Test").OrTimeout();
-                await secondConnection.InvokeAsync("AddSelfToGroup", "Test").OrTimeout();
-                await connection.InvokeAsync("EchoGroup", "Test", "Hello, World!").OrTimeout();
+                await connection.InvokeAsync("AddSelfToGroup", groupName).OrTimeout();
+                await secondConnection.InvokeAsync("AddSelfToGroup", groupName).OrTimeout();
+                await connection.InvokeAsync("EchoGroup", groupName, "Hello, World!").OrTimeout();
 
                 Assert.Equal("Hello, World!", await tcs.Task.OrTimeout());
                 Assert.Equal("Hello, World!", await tcs2.Task.OrTimeout());
