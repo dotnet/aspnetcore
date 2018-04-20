@@ -1,8 +1,8 @@
-﻿import { ILogger } from "./ILogger";
-import { TransferFormat } from "./ITransport";
-
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+import { ILogger } from "./ILogger";
+import { TransferFormat } from "./ITransport";
 
 export const enum MessageType {
     Invocation = 1,

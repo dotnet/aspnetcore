@@ -3,7 +3,7 @@
 
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
-describe("Text Message Formatter", () => {
+describe("TextMessageFormat", () => {
     ([
         ["\u001e", [""]],
         ["\u001e\u001e", ["", ""]],

@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HubConnectionBuilder } from "../src/HubConnectionBuilder";
-
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
 import { HubConnection } from "../src/HubConnection";
+import { HubConnectionBuilder } from "../src/HubConnectionBuilder";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HubMessage, IHubProtocol } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
