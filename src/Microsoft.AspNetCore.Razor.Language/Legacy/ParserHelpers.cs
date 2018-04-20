@@ -26,8 +26,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public static bool IsNewLine(string value)
         {
+            // We want to handle both LF and CRLF regardless of the platform.
+            // We explicitly check for CRLF and IsNewLine() should return true for LF.
             return (value.Length == 1 && (IsNewLine(value[0]))) ||
-                   (string.Equals(value, Environment.NewLine, StringComparison.Ordinal));
+                   (string.Equals(value, "\r\n", StringComparison.Ordinal));
         }
 
         public static bool IsIdentifier(string value)
