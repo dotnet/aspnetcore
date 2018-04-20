@@ -4,12 +4,12 @@
 // Everything that users need to access must be exported here. Including interfaces.
 export * from "./Errors";
 export * from "./HttpClient";
-export * from "./HttpConnection";
+export * from "./IHttpConnectionOptions";
 export * from "./HubConnection";
 export * from "./HubConnectionBuilder";
-export * from "./IConnection";
 export * from "./IHubProtocol";
 export * from "./ILogger";
 export * from "./ITransport";
 export * from "./Stream";
 export * from "./Loggers";
+export * from "./JsonHubProtocol";

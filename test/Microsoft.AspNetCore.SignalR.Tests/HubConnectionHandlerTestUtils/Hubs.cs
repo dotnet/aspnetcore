@@ -484,6 +484,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
+    public class SimpleVoidReturningTypedHub : Hub<IVoidReturningTypedHubClient>
+    {
+        public override Task OnConnectedAsync()
+        {
+            // Derefernce Clients, to force initialization of the TypedHubClient
+            Clients.All.Send("herp");
+            return Task.CompletedTask;
+        }
+    }
+
     public class SimpleTypedHub : Hub<ITypedHubClient>
     {
         public override async Task OnConnectedAsync()
@@ -532,6 +542,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public interface ITypedHubClient
     {
         Task Send(string message);
+    }
+
+    public interface IVoidReturningTypedHubClient
+    {
+        void Send(string message);
     }
 
     public class ConnectionLifetimeHub : Hub
