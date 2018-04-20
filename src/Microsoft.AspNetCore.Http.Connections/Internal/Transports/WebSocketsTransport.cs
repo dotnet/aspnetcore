@@ -154,7 +154,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                     var memory = _application.Output.GetMemory();
 
 #if NETCOREAPP2_1
-                    // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
 #else
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
@@ -162,12 +161,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
-
+#endif
+                   // Need to check again for NetCoreApp2.1 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         return;
                     }
-#endif
+
                     Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
                     _application.Output.Advance(receiveResult.Count);

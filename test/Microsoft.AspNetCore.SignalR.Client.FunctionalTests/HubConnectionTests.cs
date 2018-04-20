@@ -864,15 +864,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(TransportTypes))]
-        public async Task CheckHttpConnectionFeatures(HttpTransportType transportType)
+        [Fact]
+        public async Task CheckHttpConnectionFeatures()
         {
-            using (StartVerifableLog(out var loggerFactory, $"{nameof(CheckHttpConnectionFeatures)}_{transportType}"))
+            using (StartVerifableLog(out var loggerFactory))
             {
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
-                    .WithUrl(ServerFixture.Url + "/default", transportType)
+                    .WithUrl(ServerFixture.Url + "/default")
                     .Build();
                 try
                 {
@@ -888,6 +887,37 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     Assert.True(remotePort > 0L);
                     Assert.Equal("127.0.0.1", localIP);
                     Assert.Equal("127.0.0.1", remoteIP);
+                }
+                catch (Exception ex)
+                {
+                    loggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UserIdProviderCanAccessHttpContext()
+        {
+            using (StartVerifableLog(out var loggerFactory))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(loggerFactory)
+                    .WithUrl(ServerFixture.Url + "/default", options =>
+                    {
+                        options.Headers.Add(HeaderUserIdProvider.HeaderName, "SuperAdmin");
+                    })
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+
+                    var userIdentifier = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetUserIdentifier)).OrTimeout();
+                    Assert.Equal("SuperAdmin", userIdentifier);
                 }
                 catch (Exception ex)
                 {

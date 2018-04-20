@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 options.EnableDetailedErrors = true;
             })
                 .AddMessagePackProtocol();
+            services.AddSingleton<IUserIdProvider, HeaderUserIdProvider>();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>

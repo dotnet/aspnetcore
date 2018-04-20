@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class DynamicHub : Hub
+    public abstract class DynamicHub : Hub
     {
         private DynamicHubClients _clients;
 

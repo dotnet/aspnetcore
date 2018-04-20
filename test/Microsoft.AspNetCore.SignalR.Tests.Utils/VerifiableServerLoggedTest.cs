@@ -31,14 +31,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     return true;
                 }
 
-                // Suppress https://github.com/aspnet/SignalR/issues/2069
-                if (writeContext.LoggerName == "Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionManager" &&
-                    writeContext.Message.StartsWith("Failed disposing connection") &&
-                    writeContext.Exception is WebSocketException)
-                {
-                    return true;
-                }
-
                 return false;
             };
         }

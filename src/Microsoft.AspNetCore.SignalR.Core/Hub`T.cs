@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class Hub<T> : Hub where T : class
+    public abstract class Hub<T> : Hub where T : class
     {
         private IHubCallerClients<T> _clients;
 
