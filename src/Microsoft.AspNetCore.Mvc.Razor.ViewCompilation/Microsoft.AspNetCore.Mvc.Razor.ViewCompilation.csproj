@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
 
     <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
     <PreserveCompilationContext>true</PreserveCompilationContext>
@@ -11,6 +10,7 @@
     <TasksProjectDirectory>..\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\</TasksProjectDirectory>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableApiCheck>false</EnableApiCheck>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net461'">
@@ -31,17 +31,6 @@
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="build\**\*.*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="$(OutputPath)netcoreapp2.0\$(AssemblyName).dll" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName).dll" />
-    <None Include="$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.dll" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName).Tasks.dll" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(OS)'=='Windows_NT'">
-    <None Include="$(OutputPath)net461\win7-x86\$(AssemblyName)-x86.exe" Pack="true" PackagePath="build\netstandard2.0\" />
-    <None Include="$(OutputPath)net461\win7-x64\$(AssemblyName)-x64.exe" Pack="true" PackagePath="build\netstandard2.0\" />
-  </ItemGroup>
-
   <Target Name="BuildX64" AfterTargets="Build" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x64'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
@@ -50,5 +39,38 @@
         Configuration=$(Configuration);
         TargetFramework=net461;
         Platform=x64;" />
+  </Target>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuildX64;">
+
+    <PropertyGroup>
+      <!-- Make sure we create a symbols.nupkg. -->
+      <IncludeSymbols>true</IncludeSymbols>
+
+      <NuspecProperties>
+        id=$(PackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        description=$(Description);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        copyright=$(Copyright);
+        AssemblyName=$(AssemblyName);
+
+        OutputBinary=$(OutputPath)netcoreapp2.0\$(AssemblyName).dll;
+        OutputSymbol=$(OutputPath)netcoreapp2.0\$(AssemblyName).pdb;
+        TaskBinary=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.dll;
+        TaskSymbol=$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.pdb;
+
+        OutputExeX86=$(OutputPath)net461\win7-x86\$(AssemblyName)-x86.exe;
+        OutputExeSymbolX86=$(OutputPath)net461\win7-x86\$(AssemblyName)-x86.pdb;
+        OutputExeX64=$(OutputPath)net461\win7-x64\$(AssemblyName)-x64.exe;
+        OutputExeSymbolX64=$(OutputPath)net461\win7-x64\$(AssemblyName)-x64.pdb;
+      </NuspecProperties>
+    </PropertyGroup>
   </Target>
 </Project>
