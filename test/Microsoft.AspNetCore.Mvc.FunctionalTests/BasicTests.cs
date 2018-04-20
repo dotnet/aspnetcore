@@ -406,9 +406,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task RedirectToAction_WithEmptyActionName_UsesAmbientValue()
         {
             // Arrange
-            var product = new List<KeyValuePair<string, string>>
+            var product = new Dictionary<string, string>
             {
-                new KeyValuePair<string, string>("SampleInt", "20")
+                { "SampleInt", "20" }
             };
 
             // Act
@@ -522,10 +522,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task BindPropertyCanBeAppliedToControllers()
+        public async Task BindPropertiesAttribute_CanBeAppliedToControllers()
         {
+            // Arrange
+            var formContent = new Dictionary<string, string>
+            {
+                { "Name", "TestName" },
+                { "Id", "10" },
+            };
+
             // Act
-            var response = await Client.GetAsync("BindProperty/Action?Name=TestName&Id=10");
+            var response = await Client.PostAsync("BindProperties/Action", new FormUrlEncodedContent(formContent));
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
@@ -537,10 +544,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task BindProperty_DoesNotApplyToPropertiesWithBindingInfo()
+        public async Task BindPropertiesAttribute_DoesNotApplyToPropertiesWithBindingInfo()
         {
+            // Arrange
+            var formContent = new Dictionary<string, string>
+            {
+                { "Id", "10" },
+                { "FromRoute", "12" },
+                { "CustomBound", "Test" },
+            };
+
             // Act
-            var response = await Client.GetAsync("BindProperty/Action?Id=10&IdFromRoute=12&CustomBound=Test");
+            var response = await Client.PostAsync("BindProperties/Action", new FormUrlEncodedContent(formContent));
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
@@ -552,6 +567,56 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("CustomBoundValue", data.CustomBound);
         }
 
+        [Fact]
+        public async Task BindPropertiesAttribute_DoesNotCausePropertiesWithBindNeverAttributeToBeModelBound()
+        {
+            // Arrange
+            var formContent = new Dictionary<string, string>
+            {
+                { "BindNeverProperty", "Hello world" },
+            };
+
+            // Act
+            var response = await Client.PostAsync("BindProperties/Action", new FormUrlEncodedContent(formContent));
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<BindPropertyControllerData>(content);
+
+            Assert.Null(data.BindNeverProperty);
+        }
+
+        [Fact]
+        public async Task BindPropertiesAttributeWithSupportsGet_BindsOnNonGet()
+        {
+            // Arrange
+            var formContent = new Dictionary<string, string>
+            {
+                {  "Name", "TestName" },
+            };
+
+            // Act
+            var response = await Client.PostAsync("BindPropertiesSupportsGet/Action", new FormUrlEncodedContent(formContent));
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("TestName", content);
+        }
+
+        [Fact]
+        public async Task BindPropertiesAttributeWithSupportsGet_BindsOnGet()
+        {
+            // Act
+            var response = await Client.GetAsync("BindPropertiesSupportsGet/Action?Name=OnGetTestName");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("OnGetTestName", content);
+        }
+
         public class BindPropertyControllerData
         {
             public string Name { get; set; }
@@ -561,6 +626,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public int? IdFromRoute { get; set; }
 
             public string CustomBound { get; set; }
+
+            public string BindNeverProperty { get; set; }
         }
     }
 }

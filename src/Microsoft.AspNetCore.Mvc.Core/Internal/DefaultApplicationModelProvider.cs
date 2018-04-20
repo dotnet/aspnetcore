@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly MvcOptions _mvcOptions;
         private readonly IModelMetadataProvider _modelMetadataProvider;
+        private readonly Func<ActionContext, bool> _supportsAllRequests;
+        private readonly Func<ActionContext, bool> _supportsNonGetRequests;
 
         public DefaultApplicationModelProvider(
             IOptions<MvcOptions> mvcOptionsAccessor,
@@ -27,6 +29,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             _mvcOptions = mvcOptionsAccessor.Value;
             _modelMetadataProvider = modelMetadataProvider;
+
+            _supportsAllRequests = _ => true;
+            _supportsNonGetRequests = context => !string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -218,16 +223,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var attributes = propertyInfo.GetCustomAttributes(inherit: true);
 
-
+            // BindingInfo for properties can be either specified by decorating the property with binding specific attributes.
+            // ModelMetadata also adds information from the property's type and any configured IBindingMetadataProvider.
             var modelMetadata = _modelMetadataProvider.GetMetadataForProperty(propertyInfo.DeclaringType, propertyInfo.Name);
             var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
             if (bindingInfo == null)
             {
+                // Look for BindPropertiesAttribute on the handler type if no BindingInfo was inferred for the property.
+                // This allows a user to enable model binding on properties by decorating the controller type with BindPropertiesAttribute.
                 var declaringType = propertyInfo.DeclaringType;
-                if (declaringType.IsDefined(typeof(BindPropertyAttribute), inherit: true))
+                var bindPropertiesAttribute = declaringType.GetCustomAttribute<BindPropertiesAttribute>(inherit: true);
+                if (bindPropertiesAttribute != null)
                 {
-                    // Specify a BindingInfo so that the property is now considered for model binding.
-                    bindingInfo = new BindingInfo();
+                    var requestPredicate = bindPropertiesAttribute.SupportsGet ? _supportsAllRequests : _supportsNonGetRequests;
+                    bindingInfo = new BindingInfo
+                    {
+                        RequestPredicate = requestPredicate,
+                    };
                 }
             }
 
