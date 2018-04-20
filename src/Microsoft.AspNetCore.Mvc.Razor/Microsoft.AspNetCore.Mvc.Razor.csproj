@@ -42,6 +42,7 @@
         tags=$([MSBuild]::Escape($(PackageTags)));
         serviceable=$(Serviceable);
         repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
         targetframework=$(TargetFramework);
         MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion=$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion);
         MicrosoftAspNetCoreRazorRuntimePackageVersion=$(MicrosoftAspNetCoreRazorRuntimePackageVersion);
