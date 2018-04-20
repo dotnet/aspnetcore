@@ -198,7 +198,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 while (true)
                 {
 #if NETCOREAPP2_1
-                    // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
                     if (result.MessageType == WebSocketMessageType.Close)
@@ -223,7 +222,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
-
+#endif
+                    // Need to check again for NetCoreApp2.1 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         Log.WebSocketClosed(_logger, _webSocket.CloseStatus);
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                         return;
                     }
-#endif
+
                     Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
                     _application.Output.Advance(receiveResult.Count);
