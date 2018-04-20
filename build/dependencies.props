@@ -6,6 +6,7 @@
     <DotNetEfPackageVersion>2.2.0-preview1-34007</DotNetEfPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17035</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview1-34007</MicrosoftAspNetCoreAllPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>2.2.0-preview1-34007</MicrosoftAspNetCoreAppPackageVersion>
     <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>2.2.0-preview1-34007</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
     <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>2.2.0-preview1-34007</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34007</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
