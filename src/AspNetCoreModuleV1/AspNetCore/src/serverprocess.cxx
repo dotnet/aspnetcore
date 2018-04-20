@@ -2005,7 +2005,9 @@ SERVER_PROCESS::~SERVER_PROCESS()
     InterlockedDecrement(&g_dwActiveServerProcesses);
 }
 
-VOID 
+static
+VOID
+CALLBACK
 ProcessHandleCallback(
     _In_ PVOID  pContext,
     _In_ BOOL
