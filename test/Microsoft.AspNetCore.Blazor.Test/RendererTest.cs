@@ -919,6 +919,36 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 });
         }
 
+        [Fact]
+        public void CanCombineBindAndConditionalAttribute()
+        {
+            // This test represents https://github.com/aspnet/Blazor/issues/624
+
+            // Arrange: Rendered with textbox enabled
+            var renderer = new TestRenderer();
+            var component = new BindPlusConditionalAttributeComponent();
+            var componentId = renderer.AssignComponentId(component);
+            component.TriggerRender();
+            var checkboxChangeEventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+                .AttributeEventHandlerId;
+
+            // Act: Toggle the checkbox
+            var eventArgs = new UIChangeEventArgs { Value = true };
+            renderer.DispatchEvent(componentId, checkboxChangeEventHandlerId, eventArgs);
+            var latestBatch = renderer.Batches.Last();
+            var latestDiff = latestBatch.DiffsInOrder.Single();
+            var referenceFrames = latestBatch.ReferenceFrames;
+
+            // Assert: Textbox's "disabled" attribute was removed
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(componentId, latestDiff.ComponentId);
+            Assert.Contains(latestDiff.Edits, edit =>
+                edit.SiblingIndex == 1
+                && edit.RemovedAttributeName == "disabled");
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider())
@@ -1111,6 +1141,32 @@ namespace Microsoft.AspNetCore.Blazor.Test
                         builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
                     });
                 }
+            }
+        }
+
+        private class BindPlusConditionalAttributeComponent : AutoRenderComponent, IHandleEvent
+        {
+            public bool CheckboxEnabled;
+            public string SomeStringProperty;
+
+            public void HandleEvent(UIEventHandler handler, UIEventArgs args)
+            {
+                handler(args);
+                TriggerRender();
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, "input");
+                builder.AddAttribute(1, "type", "checkbox");
+                builder.AddAttribute(2, "value", BindMethods.GetValue(CheckboxEnabled));
+                builder.AddAttribute(3, "onchange", BindMethods.SetValueHandler(__value => CheckboxEnabled = __value, CheckboxEnabled));
+                builder.CloseElement();
+                builder.OpenElement(4, "input");
+                builder.AddAttribute(5, "value", BindMethods.GetValue(SomeStringProperty));
+                builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => SomeStringProperty = __value, SomeStringProperty));
+                builder.AddAttribute(7, "disabled", !CheckboxEnabled);
+                builder.CloseElement();
             }
         }
     }

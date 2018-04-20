@@ -179,8 +179,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     // These two attributes have the same sequence and name. Keep merging.
                     AppendDiffEntriesForAttributeFrame(ref diffContext, oldStartIndex, newStartIndex);
 
-                    oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
-                    newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
+                    oldStartIndex++;
+                    newStartIndex++;
                     hasMoreOld = oldEndIndexExcl > oldStartIndex;
                     hasMoreNew = newEndIndexExcl > newStartIndex;
                 }
