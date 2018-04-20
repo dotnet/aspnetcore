@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpConnection, IHttpConnectionOptions } from "./HttpConnection";
-import { HubConnection, JsonHubProtocol } from "./HubConnection";
+import { HttpConnection } from "./HttpConnection";
+import { HubConnection } from "./HubConnection";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { IHubProtocol } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType } from "./ITransport";
+import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
 import { Arg, ConsoleLogger } from "./Utils";
 
@@ -76,7 +78,7 @@ export class HubConnectionBuilder {
         }
         const connection = new HttpConnection(this.url, httpConnectionOptions);
 
-        return new HubConnection(
+        return HubConnection.create(
             connection,
             this.logger || NullLogger.instance,
             this.protocol || new JsonHubProtocol());

@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpConnection, HttpTransportType, IHttpConnectionOptions, LogLevel, TransferFormat } from "@aspnet/signalr";
+import { HttpTransportType, IHttpConnectionOptions, LogLevel, TransferFormat } from "@aspnet/signalr";
 import { eachTransport, ECHOENDPOINT_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
+
+// We want to continue testing HttpConnection, but we don't export it anymore. So just pull it in directly from the source file.
+import { HttpConnection } from "../../signalr/src/HttpConnection";
 
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,

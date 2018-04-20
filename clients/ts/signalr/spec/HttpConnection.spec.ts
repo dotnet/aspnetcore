@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { HttpResponse } from "../src/HttpClient";
 import { HttpConnection } from "../src/HttpConnection";
-import { IHttpConnectionOptions } from "../src/HttpConnection";
-import { HttpResponse } from "../src/index";
+import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 import { eachEndpointUrl, eachTransport } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
@@ -435,16 +435,26 @@ describe("HttpConnection", () => {
     it("authorization header removed when token factory returns null and using LongPolling", async (done) => {
         const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
 
-        var httpClientGetCount = 0;
-        var accessTokenFactoryCount = 0;
+        let httpClientGetCount = 0;
+        let accessTokenFactoryCount = 0;
         const options: IHttpConnectionOptions = {
             ...commonOptions,
+            accessTokenFactory: () => {
+                accessTokenFactoryCount++;
+                if (accessTokenFactoryCount === 1) {
+                    return "A token value";
+                } else {
+                    // Return a null value after the first call to test the header being removed
+                    return null;
+                }
+            },
             httpClient: new TestHttpClient()
                 .on("POST", (r) => ({ connectionId: "42", availableTransports: [availableTransport] }))
                 .on("GET", (r) => {
                     httpClientGetCount++;
+                    // tslint:disable-next-line:no-string-literal
                     const authorizationValue = r.headers["Authorization"];
-                    if (httpClientGetCount == 1) {
+                    if (httpClientGetCount === 1) {
                         if (authorizationValue) {
                             fail("First long poll request should have a authorization header.");
                         }
@@ -458,15 +468,6 @@ describe("HttpConnection", () => {
                         throw new Error("fail");
                     }
                 }),
-            accessTokenFactory: () => {
-                accessTokenFactoryCount++;
-                if (accessTokenFactoryCount == 1) {
-                    return "A token value";
-                } else {
-                    // Return a null value after the first call to test the header being removed
-                    return null;
-                }
-            },
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
@@ -485,14 +486,14 @@ describe("HttpConnection", () => {
     it("sets inherentKeepAlive feature when using LongPolling", async (done) => {
         const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
 
-        var httpClientGetCount = 0;
+        let httpClientGetCount = 0;
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", (r) => ({ connectionId: "42", availableTransports: [availableTransport] }))
                 .on("GET", (r) => {
                     httpClientGetCount++;
-                    if (httpClientGetCount == 1) {
+                    if (httpClientGetCount === 1) {
                         // First long polling request must succeed so start completes
                         return "";
                     } else {

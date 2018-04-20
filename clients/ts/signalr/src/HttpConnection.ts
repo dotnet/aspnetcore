@@ -3,21 +3,13 @@
 
 import { DefaultHttpClient, HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
 import { Arg, createLogger } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
-
-export interface IHttpConnectionOptions {
-    httpClient?: HttpClient;
-    transport?: HttpTransportType | ITransport;
-    logger?: ILogger | LogLevel;
-    accessTokenFactory?: () => string | Promise<string>;
-    logMessageContent?: boolean;
-    skipNegotiation?: boolean;
-}
 
 const enum ConnectionState {
     Connecting,
