@@ -30,10 +30,16 @@
   </Target>
 
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
+    <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
+    <PropertyGroup>
+      <DesignTimeBuildProps>MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
+      <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp21PackageVersion=$(MicrosoftNETCoreApp21PackageVersion);</DesignTimeBuildProps>
+      <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp20PackageVersion=$(MicrosoftNETCoreApp20PackageVersion);</DesignTimeBuildProps>
+    </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
-             Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
+             Properties="$(DesignTimeBuildProps);RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
              ContinueOnError="WarnAndContinue">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
@@ -52,7 +58,7 @@
     -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
-             Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true;DesignTimeBuild=true"
+             Properties="$(DesignTimeBuildProps);RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true;DesignTimeBuild=true"
              ContinueOnError="WarnAndContinue"
              Condition="'%(ShippedRepository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ShippedArtifactInfo" />

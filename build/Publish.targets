@@ -62,6 +62,7 @@
       <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>
       <AliasBlobBasePath>aspnetcore/Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
       <PackageArchiveFileName>nuGetPackagesArchive-$(PackageVersion).lzma</PackageArchiveFileName>
+      <SiteExtensionArchiveFileName>runtime-site-extension-internal-$(PackageVersion).zip</SiteExtensionArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
@@ -76,6 +77,11 @@
       </FilesToPublish>
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
+      <FilesToPublish Include="$(DependencyAssetsDir)$(SiteExtensionArchiveFileName)" >
+        <RelativeBlobPath>$(BlobBasePath)$(SiteExtensionArchiveFileName)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
+
       <FilesToPublish Include="$(DependencyAssetsDir)$(PackageArchiveFileName)" >
         <RelativeBlobPath>$(BlobBasePath)$(PackageArchiveFileName)</RelativeBlobPath>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
