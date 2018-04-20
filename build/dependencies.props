@@ -106,7 +106,7 @@
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <MessagePackPackageVersion>1.7.3.4</MessagePackPackageVersion>
     <NETStandard16PackageVersion>1.6.1</NETStandard16PackageVersion>
-    <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.2</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
