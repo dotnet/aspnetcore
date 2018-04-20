@@ -31,6 +31,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Analyzer.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
