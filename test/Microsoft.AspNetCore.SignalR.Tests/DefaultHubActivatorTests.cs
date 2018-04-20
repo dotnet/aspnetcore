@@ -11,11 +11,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class DefaultHubActivatorTests
     {
+        public class CreatableHub : Hub
+        {
+        }
+
         [Fact]
         public void HubCreatedIfNotResolvedFromServiceProvider()
         {
             Assert.NotNull(
-                new DefaultHubActivator<Hub>(Mock.Of<IServiceProvider>()).Create());
+                new DefaultHubActivator<CreatableHub>(Mock.Of<IServiceProvider>()).Create());
         }
 
         [Fact]

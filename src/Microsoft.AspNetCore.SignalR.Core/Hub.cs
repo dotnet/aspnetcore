@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class Hub : IDisposable
+    public abstract class Hub : IDisposable
     {
         private bool _disposed;
         private IHubCallerClients _clients;
