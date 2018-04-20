@@ -206,7 +206,7 @@
 
   <Target Name="PackRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID">
     <PropertyGroup>
-      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(PackageVersion)-$(RuntimeStoreRID).zip</OutputZip>
+      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(PackageVersion)-$(RuntimeStoreRID).patch.zip</OutputZip>
       <OutputSymbolZip>$(ArtifactsDir)aspnetcore-symbols-$(PackageVersion)-$(RuntimeStoreRID).zip</OutputSymbolZip>
     </PropertyGroup>
 

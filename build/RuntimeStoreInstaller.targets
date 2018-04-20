@@ -26,9 +26,9 @@
     <RuntimeStore20LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/$(PreviousRuntimeStoreArchiveVersion)/Build.RS.</RuntimeStore20LinkPrefix>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     <TimestampRSArchivePrefix>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-</TimestampRSArchivePrefix>
-    <TimestampLinuxRSArchive>$(TimestampRSArchivePrefix)linux-x64.tar.gz</TimestampLinuxRSArchive>
+    <TimestampLinuxRSArchive>$(TimestampRSArchivePrefix)linux-x64.patch.tar.gz</TimestampLinuxRSArchive>
     <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-</TimestampFreeRSArchivePrefix>
-    <TimestampFreeLinuxRSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</TimestampFreeLinuxRSArchive>
+    <TimestampFreeLinuxRSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.patch.tar.gz</TimestampFreeLinuxRSArchive>
   </PropertyGroup>
 
   <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs;GenerateRelabledInstallers" />
@@ -47,26 +47,26 @@
       Text="Timestamp linux archive not found. Expected it to exist in $(TimestampLinuxRSArchive)."
       Condition="!Exists('$(TimestampLinuxRSArchive)')" />
     <Error
-      Text="Timestamp osx archive not found. Expected it to exist in $(TimestampRSArchivePrefix)osx-x64.tar.gz."
-      Condition="!Exists('$(TimestampRSArchivePrefix)osx-x64.tar.gz')" />
+      Text="Timestamp osx archive not found. Expected it to exist in $(TimestampRSArchivePrefix)osx-x64.patch.tar.gz."
+      Condition="!Exists('$(TimestampRSArchivePrefix)osx-x64.patch.tar.gz')" />
     <Error
-      Text="Timestamp winx64 archive not found. Expected it to exist in $(TimestampRSArchivePrefix)win7-x64.zip."
-      Condition="!Exists('$(TimestampRSArchivePrefix)win7-x64.zip')" />
+      Text="Timestamp winx64 archive not found. Expected it to exist in $(TimestampRSArchivePrefix)win7-x64.patch.zip."
+      Condition="!Exists('$(TimestampRSArchivePrefix)win7-x64.patch.zip')" />
     <Error
-      Text="Timestamp winx86 archive not found. Expected it to exist in $(TimestampRSArchivePrefix)win7-x86.zip."
-      Condition="!Exists('$(TimestampRSArchivePrefix)win7-x86.zip')" />
+      Text="Timestamp winx86 archive not found. Expected it to exist in $(TimestampRSArchivePrefix)win7-x86.patch.zip."
+      Condition="!Exists('$(TimestampRSArchivePrefix)win7-x86.patch.zip')" />
     <Error
       Text="Non-timestamp linux archive not found. Expected it to exist in $(TimestampFreeLinuxRSArchive)."
       Condition="!Exists('$(TimestampFreeLinuxRSArchive)')" />
     <Error
-      Text="Non-timestamp osx archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)osx-x64.tar.gz."
-      Condition="!Exists('$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz')" />
+      Text="Non-timestamp osx archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)osx-x64.patch.tar.gz."
+      Condition="!Exists('$(TimestampFreeRSArchivePrefix)osx-x64.patch.tar.gz')" />
     <Error
-      Text="Non-timestamp winx64 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x64.zip."
-      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x64.zip')" />
+      Text="Non-timestamp winx64 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x64.patch.zip."
+      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x64.patch.zip')" />
     <Error
-      Text="Non-timestamp winx86 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x86.zip."
-      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x86.zip')" />
+      Text="Non-timestamp winx86 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x86.patch.zip."
+      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x86.patch.zip')" />
   </Target>
 
   <Target Name="_EnsureInstallerDirectory" >
@@ -162,35 +162,35 @@
     <ItemGroup>
       <TargzArchives Include="Build.RS.linux.tar.gz">
         <DependentArchive>Build.RS.linux.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.patch.tar.gz</RSArchive>
       </TargzArchives>
       <TargzArchives Include="Build.RS.osx.tar.gz">
         <DependentArchive>Build.RS.osx.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.patch.tar.gz</RSArchive>
       </TargzArchives>
       <ZipArchives Include="Build.RS.winx64.zip">
         <DependentArchive>Build.RS.winx64.zip</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.zip</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.patch.zip</RSArchive>
       </ZipArchives>
       <ZipArchives Include="Build.RS.winx86.zip">
         <DependentArchive>Build.RS.winx86.zip</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x86.zip</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x86.patch.zip</RSArchive>
       </ZipArchives>
       <TargzArchives Include="Build.RS.linux-$(VersionSuffix).tar.gz">
         <DependentArchive>Build.RS.linux.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)linux-x64.patch.tar.gz</RSArchive>
       </TargzArchives>
       <TargzArchives Include="Build.RS.osx-$(VersionSuffix).tar.gz">
         <DependentArchive>Build.RS.osx.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)osx-x64.patch.tar.gz</RSArchive>
       </TargzArchives>
       <ZipArchives Include="Build.RS.winx64-$(VersionSuffix).zip">
         <DependentArchive>Build.RS.winx64.zip</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)win7-x64.zip</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)win7-x64.patch.zip</RSArchive>
       </ZipArchives>
       <ZipArchives Include="Build.RS.winx86-$(VersionSuffix).zip">
         <DependentArchive>Build.RS.winx86.zip</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)win7-x86.zip</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)win7-x86.patch.zip</RSArchive>
       </ZipArchives>
     </ItemGroup>
 
