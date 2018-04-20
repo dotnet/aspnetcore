@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager2.OnConnectedAsync(connection2).OrTimeout();
                 await manager3.OnConnectedAsync(connection3).OrTimeout();
 
-                await manager1.SendAllExceptAsync("Hello", new object[] { "World" }, new [] { client3.Connection.ConnectionId }).OrTimeout();
+                await manager1.SendAllExceptAsync("Hello", new object[] { "World" }, new[] { client3.Connection.ConnectionId }).OrTimeout();
 
                 await AssertMessageAsync(client1);
                 await AssertMessageAsync(client2);
@@ -455,7 +456,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             {
                 // Force an exception when writing to connection
                 var connectionMock = HubConnectionContextUtils.CreateMock(client.Connection);
-                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Throws(new Exception());
+                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>(), It.IsAny<CancellationToken>())).Throws(new Exception());
                 var connection = connectionMock.Object;
 
                 await manager2.OnConnectedAsync(connection).OrTimeout();
@@ -478,7 +479,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             {
                 // Force an exception when writing to connection
                 var connectionMock = HubConnectionContextUtils.CreateMock(client1.Connection);
-                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Throws(new Exception());
+                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>(), It.IsAny<CancellationToken>())).Throws(new Exception());
 
                 var connection1 = connectionMock.Object;
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);

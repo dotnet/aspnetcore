@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ClientSample;
 using Microsoft.AspNetCore.Connections;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _endPoint = endPoint;
             }
 
-            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat)
+            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
             {
                 return new TcpConnection(_endPoint).StartAsync();
             }

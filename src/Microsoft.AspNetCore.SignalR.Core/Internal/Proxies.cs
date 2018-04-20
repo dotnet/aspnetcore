@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
@@ -17,9 +18,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _userId = userId;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendUserAsync(_userId, method, args);
+            return _lifetimeManager.SendUserAsync(_userId, method, args, cancellationToken);
         }
     }
 
@@ -34,9 +35,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _userIds = userIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendUsersAsync(_userIds, method, args);
+            return _lifetimeManager.SendUsersAsync(_userIds, method, args, cancellationToken);
         }
     }
 
@@ -51,9 +52,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _groupName = groupName;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendGroupAsync(_groupName, method, args);
+            return _lifetimeManager.SendGroupAsync(_groupName, method, args, cancellationToken);
         }
     }
 
@@ -68,9 +69,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _groupNames = groupNames;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendGroupsAsync(_groupNames, method, args);
+            return _lifetimeManager.SendGroupsAsync(_groupNames, method, args, cancellationToken);
         }
     }
 
@@ -87,9 +88,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _excludedConnectionIds = excludedConnectionIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendGroupExceptAsync(_groupName, method, args, _excludedConnectionIds);
+            return _lifetimeManager.SendGroupExceptAsync(_groupName, method, args, _excludedConnectionIds, cancellationToken);
         }
     }
 
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _lifetimeManager = lifetimeManager;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendAllAsync(method, args);
         }
@@ -119,9 +120,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _excludedConnectionIds = excludedConnectionIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendAllExceptAsync(method, args, _excludedConnectionIds);
+            return _lifetimeManager.SendAllExceptAsync(method, args, _excludedConnectionIds, cancellationToken);
         }
     }
 
@@ -136,9 +137,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _connectionId = connectionId;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendConnectionAsync(_connectionId, method, args);
+            return _lifetimeManager.SendConnectionAsync(_connectionId, method, args, cancellationToken);
         }
     }
 
@@ -153,29 +154,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _connectionIds = connectionIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args)
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendConnectionsAsync(_connectionIds, method, args);
-        }
-    }
-
-    internal class GroupManager<THub> : IGroupManager where THub : Hub
-    {
-        private readonly HubLifetimeManager<THub> _lifetimeManager;
-
-        public GroupManager(HubLifetimeManager<THub> lifetimeManager)
-        {
-            _lifetimeManager = lifetimeManager;
-        }
-
-        public Task AddToGroupAsync(string connectionId, string groupName)
-        {
-            return _lifetimeManager.AddToGroupAsync(connectionId, groupName);
-        }
-
-        public Task RemoveFromGroupAsync(string connectionId, string groupName)
-        {
-            return _lifetimeManager.RemoveFromGroupAsync(connectionId, groupName);
+            return _lifetimeManager.SendConnectionsAsync(_connectionIds, method, args, cancellationToken);
         }
     }
 }

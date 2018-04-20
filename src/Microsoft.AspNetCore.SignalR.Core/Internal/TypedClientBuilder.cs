@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         // There is one static instance of _builder per T
         private static readonly Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(() => GenerateClientBuilder());
+
+        private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static);
 
         public static T Build(IClientProxy proxy)
         {
@@ -115,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var invokeMethod = typeof(IClientProxy).GetMethod(
                 nameof(IClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
-                new[] { typeof(string), typeof(object[]) }, null);
+                new[] { typeof(string), typeof(object[]), typeof(CancellationToken) }, null);
 
             methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
             methodBuilder.SetParameters(paramTypes);
@@ -156,8 +159,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 generator.Emit(OpCodes.Stelem_Ref);
             }
 
-            // Call SendCoreAsync
+            // Load parameter array on to the stack.
             generator.Emit(OpCodes.Ldloc_0);
+
+            // Get 'CancellationToken.None' and put it on the stack, since we don't support CancellationToken right now
+            generator.Emit(OpCodes.Call, CancellationTokenNoneProperty.GetMethod);
+
+            // Send!
             generator.Emit(OpCodes.Callvirt, invokeMethod);
 
             generator.Emit(OpCodes.Ret); // Return the Task returned by 'invokeMethod'

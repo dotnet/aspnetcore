@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
@@ -31,10 +32,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _loggerFactory = loggerFactory;
         }
 
-        public async Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat)
+        public async Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             var connection = new HttpConnection(_httpConnectionOptions, _loggerFactory);
-            await connection.StartAsync(transferFormat);
+            await connection.StartAsync(transferFormat, cancellationToken);
             return connection;
         }
 

@@ -121,12 +121,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _transportFactory = transportFactory;
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            await StartAsync(TransferFormat.Binary);
+            await StartAsync(TransferFormat.Binary, cancellationToken);
         }
 
-        public async Task StartAsync(TransferFormat transferFormat)
+        public async Task StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             await StartAsyncCore(transferFormat).ForceAsync();
         }
