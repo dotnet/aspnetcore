@@ -37,6 +37,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             await Clients.Client(Context.ConnectionId).SendAsync("NoClientHandler");
         }
 
+        public string GetUserIdentifier()
+        {
+            return Context.UserIdentifier;
+        }
+
         public IEnumerable<string> GetHeaderValues(string[] headerNames)
         {
             var context = Context.GetHttpContext();
