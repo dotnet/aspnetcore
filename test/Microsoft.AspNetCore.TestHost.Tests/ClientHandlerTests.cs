@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -210,8 +211,8 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            Assert.True(readTask.Wait(TimeSpan.FromSeconds(10)), "Finished");
-            Assert.Equal(0, readTask.Result);
+            var result = await readTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+            Assert.Equal(0, result);
             block.Set();
         }
 
@@ -235,8 +236,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted, "Not Completed");
             cts.Cancel();
-            var ex = Assert.Throws<AggregateException>(() => readTask.Wait(TimeSpan.FromSeconds(10)));
-            Assert.IsAssignableFrom<OperationCanceledException>(ex.GetBaseException());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.TimeoutAfter(TimeSpan.FromSeconds(10)));
             block.Set();
         }
 
