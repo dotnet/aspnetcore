@@ -5,7 +5,7 @@
     <Serviceable Condition=" '$(Serviceable)' == '' ">true</Serviceable>
 
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
-    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>false</IncludeSource>
   </PropertyGroup>
 
