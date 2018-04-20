@@ -11,15 +11,30 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
     {
         public bool IsMet => CheckDocker();
         public string SkipReason { get; private set; } = "Docker is not available";
+        public string RequiredOsType { get; }
+
+        public SkipIfDockerNotPresentAttribute() : this("linux")
+        {
+
+        }
+
+        public SkipIfDockerNotPresentAttribute(string requiredOSType) 
+        {
+            RequiredOsType = requiredOSType;
+        }
 
         private bool CheckDocker()
         {
             if(Docker.Default != null)
             {
                 // Docker is present, but is it working?
-                if (Docker.Default.RunCommand("ps", out var output) != 0)
+                if (Docker.Default.RunCommand("info -f {{.OSType}}", out var output) != 0)
                 {
                     SkipReason = $"Failed to invoke test command 'docker ps'. Output: {output}";
+                }
+                else if (!string.Equals(output.Trim(), RequiredOsType, StringComparison.Ordinal))
+                {
+                    SkipReason = $"Docker tests do not support the OS type '{output.Trim()}', they require '{RequiredOsType}'.";
                 }
                 else
                 {
