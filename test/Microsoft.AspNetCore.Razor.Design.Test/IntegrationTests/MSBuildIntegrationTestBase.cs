@@ -62,7 +62,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
-            var buildArgumentList = new List<string>();
+            var buildArgumentList = new List<string>
+            {
+                // Disable node-reuse. We don't want msbuild processes to stick around
+                // once the test is completed.
+                "/nr:false",
+            };
 
             if (!suppressRestore)
             {
