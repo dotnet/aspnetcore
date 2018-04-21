@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\$(TaskProject)\$(TaskProject).csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="$(ToolProject)" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp2.0'" />
+    <ProjectReference Include="$(ToolProject)" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)' == 'netcoreapp2.0'" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
