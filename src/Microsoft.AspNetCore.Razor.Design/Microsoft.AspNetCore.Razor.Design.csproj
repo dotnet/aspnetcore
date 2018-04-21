@@ -1,14 +1,12 @@
-﻿<Project>
-
-  <!-- Using explicit SDK imports here because the default way conflicts with the AfterBuild target -->
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
 
     <!-- This project doesn't have any code, so don't include it in the .nupkg -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
@@ -20,83 +18,26 @@
     We then need to include the output of those projects in our output directory (where it will be used
     by tests) and in the nukpg.
   -->
-
-  <!-- This is the tasks project that needs to be included in the package. -->
-  <ItemGroup>
-    <TaskProject Include="..\Microsoft.AspNetCore.Razor.Tasks\Microsoft.AspNetCore.Razor.Tasks.csproj" />
-  </ItemGroup>
-
   <!-- These are tools that need to be included in the package. -->
-  <ItemGroup>
-    <ToolProject Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" />
-  </ItemGroup>
-
-  <!-- Using explicit SDK imports here because the default way conflicts with the AfterBuild target -->
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <GenerateNuspecDependsOn>_BuildDependencyProjects;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
-    <BuildDependsOn>_BuildDependencyProjects;$(BuildDependsOn)</BuildDependsOn>
+    <ToolProject>..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj</ToolProject>
+    <TaskProject>Microsoft.AspNetCore.Razor.Tasks</TaskProject>
   </PropertyGroup>
 
-  <Target Name="_BuildDependencyProjects">
-    <!-- 
-      The Microsoft.AspNetCore.Razor.Tasks package needs to support both net46 and netstandard2.0 for desktop vs
-      coreclr MSBuild - so we have to build it twice.
+  <ItemGroup>
+    <ProjectReference Include="..\$(TaskProject)\$(TaskProject).csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(ToolProject)" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp2.0'" />
+  </ItemGroup>
 
-      We're careful here to avoid setting properties when building the other projects. This can create problems
-      with concurrency.
-
-      First, build the project, then copy it to the ouput directory, then add it as packable content.
-    -->
-    <MSBuild Projects="@(TaskProject)" />
-
-    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=net46" Targets="BuiltProjectOutputGroup">
-      <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNet46" />
-    </MSBuild>
-
-    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=net46" Targets="DebugSymbolsProjectOutputGroup">
-      <Output TaskParameter="TargetOutputs" ItemName="TaskSymbolNet46" />
-    </MSBuild>
-
-    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=netstandard2.0" Targets="BuiltProjectOutputGroup">
-      <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNetStandard" />
-    </MSBuild>
-
-    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=netstandard2.0" Targets="DebugSymbolsProjectOutputGroup">
-      <Output TaskParameter="TargetOutputs" ItemName="TaskSymbolNetStandard" />
-    </MSBuild>
-
-    <Copy SourceFiles="@(TaskAssemblyNet46)" DestinationFolder="$(OutputPath)\tasks\net46\">
-      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
-    </Copy>
-    <Copy SourceFiles="@(TaskAssemblyNetStandard)" DestinationFolder="$(OutputPath)\tasks\netstandard2.0\">
-      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
-    </Copy>
-
-    <Error Text="TaskAssemblyNet46 is empty. This is a bug" Condition="'@(TaskAssemblyNet46)'==''" />
-    <Error Text="TaskAssemblyNetStandard is empty. This is a bug" Condition="'@(TaskAssemblyNetStandard)'==''" />
-
-    <!--
-      Next we need to build the netcoreapp2.0 tools. In this case we need to do a publish, because we need
-      all of the output to put in the package. 
-    -->
-    <RemoveDir Directories="tools\" />
-    <MSBuild Projects="@(ToolProject)" />
-    <MSBuild Projects="@(ToolProject)" Properties="PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)tools\" Targets="Publish" />
-
-    <ItemGroup>
-      <_RazorTool Include="$(OutputPath)tools\**\*" />
-    </ItemGroup>
-
-    <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''" />
-  </Target>
-
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;_BuildDependencyProjects">
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
 
     <PropertyGroup>
       <!-- Make sure we create a symbols.nupkg. -->
       <IncludeSymbols>true</IncludeSymbols>
+
+      <!-- RepositoryCommit is only available when "build" runs, but not during dotnet pack -->
+      <RepositoryCommit Condition="'$(RepositoryCommit)' == ''">unknown</RepositoryCommit>
 
       <NuspecProperties>
         id=$(PackageId);
@@ -112,14 +53,26 @@
         copyright=$(Copyright);
 
         <!-- Include the assembly and symbols from the tasks project -->
-        TaskAssemblyNet46=@(TaskAssemblyNet46);
-        TaskSymbolNet46=@(TaskSymbolNet46);
-        TaskAssemblyNetStandard=@(TaskAssemblyNetStandard);
-        TaskSymbolNetStandard=@(TaskSymbolNetStandard);
+        TaskAssemblyNet46=$(OutputPath)tasks\net46\$(TaskProject).dll;
+        TaskSymbolNet46=$(OutputPath)tasks\net46\$(TaskProject).pdb;
+        TaskAssemblyNetStandard=$(OutputPath)tasks\netstandard2.0\$(TaskProject).dll;
+        TaskSymbolNetStandard=$(OutputPath)tasks\netstandard2.0\$(TaskProject).pdb;
 
         <!-- Include the assembly and symbols from the tools project -->
-        ToolAssembly=$(OutputPath)tools\**\*;
+        ToolFiles=$(OutputPath)tools\**\*;
       </NuspecProperties>
     </PropertyGroup>
   </Target>
+
+  <Target Name="LayoutDependencies" AfterTargets="Build" BeforeTargets="PopulateNuspec" Condition="'$(IsInnerBuild)'!='true'">
+    <RemoveDir Directories="$(OutputPath)tools\" />
+    <MSBuild Projects="$(ToolProject)" Properties="PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)tools\;TargetFramework=netcoreapp2.0" Targets="Publish" />
+
+    <ItemGroup>
+      <_RazorTool Include="$(OutputPath)tools\**\*" />
+    </ItemGroup>
+
+    <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''" />
+  </Target>
+
 </Project>

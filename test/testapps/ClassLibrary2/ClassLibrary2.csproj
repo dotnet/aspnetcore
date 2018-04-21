@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   
   <PropertyGroup>
-    <_RazorMSBuildRoot>$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\netstandard2.0\</_RazorMSBuildRoot>
+    <_RazorMSBuildRoot>$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\</_RazorMSBuildRoot>
   </PropertyGroup>
 
   <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />

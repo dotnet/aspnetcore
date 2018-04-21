@@ -9,6 +9,8 @@
     <!-- This is not a package, it is part of Microsoft.AspNetCore.Razor.Design. -->
     <IsPackable>false</IsPackable>
     <EnableApiCheck>false</EnableApiCheck>
+
+    <OutputPath>..\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\tasks\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
