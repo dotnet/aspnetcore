@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -48,12 +49,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _transport = pair.Transport;
             _application = pair.Application;
 
+            var connectionFeatures = new FeatureCollection();
+            connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+            connectionFeatures.Set(Mock.Of<IBytesWrittenFeature>());
+
             _serviceContext = new TestServiceContext();
             _timeoutControl = new Mock<ITimeoutControl>();
             _http1ConnectionContext = new Http1ConnectionContext
             {
                 ServiceContext = _serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
+                ConnectionFeatures = connectionFeatures,
                 MemoryPool = _pipelineFactory,
                 TimeoutControl = _timeoutControl.Object,
                 Application = pair.Application,
@@ -727,8 +732,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(header0Count + header1Count, _http1Connection.RequestHeaders.Count);
 
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
-            Assert.Equal(header0Count + header1Count, _http1Connection.RequestHeaders.Count);
-
             await requestProcessingTask.TimeoutAfter(TestConstants.DefaultTimeout);
         }
 
@@ -767,9 +770,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(header0Count + header1Count, _http1Connection.RequestHeaders.Count);
 
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
-            Assert.Same(newRequestHeaders, _http1Connection.RequestHeaders);
-            Assert.Equal(header0Count + header1Count, _http1Connection.RequestHeaders.Count);
-
             await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
         }
 

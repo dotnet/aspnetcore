@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal

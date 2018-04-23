@@ -6,6 +6,8 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -29,11 +31,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
+            var connectionFeatures = new FeatureCollection();
+            connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+            connectionFeatures.Set(Mock.Of<IBytesWrittenFeature>());
+
             _httpConnectionContext = new HttpConnectionContext
             {
                 ConnectionId = "0123456789",
                 ConnectionAdapters = new List<IConnectionAdapter>(),
-                ConnectionFeatures = new FeatureCollection(),
+                ConnectionFeatures = connectionFeatures,
                 MemoryPool = _memoryPool,
                 HttpConnectionId = long.MinValue,
                 Application = pair.Application,
@@ -530,6 +536,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.True(_httpConnection.RequestTimedOut);
             Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
+        }
+
+        [Fact]
+        public async Task WriteTimingAbortsConnectionWhenRepeadtedSmallWritesDoNotCompleteWithMinimumDataRate()
+        {
+            var systemClock = new MockSystemClock();
+            var minResponseDataRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
+            var numWrites = 5;
+            var writeSize = 100;
+            var aborted = new TaskCompletionSource<object>();
+
+            _httpConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate = minResponseDataRate;
+            _httpConnectionContext.ServiceContext.SystemClock = systemClock;
+
+            var mockLogger = new Mock<IKestrelTrace>();
+            _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
+
+            _httpConnection.Initialize(_httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.Http1Connection.Reset();
+            _httpConnection.Http1Connection.RequestAborted.Register(() =>
+            {
+                aborted.SetResult(null);
+            });
+
+            // Initialize timestamp
+            var startTime = systemClock.UtcNow;
+            _httpConnection.Tick(startTime);
+
+            // 5 consecutive 100 byte writes.
+            for (var i = 0; i < numWrites - 1; i++)
+            {
+                _httpConnection.StartTimingWrite(writeSize);
+                _httpConnection.StopTimingWrite();
+            }
+
+            // Stall the last write.
+            _httpConnection.StartTimingWrite(writeSize);
+
+            // Move the clock forward Heartbeat.Interval + MinDataRate.GracePeriod + 4 seconds.
+            // The grace period should only be added for the first write. The subsequent 4 100 byte writes should add 1 second each to the timeout given the 100 byte/s min rate.
+            systemClock.UtcNow += Heartbeat.Interval + minResponseDataRate.GracePeriod + TimeSpan.FromSeconds((numWrites - 1) * writeSize / minResponseDataRate.BytesPerSecond);
+            _httpConnection.Tick(systemClock.UtcNow);
+
+            Assert.False(_httpConnection.RequestTimedOut);
+
+            // On more tick forward triggers the timeout.
+            systemClock.UtcNow += TimeSpan.FromTicks(1);
+            _httpConnection.Tick(systemClock.UtcNow);
+
+            Assert.True(_httpConnection.RequestTimedOut);
+            await aborted.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
         }
     }
 }
