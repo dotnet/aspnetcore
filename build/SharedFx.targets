@@ -137,6 +137,9 @@
       <AllSharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</AllSharedFxPublishDirectory>
       <SharedFxRestoreRid>$(SharedFxRID)</SharedFxRestoreRid>
 
+      <!-- Workaround for https://github.com/ericsink/SQLitePCL.raw/issues/214 -->
+      <SharedFxRestoreRid Condition=" '$(SharedFxRID)' == 'linux-musl-x64' ">alpine.3.6-x64</SharedFxRestoreRid>
+
       <!-- 3B = semicolon in ASCII -->
       <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
       <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
