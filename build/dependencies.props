@@ -3,18 +3,18 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-rc1-15774</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-rc1-30613</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-rc1-30613</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-rc1-30613</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-rc1-30613</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-rc1-30613</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.0-rc1-30613</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-rc1-30613</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-rc1-30613</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>2.1.0-rc1-30613</MicrosoftExtensionsPrimitivesPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17037</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftExtensionsCachingMemoryPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsCachingMemoryPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-rc1-26419-02</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26413-05</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
