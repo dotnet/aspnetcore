@@ -68,6 +68,11 @@
         $(PoliCheckPath)**\jquery-validation\dist\additional-methods*.js">
         <Justification>Third party code shipping in our packages</Justification>
       </FileExclusions>
+
+      <FileExclusions Include="
+        $(PoliCheckPath)**\*.deps.json">
+        <Justification>Deps files are generated and should only contain package names and sha's.</Justification>
+      </FileExclusions>
     </ItemGroup>
   </Target>
 
