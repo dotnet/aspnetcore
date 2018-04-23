@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                        writeContext.EventId.Name == "ShutdownWithError";
             }
 
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
             {
                 var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: loggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(2000);

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task NegotiateReservesConnectionIdAndReturnsIt()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task CheckThatThresholdValuesAreEnforced()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.ServerSentEvents)]
         public async Task CheckThatThresholdValuesAreEnforcedWithSends(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.LongPolling | HttpTransportType.WebSockets)]
         public async Task NegotiateReturnsAvailableTransportsAfterFilteringByOptions(HttpTransportType transports)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.LongPolling)]
         public async Task EndpointsThatAcceptConnectionId404WhenUnknownConnectionIdProvided(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task EndpointsThatAcceptConnectionId404WhenUnknownConnectionIdProvidedForPost()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task PostNotAllowedForWebSocketConnections()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task PostReturns404IfConnectionDisposed()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.WebSockets)]
         public async Task TransportEndingGracefullyWaitsOnApplication(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task TransportEndingGracefullyWaitsOnApplicationLongPolling()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.ServerSentEvents)]
         public async Task PostSendsToConnection(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.ServerSentEvents)]
         public async Task PostSendsToConnectionInParallel(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -593,7 +593,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task HttpContextFeatureForLongpollingWorksBetweenPolls()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.LongPolling)]
         public async Task EndpointsThatRequireConnectionId400WhenNoConnectionIdProvided(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -722,7 +722,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task EndpointsThatRequireConnectionId400WhenNoConnectionIdProvidedForPost()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -754,7 +754,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.ServerSentEvents, 404)]
         public async Task EndPointThatOnlySupportsLongPollingRejectsOtherTransports(HttpTransportType transportType, int status)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 await CheckTransportSupported(HttpTransportType.LongPolling, transportType, status, loggerFactory);
             }
@@ -766,7 +766,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.LongPolling, 404)]
         public async Task EndPointThatOnlySupportsSSERejectsOtherTransports(HttpTransportType transportType, int status)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 await CheckTransportSupported(HttpTransportType.ServerSentEvents, transportType, status, loggerFactory);
             }
@@ -778,7 +778,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.LongPolling, 404)]
         public async Task EndPointThatOnlySupportsWebSockesRejectsOtherTransports(HttpTransportType transportType, int status)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 await CheckTransportSupported(HttpTransportType.WebSockets, transportType, status, loggerFactory);
             }
@@ -788,7 +788,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.LongPolling, 404)]
         public async Task EndPointThatOnlySupportsWebSocketsAndSSERejectsLongPolling(HttpTransportType transportType, int status)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 await CheckTransportSupported(HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents, transportType, status, loggerFactory);
             }
@@ -797,7 +797,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task CompletedEndPointEndsConnection()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -831,7 +831,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                        writeContext.EventId.Name == "FailedDispose";
             }
 
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug, expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug, expectedErrorsFilter: ExpectedErrors))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -858,7 +858,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task CompletedEndPointEndsLongPollingConnection()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -889,7 +889,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task LongPollingTimeoutSets200StatusCode()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -915,7 +915,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task WebSocketTransportTimesOutWhenCloseFrameNotReceived()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Trace))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -945,7 +945,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.ServerSentEvents)]
         public async Task RequestToActiveConnectionId409ForStreamingTransports(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -988,7 +988,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task RequestToActiveConnectionIdKillsPreviousConnectionLongPolling()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1029,7 +1029,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.LongPolling)]
         public async Task RequestToDisposedConnectionIdReturns404(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1057,7 +1057,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task ConnectionStateSetToInactiveAfterPoll()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1092,7 +1092,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task BlockingConnectionWorksWithStreamingConnections()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1127,7 +1127,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task BlockingConnectionWorksWithLongPollingConnection()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1168,7 +1168,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task AttemptingToPollWhileAlreadyPollingReplacesTheCurrentPoll()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1213,7 +1213,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.WebSockets, TransferFormat.Binary | TransferFormat.Text)]
         public async Task TransferModeSet(HttpTransportType transportType, TransferFormat? expectedTransferFormats)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1245,7 +1245,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task UnauthorizedConnectionFailsToStartEndPoint()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1291,7 +1291,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task AuthenticatedUserWithoutPermissionCausesForbidden()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1339,7 +1339,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task AuthorizedConnectionCanConnectToEndPoint()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1399,7 +1399,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task AllPoliciesRequiredForAuthorizedEndPoint()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1486,7 +1486,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task AuthorizedConnectionWithAcceptedSchemesCanConnectToEndPoint()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1549,7 +1549,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task AuthorizedConnectionWithRejectedSchemesFailsToConnectToEndPoint()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1603,7 +1603,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task SetsInherentKeepAliveFeatureOnFirstLongPollingRequest()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1635,7 +1635,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.WebSockets)]
         public async Task DeleteEndpointRejectsRequestToTerminateNonLongPollingTransport(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1676,7 +1676,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task DeleteEndpointGracefullyTerminatesLongPolling()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1727,7 +1727,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task DeleteEndpointGracefullyTerminatesLongPollingEvenWhenBetweenPolls()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var connection = manager.CreateConnection();
@@ -1775,7 +1775,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task NegotiateDoesNotReturnWebSocketsWhenNotAvailable()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
@@ -1800,7 +1800,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task LongPollingCanPollIfWritePipeHasBackpressure()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var manager = CreateConnectionManager(loggerFactory);
                 var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);

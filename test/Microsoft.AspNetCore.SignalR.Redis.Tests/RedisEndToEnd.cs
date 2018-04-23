@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveMessages(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifableLog(out var loggerFactory, testName:
+            using (StartVerifiableLog(out var loggerFactory, testName:
                 $"{nameof(HubConnectionCanSendAndReceiveMessages)}_{transportType.ToString()}_{protocolName}"))
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveGroupMessages(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifableLog(out var loggerFactory, testName:
+            using (StartVerifiableLog(out var loggerFactory, testName:
                 $"{nameof(HubConnectionCanSendAndReceiveGroupMessages)}_{transportType.ToString()}_{protocolName}"))
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);

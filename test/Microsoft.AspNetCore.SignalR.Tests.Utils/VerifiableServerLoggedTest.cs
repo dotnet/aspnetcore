@@ -53,15 +53,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             };
         }
 
-        public override IDisposable StartVerifableLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null)
+        public override IDisposable StartVerifiableLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null)
         {
-            var disposable = base.StartVerifableLog(out loggerFactory, minLogLevel, testName, ResolveExpectedErrorsFilter(expectedErrorsFilter));
+            var disposable = base.StartVerifiableLog(out loggerFactory, minLogLevel, testName, ResolveExpectedErrorsFilter(expectedErrorsFilter));
             return new ServerLogScope(ServerFixture, loggerFactory, disposable);
         }
 
-        public override IDisposable StartVerifableLog(out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null)
+        public override IDisposable StartVerifiableLog(out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null)
         {
-            var disposable = base.StartVerifableLog(out loggerFactory, testName, ResolveExpectedErrorsFilter(expectedErrorsFilter));
+            var disposable = base.StartVerifiableLog(out loggerFactory, testName, ResolveExpectedErrorsFilter(expectedErrorsFilter));
             return new ServerLogScope(ServerFixture, loggerFactory, disposable);
         }
     }

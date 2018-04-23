@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportStopsSendAndReceiveLoopsWhenTransportIsStopped()
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifiableLog(out var loggerFactory))
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/echo"),
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsUserAgent()
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifiableLog(out var loggerFactory))
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/httpheader"),
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsXRequestedWithHeader()
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifiableLog(out var loggerFactory))
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/httpheader"),
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportStopsWhenConnectionChannelClosed()
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifiableLog(out var loggerFactory))
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/echo"),
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportStopsWhenConnectionClosedByTheServer(TransferFormat transferFormat)
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifiableLog(out var loggerFactory))
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/echoAndClose"), transferFormat);
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportSetsTransferFormat(TransferFormat transferFormat)
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifiableLog(out var loggerFactory))
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportThrowsForInvalidTransferFormat(TransferFormat transferFormat)
         {
-            using (StartVerifableLog(out var loggerFactory))
+            using (StartVerifiableLog(out var loggerFactory))
             {
                 var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
