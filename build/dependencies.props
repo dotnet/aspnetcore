@@ -3,18 +3,18 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-rc1-15774</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.1.0-rc1-30613</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-rc1-30613</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0-rc1-30613</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.1.0-rc1-30613</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.0-rc1-30613</MicrosoftExtensionsProcessSourcesPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17037</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-rc1-26419-02</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26413-05</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
-    <SystemDataSqlClientPackageVersion>4.5.0-rc1-26419-03</SystemDataSqlClientPackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.0-rc1-26419-03</SystemSecurityCryptographyCngPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.5.0-preview3-26413-02</SystemDataSqlClientPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview3-26413-02</SystemSecurityCryptographyCngPackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
