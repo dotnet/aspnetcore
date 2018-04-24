@@ -43,6 +43,7 @@
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview3-26413-02</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0-preview3-26413-02</SystemValueTuplePackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.8.0-beta3</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
