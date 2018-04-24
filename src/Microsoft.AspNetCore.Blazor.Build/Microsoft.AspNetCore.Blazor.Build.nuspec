@@ -5,6 +5,9 @@
     <version>$version$</version>
     <authors>Microsoft</authors>
     <description>Build mechanism for Blazor applications.</description>
+    <dependencies>
+      <dependency id="Microsoft.AspNetCore.Razor.Design" version="$razorversion$" include="all" />
+    </dependencies>
   </metadata>
   <files>
     <file src="_._" target="lib/netstandard1.0/" />

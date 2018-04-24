@@ -19,7 +19,10 @@
   <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
     <PropertyGroup>
       <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-      <NuspecProperties>version=$(PackageVersion);publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)))</NuspecProperties>
+      <NuspecProperties>
+      version=$(PackageVersion);
+      publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
+      razorversion=$(RazorPackageVersion);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />
@@ -64,6 +67,10 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Browser.JS\Microsoft.AspNetCore.Blazor.Browser.JS.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj" />
+
+    <!-- Intentionally include Razor.Design's MSBuild assets for everyone who reference Blazor.Build -->
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)" PrivateAssets="None" />
+
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.0" />
