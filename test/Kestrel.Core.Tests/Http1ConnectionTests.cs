@@ -955,21 +955,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        public static TheoryData<TimeSpan> RequestBodyTimeoutDataValid => new TheoryData<TimeSpan>
-        {
-            TimeSpan.FromTicks(1),
-            TimeSpan.MaxValue,
-            Timeout.InfiniteTimeSpan,
-            TimeSpan.FromMilliseconds(-1) // Same as Timeout.InfiniteTimeSpan
-        };
-
-        public static TheoryData<TimeSpan> RequestBodyTimeoutDataInvalid => new TheoryData<TimeSpan>
-        {
-            TimeSpan.MinValue,
-            TimeSpan.FromTicks(-1),
-            TimeSpan.Zero
-        };
-
         public static TheoryData<MinDataRate> MinDataRateData => new TheoryData<MinDataRate>
         {
             null,
