@@ -4,66 +4,66 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17037</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
-    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreCertificatesConfigurationSourcesPackageVersion>2.1.0-preview1-27942</MicrosoftAspNetCoreCertificatesConfigurationSourcesPackageVersion>
-    <MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreDiagnosticsPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreIdentityPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreIdentityPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
-    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreMvcTestingPackageVersion>
-    <MicrosoftAspNetCorePackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreRewritePackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreRewritePackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview3-34029</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreIdentityPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
+    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreMvcTestingPackageVersion>
+    <MicrosoftAspNetCorePackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreRewritePackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreRewritePackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview3-34031</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34031</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0-preview1-34029</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.2.0-preview1-34029</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-preview1-34029</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.0-preview1-34029</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
-    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0-preview1-34031</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.2.0-preview1-34031</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-preview1-34031</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.0-preview1-34031</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
+    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.2.0-preview1-34031</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26413-05</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34031</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
-    <MicrosoftOwinSecurityInteropPackageVersion>2.2.0-preview1-34029</MicrosoftOwinSecurityInteropPackageVersion>
+    <MicrosoftOwinSecurityInteropPackageVersion>2.2.0-preview1-34031</MicrosoftOwinSecurityInteropPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview3-26413-02</SystemComponentModelAnnotationsPackageVersion>
