@@ -385,6 +385,131 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void LeadingWhiteSpace_WithDirective()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+
+@using System
+
+<h1>Hello</h1>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void LeadingWhiteSpace_WithCSharpExpression()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+   
+@(""My value"")
+
+<h1>Hello</h1>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void LeadingWhiteSpace_WithComponent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class SomeOtherComponent : BlazorComponent
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+   
+<SomeOtherComponent />
+
+<h1>Hello</h1>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void TrailingWhiteSpace_WithDirective()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<h1>Hello</h1>
+
+@page ""/my/url""
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void TrailingWhiteSpace_WithCSharpExpression()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<h1>Hello</h1>
+
+@(""My value"")
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void TrailingWhiteSpace_WithComponent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class SomeOtherComponent : BlazorComponent
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<h1>Hello</h1>
+
+<SomeOtherComponent />
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         [Fact] // https://github.com/aspnet/Blazor/issues/597
         public void Regression_597()
         {

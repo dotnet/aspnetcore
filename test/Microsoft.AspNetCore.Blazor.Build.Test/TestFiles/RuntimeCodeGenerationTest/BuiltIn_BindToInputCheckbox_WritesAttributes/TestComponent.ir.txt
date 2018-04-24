@@ -24,7 +24,5 @@ Document -
                         IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => Enabled = __value, Enabled)
                 HtmlContent - 
                     IntermediateToken -  - Html - />
-                HtmlContent - (72:1,41 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (72:1,41 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public bool Enabled { get; set; }\n

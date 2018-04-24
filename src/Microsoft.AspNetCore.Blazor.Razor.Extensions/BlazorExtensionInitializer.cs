@@ -63,7 +63,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             builder.Features.Add(new ConfigureBlazorCodeGenerationOptions());
 
+            var isDeclarationOnlyCompile = builder.Configuration.ConfigurationName == DeclarationConfiguration.ConfigurationName;
+
             // Blazor-specific passes, in order.
+            if (!isDeclarationOnlyCompile)
+            {
+                // There's no benefit in this optimization during the declaration-only compile
+                builder.Features.Add(new TrimWhitespacePass());
+            }
             builder.Features.Add(new ComponentDocumentClassifierPass());
             builder.Features.Add(new ComplexAttributeContentPass());
             builder.Features.Add(new BindLoweringPass());
@@ -75,7 +82,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.Features.Add(new BindTagHelperDescriptorProvider());
             builder.Features.Add(new EventHandlerTagHelperDescriptorProvider());
 
-            if (builder.Configuration.ConfigurationName == DeclarationConfiguration.ConfigurationName)
+            if (isDeclarationOnlyCompile)
             {
                 // This is for 'declaration only' processing. We don't want to try and emit any method bodies during
                 // the design time build because we can't do it correctly until the set of components is known.

@@ -45,8 +45,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(Action<int>), 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(Action<int>), 2));
         }
 
         [Fact]
@@ -82,8 +81,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(UIEventHandler), 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(UIEventHandler), 2));
         }
 
         [Fact]
@@ -119,8 +117,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(Action<int>), 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(Action<int>), 2));
         }
 
         [Fact]
@@ -156,8 +153,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(UIEventHandler), 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(UIEventHandler), 2));
         }
 
         [Fact]
@@ -191,8 +187,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "div", 3, 0),
                 frame => AssertFrame.Attribute(frame, "myvalue", "hi", 1),
-                frame => AssertFrame.Attribute(frame, "myevent", typeof(UIEventHandler), 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Attribute(frame, "myevent", typeof(UIEventHandler), 2));
         }
 
         [Fact]
@@ -226,8 +221,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "div", 3, 0),
                 frame => AssertFrame.Attribute(frame, "myvalue", "hi", 1),
-                frame => AssertFrame.Attribute(frame, "myevent", typeof(UIEventHandler), 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Attribute(frame, "myevent", typeof(UIEventHandler), 2));
         }
 
         [Fact]
@@ -284,8 +278,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", "42", 1),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 2));
         }
 
         [Fact]
@@ -308,8 +301,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd/yyyy"), 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
-                frame => AssertFrame.Whitespace(frame, 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3));
         }
 
         [Fact]
@@ -334,8 +326,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd/yyyy"), 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
-                frame => AssertFrame.Whitespace(frame, 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3));
         }
 
         [Fact]
@@ -358,8 +349,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", "42", 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
-                frame => AssertFrame.Whitespace(frame, 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3));
         }
 
         [Fact]
@@ -381,8 +371,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
-                frame => AssertFrame.Whitespace(frame, 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3));
         }
 
         [Fact]
@@ -405,8 +394,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", "42", 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
-                frame => AssertFrame.Whitespace(frame, 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3));
         }
 
         [Fact]
@@ -429,8 +417,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd"), 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3),
-                frame => AssertFrame.Whitespace(frame, 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 3));
         }
 
         [Fact] // Additional coverage of OrphanTagHelperLoweringPass
@@ -454,8 +441,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "visible", 1), // This gets reordered in the node writer
                 frame => AssertFrame.Attribute(frame, "type", "text", 2),
                 frame => AssertFrame.Attribute(frame, "value", "42", 3),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 4),
-                frame => AssertFrame.Whitespace(frame, 5));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(UIEventHandler), 4));
         }
 
         [Fact] // Additional coverage of OrphanTagHelperLoweringPass
@@ -483,8 +469,7 @@ namespace Test
                 frame => AssertFrame.Whitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "span", 2, 4),
                 frame => AssertFrame.Text(frame, "42", 5),
-                frame => AssertFrame.Whitespace(frame, 6),
-                frame => AssertFrame.Whitespace(frame, 7));
+                frame => AssertFrame.Whitespace(frame, 6));
         }
 
         [Fact]

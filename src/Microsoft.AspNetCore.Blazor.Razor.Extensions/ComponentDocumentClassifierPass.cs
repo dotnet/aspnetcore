@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         /// </summary>
         public static readonly string ComponentDocumentKind = "Blazor.Component";
 
+        private static readonly object BuildRenderTreeBaseCallAnnotation = new object();
+
         private static readonly char[] PathSeparators = new char[] { '/', '\\' };
 
         /// <summary>
@@ -41,6 +43,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         /// it for now.
         /// </summary>
         public bool MangleClassNames { get; set; } = false;
+
+        internal static bool IsBuildRenderTreeBaseCall(CSharpCodeIntermediateNode node)
+            => node.Annotations[BuildRenderTreeBaseCallAnnotation] != null;
 
         /// <inheritdoc />
         protected override string DocumentKind => ComponentDocumentKind;
@@ -98,6 +103,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // We need to call the 'base' method as the first statement.
             var callBase = new CSharpCodeIntermediateNode();
+            callBase.Annotations.Add(BuildRenderTreeBaseCallAnnotation, true);
             callBase.Children.Add(new IntermediateToken
             {
                 Kind = TokenKind.CSharp,

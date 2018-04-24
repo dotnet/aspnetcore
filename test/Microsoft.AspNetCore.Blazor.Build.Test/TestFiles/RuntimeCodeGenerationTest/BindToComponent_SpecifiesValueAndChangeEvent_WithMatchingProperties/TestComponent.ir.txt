@@ -20,7 +20,5 @@ Document -
                             IntermediateToken -  - CSharp - __value => ParentValue = __value
                     ComponentBodyExtensionNode - 
                     ComponentCloseExtensionNode - 
-                HtmlContent - (81:1,50 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (81:1,50 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (95:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (95:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

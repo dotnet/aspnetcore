@@ -22,7 +22,6 @@ namespace Test
             builder.CloseElement();
             builder.AddContent(6, "\n");
             builder.CloseElement();
-            builder.AddContent(7, "\n");
         }
         #pragma warning restore 1998
     }

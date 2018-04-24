@@ -49,8 +49,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Whitespace(frame, 3),
                 frame => AssertFrame.Text(frame, "123", 4),
                 frame => AssertFrame.Whitespace(frame, 5),
-                frame => AssertFrame.Text(frame, new object().ToString(), 6),
-                frame => AssertFrame.Whitespace(frame, 7));
+                frame => AssertFrame.Text(frame, new object().ToString(), 6));
         }
 
         [Fact]
@@ -71,9 +70,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             Assert.Collection(frames,
                 frame => AssertFrame.Text(frame, "First", 0),
                 frame => AssertFrame.Text(frame, "Second", 0),
-                frame => AssertFrame.Text(frame, "Third", 0),
-                frame => AssertFrame.Whitespace(frame, 1),
-                frame => AssertFrame.Whitespace(frame, 2));
+                frame => AssertFrame.Text(frame, "Third", 0));
         }
 
         [Fact]
@@ -311,8 +308,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
                     ((UIEventHandler)frame.AttributeValue)(null);
                     Assert.True((bool)handlerWasCalledProperty.GetValue(component));
-                },
-                frame => AssertFrame.Whitespace(frame, 2));
+                });
         }
 
         [Fact]
@@ -326,8 +322,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(frames,
-                frame => AssertFrame.Whitespace(frame, 0),
-                frame => AssertFrame.Text(frame, typeof(List<string>).FullName, 1));
+                frame => AssertFrame.Text(frame, typeof(List<string>).FullName, 0));
         }
 
         [Fact]
@@ -356,8 +351,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                         Value = "Modified value"
                     });
                     Assert.Equal("Modified value", myValueProperty.GetValue(component));
-                },
-                frame => AssertFrame.Text(frame, "\n", 3));
+                });
         }
 
         [Fact]
@@ -386,8 +380,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                         Value = "Modified value"
                     });
                     Assert.Equal("Modified value", myValueProperty.GetValue(component));
-                },
-                frame => AssertFrame.Text(frame, "\n", 3));
+                });
         }
 
         [Fact]
@@ -417,8 +410,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                         Value = newDateValue.ToString()
                     });
                     Assert.Equal(newDateValue, myDateProperty.GetValue(component));
-                },
-                frame => AssertFrame.Text(frame, "\n", 3));
+                });
         }
 
         [Fact]
@@ -448,8 +440,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                         Value = new DateTime(2018, 3, 5).ToString(testDateFormat)
                     });
                     Assert.Equal(new DateTime(2018, 3, 5), myDateProperty.GetValue(component));
-                },
-                frame => AssertFrame.Text(frame, "\n", 3));
+                });
         }
 
         [Fact] // In this case, onclick is just a normal HTML attribute
@@ -495,8 +486,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
                     func(new UIMouseEventArgs());
                     Assert.True((bool)clicked.GetValue(component));
-                },
-                frame => AssertFrame.Whitespace(frame, 2));
+                });
         }
 
         [Fact]
@@ -528,8 +518,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
                     func(new UIMouseEventArgs());
                     Assert.True((bool)clicked.GetValue(component));
-                },
-                frame => AssertFrame.Whitespace(frame, 2));
+                });
         }
 
         [Fact]
@@ -558,8 +547,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                         Value = false
                     });
                     Assert.False((bool)myValueProperty.GetValue(component));
-                },
-                frame => AssertFrame.Text(frame, "\n", 3));
+                });
         }
 
         [Fact]
@@ -589,8 +577,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                         Value = MyEnum.SecondValue.ToString()
                     });
                     Assert.Equal(MyEnum.SecondValue, (MyEnum)myValueProperty.GetValue(component));
-                },
-                frame => AssertFrame.Text(frame, "\n", 3));
+                });
         }
 
         public enum MyEnum { FirstValue, SecondValue }

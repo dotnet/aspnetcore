@@ -17,7 +17,6 @@ namespace Test
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(OnClick));
             builder.CloseElement();
-            builder.AddContent(2, "\n");
         }
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"

@@ -17,7 +17,6 @@ namespace Test
             builder.AddAttribute(1, "value", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(ParentValue));
             builder.AddAttribute(2, "onchange", Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue));
             builder.CloseElement();
-            builder.AddContent(3, "\n");
         }
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"

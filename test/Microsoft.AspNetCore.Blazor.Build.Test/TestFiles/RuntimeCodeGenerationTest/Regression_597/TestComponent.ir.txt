@@ -20,7 +20,5 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => y = __value, y)
                     ComponentBodyExtensionNode - 
                     ComponentCloseExtensionNode - 
-                HtmlContent - (53:1,22 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (53:1,22 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n

@@ -20,4 +20,3 @@ Document -
                     IntermediateToken - (127:4,4 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - </script>
                     IntermediateToken - (136:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                     IntermediateToken - (138:5,0 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - </div>
-                    IntermediateToken - (144:5,6 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

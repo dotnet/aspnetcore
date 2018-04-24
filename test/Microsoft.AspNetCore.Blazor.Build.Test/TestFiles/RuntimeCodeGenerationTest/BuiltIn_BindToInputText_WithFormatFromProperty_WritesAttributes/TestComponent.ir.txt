@@ -26,7 +26,5 @@ Document -
                         IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, Format)
                 HtmlContent - 
                     IntermediateToken -  - Html - />
-                HtmlContent - (94:1,63 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (94:1,63 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (108:2,12 [135] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (108:2,12 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n

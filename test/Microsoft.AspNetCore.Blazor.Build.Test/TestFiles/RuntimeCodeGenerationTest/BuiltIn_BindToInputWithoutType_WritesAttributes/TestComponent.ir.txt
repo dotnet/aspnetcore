@@ -20,7 +20,5 @@ Document -
                         IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue)
                 HtmlContent - 
                     IntermediateToken -  - Html - />
-                HtmlContent - (60:1,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (60:1,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (74:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (74:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

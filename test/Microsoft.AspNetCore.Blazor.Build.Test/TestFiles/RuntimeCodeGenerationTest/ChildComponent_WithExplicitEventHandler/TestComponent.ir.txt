@@ -16,7 +16,5 @@ Document -
                             IntermediateToken - (90:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
                     ComponentBodyExtensionNode - 
                     ComponentCloseExtensionNode - 
-                HtmlContent - (102:2,35 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (102:2,35 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
             CSharpCode - (118:4,12 [100] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (118:4,12 [100] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment(UIEventArgs e) {\n        counter++;\n    }\n

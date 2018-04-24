@@ -15,7 +15,5 @@ Document -
                             IntermediateToken - (55:1,24 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - e => { Increment(); }
                     ComponentBodyExtensionNode - 
                     ComponentCloseExtensionNode - 
-                HtmlContent - (80:1,49 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (80:1,49 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
             CSharpCode - (96:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (96:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n

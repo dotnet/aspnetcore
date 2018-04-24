@@ -205,8 +205,7 @@ namespace Test
                     // The handler will have been assigned to a lambda
                     var handler = Assert.IsType<UIMouseEventHandler>(frame.AttributeValue);
                     Assert.Equal("Test.TestComponent", handler.Target.GetType().FullName);
-                },
-                frame => AssertFrame.Whitespace(frame, 2));
+                });
         }
 
         [Fact]
@@ -254,8 +253,7 @@ namespace Test
                     var handler = Assert.IsType<UIEventHandler>(frame.AttributeValue);
                     Assert.Equal("Test.TestComponent", handler.Target.GetType().FullName);
                     Assert.Equal("Increment", handler.Method.Name);
-                },
-                frame => AssertFrame.Whitespace(frame, 2));
+                });
         }
 
         [Fact]

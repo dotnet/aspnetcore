@@ -18,7 +18,6 @@ namespace Test
             builder.AddAttribute(2, "value", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(CurrentDate, "MM/dd/yyyy"));
             builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, "MM/dd/yyyy"));
             builder.CloseElement();
-            builder.AddContent(4, "\n");
         }
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
