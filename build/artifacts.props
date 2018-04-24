@@ -28,7 +28,7 @@
     <PackageArtifact Include="dotnet-watch" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzer.Testing" Category="noship" />
