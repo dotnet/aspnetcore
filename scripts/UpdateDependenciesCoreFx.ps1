@@ -1,10 +1,11 @@
 
 [CmdletBinding()]
 param(
-    [string]$GitHubEmail,
-    [string]$GitHubUsername,
-    [string]$GitHubPassword
+    [string]$GithubEmail,
+    [string]$GithubUsername,
+    [string]$GithubToken
 )
+# This script only works against dev/master at the moment because only master prod-con builds allow you to access their results before the entire chain is finished.
 
 $ErrorActionPreference = 'Stop'
 Import-Module -Scope Local -Force "$PSScriptRoot/common.psm1"
@@ -28,7 +29,7 @@ Invoke-WebRequest -OutFile $localCoreSetupVersions -Uri $coreSetupVersions
 $msNetCoreAppPackageVersion = $null
 $msNetCoreAppPackageName = "Microsoft.NETCore.App"
 
-Set-GitHubInfo $GitHubPassword $GitHubUsername $GitHubEmail
+Set-GitHubInfo $GithubToken $GithubUsername $GithubEmail
 
 $variables = @{}
 
@@ -114,7 +115,7 @@ try {
     $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
 
     if ($body) {
-        CreatePR $baseBranch $destinationBranch $body $GitHubPassword
+        CreatePR $baseBranch $destinationBranch $body $GithubToken
     }
 }
 finally {
