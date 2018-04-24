@@ -46,7 +46,14 @@
   <ItemGroup>
     <!-- Explicitly require the 2.0.x and 2.1.0-* version of shared runtime used by universe -->
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
+      Include="$(MicrosoftNETCoreApp21PackageVersion)"
+      Arch="x86"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
   </ItemGroup>
