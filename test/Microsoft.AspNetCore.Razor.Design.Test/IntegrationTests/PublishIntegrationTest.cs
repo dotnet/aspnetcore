@@ -27,6 +27,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.dll");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.pdb");
 
+            // Verify assets get published
+            Assert.FileExists(result, PublishOutputPath, "wwwroot", "js", "SimpleMvc.js");
+            Assert.FileExists(result, PublishOutputPath, "wwwroot", "css", "site.css");
+
             // By default refs and .cshtml files will not be copied on publish
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
@@ -294,6 +298,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary.pdb");
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary.Views.dll");
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary.Views.pdb");
+
+            // Verify fix for https://github.com/aspnet/Razor/issues/2295. No cshtml files should be published from the app
+            // or the ClassLibrary.
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
         [Fact]
@@ -309,6 +318,41 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.dll");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_DoesNotPublishCustomRazorGenerateItems()
+        {
+            var additionalProjectContent = @"
+<PropertyGroup>
+    <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
+</PropertyGroup>
+<ItemGroup>
+  <RazorGenerate Include=""Views\_ViewImports.cshtml"" />
+  <RazorGenerate Include=""Views\Home\Index.cshtml"" />
+</ItemGroup>
+";
+            AddProjectFileContent(additionalProjectContent);
+            var result = await DotnetMSBuild("Publish");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.pdb");
+
+            // Verify assets get published
+            Assert.FileExists(result, PublishOutputPath, "wwwroot", "js", "SimpleMvc.js");
+            Assert.FileExists(result, PublishOutputPath, "wwwroot", "css", "site.css");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+            // Custom RazorGenerate item does not get published
+            Assert.FileDoesNotExist(result, PublishOutputPath, "Views", "Home", "Home.cshtml");
+            // cshtml Content item that's not part of RazorGenerate gets published.
+            Assert.FileExists(result, PublishOutputPath, "Views", "Home", "About.cshtml");
         }
     }
 }

@@ -69,6 +69,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       _RazorAddDebugSymbolsProjectOutputGroupOutput
     </DebugSymbolsProjectOutputGroupDependsOn>
 
+    <PrepareForBuildDependsOn>
+      $(PrepareForBuildDependsOn);
+      ResolveRazorGenerateInputs
+    </PrepareForBuildDependsOn>
+
     <PrepareForRunDependsOn>
       _RazorPrepareForRun;
       $(PrepareForRunDependsOn)
@@ -285,6 +290,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     Gathers input source files for code generation. This is a separate target so that we can avoid
     lots of work when there are no inputs for code generation.
+    This target runs as part of PrepareForBuild. This gives us an opportunitity to change things like CopyToPublishDirectory
+    for Content items before they are processed by other Build targets.
 
     NOTE: This target is called as part of an incremental build scenario in VS. Do not perform any work
     outside of calculating RazorGenerate items in this target.
@@ -304,6 +311,20 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(EnableDefaultRazorGenerateItems)'=='true'">
       <RazorGenerate Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'" />
+    </ItemGroup>
+
+    <!--
+      Ideally we want to able to update all Content items that also appear in RazorGenerate to have
+      CopyToPublishDirectory=Never. However, there isn't a simple way to do this (https://github.com/Microsoft/msbuild/issues/1618). 
+      Instead, we'll update all cshtml Content items when EnableDefaultRazorGenerateItems=true and Razor Sdk is used for publishing.
+    -->
+    <ItemGroup Condition="
+      '$(EnableDefaultRazorGenerateItems)'=='true' and 
+      '$(CopyRazorGenerateFilesToPublishDirectory)'=='false' and 
+      '$(ResolvedRazorCompileToolset)'=='RazorSdk' and 
+      '$(RazorCompileOnPublish)'=='true'">
+      
+      <Content Condition="'%(Content.Extension)'=='.cshtml'" CopyToPublishDirectory="Never" />
     </ItemGroup>
   </Target>
 
