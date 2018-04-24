@@ -68,7 +68,7 @@ try {
         $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
 
         if ($body) {
-            CreatePR $GithubUpstreamBranch $destinationBranch $body $GithubToken
+            CreatePR "aspnet" $GithubUsername $GithubUpstreamBranch $destinationBranch $body $GithubToken
         }
     }
 }

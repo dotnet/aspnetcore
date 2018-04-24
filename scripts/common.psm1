@@ -136,11 +136,17 @@ function Ensure-Hub() {
     return $hubLocation
 }
 
-function CreatePR([string]$baseBranch, [string]$destinationBranch, [string]$body, [string]$gitHubToken) {
+function CreatePR(
+    [string]$baseFork,
+    [string]$headFork,
+    [string]$baseBranch,
+    [string]$destinationBranch,
+    [string]$body,
+    [string]$gitHubToken) {
     $hubLocation = Ensure-Hub
 
-    Invoke-Block { git push -f https://$gitHubToken@github.com/aspnet/Universe.git $destinationBranch }
-    & $hubLocation pull-request -f -b $baseBranch -h $destinationBranch -m $body
+    Invoke-Block { git push -f https://$gitHubToken@github.com/$headFork/Universe.git $destinationBranch }
+    & $hubLocation pull-request -f -b "${baseFork}:$baseBranch" -h "${headFork}:$destinationBranch" -m $body
 }
 
 function Set-GithubInfo(
