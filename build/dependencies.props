@@ -18,7 +18,8 @@
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34029</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsBuffersSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsBuffersSourcesPackageVersion>
+    <MicrosoftExtensionsBuffersSourcesPackageVersion>2.2.0-a-preview1-split-pool-16472</MicrosoftExtensionsBuffersSourcesPackageVersion>
+    <MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>2.2.0-a-preview1-split-pool-16472</MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34029</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
