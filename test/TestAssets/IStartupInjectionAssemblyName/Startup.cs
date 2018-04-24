@@ -11,11 +11,6 @@ namespace IStartupInjectionAssemblyName
     {
         public void Configure(IApplicationBuilder app)
         {
-            var applicationName = app.ApplicationServices.GetRequiredService<IHostingEnvironment>().ApplicationName;
-            app.Run(context =>
-            {
-                return context.Response.WriteAsync(applicationName);
-            });
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
