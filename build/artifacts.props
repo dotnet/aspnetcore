@@ -221,6 +221,7 @@
     <PackageArtifact Include="Microsoft.Extensions.ActivatorUtilities.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Memory" Category="ship" AppMetapackage="true" AllMetapackage="true" />
