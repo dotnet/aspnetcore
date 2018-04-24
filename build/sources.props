@@ -9,6 +9,7 @@
     </RestoreSources>
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
       $(RestoreSources);
+      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://api.nuget.org/v3/index.json;
     </RestoreSources>
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">

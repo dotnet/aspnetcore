@@ -9,7 +9,10 @@ param(
     $BuildXml,
     [switch]
     $NoCommit,
-    [string[]]$ConfigVars = @()
+    [string]$GithubUpstreamBranch,
+    [string]$GithubEmail,
+    [string]$GithubUsername,
+    [string]$GithubToken
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,11 +21,7 @@ Set-StrictMode -Version 1
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 if (-not $NoCommit) {
-    $GitHubEmail = $ConfigVars["GithubEmail"]
-    $GitHubUsername = $ConfigVars["GithubUsername"]
-    $GitHubPassword = $ConfigVars["GithubToken"]
-
-    Set-GitHubInfo $GitHubPassword $GitHubUsername $GitHubEmail
+    Set-GitHubInfo $GithubToken $GithubUsername $GithubEmail
 }
 
 $depsPath = Resolve-Path "$PSScriptRoot/../build/dependencies.props"
@@ -56,15 +55,23 @@ foreach ($package in $remoteDeps.SelectNodes('//Package')) {
     }
 }
 
-$updatedVars = UpdateVersions $variables $dependencies $depsPath
 
-if (-not $NoCommit) {
-    $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
-    $destinationBranch = "dotnetbot/UpdateDeps"
+$currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
 
-    $baseBranch = $ConfigVars["GithubUpstreamBranch"]
+$destinationBranch = "dotnetbot/UpdateDeps"
+Invoke-Block { & git checkout -tb $destinationBranch "origin/$GithubUpstreamBranch" }
 
-    if ($body) {
-        CreatePR $baseBranch $destinationBranch $body $GitHubPassword
+try {
+    $updatedVars = UpdateVersions $variables $dependencies $depsPath
+
+    if (-not $NoCommit) {
+        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+
+        if ($body) {
+            CreatePR $GithubUpstreamBranch $destinationBranch $body $GithubToken
+        }
     }
+}
+finally {
+    Invoke-Block { & git checkout $currentBranch }
 }

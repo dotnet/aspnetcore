@@ -205,7 +205,7 @@ function UpdateVersions([hashtable]$variables, [xml]$dependencies, [string]$deps
     }
 
     if ($updatedVars.Count -gt 0) {
-        Write-Host -f Cyan "Updating $count version variables in $depsPath"
+        Write-Host -f Cyan "Updating version variables in $depsPath"
         SaveXml $dependencies $depsPath
     }
     else {
