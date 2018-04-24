@@ -59,7 +59,6 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
 [debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
 [redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
-[alpine.3.6-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-alpine.3.6-x64.tar.gz
 [linux-musl-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
 [badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
@@ -71,7 +70,6 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
 [debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
 [redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
-[alpine.3.6-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-alpine.3.6-x64.tar.gz
 [linux-arm-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-arm.tar.gz
 [linux-musl-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
@@ -85,7 +83,6 @@ Linux (x64 - musl)<br>_(for musl based OS, such as Alpine Linux)_ | [Archive (ta
 Linux (arm32)         | [Archive (tar.gz)][linux-arm-tar]                                | [Archive (tar.gz)][linux-arm-tar-rel-21]
 Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-21]
 RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-21]
-Alpine Linux 3.6 (x64)| [Archive (tar.gz)][alpine.3.6-x64-tar]                           | [Archive (tar.gz)][alpine.3.6-x64-tar-rel-21]
 
 ## Building from source
 
