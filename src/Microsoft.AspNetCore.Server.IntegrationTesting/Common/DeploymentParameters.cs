@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
@@ -45,6 +46,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             ServerType = serverType;
             RuntimeFlavor = runtimeFlavor;
             EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
+
+            var configAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>();
+            if (configAttribute != null && !string.IsNullOrEmpty(configAttribute.Configuration))
+            {
+                Configuration = configAttribute.Configuration;
+            }
         }
 
         public ServerType ServerType { get; }

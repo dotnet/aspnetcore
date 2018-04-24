@@ -93,9 +93,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0");
 
                     executableName = DotnetCommandName;
-                    // Set VerifyMatchingImplicitPackageVersion to disable errors when Microsoft.NETCore.App's version is overridden externally
-                    // This verification doesn't matter if we are skipping restore during tests.
-                    executableArgs = $"run --no-restore --framework {targetFramework} /p:VerifyMatchingImplicitPackageVersion=false {DotnetArgumentSeparator}";
+                    executableArgs = $"run --no-build -c {DeploymentParameters.Configuration} --framework {targetFramework} {DotnetArgumentSeparator}";
                 }
 
                 executableArgs += $" --server.urls {hintUrl} "

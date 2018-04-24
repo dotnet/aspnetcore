@@ -13,13 +13,16 @@ namespace IStartupInjectionAssemblyName
     {
         public static void Main(string[] args)
         {
-            var server = new TestServer(CreateWebHostBuilder(args));
-
-            Task.Run(async () => Console.WriteLine(await server.CreateClient().GetStringAsync(""))).GetAwaiter().GetResult();
+            var webHost = CreateWebHostBuilder(args).Build();
+            var applicationName = webHost.Services.GetRequiredService<IHostingEnvironment>().ApplicationName;
+            Console.WriteLine(applicationName);
+            Console.ReadKey();
         }
 
         // Do not change the signature of this method. It's used for tests.
         private static IWebHostBuilder CreateWebHostBuilder(string [] args) =>
-            new WebHostBuilder().SuppressStatusMessages(true).ConfigureServices(services => services.AddSingleton<IStartup, Startup>());
+            new WebHostBuilder()
+            .SuppressStatusMessages(true)
+            .ConfigureServices(services => services.AddSingleton<IStartup, Startup>());
     }
 }
