@@ -18,4 +18,8 @@
   <Target Name="_IntrospectUseRazorBuildServer">
     <Message Text="UseRazorBuildServer: $(UseRazorBuildServer)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectGetCopyToOutputDirectoryItems">
+    <Message Text="AllItemsFullPathWithTargetPath: %(AllItemsFullPathWithTargetPath.TargetPath)" Importance="High" />
+  </Target>
 </Project>

@@ -136,5 +136,42 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.FileDoesNotExist(result, IntermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs");
             }
         }
+
+        [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
+        public async Task IncrementalBuild_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
+        {
+            // Simulates building the same way VS does by setting BuildProjectReferences=false.
+            // With this flag, the only target called is GetCopyToOutputDirectoryItems on the referenced project.
+            // We need to ensure that we continue providing Razor binaries and symbols as files to be copied over.
+            var result = await DotnetMSBuild(target: default);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
+
+            result = await DotnetMSBuild(target: "Clean", "/p:BuildProjectReferences=false", suppressRestore: true);
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.Views.pdb");
+
+            // dotnet msbuild /p:BuildProjectReferences=false
+            result = await DotnetMSBuild(target: default, "/p:BuildProjectReferences=false", suppressRestore: true);
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
+        }
     }
 }
