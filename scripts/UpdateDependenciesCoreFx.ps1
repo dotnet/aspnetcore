@@ -109,6 +109,7 @@ Write-Host "Loading deps from $depsPath"
 
 if (-not $NoCommit) {
     $baseBranch = "dev"
+    Invoke-Block { & git fetch origin }
 
     $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
     $destinationBranch = "rybrande/UpgradeDepsTest"
