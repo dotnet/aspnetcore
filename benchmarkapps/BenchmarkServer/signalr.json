@@ -18,6 +18,7 @@
     "ClientProperties": { "Scenario": "echo" }
   },
   "SignalREchoAll": {
-    "ClientProperties": { "Scenario": "echoAll" }
+    "ClientProperties": { "Scenario": "echoAll" },
+    "Warmup": 0
   }
 }
