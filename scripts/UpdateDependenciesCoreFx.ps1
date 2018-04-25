@@ -1,6 +1,7 @@
 
 [CmdletBinding()]
 param(
+    [switch]$NoCommit,
     [string]$GithubEmail,
     [string]$GithubUsername,
     [string]$GithubToken
@@ -106,20 +107,27 @@ $depsPath = Resolve-Path "$PSScriptRoot/../build/dependencies.props"
 Write-Host "Loading deps from $depsPath"
 [xml] $dependencies = LoadXml $depsPath
 
-$baseBranch = "dev"
+if (-not $NoCommit) {
+    $baseBranch = "dev"
 
-$currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
-$destinationBranch = "rybrande/UpgradeDepsTest"
+    $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
+    $destinationBranch = "rybrande/UpgradeDepsTest"
 
-Invoke-Block { & git checkout -tb $destinationBranch "origin/$baseBranch" }
+    Invoke-Block { & git checkout -tb $destinationBranch "origin/$baseBranch" }
+}
+
 try {
     $updatedVars = UpdateVersions $variables $dependencies $depsPath
-    $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+    if (-not $NoCommit) {
+        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
 
-    if ($body) {
-        CreatePR "aspnet" $GithubUsername $baseBranch $destinationBranch $body $GithubToken
+        if ($body) {
+            CreatePR "aspnet" $GithubUsername $baseBranch $destinationBranch $body $GithubToken
+        }
     }
 }
 finally {
-    Invoke-Block { & git checkout $currentBranch }
+    if (-not $NoCommit) {
+        Invoke-Block { & git checkout $currentBranch }
+    }
 }
