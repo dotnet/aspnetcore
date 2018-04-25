@@ -83,24 +83,24 @@ The Blazor Visual Studio tooling will build as part of the command line build wh
 To use a nightly or developer CI build of the Blazor package, ensure that you have the Blazor package feed configured, and update your package version numbers. You should use developer builds only with the expectation that things will break and change without any sort of announcement.
 
 Update your projects to include the Blazor developer feed (`https://dotnet.myget.org/f/blazor-dev/api/v3/index.json`) and ASP.NET Core developer feed (`https://dotnet.myget.org/F/dotnet-core/api/v3/index.json`). You can do this in a project file with MSBuild:
-```
-    <RestoreSources>
-      $(RestoreSources);
-      https://api.nuget.org/v3/index.json;
-      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
-      https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
-    </RestoreSources>
+```xml
+<RestoreSources>
+    $(RestoreSources);
+    https://api.nuget.org/v3/index.json;
+    https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
+    https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
+</RestoreSources>
 ```
 
 Or in a NuGet.config in the same directory as the solution file:
 
-```
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
  <packageSources>
     <clear />
     <add key="blazor" value="https://dotnet.myget.org/f/blazor-dev/api/v3/index.json" />
-    <add key="aspnet" value="dotnet.myget.org/F/dotnet-core/api/v3/index.json" />
+    <add key="aspnet" value="https://dotnet.myget.org/f/dotnet-core/api/v3/index.json" />
     <add key="nuget" value="https://api.nuget.org/v3/index.json" />
  </packageSources>
 </configuration>
@@ -108,13 +108,13 @@ Or in a NuGet.config in the same directory as the solution file:
 
 You can browse https://dotnet.myget.org/gallery/blazor-dev to find the current versions of packages. We recommend picking a specific version of the packages and using it across your projects. 
 
-```
-  <ItemGroup>
+```xml
+<ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0-preview2-final" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.3.0-preview1-10220" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.3.0-preview1-10220" />
     <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.3.0-preview1-10220" />
-  </ItemGroup>
+</ItemGroup>
 ```
 
 To install a developer CI build of the Blazor Language Service extension for Visual Studio, add https://dotnet.myget.org/F/blazor-dev/vsix/ as an additional extension gallery by going to Tools -> Options -> Environment -> Extensions and Updates:
