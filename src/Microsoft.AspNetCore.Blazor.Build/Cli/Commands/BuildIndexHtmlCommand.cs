@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                 "Path to the HTML Page containing the Blazor bootstrap script tag.",
                 CommandOptionType.SingleValue);
 
-            var references = command.Option("--reference",
-                "The path from the _bin folder to a given referenced dll file (typically just the dll name)",
-                CommandOptionType.MultipleValue);
+            var referencesFile = command.Option("--references",
+                "The path to a file that lists the paths to given referenced dll files",
+                CommandOptionType.SingleValue);
 
             var embeddedResourcesFile = command.Option("--embedded-resources",
                 "The path to a file that lists the paths of .NET assemblies that may contain embedded resources (typically, referenced assemblies in their pre-linked states)",
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
             command.OnExecute(() =>
             {
                 if (string.IsNullOrEmpty(mainAssemblyPath.Value) ||
-                    !clientPage.HasValue() || !references.HasValue() || !outputPath.HasValue())
+                    !clientPage.HasValue() || !referencesFile.HasValue() || !outputPath.HasValue())
                 {
                     command.ShowHelp(command.Name);
                     return 1;
@@ -45,6 +45,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
 
                 try
                 {
+                    var referencesSources = referencesFile.HasValue()
+                        ? File.ReadAllLines(referencesFile.Value())
+                        : Array.Empty<string>();
+
                     var embeddedResourcesSources = embeddedResourcesFile.HasValue()
                         ? File.ReadAllLines(embeddedResourcesFile.Value())
                         : Array.Empty<string>();
@@ -52,7 +56,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                     IndexHtmlWriter.UpdateIndex(
                         clientPage.Value(),
                         mainAssemblyPath.Value,
-                        references.Values.ToArray(),
+                        referencesSources,
                         embeddedResourcesSources,
                         linkerEnabledFlag.HasValue(),
                         outputPath.Value());

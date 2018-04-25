@@ -24,12 +24,12 @@
       <FileWrites Include="@(BlazorItemOutput->'%(TargetOutputPath)')" />
     </ItemGroup>
   </Target>
-  
+
   <Target Name="_BlazorTrackResolveReferencesDidRun" AfterTargets="ResolveReferences">
     <PropertyGroup>
       <!-- So we know we can trust @(ReferenceCopyLocalPaths) later -->
       <_BlazorResolveReferencesDidRun>true</_BlazorResolveReferencesDidRun>
-    </PropertyGroup>  
+    </PropertyGroup>
   </Target>
 
   <Target Name="_BlazorBuildReport"
@@ -199,7 +199,7 @@
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.copylocal.txt -->
       <BlazorLocalReferencesOutputPath>$(BlazorIntermediateOutputPath)inputs.copylocal.txt</BlazorLocalReferencesOutputPath>
-      
+
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.linkerswitch.cache -->
       <BlazorBuildLinkerSwitchInputsCache>$(BlazorIntermediateOutputPath)inputs.linkerswitch.cache</BlazorBuildLinkerSwitchInputsCache>
 
@@ -235,6 +235,9 @@
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.index.cache -->
       <BlazorBuildIndexInputsCache>$(BlazorIntermediateOutputPath)inputs.index.cache</BlazorBuildIndexInputsCache>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/embedded.resources.txt -->
+      <BlazorReferencesConfigFilePath>$(BlazorIntermediateOutputPath)references.txt</BlazorReferencesConfigFilePath>
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/embedded.resources.txt -->
       <BlazorEmbeddedResourcesConfigFilePath>$(BlazorIntermediateOutputPath)embedded.resources.txt</BlazorEmbeddedResourcesConfigFilePath>
@@ -279,7 +282,7 @@
       File="$(BlazorBuildCommonInputsCache)"
       Overwrite="True"
       WriteOnlyWhenDifferent="True" />
-    
+
     <WriteLinesToFile
       Lines="@(_BlazorDependencyInput)"
       File="$(BlazorLocalReferencesOutputPath)"
@@ -389,9 +392,9 @@
       Overwrite="True"
       WriteOnlyWhenDifferent="True" />
 
-  <ItemGroup>
-    <FileWrites Include="$(BlazorBuildLinkerInputsCache)" />
-  </ItemGroup>
+    <ItemGroup>
+      <FileWrites Include="$(BlazorBuildLinkerInputsCache)" />
+    </ItemGroup>
 
   </Target>
 
@@ -472,10 +475,10 @@
 
   <PropertyGroup>
     <_CollectResolvedAssembliesDependsOn>
-    _ResolveBlazorApplicationAssemblies;
-    _ReadResolvedBlazorApplicationAssemblies;
-    _IntermediateCopyBlazorApplicationAssemblies;
-    _TouchBlazorApplicationAssemblies
+      _ResolveBlazorApplicationAssemblies;
+      _ReadResolvedBlazorApplicationAssemblies;
+      _IntermediateCopyBlazorApplicationAssemblies;
+      _TouchBlazorApplicationAssemblies
     </_CollectResolvedAssembliesDependsOn>
   </PropertyGroup>
 
@@ -509,14 +512,18 @@
             @(_BlazorDependencyInput)"
     Outputs="$(BlazorResolvedAssembliesOutputPath)"
   >
-    <ItemGroup>
-      <_DependenciesParameter Include="@(_BlazorDependencyInput->'--reference &quot;%(Identity)&quot;')" />
-    </ItemGroup>
+
     <PropertyGroup>
+      <_ReferencesArg Condition="'@(_BlazorDependencyInput)' != ''">--references &quot;$(BlazorReferencesConfigFilePath)&quot;</_ReferencesArg>
       <_BclParameter>--base-class-library &quot;$(MonoBaseClassLibraryPath)&quot; --base-class-library &quot;$(MonoBaseClassLibraryFacadesPath)&quot;</_BclParameter>
     </PropertyGroup>
 
-    <Exec Command="$(BlazorBuildExe) resolve-dependencies &quot;@(IntermediateAssembly->'%(FullPath)')&quot; @(_DependenciesParameter, ' ') $(_BclParameter) --output &quot;$(BlazorResolvedAssembliesOutputPath)&quot;" />
+    <WriteLinesToFile
+          File="$(BlazorReferencesConfigFilePath)"
+          Lines="@(_BlazorDependencyInput)"
+          Overwrite="true" />
+
+    <Exec Command="$(BlazorBuildExe) resolve-dependencies &quot;@(IntermediateAssembly->'%(FullPath)')&quot; $(_ReferencesArg) $(_BclParameter) --output &quot;$(BlazorResolvedAssembliesOutputPath)&quot;" />
 
   </Target>
 
@@ -600,8 +607,14 @@
     </ItemGroup>
     <PropertyGroup>
       <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
+      <_ReferencesArg Condition="'@(_AppReferences)' != ''">--references &quot;$(BlazorReferencesConfigFilePath)&quot;</_ReferencesArg>
       <_EmbeddedResourcesArg Condition="'@(_UnlinkedAppReferencesPaths)' != ''">--embedded-resources &quot;$(BlazorEmbeddedResourcesConfigFilePath)&quot;</_EmbeddedResourcesArg>
     </PropertyGroup>
+
+    <WriteLinesToFile
+      File="$(BlazorReferencesConfigFilePath)"
+      Lines="@(_AppReferences)"
+      Overwrite="true" />
 
     <WriteLinesToFile
       Condition="'@(_UnlinkedAppReferencesPaths)' != ''"
@@ -609,7 +622,7 @@
       Lines="@(_UnlinkedAppReferencesPaths)"
       Overwrite="true" />
 
-    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
+    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; $(_ReferencesArg) $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
 
     <ItemGroup Condition="Exists('$(BlazorIndexHtmlOutputPath)')">
       <_BlazorIndex Include="$(BlazorIndexHtmlOutputPath)" />

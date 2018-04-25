@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
@@ -10,9 +11,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
     {
         public static void Command(CommandLineApplication command)
         {
-            var references = command.Option("--reference",
-                "Full path to a referenced assembly file",
-                CommandOptionType.MultipleValue);
+            var referencesFile = command.Option("--references",
+                "The path to a file that lists the paths to given referenced dll files",
+                CommandOptionType.SingleValue);
 
             var baseClassLibrary = command.Option("--base-class-library",
                 "Full path to a directory in which BCL assemblies can be found",
@@ -36,9 +37,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
 
                 try
                 {
+                    var referencesSources = referencesFile.HasValue()
+                        ? File.ReadAllLines(referencesFile.Value())
+                        : Array.Empty<string>();
+
                     RuntimeDependenciesResolver.ResolveRuntimeDependencies(
                         mainAssemblyPath.Value,
-                        references.Values.ToArray(),
+                        referencesSources,
                         baseClassLibrary.Values.ToArray(),
                         outputPath.Value());
 
