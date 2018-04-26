@@ -16,6 +16,7 @@ namespace AspNetCoreSdkTests
                 data.Ignore("RC1 not yet published to nuget.org") :
                 data);
 
+        // TODO: Add TemplateTypeAttribute to distinguish app templates from classlib templates
         public static IEnumerable<TestCaseData> ApplicationTemplates { get; } =
             from d in AllTemplates
             where ((Template)d.Arguments[0] != Template.RazorClassLib)
