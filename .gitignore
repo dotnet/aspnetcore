@@ -9,6 +9,7 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
+.vscode/
 *.user
 *.suo
 *.cache
