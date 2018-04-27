@@ -4,8 +4,12 @@ using System.Linq;
 
 namespace AspNetCoreSdkTests.Templates
 {
-    public class MvcTemplate : RazorBaseTemplate
+    public class MvcTemplate : RazorApplicationBaseTemplate
     {
+        public new static MvcTemplate Instance { get; } = new MvcTemplate();
+
+        protected MvcTemplate() { }
+
         public override string Name => "mvc";
 
         protected override string RazorPath => "Views";

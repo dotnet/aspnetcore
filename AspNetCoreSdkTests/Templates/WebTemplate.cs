@@ -6,6 +6,10 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class WebTemplate : ConsoleApplicationTemplate
     {
+        public new static WebTemplate Instance { get; } = new WebTemplate();
+
+        protected WebTemplate() { }
+
         public override string Name => "web";
 
         public override IEnumerable<string> ExpectedObjFilesAfterBuild => Enumerable.Concat(base.ExpectedObjFilesAfterBuild, new[]

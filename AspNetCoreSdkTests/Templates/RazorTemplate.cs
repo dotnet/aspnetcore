@@ -4,8 +4,12 @@ using System.Linq;
 
 namespace AspNetCoreSdkTests.Templates
 {
-    public class RazorTemplate : RazorBaseTemplate
+    public class RazorTemplate : RazorApplicationBaseTemplate
     {
+        public new static RazorTemplate Instance { get; } = new RazorTemplate();
+
+        protected RazorTemplate() { }
+
         public override string Name => "razor";
 
         protected override string RazorPath => "Pages";

@@ -6,9 +6,13 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class ClassLibraryTemplate : Template
     {
-        public virtual string OutputPath { get; } = Path.Combine("Debug", "netstandard2.0");
+        public static ClassLibraryTemplate Instance { get; } = new ClassLibraryTemplate();
+
+        protected ClassLibraryTemplate() { }
 
         public override string Name => "classlib";
+
+        public virtual string OutputPath { get; } = Path.Combine("Debug", "netstandard2.0");
 
         public override TemplateType Type => TemplateType.ClassLibrary;
 

@@ -8,9 +8,8 @@ namespace AspNetCoreSdkTests
     public class TemplateTests
     {
         [Test]
-        public void Restore(
-            [ValueSource(typeof(TemplateData), nameof(TemplateData.All))] Template template,
-            [Values] NuGetConfig nuGetConfig)
+        [TestCaseSource(typeof(TemplateData), nameof(TemplateData.Current))]
+        public void Restore(Template template, NuGetConfig nuGetConfig)
         {
             using (var context = new DotNetContext())
             {
@@ -22,9 +21,8 @@ namespace AspNetCoreSdkTests
         }
 
         [Test]
-        public void Build(
-            [ValueSource(typeof(TemplateData), nameof(TemplateData.All))] Template template,
-            [Values] NuGetConfig nuGetConfig)
+        [TestCaseSource(typeof(TemplateData), nameof(TemplateData.Current))]
+        public void Build(Template template, NuGetConfig nuGetConfig)
         {
             using (var context = new DotNetContext())
             {
