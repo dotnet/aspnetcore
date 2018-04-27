@@ -684,8 +684,8 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         public async Task PropertiesOnPageModelAreBound()
         {
             // Arrange
-            var expected = "Id = 10, Name = Foo, Age = 25";
-            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PageModelWithPropertyBinding/10")
+            var expected = "Id = 10, Name = Foo, Age = 25, PropertyWithSupportGetsTrue = foo";
+            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PageModelWithPropertyBinding/10?PropertyWithSupportGetsTrue=foo")
             {
                 Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
                 {
@@ -711,7 +711,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             var url = "Pages/PropertyBinding/PageModelWithPropertyBinding/27";
             var expected = new[]
             {
-                "Id = 27, Name = , Age = 325",
+                "Id = 27, Name = , Age = 325, PropertyWithSupportGetsTrue =",
                 "The Name field is required.",
                 "The field Age must be between 0 and 99.",
             };
@@ -785,6 +785,38 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             var content = await response.Content.ReadAsStringAsync();
             Assert.StartsWith(expected, content.Trim());
             Assert.DoesNotContain(validationError, content);
+        }
+
+        [Fact]
+        public async Task PageProperty_WithSupportsGetTrue_OnPageWithHandler_FuzzyMatchesHeadRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Head, "Pages/PropertyBinding/PageModelWithPropertyBinding/10?PropertyWithSupportGetsTrue=foo");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Fact]
+        public async Task PageProperty_WithSupportsGetTrue_OnPageWithNoHandler_FuzzyMatchesHeadRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Head, "Pages/PropertyBinding/BindPropertyWithGet?value=11");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
         }
 
         [Fact]
