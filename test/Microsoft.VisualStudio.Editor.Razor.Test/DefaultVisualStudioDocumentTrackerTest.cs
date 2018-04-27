@@ -99,6 +99,72 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private DefaultVisualStudioDocumentTracker DocumentTracker { get; }
 
         [ForegroundFact]
+        public void Subscribe_NoopsIfAlreadySubscribed()
+        {
+            // Arrange
+            var callCount = 0;
+            DocumentTracker.ContextChanged += (sender, args) =>
+            {
+                callCount++;
+            };
+            DocumentTracker.Subscribe();
+
+            // Call count is 2 right now:
+            // 1 trigger for initial subscribe context changed.
+            // 1 trigger for TagHelpers being changed (computed).
+
+            // Act
+            DocumentTracker.Subscribe();
+
+            // Assert
+            Assert.Equal(2, callCount);
+        }
+
+        [ForegroundFact]
+        public void Unsubscribe_NoopsIfAlreadyUnsubscribed()
+        {
+            // Arrange
+            var callCount = 0;
+            DocumentTracker.Subscribe();
+            DocumentTracker.ContextChanged += (sender, args) =>
+            {
+                callCount++;
+            };
+            DocumentTracker.Unsubscribe();
+
+            // Act
+            DocumentTracker.Unsubscribe();
+
+            // Assert
+            Assert.Equal(1, callCount);
+        }
+
+        [ForegroundFact]
+        public void Unsubscribe_NoopsIfSubscribeHasBeenCalledMultipleTimes()
+        {
+            // Arrange
+            var callCount = 0;
+            DocumentTracker.Subscribe();
+            DocumentTracker.Subscribe();
+            DocumentTracker.ContextChanged += (sender, args) =>
+            {
+                callCount++;
+            };
+
+            // Act - 1
+            DocumentTracker.Unsubscribe();
+
+            // Assert - 1
+            Assert.Equal(0, callCount);
+
+            // Act - 2
+            DocumentTracker.Unsubscribe();
+
+            // Assert - 2
+            Assert.Equal(1, callCount);
+        }
+
+        [ForegroundFact]
         public void EditorSettingsManager_Changed_TriggersContextChanged()
         {
             // Arrange

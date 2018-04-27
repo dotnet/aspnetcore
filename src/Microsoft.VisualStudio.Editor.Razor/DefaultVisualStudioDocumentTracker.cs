@@ -29,6 +29,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly Workspace _workspace;
         private bool _isSupportedProject;
         private ProjectSnapshot _projectSnapshot;
+        private int _subscribeCount;
 
         // Only allow a single tag helper computation task at a time.
         private (ProjectSnapshot project, Task task) _computingTagHelpers;
@@ -177,12 +178,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _foregroundDispatcher.AssertForegroundThread();
 
+            if (_subscribeCount++ > 0)
+            {
+                return;
+            }
+
             _projectSnapshot = _projectManager.GetOrCreateProject(_projectPath);
             _isSupportedProject = true;
 
             _projectManager.Changed += ProjectManager_Changed;
             _workspaceEditorSettings.Changed += EditorSettingsManager_Changed;
             _importDocumentManager.Changed += Import_Changed;
+
             _importDocumentManager.OnSubscribed(this);
 
             OnContextChanged(ContextChangeKind.ProjectChanged);
@@ -191,6 +198,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void Unsubscribe()
         {
             _foregroundDispatcher.AssertForegroundThread();
+
+            if (_subscribeCount == 0 || _subscribeCount-- > 1)
+            {
+                return;
+            }
 
             _importDocumentManager.OnUnsubscribed(this);
 
