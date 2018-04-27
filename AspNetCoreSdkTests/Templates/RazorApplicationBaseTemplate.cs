@@ -15,10 +15,6 @@ namespace AspNetCoreSdkTests.Templates
         public override IEnumerable<string> ExpectedObjFilesAfterBuild => Enumerable.Concat(base.ExpectedObjFilesAfterBuild, new[]
          {
             Path.Combine("Razor", RazorPath, "_ViewImports.g.cshtml.cs"),
-            Path.Combine("Razor", RazorPath, "_ViewStart.g.cshtml.cs"),
-            Path.Combine("Razor", RazorPath, "Shared", "_CookieConsentPartial.g.cshtml.cs"),
-            Path.Combine("Razor", RazorPath, "Shared", "_Layout.g.cshtml.cs"),
-            Path.Combine("Razor", RazorPath, "Shared", "_ValidationScriptsPartial.g.cshtml.cs"),
         }.Select(p => Path.Combine(OutputPath, p)));
 
         public override IEnumerable<string> ExpectedBinFilesAfterBuild => Enumerable.Concat(base.ExpectedBinFilesAfterBuild, new[]

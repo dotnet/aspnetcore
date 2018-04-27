@@ -9,13 +9,14 @@ namespace AspNetCoreSdkTests.Templates
     {
         private static IEnumerable<Template> Templates { get; } = new Template[]
         {
-            ClassLibraryTemplate.Instance,
             ConsoleApplicationTemplate.Instance,
+            ClassLibraryTemplate.Instance,
             WebTemplate.Instance,
-            RazorTemplate.Instance,
             MvcTemplate.Instance,
-            WebApiTemplate.Instance,
+            RazorTemplate.Instance,
+            AngularTemplate.Instance,
             RazorClassLibraryTemplate.Instance,
+            WebApiTemplate.Instance,
         };
 
         private static IEnumerable<NuGetConfig> NuGetConfigs { get; } = Enum.GetValues(typeof(NuGetConfig)).Cast<NuGetConfig>();
@@ -23,6 +24,8 @@ namespace AspNetCoreSdkTests.Templates
         private static IEnumerable<TestCaseData> All { get; } =
             from t in Templates
             from c in NuGetConfigs
+            // Exclude the DotNetCore NuGet.config scenarios unless temporarily required to make tests pass
+            where c != NuGetConfig.DotNetCore
             select new TestCaseData(t, c);
 
         private static IEnumerable<TestCaseData> IgnoreRazorClassLibEmpty { get; } =
