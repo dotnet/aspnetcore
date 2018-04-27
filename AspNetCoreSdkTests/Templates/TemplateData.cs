@@ -11,6 +11,7 @@ namespace AspNetCoreSdkTests.Templates
             new WebTemplate(),
             new RazorTemplate(),
             new MvcTemplate(),
+            new WebApiTemplate(),
         };
     }
 }
