@@ -66,22 +66,14 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   }
 
   const newSiblings = getLogicalChildrenArray(parent);
-  const newPhysicalParent = getClosestDomElement(parent);
   if (childIndex < newSiblings.length) {
-    newPhysicalParent.insertBefore(child, newSiblings[childIndex] as any as Node);
+    // Insert
+    const nextSibling = newSiblings[childIndex] as any as Node;
+    nextSibling.parentNode!.insertBefore(child, nextSibling);
     newSiblings.splice(childIndex, 0, childAsLogicalElement);
   } else {
-    if (parent instanceof Comment) {
-      const parentLogicalNextSibling = getLogicalNextSibling(parent);
-      if (parentLogicalNextSibling) {
-        newPhysicalParent.insertBefore(child, parentLogicalNextSibling as any as Node);
-      } else {
-        newPhysicalParent.appendChild(child);
-      }
-    } else {
-      newPhysicalParent.appendChild(child);
-    }
-
+    // Append
+    appendDomNode(child, parent);
     newSiblings.push(childAsLogicalElement);
   }
 
@@ -137,6 +129,27 @@ function getClosestDomElement(logicalElement: LogicalElement) {
     return logicalElement.parentNode! as Element;
   } else {
     throw new Error('Not a valid logical element');
+  }
+}
+
+function appendDomNode(child: Node, parent: LogicalElement) {
+  // This function only puts 'child' into the DOM in the right place relative to 'parent'
+  // It does not update the logical children array of anything
+  if (parent instanceof Element) {
+    parent.appendChild(child);
+  } else if (parent instanceof Comment) {
+    const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
+    if (parentLogicalNextSibling) {
+      // Since the parent has a logical next-sibling, its appended child goes right before that
+      parentLogicalNextSibling.parentNode!.insertBefore(child, parentLogicalNextSibling);
+    } else {
+      // Since the parent has no logical next-sibling, keep recursing upwards until we find
+      // a logical ancestor that does have a next-sibling or is a physical element.
+      appendDomNode(child, getLogicalParent(parent)!);
+    }
+  } else {
+    // Should never happen
+    throw new Error(`Cannot append node because the parent is not a valid logical element. Parent: ${parent}`);
   }
 }
 

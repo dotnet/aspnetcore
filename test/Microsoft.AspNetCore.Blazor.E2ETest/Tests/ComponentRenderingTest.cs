@@ -292,5 +292,12 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
             Assert.NotNull(svgCircleElement);
         }
+
+        [Fact]
+        public void LogicalElementInsertionWorksHierarchically()
+        {
+            var appElement = MountTestComponent<LogicalElementInsertionCases>();
+            Assert.Equal("First Second Third", appElement.Text);
+        }
     }
 }
