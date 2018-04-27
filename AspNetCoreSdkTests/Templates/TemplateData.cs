@@ -10,6 +10,7 @@ namespace AspNetCoreSdkTests.Templates
             new ConsoleApplicationTemplate(),
             new WebTemplate(),
             new RazorTemplate(),
+            new MvcTemplate(),
         };
     }
 }
