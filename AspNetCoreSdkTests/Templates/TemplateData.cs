@@ -15,6 +15,7 @@ namespace AspNetCoreSdkTests.Templates
             MvcTemplate.Instance,
             RazorTemplate.Instance,
             AngularTemplate.Instance,
+            ReactTemplate.Instance,
             RazorClassLibraryTemplate.Instance,
             WebApiTemplate.Instance,
         };
