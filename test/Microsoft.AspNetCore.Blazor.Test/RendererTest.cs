@@ -991,6 +991,86 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 });
         }
 
+        [Fact]
+        public void CallsAfterRenderOnEachRender()
+        {
+            // Arrange
+            var onAfterRenderCallCountLog = new List<int>();
+            var component = new AfterRenderCaptureComponent();
+            var renderer = new TestRenderer
+            {
+                OnUpdateDisplay = _ => onAfterRenderCallCountLog.Add(component.OnAfterRenderCallCount)
+            };
+            renderer.AssignComponentId(component);
+
+            // Act
+            component.TriggerRender();
+
+            // Assert
+            // When the display was first updated, OnAfterRender had not yet been called
+            Assert.Equal(new[] { 0 }, onAfterRenderCallCountLog);
+            // But OnAfterRender was called since then
+            Assert.Equal(1, component.OnAfterRenderCallCount);
+
+            // Act/Assert 2: On a subsequent render, the same happens again
+            component.TriggerRender();
+            Assert.Equal(new[] { 0, 1 }, onAfterRenderCallCountLog);
+            Assert.Equal(2, component.OnAfterRenderCallCount);
+        }
+
+        [Fact]
+        public void DoesNotCallOnAfterRenderForComponentsNotRendered()
+        {
+            // Arrange
+            var showComponent3 = true;
+            var parentComponent = new TestComponent(builder =>
+            {
+                // First child will be re-rendered because we'll change its param
+                builder.OpenComponent<AfterRenderCaptureComponent>(0);
+                builder.AddAttribute(1, "some param", showComponent3);
+                builder.CloseComponent();
+
+                // Second child will not be re-rendered because nothing changes
+                builder.OpenComponent<AfterRenderCaptureComponent>(2);
+                builder.CloseComponent();
+
+                // Third component will be disposed
+                if (showComponent3)
+                {
+                    builder.OpenComponent<AfterRenderCaptureComponent>(3);
+                    builder.CloseComponent();
+                }
+            });
+            var renderer = new TestRenderer();
+            var parentComponentId = renderer.AssignComponentId(parentComponent);
+
+            // Act: First render
+            parentComponent.TriggerRender();
+
+            // Assert: All child components were notified of "after render"
+            var batch1 = renderer.Batches.Single();
+            var parentComponentEdits1 = batch1.DiffsByComponentId[parentComponentId].Single().Edits;
+            var childComponents = parentComponentEdits1
+                .Select(
+                    edit => (AfterRenderCaptureComponent)batch1.ReferenceFrames[edit.ReferenceFrameIndex].Component)
+                .ToArray();
+            Assert.Equal(1, childComponents[0].OnAfterRenderCallCount);
+            Assert.Equal(1, childComponents[1].OnAfterRenderCallCount);
+            Assert.Equal(1, childComponents[2].OnAfterRenderCallCount);
+
+            // Act: Second render
+            showComponent3 = false;
+            parentComponent.TriggerRender();
+
+            // Assert: Only the re-rendered component was notified of "after render"
+            var batch2 = renderer.Batches.Skip(1).Single();
+            Assert.Equal(2, batch2.DiffsInOrder.Count); // Parent and first child
+            Assert.Equal(1, batch2.DisposedComponentIDs.Count); // Third child
+            Assert.Equal(2, childComponents[0].OnAfterRenderCallCount); // Retained and re-rendered
+            Assert.Equal(1, childComponents[1].OnAfterRenderCallCount); // Retained and not re-rendered
+            Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider())
@@ -1211,6 +1291,25 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => SomeStringProperty = __value, SomeStringProperty));
                 builder.AddAttribute(7, "disabled", !CheckboxEnabled);
                 builder.CloseElement();
+            }
+        }
+
+        private class AfterRenderCaptureComponent : AutoRenderComponent, IComponent, IHandleAfterRender
+        {
+            public int OnAfterRenderCallCount { get; private set; }
+
+            public void OnAfterRender()
+            {
+                OnAfterRenderCallCount++;
+            }
+
+            void IComponent.SetParameters(ParameterCollection parameters)
+            {
+                TriggerRender();
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
             }
         }
     }

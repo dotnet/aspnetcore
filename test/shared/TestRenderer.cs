@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
-using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 {
@@ -19,6 +18,8 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
         public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
+
+        public Action<RenderBatch> OnUpdateDisplay { get; set; }
 
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
@@ -34,6 +35,8 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 
         protected override void UpdateDisplay(RenderBatch renderBatch)
         {
+            OnUpdateDisplay?.Invoke(renderBatch);
+
             var capturedBatch = new CapturedBatch();
             Batches.Add(capturedBatch);
 

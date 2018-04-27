@@ -86,5 +86,8 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                     $"events because it does not implement {typeof(IHandleEvent).FullName}.");
             }
         }
+
+        public void NotifyRenderCompleted()
+            => (_component as IHandleAfterRender)?.OnAfterRender();
     }
 }

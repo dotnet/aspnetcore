@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// Optional base class for Blazor components. Alternatively, Blazor components may
     /// implement <see cref="IComponent"/> directly.
     /// </summary>
-    public abstract class BlazorComponent : IComponent, IHandleEvent
+    public abstract class BlazorComponent : IComponent, IHandleEvent, IHandleAfterRender
     {
         /// <summary>
         /// Specifies the name of the <see cref="RenderTree"/>-building method.
@@ -87,6 +87,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// Method invoked when the component has received parameters from its parent in
         /// the render tree, and the incoming values have been assigned to properties.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation, or <see langword="null"/>.</returns>
         protected virtual Task OnParametersSetAsync()
             => null;
 
@@ -114,6 +115,22 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <returns></returns>
         protected virtual bool ShouldRender()
             => true;
+
+        /// <summary>
+        /// Method invoked after each time the component has been rendered.
+        /// </summary>
+        protected virtual void OnAfterRender()
+        {
+        }
+
+        /// <summary>
+        /// Method invoked after each time the component has been rendered. Note that the component does
+        /// not automatically re-render after the completion of any returned <see cref="Task"/>, because
+        /// that would cause an infinite render loop.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation, or <see langword="null"/>.</returns>
+        protected virtual Task OnAfterRenderAsync()
+            => null;
 
         void IComponent.Init(RenderHandle renderHandle)
         {
@@ -190,6 +207,25 @@ namespace Microsoft.AspNetCore.Blazor.Components
             }
 
             task.ContinueWith(ContinueAfterLifecycleTask);
+        }
+
+        void IHandleAfterRender.OnAfterRender()
+        {
+            OnAfterRender();
+
+            OnAfterRenderAsync()?.ContinueWith(task =>
+            {
+                // Note that we don't call StateHasChanged to trigger a render after
+                // handling this, because that would be an infinite loop. The only
+                // reason we have OnAfterRenderAsync is so that the developer doesn't
+                // have to use "async void" and do their own exception handling in
+                // the case where they want to start an async task.
+
+                if (task.Exception != null)
+                {
+                    HandleException(task.Exception);
+                }
+            });
         }
     }
 }

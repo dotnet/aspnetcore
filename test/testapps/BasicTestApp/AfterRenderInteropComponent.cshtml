@@ -1,0 +1,13 @@
+﻿@using Microsoft.AspNetCore.Blazor
+@using Microsoft.AspNetCore.Blazor.Browser.Interop
+
+<input ref="myInput" value="Value set during render" />
+
+@functions {
+    ElementRef myInput;
+
+    protected override void OnAfterRender()
+    {
+        RegisteredFunction.Invoke<object>("setElementValue", myInput, "Value set after render");
+    }
+}

@@ -370,5 +370,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             resetButton.Click();
             Assert.Equal("Current count: 0", appElement.FindElement(currentCountTextSelector).Text);
         }
+
+        [Fact]
+        public void CanUseJsInteropForRefElementsDuringOnAfterRender()
+        {
+            var appElement = MountTestComponent<AfterRenderInteropComponent>();
+            var inputElement = appElement.FindElement(By.TagName("input"));
+            Assert.Equal("Value set after render", inputElement.GetAttribute("value"));
+        }
     }
 }

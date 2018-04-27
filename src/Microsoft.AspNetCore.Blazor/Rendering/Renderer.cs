@@ -164,13 +164,26 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                     RenderInExistingBatch(nextToRender);
                 }
 
-                UpdateDisplay(_batchBuilder.ToBatch());
+                var batch = _batchBuilder.ToBatch();
+                UpdateDisplay(batch);
+                InvokeRenderCompletedCalls(batch.UpdatedComponents);
             }
             finally
             {
                 RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange());
                 _batchBuilder.Clear();
                 _isBatchInProgress = false;
+            }
+        }
+
+        private void InvokeRenderCompletedCalls(ArrayRange<RenderTreeDiff> updatedComponents)
+        {
+            var array = updatedComponents.Array;
+            for (var i = 0; i < updatedComponents.Count; i++)
+            {
+                // The component might be rendered and disposed in the same batch (if its parent
+                // was rendered later in the batch, and removed the child from the tree).
+                GetOptionalComponentState(array[i].ComponentId)?.NotifyRenderCompleted();
             }
         }
 
