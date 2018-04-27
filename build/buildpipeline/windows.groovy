@@ -7,6 +7,6 @@ simpleNode('Windows_NT','latest') {
         checkout scm
     }
     stage ('Build') {
-        bat '.\\run.cmd -CI default-build'
+        bat ".\\run.cmd -CI default-build /p:Configuration=${params.Configuration}"
     }
 }

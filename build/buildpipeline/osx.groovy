@@ -5,6 +5,6 @@ simpleNode('OSX10.12','latest') {
         checkout scm
     }
     stage ('Build') {
-        sh './build.sh --ci'
+        sh "./build.sh --ci /p:Configuration=${params.Configuration}"
     }
 }

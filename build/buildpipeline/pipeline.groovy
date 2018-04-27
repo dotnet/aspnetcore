@@ -11,17 +11,17 @@ def configurations = [
 
 configurations.each { configuration ->
 
-    def parameters = [
+    def params = [
         'Configuration': configuration
     ]
 
-    windowsPipeline.triggerPipelineOnEveryGithubPR("Windows ${configuration} x64 Build", parameters)
-    windowsPipeline.triggerPipelineOnGithubPush(parameters)
+    windowsPipeline.triggerPipelineOnEveryGithubPR("Windows ${configuration} x64 Build", params)
+    windowsPipeline.triggerPipelineOnGithubPush(params)
 
-    linuxPipeline.triggerPipelineOnEveryGithubPR("Ubuntu 16.04 ${configuration} Build", parameters)
-    linuxPipeline.triggerPipelineOnGithubPush(parameters)
+    linuxPipeline.triggerPipelineOnEveryGithubPR("Ubuntu 16.04 ${configuration} Build", params)
+    linuxPipeline.triggerPipelineOnGithubPush(params)
 
-    osxPipeline.triggerPipelineOnEveryGithubPR("OSX 10.12 ${configuration} Build", parameters)
-    osxPipeline.triggerPipelineOnGithubPush(parameters)
+    osxPipeline.triggerPipelineOnEveryGithubPR("OSX 10.12 ${configuration} Build", params)
+    osxPipeline.triggerPipelineOnGithubPush(params)
 
 }

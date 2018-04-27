@@ -5,6 +5,6 @@ simpleNode('Ubuntu16.04', 'latest-or-auto-docker') {
         checkout scm
     }
     stage ('Build') {
-        sh './build.sh --ci'
+        sh "./build.sh --ci /p:Configuration=${params.Configuration}"
     }
 }
