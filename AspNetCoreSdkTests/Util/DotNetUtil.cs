@@ -16,16 +16,20 @@ namespace AspNetCoreSdkTests.Util
             yield return new KeyValuePair<string, string>("NUGET_PACKAGES", Path.Combine(workingDirectory, ".nuget", "packages"));
         }
 
-        public static string New(string template, string workingDirectory, bool restore)
+        public static string New(string template, string workingDirectory)
         {
-            var arguments = $"new {template} --name {template} --output ." + (restore ? "" : " --no-restore");
-            return RunDotNet(arguments, workingDirectory, GetEnvironment(workingDirectory));
+            return RunDotNet($"new {template} --name {template} --output . --no-restore", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         public static string Restore(string workingDirectory, NuGetConfig config)
         {
             var configPath = Path.GetFullPath(Path.Combine("NuGetConfig", $"NuGet.{config}.config"));
             return RunDotNet($"restore --no-cache --configfile {configPath}", workingDirectory, GetEnvironment(workingDirectory));
+        }
+
+        public static string Build(string workingDirectory)
+        {
+            return RunDotNet("build --no-restore", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         private static string RunDotNet(string arguments, string workingDirectory,

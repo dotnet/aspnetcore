@@ -1,6 +1,6 @@
-﻿using AspNetCoreSdkTests.Util;
+﻿using AspNetCoreSdkTests.Templates;
+using AspNetCoreSdkTests.Util;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace AspNetCoreSdkTests
 {
@@ -8,37 +8,33 @@ namespace AspNetCoreSdkTests
     public class TemplateTests
     {
         [Test]
-        [TestCaseSource(typeof(TestData), nameof(TestData.AllTemplates))]
-        public void Restore(Template template, NuGetConfig nuGetConfig)
+        public void Restore(
+            [ValueSource(typeof(TemplateData), nameof(TemplateData.All))] Template template,
+            [Values] NuGetConfig nuGetConfig)
         {
-            IEnumerable<string> objFiles;
             using (var context = new DotNetContext())
             {
-                context.New(template, restore: false);
+                context.New(template);
                 context.Restore(nuGetConfig);
-                objFiles = context.GetObjFiles();
+
+                CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, context.GetObjFiles());
             }
-
-            var t = template.ToString().ToLowerInvariant();
-            var expectedObjFiles = new[] {
-                $"{t}.csproj.nuget.cache",
-                $"{t}.csproj.nuget.g.props",
-                $"{t}.csproj.nuget.g.targets",
-                "project.assets.json",
-            };
-
-            CollectionAssert.AreEquivalent(expectedObjFiles, objFiles);
         }
 
-        //[Test]
-        //[TestCaseSource(typeof(TestData), nameof(TestData.AllTemplates))]
-        //public void Build(Template template, NuGetConfig nuGetConfig)
-        //{
-        //    using (var context = new DotNetContext())
-        //    {
-        //        context.New(template, restore: false);
-        //        context.Restore(nuGetConfig);
-        //    }
-        //}
+        [Test]
+        public void Build(
+            [ValueSource(typeof(TemplateData), nameof(TemplateData.All))] Template template,
+            [Values] NuGetConfig nuGetConfig)
+        {
+            using (var context = new DotNetContext())
+            {
+                context.New(template);
+                context.Restore(nuGetConfig);
+                context.Build();
+
+                CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterBuild, context.GetObjFiles());
+                CollectionAssert.AreEquivalent(template.ExpectedBinFilesAfterBuild, context.GetBinFiles());
+            }
+        }
     }
 }
