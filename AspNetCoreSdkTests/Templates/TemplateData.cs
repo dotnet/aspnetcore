@@ -9,6 +9,7 @@ namespace AspNetCoreSdkTests.Templates
             new ClassLibraryTemplate(),
             new ConsoleApplicationTemplate(),
             new WebTemplate(),
+            new RazorTemplate(),
         };
     }
 }
