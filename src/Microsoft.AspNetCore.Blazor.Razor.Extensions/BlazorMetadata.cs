@@ -43,5 +43,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             public readonly static string TagHelperKind = "Blazor.EventHandler";
         }
+
+        public static class Ref
+        {
+            public readonly static string TagHelperKind = "Blazor.Ref";
+
+            public static readonly string RuntimeName = "Blazor.None";
+        }
     }
 }

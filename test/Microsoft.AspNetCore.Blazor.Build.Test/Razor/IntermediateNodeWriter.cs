@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         IExtensionIntermediateNodeVisitor<ComponentBodyExtensionNode>,
         IExtensionIntermediateNodeVisitor<ComponentCloseExtensionNode>,
         IExtensionIntermediateNodeVisitor<ComponentOpenExtensionNode>,
-        IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>
+        IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>,
+        IExtensionIntermediateNodeVisitor<RefExtensionNode>
     {
         private readonly TextWriter _writer;
 
@@ -287,6 +288,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         void IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>.VisitExtension(RouteAttributeExtensionNode node)
         {
             WriteContentNode(node, node.Template);
+        }
+
+        void IExtensionIntermediateNodeVisitor<RefExtensionNode>.VisitExtension(RefExtensionNode node)
+        {
+            WriteContentNode(node, node.IdentifierToken.Content, node.IsComponentCapture ? node.ComponentCaptureTypeName : "Element");
         }
     }
 }

@@ -14,6 +14,7 @@ export const renderTreeFrame = {
   // The properties and memory layout must be kept in sync with the .NET equivalent in RenderTreeFrame.cs
   frameType: (frame: RenderTreeFramePointer) => platform.readInt32Field(frame, 4) as FrameType,
   subtreeLength: (frame: RenderTreeFramePointer) => platform.readInt32Field(frame, 8) as FrameType,
+  elementReferenceCaptureId: (frame: RenderTreeFramePointer) => platform.readInt32Field(frame, 8),
   componentId: (frame: RenderTreeFramePointer) => platform.readInt32Field(frame, 12),
   elementName: (frame: RenderTreeFramePointer) => platform.readStringField(frame, 16),
   textContent: (frame: RenderTreeFramePointer) => platform.readStringField(frame, 16),
@@ -29,6 +30,7 @@ export enum FrameType {
   attribute = 3,
   component = 4,
   region = 5,
+  elementReferenceCapture = 6,
 }
 
 // Nominal type to ensure only valid pointers are passed to the renderTreeFrame functions.

@@ -942,5 +942,87 @@ namespace Test
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
         }
+
+        [Fact]
+        public void Element_WithRef()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" ref=""myElem"" attributeafter=""after"">Hello</elem>
+
+@functions {
+    private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithRef()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent ParamBefore=""before"" ref=""myInstance"" ParamAfter=""after"" />
+
+@functions {
+    private Test.MyComponent myInstance;
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithRef_WithChildContent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent ref=""myInstance"" SomeProp=""val"">
+    Some <el>further</el> content
+</MyComponent>
+
+@functions {
+    private Test.MyComponent myInstance;
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
     }
 }

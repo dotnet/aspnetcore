@@ -950,6 +950,47 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 && edit.RemovedAttributeName == "disabled");
         }
 
+        [Fact]
+        public void HandlesNestedElementCapturesDuringRefresh()
+        {
+            // This may seem like a very arbitrary test case, but at once stage there was a bug
+            // whereby the diff output was incorrect given a ref capture on an element whose
+            // parent element also had a ref capture
+
+            // Arrange
+            var attrValue = 0;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "parent elem");
+                builder.AddAttribute(1, "parent elem attr", attrValue);
+                builder.AddElementReferenceCapture(2, _ => { });
+                builder.OpenElement(3, "child elem");
+                builder.AddElementReferenceCapture(4, _ => { });
+                builder.AddContent(5, "child text");
+                builder.CloseElement();
+                builder.CloseElement();
+            });
+            var renderer = new TestRenderer();
+            renderer.AssignComponentId(component);
+
+            // Act: Update the attribute value on the parent
+            component.TriggerRender();
+            attrValue++;
+            component.TriggerRender();
+
+            // Assert
+            var latestBatch = renderer.Batches.Skip(1).Single();
+            var latestDiff = latestBatch.DiffsInOrder.Single();
+            Assert.Collection(latestDiff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                    Assert.Equal(0, edit.SiblingIndex);
+                    AssertFrame.Attribute(latestBatch.ReferenceFrames[edit.ReferenceFrameIndex],
+                        "parent elem attr", 1);
+                });
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider())

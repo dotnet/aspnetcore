@@ -689,5 +689,58 @@ namespace Test
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
         }
+
+        [Fact]
+        public void Element_WithRef()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" ref=""myElem"" attributeafter=""after"">Hello</elem>
+
+@functions {
+    Microsoft.AspNetCore.Blazor.ElementRef myElem;
+
+    void DoSomething() { myElem.GetHashCode(); } // Avoid 'assigned but not used' warning
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithRef()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent ParamBefore=""before"" ref=""myInstance"" ParamAfter=""after"" />
+
+@functions {
+    Test.MyComponent myInstance;
+
+    void DoSomething() { myInstance.GetHashCode(); } // Avoid 'assigned but not used' warning
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
     }
 }

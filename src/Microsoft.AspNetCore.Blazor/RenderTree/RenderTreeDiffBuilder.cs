@@ -293,11 +293,17 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         private static int NextSiblingIndex(RenderTreeFrame frame, int frameIndex)
         {
-            var subtreeLength = frame.ElementSubtreeLength;
-            var distanceToNextSibling = subtreeLength == 0
-                ? 1                 // For frames that don't have a subtree length set, such as text frames
-                : subtreeLength;    // For element or component frames
-            return frameIndex + distanceToNextSibling;
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Component:
+                    return frameIndex + frame.ComponentSubtreeLength;
+                case RenderTreeFrameType.Element:
+                    return frameIndex + frame.ElementSubtreeLength;
+                case RenderTreeFrameType.Region:
+                    return frameIndex + frame.RegionSubtreeLength;
+                default:
+                    return frameIndex + 1;
+            }
         }
 
         private static void AppendDiffEntriesForFramesWithSameSequence(
@@ -404,6 +410,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         break;
                     }
 
+                case RenderTreeFrameType.ElementReferenceCapture:
+                    {
+                        // We could preserve the ElementReferenceCaptureId from the old frame to the new frame,
+                        // and even call newFrame.ElementReferenceCaptureAction(id) each time in case it wants
+                        // to do something different with the ID. However there's no known use case for
+                        // that, so presently the rule is that for any given element, the reference
+                        // capture action is only invoked once.
+                        break;
+                    }
+
                     // We don't handle attributes here, they have their own diff logic.
                     // See AppendDiffEntriesForAttributeFrame
                 default:
@@ -482,6 +498,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
                         diffContext.Edits.Append(RenderTreeEdit.PrependFrame(diffContext.SiblingIndex, referenceFrameIndex));
                         diffContext.SiblingIndex++;
+                        break;
+                    }
+                case RenderTreeFrameType.ElementReferenceCapture:
+                    {
+                        InitializeNewElementReferenceCaptureFrame(ref diffContext, ref newFrame);
+                        break;
+                    }
+                case RenderTreeFrameType.ComponentReferenceCapture:
+                    {
+                        InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref newFrame);
                         break;
                     }
             }
@@ -573,6 +599,12 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     case RenderTreeFrameType.Attribute:
                         InitializeNewAttributeFrame(ref diffContext, ref frame);
                         break;
+                    case RenderTreeFrameType.ElementReferenceCapture:
+                        InitializeNewElementReferenceCaptureFrame(ref diffContext, ref frame);
+                        break;
+                    case RenderTreeFrameType.ComponentReferenceCapture:
+                        InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref frame);
+                        break;
                 }
             }
         }
@@ -607,6 +639,32 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             {
                 diffContext.Renderer.AssignEventHandlerId(ref newFrame);
             }
+        }
+
+        private static void InitializeNewElementReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
+        {
+            var newElementRef = ElementRef.CreateWithUniqueId();
+            newFrame = newFrame.WithElementReferenceCaptureId(newElementRef.Id);
+            newFrame.ElementReferenceCaptureAction(newElementRef);
+        }
+
+        private static void InitializeNewComponentReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
+        {
+            ref var parentFrame = ref diffContext.NewTree[newFrame.ComponentReferenceCaptureParentFrameIndex];
+            if (parentFrame.FrameType != RenderTreeFrameType.Component)
+            {
+                // Should never happen, but will help with diagnosis if it does
+                throw new InvalidOperationException($"{nameof(RenderTreeFrameType.ComponentReferenceCapture)} frame references invalid parent index.");
+            }
+
+            var componentInstance = parentFrame.Component;
+            if (componentInstance == null)
+            {
+                // Should never happen, but will help with diagnosis if it does
+                throw new InvalidOperationException($"Trying to initialize {nameof(RenderTreeFrameType.ComponentReferenceCapture)} frame before parent component was assigned.");
+            }
+
+            newFrame.ComponentReferenceCaptureAction(componentInstance);
         }
 
         private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)

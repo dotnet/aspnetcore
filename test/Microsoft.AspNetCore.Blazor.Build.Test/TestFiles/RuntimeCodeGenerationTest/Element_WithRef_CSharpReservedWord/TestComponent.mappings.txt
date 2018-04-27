@@ -1,0 +1,14 @@
+Source Location: (13:0,13 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+|@class|
+Generated Location: (685:18,13 [6] )
+|@class|
+
+Source Location: (40:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private Microsoft.AspNetCore.Blazor.ElementRef @class;
+|
+Generated Location: (915:28,12 [62] )
+|
+    private Microsoft.AspNetCore.Blazor.ElementRef @class;
+|
+

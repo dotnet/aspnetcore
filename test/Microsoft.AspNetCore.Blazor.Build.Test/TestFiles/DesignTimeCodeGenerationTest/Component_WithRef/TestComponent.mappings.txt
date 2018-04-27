@@ -1,0 +1,23 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (468:14,38 [15] )
+|*, TestAssembly|
+
+Source Location: (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+|myInstance|
+Generated Location: (1132:30,39 [10] )
+|myInstance|
+
+Source Location: (119:3,12 [133] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    Test.MyComponent myInstance;
+
+    void DoSomething() { myInstance.GetHashCode(); } // Avoid 'assigned but not used' warning
+|
+Generated Location: (1316:37,12 [133] )
+|
+    Test.MyComponent myInstance;
+
+    void DoSomething() { myInstance.GetHashCode(); } // Avoid 'assigned but not used' warning
+|
+

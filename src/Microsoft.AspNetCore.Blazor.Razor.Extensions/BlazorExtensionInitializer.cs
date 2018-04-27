@@ -76,11 +76,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.Features.Add(new BindLoweringPass());
             builder.Features.Add(new EventHandlerLoweringPass());
             builder.Features.Add(new ComponentLoweringPass());
+            builder.Features.Add(new RefLoweringPass());
             builder.Features.Add(new OrphanTagHelperLoweringPass());
 
             builder.Features.Add(new ComponentTagHelperDescriptorProvider());
             builder.Features.Add(new BindTagHelperDescriptorProvider());
             builder.Features.Add(new EventHandlerTagHelperDescriptorProvider());
+            builder.Features.Add(new RefTagHelperDescriptorProvider());
 
             if (isDeclarationOnlyCompile)
             {

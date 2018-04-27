@@ -482,6 +482,39 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
+        public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode refNode)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (refNode == null)
+            {
+                throw new ArgumentNullException(nameof(refNode));
+            }
+
+            // The runtime node writer moves the call elsewhere. At design time we
+            // just want sufficiently similar code that any unknown-identifier or type
+            // errors will be equivalent
+            var captureTypeName = refNode.IsComponentCapture
+                ? refNode.ComponentCaptureTypeName
+                : BlazorApi.ElementRef.FullTypeName;
+            WriteCSharpCode(context, new CSharpCodeIntermediateNode
+            {
+                Source = refNode.Source,
+                Children =
+                {
+                    refNode.IdentifierToken,
+                    new IntermediateToken
+                    {
+                        Kind = TokenKind.CSharp,
+                        Content = $" = default({captureTypeName});"
+                    }
+                }
+            });
+        }
+
         private void WriteCSharpToken(CodeRenderingContext context, IntermediateToken token)
         {
             if (string.IsNullOrWhiteSpace(token.Content))

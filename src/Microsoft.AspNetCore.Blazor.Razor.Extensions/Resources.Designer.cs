@@ -203,5 +203,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor {
                 return ResourceManager.GetString("PageDirectiveCannotBeImported", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Populates the specified field or property with a reference to the element or component..
+        /// </summary>
+        internal static string RefTagHelper_Documentation {
+            get {
+                return ResourceManager.GetString("RefTagHelper_Documentation", resourceCulture);
+            }
+        }
     }
 }

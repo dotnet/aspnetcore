@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
     {
         private readonly static object BoxedTrue = true;
         private readonly static object BoxedFalse = false;
+        private readonly static string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
         private readonly Renderer _renderer;
         private readonly ArrayBuilder<RenderTreeFrame> _entries = new ArrayBuilder<RenderTreeFrame>(10);
@@ -356,6 +357,43 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
         }
 
+        /// <summary>
+        /// Appends a frame representing an instruction to capture a reference to the parent element.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="elementReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
+        public void AddElementReferenceCapture(int sequence, Action<ElementRef> elementReferenceCaptureAction)
+        {
+            if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
+            {
+                throw new InvalidOperationException($"Element reference captures may only be added as children of frames of type {RenderTreeFrameType.Element}");
+            }
+
+            Append(RenderTreeFrame.ElementReferenceCapture(sequence, elementReferenceCaptureAction));
+        }
+
+        /// <summary>
+        /// Appends a frame representing an instruction to capture a reference to the parent component.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="componentReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
+        public void AddComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction)
+        {
+            var parentFrameIndex = GetCurrentParentFrameIndex();
+            if (!parentFrameIndex.HasValue)
+            {
+                throw new InvalidOperationException(ComponentReferenceCaptureInvalidParentMessage);
+            }
+
+            var parentFrameIndexValue = parentFrameIndex.Value;
+            if (_entries.Buffer[parentFrameIndexValue].FrameType != RenderTreeFrameType.Component)
+            {
+                throw new InvalidOperationException(ComponentReferenceCaptureInvalidParentMessage);
+            }
+
+            Append(RenderTreeFrame.ComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue));
+        }
+
         // Internal for tests
         // Not public because there's no current use case for user code defining regions arbitrarily.
         // Currently the sole use case for regions is when appending a RenderFragment.
@@ -380,6 +418,17 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             {
                 throw new InvalidOperationException($"Attributes may only be added immediately after frames of type {RenderTreeFrameType.Element} or {RenderTreeFrameType.Component}");
             }
+        }
+
+        private int? GetCurrentParentFrameIndex()
+            => _openElementIndices.Count == 0 ? (int?)null : _openElementIndices.Peek();
+
+        private RenderTreeFrameType? GetCurrentParentFrameType()
+        {
+            var parentIndex = GetCurrentParentFrameIndex();
+            return parentIndex.HasValue
+                ? _entries.Buffer[parentIndex.Value].FrameType
+                : (RenderTreeFrameType?)null;
         }
 
         /// <summary>

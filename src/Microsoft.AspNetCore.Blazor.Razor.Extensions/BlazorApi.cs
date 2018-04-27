@@ -54,6 +54,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             public static readonly string AddAttribute = nameof(AddAttribute);
 
+            public static readonly string AddElementReferenceCapture = nameof(AddElementReferenceCapture);
+
+            public static readonly string AddComponentReferenceCapture = nameof(AddComponentReferenceCapture);
+
             public static readonly string Clear = nameof(Clear);
 
             public static readonly string GetFrames = nameof(GetFrames);
@@ -90,6 +94,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public static class EventHandlerAttribute
         {
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Components.EventHandlerAttribute";
+        }
+
+        public static class ElementRef
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.ElementRef";
         }
     }
 }

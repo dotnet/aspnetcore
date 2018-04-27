@@ -35,5 +35,15 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// fragment are not comparable to sequence numbers outside it.
         /// </summary>
         Region = 5,
+
+        /// <summary>
+        /// Represents an instruction to capture or update a reference to the parent element.
+        /// </summary>
+        ElementReferenceCapture = 6,
+
+        /// <summary>
+        /// Represents an instruction to capture or update a reference to the parent component.
+        /// </summary>
+        ComponentReferenceCapture = 7,
     }
 }

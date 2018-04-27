@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Json;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -132,6 +133,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 exception.Message);
         }
 
+        [Fact]
+        public void SupportsInternalCustomSerializer()
+        {
+            // Arrange/Act
+            var json = JsonUtil.Serialize(new WithCustomSerializer());
+
+            // Asssert
+            Assert.Equal("{\"key1\":\"value1\",\"key2\":123}", json);
+        }
+
         class NonEmptyConstructorPoco
         {
             public NonEmptyConstructorPoco(int parameter) {}
@@ -158,5 +169,17 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         enum Hobbies { Reading = 1, Swordfighting = 2 }
+
+        class WithCustomSerializer : ICustomJsonSerializer
+        {
+            public object ToJsonPrimitive()
+            {
+                return new Dictionary<string, object>
+                {
+                    { "key1", "value1" },
+                    { "key2", 123 },
+                };
+            }
+        }
     }
 }

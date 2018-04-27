@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         private string _unconsumedHtml;
         private List<IntermediateToken> _currentAttributeValues;
         private IDictionary<string, PendingAttribute> _currentElementAttributes = new Dictionary<string, PendingAttribute>();
+        private List<RefExtensionNode> _currentElementRefCaptures = new List<RefExtensionNode>();
         private int _sourceSequence = 0;
 
         private struct PendingAttribute
@@ -269,6 +270,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                     _currentElementAttributes.Clear();
                                 }
 
+                                if (_currentElementRefCaptures.Count > 0)
+                                {
+                                    foreach (var refNode in _currentElementRefCaptures)
+                                    {
+                                        WriteAddReferenceCaptureCall(context, refNode);
+                                    }
+                                    _currentElementRefCaptures.Clear();
+                                }
+
                                 _scopeStack.OpenScope( tagName: nextTag.Data, isComponent: false);
                             }
 
@@ -304,6 +314,39 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
             }
+        }
+
+        private void WriteAddReferenceCaptureCall(CodeRenderingContext context, RefExtensionNode refNode)
+        {
+            var codeWriter = context.CodeWriter;
+
+            var methodName = refNode.IsComponentCapture
+                ? nameof(BlazorApi.RenderTreeBuilder.AddComponentReferenceCapture)
+                : nameof(BlazorApi.RenderTreeBuilder.AddElementReferenceCapture);
+            codeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{methodName}")
+                .Write((_sourceSequence++).ToString())
+                .WriteParameterSeparator();
+
+            const string refCaptureParamName = "__value";
+            using (var lambdaScope = codeWriter.BuildLambda(refCaptureParamName))
+            {
+                var typecastIfNeeded = refNode.IsComponentCapture ? $"({refNode.ComponentCaptureTypeName})" : string.Empty;
+                WriteCSharpCode(context, new CSharpCodeIntermediateNode
+                {
+                    Source = refNode.Source,
+                    Children =
+                    {
+                        refNode.IdentifierToken,
+                        new IntermediateToken {
+                            Kind = TokenKind.CSharp,
+                            Content = $" = {typecastIfNeeded}{refCaptureParamName};"
+                        }
+                    }
+                });
+            }
+
+            codeWriter.WriteEndMethodInvocation();
         }
 
         private void RejectDisallowedHtmlTags(IntermediateNode node, HtmlTagToken tagToken)
@@ -482,6 +525,26 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             
             context.CodeWriter.Write(");");
             context.CodeWriter.WriteLine();
+        }
+
+        public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node)
+        {
+            if (node.IsComponentCapture)
+            {
+                // AddComponentReferenceCapture calls can be inserted directly because they are
+                // already in the desired place in the IR
+                WriteAddReferenceCaptureCall(context, node);
+            }
+            else
+            {
+                // AddElementReferenceCapture calls must appear in the RenderTree as children of the element
+                // being captured, so store the RefCapture until we're ready to write its children.
+                // We could instead modify RefLoweringPass to insert the RefExtensionNode at the right
+                // place, but this is harder because it would involve understanding which HtmlContent
+                // node represents the end of the tag. It's simpler to do it here because here we are
+                // already doing HTML parsing to understand the structure.
+                _currentElementRefCaptures.Add(node);
+            }
         }
 
         private SourceSpan? CalculateSourcePosition(

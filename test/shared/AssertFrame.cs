@@ -107,5 +107,19 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
             AssertFrame.Sequence(frame, sequence);
             Assert.True(string.IsNullOrWhiteSpace(frame.TextContent));
         }
+
+        public static void ElementReferenceCapture(RenderTreeFrame frame, Action<ElementRef> action, int? sequence = null)
+        {
+            Assert.Equal(RenderTreeFrameType.ElementReferenceCapture, frame.FrameType);
+            Assert.Same(action, frame.ElementReferenceCaptureAction);
+            AssertFrame.Sequence(frame, sequence);
+        }
+
+        public static void ComponentReferenceCapture(RenderTreeFrame frame, Action<object> action, int? sequence = null)
+        {
+            Assert.Equal(RenderTreeFrameType.ComponentReferenceCapture, frame.FrameType);
+            Assert.Same(action, frame.ComponentReferenceCaptureAction);
+            AssertFrame.Sequence(frame, sequence);
+        }
     }
 }

@@ -103,6 +103,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 string.Equals(BlazorMetadata.EventHandler.TagHelperKind, kind);
         }
 
+        public static bool IsRefTagHelper(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return
+                tagHelper.Metadata.TryGetValue(BlazorMetadata.SpecialKindKey, out var kind) &&
+                string.Equals(BlazorMetadata.Ref.TagHelperKind, kind);
+        }
+
         public static string GetEventArgsType(this TagHelperDescriptor tagHelper)
         {
             if (tagHelper == null)

@@ -165,4 +165,7 @@
   <data name="PageDirective_RouteToken_Name" xml:space="preserve">
     <value>route template</value>
   </data>
+  <data name="RefTagHelper_Documentation" xml:space="preserve">
+    <value>Populates the specified field or property with a reference to the element or component.</value>
+  </data>
 </root>

@@ -27,5 +27,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public abstract void WriteComponentBody(CodeRenderingContext context, ComponentBodyExtensionNode node);
 
         public abstract void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node);
+
+        public abstract void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node);
     }
 }
