@@ -12,7 +12,7 @@
         <PreviewImage>Content\WebConfiguration.png</PreviewImage>
     </Metadata>
     <Installation AllUsers="true">
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0.27512, 16.0)" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0.27617, 16.0)" />
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6.1,)" />
