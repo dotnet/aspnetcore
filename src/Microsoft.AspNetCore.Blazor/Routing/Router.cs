@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// Gets or sets the assembly that should be searched, along with its referenced
         /// assemblies, for components matching the URI.
         /// </summary>
+        [Parameter]
         public Assembly AppAssembly { get; set; }
 
         private RouteTable Routes { get; set; }

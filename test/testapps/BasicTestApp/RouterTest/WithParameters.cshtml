@@ -1,11 +1,14 @@
 ﻿@page "/RouterTest/WithParameters/Name/{firstName}/LastName/{lastName}"
 @using BasicTestApp.RouterTest
+@using Microsoft.AspNetCore.Blazor.Components
 <div id="test-info">Your full name is @FirstName @LastName.</div>
 <Links />
 
 @functions
 {
+    [Parameter]
     public string FirstName { get; set; }
 
+    [Parameter]
     public string LastName { get ; set; }
 }

@@ -1,8 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Blazor
+@using Microsoft.AspNetCore.Blazor.Components
 @ChildContent
 @functions {
     // Note: The lack of any whitespace or other output besides @ChildContent is important for
     // what scenarios this component is used for in E2E tests.
 
-    public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
 }

@@ -38,11 +38,13 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// Gets or sets the CSS class name applied to the NavLink when the 
         /// current route matches the NavLink href.
         /// </summary>
+        [Parameter]
         public string ActiveClass { get; set; }
 
         /// <summary>
         /// Gets or sets a value representing the URL matching behavior.
         /// </summary>
+        [Parameter]
         public NavLinkMatch Match { get; set; }
 
         [Inject] private IUriHelper UriHelper { get; set; }

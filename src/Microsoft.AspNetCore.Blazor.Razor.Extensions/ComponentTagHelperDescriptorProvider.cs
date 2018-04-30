@@ -42,6 +42,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 return;
             }
 
+            var parameterSymbol = compilation.GetTypeByMetadataName(BlazorApi.ParameterAttribute.FullTypeName);
+            if (parameterSymbol == null)
+            {
+                // No definition for [Parameter], nothing to do.
+                return;
+            }
+
             var types = new List<INamedTypeSymbol>();
             var visitor = new ComponentTypeVisitor(componentSymbol, types);
 
@@ -60,15 +67,20 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             for (var i = 0; i < types.Count; i++)
             {
                 var type = types[i];
-                context.Results.Add(CreateDescriptor(type));
+                context.Results.Add(CreateDescriptor(type, parameterSymbol));
             }
         }
 
-        private TagHelperDescriptor CreateDescriptor(INamedTypeSymbol type)
+        private TagHelperDescriptor CreateDescriptor(INamedTypeSymbol type, INamedTypeSymbol parameterSymbol)
         {
             if (type == null)
             {
                 throw new ArgumentNullException(nameof(type));
+            }
+
+            if (parameterSymbol == null)
+            {
+                throw new ArgumentNullException(nameof(parameterSymbol));
             }
 
             var typeName = type.ToDisplayString(FullNameTypeDisplayFormat);
@@ -90,7 +102,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Components have very simple matching rules. The type name (short) matches the tag name.
             builder.TagMatchingRule(r => r.TagName = type.Name);
 
-            foreach (var property in GetVisibleProperties(type))
+            foreach (var property in GetProperties(type, parameterSymbol))
             {
                 if (property.kind == PropertyKind.Ignored)
                 {
@@ -134,7 +146,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         // - has public getter
         // - has public setter
         // - is not an indexer
-        private IEnumerable<(IPropertySymbol property, PropertyKind kind)> GetVisibleProperties(INamedTypeSymbol type)
+        private IEnumerable<(IPropertySymbol property, PropertyKind kind)> GetProperties(INamedTypeSymbol type, INamedTypeSymbol parameterSymbol)
         {
             var properties = new Dictionary<string, (IPropertySymbol, PropertyKind)>(StringComparer.Ordinal);
             do
@@ -171,6 +183,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     if (property.SetMethod?.DeclaredAccessibility != Accessibility.Public)
                     {
                         // Non-public setter or no setter
+                        kind = PropertyKind.Ignored;
+                    }
+
+                    if (!property.GetAttributes().Any(a => a.AttributeClass == parameterSymbol))
+                    {
+                        // Does not have [Parameter]
                         kind = PropertyKind.Ignored;
                     }
 

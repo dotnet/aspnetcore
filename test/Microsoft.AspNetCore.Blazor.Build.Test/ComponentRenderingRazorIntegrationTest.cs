@@ -57,10 +57,10 @@ namespace Test
 
     public class MyComponent : BlazorComponent
     {
-        public int IntProperty { get; set; }
-        public bool BoolProperty { get; set; }
-        public string StringProperty { get; set; }
-        public SomeType ObjectProperty { get; set; }
+        [Parameter] public int IntProperty { get; set; }
+        [Parameter] public bool BoolProperty { get; set; }
+        [Parameter] public string StringProperty { get; set; }
+        [Parameter] public SomeType ObjectProperty { get; set; }
     }
 }
 "));
@@ -91,6 +91,36 @@ namespace Test
         }
 
         [Fact]
+        public void Render_ChildComponent_TriesToSetNonParamter()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        public int IntProperty { get; set; }
+    }
+}
+"));
+
+            var component = CompileToComponent(@"
+@addTagHelper *, TestAssembly
+<MyComponent  IntProperty=""123"" />");
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => GetRenderTree(component));
+
+            // Assert
+            Assert.Equal(
+                "Object of type 'Test.MyComponent' has a property matching the name 'IntProperty', " +
+                    "but it does not have [ParameterAttribute] applied.",
+                ex.Message);
+        }
+
+        [Fact]
         public void Render_ChildComponent_WithExplicitStringParameter()
         {
             // Arrange
@@ -101,6 +131,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public string StringProperty { get; set; }
     }
 }
@@ -174,6 +205,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public Action<UIMouseEventArgs> OnClick { get; set; }
     }
 }
@@ -221,6 +253,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public Action<UIEventArgs> OnClick { get; set; }
     }
 }
@@ -267,6 +300,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public bool BoolProperty { get; set; }
     }
 }"));
@@ -296,7 +330,10 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public string MyAttr { get; set; }
+
+        [Parameter]
         public RenderFragment ChildContent { get; set; }
     }
 }
@@ -338,6 +375,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public RenderFragment ChildContent { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Layouts;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Helpers;
@@ -219,6 +220,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class RootLayout : AutoRenderComponent, ILayoutComponent
         {
+            [Parameter]
             public RenderFragment Body { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -232,6 +234,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         [Layout(typeof(RootLayout))]
         private class NestedLayout : AutoRenderComponent, ILayoutComponent
         {
+            [Parameter]
             public RenderFragment Body { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)

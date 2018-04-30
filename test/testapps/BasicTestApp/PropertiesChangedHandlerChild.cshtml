@@ -1,7 +1,9 @@
-﻿<div class="supplied">You supplied: @SuppliedValue</div>
+﻿@using Microsoft.AspNetCore.Blazor.Components
+<div class="supplied">You supplied: @SuppliedValue</div>
 <div class="computed">I computed: @computedValue</div>
 
 @functions {
+    [Parameter]
     public int SuppliedValue { get; set; }
 
     private int computedValue;

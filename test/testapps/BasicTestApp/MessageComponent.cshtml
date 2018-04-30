@@ -1,4 +1,5 @@
-﻿<span style="color: red" class="message">@Message</span>
+﻿@using Microsoft.AspNetCore.Blazor.Components
+<span style="color: red" class="message">@Message</span>
 @functions {
-    public string Message { get; set; }
+    [Parameter] public string Message { get; set; }
 }

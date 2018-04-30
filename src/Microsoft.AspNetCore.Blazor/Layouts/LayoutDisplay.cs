@@ -21,11 +21,13 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
         /// Gets or sets the type of the page component to display.
         /// The type must implement <see cref="IComponent"/>.
         /// </summary>
+        [Parameter]
         public Type Page { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters to pass to the page.
         /// </summary>
+        [Parameter]
         public IDictionary<string, object> PageParameters { get; set; }
 
         /// <inheritdoc />

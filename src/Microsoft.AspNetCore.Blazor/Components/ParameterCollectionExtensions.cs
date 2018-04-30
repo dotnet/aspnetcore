@@ -66,6 +66,13 @@ namespace Microsoft.AspNetCore.Blazor.Components
                     $"matching the name '{propertyName}'.");
             }
 
+            if (!property.IsDefined(typeof(ParameterAttribute)))
+            {
+                throw new InvalidOperationException(
+                    $"Object of type '{targetType.FullName}' has a property matching the name '{propertyName}', " +
+                    $"but it does not have [{nameof(ParameterAttribute)}] applied.");
+            }
+
             return property;
         }
     }

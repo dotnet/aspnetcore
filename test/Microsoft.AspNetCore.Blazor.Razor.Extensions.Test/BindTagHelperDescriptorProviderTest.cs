@@ -27,8 +27,10 @@ namespace Test
 
         public void SetParameters(ParameterCollection parameters) { }
 
+        [Parameter]
         public string MyProperty { get; set; }
 
+        [Parameter]
         public Action<string> MyPropertyChanged { get; set; }
     }
 }

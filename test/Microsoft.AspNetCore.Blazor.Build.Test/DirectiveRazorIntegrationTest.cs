@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         public class TestLayout : ILayoutComponent
         {
+            [Parameter]
             public RenderFragment Body { get; set; }
 
             public void Init(RenderHandle renderHandle)

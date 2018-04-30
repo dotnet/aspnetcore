@@ -27,6 +27,7 @@ namespace Test
 
         public void SetParameters(ParameterCollection parameters) { }
 
+        [Parameter]
         public string MyProperty { get; set; }
     }
 }
@@ -136,6 +137,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public string MyProperty { get; set; }
     }
 }
@@ -176,6 +178,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public bool MyProperty { get; set; }
     }
 }
@@ -227,6 +230,7 @@ namespace Test
 
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public MyEnum MyProperty { get; set; }
     }
 }
@@ -274,6 +278,7 @@ namespace Test
 {
     public class MyComponent : BlazorComponent
     {
+        [Parameter]
         public Action<UIMouseEventArgs> OnClick { get; set; }
     }
 }
@@ -306,6 +311,62 @@ namespace Test
             Assert.False(attribute.IsEnum);
             Assert.False(attribute.IsStringProperty);
             Assert.True(attribute.IsDelegateProperty());
+        }
+
+        [Fact] // This component has lots of properties that don't become components.
+        public void Execute_IgnoredProperties_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public abstract class MyBase : BlazorComponent
+    {
+        [Parameter]
+        public string Hidden { get; set; }
+    }
+
+    public class MyComponent : MyBase
+    {
+        [Parameter]
+        public string NoPublicGetter { private get; set; }
+
+        public string NoParameterAttribute { get; set; }
+
+        // No attribute here, hides base-class property of the same name.
+        public new int Hidden { get; set; }
+
+        public string this[int i]
+        {
+            get { throw null; }
+            set { throw null; }
+        }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            Assert.Empty(component.BoundAttributes);
         }
     }
 }

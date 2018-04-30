@@ -1109,6 +1109,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class MessageComponent : AutoRenderComponent
         {
+            [Parameter]
             public string Message { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -1119,9 +1120,15 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class FakeComponent : IComponent
         {
+            [Parameter]
             public int IntProperty { get; set; }
+
+            [Parameter]
             public string StringProperty { get; set; }
+
+            [Parameter]
             public object ObjectProperty { get; set; }
+
             public RenderHandle RenderHandle { get; private set; }
 
             public void Init(RenderHandle renderHandle)
@@ -1133,8 +1140,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class EventComponent : AutoRenderComponent, IComponent, IHandleEvent
         {
+            [Parameter]
             public Action<UIEventArgs> OnTest { get; set; }
+
+            [Parameter]
             public Action<UIMouseEventArgs> OnClick { get; set; }
+
+            [Parameter]
             public Action OnClickAction { get; set; }
 
             public bool SkipElement { get; set; }
@@ -1174,7 +1186,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class ConditionalParentComponent<T> : AutoRenderComponent where T : IComponent
         {
+            [Parameter]
             public bool IncludeChild { get; set; }
+
+            [Parameter]
             public IDictionary<string, object> ChildParameters { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -1199,6 +1214,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         
         private class ReRendersParentComponent : AutoRenderComponent
         {
+            [Parameter]
             public TestComponent Parent { get; set; }
             private bool _isFirstTime = true;
 
@@ -1216,6 +1232,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class RendersSelfAfterEventComponent : IComponent, IHandleEvent
         {
+            [Parameter]
             public Action<object> OnClick { get; set; }
 
             private RenderHandle _renderHandle;
