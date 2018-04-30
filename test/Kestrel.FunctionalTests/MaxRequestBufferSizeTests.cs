@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            var startReadingRequestBody = new TaskCompletionSource<object>();
-            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
+            var startReadingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
@@ -183,8 +183,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            var startReadingRequestBody = new TaskCompletionSource<object>();
-            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
+            var startReadingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);

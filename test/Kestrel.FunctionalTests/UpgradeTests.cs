@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ResponseThrowsAfterUpgrade()
         {
-            var upgrade = new TaskCompletionSource<bool>();
+            var upgrade = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const string send = "Custom protocol send";
             const string recv = "Custom protocol recv";
 
-            var upgrade = new TaskCompletionSource<bool>();
+            var upgrade = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var server = new TestServer(async context =>
             {
                 try
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task UpgradeCannotBeCalledMultipleTimes()
         {
-            var upgradeTcs = new TaskCompletionSource<object>();
+            var upgradeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ThrowsWhenUpgradingNonUpgradableRequest()
         {
-            var upgradeTcs = new TaskCompletionSource<bool>();
+            var upgradeTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var server = new TestServer(async context =>
             {
                  var feature = context.Features.Get<IHttpUpgradeFeature>();
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task RejectsUpgradeWhenLimitReached()
         {
             const int limit = 10;
-            var upgradeTcs = new TaskCompletionSource<object>();
+            var upgradeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var serviceContext = new TestServiceContext(LoggerFactory);
             serviceContext.ConnectionManager = new HttpConnectionManager(serviceContext.Log, ResourceCounter.Quota(limit));
 

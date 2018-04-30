@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task CopyToAsyncDoesNotCopyBlocks()
         {
             var writeCount = 0;
-            var writeTcs = new TaskCompletionSource<(byte[], int, int)>();
+            var writeTcs = new TaskCompletionSource<(byte[], int, int)>(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockDestination = new Mock<Stream>() { CallBase = true };
 
             mockDestination
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal((segment.Array, segment.Offset, bytes.Length), await writeTcs.Task);
 
                 // Verify the again when GetMemory returns the tail space of the same block.
-                writeTcs = new TaskCompletionSource<(byte[], int, int)>();
+                writeTcs = new TaskCompletionSource<(byte[], int, int)>(TaskCreationOptions.RunContinuationsAsynchronously);
                 bytes = Encoding.ASCII.GetBytes("World!");
                 buffer = http1Connection.RequestBodyPipe.Writer.GetMemory(2048);
                 Assert.True(MemoryMarshal.TryGetArray(buffer, out segment));

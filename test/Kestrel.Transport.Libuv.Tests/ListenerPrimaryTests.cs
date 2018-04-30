@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
             // Create a pipe connection and keep it open without sending any data
-            var connectTcs = new TaskCompletionSource<object>();
+            var connectTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var connectionTrace = new LibuvTrace(new TestApplicationErrorLogger());
             var pipe = new UvPipeHandle(connectionTrace);
 
