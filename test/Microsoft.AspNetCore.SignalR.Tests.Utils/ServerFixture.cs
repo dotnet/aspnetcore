@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -165,9 +166,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     }
 
     // TestSink doesn't seem to be thread-safe :(.
-    internal class LogSinkProvider : ILoggerProvider
+    internal class LogSinkProvider : ILoggerProvider, ISupportExternalScope
     {
         private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
+        internal IExternalScopeProvider _scopeProvider;
 
         public event Action<LogRecord> RecordLogged;
 
@@ -186,7 +188,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var record = new LogRecord(
                 DateTime.Now,
-                new WriteContext()
+                new WriteContext
                 {
                     LoggerName = categoryName,
                     LogLevel = logLevel,
@@ -223,9 +225,42 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
-                _logSinkProvider.Log(_categoryName, logLevel, eventId, state, exception, formatter);
+                // Build the message outside of the formatter
+                // Serilog doesn't appear to use the formatter and just writes the state
+                var connectionId = GetConnectionId();
+
+                var sb = new StringBuilder();
+                if (connectionId != null)
+                {
+                    sb.Append(connectionId + " - ");
+                }
+                sb.Append(formatter(state, exception));
+                var message = sb.ToString();
+
+                _logSinkProvider.Log(_categoryName, logLevel, eventId, message, exception, (s, ex) => s);
+            }
+
+            private string GetConnectionId()
+            {
+                string connectionId = null;
+                _logSinkProvider._scopeProvider.ForEachScope<object>((scope, s) =>
+                {
+                    if (scope is IReadOnlyList<KeyValuePair<string, object>> logScope)
+                    {
+                        var id = logScope.FirstOrDefault(kv => kv.Key == "TransportConnectionId").Value as string;
+                        if (id != null)
+                        {
+                            connectionId = id;
+                        }
+                    }
+                }, null);
+                return connectionId;
             }
         }
-    }
 
+        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+        {
+            _scopeProvider = scopeProvider;
+        }
+    }
 }

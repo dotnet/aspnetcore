@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
     [Collection(HubConnectionTestsCollection.Name)]
     public class HubConnectionTests : VerifiableServerLoggedTest
     {
+        private const string DefaultHubDispatcherLoggerName = "SERVER Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher";
+
         public HubConnectionTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(serverFixture, output)
         {
         }
@@ -430,7 +432,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -464,7 +466,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "UnknownHubMethod";
             }
 
@@ -497,7 +499,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -530,7 +532,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -563,7 +565,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "UnknownHubMethod";
             }
 
@@ -597,7 +599,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -632,7 +634,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
@@ -666,7 +668,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "NonStreamingMethodCalledWithStream";
             }
 
@@ -699,7 +701,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "StreamingMethodCalledWithInvoke";
             }
 
@@ -732,7 +734,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
                        writeContext.EventId.Name == "InvalidReturnValueFromStreamingMethod";
             }
 

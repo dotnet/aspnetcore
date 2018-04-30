@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             lock (_lock)
             {
                 // Create (or get) a logger with the same name as the server logger
-                logger = _serverLoggers.GetOrAdd(write.LoggerName, loggerName => _loggerFactory.CreateLogger(loggerName));
+                logger = _serverLoggers.GetOrAdd(write.LoggerName, loggerName => _loggerFactory.CreateLogger("SERVER " + loggerName));
             }
 
             logger.Log(write.LogLevel, write.EventId, write.State, write.Exception, write.Formatter);
