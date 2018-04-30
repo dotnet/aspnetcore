@@ -29,21 +29,39 @@ namespace GitHubProvider
 
         private IDictionary<string, IEnumerable<GithubIssue>> _issueCache = new ConcurrentDictionary<string, IEnumerable<GithubIssue>>();
 
+        /// <summary>
+        /// Get the issues for a repo
+        /// </summary>
+        /// <param name="repo">The repo to retrieve issues for.</param>
+        /// <returns>The issues which apply to the given repo.</returns>
+        /// <remarks>We take care of repos which keep their issues on the home repo within this function.</remarks>
         public async Task<IEnumerable<GithubIssue>> GetIssues(string repo)
         {
+            string repoLabel = null;
             if (IssuesOnHomeRepo(repo))
             {
+                repoLabel = $"repo:{repo}";
                 repo = "Home";
             }
 
             if(!_issueCache.ContainsKey(repo))
             {
-                _issueCache[repo] = await MakePagedGithubRequest<GithubIssue>(HttpMethod.Get, $"repos/{_owner}/{repo}/issues?per_page=100&q=is%3Aissue+is%3Aclosed");
+                var issues = await MakePagedGithubRequest<GithubIssue>(HttpMethod.Get, $"repos/{_owner}/{repo}/issues?per_page=100&q=is%3Aissue+is%3Aclosed");
+                if(repoLabel != null)
+                {
+                    issues = issues.Where(i => i.Labels.Any(l => l.Name.Equals(repoLabel)));
+                }
+                _issueCache[repo] = issues;
             }
 
             return _issueCache[repo];
         }
 
+        /// <summary>
+        /// Get all the issues for the given repo which regard flaky issues.
+        /// </summary>
+        /// <param name="repo">The repo to search.</param>
+        /// <returns>The list of flaky issues.</returns>
         public async Task<IEnumerable<GithubIssue>> GetFlakyIssues(string repo)
         {
             var issues = await GetIssues(repo);
@@ -52,14 +70,32 @@ namespace GitHubProvider
             i.Title.StartsWith("Flaky", StringComparison.InvariantCultureIgnoreCase)
             || i.Title.StartsWith("flakey", StringComparison.InvariantCultureIgnoreCase) 
             || i.Title.Contains(" fails")
-            || i.Title.StartsWith("Broken"));
+            || i.Title.StartsWith("Broken", StringComparison.InvariantCultureIgnoreCase));
         }
 
-        private IEnumerable<string> _issuesOnHomeRepo = new List<string> {
+        private static readonly IEnumerable<string> _issuesOnHomeRepo = new List<string> {
+            "Antiforgery",
+            "Common",
+            "CORS",
+            "DataProtection",
+            "DependencyInjection",
+            "Diagnostics",
+            "EventNotification",
+            "FileSystem",
+            "HttpAbstractions",
+            "JsonPatch",
+            "Localization",
+            "Options",
+            "Proxy",
+            "ResponseCaching",
+            "Routing",
+            "Session",
+            "StaticFiles",
+            "Testing",
             "WebSockets"
         };
 
-        private bool IssuesOnHomeRepo(string repo)
+        private static bool IssuesOnHomeRepo(string repo)
         {
             return _issuesOnHomeRepo.Contains(repo);
         }
@@ -90,7 +126,7 @@ namespace GitHubProvider
             }
         }
 
-        public async Task<IEnumerable<GithubComment>> GetComments(GithubIssue issue)
+        public async Task<IEnumerable<GithubComment>> GetIssueComments(GithubIssue issue)
         {
             return await MakePagedGithubRequest<GithubComment>(HttpMethod.Get, $"repos/aspnet/{issue.RepositoryName}/issues/{issue.Number}/comments");
         }

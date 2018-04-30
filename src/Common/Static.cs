@@ -19,6 +19,12 @@ namespace Common
         /// </summary>
         public static bool BeQuite = true;
 
+        /// <summary>
+        /// Find out what repo the test belongs to based off its namespace.
+        /// </summary>
+        /// <param name="testName">The full value of the test name as returned by TC.</param>
+        /// <returns>The name of the repo the test came from.</returns>
+        /// <remarks>We don't have a good way to know what repo a test came out of, so we have this hidious method which attempts to figure it out based on the namespace of the test.</remarks>
         public static string FindRepo(string testName)
         {
             if (testName.StartsWith(VSTestPrefix))
@@ -85,6 +91,11 @@ namespace Common
             throw new NotImplementedException($"Don't know how to find the repo of tests like {testName}");
         }
 
+        /// <summary>
+        /// Trim the full value of an error/exception message down to just the message.
+        /// </summary>
+        /// <param name="fullErrorMsg">The complete error message</param>
+        /// <returns>The message of the error.</returns>
         public static string GetExceptionMessage(string fullErrorMsg)
         {
             // Don't include the stacktrace, it's likely to be different between runs.

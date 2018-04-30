@@ -70,7 +70,7 @@ namespace TriageBuildFailures.Handlers
                 {
                     var issue = applicableIssues.First();
 
-                    var comments = await GHClient.GetComments(issue);
+                    var comments = await GHClient.GetIssueComments(issue);
 
                     var commentsAboutThisBuild = comments.Where(c => c.Body.Contains(build.WebURL.ToString()));
 
