@@ -3,8 +3,8 @@
     <VersionPrefix>2.2.0</VersionPrefix>
     <VersionSuffix>preview1</VersionSuffix>
 
-    <ExperimentalVersionPrefix>0.1.0</ExperimentalVersionPrefix>
-    <ExperimentalVersionSuffix>alpha3</ExperimentalVersionSuffix>
+    <ExperimentalVersionPrefix>0.2.0</ExperimentalVersionPrefix>
+    <ExperimentalVersionSuffix>preview1</ExperimentalVersionSuffix>
 
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
