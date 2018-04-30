@@ -59,8 +59,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual IHubProtocol Protocol { get; internal set; }
 
-        internal ExceptionDispatchInfo AbortException { get; private set; }
-
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
@@ -270,6 +268,8 @@ namespace Microsoft.AspNetCore.SignalR
                 return;
             }
 
+            Input.CancelPendingRead();
+
             // We fire and forget since this can trigger user code to run
             Task.Factory.StartNew(_abortedCallback, this);
         }
@@ -295,6 +295,12 @@ namespace Microsoft.AspNetCore.SignalR
 
                         try
                         {
+                            if (result.IsCanceled)
+                            {
+                                Log.HandshakeCanceled(_logger);
+                                return false;
+                            }
+
                             if (!buffer.IsEmpty)
                             {
                                 if (HandshakeProtocol.TryParseRequestMessage(ref buffer, out var handshakeRequestMessage))
@@ -384,12 +390,6 @@ namespace Microsoft.AspNetCore.SignalR
                 await WriteHandshakeResponseAsync(new HandshakeResponseMessage(errorMessage));
                 return false;
             }
-        }
-
-        internal void Abort(Exception exception)
-        {
-            AbortException = ExceptionDispatchInfo.Capture(exception);
-            Abort();
         }
 
         // Used by the HubConnectionHandler only
