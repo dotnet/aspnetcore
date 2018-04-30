@@ -12,6 +12,8 @@ namespace AspNetCoreSdkTests.Templates
 
         public override string Name => "web";
 
+        public override TemplateType Type => TemplateType.WebApplication;
+
         public override IEnumerable<string> ExpectedObjFilesAfterBuild => Enumerable.Concat(base.ExpectedObjFilesAfterBuild, new[]
         {
             $"{Name}.RazorAssemblyInfo.cache",

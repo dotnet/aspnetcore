@@ -2,7 +2,8 @@
 {
     public enum TemplateType
     {
-        Application,
-        ClassLibrary
+        ClassLibrary,
+        ConsoleApplication,
+        WebApplication,
     }
 }

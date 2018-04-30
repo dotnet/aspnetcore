@@ -15,7 +15,7 @@ namespace AspNetCoreSdkTests.Templates
 
         public override string OutputPath { get; } = Path.Combine("Debug", "netcoreapp2.1");
 
-        public override TemplateType Type => TemplateType.Application;
+        public override TemplateType Type => TemplateType.ConsoleApplication;
 
         public override IEnumerable<string> ExpectedBinFilesAfterBuild => Enumerable.Concat(base.ExpectedBinFilesAfterBuild, new[]
         {

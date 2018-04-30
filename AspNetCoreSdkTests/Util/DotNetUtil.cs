@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Microsoft.Extensions.Internal;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 
 namespace AspNetCoreSdkTests.Util
 {
-    internal static class DotNet
+    internal static class DotNetUtil
     {
         private static IEnumerable<KeyValuePair<string, string>> GetEnvironment(string workingDirectory)
         {
@@ -32,6 +32,12 @@ namespace AspNetCoreSdkTests.Util
             return RunDotNet("build --no-restore", workingDirectory, GetEnvironment(workingDirectory));
         }
 
+        public static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Run(string workingDirectory)
+        {
+            // Bind to dynamic port 0 to avoid port conflicts during parallel tests
+            return StartDotNet("run --no-restore --urls http://127.0.0.1:0;https://127.0.0.1:0", workingDirectory, GetEnvironment(workingDirectory));
+        }
+
         private static string RunDotNet(string arguments, string workingDirectory,
             IEnumerable<KeyValuePair<string, string>> environment = null, bool throwOnError = true)
         {
@@ -39,13 +45,13 @@ namespace AspNetCoreSdkTests.Util
             return WaitForExit(p.Process, p.OutputBuilder, p.ErrorBuilder, throwOnError: throwOnError);
         }
 
-        private static (Process Process, StringBuilder OutputBuilder, StringBuilder ErrorBuilder) StartDotNet(
+        private static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) StartDotNet(
             string arguments, string workingDirectory, IEnumerable<KeyValuePair<string, string>> environment = null)
         {
             return StartProcess("dotnet", arguments, workingDirectory, environment);
         }
 
-        private static (Process Process, StringBuilder OutputBuilder, StringBuilder ErrorBuilder) StartProcess(
+        private static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) StartProcess(
             string filename, string arguments, string workingDirectory, IEnumerable<KeyValuePair<string, string>> environment = null)
         {
             var process = new Process()
@@ -70,13 +76,13 @@ namespace AspNetCoreSdkTests.Util
                 }
             }
 
-            var outputBuilder = new StringBuilder();
+            var outputBuilder = new ConcurrentStringBuilder();
             process.OutputDataReceived += (_, e) =>
             {
                 outputBuilder.AppendLine(e.Data);
             };
 
-            var errorBuilder = new StringBuilder();
+            var errorBuilder = new ConcurrentStringBuilder();
             process.ErrorDataReceived += (_, e) =>
             {
                 errorBuilder.AppendLine(e.Data);
@@ -89,7 +95,18 @@ namespace AspNetCoreSdkTests.Util
             return (process, outputBuilder, errorBuilder);
         }
 
-        public static string WaitForExit(Process process, StringBuilder outputBuilder, StringBuilder errorBuilder,
+        public static string StopProcess(Process process, ConcurrentStringBuilder outputBuilder, ConcurrentStringBuilder errorBuilder,
+            bool throwOnError = true)
+        {
+            if (!process.HasExited)
+            {
+                process.KillTree();
+            }
+
+            return WaitForExit(process, outputBuilder, errorBuilder, throwOnError: throwOnError);
+        }
+
+        public static string WaitForExit(Process process, ConcurrentStringBuilder outputBuilder, ConcurrentStringBuilder errorBuilder,
             bool throwOnError = true)
         {
             // Workaround issue where WaitForExit() blocks until child processes are killed, which is problematic
@@ -100,7 +117,7 @@ namespace AspNetCoreSdkTests.Util
 
             if (throwOnError && process.ExitCode != 0)
             {
-                var sb = new StringBuilder();
+                var sb = new ConcurrentStringBuilder();
 
                 sb.AppendLine($"Command {process.StartInfo.FileName} {process.StartInfo.Arguments} returned exit code {process.ExitCode}");
                 sb.AppendLine();
@@ -111,7 +128,5 @@ namespace AspNetCoreSdkTests.Util
 
             return outputBuilder.ToString();
         }
-
-
     }
 }

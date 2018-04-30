@@ -38,5 +38,11 @@ namespace AspNetCoreSdkTests.Templates
                 d);
 
         public static IEnumerable<TestCaseData> Current => IgnoreRazorClassLibEmpty;
+
+        public static IEnumerable<TestCaseData> CurrentWebApplications { get; } =
+            from d in Current
+            where ((Template)d.Arguments[0]).Type == TemplateType.WebApplication
+            select d;
+
     }
 }

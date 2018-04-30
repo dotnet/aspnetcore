@@ -7,5 +7,7 @@
         protected WebApiTemplate() { }
 
         public override string Name => "webapi";
+
+        public override string RelativeUrl => "/api/values";
     }
 }

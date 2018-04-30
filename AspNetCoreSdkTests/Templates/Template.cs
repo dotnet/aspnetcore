@@ -6,6 +6,7 @@ namespace AspNetCoreSdkTests.Templates
     {
         public abstract string Name { get; }
         public abstract TemplateType Type { get; }
+        public virtual string RelativeUrl => string.Empty;
 
         public virtual IEnumerable<string> ExpectedObjFilesAfterRestore => new[]
         {

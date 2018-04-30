@@ -11,7 +11,7 @@ namespace AspNetCoreSdkTests.Util
             Path = IOUtil.GetTempDir();
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             IOUtil.DeleteDir(Path);
         }
