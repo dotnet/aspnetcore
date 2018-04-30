@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public virtual bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
         {
-            if (descriptorX == descriptorY)
+            if (object.ReferenceEquals(descriptorX, descriptorY))
             {
                 return true;
             }
@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return descriptorX != null &&
                 string.Equals(descriptorX.Kind, descriptorY.Kind, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
+                string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
                 Enumerable.SequenceEqual(
                     descriptorX.BoundAttributes.OrderBy(attribute => attribute.Name, _stringComparer),
                     descriptorY.BoundAttributes.OrderBy(attribute => attribute.Name, _stringComparer),
@@ -94,33 +95,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(descriptor.Kind);
-            hashCodeCombiner.Add(descriptor.AssemblyName, StringComparer.Ordinal);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(descriptor.Kind, StringComparer.Ordinal);
+            hash.Add(descriptor.AssemblyName, StringComparer.Ordinal);
+            hash.Add(descriptor.Name, StringComparer.Ordinal);
 
-            var childTags = descriptor.AllowedChildTags.OrderBy(childTag => childTag.Name, _stringComparer);
-            foreach (var childTag in childTags)
-            {
-                hashCodeCombiner.Add(_AllowedChildTagDescriptorComparer.GetHashCode(childTag));
-            }
-
-            var boundAttributes = descriptor.BoundAttributes.OrderBy(attribute => attribute.Name, _stringComparer);
-            foreach (var attribute in boundAttributes)
-            {
-                hashCodeCombiner.Add(_boundAttributeComparer.GetHashCode(attribute));
-            }
-
-            var rules = descriptor.TagMatchingRules.OrderBy(rule => rule.TagName, _stringComparer);
-            foreach (var rule in rules)
-            {
-                hashCodeCombiner.Add(_tagMatchingRuleComparer.GetHashCode(rule));
-            }
-
-            hashCodeCombiner.Add(descriptor.Documentation, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.DisplayName, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.TagOutputHint, _stringComparer);
-
-            return hashCodeCombiner.CombinedHash;
+            return hash.CombinedHash;
         }
     }
 }

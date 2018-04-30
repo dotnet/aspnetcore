@@ -29,18 +29,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _tagHelperFactsService = tagHelperFactsService;
         }
 
-        /*
-         * This API attempts to understand a users context as they're typing in a Razor file to provide TagHelper based attribute IntelliSense.
-         * 
-         * Scenarios for TagHelper attribute IntelliSense follows:
-         * 1. TagHelperDescriptor's have matching required attribute names
-         *  -> Provide IntelliSense for the required attributes of those descriptors to lead users towards a TagHelperified element.
-         * 2. TagHelperDescriptor entirely applies to current element. Tag name, attributes, everything is fulfilled.
-         *  -> Provide IntelliSense for the bound attributes for the applied descriptors.
-         *  
-         *  Within each of the above scenarios if an attribute completion has a corresponding bound attribute we associate it with the corresponding
-         *  BoundAttributeDescriptor. By doing this a user can see what C# type a TagHelper expects for the attribute.
-         */
+        // This API attempts to understand a users context as they're typing in a Razor file to provide TagHelper based attribute IntelliSense.
+        //
+        // Scenarios for TagHelper attribute IntelliSense follows:
+        // 1. TagHelperDescriptor's have matching required attribute names
+        //  -> Provide IntelliSense for the required attributes of those descriptors to lead users towards a TagHelperified element.
+        // 2. TagHelperDescriptor entirely applies to current element. Tag name, attributes, everything is fulfilled.
+        //  -> Provide IntelliSense for the bound attributes for the applied descriptors.
+        //
+        // Within each of the above scenarios if an attribute completion has a corresponding bound attribute we associate it with the corresponding
+        // BoundAttributeDescriptor. By doing this a user can see what C# type a TagHelper expects for the attribute.
         public override AttributeCompletionResult GetAttributeCompletions(AttributeCompletionContext completionContext)
         {
             if (completionContext == null)
