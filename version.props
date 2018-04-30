@@ -11,7 +11,7 @@
     <!-- VS for Mac does not like letters in package versions -->
     <AddinBuildNumber Condition="'$(BuildNumber)' == 't000'">99999</AddinBuildNumber>
     <AddinBuildNumber Condition="'$(AddinBuildNumber)' == ''">$(BuildNumber)</AddinBuildNumber>
-    
+
     <!-- Properties for VS for Mac addin -->
 
     <!--
