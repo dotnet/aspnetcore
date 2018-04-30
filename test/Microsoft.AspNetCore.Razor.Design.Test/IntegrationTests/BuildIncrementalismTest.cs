@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -172,6 +173,47 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Build_TouchesUpToDateMarkerFile()
+        {
+            var classLibraryDll = Path.Combine(IntermediateOutputPath, "ClassLibrary.dll");
+            var classLibraryViewsDll = Path.Combine(IntermediateOutputPath, "ClassLibrary.Views.dll");
+            var markerFile = Path.Combine(IntermediateOutputPath, "ClassLibrary.csproj.CopyComplete");
+
+            var result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, classLibraryDll);
+            Assert.FileExists(result, classLibraryViewsDll);
+            Assert.FileExists(result, markerFile);
+
+            // Gather thumbprints before incremental build.
+            var classLibraryThumbPrint = GetThumbPrint(classLibraryDll);
+            var classLibraryViewsThumbPrint = GetThumbPrint(classLibraryViewsDll);
+            var markerFileThumbPrint = GetThumbPrint(markerFile);
+
+            result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result);
+
+            // Verify thumbprint file is unchanged between true incremental builds
+            Assert.Equal(classLibraryThumbPrint, GetThumbPrint(classLibraryDll));
+            Assert.Equal(classLibraryViewsThumbPrint, GetThumbPrint(classLibraryViewsDll));
+            // In practice, this should remain unchanged. However, since our tests reference
+            // binaries from other projects, this file gets updated by Microsoft.Common.targets
+            Assert.NotEqual(markerFileThumbPrint, GetThumbPrint(markerFile));
+
+            // Change a cshtml file and verify ClassLibrary.Views.dll and marker file are updated
+            File.AppendAllText(Path.Combine(Project.DirectoryPath, "Views", "_ViewImports.cshtml"), Environment.NewLine);
+
+            result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result);
+
+            Assert.Equal(classLibraryThumbPrint, GetThumbPrint(classLibraryDll));
+            Assert.NotEqual(classLibraryViewsThumbPrint, GetThumbPrint(classLibraryViewsDll));
+            Assert.NotEqual(markerFileThumbPrint, GetThumbPrint(markerFile));
         }
     }
 }

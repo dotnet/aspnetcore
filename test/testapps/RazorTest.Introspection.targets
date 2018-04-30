@@ -7,8 +7,11 @@
     <Message Text="CompileResource: %(_RazorCoreCompileResourceInputs.Identity) %(_RazorCoreCompileResourceInputs.LogicalName)" Importance="High" />
   </Target>
 
-  <Target Name="_IntrospectUpToDateCheckInput">
+  <Target Name="_IntrospectUpToDateCheck">
     <Message Text="UpToDateCheckInput: %(UpToDateCheckInput.Identity)" Importance="High" />
+    <Message Text="No UpToDateCheckInput input found" Importance="High" Condition="'@(UpToDateCheckInput->Count)' == '0'" />
+    <Message Text="UpToDateCheckBuilt: %(UpToDateCheckBuilt.Identity)" Importance="High" />
+    <Message Text="No UpToDateCheckBuilt input found" Importance="High" Condition="'@(UpToDateCheckBuilt->Count)' == '0'" />
   </Target>
 
   <Target Name="_IntrospectRazorCompileItems">

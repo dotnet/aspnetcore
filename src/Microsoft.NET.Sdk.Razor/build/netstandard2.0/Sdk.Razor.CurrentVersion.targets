@@ -185,9 +185,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorIntermediateAssembly Condition="'$(RazorIntermediateAssembly)'==''" Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
     <!-- Used in Compilation.targets -->   
     <_RazorDebugSymbolsIntermediatePath Condition="'$(_RazorDebugSymbolsProduced)'=='true'" Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
-    <!-- Add all cshtml files to UpToDateCheckInput - a collection used by the IDE's project system to determine if a project needs to be rebuilt -->
-    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Add all cshtml files to UpToDateCheckInput - a collection of files used by FastUpToDateCheck to determine
+      if any of the the project inputs have changed.
+    -->
+    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+
+    <!--
+      Add Razor output files to UpToDateCheckBuilt - a collection of files used by FastUpToDateCheck to determine
+      if any of the project's outputs have changed.
+    -->
+    <UpToDateCheckBuilt Include="@(RazorIntermediateAssembly)"
+      Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" />
+  </ItemGroup>
+
 
   <!--
     These are the targets that generate code using Razor, separated from the main file for ease of maintenance.
@@ -487,6 +501,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
+
+    <!--
+    FastUpToDate check in VS does not consider the Views dll when determining if referencing projects need to be rebuilt.
+    We'll touch a marker file that is used during as input for up to date check. Based on
+    https://github.com/Microsoft/msbuild/blob/637f06e31ef46892faeb40044899a62a15b77f79/src/Tasks/Microsoft.Common.CurrentVersion.targets#L4364-L4368
+    -->
+    <Touch Files="@(CopyUpToDateMarker)" AlwaysCreate="true" Condition="'@(_RazorAssembly)' != ''">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
     
   </Target>
 

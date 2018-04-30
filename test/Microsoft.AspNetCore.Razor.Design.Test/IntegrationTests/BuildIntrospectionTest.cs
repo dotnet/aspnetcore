@@ -18,11 +18,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorSdk_AddsCshtmlFilesToUpToDateCheckInput()
         {
-            var result = await DotnetMSBuild("_IntrospectUpToDateCheckInput");
+            var result = await DotnetMSBuild("_IntrospectUpToDateCheck");
 
             Assert.BuildPassed(result);
             Assert.BuildOutputContainsLine(result, $"UpToDateCheckInput: {Path.Combine("Views", "Home", "Index.cshtml")}");
             Assert.BuildOutputContainsLine(result, $"UpToDateCheckInput: {Path.Combine("Views", "_ViewStart.cshtml")}");
+            Assert.BuildOutputContainsLine(result, $"UpToDateCheckBuilt: {Path.Combine(IntermediateOutputPath, "SimpleMvc.Views.dll")}");
         }
 
         [Fact]
