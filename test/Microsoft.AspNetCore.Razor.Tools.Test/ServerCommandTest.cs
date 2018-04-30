@@ -13,15 +13,15 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     public class ServerCommandTest
     {
-        [Fact(Skip = "https://github.com/aspnet/Razor/issues/2310")]
+        [Fact]
         public void WritePidFile_WorksAsExpected()
         {
             // Arrange
             var expectedProcessId = Process.GetCurrentProcess().Id;
             var expectedRzcPath = typeof(ServerCommand).Assembly.Location;
             var expectedFileName = $"rzc-{expectedProcessId}";
-            var homeEnvVariable = PlatformInformation.IsWindows ? "USERPROFILE" : "HOME";
-            var path = Path.Combine(Environment.GetEnvironmentVariable(homeEnvVariable), ".dotnet", "pids", "build", expectedFileName);
+            var directoryPath = Path.Combine(Path.GetTempPath(), "RazorTest", Guid.NewGuid().ToString());
+            var path = Path.Combine(directoryPath, expectedFileName);
 
             var pipeName = Guid.NewGuid().ToString();
             var server = GetServerCommand(pipeName);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             // Act & Assert
             try
             {
-                using (var _ = server.WritePidFile())
+                using (var _ = server.WritePidFile(directoryPath))
                 {
                     Assert.True(File.Exists(path));
 
@@ -47,15 +47,64 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
             finally
             {
-                // Delete the file in case the test fails.
-                if (File.Exists(path))
+                // Cleanup after the test.
+                if (Directory.Exists(directoryPath))
                 {
-                    File.Delete(path);
+                    Directory.Delete(directoryPath, recursive: true);
                 }
             }
         }
 
-        private ServerCommand GetServerCommand(string pipeName)
+        [Fact]
+        public void GetPidFilePath_ReturnsCorrectDefaultPath()
+        {
+            // Arrange
+            var expectedPath = Path.Combine("homeDir", ".dotnet", "pids", "build");
+            var server = GetServerCommand();
+
+            // Act
+            var directoryPath = server.GetPidFilePath(getEnvironmentVariable: env =>
+            {
+                if (env == "DOTNET_BUILD_PIDFILE_DIRECTORY")
+                {
+                    return null;
+                }
+
+                return "homeDir";
+            });
+
+            // Assert
+            Assert.Equal(expectedPath, directoryPath);
+        }
+
+        [Fact]
+        public void GetPidFilePath_UsesEnvironmentVariablePathIfSpecified()
+        {
+            // Arrange
+            var expectedPath = "/Some/directory/path/";
+            var server = GetServerCommand();
+
+            // Act
+            var directoryPath = server.GetPidFilePath(getEnvironmentVariable: env => expectedPath);
+
+            // Assert
+            Assert.Equal(expectedPath, directoryPath);
+        }
+
+        [Fact]
+        public void GetPidFilePath_NullEnvironmentVariableValue_ReturnsNull()
+        {
+            // Arrange
+            var server = GetServerCommand();
+
+            // Act
+            var directoryPath = server.GetPidFilePath(getEnvironmentVariable: env => null);
+
+            // Assert
+            Assert.Null(directoryPath);
+        }
+
+        private ServerCommand GetServerCommand(string pipeName = null)
         {
             var application = new Application(
                 CancellationToken.None,
