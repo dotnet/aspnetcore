@@ -68,6 +68,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public void Dispose()
         {
+            Application.Input.Complete();
+            Application.Output.Complete();
+            Transport.Input.Complete();
+            Transport.Output.Complete();
             _memoryPool.Dispose();
         }
     }

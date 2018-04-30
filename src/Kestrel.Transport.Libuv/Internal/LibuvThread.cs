@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly object _startSync = new object();
         private bool _stopImmediate = false;
         private bool _initCompleted = false;
-        private ExceptionDispatchInfo _closeError;
+        private Exception _closeError;
         private readonly ILibuvTrace _log;
 
         public LibuvThread(LibuvTransport transport)
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #endif
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
-            MemoryPool = KestrelMemoryPool.Create();
+            MemoryPool = transport.TransportOptions.MemoryPoolFactory();
             WriteReqPool = new WriteReqPool(this, _log);
         }
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public List<WeakReference> Requests { get; } = new List<WeakReference>();
 #endif
 
-        public ExceptionDispatchInfo FatalError { get { return _closeError; } }
+        public Exception FatalError => _closeError;
 
         public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; }
 
@@ -133,7 +133,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
             }
 
-            _closeError?.Throw();
+            if (_closeError != null)
+            {
+                ExceptionDispatchInfo.Capture(_closeError).Throw();
+            }
         }
 
 #if DEBUG && !INNER_LOOP
@@ -323,14 +326,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             catch (Exception ex)
             {
-                _closeError = ExceptionDispatchInfo.Capture(ex);
+                _closeError = ex;
                 // Request shutdown so we can rethrow this exception
                 // in Stop which should be observable.
                 _appLifetime.StopApplication();
             }
             finally
             {
-                MemoryPool.Dispose();
+                try
+                {
+                    MemoryPool.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _closeError = _closeError == null ? ex : new AggregateException(_closeError, ex);
+                }
                 WriteReqPool.Dispose();
                 _threadTcs.SetResult(null);
 

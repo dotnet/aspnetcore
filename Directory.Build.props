@@ -8,6 +8,10 @@
   <Import Project="build\sources.props" />
 
   <PropertyGroup>
+    <DefineConstants Condition="'$(InnerLoop)' != ''">$(DefineConstants);INNER_LOOP</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
     <RepositoryUrl>https://github.com/aspnet/KestrelHttpServer</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

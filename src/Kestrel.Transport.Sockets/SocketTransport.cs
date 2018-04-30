@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     {
         private static readonly PipeScheduler[] ThreadPoolSchedulerArray = new PipeScheduler[] { PipeScheduler.ThreadPool };
 
-        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
+        private readonly MemoryPool<byte> _memoryPool;
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionDispatcher _dispatcher;
         private readonly IApplicationLifetime _appLifetime;
@@ -39,7 +39,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             IConnectionDispatcher dispatcher,
             IApplicationLifetime applicationLifetime,
             int ioQueueCount,
-            ISocketsTrace trace)
+            ISocketsTrace trace,
+            MemoryPool<byte> memoryPool)
         {
             Debug.Assert(endPointInformation != null);
             Debug.Assert(endPointInformation.Type == ListenType.IPEndPoint);
@@ -51,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _dispatcher = dispatcher;
             _appLifetime = applicationLifetime;
             _trace = trace;
+            _memoryPool = memoryPool;
 
             if (ioQueueCount > 0)
             {

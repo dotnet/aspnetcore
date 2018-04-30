@@ -590,9 +590,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("http://localhost/path%20with%20space?q=abc%20123", "/path with space", "abc 123")]
         public async Task CanHandleRequestsWithUrlInAbsoluteForm(string requestUrl, string expectedPath, string queryValue)
         {
-            var pathTcs = new TaskCompletionSource<PathString>();
-            var rawTargetTcs = new TaskCompletionSource<string>();
-            var queryTcs = new TaskCompletionSource<IQueryCollection>();
+            var pathTcs = new TaskCompletionSource<PathString>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var rawTargetTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var queryTcs = new TaskCompletionSource<IQueryCollection>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async context =>
                  {
@@ -1031,8 +1031,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var readTcs = new TaskCompletionSource<object>();
-            var registrationTcs = new TaskCompletionSource<int>();
+            var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var registrationTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestId = 0;
 
             using (var server = new TestServer(async httpContext =>

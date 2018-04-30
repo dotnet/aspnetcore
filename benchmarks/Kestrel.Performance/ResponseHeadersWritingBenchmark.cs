@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private MemoryPool<byte> _memoryPool;
 
+        private DuplexPipe.DuplexPipePair _pair;
+
         [Params(
             BenchmarkTypes.TechEmpowerPlaintext,
             BenchmarkTypes.PlaintextChunked,
@@ -115,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _memoryPool = KestrelMemoryPool.Create();
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            _pair = DuplexPipe.CreateConnectionPair(options, options);
 
             var serviceContext = new ServiceContext
             {
@@ -131,8 +133,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = _memoryPool,
                 TimeoutControl = new MockTimeoutControl(),
-                Application = pair.Application,
-                Transport = pair.Transport
+                Application = _pair.Application,
+                Transport = _pair.Transport
             });
 
             http1Connection.Reset();
@@ -143,6 +145,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationCleanup]
         public void Cleanup()
         {
+            _pair.Application.Input.Complete();
+            _pair.Application.Output.Complete();
+            _pair.Transport.Input.Complete();
+            _pair.Transport.Output.Complete();
             _memoryPool.Dispose();
         }
 

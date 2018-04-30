@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public void Dispose()
         {
+            _pipe.Reader.Complete();
+            _pipe.Writer.Complete();
             _memoryPool.Dispose();
         }
 

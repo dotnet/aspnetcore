@@ -12,11 +12,16 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class ChunkedRequestTests : LoggedTest
     {
+        public ChunkedRequestTests(ITestOutputHelper output) : base(output)
+        {
+        }
+
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
@@ -88,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task Http10KeepAliveTransferEncoding(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext();
 
             using (var server = new TestServer(AppChunked, testContext, listenOptions))
             {

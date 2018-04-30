@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -90,7 +91,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
             var lastBytesWritten = DateTime.MaxValue;
 
-            using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody))
+            var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
+
+            using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -167,6 +170,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                 }
             }
+
+            await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
         [Fact]
@@ -182,7 +187,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
             var lastBytesWritten = DateTime.MaxValue;
 
-            using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody))
+            var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
+
+            using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -239,15 +246,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     host.Dispose();
                 }
             }
+            // Allow appfunc to unblock
+            startReadingRequestBody.SetResult(null);
+            clientFinishedSendingRequestBody.SetResult(null);
+            await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
         private IWebHost StartWebHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
             TaskCompletionSource<object> startReadingRequestBody,
-            TaskCompletionSource<object> clientFinishedSendingRequestBody)
+            TaskCompletionSource<object> clientFinishedSendingRequestBody,
+            Func<MemoryPool<byte>> memoryPoolFactory = null)
         {
-            var host = TransportSelector.GetWebHostBuilder()
+            var host = TransportSelector.GetWebHostBuilder(memoryPoolFactory)
                 .ConfigureServices(AddTestLogging)
                 .UseKestrel(options =>
                 {

@@ -287,6 +287,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public void Dispose()
         {
+            _pair.Application.Input.Complete();
+            _pair.Application.Output.Complete();
+            _pair.Transport.Input.Complete();
+            _pair.Transport.Output.Complete();
             _memoryPool.Dispose();
         }
 
@@ -1213,7 +1217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
-            
+
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
             _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);

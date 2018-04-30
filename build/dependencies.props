@@ -18,7 +18,7 @@
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>
+    <MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>2.2.0-a-preview1-pool-cleanup-16484</MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>
     <MicrosoftExtensionsBuffersSourcesPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsBuffersSourcesPackageVersion>
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsConfigurationBinderPackageVersion>

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContext = new TestLibuvTransportContext() { ConnectionDispatcher = mockConnectionDispatcher };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
-
+            Task connectionTask = null;
             try
             {
                 await thread.StartAsync();
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
                     var connection = new LibuvConnection(listenerContext, socket);
-                    _ = connection.Start();
+                    connectionTask = connection.Start();
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
@@ -47,6 +47,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
+                mockConnectionDispatcher.Input.Reader.Complete();
+                mockConnectionDispatcher.Output.Writer.Complete();
+                await connectionTask;
+
                 await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }
@@ -108,6 +112,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
+                mockConnectionDispatcher.Input.Reader.Complete();
+                mockConnectionDispatcher.Output.Writer.Complete();
+
                 await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }
@@ -189,6 +196,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
+                mockConnectionDispatcher.Input.Reader.Complete();
+                mockConnectionDispatcher.Output.Writer.Complete();
+
                 await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }
@@ -202,6 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
 
+            Task connectionTask = null;
             try
             {
                 await thread.StartAsync();
@@ -213,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
                     var connection = new LibuvConnection(listenerContext, socket);
-                    _ = connection.Start();
+                    connectionTask = connection.Start();
 
                     var ignored = new LibuvFunctions.uv_buf_t();
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), TestConstants.EOF, ref ignored);
@@ -224,6 +235,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
+                mockConnectionDispatcher.Input.Reader.Complete();
+                mockConnectionDispatcher.Output.Writer.Complete();
+                await connectionTask;
+
                 await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }

@@ -148,6 +148,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         private void Log(string method, ReadOnlySpan<byte> buffer)
         {
+            if (!_logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
             var builder = new StringBuilder($"{method}[{buffer.Length}] ");
 
             // Write the hex
