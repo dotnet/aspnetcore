@@ -70,6 +70,29 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task OnDisconnectedAsyncTriggersWhenAbortedTokenCallbackThrows()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ErrorInAbortedTokenHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // kill the connection
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+
+                var firedOnConnected = (bool)client.Connection.Items[nameof(ErrorInAbortedTokenHub.OnConnectedAsync)];
+                var firedOnDisconnected = (bool)client.Connection.Items[nameof(ErrorInAbortedTokenHub.OnDisconnectedAsync)];
+
+                Assert.True(firedOnConnected);
+                Assert.True(firedOnDisconnected);
+            }
+        }
+
+        [Fact]
         public async Task AbortFromHubMethodForcesClientDisconnect()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();

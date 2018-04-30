@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubConnectionContext
     {
-        private static readonly Action<object> _abortedCallback = AbortConnection;
+        private static readonly WaitCallback _abortedCallback = AbortConnection;
 
         private readonly ConnectionContext _connectionContext;
         private readonly ILogger _logger;
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.SignalR
             Input.CancelPendingRead();
 
             // We fire and forget since this can trigger user code to run
-            Task.Factory.StartNew(_abortedCallback, this);
+            ThreadPool.QueueUserWorkItem(_abortedCallback, this);
         }
 
         internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
@@ -425,15 +425,15 @@ namespace Microsoft.AspNetCore.SignalR
             try
             {
                 connection._connectionAbortedTokenSource.Cancel();
-
-                // Communicate the fact that we're finished triggering abort callbacks
-                connection._abortCompletedTcs.TrySetResult(null);
             }
             catch (Exception ex)
             {
-                // TODO: Should we log if the cancellation callback fails? This is more preventative to make sure
-                // we don't end up with an unobserved task
-                connection._abortCompletedTcs.TrySetException(ex);
+                Log.AbortFailed(connection._logger, ex);
+            }
+            finally
+            {
+                // Communicate the fact that we're finished triggering abort callbacks
+                connection._abortCompletedTcs.TrySetResult(null);
             }
         }
 
@@ -460,6 +460,9 @@ namespace Microsoft.AspNetCore.SignalR
 
             private static readonly Action<ILogger, string, int, Exception> _protocolVersionFailed =
                 LoggerMessage.Define<string, int>(LogLevel.Warning, new EventId(7, "ProtocolVersionFailed"), "Server does not support version {Version} of the {Protocol} protocol.");
+
+            private static readonly Action<ILogger, Exception> _abortFailed =
+                LoggerMessage.Define(LogLevel.Trace, new EventId(8, "AbortFailed"), "Abort callback failed.");
 
             public static void HandshakeComplete(ILogger logger, string hubProtocol)
             {
@@ -495,7 +498,11 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 _protocolVersionFailed(logger, protocolName, version, null);
             }
-        }
 
+            public static void AbortFailed(ILogger logger, Exception exception)
+            {
+                _abortFailed(logger, exception);
+            }
+        }
     }
 }

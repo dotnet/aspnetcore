@@ -126,15 +126,8 @@ namespace Microsoft.AspNetCore.SignalR
             // We wait on abort to complete, this is so that we can guarantee that all callbacks have fired
             // before OnDisconnectedAsync
 
-            try
-            {
-                // Ensure the connection is aborted before firing disconnect
-                await connection.AbortAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.AbortFailed(_logger, ex);
-            }
+            // Ensure the connection is aborted before firing disconnect
+            await connection.AbortAsync();
 
             try
             {

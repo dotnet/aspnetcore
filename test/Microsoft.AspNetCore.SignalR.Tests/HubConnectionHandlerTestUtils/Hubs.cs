@@ -549,6 +549,28 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         void Send(string message);
     }
 
+    public class ErrorInAbortedTokenHub : Hub
+    {
+        public override Task OnConnectedAsync()
+        {
+            Context.Items[nameof(OnConnectedAsync)] = true;
+
+            Context.ConnectionAborted.Register(() =>
+            {
+                throw new InvalidOperationException("BOOM");
+            });
+
+            return base.OnConnectedAsync();
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            Context.Items[nameof(OnDisconnectedAsync)] = true;
+
+            return base.OnDisconnectedAsync(exception);
+        }
+    }
+
     public class ConnectionLifetimeHub : Hub
     {
         private readonly ConnectionLifetimeState _state;
