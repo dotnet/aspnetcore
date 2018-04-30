@@ -71,23 +71,22 @@ namespace GitHubProvider
 
         public async Task AddIssueToProject(GithubIssue issue, GitHubProjectColumn column)
         {
-            if(QuiteMode.BeQuite)
+            if(Static.BeQuite)
             {
                 Directory.CreateDirectory("Project");
 
-                using (var fileStream = File.CreateText(Path.Combine("Project", $"{ issue.Id}.txt")))
+                using (var fileStream = File.CreateText(Path.Combine("Project", $"{ issue.Number}.txt")))
                 {
                     fileStream.Write(issue.Id);
                 }
             }
             else
             {
-                throw new NotImplementedException();
-                //var body = JsonConvert.SerializeObject(new Dictionary<string, string> {
-                //    { "note", $"{issue.Repository.Owner.Login}/{issue.Repository.Name}#{issue.Id}" }
-                //});
+                var body = JsonConvert.SerializeObject(new Dictionary<string, string> {
+                    { "note", $"aspnet/{issue.RepositoryName}#{issue.Number}" }
+                });
 
-                //await MakeGithubRequest(HttpMethod.Post, $"org/projects/columns/{column.Id}/cards", body);
+                await MakeGithubRequest(HttpMethod.Post, $"org/projects/columns/{column.Id}/cards", body);
             }
         }
 
@@ -98,7 +97,7 @@ namespace GitHubProvider
 
         public async Task CreateComment(GithubIssue issue, string comment)
         {
-            if (QuiteMode.BeQuite)
+            if (Static.BeQuite)
             {
                 var tempComments = Path.Combine("Comments", issue.Id.ToString());
                 Directory.CreateDirectory(tempComments);
@@ -119,7 +118,7 @@ namespace GitHubProvider
 
         public Task<GithubIssue> CreateIssue(string repo, string subject, string body, IEnumerable<string> labels)
         {
-            if (QuiteMode.BeQuite)
+            if (Static.BeQuite)
             {
                 var tempMsg = $@"Tried to create a github issue:
                     Repo: {repo}

@@ -112,7 +112,7 @@ namespace TeamCityApi
 
         public void SetTag(TeamCityBuild build, string tag)
         {
-            if(QuiteMode.BeQuite)
+            if(Static.BeQuite)
             {
                 _reporter.Output($"Tried to set tag {tag} on {build.WebURL}");
             }
@@ -121,11 +121,6 @@ namespace TeamCityApi
                 var url = $"app/rest/builds/{build.Id}/tags/";
                 MakeTeamCityRequest(HttpMethod.Post, url, tag).Dispose();
             }
-        }
-
-        public IEnumerable<string> GetErrors(TeamCityBuild build)
-        {
-            throw new NotImplementedException();
         }
 
         public IList<TeamCityBuild> GetFailedBuilds(DateTime startDate)

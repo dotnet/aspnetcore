@@ -11,9 +11,13 @@ namespace Common
         public const string VSTestPrefix = "VSTest: ";
         public const int FlakyProjectColumn = 2260926;
 
-
         public const string ProjectKRuntimeEngEmail = "projectk-runtime-eng@microsoft.com";
         public const string BuildBuddyEmail = "rybrande@microsoft.com";
+
+        /// <summary>
+        /// This property keeps the various providers from making changes to their data sources when testing things out.
+        /// </summary>
+        public static bool BeQuite = true;
 
         public static string FindRepo(string testName)
         {

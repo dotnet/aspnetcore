@@ -25,7 +25,7 @@ namespace EmailProvider
 
         public async Task SendEmail(string to, string subject, string body)
         {
-            if (QuiteMode.BeQuite)
+            if (Static.BeQuite)
             {
                 var tempMsg = $"We tried to send an email to {to} about {subject} with {body}";
 
