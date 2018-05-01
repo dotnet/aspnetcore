@@ -37,12 +37,12 @@ namespace AspNetCoreSdkTests.Util
         public static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Run(string workingDirectory)
         {
             // Bind to dynamic port 0 to avoid port conflicts during parallel tests
-            return StartDotNet("run --no-restore --urls http://127.0.0.1:0;https://127.0.0.1:0", workingDirectory, GetEnvironment(workingDirectory));
+            return StartDotNet("run --no-build --urls http://127.0.0.1:0;https://127.0.0.1:0", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         public static string Publish(string workingDirectory)
         {
-            return RunDotNet($"publish --no-restore -o {PublishOutput}", workingDirectory, GetEnvironment(workingDirectory));
+            return RunDotNet($"publish --no-build -o {PublishOutput}", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         private static string RunDotNet(string arguments, string workingDirectory,

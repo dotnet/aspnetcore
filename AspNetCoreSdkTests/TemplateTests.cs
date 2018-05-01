@@ -21,57 +21,27 @@ namespace AspNetCoreSdkTests
 
         [Test]
         [TestCaseSource(typeof(TemplateData), nameof(TemplateData.Current))]
-        public void Restore(Template template, NuGetConfig nuGetConfig)
+        public void RestoreBuildRunPublish(Template template, NuGetConfig nuGetConfig)
         {
             using (var context = new DotNetContext())
             {
                 context.New(template);
-                context.Restore(nuGetConfig);
 
+                context.Restore(nuGetConfig);
                 CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, context.GetObjFiles());
-            }
-        }
 
-        [Test]
-        [TestCaseSource(typeof(TemplateData), nameof(TemplateData.Current))]
-        public void Build(Template template, NuGetConfig nuGetConfig)
-        {
-            using (var context = new DotNetContext())
-            {
-                context.New(template);
-                context.Restore(nuGetConfig);
                 context.Build();
-
                 CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterBuild, context.GetObjFiles());
                 CollectionAssert.AreEquivalent(template.ExpectedBinFilesAfterBuild, context.GetBinFiles());
-            }
-        }
 
-        [Test]
-        [TestCaseSource(typeof(TemplateData), nameof(TemplateData.CurrentWebApplications))]
-        public void Run(Template template, NuGetConfig nuGetConfig)
-        {
-            using (var context = new DotNetContext())
-            {
-                context.New(template);
-                context.Restore(nuGetConfig);
-                var (httpUrl, httpsUrl) = context.Run();
+                if (template.Type == TemplateType.WebApplication)
+                {
+                    var (httpUrl, httpsUrl) = context.Run();
+                    Assert.AreEqual(HttpStatusCode.OK, GetAsync(new Uri(new Uri(httpUrl), template.RelativeUrl)).StatusCode);
+                    Assert.AreEqual(HttpStatusCode.OK, GetAsync(new Uri(new Uri(httpsUrl), template.RelativeUrl)).StatusCode);
+                }
 
-                Assert.AreEqual(HttpStatusCode.OK, GetAsync(new Uri(new Uri(httpUrl), template.RelativeUrl)).StatusCode);
-                Assert.AreEqual(HttpStatusCode.OK, GetAsync(new Uri(new Uri(httpsUrl), template.RelativeUrl)).StatusCode);
-            }
-        }
-
-        [Test]
-        [TestCaseSource(typeof(TemplateData), nameof(TemplateData.Current))]
-        public void Publish(Template template, NuGetConfig nuGetConfig)
-        {
-            using (var context = new DotNetContext())
-            {
-                context.New(template);
-                context.Restore(nuGetConfig);
                 context.Publish();
-
                 CollectionAssert.AreEquivalent(template.ExpectedFilesAfterPublish, context.GetPublishFiles());
             }
         }
