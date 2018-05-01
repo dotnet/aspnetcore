@@ -15,5 +15,9 @@
   "learnMoreLink": "https://github.com/aspnet/blazor",
   "uiFilters": [
     "oneaspnet"
-  ]
+  ],
+  "additionalWizardParameters":
+  {
+      "$isMultiProjectTemplate$": "true"
+  }
 }
