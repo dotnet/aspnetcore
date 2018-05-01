@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EmailProvider;
 using GitHubProvider;
-using Microsoft.Extensions.Tools.Internal;
+using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using TeamCityApi;
 using TriageBuildFailures.Handlers;
@@ -87,6 +87,7 @@ namespace TriageBuildFailures
                 handler.TCClient = _tcClient;
                 handler.GHClient = _ghClient;
                 handler.EmailClient = _emailClient;
+                handler.Reporter = _reporter;
                 
                 if(handler.CanHandleFailure(build))
                 {
@@ -127,17 +128,17 @@ namespace TriageBuildFailures
 
         private GitHubClient GetGitHubClient(Config config)
         {
-            return new GitHubClient(config.GitHubAccessToken, _reporter);
+            return new GitHubClient(config.GitHub, _reporter);
         }
 
         private EmailClient GetEmailClient(Config config)
         {
-            return new EmailClient(_reporter);
+            return new EmailClient(config.Email ,_reporter);
         }
 
         private TeamCityClient GetTeamCityClient(Config config)
         {
-            return new TeamCityClient(config.TeamCityServer, config.TeamCityUser, config.TeamCityPassword, _reporter);
+            return new TeamCityClient(config.TeamCity, _reporter);
         }
     }
 }

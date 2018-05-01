@@ -31,7 +31,7 @@ namespace TriageBuildFailures.Handlers
 
             foreach (var failure in failures)
             {
-                var repo = Static.FindRepo(failure.Name);
+                var repo = TestToRepoMapper.FindRepo(failure.Name, Reporter);
 
                 var issuesTask = GHClient.GetFlakyIssues(repo: repo);
                 
@@ -44,7 +44,7 @@ namespace TriageBuildFailures.Handlers
                 }
                 else
                 {
-                    exceptionMessage = Static.GetExceptionMessage(errors);
+                    exceptionMessage = ErrorParsing.GetExceptionMessage(errors);
                 }
 
                 var applicableIssues = GetApplicableIssues(await issuesTask, failure);
@@ -63,7 +63,7 @@ namespace TriageBuildFailures.Handlers
                     var tags = new List<string> { "Flaky" };
 
                     var issue = await GHClient.CreateIssue(repo, subject, body, tags);
-                    await GHClient.AddIssueToProject(issue, new GitHubProjectColumn { Id = Static.FlakyProjectColumn });
+                    await GHClient.AddIssueToProject(issue, new GitHubProjectColumn { Id = GHClient.Config.FlakyProjectColumn });
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else
@@ -85,7 +85,7 @@ namespace TriageBuildFailures.Handlers
 
         private static string GetTestName(TestOccurrence testOccurrence)
         {
-            var shortTestName = testOccurrence.Name.Replace(Static.VSTestPrefix, string.Empty);
+            var shortTestName = testOccurrence.Name.Replace(Constants.VSTestPrefix, string.Empty);
             shortTestName = shortTestName.Split('(').First();
             return shortTestName.Split('.').Last();
         }
@@ -171,14 +171,14 @@ namespace TriageBuildFailures.Handlers
                 }
 
                 insideTicks = insideTicks.Trim();
-                return Static.GetExceptionMessage(insideTicks);
+                return ErrorParsing.GetExceptionMessage(insideTicks);
             }
         }
 
         private IEnumerable<GithubIssue> GetApplicableIssues(IEnumerable<GithubIssue> issues, TestOccurrence failure)
         {
             var testError = TCClient.GetTestFailureText(failure);
-            var testException = Static.GetExceptionMessage(testError);
+            var testException = ErrorParsing.GetExceptionMessage(testError);
             var shortTestName = GetTestName(failure);
 
             var applicableIssues = new List<GithubIssue>();

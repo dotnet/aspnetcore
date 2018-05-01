@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.2" />
   </ItemGroup>
 
   <ItemGroup>

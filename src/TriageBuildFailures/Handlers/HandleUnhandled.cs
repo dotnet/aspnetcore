@@ -23,7 +23,7 @@ namespace TriageBuildFailures.Handlers
 
             var message = $"The build {build.WebURL} failed and RAAS doesn't know what to do about it. Plz hlp";
 
-            await EmailClient.SendEmail(subject: subject, body: message, to: Static.BuildBuddyEmail);
+            await EmailClient.SendEmail(subject: subject, body: message, to: EmailClient.Config.BuildBuddyEmail);
         }
     }
 }

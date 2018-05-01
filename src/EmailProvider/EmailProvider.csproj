@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.2" />
   </ItemGroup>
 
 </Project>

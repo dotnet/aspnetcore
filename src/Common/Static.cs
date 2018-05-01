@@ -3,33 +3,34 @@
 
 using System;
 using System.Text.RegularExpressions;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace Common
 {
-    public static class Static
+    public static class Constants
     {
         public const string VSTestPrefix = "VSTest: ";
-        public const int FlakyProjectColumn = 2260926;
-
-        public const string ProjectKRuntimeEngEmail = "projectk-runtime-eng@microsoft.com";
-        public const string BuildBuddyEmail = "rybrande@microsoft.com";
 
         /// <summary>
         /// This property keeps the various providers from making changes to their data sources when testing things out.
         /// </summary>
         public static bool BeQuite = true;
+    }
 
+    public static class TestToRepoMapper
+    {
         /// <summary>
         /// Find out what repo the test belongs to based off its namespace.
         /// </summary>
         /// <param name="testName">The full value of the test name as returned by TC.</param>
+        /// <param name="reporter">The reporter to use.</param>
         /// <returns>The name of the repo the test came from.</returns>
         /// <remarks>We don't have a good way to know what repo a test came out of, so we have this hidious method which attempts to figure it out based on the namespace of the test.</remarks>
-        public static string FindRepo(string testName)
+        public static string FindRepo(string testName, IReporter reporter)
         {
-            if (testName.StartsWith(VSTestPrefix))
+            if (testName.StartsWith(Constants.VSTestPrefix))
             {
-                var name = testName.Replace(VSTestPrefix, string.Empty);
+                var name = testName.Replace(Constants.VSTestPrefix, string.Empty);
 
                 if (name.StartsWith("Microsoft.AspNetCore.Server"))
                 {
@@ -88,9 +89,14 @@ namespace Common
                 }
             }
 
-            throw new NotImplementedException($"Don't know how to find the repo of tests like {testName}");
-        }
+            reporter.Error($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/Home");
 
+            return "Home";
+        }
+    }
+
+    public static class ErrorParsing
+    {
         /// <summary>
         /// Trim the full value of an error/exception message down to just the message.
         /// </summary>

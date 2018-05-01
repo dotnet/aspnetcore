@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Common;
 using TeamCityApi;
 
 namespace TriageBuildFailures.Handlers
@@ -20,12 +19,11 @@ namespace TriageBuildFailures.Handlers
 
         public override async Task HandleFailure(TeamCityBuild build)
         {
-            var to = Static.BuildBuddyEmail;
             var subject = $"Failure of MSRC {build.BuildName}";
             var body = $"{build.WebURL} failed, we don't want to do anything automatic to it because the name says MSRC.";
 
             // We don't want to create issues or anything public about MSRC builds, send an email to BBFL and he'll deal with it
-            await EmailClient.SendEmail(to, subject, body);
+            await EmailClient.SendEmail(EmailClient.Config.BuildBuddyEmail, subject, body);
         }
     }
 }

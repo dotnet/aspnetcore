@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using EmailProvider;
 using GitHubProvider;
+using McMaster.Extensions.CommandLineUtils;
 using TeamCityApi;
 
 namespace TriageBuildFailures.Handlers
@@ -16,6 +17,7 @@ namespace TriageBuildFailures.Handlers
         public TeamCityClient TCClient { get; set; }
         public GitHubClient GHClient { get; set; }
         public EmailClient EmailClient { get; set; }
+        public IReporter Reporter { get; set; }
 
         public abstract bool CanHandleFailure(TeamCityBuild build);
         public abstract Task HandleFailure(TeamCityBuild build);

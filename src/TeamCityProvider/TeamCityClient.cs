@@ -11,24 +11,21 @@ using System.Text;
 using System.Web;
 using System.Xml.Serialization;
 using Common;
-using Microsoft.Extensions.Tools.Internal;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace TeamCityApi
 {
     public class TeamCityClient
     {
-        private readonly string _ciServer;
-        private readonly string _ciUserName;
-        private readonly string _ciPassword;
         private readonly IReporter _reporter;
 
         private const int _defaultCount = 1000000;
 
-        public TeamCityClient(string ciServer, string ciUserName, string ciPassword, IReporter reporter)
+        public TeamCityConfig Config { get; private set; }
+
+        public TeamCityClient(TeamCityConfig config, IReporter reporter)
         {
-            _ciServer = ciServer;
-            _ciUserName = ciUserName;
-            _ciPassword = ciPassword;
+            Config = config;
             _reporter = reporter;
 
             if (TeamCityBuild.BuildNames == null)
@@ -112,7 +109,7 @@ namespace TeamCityApi
 
         public void SetTag(TeamCityBuild build, string tag)
         {
-            if(Static.BeQuite)
+            if(Constants.BeQuite)
             {
                 _reporter.Output($"Tried to set tag {tag} on {build.WebURL}");
             }
@@ -169,9 +166,9 @@ namespace TeamCityApi
 
         private Stream MakeTeamCityRequest(HttpMethod method, string url, string body = null, TimeSpan? timeout = null)
         {
-            var requestUri = $"http://{_ciServer}/{url}";
+            var requestUri = $"http://{Config.Server}/{url}";
 
-            var authInfo = $"{_ciUserName}:{_ciPassword}";
+            var authInfo = $"{Config.User}:{Config.Password}";
             var authEncoded = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
 
             var request = new HttpRequestMessage(method, requestUri);

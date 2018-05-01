@@ -69,7 +69,7 @@ namespace TriageBuildFailures.Handlers
 
             var subject = $"{build.BuildName} failed";
             var body = $"{build.BuildName} failed with the following errors:\n {string.Join(Environment.NewLine, errMsgs)}\n {build.WebURL}";
-            var to = Static.ProjectKRuntimeEngEmail;
+            var to = EmailClient.Config.EngineringAlias;
 
             await EmailClient.SendEmail(to, subject, body);
         }
