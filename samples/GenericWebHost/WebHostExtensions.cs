@@ -22,7 +22,7 @@ namespace GenericWebHost
                 {
                     options.ConfigureApp = configureApp;
                 });
-                services.AddSingleton<IHostedService, WebHostService>();
+                services.AddHostedService<WebHostService>();
                 
                 var listener = new DiagnosticListener("Microsoft.AspNetCore");
                 services.AddSingleton<DiagnosticListener>(listener);

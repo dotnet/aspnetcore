@@ -11,8 +11,8 @@ namespace GenericHostSample
             var builder = new HostBuilder()
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddScoped<IHostedService, MyServiceA>();
-                    services.AddScoped<IHostedService, MyServiceB>();
+                    services.AddHostedService<MyServiceA>();
+                    services.AddHostedService<MyServiceB>();
                 });
 
             await builder.RunConsoleAsync();
