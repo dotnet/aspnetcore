@@ -21,11 +21,11 @@
 
   <ItemGroup>
     <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="ship" />
-    <PackageArtifact Include="dotnet-dev-certs" Category="shipoob" />
-    <PackageArtifact Include="dotnet-ef" Category="shipoob" />
-    <PackageArtifact Include="dotnet-sql-cache" Category="shipoob" />
-    <PackageArtifact Include="dotnet-user-secrets" Category="shipoob" />
-    <PackageArtifact Include="dotnet-watch" Category="shipoob" />
+    <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
+    <PackageArtifact Include="dotnet-ef" Category="ship" />
+    <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
+    <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
+    <PackageArtifact Include="dotnet-watch" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" LZMA="true" />
