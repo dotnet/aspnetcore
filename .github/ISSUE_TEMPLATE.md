@@ -23,3 +23,5 @@ Other common projects:
  - Visual Studio: https://developercommunity.visualstudio.com
  - Visual Studio Code: https://github.com/microsoft/vscode
  - Omnisharp (C# support for VS Code): https://github.com/omnisharp/omnisharp-vscode
+
+If you believe you have an issue that affects the security of the platform please do not create an issue, instead email your issue details to secure@microsoft.com. Your report may be eligible for our [bug bounty](https://technet.microsoft.com/en-us/mt764065.aspx).
