@@ -3,6 +3,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
+    <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17042</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>

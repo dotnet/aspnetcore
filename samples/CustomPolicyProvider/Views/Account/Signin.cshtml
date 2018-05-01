@@ -3,12 +3,12 @@
     <form asp-controller="Account" asp-action="Signin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
         <div>
             <label>User Name</label>
-            <input type="text" name="userName" />
+            <input id="UserName" type="text" name="userName" />
         </div>
 
         <div>
             <label>Date of Birth (MM/DD/YYYY)</label>
-            <input type="text" name="birthDate" />
+            <input id="DOB" type="text" name="birthDate" />
         </div>
 
         <div>
