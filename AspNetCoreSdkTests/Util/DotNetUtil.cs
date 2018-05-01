@@ -9,6 +9,9 @@ namespace AspNetCoreSdkTests.Util
 {
     internal static class DotNetUtil
     {
+        // Bind to dynamic port 0 to avoid port conflicts during parallel tests
+        private const string _urls = "--urls http://127.0.0.1:0;https://127.0.0.1:0";
+
         public static string PublishOutput => "pub";
 
         private static IEnumerable<KeyValuePair<string, string>> GetEnvironment(string workingDirectory)
@@ -36,8 +39,13 @@ namespace AspNetCoreSdkTests.Util
 
         public static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Run(string workingDirectory)
         {
-            // Bind to dynamic port 0 to avoid port conflicts during parallel tests
-            return StartDotNet("run --no-build --urls http://127.0.0.1:0;https://127.0.0.1:0", workingDirectory, GetEnvironment(workingDirectory));
+            return StartDotNet($"run --no-build {_urls}", workingDirectory, GetEnvironment(workingDirectory));
+        }
+
+        internal static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Exec(string workingDirectory, string name)
+        {
+            var path = Path.Combine(PublishOutput, $"{name}.dll");
+            return StartDotNet($"exec {path} {_urls}", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         public static string Publish(string workingDirectory)

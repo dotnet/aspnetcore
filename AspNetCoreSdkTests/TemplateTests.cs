@@ -23,9 +23,9 @@ namespace AspNetCoreSdkTests
         [TestCaseSource(typeof(TemplateData), nameof(TemplateData.Current))]
         public void RestoreBuildRunPublish(Template template, NuGetConfig nuGetConfig)
         {
-            using (var context = new DotNetContext())
+            using (var context = new DotNetContext(template))
             {
-                context.New(template);
+                context.New();
 
                 context.Restore(nuGetConfig);
                 CollectionAssert.AreEquivalent(template.ExpectedObjFilesAfterRestore, context.GetObjFiles());
@@ -43,6 +43,13 @@ namespace AspNetCoreSdkTests
 
                 context.Publish();
                 CollectionAssert.AreEquivalent(template.ExpectedFilesAfterPublish, context.GetPublishFiles());
+
+                if (template.Type == TemplateType.WebApplication)
+                {
+                    var (httpUrl, httpsUrl) = context.Exec();
+                    Assert.AreEqual(HttpStatusCode.OK, GetAsync(new Uri(new Uri(httpUrl), template.RelativeUrl)).StatusCode);
+                    Assert.AreEqual(HttpStatusCode.OK, GetAsync(new Uri(new Uri(httpsUrl), template.RelativeUrl)).StatusCode);
+                }
             }
         }
 

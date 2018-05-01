@@ -11,11 +11,16 @@ namespace AspNetCoreSdkTests.Util
     {
         private static readonly TimeSpan _sleepBetweenOutputContains = TimeSpan.FromMilliseconds(100);
 
-        private (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) _process;
+        private (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) _runProcess;
+        private (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) _execProcess;
 
-        public string New(Template template)
+        public DotNetContext(Template template) { Template = template; }
+
+        public Template Template { get; }
+
+        public string New()
         {
-            return DotNetUtil.New(template.Name, Path);
+            return DotNetUtil.New(Template.Name, Path);
         }
 
         public string Restore(NuGetConfig config)
@@ -30,17 +35,34 @@ namespace AspNetCoreSdkTests.Util
 
         public (string httpUrl, string httpsUrl) Run()
         {
-            _process = DotNetUtil.Run(Path);
+            _runProcess = DotNetUtil.Run(Path);
+            return ScrapeUrls(_runProcess);
+        }
 
+        public (string httpUrl, string httpsUrl) Exec()
+        {
+            _execProcess = DotNetUtil.Exec(Path, Template.Name);
+            return ScrapeUrls(_execProcess);
+        }
+
+        private (string httpUrl, string httpsUrl) ScrapeUrls(
+            (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) process)
+        {
             // Extract URLs from output
             while (true)
             {
-                var output = _process.OutputBuilder.ToString();
+                var output = process.OutputBuilder.ToString();
                 if (output.Contains("Application started"))
                 {
                     var httpUrl = Regex.Match(output, @"Now listening on: (http:\S*)").Groups[1].Value;
                     var httpsUrl = Regex.Match(output, @"Now listening on: (https:\S*)").Groups[1].Value;
                     return (httpUrl, httpsUrl);
+                }
+                else if (process.Process.HasExited)
+                {
+                    var startInfo = process.Process.StartInfo;
+                    throw new InvalidOperationException(
+                        $"Failed to start process '{startInfo.FileName} {startInfo.Arguments}'" + Environment.NewLine + output);
                 }
                 else
                 {
@@ -71,14 +93,20 @@ namespace AspNetCoreSdkTests.Util
 
         public override void Dispose()
         {
-            // Must stop process to release filehandles before calling base.Dispose() which deletes app dir
-            if (_process.Process != null)
-            {
-                DotNetUtil.StopProcess(_process.Process, _process.OutputBuilder, _process.ErrorBuilder, throwOnError: false);
-                _process.Process = null;
-            }
+            // Must stop processes to release filehandles before calling base.Dispose() which deletes app dir
+            Dispose(_runProcess);
+            Dispose(_execProcess);
 
             base.Dispose();
+        }
+
+        private static void Dispose((Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) process)
+        {
+            if (process.Process != null)
+            {
+                DotNetUtil.StopProcess(process.Process, process.OutputBuilder, process.ErrorBuilder, throwOnError: false);
+                process.Process = null;
+            }
         }
     }
 }
