@@ -104,8 +104,6 @@ namespace AuthSamples.FunctionalTests
         }
 
         internal static void IsOK(HttpResponseMessage download)
-        {
-            Assert.Equal(HttpStatusCode.OK, download.StatusCode);
-        }
+            => Assert.Equal(HttpStatusCode.OK, download.StatusCode);
     }
 }
