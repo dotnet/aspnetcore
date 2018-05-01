@@ -28,14 +28,25 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             var target = Browser.FindElement(By.Id("textbox-initially-blank"));
             var boundValue = Browser.FindElement(By.Id("textbox-initially-blank-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-initially-blank-mirror"));
+            var setNullButton = Browser.FindElement(By.Id("textbox-initially-blank-setnull"));
             Assert.Equal(string.Empty, target.GetAttribute("value"));
             Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
 
-            // Modify target; verify value is updated
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("Changed value");
             Assert.Equal(string.Empty, boundValue.Text); // Doesn't update until change event
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
             target.SendKeys("\t");
             Assert.Equal("Changed value", boundValue.Text);
+            Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
+
+            // Remove the value altogether
+            setNullButton.Click();
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
 
         [Fact]
@@ -43,13 +54,23 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             var target = Browser.FindElement(By.Id("textbox-initially-populated"));
             var boundValue = Browser.FindElement(By.Id("textbox-initially-populated-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-initially-populated-mirror"));
+            var setNullButton = Browser.FindElement(By.Id("textbox-initially-populated-setnull"));
             Assert.Equal("Hello", target.GetAttribute("value"));
             Assert.Equal("Hello", boundValue.Text);
+            Assert.Equal("Hello", mirrorValue.GetAttribute("value"));
 
-            // Modify target; verify value is updated
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("Changed value\t");
             Assert.Equal("Changed value", boundValue.Text);
+            Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
+
+            // Remove the value altogether
+            setNullButton.Click();
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
         
         [Fact]
@@ -86,6 +107,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             var target = Browser.FindElement(By.Id("checkbox-initially-unchecked"));
             var boundValue = Browser.FindElement(By.Id("checkbox-initially-unchecked-value"));
+            var invertButton = Browser.FindElement(By.Id("checkbox-initially-unchecked-invert"));
             Assert.False(target.Selected);
             Assert.Equal("False", boundValue.Text);
 
@@ -93,6 +115,11 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             target.Click();
             Assert.True(target.Selected);
             Assert.Equal("True", boundValue.Text);
+
+            // Modify data; verify checkbox is updated
+            invertButton.Click();
+            Assert.False(target.Selected);
+            Assert.Equal("False", boundValue.Text);
         }
 
         [Fact]
@@ -100,6 +127,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             var target = Browser.FindElement(By.Id("checkbox-initially-checked"));
             var boundValue = Browser.FindElement(By.Id("checkbox-initially-checked-value"));
+            var invertButton = Browser.FindElement(By.Id("checkbox-initially-checked-invert"));
             Assert.True(target.Selected);
             Assert.Equal("True", boundValue.Text);
 
@@ -107,6 +135,11 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             target.Click();
             Assert.False(target.Selected);
             Assert.Equal("False", boundValue.Text);
+
+            // Modify data; verify checkbox is updated
+            invertButton.Click();
+            Assert.True(target.Selected);
+            Assert.Equal("True", boundValue.Text);
         }
 
         [Fact]

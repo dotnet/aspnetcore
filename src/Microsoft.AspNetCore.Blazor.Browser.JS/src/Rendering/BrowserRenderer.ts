@@ -84,7 +84,11 @@ export class BrowserRenderer {
           const element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           if (element instanceof HTMLElement) {
             const attributeName = renderTreeEdit.removedAttributeName(edit)!;
-            element.removeAttribute(attributeName);
+            // First try to remove any special property we use for this attribute
+            if (!this.tryApplySpecialProperty(element, attributeName, null)) {
+              // If that's not applicable, it's a regular DOM attribute so remove that
+              element.removeAttribute(attributeName);
+            }
           } else {
             throw new Error(`Cannot remove attribute from non-element child`);
           }
@@ -205,50 +209,73 @@ export class BrowserRenderer {
       return;
     }
 
-    if (attributeName === 'value') {
-      if (this.tryApplyValueProperty(toDomElement, renderTreeFrame.attributeValue(attributeFrame))) {
-        return; // If this DOM element type has special 'value' handling, don't also write it as an attribute
-      }
+    // First see if we have special handling for this attribute
+    if (!this.tryApplySpecialProperty(toDomElement, attributeName, attributeFrame)) {
+      // If not, treat it as a regular string-valued attribute
+      toDomElement.setAttribute(
+        attributeName,
+        renderTreeFrame.attributeValue(attributeFrame)!
+      );
     }
-
-    // Treat as a regular string-valued attribute
-    toDomElement.setAttribute(
-      attributeName,
-      renderTreeFrame.attributeValue(attributeFrame)!
-    );
   }
 
-  private tryApplyValueProperty(element: Element, value: string | null) {
+  private tryApplySpecialProperty(element: Element, attributeName: string, attributeFrame: RenderTreeFramePointer | null) {
+    switch (attributeName) {
+      case 'value':
+        return this.tryApplyValueProperty(element, attributeFrame);
+      case 'checked':
+        return this.tryApplyCheckedProperty(element, attributeFrame);
+      default:
+        return false;
+    }
+  }
+
+  private tryApplyValueProperty(element: Element, attributeFrame: RenderTreeFramePointer | null) {
     // Certain elements have built-in behaviour for their 'value' property
     switch (element.tagName) {
       case 'INPUT':
       case 'SELECT':
-      case 'TEXTAREA':
-        if (isCheckbox(element)) {
-          (element as HTMLInputElement).checked = value === '';
-        } else {
-          (element as any).value = value;
+      case 'TEXTAREA': {
+        const value = attributeFrame ? renderTreeFrame.attributeValue(attributeFrame) : null;
+        (element as any).value = value;
 
-          if (element.tagName === 'SELECT') {
-            // <select> is special, in that anything we write to .value will be lost if there
-            // isn't yet a matching <option>. To maintain the expected behavior no matter the
-            // element insertion/update order, preserve the desired value separately so
-            // we can recover it when inserting any matching <option>.
-            element[selectValuePropname] = value;
-          }
+        if (element.tagName === 'SELECT') {
+          // <select> is special, in that anything we write to .value will be lost if there
+          // isn't yet a matching <option>. To maintain the expected behavior no matter the
+          // element insertion/update order, preserve the desired value separately so
+          // we can recover it when inserting any matching <option>.
+          element[selectValuePropname] = value;
         }
         return true;
-      case 'OPTION':
-        element.setAttribute('value', value!);
+      }
+      case 'OPTION': {
+        const value = attributeFrame ? renderTreeFrame.attributeValue(attributeFrame) : null;
+        if (value) {
+          element.setAttribute('value', value);
+        } else {
+          element.removeAttribute('value');
+        }
         // See above for why we have this special handling for <select>/<option>
         const parentElement = element.parentElement;
         if (parentElement && (selectValuePropname in parentElement) && parentElement[selectValuePropname] === value) {
-          this.tryApplyValueProperty(parentElement, value);
+          this.tryApplyValueProperty(parentElement, attributeFrame);
           delete parentElement[selectValuePropname];
         }
         return true;
+      }
       default:
         return false;
+    }
+  }
+
+  private tryApplyCheckedProperty(element: Element, attributeFrame: RenderTreeFramePointer | null) {
+    // Certain elements have built-in behaviour for their 'checked' property
+    if (element.tagName === 'INPUT') {
+      const value = attributeFrame ? renderTreeFrame.attributeValue(attributeFrame) : null;
+      (element as any).checked = value !== null;
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -279,10 +306,6 @@ function countDescendantFrames(frame: RenderTreeFramePointer): number {
     default:
       return 0;
   }
-}
-
-function isCheckbox(element: Element) {
-  return element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
 }
 
 function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {

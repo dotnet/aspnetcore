@@ -15,7 +15,7 @@ namespace Test
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "checkbox");
-            builder.AddAttribute(2, "value", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(Enabled));
+            builder.AddAttribute(2, "checked", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(Enabled));
             builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => Enabled = __value, Enabled));
             builder.CloseElement();
         }
