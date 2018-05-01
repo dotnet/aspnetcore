@@ -25,8 +25,8 @@ namespace GenericHostSample
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddScoped<IHostedService, MyServiceA>();
-                    services.AddScoped<IHostedService, MyServiceB>();
+                    services.AddHostedService<MyServiceA>();
+                    services.AddHostedService<MyServiceB>();
                 })
                 .Build();
         }

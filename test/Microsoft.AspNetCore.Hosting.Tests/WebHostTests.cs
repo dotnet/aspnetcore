@@ -548,7 +548,7 @@ namespace Microsoft.AspNetCore.Hosting
                    .UseFakeServer()
                    .ConfigureServices(services =>
                    {
-                       services.AddSingleton<IHostedService, TestHostedService>();
+                       services.AddHostedService<TestHostedService>();
                    })
                    .Build())
             {

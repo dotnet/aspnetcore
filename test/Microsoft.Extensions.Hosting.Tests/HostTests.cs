@@ -110,7 +110,7 @@ namespace Microsoft.Extensions.Hosting
             using (var host = CreateBuilder()
                    .ConfigureServices((hostContext, services) =>
                    {
-                       services.AddSingleton<IHostedService, TestHostedService>();
+                       services.AddHostedService<TestHostedService>();
                    })
                    .Build())
             {
@@ -133,7 +133,7 @@ namespace Microsoft.Extensions.Hosting
             using (var host = CreateBuilder()
                    .ConfigureServices((hostContext, services) =>
                    {
-                       services.AddSingleton<IHostedService, TestHostedService>();
+                       services.AddHostedService<TestHostedService>();
                    })
                    .Build())
             {
