@@ -110,6 +110,10 @@ export const monoPlatform: Platform = {
     return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
   },
 
+  readFloatField: function readHeapFloat(baseAddress: Pointer, fieldOffset?: number): number {
+    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'float');
+  },
+
   readObjectField: function readHeapObject<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T {
     return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32') as any as T;
   },
