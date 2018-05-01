@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                     return JsonUtil.Deserialize<UIKeyboardEventArgs>(eventArgsJson);
                 case "change":
                     return JsonUtil.Deserialize<UIChangeEventArgs>(eventArgsJson);
+                case "unknown":
+                    return JsonUtil.Deserialize<UIEventArgs>(eventArgsJson);
                 default:
                     throw new ArgumentException($"Unsupported value '{eventArgsType}'.", nameof(eventArgsType));
             }

@@ -1,5 +1,10 @@
 ﻿import { EventForDotNet, UIEventArgs } from './EventForDotNet';
 
+const nonBubblingEvents = toLookup([
+  'abort', 'blur', 'change', 'error', 'focus', 'load', 'loadend', 'loadstart', 'mouseenter', 'mouseleave',
+  'progress', 'reset', 'scroll', 'submit', 'unload', 'DOMNodeInsertedIntoDocument', 'DOMNodeRemovedFromDocument'
+]);
+
 export interface OnEventCallback {
   (event: Event, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>): void;
 }
@@ -64,6 +69,7 @@ export class EventDelegator {
     // Scan up the element hierarchy, looking for any matching registered event handlers
     let candidateElement = evt.target as Element | null;
     let eventArgs: EventForDotNet<UIEventArgs> | null = null; // Populate lazily
+    const eventIsNonBubbling = nonBubblingEvents.hasOwnProperty(evt.type);
     while (candidateElement) {
       if (candidateElement.hasOwnProperty(this.eventsCollectionKey)) {
         const handlerInfos = candidateElement[this.eventsCollectionKey];
@@ -78,7 +84,7 @@ export class EventDelegator {
         }
       }
 
-      candidateElement = candidateElement.parentElement;
+      candidateElement = eventIsNonBubbling ? null : candidateElement.parentElement;
     }
   }
 }
@@ -105,7 +111,11 @@ class EventInfoStore {
       this.countByEventName[eventName]++;
     } else {
       this.countByEventName[eventName] = 1;
-      document.addEventListener(eventName, this.globalListener);
+
+      // To make delegation work with non-bubbling events, register a 'capture' listener.
+      // We preserve the non-bubbling behavior by only dispatching such events to the targeted element.
+      const useCapture = nonBubblingEvents.hasOwnProperty(eventName);
+      document.addEventListener(eventName, this.globalListener, useCapture);
     }
   }
 
@@ -153,4 +163,10 @@ interface EventHandlerInfo {
   eventName: string;
   componentId: number;
   eventHandlerId: number;
+}
+
+function toLookup(items: string[]): { [key: string]: boolean } {
+  const result = {};
+  items.forEach(value => { result[value] = true; });
+  return result;
 }
