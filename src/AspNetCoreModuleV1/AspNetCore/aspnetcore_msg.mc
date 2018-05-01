@@ -73,6 +73,12 @@ Language=English
 %1
 .
 
+Messageid=1030
+SymbolicName=ASPNETCORE_EVENT_PROCESS_SHUTDOWN
+Language=English
+%1
+.
+
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
 ;

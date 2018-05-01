@@ -18,3 +18,4 @@
 #define ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG       L"Failed to gracefully shutdown process '%d'."
 #define ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST_MSG      L"Sent shutdown HTTP message to process '%d' and received http status '%d'."
 #define ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG              L"App_offline file '%s' was detected."
+#define ASPNETCORE_EVENT_PROCESS_SHUTDOWN_MSG                L"Application '%s' with physical root '%s' shut down process with Id '%d' listening on port '%d'"
