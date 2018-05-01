@@ -1,5 +1,7 @@
 #pragma once
 
+class IN_PROCESS_APPLICATION;
+
 class IN_PROCESS_HANDLER : public REQUEST_HANDLER
 {
 public:
@@ -7,27 +9,26 @@ public:
 
         _In_ IHttpContext   *pW3Context,
         _In_ HTTP_MODULE_ID *pModuleId,
-        _In_ APPLICATION    *pApplication);
+        _In_ IN_PROCESS_APPLICATION  *pApplication);
 
-    ~IN_PROCESS_HANDLER();
+    ~IN_PROCESS_HANDLER() override;
 
     __override
     REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequestHandler();
+    OnExecuteRequestHandler() override;
 
     __override
     REQUEST_NOTIFICATION_STATUS
     OnAsyncCompletion(
         DWORD       cbCompletion,
         HRESULT     hrCompletionStatus
-    );
+    ) override;
 
     __override
     VOID
     TerminateRequest(
         bool    fClientInitiated
-
-    );
+    ) override;
 
     PVOID
     QueryManagedHttpContext(
@@ -69,4 +70,8 @@ private:
     IHttpContext* m_pHttpContext;
     BOOL m_fManagedRequestComplete;
     REQUEST_NOTIFICATION_STATUS m_requestNotificationStatus;
+
+    IHttpContext*               m_pW3Context;
+    IN_PROCESS_APPLICATION*     m_pApplication;
+    HTTP_MODULE_ID              m_pModuleId;
 };

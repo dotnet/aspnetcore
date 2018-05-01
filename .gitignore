@@ -48,6 +48,7 @@ x64/
 *.pdb
 *.lib
 *.idb
+*.TMP
 
 src/*/AspNetCore/aspnetcoremodule.h
 src/*/AspNetCore/aspnetcore_msg.h

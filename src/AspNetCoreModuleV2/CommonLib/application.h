@@ -3,51 +3,45 @@
 
 #pragma once
 
-enum APPLICATION_STATUS
-{
-    UNKNOWN = 0,
-    STARTING,
-    RUNNING,
-    SHUTDOWN,
-    FAIL
-};
+#include "stdafx.h"
 
-class  ASPNETCORE_CONFIG;
-
-class APPLICATION
+class APPLICATION : public IAPPLICATION
 {
+
 public:
-    APPLICATION(
-        _In_ IHttpServer* pHttpServer,
-        _In_ ASPNETCORE_CONFIG* pConfig);
-
-    virtual
-    VOID
-    ShutDown() = 0;
-
-    virtual
-    VOID
-    Recycle() = 0;
-
-    virtual
-    ~APPLICATION();
 
     APPLICATION_STATUS
-    QueryStatus();
+    QueryStatus() override
+    {
+        return m_status;
+    }
 
-    ASPNETCORE_CONFIG*
-    QueryConfig();
+    APPLICATION()
+        : m_cRefs(1)
+    {
+    }
 
     VOID
-    ReferenceApplication()
-    const;
+    ReferenceApplication() override
+    {
+        InterlockedIncrement(&m_cRefs);
+    }
 
     VOID
-    DereferenceApplication()
-    const;
+    DereferenceApplication() override
+    {
+        DBG_ASSERT(m_cRefs != 0);
+
+        LONG cRefs = 0;
+        if ((cRefs = InterlockedDecrement(&m_cRefs)) == 0)
+        {
+            delete this;
+        }
+    }
 
 protected:
-    mutable LONG            m_cRefs;
-    volatile APPLICATION_STATUS m_status;
-    ASPNETCORE_CONFIG*      m_pConfig;
+    volatile APPLICATION_STATUS     m_status = APPLICATION_STATUS::UNKNOWN;
+
+private:
+    mutable LONG                    m_cRefs;
 };

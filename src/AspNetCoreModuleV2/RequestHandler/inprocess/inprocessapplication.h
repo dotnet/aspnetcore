@@ -33,6 +33,14 @@ public:
         VOID
     );
 
+    __override
+    HRESULT
+    CreateHandler(
+        _In_  IHttpContext       *pHttpContext,
+        _In_  HTTP_MODULE_ID     *pModuleId,
+        _Out_ IREQUEST_HANDLER   **pRequestHandler)
+    override;
+
     // Executes the .NET Core process
     HRESULT
     ExecuteApplication(
@@ -98,6 +106,9 @@ public:
         return s_Application;
     }
 
+    ASPNETCORE_CONFIG*
+    QueryConfig() const;
+
 private:
     static
     DWORD
@@ -154,6 +165,8 @@ private:
     CHAR                            m_pzFileContents[4096] = { 0 };
     DWORD                           m_dwStdErrReadTotal;
     static IN_PROCESS_APPLICATION*  s_Application;
+
+    ASPNETCORE_CONFIG*              m_pConfig;
 
     VOID
     SetStdOut(

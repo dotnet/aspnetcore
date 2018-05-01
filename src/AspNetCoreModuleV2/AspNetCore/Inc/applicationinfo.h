@@ -11,17 +11,9 @@ HRESULT
 (WINAPI * PFN_ASPNETCORE_CREATE_APPLICATION)(
     _In_  IHttpServer        *pServer,
     _In_  ASPNETCORE_CONFIG  *pConfig,
-    _Out_ APPLICATION       **pApplication
+    _Out_ IAPPLICATION       **pApplication
     );
 
-typedef
-HRESULT
-(WINAPI * PFN_ASPNETCORE_CREATE_REQUEST_HANDLER)(
-    _In_  IHttpContext       *pHttpContext,
-    _In_  HTTP_MODULE_ID     *pModuleId,
-    _In_  APPLICATION        *pApplication,
-    _Out_ REQUEST_HANDLER   **pRequestHandler
-    );
 //
 // The key used for hash-table lookups, consists of the port on which the http process is created.
 //
@@ -71,8 +63,7 @@ public:
         m_cRefs(1), m_fAppOfflineFound(FALSE),
         m_pAppOfflineHtm(NULL), m_pFileWatcherEntry(NULL),
         m_pConfiguration(NULL),
-        m_pfnAspNetCoreCreateApplication(NULL),
-        m_pfnAspNetCoreCreateRequestHandler(NULL)
+        m_pfnAspNetCoreCreateApplication(NULL)
     {
         InitializeSRWLock(&m_srwLock);
     }
@@ -136,7 +127,7 @@ public:
     // Otherwise memory leak
     //
     VOID
-    ExtractApplication(APPLICATION** ppApplication)
+    ExtractApplication(IAPPLICATION** ppApplication)
     {
         AcquireSRWLockShared(&m_srwLock);
         if (m_pApplication != NULL)
@@ -156,12 +147,6 @@ public:
     HRESULT
     EnsureApplicationCreated();
 
-    PFN_ASPNETCORE_CREATE_REQUEST_HANDLER
-    QueryCreateRequestHandler()
-    {
-        return m_pfnAspNetCoreCreateRequestHandler;
-    }
-
 private:
     HRESULT FindRequestHandlerAssembly();
     HRESULT FindNativeAssemblyFromGlobalLocation(STRU* struFilename);
@@ -175,11 +160,10 @@ private:
     APP_OFFLINE_HTM        *m_pAppOfflineHtm;
     FILE_WATCHER_ENTRY     *m_pFileWatcherEntry;
     ASPNETCORE_CONFIG      *m_pConfiguration;
-    APPLICATION            *m_pApplication;
+    IAPPLICATION            *m_pApplication;
     SRWLOCK                 m_srwLock;
     IHttpServer            *m_pServer;
     PFN_ASPNETCORE_CREATE_APPLICATION      m_pfnAspNetCoreCreateApplication;
-    PFN_ASPNETCORE_CREATE_REQUEST_HANDLER  m_pfnAspNetCoreCreateRequestHandler;
 };
 
 class APPLICATION_INFO_HASH :

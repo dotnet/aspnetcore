@@ -104,7 +104,7 @@ inline bool IsSpace(char ch)
 #include "..\..\CommonLib\environmentvariablehash.h"
 #include "..\..\CommonLib\aspnetcoreconfig.h"
 #include "..\..\CommonLib\hostfxr_utility.h"
-#include "..\..\CommonLib\application.h"
+#include "..\..\CommonLib\iapplication.h"
 #include "..\..\CommonLib\utility.h"
 #include "..\..\CommonLib\debugutil.h"
 #include "..\..\CommonLib\requesthandler.h"
@@ -138,7 +138,7 @@ FORCEINLINE
 HRESULT
 HRESULT_FROM_GETLASTERROR()
 {
-    return  ( GetLastError() != NO_ERROR ) 
+    return  ( GetLastError() != NO_ERROR )
            ? HRESULT_FROM_WIN32( GetLastError() )
            : E_FAIL;
 }
@@ -155,5 +155,4 @@ extern SRWLOCK      g_srwLock;
 extern PCWSTR       g_pwzAspnetcoreRequestHandlerName;
 extern HANDLE       g_hEventLog;
 extern PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
-extern PFN_ASPNETCORE_CREATE_REQUEST_HANDLER  g_pfnAspNetCoreCreateRequestHandler;
 #pragma warning( error : 4091)

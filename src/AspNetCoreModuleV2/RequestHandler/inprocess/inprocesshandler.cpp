@@ -3,8 +3,10 @@
 IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ IHttpContext   *pW3Context,
     _In_ HTTP_MODULE_ID *pModuleId,
-    _In_ APPLICATION    *pApplication
-): REQUEST_HANDLER(pW3Context, pModuleId, pApplication)
+    _In_ IN_PROCESS_APPLICATION    *pApplication
+):  m_pW3Context(pW3Context),
+    m_pApplication(pApplication),
+    m_pModuleId(*pModuleId)
 {
     m_fManagedRequestComplete = FALSE;
 }
@@ -20,7 +22,7 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
 {
     // First get the in process Application
     HRESULT hr;
-    hr = ((IN_PROCESS_APPLICATION*)m_pApplication)->LoadManagedApplication();
+    hr = m_pApplication->LoadManagedApplication();
     if (FAILED(hr))
     {
         // TODO remove com_error?
@@ -39,7 +41,7 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
     }
 
     // FREB log
-    
+
     if (ANCMEvents::ANCM_START_APPLICATION_SUCCESS::IsEnabled(m_pW3Context->GetTraceContext()))
     {
         ANCMEvents::ANCM_START_APPLICATION_SUCCESS::RaiseEvent(
@@ -49,7 +51,7 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
     }
 
     //SetHttpSysDisconnectCallback();
-    return ((IN_PROCESS_APPLICATION*)m_pApplication)->OnExecuteRequest(m_pW3Context, this);
+    return m_pApplication->OnExecuteRequest(m_pW3Context, this);
 }
 
 __override
@@ -59,15 +61,9 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
     HRESULT     hrCompletionStatus
 )
 {
-    IN_PROCESS_APPLICATION* application = (IN_PROCESS_APPLICATION*)m_pApplication;
-    if (application == NULL)
-    {
-        return RQ_NOTIFICATION_FINISH_REQUEST;
-    }
-
     // OnAsyncCompletion must call into the application if there was a error. We will redo calls
     // to Read/Write if we called cancelIo on the IHttpContext.
-    return application->OnAsyncCompletion(cbCompletion, hrCompletionStatus, this);
+    return m_pApplication->OnAsyncCompletion(cbCompletion, hrCompletionStatus, this);
 }
 
 VOID

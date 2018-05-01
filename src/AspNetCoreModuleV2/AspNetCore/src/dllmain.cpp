@@ -21,7 +21,6 @@ DWORD               g_dwDebugFlags = 0;
 PCSTR               g_szDebugLabel = "ASPNET_CORE_MODULE";
 PCWSTR              g_pwzAspnetcoreRequestHandlerName = L"aspnetcorerh.dll";
 PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
-PFN_ASPNETCORE_CREATE_REQUEST_HANDLER  g_pfnAspNetCoreCreateRequestHandler;
 
 VOID
 StaticCleanup()
@@ -49,7 +48,7 @@ BOOL WINAPI DllMain(HMODULE hModule,
         break;
     case DLL_PROCESS_DETACH:
         // IIS can cause dll detach to occur before we receive global notifications
-        // For example, when we switch the bitness of the worker process, 
+        // For example, when we switch the bitness of the worker process,
         // this is a bug in IIS. To try to avoid AVs, we will set a global flag
         g_fInShutdown = TRUE;
         StaticCleanup();
@@ -204,7 +203,7 @@ HRESULT
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
-    
+
     hr = pApplicationManager->Initialize();
     if(FAILED(hr))
      {

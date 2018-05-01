@@ -4,6 +4,7 @@ extern DWORD            g_OptionalWinHttpFlags;
 extern HINSTANCE        g_hWinHttpModule;
 extern HINSTANCE        g_hAspNetCoreModule;
 
+class OUT_OF_PROCESS_APPLICATION;
 
 enum FORWARDING_REQUEST_STATUS
 {
@@ -23,7 +24,7 @@ public:
 
         _In_ IHttpContext     *pW3Context,
         _In_  HTTP_MODULE_ID  *pModuleId,
-        _In_ APPLICATION      *pApplication);
+        _In_ OUT_OF_PROCESS_APPLICATION  *pApplication);
 
     ~FORWARDING_HANDLER();
 
@@ -193,7 +194,7 @@ private:
     volatile  BOOL                      m_fDoneAsyncCompletion;
     volatile  BOOL                      m_fHasError;
     //
-    // WinHttp may hit AV under race if handle got closed more than once simultaneously 
+    // WinHttp may hit AV under race if handle got closed more than once simultaneously
     // Use two bool variables to guard
     //
     volatile  BOOL                      m_fHttpHandleInClose;
@@ -230,4 +231,9 @@ private:
     static TRACE_LOG *                  sm_pTraceLog;
 
     static STRA                         sm_pStra502ErrorMsg;
+
+    mutable LONG                        m_cRefs;
+    IHttpContext*                       m_pW3Context;
+    OUT_OF_PROCESS_APPLICATION*         m_pApplication;
+    HTTP_MODULE_ID                      m_pModuleId;
 };

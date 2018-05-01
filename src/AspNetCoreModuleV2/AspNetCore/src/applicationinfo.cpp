@@ -15,7 +15,7 @@ APPLICATION_INFO::~APPLICATION_INFO()
     {
         // Mark the entry as invalid,
         // StopMonitor will close the file handle and trigger a FCN
-        // the entry will delete itself when processing this FCN 
+        // the entry will delete itself when processing this FCN
         m_pFileWatcherEntry->MarkEntryInValid();
         m_pFileWatcherEntry->StopMonitor();
         m_pFileWatcherEntry->DereferenceFileWatcherEntry();
@@ -161,7 +161,7 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
             STACK_STRU(strEventMsg, 256);
             if (SUCCEEDED(strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
-                m_pApplication->QueryConfig()->QueryApplicationPath()->QueryStr())))
+                m_pConfiguration->QueryApplicationPath()->QueryStr())))
             {
                 UTILITY::LogEvent(g_hEventLog,
                     EVENTLOG_INFORMATION_TYPE,
@@ -181,7 +181,7 @@ APPLICATION_INFO::EnsureApplicationCreated()
 {
     HRESULT             hr = S_OK;
     BOOL                fLocked = FALSE;
-    APPLICATION*        pApplication = NULL;
+    IAPPLICATION*        pApplication = NULL;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
     STRU                struHostFxrDllLocation;
 
@@ -314,24 +314,15 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
             hr = HRESULT_FROM_WIN32(GetLastError());
             goto Finished;
         }
-
-        g_pfnAspNetCoreCreateRequestHandler = (PFN_ASPNETCORE_CREATE_REQUEST_HANDLER)
-            GetProcAddress(g_hAspnetCoreRH, "CreateRequestHandler");
-        if (g_pfnAspNetCoreCreateRequestHandler == NULL)
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
         g_fAspnetcoreRHAssemblyLoaded = TRUE;
     }
 
 Finished:
     //
     // Question: we remember the load failure so that we will not try again.
-    // User needs to check whether the fuction pointer is NULL 
+    // User needs to check whether the fuction pointer is NULL
     //
     m_pfnAspNetCoreCreateApplication = g_pfnAspNetCoreCreateApplication;
-    m_pfnAspNetCoreCreateRequestHandler = g_pfnAspNetCoreCreateRequestHandler;
     if (!g_fAspnetcoreRHLoadedError && FAILED(hr))
     {
         g_fAspnetcoreRHLoadedError = TRUE;
@@ -401,11 +392,11 @@ Finished:
     return hr;
 }
 
-// 
+//
 // Tries to find aspnetcorerh.dll from the application
 // Calls into hostfxr.dll to find it.
 // Will leave hostfxr.dll loaded as it will be used again to call hostfxr_main.
-// 
+//
 HRESULT
 APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     STRU* struFilename
@@ -440,7 +431,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     if (pFnHostFxrSearchDirectories == NULL)
     {
         // Host fxr version is incorrect (need a higher version).
-        // TODO log error 
+        // TODO log error
         hr = E_FAIL;
         goto Finished;
     }
@@ -540,7 +531,7 @@ Finished:
 VOID
 APPLICATION_INFO::RecycleApplication()
 {
-    APPLICATION* pApplication = NULL;
+    IAPPLICATION* pApplication = NULL;
     HANDLE       hThread = INVALID_HANDLE_VALUE;
     BOOL         fLockAcquired = FALSE;
 
@@ -551,7 +542,7 @@ APPLICATION_INFO::RecycleApplication()
         if (m_pApplication != NULL)
         {
             pApplication = m_pApplication;
-            if (pApplication->QueryConfig()->QueryHostingModel() == HOSTING_OUT_PROCESS)
+            if (m_pConfiguration->QueryHostingModel() == HOSTING_OUT_PROCESS)
             {
                 //
                 // For inprocess, need to set m_pApplication to NULL first to
@@ -588,7 +579,7 @@ APPLICATION_INFO::RecycleApplication()
                 g_pHttpServer->RecycleProcess(L"On Demand by AspNetCore Module for recycle application failure");
             }
         }
-        else 
+        else
         {
             // Closing a thread handle does not terminate the associated thread or remove the thread object.
             CloseHandle(hThread);
@@ -606,7 +597,7 @@ VOID
 APPLICATION_INFO::DoRecycleApplication(
     LPVOID lpParam)
 {
-    APPLICATION* pApplication = static_cast<APPLICATION*>(lpParam);
+    IAPPLICATION* pApplication = static_cast<IAPPLICATION*>(lpParam);
 
     // No lock required
 
@@ -624,7 +615,7 @@ APPLICATION_INFO::DoRecycleApplication(
 VOID
 APPLICATION_INFO::ShutDownApplication()
 {
-    APPLICATION* pApplication = NULL;
+    IAPPLICATION* pApplication = NULL;
     BOOL         fLockAcquired = FALSE;
 
     // pApplication can be NULL due to app_offline

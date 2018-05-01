@@ -21,7 +21,7 @@ public:
     VOID
     NotifyDisconnect()
     {
-        REQUEST_HANDLER *pInitialValue = (REQUEST_HANDLER*)
+        IREQUEST_HANDLER *pInitialValue = (IREQUEST_HANDLER*)
             InterlockedExchangePointer((PVOID*)&m_pHandler, NULL);
 
         if (pInitialValue != NULL)
@@ -33,7 +33,7 @@ public:
 
     VOID
     SetHandler(
-        REQUEST_HANDLER *pHandler
+        IREQUEST_HANDLER *pHandler
     )
     {
         //
@@ -61,7 +61,7 @@ public:
         VOID
     )
     {
-        REQUEST_HANDLER *pInitialValue = (REQUEST_HANDLER*)
+        IREQUEST_HANDLER *pInitialValue = (IREQUEST_HANDLER*)
             InterlockedExchangePointer((PVOID*)&m_pHandler, NULL);
 
         if (pInitialValue != NULL)
@@ -74,5 +74,5 @@ private:
     ~ASYNC_DISCONNECT_CONTEXT()
     {}
 
-    REQUEST_HANDLER *     m_pHandler;
+    IREQUEST_HANDLER *     m_pHandler;
 };

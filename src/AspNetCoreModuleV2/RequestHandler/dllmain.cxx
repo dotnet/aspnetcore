@@ -187,10 +187,10 @@ EnsureOutOfProcessInitializtion()
         }
 
         //
-        // Don't set non-blocking callbacks WINHTTP_OPTION_ASSURED_NON_BLOCKING_CALLBACKS, 
+        // Don't set non-blocking callbacks WINHTTP_OPTION_ASSURED_NON_BLOCKING_CALLBACKS,
         // as we will call WinHttpQueryDataAvailable to get response on the same thread
         // that we received callback from Winhttp on completing sending/forwarding the request
-        // 
+        //
 
         //
         // Setup the callback function
@@ -277,11 +277,11 @@ __stdcall
 CreateApplication(
     _In_  IHttpServer        *pServer,
     _In_  ASPNETCORE_CONFIG  *pConfig,
-    _Out_ APPLICATION       **ppApplication
+    _Out_ IAPPLICATION       **ppApplication
 )
 {
     HRESULT      hr = S_OK;
-    APPLICATION *pApplication = NULL;
+    IAPPLICATION *pApplication = NULL;
 
     // Initialze some global variables here
     InitializeGlobalConfiguration(pServer);
@@ -303,7 +303,8 @@ CreateApplication(
             goto Finished;
         }
 
-        pApplication = new OUT_OF_PROCESS_APPLICATION(pServer, pConfig);
+
+        pApplication = new OUT_OF_PROCESS_APPLICATION(pConfig);
         if (pApplication == NULL)
         {
             hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
@@ -327,43 +328,5 @@ CreateApplication(
     *ppApplication = pApplication;
 
 Finished:
-    return hr;
-}
-
-HRESULT
-__stdcall
-CreateRequestHandler(
-    _In_  IHttpContext       *pHttpContext,
-    _In_  HTTP_MODULE_ID     *pModuleId,
-    _In_  APPLICATION        *pApplication,
-    _Out_ REQUEST_HANDLER   **pRequestHandler
-)
-{
-    HRESULT hr = S_OK;
-    REQUEST_HANDLER* pHandler = NULL;
-    ASPNETCORE_CONFIG* pConfig = pApplication->QueryConfig();
-    DBG_ASSERT(pConfig);
-
-    if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
-    {
-        pHandler = new IN_PROCESS_HANDLER(pHttpContext, pModuleId, pApplication);
-    }
-    else if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
-    {
-        pHandler = new FORWARDING_HANDLER(pHttpContext, pModuleId, pApplication);
-    }
-    else
-    {
-        return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
-    }
-
-    if (pHandler == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
-    }
-    else
-    {
-        *pRequestHandler = pHandler;
-    }
     return hr;
 }

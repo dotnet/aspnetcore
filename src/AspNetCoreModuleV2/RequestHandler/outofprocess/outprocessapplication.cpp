@@ -1,9 +1,8 @@
 #include "..\precomp.hxx"
 
 OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
-    IHttpServer*        pHttpServer,
     ASPNETCORE_CONFIG*  pConfig) :
-    APPLICATION(pHttpServer, pConfig)
+    m_pConfig(pConfig)
 {
     m_status = APPLICATION_STATUS::RUNNING;
     m_pProcessManager = NULL;
@@ -53,6 +52,12 @@ OUT_OF_PROCESS_APPLICATION::GetProcess(
     return m_pProcessManager->GetProcess(m_pConfig, ppServerProcess);
 }
 
+ASPNETCORE_CONFIG*
+OUT_OF_PROCESS_APPLICATION::QueryConfig() const
+{
+    return m_pConfig;
+}
+
 __override
 VOID
 OUT_OF_PROCESS_APPLICATION::ShutDown()
@@ -76,3 +81,21 @@ OUT_OF_PROCESS_APPLICATION::Recycle()
     ShutDown();
 }
 
+HRESULT
+OUT_OF_PROCESS_APPLICATION::CreateHandler(
+    _In_  IHttpContext       *pHttpContext,
+    _In_  HTTP_MODULE_ID     *pModuleId,
+    _Out_ IREQUEST_HANDLER   **pRequestHandler)
+{
+    HRESULT hr = S_OK;
+    IREQUEST_HANDLER* pHandler = NULL;
+    pHandler = new FORWARDING_HANDLER(pHttpContext, pModuleId, this);
+
+    if (pHandler == NULL)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
+    }
+
+    *pRequestHandler = pHandler;
+    return hr;
+}

@@ -81,7 +81,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     ASPNETCORE_CONFIG     *pConfig = NULL;
     APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
-    APPLICATION* pApplication = NULL;
+    IAPPLICATION* pApplication = NULL;
     STACK_STRU(struFileName, 256);
     if (g_fInShutdown)
     {
@@ -162,9 +162,8 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
 
     // Create RequestHandler and process the request
-    hr = m_pApplicationInfo->QueryCreateRequestHandler()(pHttpContext,
+    hr = pApplication->CreateHandler(pHttpContext,
                     (HTTP_MODULE_ID*) &g_pModuleId,
-                    pApplication,
                     &m_pHandler);
 
     if (FAILED(hr))
@@ -174,7 +173,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
     retVal = m_pHandler->OnExecuteRequestHandler();
 
-Finished: 
+Finished:
     if (FAILED(hr))
     {
         retVal = RQ_NOTIFICATION_FINISH_REQUEST;

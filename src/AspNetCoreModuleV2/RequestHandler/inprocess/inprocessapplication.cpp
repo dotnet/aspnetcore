@@ -5,7 +5,6 @@ IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer*        pHttpServer,
     ASPNETCORE_CONFIG*  pConfig) :
-    APPLICATION(pHttpServer, pConfig),
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
@@ -17,7 +16,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_fInitialized(FALSE),
     m_fShutdownCalledFromNative(FALSE),
     m_fShutdownCalledFromManaged(FALSE),
-    m_srwLock()
+    m_srwLock(),
+    m_pConfig(pConfig)
 {
     // is it guaranteed that we have already checked app offline at this point?
     // If so, I don't think there is much to do here.
@@ -984,4 +984,29 @@ IN_PROCESS_APPLICATION::FilterException(unsigned int, struct _EXCEPTION_POINTERS
     // We assume that any exception is a failure as the applicaiton didn't start or there was a startup error.
     // TODO, log error based on exception code.
     return EXCEPTION_EXECUTE_HANDLER;
+}
+
+ASPNETCORE_CONFIG*
+IN_PROCESS_APPLICATION::QueryConfig() const
+{
+    return m_pConfig;
+}
+
+HRESULT
+IN_PROCESS_APPLICATION::CreateHandler(
+    _In_  IHttpContext       *pHttpContext,
+    _In_  HTTP_MODULE_ID     *pModuleId,
+    _Out_ IREQUEST_HANDLER   **pRequestHandler)
+{
+    HRESULT hr = S_OK;
+    IREQUEST_HANDLER* pHandler = NULL;
+    pHandler = new IN_PROCESS_HANDLER(pHttpContext, pModuleId, this);
+
+    if (pHandler == NULL)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
+    }
+
+    *pRequestHandler = pHandler;
+    return hr;
 }

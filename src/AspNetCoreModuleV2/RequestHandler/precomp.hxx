@@ -72,6 +72,7 @@
 #include ".\outofprocess\forwardinghandler.h"
 #include ".\outofprocess\outprocessapplication.h"
 #include ".\outofprocess\winhttphelper.h"
+#include ".\outofprocess\outprocessapplication.h"
 
 #ifdef max
 #undef max

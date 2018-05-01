@@ -4,56 +4,32 @@
 #pragma once
 
 #include "stdafx.h"
-#include "application.h"
 
 //
-// Abstract class
+// Pure abstract class
 //
-class REQUEST_HANDLER
+class REQUEST_HANDLER: public virtual IREQUEST_HANDLER
 {
+
 public:
-    REQUEST_HANDLER(
-        _In_ IHttpContext *pW3Context,
-        _In_ HTTP_MODULE_ID  *pModuleId,
-        _In_ APPLICATION  *pApplication
-    );
-
-    virtual
-    REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequestHandler() = 0;
-
-    virtual
-    REQUEST_NOTIFICATION_STATUS
-    OnAsyncCompletion(
-        DWORD      cbCompletion,
-        HRESULT    hrCompletionStatus
-    ) = 0;
-
-    virtual
     VOID
-    TerminateRequest(
-        bool    fClientInitiated
-    ) = 0;
-
-    virtual
-    ~REQUEST_HANDLER(
-        VOID
-    );
+    ReferenceRequestHandler() override
+    {
+        InterlockedIncrement(&m_cRefs);
+    }
 
     VOID
-    ReferenceRequestHandler(
-        VOID
-    ) const;
+    DereferenceRequestHandler() override
+    {
+        DBG_ASSERT(m_cRefs != 0);
 
-    virtual
-    VOID
-    DereferenceRequestHandler(
-        VOID
-    ) const;
+        LONG cRefs = 0;
+        if ((cRefs = InterlockedDecrement(&m_cRefs)) == 0)
+        {
+            delete this;
+        }
+    }
 
-protected:
-    mutable LONG    m_cRefs;
-    IHttpContext*   m_pW3Context;
-    APPLICATION*    m_pApplication;
-    HTTP_MODULE_ID   m_pModuleId;
+private:
+    mutable LONG                    m_cRefs = 1;
 };

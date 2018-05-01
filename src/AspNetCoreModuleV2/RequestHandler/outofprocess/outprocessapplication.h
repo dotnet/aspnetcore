@@ -4,9 +4,10 @@ class OUT_OF_PROCESS_APPLICATION : public APPLICATION
 {
 
 public:
-    OUT_OF_PROCESS_APPLICATION(IHttpServer* pHttpServer, ASPNETCORE_CONFIG  *pConfig);
+    OUT_OF_PROCESS_APPLICATION(ASPNETCORE_CONFIG  *pConfig);
 
-    ~OUT_OF_PROCESS_APPLICATION();
+    __override
+    ~OUT_OF_PROCESS_APPLICATION() override;
 
     HRESULT
     Initialize();
@@ -18,13 +19,30 @@ public:
 
     __override
     VOID
-    ShutDown();
+    ShutDown()
+    override;
 
     __override
     VOID
-    Recycle();
+    Recycle()
+    override;
+
+    __override
+    HRESULT
+    CreateHandler(
+        _In_  IHttpContext       *pHttpContext,
+        _In_  HTTP_MODULE_ID     *pModuleId,
+        _Out_ IREQUEST_HANDLER   **pRequestHandler)
+    override;
+
+    ASPNETCORE_CONFIG*
+    QueryConfig()
+    const;
 
 private:
+
     PROCESS_MANAGER * m_pProcessManager;
     SRWLOCK           rwlock;
+
+    ASPNETCORE_CONFIG*              m_pConfig;
 };
