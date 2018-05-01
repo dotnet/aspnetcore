@@ -119,9 +119,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                 throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmFile);
                             }
 
-                            Logger.LogDebug("Writing ANCMPath '{ancmPath}' to config", ancmFile);
+                            Logger.LogDebug("Writing ANCMPath '{ancmFile}' to config", ancmFile);
                             serverConfig =
                                 serverConfig.Replace("[ANCMPath]", ancmFile);
+                        }
+
+                        if (serverConfig.Contains("[ANCMV2Path]"))
+                        {
+                            var ancmFile = Path.Combine(contentRoot, Is64BitHost ? @"x64\aspnetcorev2.dll" : @"x86\aspnetcorev2.dll");
+
+                            if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
+                            {
+                                throw new FileNotFoundException("AspNetCoreModuleV2 could not be found.", ancmFile);
+                            }
+
+                            Logger.LogDebug("Writing ANCMV2Path '{ancmFile}' to config", ancmFile);
+                            serverConfig =
+                                serverConfig.Replace("[ANCMV2Path]", ancmFile);
                         }
 
                         Logger.LogDebug("Writing ApplicationPhysicalPath '{applicationPhysicalPath}' to config", contentRoot);
