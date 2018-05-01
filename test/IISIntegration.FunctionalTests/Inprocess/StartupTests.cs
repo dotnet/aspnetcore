@@ -1,18 +1,17 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
-
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
@@ -26,8 +25,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Fact]
         public async Task ExpandEnvironmentVariableInWebConfig()
         {
-            var architecture = RuntimeArchitecture.x64;
-            var dotnetLocation = $"%USERPROFILE%\\.dotnet\\{architecture.ToString()}\\dotnet.exe";
+#if NET461
+            // use the dotnet on PATH
+            var dotnetLocation = "dotnet";
+#else
+            var dotnetLocation = DotNetMuxer.MuxerPathOrDefault();
+#endif
             using (StartLog(out var loggerFactory))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
@@ -35,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var deploymentParameters = GetBaseDeploymentParameters();
 
                 // Point to dotnet installed in user profile.
-                deploymentParameters.EnvironmentVariables["DotnetPath"] = Environment.ExpandEnvironmentVariables(dotnetLocation); // Path to dotnet.
+                deploymentParameters.EnvironmentVariables["DotnetPath"] = dotnetLocation;
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
@@ -72,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
                 var deploymentParameters = GetBaseDeploymentParameters();
-                
+
                 // Point to dotnet installed in user profile.
                 deploymentParameters.EnvironmentVariables["DotnetPath"] = Environment.ExpandEnvironmentVariables(dotnetLocation); // Path to dotnet.
 
@@ -101,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             using (StartLog(out var loggerFactory))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
-                
+
                 var deploymentParameters = GetBaseDeploymentParameters();
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
@@ -171,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 #else
 #error Target frameworks need to be updated
 #endif
-        
+
         [Fact]
         public async Task DetectsOveriddenServer()
         {
