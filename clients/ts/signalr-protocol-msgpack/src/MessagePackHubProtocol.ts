@@ -8,18 +8,51 @@ import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
 
+// TypeDoc's @inheritDoc and @link don't work across modules :(
+
+/** Implements the MessagePack Hub Protocol */
 export class MessagePackHubProtocol implements IHubProtocol {
-
+    /** The name of the protocol. This is used by SignalR to resolve the protocol between the client and server. */
     public readonly name: string = "messagepack";
+    /** The version of the protocol. */
     public readonly version: number = 1;
-
+    /** The TransferFormat of the protocol. */
     public readonly transferFormat: TransferFormat = TransferFormat.Binary;
 
+    /** Creates an array of HubMessage objects from the specified serialized representation.
+     *
+     * @param {ArrayBuffer} input An ArrayBuffer containing the serialized representation.
+     * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
+     */
     public parseMessages(input: ArrayBuffer, logger: ILogger): HubMessage[] {
+        // The interface does allow "string" to be passed in, but this implementation does not. So let's throw a useful error.
+        if (!(input instanceof ArrayBuffer)) {
+            throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer.");
+        }
+
         if (logger === null) {
             logger = NullLogger.instance;
         }
         return BinaryMessageFormat.parse(input).map((m) => this.parseMessage(m, logger));
+    }
+
+    /** Writes the specified HubMessage to an ArrayBuffer and returns it.
+     *
+     * @param {HubMessage} message The message to write.
+     * @returns {ArrayBuffer} An ArrayBuffer containing the serialized representation of the message.
+     */
+    public writeMessage(message: HubMessage): ArrayBuffer {
+        switch (message.type) {
+            case MessageType.Invocation:
+                return this.writeInvocation(message as InvocationMessage);
+            case MessageType.StreamInvocation:
+                return this.writeStreamInvocation(message as StreamInvocationMessage);
+            case MessageType.StreamItem:
+            case MessageType.Completion:
+                throw new Error(`Writing messages of type '${message.type}' is not supported.`);
+            default:
+                throw new Error("Invalid message type.");
+        }
     }
 
     private parseMessage(input: Uint8Array, logger: ILogger): HubMessage {
@@ -152,20 +185,6 @@ export class MessagePackHubProtocol implements IHubProtocol {
         }
 
         return completionMessage as CompletionMessage;
-    }
-
-    public writeMessage(message: HubMessage): ArrayBuffer {
-        switch (message.type) {
-            case MessageType.Invocation:
-                return this.writeInvocation(message as InvocationMessage);
-            case MessageType.StreamInvocation:
-                return this.writeStreamInvocation(message as StreamInvocationMessage);
-            case MessageType.StreamItem:
-            case MessageType.Completion:
-                throw new Error(`Writing messages of type '${message.type}' is not supported.`);
-            default:
-                throw new Error("Invalid message type.");
-        }
     }
 
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {

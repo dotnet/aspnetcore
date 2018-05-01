@@ -10,6 +10,7 @@ import { Arg, Subject } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 
+/** Represents a connection to a SignalR Hub. */
 export class HubConnection {
     private readonly connection: IConnection;
     private readonly logger: ILogger;
@@ -22,6 +23,11 @@ export class HubConnection {
     private timeoutHandle: NodeJS.Timer;
     private receivedHandshakeResponse: boolean;
 
+    /** The server timeout in milliseconds.
+     *
+     * If this timeout elapses without receiving any messages from the server, the connection will be terminated with an error.
+     * The default timeout value is 30,000 milliseconds (30 seconds).
+     */
     public serverTimeoutInMilliseconds: number;
 
     /** @internal */
@@ -54,6 +60,10 @@ export class HubConnection {
         this.id = 0;
     }
 
+    /** Starts the connection.
+     *
+     * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.
+     */
     public async start(): Promise<void> {
         const handshakeRequest: HandshakeRequestMessage = {
             protocol: this.protocol.name,
@@ -77,6 +87,10 @@ export class HubConnection {
         this.configureTimeout();
     }
 
+    /** Stops the connection.
+     *
+     * @returns {Promise<void>} A Promise that resolves when the connection has been successfully terminated, or rejects with an error.
+     */
     public stop(): Promise<void> {
         this.logger.log(LogLevel.Debug, "Stopping HubConnection.");
 
@@ -84,6 +98,13 @@ export class HubConnection {
         return this.connection.stop();
     }
 
+    /** Invokes a streaming hub method on the server using the specified name and arguments.
+     *
+     * @typeparam T The type of the items returned by the server.
+     * @param {string} methodName The name of the server method to invoke.
+     * @param {any[]} args The arguments used to invoke the server method.
+     * @returns {IStreamResult<T>} An object that yields results from the server as they are received.
+     */
     public stream<T = any>(methodName: string, ...args: any[]): IStreamResult<T> {
         const invocationDescriptor = this.createStreamInvocation(methodName, args);
 
@@ -124,6 +145,15 @@ export class HubConnection {
         return subject;
     }
 
+    /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
+     *
+     * The Promise returned by this method resolves when the client has sent the invocation to the server. The server may still
+     * be processing the invocation.
+     *
+     * @param {string} methodName The name of the server method to invoke.
+     * @param {any[]} args The arguments used to invoke the server method.
+     * @returns {Promise<void>} A Promise that resolves when the invocation has been successfully sent, or rejects with an error.
+     */
     public send(methodName: string, ...args: any[]): Promise<void> {
         const invocationDescriptor = this.createInvocation(methodName, args, true);
 
@@ -132,6 +162,17 @@ export class HubConnection {
         return this.connection.send(message);
     }
 
+    /** Invokes a hub method on the server using the specified name and arguments.
+     *
+     * The Promise returned by this method resolves when the server indicates it has finished invoking the method. When the promise
+     * resolves, the server has finished invoking the method. If the server method returns a result, it is produced as the result of
+     * resolving the Promise.
+     *
+     * @typeparam T The expected return type.
+     * @param {string} methodName The name of the server method to invoke.
+     * @param {any[]} args The arguments used to invoke the server method.
+     * @returns {Promise<T>} A Promise that resolves with the result of the server method (if any), or rejects with an error.
+     */
     public invoke<T = any>(methodName: string, ...args: any[]): Promise<T> {
         const invocationDescriptor = this.createInvocation(methodName, args, false);
 
@@ -165,6 +206,11 @@ export class HubConnection {
         return p;
     }
 
+    /** Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param {string} methodName The name of the hub method to define.
+     * @param {Function} newMethod The handler that will be raised when the hub method is invoked.
+     */
     public on(methodName: string, newMethod: (...args: any[]) => void) {
         if (!methodName || !newMethod) {
             return;
@@ -183,7 +229,22 @@ export class HubConnection {
         this.methods[methodName].push(newMethod);
     }
 
-    public off(methodName: string, method?: (...args: any[]) => void) {
+    /** Removes all handlers for the specified hub method.
+     *
+     * @param {string} methodName The name of the method to remove handlers for.
+     */
+    public off(methodName: string): void;
+
+    /** Removes the specified handler for the specified hub method.
+     *
+     * You must pass the exact same Function instance as was previously passed to {@link on}. Passing a different instance (even if the function
+     * body is the same) will not remove the handler.
+     *
+     * @param {string} methodName The name of the method to remove handlers for.
+     * @param {Function} method The handler to remove. This must be the same Function instance as the one passed to {@link on}.
+     */
+    public off(methodName: string, method: (...args: any[]) => void): void;
+    public off(methodName: string, method?: (...args: any[]) => void): void {
         if (!methodName) {
             return;
         }
@@ -207,6 +268,10 @@ export class HubConnection {
 
     }
 
+    /** Registers a handler that will be invoked when the connection is closed.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection is closed. Optionally receives a single argument containing the error that caused the connection to close (if any).
+     */
     public onclose(callback: (error?: Error) => void) {
         if (callback) {
             this.closedCallbacks.push(callback);
