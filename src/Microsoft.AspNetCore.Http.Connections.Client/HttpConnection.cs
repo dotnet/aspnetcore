@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _httpClient = CreateHttpClient();
             }
 
-            _transportFactory = new DefaultTransportFactory(httpConnectionOptions.Transports, _loggerFactory, _httpClient, httpConnectionOptions);
+            _transportFactory = new DefaultTransportFactory(httpConnectionOptions.Transports, _loggerFactory, _httpClient, httpConnectionOptions, GetAccessTokenAsync);
             _logScope = new ConnectionLogScope();
             _scopeDisposable = _logger.BeginScope(_logScope);
 

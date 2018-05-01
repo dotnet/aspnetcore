@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
@@ -68,6 +69,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await context.Response.WriteAsync(GenerateJwtToken());
                     return;
+                }
+                else if (context.Request.Path.StartsWithSegments("/redirect"))
+                {
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                    {
+                        url = $"{context.Request.Scheme}://{context.Request.Host}/authorizedHub",
+                        accessToken = GenerateJwtToken()
+                    }));
                 }
             });
         }

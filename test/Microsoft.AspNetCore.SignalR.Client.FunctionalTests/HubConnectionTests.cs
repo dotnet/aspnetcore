@@ -799,6 +799,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         [Theory]
         [MemberData(nameof(TransportTypes))]
+        public async Task ClientCanUseJwtBearerTokenForAuthenticationWhenRedirected(HttpTransportType transportType)
+        {
+            using (StartVerifableLog(out var loggerFactory, $"{nameof(ClientCanUseJwtBearerTokenForAuthenticationWhenRedirected)}_{transportType}"))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(loggerFactory)
+                    .WithUrl(ServerFixture.Url + "/redirect", transportType)
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+                    var message = await hubConnection.InvokeAsync<string>(nameof(TestHub.Echo), "Hello, World!").OrTimeout();
+                    Assert.Equal("Hello, World!", message);
+                }
+                catch (Exception ex)
+                {
+                    loggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TransportTypes))]
         public async Task ClientCanSendHeaders(HttpTransportType transportType)
         {
             using (StartVerifableLog(out var loggerFactory, $"{nameof(ClientCanSendHeaders)}_{transportType}"))
