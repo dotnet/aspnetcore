@@ -10,20 +10,39 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
+    /// <summary>
+    /// Maps routes to ASP.NET Core Connection Handlers.
+    /// </summary>
     public class ConnectionsRouteBuilder
     {
         private readonly HttpConnectionDispatcher _dispatcher;
         private readonly RouteBuilder _routes;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionsRouteBuilder"/> class.
+        /// </summary>
+        /// <param name="routes">The underlying <see cref="RouteBuilder"/>.</param>
+        /// <param name="dispatcher">The dispatcher.</param>
         public ConnectionsRouteBuilder(RouteBuilder routes, HttpConnectionDispatcher dispatcher)
         {
             _routes = routes;
             _dispatcher = dispatcher;
         }
 
+        /// <summary>
+        /// Maps incoming requests with the specified path to the provided connection pipeline.
+        /// </summary>
+        /// <param name="path">The request path.</param>
+        /// <param name="configure">A callback to configure the connection.</param>
         public void MapConnections(PathString path, Action<IConnectionBuilder> configure) =>
             MapConnections(path, new HttpConnectionDispatcherOptions(), configure);
 
+        /// <summary>
+        /// Maps incoming requests with the specified path to the provided connection pipeline.
+        /// </summary>
+        /// <param name="path">The request path.</param>
+        /// <param name="options">Options used to configure the connection.</param>
+        /// <param name="configure">A callback to configure the connection.</param>
         public void MapConnections(PathString path, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
         {
             var connectionBuilder = new ConnectionBuilder(_routes.ServiceProvider);
@@ -33,11 +52,22 @@ namespace Microsoft.AspNetCore.Http.Connections
             _routes.MapRoute(path + "/negotiate", c => _dispatcher.ExecuteNegotiateAsync(c, options));
         }
 
+        /// <summary>
+        /// Maps incoming requests with the specified path to the provided connection pipeline.
+        /// </summary>
+        /// <typeparam name="TConnectionHandler">The <see cref="ConnectionHandler"/> type.</typeparam>
+        /// <param name="path">The request path.</param>
         public void MapConnectionHandler<TConnectionHandler>(PathString path) where TConnectionHandler : ConnectionHandler
         {
             MapConnectionHandler<TConnectionHandler>(path, configureOptions: null);
         }
 
+        /// <summary>
+        /// Maps incoming requests with the specified path to the provided connection pipeline.
+        /// </summary>
+        /// <typeparam name="TConnectionHandler">The <see cref="ConnectionHandler"/> type.</typeparam>
+        /// <param name="path">The request path.</param>
+        /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         public void MapConnectionHandler<TConnectionHandler>(PathString path, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             var authorizeAttributes = typeof(TConnectionHandler).GetCustomAttributes<AuthorizeAttribute>(inherit: true);

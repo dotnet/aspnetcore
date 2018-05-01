@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 namespace Microsoft.AspNetCore.SignalR
 {
     /// <summary>
-    /// This class is designed to support the framework. The API is subject to breaking changes.
     /// Represents a serialization cache for a single message.
     /// </summary>
     public class SerializedHubMessage
@@ -18,8 +17,15 @@ namespace Microsoft.AspNetCore.SignalR
         private IList<SerializedMessage> _cachedItems;
         private readonly object _lock = new object();
 
+        /// <summary>
+        /// Gets the hub message for the serialization cache.
+        /// </summary>
         public HubMessage Message { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SerializedHubMessage"/> class.
+        /// </summary>
+        /// <param name="messages">A collection of already serialized messages to cache.</param>
         public SerializedHubMessage(IReadOnlyList<SerializedMessage> messages)
         {
             // A lock isn't needed here because nobody has access to this type until the constructor finishes.
@@ -30,11 +36,20 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SerializedHubMessage"/> class.
+        /// </summary>
+        /// <param name="message">The hub message for the cache. This will be serialized with an <see cref="IHubProtocol"/> in <see cref="GetSerializedMessage"/> to get the message's serialized representation.</param>
         public SerializedHubMessage(HubMessage message)
         {
             Message = message;
         }
 
+        /// <summary>
+        /// Gets the serialized representation of the <see cref="HubMessage"/> using the specified <see cref="IHubProtocol"/>.
+        /// </summary>
+        /// <param name="protocol">The protocol used to create the serialized representation.</param>
+        /// <returns>The serialized representation of the <see cref="HubMessage"/>.</returns>
         public ReadOnlyMemory<byte> GetSerializedMessage(IHubProtocol protocol)
         {
             lock (_lock)

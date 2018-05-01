@@ -3,5 +3,8 @@
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// A clients caller abstraction for a hub.
+    /// </summary>
     public interface IHubCallerClients : IHubCallerClients<IClientProxy> { }
 }

@@ -8,8 +8,18 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for setting up SignalR services in an <see cref="IServiceCollection" />.
+    /// </summary>
     public static class SignalRDependencyInjectionExtensions
     {
+        /// <summary>
+        /// Adds hub specific options to an <see cref="ISignalRServerBuilder"/>.
+        /// </summary>
+        /// <typeparam name="THub">The hub type to configure.</typeparam>
+        /// <param name="signalrBuilder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="options">A callback to configure the hub options.</param>
+        /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
         public static ISignalRServerBuilder AddHubOptions<THub>(this ISignalRServerBuilder signalrBuilder, Action<HubOptions<THub>> options) where THub : Hub
         {
             signalrBuilder.Services.AddSingleton<IConfigureOptions<HubOptions<THub>>, HubOptionsSetup<THub>>();
@@ -17,6 +27,11 @@ namespace Microsoft.Extensions.DependencyInjection
             return signalrBuilder;
         }
 
+        /// <summary>
+        /// Adds SignalR services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
         public static ISignalRServerBuilder AddSignalR(this IServiceCollection services)
         {
             services.AddConnections();
@@ -24,6 +39,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSignalRCore();
         }
 
+        /// <summary>
+        /// Adds SignalR services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="options">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="HubOptions"/>.</param>
+        /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
         public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> options)
         {
             return services.Configure(options)

@@ -16,6 +16,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
+    /// <summary>
+    /// Implements the SignalR Hub Protocol using MessagePack.
+    /// </summary>
     public class MessagePackHubProtocol : IHubProtocol
     {
         private const int ErrorResult = 1;
@@ -27,16 +30,26 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static readonly string ProtocolName = "messagepack";
         private static readonly int ProtocolVersion = 1;
 
+        /// <inheritdoc />
         public string Name => ProtocolName;
 
+        /// <inheritdoc />
         public int Version => ProtocolVersion;
 
+        /// <inheritdoc />
         public TransferFormat TransferFormat => TransferFormat.Binary;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MessagePackHubProtocol"/> class.
+        /// </summary>
         public MessagePackHubProtocol()
             : this(Options.Create(new MessagePackHubProtocolOptions()))
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MessagePackHubProtocol"/> class.
+        /// </summary>
+        /// <param name="options">The options used to initialize the protocol.</param>
         public MessagePackHubProtocol(IOptions<MessagePackHubProtocolOptions> options)
         {
             var msgPackOptions = options.Value;
@@ -67,11 +80,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             _resolver = SignalRResolver.Instance;
         }
 
+        /// <inheritdoc />
         public bool IsVersionSupported(int version)
         {
             return version == Version;
         }
 
+        /// <inheritdoc />
         public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
         {
             if (!BinaryMessageParser.TryParseMessage(ref input, out var payload))
@@ -283,6 +298,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return destination;
         }
 
+        /// <inheritdoc />
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
             var writer = MemoryBufferWriter.Get();
@@ -302,6 +318,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
+        /// <inheritdoc />
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
             var writer = MemoryBufferWriter.Get();

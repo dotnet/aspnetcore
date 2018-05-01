@@ -8,13 +8,27 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for configuring Redis-based scale-out for a SignalR Server in an <see cref="ISignalRServerBuilder" />.
+    /// </summary>
     public static class RedisDependencyInjectionExtensions
     {
+        /// <summary>
+        /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
+        /// </summary>
+        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
         public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder)
         {
             return AddRedis(builder, o => { });
         }
 
+        /// <summary>
+        /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
+        /// </summary>
+        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="redisConnectionString">The connection string used to connect to the Redis server.</param>
+        /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
         public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, string redisConnectionString)
         {
             return AddRedis(builder, o =>
@@ -23,6 +37,12 @@ namespace Microsoft.Extensions.DependencyInjection
             });
         }
 
+        /// <summary>
+        /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
+        /// </summary>
+        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="configure">A callback to configure the Redis options.</param>
+        /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
         public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, Action<RedisOptions> configure)
         {
             builder.Services.Configure(configure);
@@ -30,6 +50,13 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
+        /// </summary>
+        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="redisConnectionString">The connection string used to connect to the Redis server.</param>
+        /// <param name="configure">A callback to configure the Redis options.</param>
+        /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
         public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, string redisConnectionString, Action<RedisOptions> configure)
         {
             return AddRedis(builder, o =>

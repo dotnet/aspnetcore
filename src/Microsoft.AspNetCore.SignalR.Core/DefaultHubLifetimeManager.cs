@@ -13,17 +13,25 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// A default in-memory lifetime manager abstraction for <see cref="Hub"/> instances.
+    /// </summary>
     public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where THub : Hub
     {
         private readonly HubConnectionStore _connections = new HubConnectionStore();
         private readonly HubGroupList _groups = new HubGroupList();
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultHubLifetimeManager{THub}"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
         public DefaultHubLifetimeManager(ILogger<DefaultHubLifetimeManager<THub>> logger)
         {
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
@@ -47,6 +55,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
@@ -70,6 +79,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override Task SendAllAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, null);
@@ -146,6 +156,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
+        /// <inheritdoc />
         public override Task SendConnectionAsync(string connectionId, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
@@ -167,6 +178,7 @@ namespace Microsoft.AspNetCore.SignalR
             return connection.WriteAsync(message).AsTask();
         }
 
+        /// <inheritdoc />
         public override Task SendGroupAsync(string groupName, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
@@ -192,6 +204,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             // Each task represents the list of tasks for each of the writes within a group
@@ -220,6 +233,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
@@ -254,17 +268,20 @@ namespace Microsoft.AspNetCore.SignalR
             return new InvocationMessage(methodName, args);
         }
 
+        /// <inheritdoc />
         public override Task SendUserAsync(string userId, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, connection => string.Equals(connection.UserIdentifier, userId, StringComparison.Ordinal));
         }
 
+        /// <inheritdoc />
         public override Task OnConnectedAsync(HubConnectionContext connection)
         {
             _connections.Add(connection);
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override Task OnDisconnectedAsync(HubConnectionContext connection)
         {
             _connections.Remove(connection);
@@ -272,16 +289,19 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, connection => !excludedConnectionIds.Contains(connection.ConnectionId));
         }
 
+        /// <inheritdoc />
         public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, connection => connectionIds.Contains(connection.ConnectionId));
         }
 
+        /// <inheritdoc />
         public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, connection => userIds.Contains(connection.UserIdentifier));

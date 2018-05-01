@@ -6,6 +6,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for <see cref="ISignalRBuilder"/>.
+    /// </summary>
     public static class JsonProtocolDependencyInjectionExtensions
     {
         /// <summary>

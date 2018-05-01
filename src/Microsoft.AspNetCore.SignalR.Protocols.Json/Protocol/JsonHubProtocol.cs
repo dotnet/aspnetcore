@@ -16,6 +16,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
+    /// <summary>
+    /// Implements the SignalR Hub Protocol using JSON.
+    /// </summary>
     public class JsonHubProtocol : IHubProtocol
     {
         private const string ResultPropertyName = "result";
@@ -30,29 +33,43 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static readonly string ProtocolName = "json";
         private static readonly int ProtocolVersion = 1;
 
-        // ONLY to be used for application payloads (args, return values, etc.)
+        /// <summary>
+        /// Gets the serializer used to serialize invocation arguments and return values.
+        /// </summary>
         public JsonSerializer PayloadSerializer { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
+        /// </summary>
         public JsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
+        /// </summary>
+        /// <param name="options">The options used to initialize the protocol.</param>
         public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
         {
             PayloadSerializer = JsonSerializer.Create(options.Value.PayloadSerializerSettings);
         }
 
+        /// <inheritdoc />
         public string Name => ProtocolName;
 
+        /// <inheritdoc />
         public int Version => ProtocolVersion;
 
+        /// <inheritdoc />
         public TransferFormat TransferFormat => TransferFormat.Text;
 
+        /// <inheritdoc />
         public bool IsVersionSupported(int version)
         {
             return version == Version;
         }
 
+        /// <inheritdoc />
         public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
         {
             if (!TextMessageParser.TryParseMessage(ref input, out var payload))
@@ -75,12 +92,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return message != null;
         }
 
+        /// <inheritdoc />
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
             WriteMessageCore(message, output);
             TextMessageFormatter.WriteRecordSeparator(output);
         }
 
+        /// <inheritdoc />
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
             return HubProtocolExtensions.GetMessageBytes(this, message);

@@ -9,14 +9,23 @@ using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis
 {
+    /// <summary>
+    /// Options used to configure <see cref="RedisHubLifetimeManager{THub}"/>.
+    /// </summary>
     public class RedisOptions
     {
+        /// <summary>
+        /// Gets or sets configuration options exposed by <c>StackExchange.Redis</c>.
+        /// </summary>
         public ConfigurationOptions Configuration { get; set; } = new ConfigurationOptions
         {
             // Enable reconnecting by default
             AbortOnConnectFail = false
         };
 
+        /// <summary>
+        /// Gets or sets the Redis connection factory.
+        /// </summary>
         public Func<TextWriter, Task<IConnectionMultiplexer>> ConnectionFactory { get; set; }
 
         internal async Task<IConnectionMultiplexer> ConnectAsync(TextWriter log)

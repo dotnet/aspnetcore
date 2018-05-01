@@ -20,6 +20,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
+    /// <summary>
+    /// A connection used to invoke hub methods on a SignalR Server.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="HubConnection"/> should be created using <see cref="HubConnectionBuilder"/>.
+    /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
+    /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
+    /// </remarks>
     public partial class HubConnection
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
@@ -49,12 +57,28 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
         public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnection"/> class.
+        /// </summary>
+        /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
+        /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
+        /// <param name="serviceProvider">An <see cref="IServiceProvider"/> containing the services provided to this <see cref="HubConnection"/> instance.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <remarks>
+        /// The <see cref="IServiceProvider"/> used to initialize the connection will be disposed when the connection is disposed.
+        /// </remarks>
         public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
             : this(connectionFactory, protocol, loggerFactory)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnection"/> class.
+        /// </summary>
+        /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
+        /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, ILoggerFactory loggerFactory)
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
@@ -64,12 +88,22 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger = _loggerFactory.CreateLogger<HubConnection>();
         }
 
+        /// <summary>
+        /// Starts a connection to the server.
+        /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous start.</returns>
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
             await StartAsyncCore(cancellationToken).ForceAsync();
         }
 
+        /// <summary>
+        /// Stops a connection to the server.
+        /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous stop.</returns>
         public async Task StopAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
@@ -78,6 +112,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         // Current plan for IAsyncDisposable is that DisposeAsync will NOT take a CancellationToken
         // https://github.com/dotnet/csharplang/blob/195efa07806284d7b57550e7447dc8bd39c156bf/proposals/async-streams.md#iasyncdisposable
+        /// <summary>
+        /// Disposes the <see cref="HubConnection"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous dispose.</returns>
         public async Task DisposeAsync()
         {
             if (!_disposed)
@@ -86,6 +124,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
+        // If the registered callback blocks it can cause the client to stop receiving messages. If you need to block, get off the current thread first.
+        /// <summary>
+        /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+        /// </summary>
+        /// <param name="methodName">The name of the hub method to define.</param>
+        /// <param name="parameterTypes">The parameters types expected by the hub method.</param>
+        /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+        /// <param name="state">A state object that will be passed to the handler.</param>
+        /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
+        /// <remarks>
+        /// This is a low level method for registering a handler. Using an <see cref="HubConnectionExtensions"/> <c>On</c> extension method is recommended.
+        /// </remarks>
         public IDisposable On(string methodName, Type[] parameterTypes, Func<object[], object, Task> handler, object state)
         {
             Log.RegisteringHandler(_logger, methodName);
@@ -107,14 +157,51 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return new Subscription(invocationHandler, invocationList);
         }
 
+        /// <summary>
+        /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
+        /// </summary>
+        /// <param name="methodName">The name of the server method to invoke.</param>
+        /// <param name="returnType">The return type of the server method.</param>
+        /// <param name="args">The arguments used to invoke the server method.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the asynchronous invoke.
+        /// The <see cref="Task{TResult}.Result"/> property returns a <see cref="ChannelReader{T}"/> for the streamed hub method values.
+        /// </returns>
+        /// <remarks>
+        /// This is a low level method for invoking a streaming hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>StreamAsChannelAsync</c> extension method is recommended.
+        /// </remarks>
         public async Task<ChannelReader<object>> StreamAsChannelCoreAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
             await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
 
+        /// <summary>
+        /// Invokes a hub method on the server using the specified method name, return type and arguments.
+        /// </summary>
+        /// <param name="methodName">The name of the server method to invoke.</param>
+        /// <param name="returnType">The return type of the server method.</param>
+        /// <param name="args">The arguments used to invoke the server method.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the asynchronous invoke.
+        /// The <see cref="Task{TResult}.Result"/> property returns an <see cref="object"/> for the hub method return value.
+        /// </returns>
+        /// <remarks>
+        /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>InvokeAsync</c> extension method is recommended.
+        /// </remarks>
         public async Task<object> InvokeCoreAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
             await InvokeCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
 
-        // REVIEW: We don't generally use cancellation tokens when writing to a pipe because the asynchrony is only the result of backpressure.
-        // However, this would be the only "invocation" method _without_ a cancellation token... which is odd.
+        /// <summary>
+        /// Invokes a hub method on the server using the specified method name and arguments.
+        /// Does not wait for a response from the receiver.
+        /// </summary>
+        /// <param name="methodName">The name of the server method to invoke.</param>
+        /// <param name="args">The arguments used to invoke the server method.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous invoke.</returns>
+        /// <remarks>
+        /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>SendAsync</c> extension method is recommended.
+        /// </remarks>
         public async Task SendCoreAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
             await SendCoreAsyncCore(methodName, args, cancellationToken).ForceAsync();
 

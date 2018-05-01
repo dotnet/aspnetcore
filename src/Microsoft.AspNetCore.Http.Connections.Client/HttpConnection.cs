@@ -18,6 +18,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {
+    /// <summary>
+    /// Used to make a connection to an ASP.NET Core ConnectionHandler using an HTTP-based transport.
+    /// </summary>
     public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
     {
         // Not configurable on purpose, high enough that if we reach here, it's likely
@@ -47,6 +50,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private readonly ILoggerFactory _loggerFactory;
         private Func<Task<string>> _accessTokenProvider;
 
+        /// <inheritdoc />
         public override IDuplexPipe Transport
         {
             get
@@ -61,21 +65,42 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             set => throw new NotSupportedException("The transport pipe isn't settable.");
         }
 
+        /// <inheritdoc />
         public override IFeatureCollection Features { get; } = new FeatureCollection();
+
+        /// <inheritdoc />
         public override string ConnectionId { get; set; }
+
+        /// <inheritdoc />
         public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
 
+        /// <inheritdoc />
         bool IConnectionInherentKeepAliveFeature.HasInherentKeepAlive => _hasInherentKeepAlive;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
+        /// </summary>
+        /// <param name="url">The URL to connect to.</param>
         public HttpConnection(Uri url)
             : this(url, HttpTransports.All)
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
+        /// </summary>
+        /// <param name="url">The URL to connect to.</param>
+        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
         public HttpConnection(Uri url, HttpTransportType transports)
             : this(url, transports, loggerFactory: null)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
+        /// </summary>
+        /// <param name="url">The URL to connect to.</param>
+        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(Uri url, HttpTransportType transports, ILoggerFactory loggerFactory)
             : this(CreateHttpOptions(url, transports), loggerFactory)
         {
@@ -90,6 +115,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             return new HttpConnectionOptions { Url = url, Transports = transports };
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
+        /// </summary>
+        /// <param name="httpConnectionOptions">The connection options to use.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
         {
             if (httpConnectionOptions.Url == null)
@@ -121,11 +151,30 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _transportFactory = transportFactory;
         }
 
+        /// <summary>
+        /// Starts the connection.
+        /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous start.</returns>
+        /// <remarks>
+        /// A connection cannot be restarted after it has stopped. To restart a connection
+        /// a new instance should be created using the same options.
+        /// </remarks>
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             await StartAsync(TransferFormat.Binary, cancellationToken);
         }
 
+        /// <summary>
+        /// Starts the connection using the specified transfer format.
+        /// </summary>
+        /// <param name="transferFormat">The transfer format the connection should use.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous start.</returns>
+        /// <remarks>
+        /// A connection cannot be restarted after it has stopped. To restart a connection
+        /// a new instance should be created using the same options.
+        /// </remarks>
         public async Task StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             await StartAsyncCore(transferFormat).ForceAsync();
@@ -165,6 +214,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
         }
 
+        /// <summary>
+        /// Disposes the connection.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous dispose.</returns>
+        /// <remarks>
+        /// A connection cannot be restarted after it has stopped. To restart a connection
+        /// a new instance should be created using the same options.
+        /// </remarks>
         public async Task DisposeAsync() => await DisposeAsyncCore().ForceAsync();
 
         private async Task DisposeAsyncCore()

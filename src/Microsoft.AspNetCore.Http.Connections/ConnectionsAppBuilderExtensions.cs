@@ -9,8 +9,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Extension methods for <see cref="IApplicationBuilder"/>.
+    /// </summary>
     public static class ConnectionsAppBuilderExtensions
     {
+        /// <summary>
+        /// Adds support for ASP.NET Core Connection Handlers to the <see cref="IApplicationBuilder"/> request execution pipeline.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="configure">A callback to configure connection routes.</param>
+        /// <returns>The same instance of the <see cref="IApplicationBuilder"/> for chaining.</returns>
         public static IApplicationBuilder UseConnections(this IApplicationBuilder app, Action<ConnectionsRouteBuilder> configure)
         {
             if (configure == null)
