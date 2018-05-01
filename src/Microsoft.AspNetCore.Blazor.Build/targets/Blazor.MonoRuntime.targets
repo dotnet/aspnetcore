@@ -236,8 +236,11 @@
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.index.cache -->
       <BlazorBuildIndexInputsCache>$(BlazorIntermediateOutputPath)inputs.index.cache</BlazorBuildIndexInputsCache>
 
-      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/embedded.resources.txt -->
-      <BlazorReferencesConfigFilePath>$(BlazorIntermediateOutputPath)references.txt</BlazorReferencesConfigFilePath>
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/resolve-dependencies.txt -->
+      <BlazorResolveDependenciesFilePath>$(BlazorIntermediateOutputPath)resolve-dependencies.txt</BlazorResolveDependenciesFilePath>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/indexhtml-references.txt -->
+      <BlazorIndexHtmlReferencesFilePath>$(BlazorIntermediateOutputPath)indexhtml-references.txt</BlazorIndexHtmlReferencesFilePath>
 
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/embedded.resources.txt -->
       <BlazorEmbeddedResourcesConfigFilePath>$(BlazorIntermediateOutputPath)embedded.resources.txt</BlazorEmbeddedResourcesConfigFilePath>
@@ -514,12 +517,12 @@
   >
 
     <PropertyGroup>
-      <_ReferencesArg Condition="'@(_BlazorDependencyInput)' != ''">--references &quot;$(BlazorReferencesConfigFilePath)&quot;</_ReferencesArg>
+      <_ReferencesArg Condition="'@(_BlazorDependencyInput)' != ''">--references &quot;$(BlazorResolveDependenciesFilePath)&quot;</_ReferencesArg>
       <_BclParameter>--base-class-library &quot;$(MonoBaseClassLibraryPath)&quot; --base-class-library &quot;$(MonoBaseClassLibraryFacadesPath)&quot;</_BclParameter>
     </PropertyGroup>
 
     <WriteLinesToFile
-          File="$(BlazorReferencesConfigFilePath)"
+          File="$(BlazorResolveDependenciesFilePath)"
           Lines="@(_BlazorDependencyInput)"
           Overwrite="true" />
 
@@ -607,12 +610,12 @@
     </ItemGroup>
     <PropertyGroup>
       <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
-      <_ReferencesArg Condition="'@(_AppReferences)' != ''">--references &quot;$(BlazorReferencesConfigFilePath)&quot;</_ReferencesArg>
+      <_ReferencesArg Condition="'@(_AppReferences)' != ''">--references &quot;$(BlazorIndexHtmlReferencesFilePath)&quot;</_ReferencesArg>
       <_EmbeddedResourcesArg Condition="'@(_UnlinkedAppReferencesPaths)' != ''">--embedded-resources &quot;$(BlazorEmbeddedResourcesConfigFilePath)&quot;</_EmbeddedResourcesArg>
     </PropertyGroup>
 
     <WriteLinesToFile
-      File="$(BlazorReferencesConfigFilePath)"
+      File="$(BlazorIndexHtmlReferencesFilePath)"
       Lines="@(_AppReferences)"
       Overwrite="true" />
 

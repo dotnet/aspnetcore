@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
             command.OnExecute(() =>
             {
                 if (string.IsNullOrEmpty(mainAssemblyPath.Value) ||
-                    !clientPage.HasValue() || !referencesFile.HasValue() || !outputPath.HasValue())
+                    !clientPage.HasValue() || !outputPath.HasValue())
                 {
                     command.ShowHelp(command.Name);
                     return 1;
