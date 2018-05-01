@@ -10,9 +10,22 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     /// </summary>
     public class InvocationBindingFailureMessage : HubInvocationMessage
     {
+        /// <summary>
+        /// Gets the exception thrown during binding.
+        /// </summary>
         public ExceptionDispatchInfo BindingFailure { get; }
+
+        /// <summary>
+        /// Gets the target method name.
+        /// </summary>
         public string Target { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InvocationBindingFailureMessage"/> class.
+        /// </summary>
+        /// <param name="invocationId">The invocation ID.</param>
+        /// <param name="target">The target method name.</param>
+        /// <param name="bindingFailure">The exception thrown during binding.</param>
         public InvocationBindingFailureMessage(string invocationId, string target, ExceptionDispatchInfo bindingFailure) : base(invocationId)
         {
             Target = target;

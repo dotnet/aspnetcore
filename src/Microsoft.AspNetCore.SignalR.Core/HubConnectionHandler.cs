@@ -13,6 +13,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// Handles incoming connections and implements the SignalR Hub Protocol.
+    /// </summary>
     public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -25,6 +28,17 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly HubDispatcher<THub> _dispatcher;
         private readonly bool _enableDetailedErrors;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnectionHandler{THub}"/> class.
+        /// </summary>
+        /// <param name="lifetimeManager">The hub lifetime manager.</param>
+        /// <param name="protocolResolver">The protocol resolver used to resolve the protocols between client and server.</param>
+        /// <param name="globalHubOptions">The global options used to initialize hubs.</param>
+        /// <param name="hubOptions">Hub specific options used to initialize hubs. These options override the global options.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="userIdProvider">The user ID provider used to get the user ID from a hub connection.</param>
+        /// <param name="dispatcher">The hub dispatcher used to dispatch incoming messages to hubs.</param>
+        /// <remarks>This class is typically created via dependency injection.</remarks>
         public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager,
                                     IHubProtocolResolver protocolResolver,
                                     IOptions<HubOptions> globalHubOptions,
@@ -45,6 +59,7 @@ namespace Microsoft.AspNetCore.SignalR
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
         }
 
+        /// <inheritdoc />
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.

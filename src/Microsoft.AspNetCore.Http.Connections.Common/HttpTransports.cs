@@ -3,10 +3,14 @@
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
+    /// <summary>
+    /// Constants related to HTTP transports.
+    /// </summary>
     public static class HttpTransports
     {
-        // Note that this is static readonly instead of const so it is not baked into a DLL when referenced
-        // Updating package without recompiling will automatically pick up new transports added here
+        /// <summary>
+        /// A bitmask comprised of all available <see cref="HttpTransportType"/> values.
+        /// </summary>
         public static readonly HttpTransportType All = HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling;
     }
 }

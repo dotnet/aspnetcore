@@ -34,6 +34,12 @@ namespace Microsoft.AspNetCore.SignalR
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
         private ReadOnlyMemory<byte> _cachedPingMessage;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
+        /// </summary>
+        /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
+        /// <param name="keepAliveInterval">The keep alive interval.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
         {
             _connectionContext = connectionContext;
@@ -42,21 +48,42 @@ namespace Microsoft.AspNetCore.SignalR
             _keepAliveDuration = (int)keepAliveInterval.TotalMilliseconds * (Stopwatch.Frequency / 1000);
         }
 
+        /// <summary>
+        /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.
+        /// </summary>
         public virtual CancellationToken ConnectionAborted { get; }
 
+        /// <summary>
+        /// Gets the ID for this connection.
+        /// </summary>
         public virtual string ConnectionId => _connectionContext.ConnectionId;
 
+        /// <summary>
+        /// Gets the user for this connection.
+        /// </summary>
         public virtual ClaimsPrincipal User => Features.Get<IConnectionUserFeature>()?.User;
 
+        /// <summary>
+        /// Gets the collection of features available on this connection.
+        /// </summary>
         public virtual IFeatureCollection Features => _connectionContext.Features;
 
+        /// <summary>
+        /// Gets a key/value collection that can be used to share data within the scope of this connection.
+        /// </summary>
         public virtual IDictionary<object, object> Items => _connectionContext.Items;
 
         // Used by HubConnectionHandler
         internal PipeReader Input => _connectionContext.Transport.Input;
 
+        /// <summary>
+        /// Gets or sets the user identifier for this connection.
+        /// </summary>
         public string UserIdentifier { get; set; }
 
+        /// <summary>
+        /// Gets the protocol used by this connection.
+        /// </summary>
         public virtual IHubProtocol Protocol { get; internal set; }
 
         // Currently used only for streaming methods
@@ -259,6 +286,9 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
+        /// <summary>
+        /// Aborts the connection.
+        /// </summary>
         public virtual void Abort()
         {
             // If we already triggered the token then noop, this isn't thread safe but it's good enough
