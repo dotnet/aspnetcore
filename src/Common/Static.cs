@@ -104,8 +104,19 @@ namespace Common
         /// <returns>The message of the error.</returns>
         public static string GetExceptionMessage(string fullErrorMsg)
         {
+            if(String.IsNullOrEmpty(fullErrorMsg))
+            {
+                throw new NotImplementedException();
+            }
+
             // Don't include the stacktrace, it's likely to be different between runs.
-            var exceptionMessage = fullErrorMsg.Split(new string[] { "   at " }, StringSplitOptions.RemoveEmptyEntries)[0];
+            var parts = fullErrorMsg.Split(new string[] { "   at " }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length <= 0)
+            {
+                throw new NotImplementedException();
+            }
+            var exceptionMessage = parts[0];
             exceptionMessage = exceptionMessage.Trim();
 
             // De-uniquify the port

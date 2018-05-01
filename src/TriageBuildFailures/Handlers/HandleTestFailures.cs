@@ -24,6 +24,21 @@ namespace TriageBuildFailures.Handlers
             return tests.Any(s => s.Status == BuildStatus.FAILURE);
         }
 
+        private string SafeGetExceptionMessage(string errors)
+        {
+            string exceptionMessage;
+            if (string.IsNullOrEmpty(errors))
+            {
+                exceptionMessage = NoStackTraceAvailable;
+            }
+            else
+            {
+                exceptionMessage = ErrorParsing.GetExceptionMessage(errors);
+            }
+
+            return exceptionMessage;
+        }
+
         public override async Task HandleFailure(TeamCityBuild build)
         {
             var tests = TCClient.GetTests(build);
@@ -36,16 +51,6 @@ namespace TriageBuildFailures.Handlers
                 var issuesTask = GHClient.GetFlakyIssues(repo: repo);
                 
                 var errors = TCClient.GetTestFailureText(failure);
-
-                string exceptionMessage;
-                if(string.IsNullOrEmpty(errors))
-                {
-                    exceptionMessage = NoStackTraceAvailable;
-                }
-                else
-                {
-                    exceptionMessage = ErrorParsing.GetExceptionMessage(errors);
-                }
 
                 var applicableIssues = GetApplicableIssues(await issuesTask, failure);
 
@@ -178,7 +183,7 @@ namespace TriageBuildFailures.Handlers
         private IEnumerable<GithubIssue> GetApplicableIssues(IEnumerable<GithubIssue> issues, TestOccurrence failure)
         {
             var testError = TCClient.GetTestFailureText(failure);
-            var testException = ErrorParsing.GetExceptionMessage(testError);
+            var testException = SafeGetExceptionMessage(testError); ;
             var shortTestName = GetTestName(failure);
 
             var applicableIssues = new List<GithubIssue>();

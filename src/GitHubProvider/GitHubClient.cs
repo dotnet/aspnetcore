@@ -145,7 +145,7 @@ namespace GitHubProvider
                 var tempComments = Path.Combine("Comments", issue.Id.ToString());
                 Directory.CreateDirectory(tempComments);
 
-                using (var fileStream = File.CreateText(Path.Combine(tempComments, Path.GetRandomFileName())))
+                using (var fileStream = File.CreateText(Path.Combine(tempComments, $"{Path.GetRandomFileName()}.txt")))
                 {
                     fileStream.Write(comment);
                 }
@@ -156,7 +156,6 @@ namespace GitHubProvider
                 await MakeGithubRequest(HttpMethod.Post, $"repos/aspnet/{issue.RepositoryName}/issues/{issue.Number}/comments", body);
             }
         }
-
 
         public async Task<GithubIssue> CreateIssue(string repo, string subject, string body, IEnumerable<string> labels)
         {
