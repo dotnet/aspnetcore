@@ -8,7 +8,6 @@ using Identity.DefaultUI.WebSite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
@@ -30,6 +29,29 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             // Arrange
             var client = ServerFactory.CreateClient();
             var newClient = ServerFactory.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Use a new client to simulate a new browser session.
+            await UserStories.LoginExistingUserAsync(newClient, userName, password);
+        }
+
+        [Fact]
+        public async Task CanLogInWithAPreviouslyRegisteredUser_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupGlobalAuthorizeFilter();
+
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
@@ -65,8 +87,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public async Task CanLogInWithTwoFactorAuthentication_WithGlobalAuthorizeFilter()
         {
             // Arrange
-            var client = ServerFactory.CreateClient();
-            var newClient = ServerFactory.CreateClient();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupGlobalAuthorizeFilter();
+
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
@@ -130,11 +158,35 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public async Task CannotLogInWithoutRequiredEmailConfirmation()
         {
             // Arrange
-
             var emailSender = new ContosoEmailSender();
             void ConfigureTestServices(IServiceCollection services) => services
                     .SetupTestEmailSender(emailSender)
                     .SetupEmailRequired();
+
+            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Act & Assert
+            // Use a new client to simulate a new browser session.
+            await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
+        }
+
+        [Fact]
+        public async Task CannotLogInWithoutRequiredEmailConfirmation_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            var emailSender = new ContosoEmailSender();
+            void ConfigureTestServices(IServiceCollection services) => services
+                    .SetupTestEmailSender(emailSender)
+                    .SetupEmailRequired()
+                    .SetupGlobalAuthorizeFilter();
 
             var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
@@ -179,11 +231,61 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         [Fact]
+        public async Task CanLogInAfterConfirmingEmail_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            var emailSender = new ContosoEmailSender();
+            void ConfigureTestServices(IServiceCollection services) => services
+                .SetupTestEmailSender(emailSender)
+                .SetupEmailRequired()
+                .SetupGlobalAuthorizeFilter();
+
+            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Act & Assert
+            // Use a new client to simulate a new browser session.
+            var email = Assert.Single(emailSender.SentEmails);
+            await UserStories.ConfirmEmailAsync(email, newClient);
+
+            await UserStories.LoginExistingUserAsync(newClient, userName, password);
+        }
+
+        [Fact]
         public async Task CanLoginWithASocialLoginProvider()
         {
             // Arrange
             void ConfigureTestServices(IServiceCollection services) =>
                 services.SetupTestThirdPartyLogin();
+
+            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+            await UserStories.LoginWithSocialLoginAsync(newClient, userName);
+        }
+
+        [Fact]
+        public async Task CanLoginWithASocialLoginProvider_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) => services
+                .SetupTestThirdPartyLogin()
+                .SetupGlobalAuthorizeFilter();
 
             var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 

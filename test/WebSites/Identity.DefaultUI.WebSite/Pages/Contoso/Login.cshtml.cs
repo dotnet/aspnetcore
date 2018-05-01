@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace Identity.DefaultUI.WebSite.Pages
 {
+    [AllowAnonymous]
     public class LoginModel : PageModel
     {
         public LoginModel(IOptionsMonitor<ContosoAuthenticationOptions> options)
