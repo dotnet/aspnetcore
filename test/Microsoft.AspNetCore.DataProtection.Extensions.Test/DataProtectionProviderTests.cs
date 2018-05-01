@@ -7,9 +7,16 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.DataProtection.Internal;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection
@@ -42,49 +49,42 @@ namespace Microsoft.AspNetCore.DataProtection
         [Fact]
         public void System_NoKeysDirectoryProvided_UsesDefaultKeysDirectory()
         {
-            Assert.NotNull(FileSystemXmlRepository.DefaultKeyStorageDirectory);
+            var mock = new Mock<IDefaultKeyStorageDirectories>();
+            var keysPath = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName());
+            mock.Setup(m => m.GetKeyStorageDirectory()).Returns(new DirectoryInfo(keysPath));
 
-            var keysPath = FileSystemXmlRepository.DefaultKeyStorageDirectory.FullName;
-            var tempPath = FileSystemXmlRepository.DefaultKeyStorageDirectory.FullName + Path.GetRandomFileName();
-
-            try
+            // Step 1: Instantiate the system and round-trip a payload
+            var provider = DataProtectionProvider.CreateProvider(
+                keyDirectory: null,
+                certificate: null,
+                setupAction: builder =>
             {
-                // Step 1: Move the current contents, if any, to a temporary directory.
-                if (Directory.Exists(keysPath))
-                {
-                    Directory.Move(keysPath, tempPath);
-                }
+                builder.SetApplicationName("TestApplication");
+                builder.Services.AddSingleton<IKeyManager>(s =>
+                    new XmlKeyManager(
+                        s.GetRequiredService<IOptions<KeyManagementOptions>>(),
+                        s.GetRequiredService<IActivator>(),
+                        NullLoggerFactory.Instance,
+                        mock.Object));
+            });
 
-                // Step 2: Instantiate the system and round-trip a payload
-                var protector = DataProtectionProvider.Create("TestApplication").CreateProtector("purpose");
-                Assert.Equal("payload", protector.Unprotect(protector.Protect("payload")));
+            var protector = provider.CreateProtector("Protector");
+            Assert.Equal("payload", protector.Unprotect(protector.Protect("payload")));
 
-                // Step 3: Validate that there's now a single key in the directory
-                var newFileName = Assert.Single(Directory.GetFiles(keysPath));
-                var file = new FileInfo(newFileName);
-                Assert.StartsWith("key-", file.Name, StringComparison.OrdinalIgnoreCase);
-                var fileText = File.ReadAllText(file.FullName);
-                // On Windows, validate that it's protected using Windows DPAPI.
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
-                    Assert.Contains("This key is encrypted with Windows DPAPI.", fileText, StringComparison.Ordinal);
-                }
-                else
-                {
-                    Assert.Contains("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
-                }
+            // Step 2: Validate that there's now a single key in the directory
+            var newFileName = Assert.Single(Directory.GetFiles(keysPath));
+            var file = new FileInfo(newFileName);
+            Assert.StartsWith("key-", file.Name, StringComparison.OrdinalIgnoreCase);
+            var fileText = File.ReadAllText(file.FullName);
+            // On Windows, validate that it's protected using Windows DPAPI.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
+                Assert.Contains("This key is encrypted with Windows DPAPI.", fileText, StringComparison.Ordinal);
             }
-            finally
+            else
             {
-                if (Directory.Exists(keysPath))
-                {
-                    Directory.Delete(keysPath, recursive: true);
-                }
-                if (Directory.Exists(tempPath))
-                {
-                    Directory.Move(tempPath, keysPath);
-                }
+                Assert.Contains("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
             }
         }
 

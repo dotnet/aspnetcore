@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.DataProtection
             return CreateProvider(keyDirectory, setupAction, certificate);
         }
 
-        private static IDataProtectionProvider CreateProvider(
+        internal static IDataProtectionProvider CreateProvider(
             DirectoryInfo keyDirectory,
             Action<IDataProtectionBuilder> setupAction,
             X509Certificate2 certificate)
