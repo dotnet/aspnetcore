@@ -66,18 +66,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{E8EBA72C-D555-43AE-BC98-F0B2D05F6A07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorStandalone.CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorStandalone.CSharp\BlazorStandalone.CSharp.csproj", "{A092FA91-856B-4ACA-B1C2-10BDBA366185}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorStandalone-CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorStandalone-CSharp\BlazorStandalone-CSharp.csproj", "{A092FA91-856B-4ACA-B1C2-10BDBA366185}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorHosted.CSharp", "BlazorHosted.CSharp", "{73DA1DFD-79F0-4BA2-B0B6-4F3A21D2C3F8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorHosted-CSharp", "BlazorHosted-CSharp", "{73DA1DFD-79F0-4BA2-B0B6-4F3A21D2C3F8}"
 	ProjectSection(SolutionItems) = preProject
-		src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\global.json = src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\global.json
+		src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted-CSharp\global.json = src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted-CSharp\global.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted.CSharp.Client", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\BlazorHosted.CSharp.Client\BlazorHosted.CSharp.Client.csproj", "{7549444A-9C81-44DE-AD0D-2C55501EAAC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted-CSharp.Client", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted-CSharp\BlazorHosted-CSharp.Client\BlazorHosted-CSharp.Client.csproj", "{7549444A-9C81-44DE-AD0D-2C55501EAAC7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted.CSharp.Server", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\BlazorHosted.CSharp.Server\BlazorHosted.CSharp.Server.csproj", "{78ED9932-0912-4F36-8F82-33DE850E7A33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted-CSharp.Server", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted-CSharp\BlazorHosted-CSharp.Server\BlazorHosted-CSharp.Server.csproj", "{78ED9932-0912-4F36-8F82-33DE850E7A33}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted.CSharp.Shared", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted.CSharp\BlazorHosted.CSharp.Shared\BlazorHosted.CSharp.Shared.csproj", "{F3E02B21-1127-431A-B832-0E53CB72097B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted-CSharp.Shared", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorHosted-CSharp\BlazorHosted-CSharp.Shared\BlazorHosted-CSharp.Shared.csproj", "{F3E02B21-1127-431A-B832-0E53CB72097B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Razor.Extensions.Test", "test\Microsoft.AspNetCore.Blazor.Razor.Extensions.Test\Microsoft.AspNetCore.Blazor.Razor.Extensions.Test.csproj", "{FF25111E-5A3E-48A3-96D8-08A2C5A2A91C}"
 EndProject
@@ -93,7 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Performance", "benchmarks\Microsoft.AspNetCore.Blazor.Performance\Microsoft.AspNetCore.Blazor.Performance.csproj", "{50F6820F-D058-4E68-9E15-801F893F514E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorLibrary.CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorLibrary.CSharp\BlazorLibrary.CSharp.csproj", "{3A457B14-D91B-4FFF-A81A-8F350BDB911F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorLibrary-CSharp", "src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorLibrary-CSharp\BlazorLibrary-CSharp.csproj", "{3A457B14-D91B-4FFF-A81A-8F350BDB911F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RestoreSources Condition="'$(IncludeCustomRestoreSourcesSymbol)'=='true'">
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+      https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
+    </RestoreSources>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="$(TemplateBlazorPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="$(TemplateBlazorPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorHosted-CSharp.Shared\BlazorHosted-CSharp.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
