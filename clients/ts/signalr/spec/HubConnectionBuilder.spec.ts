@@ -197,15 +197,15 @@ class TestProtocol implements IHubProtocol {
     public name: string = "test";
     public version: number = 1;
     public transferFormat: TransferFormat = TransferFormat.Text;
-    public parseMessages(input: any, logger: ILogger): HubMessage[] {
+    public parseMessages(input: string | ArrayBuffer, logger: ILogger): HubMessage[] {
         throw new Error("Method not implemented.");
     }
-    public writeMessage(message: HubMessage) {
+    public writeMessage(message: HubMessage): string | ArrayBuffer {
         throw new Error("Method not implemented.");
     }
 }
 
-function createConnectionBuilder(logger?: ILogger | LogLevel): HubConnectionBuilder {
+function createConnectionBuilder(logger?: ILogger): HubConnectionBuilder {
     // We don't want to spam test output with logs. This can be changed as needed
     return new HubConnectionBuilder()
         .configureLogging(logger || NullLogger.instance);

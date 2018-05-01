@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 // Everything that users need to access must be exported here. Including interfaces.
-export * from "./Errors";
-export * from "./HttpClient";
-export * from "./IHttpConnectionOptions";
-export * from "./HubConnection";
-export * from "./HubConnectionBuilder";
-export * from "./IHubProtocol";
-export * from "./ILogger";
-export * from "./ITransport";
-export * from "./Stream";
-export * from "./Loggers";
-export * from "./JsonHubProtocol";
+export { AbortSignal } from "./AbortController";
+export { HttpError, TimeoutError } from "./Errors";
+export { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
+export { IHttpConnectionOptions } from "./IHttpConnectionOptions";
+export { HubConnection } from "./HubConnection";
+export { HubConnectionBuilder } from "./HubConnectionBuilder";
+export { MessageType, MessageHeaders, HubMessage, HubMessageBase, HubInvocationMessage, InvocationMessage, StreamInvocationMessage, StreamItemMessage, CompletionMessage, PingMessage, CloseMessage, CancelInvocationMessage, IHubProtocol } from "./IHubProtocol";
+export { ILogger, LogLevel } from "./ILogger";
+export { HttpTransportType, TransferFormat, ITransport } from "./ITransport";
+export { IStreamSubscriber, IStreamResult, ISubscription } from "./Stream";
+export { NullLogger } from "./Loggers";
+export { JsonHubProtocol } from "./JsonHubProtocol";
