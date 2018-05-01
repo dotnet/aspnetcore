@@ -14,6 +14,8 @@ namespace TriageBuildFailures.Handlers
     {
         public override bool CanHandleFailure(TeamCityBuild build)
         {
+            // TODO: Have an allowlist of projects which don't contain MSRC configs.
+            // If anything NOT on that allowlist fails, this FailureHandler should send it straight to my inbox.
             return build.BuildTypeID.Contains("MSRC", StringComparison.InvariantCultureIgnoreCase);
         }
 

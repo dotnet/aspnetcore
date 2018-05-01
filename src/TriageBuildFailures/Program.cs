@@ -78,7 +78,7 @@ namespace TriageBuildFailures
         /// <returns></returns>
         private async Task HandleFailure(TeamCityBuild build)
         {
-            var handlers = new List<HandleFailureBase> { new HandleLowValueBuilds(), new HandleMSRCBuilds(),
+            var handlers = new List<HandleFailureBase> { new HandleMSRCBuilds(), new HandleLowValueBuilds(),
                 new HandleUniverseMovedOn(), new HandleTestFailures(),
                 new HandleBuildTimeFailures(), new HandleUnhandled() };
 
