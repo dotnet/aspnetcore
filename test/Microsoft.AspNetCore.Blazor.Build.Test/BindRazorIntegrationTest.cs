@@ -25,10 +25,10 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public int Value { get; set; }
+        int Value { get; set; }
 
         [Parameter]
-        public Action<int> ValueChanged { get; set; }
+        Action<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -99,10 +99,10 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public int Value { get; set; }
+        int Value { get; set; }
 
         [Parameter]
-        public Action<int> OnChanged { get; set; }
+        Action<int> OnChanged { get; set; }
     }
 }"));
 

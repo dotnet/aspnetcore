@@ -119,10 +119,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Text(frame, typeof(MyService2Impl).FullName));
         }
 
-        public class TestLayout : ILayoutComponent
+        public class TestLayout : IComponent
         {
             [Parameter]
-            public RenderFragment Body { get; set; }
+            RenderFragment Body { get; set; }
 
             public void Init(RenderHandle renderHandle)
             {

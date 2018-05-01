@@ -1,7 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Reflection;
+using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Blazor.Components
@@ -11,6 +16,13 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// </summary>
     public static class ParameterCollectionExtensions
     {
+        private const BindingFlags _bindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
+
+        private delegate void WriteParameterAction(ref RenderTreeFrame frame, object target);
+
+        private readonly static IDictionary<Type, IDictionary<string, WriteParameterAction>> _cachedParameterWriters
+            = new ConcurrentDictionary<Type, IDictionary<string, WriteParameterAction>>();
+
         /// <summary>
         /// Iterates through the <see cref="ParameterCollection"/>, assigning each parameter
         /// to a property of the same name on <paramref name="target"/>.
@@ -26,54 +38,89 @@ namespace Microsoft.AspNetCore.Blazor.Components
                 throw new ArgumentNullException(nameof(target));
             }
 
+            var targetType = target.GetType();
+            if (!_cachedParameterWriters.TryGetValue(targetType, out var parameterWriters))
+            {
+                parameterWriters = CreateParameterWriters(targetType);
+                _cachedParameterWriters[targetType] = parameterWriters;
+            }
+
             foreach (var parameter in parameterCollection)
             {
-                AssignToProperty(target, parameter);
+                var parameterName = parameter.Name;
+                if (!parameterWriters.TryGetValue(parameterName, out var parameterWriter))
+                {
+                    ThrowForUnknownIncomingParameterName(targetType, parameterName);
+                }
+
+                try
+                {
+                    parameterWriter(ref parameter.Frame, target);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to set property '{parameterName}' on object of " +
+                        $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
+                }
             }
         }
 
-        private static void AssignToProperty(object target, Parameter parameter)
+        private static IDictionary<string, WriteParameterAction> CreateParameterWriters(Type targetType)
         {
-            // TODO: Don't just use naive reflection like this. Possible ways to make it faster:
-            // (a) Create and cache a property-assigning open delegate for each (target type,
-            //     property name) pair, e.g., using propertyInfo.GetSetMethod().CreateDelegate(...)
-            //     That's much faster than caching the PropertyInfo, at least on JIT-enabled platforms.
-            // (b) Or possibly just code-gen an IComponent.SetParameters implementation for each
-            //     Razor component. However that might not work well with code-behind inheritance,
-            //     because the code-behind wouldn't be able to override it.
+            var result = new Dictionary<string, WriteParameterAction>(StringComparer.OrdinalIgnoreCase);
 
-            var propertyInfo = GetPropertyInfo(target.GetType(), parameter.Name);
-            try
+            foreach (var propertyInfo in GetBindableProperties(targetType))
             {
-                propertyInfo.SetValue(target, parameter.Value);
+                var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
+
+                var propertyName = propertyInfo.Name;
+                if (result.ContainsKey(propertyName))
+                {
+                    throw new InvalidOperationException(
+                        $"The type '{targetType.FullName}' declares more than one parameter matching the " +
+                        $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
+                }
+
+                result.Add(propertyName, (ref RenderTreeFrame frame, object target) =>
+                {
+                    propertySetter.SetValue(target, frame.AttributeValue);
+                });
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to set property '{parameter.Name}' on object of " +
-                    $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
-            }
+
+            return result;
         }
 
-        private static PropertyInfo GetPropertyInfo(Type targetType, string propertyName)
+        private static IEnumerable<PropertyInfo> GetBindableProperties(Type targetType)
+            => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags)
+                .Where(property => property.IsDefined(typeof(ParameterAttribute)));
+
+        private static void ThrowForUnknownIncomingParameterName(Type targetType, string parameterName)
         {
-            var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
-            var property = targetType.GetProperty(propertyName, flags);
-            if (property == null)
+            // We know we're going to throw by this stage, so it doesn't matter that the following
+            // reflection code will be slow. We're just trying to help developers see what they did wrong.
+            var propertyInfo = targetType.GetProperty(parameterName, _bindablePropertyFlags);
+            if (propertyInfo != null)
+            {
+                if (!propertyInfo.IsDefined(typeof(ParameterAttribute)))
+                {
+                    throw new InvalidOperationException(
+                        $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
+                        $"but it does not have [{nameof(ParameterAttribute)}] applied.");
+                }
+                else
+                {
+                    // This should not happen
+                    throw new InvalidOperationException(
+                        $"No writer was cached for the property '{propertyInfo.Name}' on type '{targetType.FullName}'.");
+                }
+            }
+            else
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' does not have a property " +
-                    $"matching the name '{propertyName}'.");
+                    $"matching the name '{parameterName}'.");
             }
-
-            if (!property.IsDefined(typeof(ParameterAttribute)))
-            {
-                throw new InvalidOperationException(
-                    $"Object of type '{targetType.FullName}' has a property matching the name '{propertyName}', " +
-                    $"but it does not have [{nameof(ParameterAttribute)}] applied.");
-            }
-
-            return property;
         }
     }
 }

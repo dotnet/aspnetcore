@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Blazor.Shared
 {
     // Constants for method names used in code-generation
     // Keep these in sync with the actual definitions

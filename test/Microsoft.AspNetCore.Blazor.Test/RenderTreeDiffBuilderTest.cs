@@ -1504,19 +1504,19 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class FakeComponent : IComponent
         {
             [Parameter]
-            public int IntProperty { get; set; }
+            internal int IntProperty { get; set; }
 
             [Parameter]
-            public string StringProperty { get; set; }
+            internal string StringProperty { get; set; }
 
             [Parameter]
-            public object ObjectProperty { get; set; }
+            internal object ObjectProperty { get; set; }
 
             [Parameter]
-            public string ReadonlyProperty { get; private set; }
+            internal string ReadonlyProperty { get; private set; }
 
             [Parameter]
-            private string PrivateProperty { get; set; }
+            string PrivateProperty { get; set; }
 
             public string NonParameterProperty { get; set; }
 

@@ -170,6 +170,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             () => "Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information see https://go.microsoft.com/fwlink/?linkid=872131",
             RazorDiagnosticSeverity.Error);
 
+        // Reserved: BL9993 Component parameters should not be public
+
         public static RazorDiagnostic Create_DisallowedScriptTag(SourceSpan? source)
         {
             var diagnostic = RazorDiagnostic.Create(DisallowedScriptTag, source ?? SourceSpan.Undefined);

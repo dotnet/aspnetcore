@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange/Act
             _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
-                { nameof(LayoutDisplay.Page), typeof(ComponentWithLayout) }
+                { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
             });
 
             // Assert
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange/Act
             _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
-                { nameof(LayoutDisplay.Page), typeof(ComponentWithNestedLayout) }
+                { LayoutDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
             });
 
             // Assert
@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
-                { nameof(LayoutDisplay.Page), typeof(ComponentWithLayout) }
+                { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
             });
 
             // Act
             _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
-                { nameof(LayoutDisplay.Page), typeof(DifferentComponentWithLayout) }
+                { LayoutDisplay.NameOfPage, typeof(DifferentComponentWithLayout) }
             });
 
             // Assert
@@ -165,13 +165,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
-                { nameof(LayoutDisplay.Page), typeof(ComponentWithLayout) }
+                { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
             });
 
             // Act
             _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
-                { nameof(LayoutDisplay.Page), typeof(ComponentWithNestedLayout) }
+                { LayoutDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
             });
 
             // Assert
@@ -218,10 +218,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 });
         }
 
-        private class RootLayout : AutoRenderComponent, ILayoutComponent
+        private class RootLayout : AutoRenderComponent
         {
             [Parameter]
-            public RenderFragment Body { get; set; }
+            RenderFragment Body { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -232,10 +232,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Layout(typeof(RootLayout))]
-        private class NestedLayout : AutoRenderComponent, ILayoutComponent
+        private class NestedLayout : AutoRenderComponent
         {
             [Parameter]
-            public RenderFragment Body { get; set; }
+            RenderFragment Body { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {

@@ -28,7 +28,7 @@ namespace Test
         public void SetParameters(ParameterCollection parameters) { }
 
         [Parameter]
-        public string MyProperty { get; set; }
+        private string MyProperty { get; set; }
     }
 }
 
@@ -138,7 +138,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public string MyProperty { get; set; }
+        string MyProperty { get; set; }
     }
 }
 
@@ -179,7 +179,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public bool MyProperty { get; set; }
+        bool MyProperty { get; set; }
     }
 }
 
@@ -231,7 +231,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public MyEnum MyProperty { get; set; }
+        MyEnum MyProperty { get; set; }
     }
 }
 
@@ -279,7 +279,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public Action<UIMouseEventArgs> OnClick { get; set; }
+        Action<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 
@@ -326,18 +326,21 @@ namespace Test
     public abstract class MyBase : BlazorComponent
     {
         [Parameter]
-        public string Hidden { get; set; }
+        protected string Hidden { get; set; }
     }
 
     public class MyComponent : MyBase
     {
         [Parameter]
-        public string NoPublicGetter { private get; set; }
+        string NoSetter { get; }
+
+        [Parameter]
+        static string StaticProperty { get; set; }
 
         public string NoParameterAttribute { get; set; }
 
         // No attribute here, hides base-class property of the same name.
-        public new int Hidden { get; set; }
+        protected new int Hidden { get; set; }
 
         public string this[int i]
         {

@@ -1110,7 +1110,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class MessageComponent : AutoRenderComponent
         {
             [Parameter]
-            public string Message { get; set; }
+            internal string Message { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -1121,13 +1121,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class FakeComponent : IComponent
         {
             [Parameter]
-            public int IntProperty { get; set; }
+            internal int IntProperty { get; private set; }
 
             [Parameter]
-            public string StringProperty { get; set; }
+            internal string StringProperty { get; private set; }
 
             [Parameter]
-            public object ObjectProperty { get; set; }
+            internal object ObjectProperty { get; set; }
 
             public RenderHandle RenderHandle { get; private set; }
 
@@ -1141,13 +1141,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class EventComponent : AutoRenderComponent, IComponent, IHandleEvent
         {
             [Parameter]
-            public Action<UIEventArgs> OnTest { get; set; }
+            internal Action<UIEventArgs> OnTest { get; set; }
 
             [Parameter]
-            public Action<UIMouseEventArgs> OnClick { get; set; }
+            internal Action<UIMouseEventArgs> OnClick { get; set; }
 
             [Parameter]
-            public Action OnClickAction { get; set; }
+            internal Action OnClickAction { get; set; }
 
             public bool SkipElement { get; set; }
             private int renderCount = 0;
@@ -1187,10 +1187,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class ConditionalParentComponent<T> : AutoRenderComponent where T : IComponent
         {
             [Parameter]
-            public bool IncludeChild { get; set; }
+            internal bool IncludeChild { get; set; }
 
             [Parameter]
-            public IDictionary<string, object> ChildParameters { get; set; }
+            internal IDictionary<string, object> ChildParameters { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -1215,7 +1215,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class ReRendersParentComponent : AutoRenderComponent
         {
             [Parameter]
-            public TestComponent Parent { get; set; }
+            internal TestComponent Parent { get; private set; }
+
             private bool _isFirstTime = true;
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -1233,7 +1234,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class RendersSelfAfterEventComponent : IComponent, IHandleEvent
         {
             [Parameter]
-            public Action<object> OnClick { get; set; }
+            Action<object> OnClick { get; set; }
 
             private RenderHandle _renderHandle;
 

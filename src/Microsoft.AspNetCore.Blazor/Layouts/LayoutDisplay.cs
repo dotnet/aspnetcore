@@ -15,6 +15,9 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
     /// </summary>
     public class LayoutDisplay : IComponent
     {
+        internal const string NameOfPage = nameof(Page);
+        internal const string NameOfPageParameters = nameof(PageParameters);
+
         private RenderHandle _renderHandle;
 
         /// <summary>
@@ -22,13 +25,13 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
         /// The type must implement <see cref="IComponent"/>.
         /// </summary>
         [Parameter]
-        public Type Page { get; set; }
+        Type Page { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters to pass to the page.
         /// </summary>
         [Parameter]
-        public IDictionary<string, object> PageParameters { get; set; }
+        IDictionary<string, object> PageParameters { get; set; }
 
         /// <inheritdoc />
         public void Init(RenderHandle renderHandle)
@@ -64,7 +67,7 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
             builder.OpenComponent(0, componentType);
             if (bodyParam != null)
             {
-                builder.AddAttribute(1, nameof(ILayoutComponent.Body), bodyParam);
+                builder.AddAttribute(1, BlazorLayoutComponent.BodyPropertyName, bodyParam);
             }
             else
             {

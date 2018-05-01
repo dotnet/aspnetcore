@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Reflection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -56,26 +57,14 @@ namespace Microsoft.AspNetCore.Blazor.Components
         {
             // Do all the reflection up front
             var injectableProperties =
-                GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags)
+                MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags)
                 .Where(p => p.GetCustomAttribute<InjectAttribute>() != null);
             var injectables = injectableProperties.Select(property =>
-            {
-                if (property.SetMethod == null)
-                {
-                    throw new InvalidOperationException($"Cannot provide a value for property " +
-                        $"'{property.Name}' on type '{type.FullName}' because the property " +
-                        $"has no setter.");
-                }
-
-                return
-                (
-                    propertyName: property.Name,
-                    propertyType: property.PropertyType,
-                    setter: (IPropertySetter)Activator.CreateInstance(
-                        typeof(PropertySetter<,>).MakeGenericType(type, property.PropertyType),
-                        property.SetMethod)
-                );
-            }).ToArray();
+            (
+                propertyName: property.Name,
+                propertyType: property.PropertyType,
+                setter: MemberAssignment.CreatePropertySetter(type, property)
+            )).ToArray();
 
             // Return an action whose closure can write all the injected properties
             // without any further reflection calls (just typecasts)
@@ -94,41 +83,6 @@ namespace Microsoft.AspNetCore.Blazor.Components
                     injectable.setter.SetValue(instance, serviceInstance);
                 }
             };
-        }
-
-        private interface IPropertySetter
-        {
-            void SetValue(object target, object value);
-        }
-
-        private class PropertySetter<TTarget, TValue> : IPropertySetter
-        {
-            private readonly Action<TTarget, TValue> _setterDelegate;
-
-            public PropertySetter(MethodInfo setMethod)
-            {
-                _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
-                    typeof(Action<TTarget, TValue>), setMethod);
-            }
-
-            public void SetValue(object target, object value)
-                => _setterDelegate((TTarget)target, (TValue)value);
-        }
-
-        private static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
-            Type type, BindingFlags bindingFlags)
-        {
-            while (type != null)
-            {
-                var properties = type.GetProperties(bindingFlags)
-                    .Where(prop => prop.DeclaringType == type);
-                foreach (var property in properties)
-                {
-                    yield return property;
-                }
-
-                type = type.BaseType;
-            }
         }
     }
 }

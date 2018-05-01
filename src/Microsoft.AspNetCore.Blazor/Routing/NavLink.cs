@@ -39,13 +39,13 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// current route matches the NavLink href.
         /// </summary>
         [Parameter]
-        public string ActiveClass { get; set; }
+        string ActiveClass { get; set; }
 
         /// <summary>
         /// Gets or sets a value representing the URL matching behavior.
         /// </summary>
         [Parameter]
-        public NavLinkMatch Match { get; set; }
+        NavLinkMatch Match { get; set; }
 
         [Inject] private IUriHelper UriHelper { get; set; }
 

@@ -7,6 +7,7 @@
     <description>Build mechanism for Blazor applications.</description>
     <dependencies>
       <dependency id="Microsoft.AspNetCore.Razor.Design" version="$razorversion$" include="all" />
+      <dependency id="Microsoft.AspNetCore.Blazor.Analyzers" version="$version$" include="all" />
     </dependencies>
   </metadata>
   <files>

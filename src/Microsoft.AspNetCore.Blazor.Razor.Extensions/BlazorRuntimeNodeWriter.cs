@@ -8,6 +8,7 @@ using System.Text;
 using AngleSharp;
 using AngleSharp.Html;
 using AngleSharp.Parser.Html;
+using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;

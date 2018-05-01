@@ -31,5 +31,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// </summary>
         public object Value
             => _frames[_frameIndex].AttributeValue;
+
+        /// <summary>
+        /// Gets the <see cref="RenderTreeFrame" /> that holds the parameter name and value.
+        /// </summary>
+        internal ref RenderTreeFrame Frame
+            => ref _frames[_frameIndex];
     }
 }

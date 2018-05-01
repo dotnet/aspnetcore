@@ -1,4 +1,4 @@
-@implements ILayoutComponent
+@inherits BlazorLayoutComponent
 
 <div class="sidebar">
     <NavMenu />
@@ -13,7 +13,3 @@
         @Body
     </div>
 </div>
-
-@functions {
-    public RenderFragment Body { get; set; }
-}

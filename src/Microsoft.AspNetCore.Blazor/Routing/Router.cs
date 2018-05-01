@@ -29,8 +29,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         /// Gets or sets the assembly that should be searched, along with its referenced
         /// assemblies, for components matching the URI.
         /// </summary>
-        [Parameter]
-        public Assembly AppAssembly { get; set; }
+        [Parameter] private Assembly AppAssembly { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -70,8 +69,8 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         protected virtual void Render(RenderTreeBuilder builder, Type handler, IDictionary<string, object> parameters)
         {
             builder.OpenComponent(0, typeof(LayoutDisplay));
-            builder.AddAttribute(1, nameof(LayoutDisplay.Page), handler);
-            builder.AddAttribute(2, nameof(LayoutDisplay.PageParameters), parameters);
+            builder.AddAttribute(1, LayoutDisplay.NameOfPage, handler);
+            builder.AddAttribute(2, LayoutDisplay.NameOfPageParameters, parameters);
             builder.CloseComponent();
         }
 

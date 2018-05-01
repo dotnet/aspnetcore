@@ -57,10 +57,10 @@ namespace Test
 
     public class MyComponent : BlazorComponent
     {
-        [Parameter] public int IntProperty { get; set; }
-        [Parameter] public bool BoolProperty { get; set; }
-        [Parameter] public string StringProperty { get; set; }
-        [Parameter] public SomeType ObjectProperty { get; set; }
+        [Parameter] int IntProperty { get; set; }
+        [Parameter] bool BoolProperty { get; set; }
+        [Parameter] string StringProperty { get; set; }
+        [Parameter] SomeType ObjectProperty { get; set; }
     }
 }
 "));
@@ -132,7 +132,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public string StringProperty { get; set; }
+        string StringProperty { get; set; }
     }
 }
 "));
@@ -206,7 +206,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public Action<UIMouseEventArgs> OnClick { get; set; }
+        Action<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -254,7 +254,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public Action<UIEventArgs> OnClick { get; set; }
+        Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -301,7 +301,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public bool BoolProperty { get; set; }
+        bool BoolProperty { get; set; }
     }
 }"));
 
@@ -331,10 +331,10 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public string MyAttr { get; set; }
+        string MyAttr { get; set; }
 
         [Parameter]
-        public RenderFragment ChildContent { get; set; }
+        RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -376,7 +376,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public RenderFragment ChildContent { get; set; }
+        RenderFragment ChildContent { get; set; }
     }
 }
 "));

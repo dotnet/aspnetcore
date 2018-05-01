@@ -51,10 +51,10 @@ namespace Test
 
     public class MyComponent : BlazorComponent
     {
-        [Parameter] public int IntProperty { get; set; }
-        [Parameter] public bool BoolProperty { get; set; }
-        [Parameter] public string StringProperty { get; set; }
-        [Parameter] public SomeType ObjectProperty { get; set; }
+        [Parameter] int IntProperty { get; set; }
+        [Parameter] bool BoolProperty { get; set; }
+        [Parameter] string StringProperty { get; set; }
+        [Parameter] SomeType ObjectProperty { get; set; }
     }
 }
 "));
@@ -86,7 +86,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public string StringProperty { get; set; }
+        string StringProperty { get; set; }
     }
 }
 "));
@@ -143,7 +143,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public Action<UIEventArgs> OnClick { get; set; }
+        Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -180,7 +180,7 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public Action<UIEventArgs> OnClick { get; set; }
+        Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -217,10 +217,10 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public string MyAttr { get; set; }
+        string MyAttr { get; set; }
 
         [Parameter]
-        public RenderFragment ChildContent { get; set; }
+        RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -641,10 +641,10 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public int Value { get; set; }
+        int Value { get; set; }
 
         [Parameter]
-        public Action<int> ValueChanged { get; set; }
+        Action<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -707,10 +707,10 @@ namespace Test
     public class MyComponent : BlazorComponent
     {
         [Parameter]
-        public int Value { get; set; }
+        int Value { get; set; }
 
         [Parameter]
-        public Action<int> OnChanged { get; set; }
+        Action<int> OnChanged { get; set; }
     }
 }"));
             // Act
