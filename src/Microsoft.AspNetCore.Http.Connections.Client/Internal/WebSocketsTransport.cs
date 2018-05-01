@@ -32,12 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         public PipeWriter Output => _transport.Output;
 
-        public WebSocketsTransport()
-            : this(null, null)
-        {
-        }
-
-        public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string>> accessTokenProvider)
         {
             _webSocket = new ClientWebSocket();
 
@@ -79,11 +74,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     _webSocket.Options.UseDefaultCredentials = httpConnectionOptions.UseDefaultCredentials.Value;
                 }
 
-                if (httpConnectionOptions.AccessTokenProvider != null)
-                {
-                    _accessTokenProvider = httpConnectionOptions.AccessTokenProvider;
-                }
-
                 httpConnectionOptions.WebSocketConfiguration?.Invoke(_webSocket.Options);
 
                 _closeTimeout = httpConnectionOptions.CloseTimeout;
@@ -94,6 +84,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _webSocket.Options.SetRequestHeader("X-Requested-With", "XMLHttpRequest");
 
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
+
+            // Ignore the HttpConnectionOptions access token provider. We were given an updated delegate from the HttpConnection.
+            _accessTokenProvider = accessTokenProvider;
         }
 
         public async Task StartAsync(Uri url, TransferFormat transferFormat)
@@ -116,10 +109,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
+            // We don't need to capture to a local because we never change this delegate.
             if (_accessTokenProvider != null)
             {
                 var accessToken = await _accessTokenProvider();
-                _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                }
             }
 
             await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);

@@ -19,15 +19,17 @@ export class LongPollingTransport implements ITransport {
     private url: string;
     private pollXhr: XMLHttpRequest;
     private pollAbort: AbortController;
+    private shutdownTimer: any; // We use 'any' because this is an object in NodeJS. But it still gets passed to clearTimeout, so it doesn't really matter
     private shutdownTimeout: number;
     private running: boolean;
 
-    constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean) {
+    constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean, shutdownTimeout?: number) {
         this.httpClient = httpClient;
         this.accessTokenFactory = accessTokenFactory || (() => null);
         this.logger = logger;
         this.pollAbort = new AbortController();
         this.logMessageContent = logMessageContent;
+        this.shutdownTimeout = shutdownTimeout || SHUTDOWN_TIMEOUT;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -107,7 +109,7 @@ export class LongPollingTransport implements ITransport {
                         this.logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server");
 
                         // If we were on a timeout waiting for shutdown, unregister it.
-                        clearTimeout(this.shutdownTimeout);
+                        clearTimeout(this.shutdownTimer);
 
                         this.running = false;
                     } else if (response.statusCode !== 200) {
@@ -179,10 +181,10 @@ export class LongPollingTransport implements ITransport {
         } finally {
             // Abort the poll after 5 seconds if the server doesn't stop it.
             if (!this.pollAbort.aborted) {
-                this.shutdownTimeout = setTimeout(SHUTDOWN_TIMEOUT, () => {
-                    this.logger.log(LogLevel.Warning, "(LongPolling transport) server did not terminate within 5 seconds after DELETE request, cancelling poll.");
+                this.shutdownTimer = setTimeout(() => {
+                    this.logger.log(LogLevel.Warning, "(LongPolling transport) server did not terminate after DELETE request, canceling poll.");
                     this.pollAbort.abort();
-                });
+                }, this.shutdownTimeout);
             }
         }
     }

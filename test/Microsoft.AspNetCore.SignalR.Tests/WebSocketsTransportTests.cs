@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             httpOptions.Proxy = Mock.Of<IWebProxy>();
             httpOptions.WebSocketConfiguration = options => webSocketsOptions = options;
 
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null);
             Assert.NotNull(webSocketsTransport);
 
             Assert.NotNull(webSocketsOptions);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog(out var loggerFactory))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/echo"),
                     TransferFormat.Binary).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog(out var loggerFactory))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/httpheader"),
                     TransferFormat.Binary).OrTimeout();
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog(out var loggerFactory))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/httpheader"),
                     TransferFormat.Binary).OrTimeout();
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog(out var loggerFactory))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/echo"),
                     TransferFormat.Binary);
                 webSocketsTransport.Output.Complete();
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog(out var loggerFactory))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/echoAndClose"), transferFormat);
 
                 await webSocketsTransport.Output.WriteAsync(new byte[] { 0x42 });
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog(out var loggerFactory))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
 
                 await webSocketsTransport.StartAsync(new Uri(ServerFixture.WebSocketsUrl + "/echo"),
                     transferFormat).OrTimeout();
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog(out var loggerFactory))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
                     webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
 

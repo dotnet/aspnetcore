@@ -577,13 +577,8 @@ describe("hubConnection", () => {
                     const hubConnection = getConnectionBuilder(transportType).build();
                     hubConnection.serverTimeoutInMilliseconds = 100;
 
-                    const timeout = setTimeout(200, () => {
-                        fail("Server timeout did not fire within expected interval");
-                    });
-
                     hubConnection.start().then(() => {
                         hubConnection.onclose((error) => {
-                            clearTimeout(timeout);
                             expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
                             done();
                         });
