@@ -38,12 +38,51 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         [Fact]
+        public async Task CanRegisterAUser_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupGlobalAuthorizeFilter();
+
+            var client = ServerFactory
+                    .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+                    .CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserAsync(client, userName, password);
+        }
+
+        [Fact]
         public async Task CanRegisterWithASocialLoginProvider()
         {
             // Arrange
             void ConfigureTestServices(IServiceCollection services) =>
                 services
                     .SetupTestThirdPartyLogin();
+
+            var client = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+                .CreateClient();
+
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        }
+
+        [Fact]
+        public async Task CanRegisterWithASocialLoginProvider_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) =>
+                services
+                    .SetupTestThirdPartyLogin()
+                    .SetupGlobalAuthorizeFilter();
 
             var client = ServerFactory
                 .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))

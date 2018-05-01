@@ -3,11 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
+    [AllowAnonymous]
     [IdentityDefaultUI(typeof(ConfirmEmailModel<>))]
     public abstract class ConfirmEmailModel : PageModel
     {
