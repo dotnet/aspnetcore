@@ -49,6 +49,11 @@ namespace AspNetCoreSdkTests.Util
             }
         }
 
+        public string Publish()
+        {
+            return DotNetUtil.Publish(Path);
+        }
+
         public IEnumerable<string> GetObjFiles()
         {
             return IOUtil.GetFiles(System.IO.Path.Combine(Path, "obj"));
@@ -57,6 +62,11 @@ namespace AspNetCoreSdkTests.Util
         public IEnumerable<string> GetBinFiles()
         {
             return IOUtil.GetFiles(System.IO.Path.Combine(Path, "bin"));
+        }
+
+        public IEnumerable<string> GetPublishFiles()
+        {
+            return IOUtil.GetFiles(System.IO.Path.Combine(Path, DotNetUtil.PublishOutput));
         }
 
         public override void Dispose()

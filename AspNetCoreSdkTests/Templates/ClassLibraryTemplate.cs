@@ -34,5 +34,12 @@ namespace AspNetCoreSdkTests.Templates
             $"{Name}.dll",
             $"{Name}.pdb",
         }.Select(p => Path.Combine(OutputPath, p));
+
+        public override IEnumerable<string> ExpectedFilesAfterPublish => new[]
+        {
+            $"{Name}.deps.json",
+            $"{Name}.dll",
+            $"{Name}.pdb",
+        };
     }
 }

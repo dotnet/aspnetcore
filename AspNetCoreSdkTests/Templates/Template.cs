@@ -20,6 +20,8 @@ namespace AspNetCoreSdkTests.Templates
 
         public abstract IEnumerable<string> ExpectedBinFilesAfterBuild { get; }
 
+        public abstract IEnumerable<string> ExpectedFilesAfterPublish { get; }
+
         public override string ToString() => Name;
     }
 }

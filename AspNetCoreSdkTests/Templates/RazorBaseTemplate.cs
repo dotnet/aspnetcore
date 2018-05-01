@@ -24,5 +24,11 @@ namespace AspNetCoreSdkTests.Templates
             $"{Name}.Views.dll",
             $"{Name}.Views.pdb",
         }.Select(p => Path.Combine(OutputPath, p)));
+
+        public override IEnumerable<string> ExpectedFilesAfterPublish => Enumerable.Concat(base.ExpectedFilesAfterPublish, new[]
+        {
+            $"{Name}.Views.dll",
+            $"{Name}.Views.pdb",
+        });
     }
 }

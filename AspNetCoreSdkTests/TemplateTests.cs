@@ -62,6 +62,20 @@ namespace AspNetCoreSdkTests
             }
         }
 
+        [Test]
+        [TestCaseSource(typeof(TemplateData), nameof(TemplateData.Current))]
+        public void Publish(Template template, NuGetConfig nuGetConfig)
+        {
+            using (var context = new DotNetContext())
+            {
+                context.New(template);
+                context.Restore(nuGetConfig);
+                context.Publish();
+
+                CollectionAssert.AreEquivalent(template.ExpectedFilesAfterPublish, context.GetPublishFiles());
+            }
+        }
+
         private HttpResponseMessage GetAsync(Uri requestUri)
         {
             while (true)

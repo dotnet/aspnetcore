@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace AspNetCoreSdkTests.Templates
 {
-    public class RazorTemplate : RazorApplicationBaseTemplate
+    public class RazorTemplate : RazorBootstrapJQueryTemplate
     {
         public new static RazorTemplate Instance { get; } = new RazorTemplate();
 

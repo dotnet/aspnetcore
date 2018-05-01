@@ -9,6 +9,8 @@ namespace AspNetCoreSdkTests.Util
 {
     internal static class DotNetUtil
     {
+        public static string PublishOutput => "pub";
+
         private static IEnumerable<KeyValuePair<string, string>> GetEnvironment(string workingDirectory)
         {
             // Set NUGET_PACKAGES to an empty folder to ensure all packages are loaded from either NuGetFallbackFolder or configured sources,
@@ -36,6 +38,11 @@ namespace AspNetCoreSdkTests.Util
         {
             // Bind to dynamic port 0 to avoid port conflicts during parallel tests
             return StartDotNet("run --no-restore --urls http://127.0.0.1:0;https://127.0.0.1:0", workingDirectory, GetEnvironment(workingDirectory));
+        }
+
+        public static string Publish(string workingDirectory)
+        {
+            return RunDotNet($"publish --no-restore -o {PublishOutput}", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         private static string RunDotNet(string arguments, string workingDirectory,

@@ -20,5 +20,10 @@ namespace AspNetCoreSdkTests.Templates
             $"{Name}.RazorAssemblyInfo.cs",
             $"{Name}.RazorTargetAssemblyInfo.cache",
         }.Select(p => Path.Combine(OutputPath, p)));
+
+        public override IEnumerable<string> ExpectedFilesAfterPublish => Enumerable.Concat(base.ExpectedFilesAfterPublish, new[]
+        {
+            "web.config",
+        });
     }
 }

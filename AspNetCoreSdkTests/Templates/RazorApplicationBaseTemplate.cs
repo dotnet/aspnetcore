@@ -22,5 +22,13 @@ namespace AspNetCoreSdkTests.Templates
             $"{Name}.runtimeconfig.dev.json",
             $"{Name}.runtimeconfig.json",
         }.Select(p => Path.Combine(OutputPath, p)));
+
+        public override IEnumerable<string> ExpectedFilesAfterPublish => Enumerable.Concat(base.ExpectedFilesAfterPublish, new[]
+        {
+            "appsettings.Development.json",
+            "appsettings.json",
+            $"{Name}.runtimeconfig.json",
+            "web.config",
+        });
     }
 }
