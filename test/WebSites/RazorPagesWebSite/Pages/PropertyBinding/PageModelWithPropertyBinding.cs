@@ -14,6 +14,10 @@ namespace RazorPagesWebSite
         [FromRoute]
         public int Id { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        [FromQuery]
+        public string PropertyWithSupportGetsTrue { get; set; }
+
         public void OnGet() { }
     }
 }

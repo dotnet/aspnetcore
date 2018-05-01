@@ -1,6 +1,6 @@
 ﻿@page "{id:int}"
 @model PageModelWithPropertyBinding
-Id = @Model.Id, Name = @Model.UserModel?.Name, Age = @Model.UserModel?.Age
+Id = @Model.Id, Name = @Model.UserModel?.Name, Age = @Model.UserModel?.Age, PropertyWithSupportGetsTrue = @Model.PropertyWithSupportGetsTrue
 @Html.ValidationSummary()
 
 <form action="">
