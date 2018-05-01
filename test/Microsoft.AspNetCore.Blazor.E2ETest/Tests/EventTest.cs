@@ -110,21 +110,5 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             actions.Perform();
             Assert.Equal("onmousedown,onmouseup,", output.Text);
         }
-
-        private string[] GetLogLines()
-            => Browser.FindElement(By.TagName("textarea"))
-            .GetAttribute("value")
-            .Replace("\r\n", "\n")
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
-
-        private void TriggerCustomBubblingEvent(string elementId, string eventName)
-        {
-            var jsExecutor = (IJavaScriptExecutor)Browser;
-            jsExecutor.ExecuteScript(
-                $"document.getElementById('{elementId}').dispatchEvent(" +
-                $"    new Event('{eventName}', {{ bubbles: true }})" +
-                $")");
-            MountTestComponent<FocusEventComponent>();
-        }
     }
 }
