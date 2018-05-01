@@ -5,17 +5,66 @@
   static fromDOMEvent(event: Event): EventForDotNet<UIEventArgs> {
     const element = event.target as Element;
     switch (event.type) {
-      case 'click':
-      case 'mousedown':
-      case 'mouseup':
-        return new EventForDotNet<UIMouseEventArgs>('mouse', { Type: event.type });
+
       case 'change': {
         const targetIsCheckbox = isCheckbox(element);
         const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
         return new EventForDotNet<UIChangeEventArgs>('change', { Type: event.type, Value: newValue });
       }
+
+      case 'copy':
+      case 'cut':
+      case 'paste':
+        return new EventForDotNet<UIClipboardEventArgs>('clipboard', { Type: event.type });
+
+      case 'drag':
+      case 'dragend':
+      case 'dragenter':
+      case 'dragleave':
+      case 'dragover':
+      case 'dragstart':
+      case 'drop':
+        return new EventForDotNet<UIDragEventArgs>('drag', { Type: event.type });
+
+      case 'error':
+        return new EventForDotNet<UIProgressEventArgs>('error', { Type: event.type });
+
+      case 'focus':
+      case 'blur':
+      case 'focusin':
+      case 'focusout':
+        return new EventForDotNet<UIFocusEventArgs>('focus', { Type: event.type });
+
+      case 'keydown':
+      case 'keyup':
       case 'keypress':
         return new EventForDotNet<UIKeyboardEventArgs>('keyboard', { Type: event.type, Key: (event as any).key });
+
+      case 'click':
+      case 'mouseover':
+      case 'mouseout':
+      case 'mousemove':
+      case 'mousedown':
+      case 'mouseup':
+      case 'dblclick':
+        return new EventForDotNet<UIMouseEventArgs>('mouse', { Type: event.type });
+
+      case 'contextmenu':
+        return new EventForDotNet<UIPointerEventArgs>('pointer', { Type: event.type });
+
+      case 'progress':
+        return new EventForDotNet<UIProgressEventArgs>('progress', { Type: event.type });
+
+      case 'touchcancel':
+      case 'touchend':
+      case 'touchmove':
+      case 'touchstart':
+        return new EventForDotNet<UITouchEventArgs>('touch', { Type: event.type });
+
+      case 'mousewheel':
+        return new EventForDotNet<UIWheelEventArgs>('wheel', { Type: event.type });
+
+
       default:
         return new EventForDotNet<UIEventArgs>('unknown', { Type: event.type });
     }
@@ -28,19 +77,43 @@ function isCheckbox(element: Element | null) {
 
 // The following interfaces must be kept in sync with the UIEventArgs C# classes
 
-type EventArgsType = 'mouse' | 'keyboard' | 'change' | 'unknown';
+type EventArgsType = 'change' | 'clipboard' | 'drag' | 'error' | 'focus' | 'keyboard' | 'mouse' | 'pointer' | 'progress' | 'touch' | 'unknown' | 'wheel';
 
 export interface UIEventArgs {
   Type: string;
 }
 
-interface UIMouseEventArgs extends UIEventArgs {
+interface UIChangeEventArgs extends UIEventArgs {
+  Value: string | boolean;
+}
+
+interface UIClipboardEventArgs extends UIEventArgs {
+}
+
+interface UIDragEventArgs extends UIEventArgs {
+}
+
+interface UIErrorEventArgs extends UIEventArgs {
+}
+
+interface UIFocusEventArgs extends UIEventArgs {
 }
 
 interface UIKeyboardEventArgs extends UIEventArgs {
   Key: string;
 }
 
-interface UIChangeEventArgs extends UIEventArgs {
-  Value: string | boolean;
+interface UIMouseEventArgs extends UIEventArgs {
+}
+
+interface UIPointerEventArgs extends UIMouseEventArgs {
+}
+
+interface UIProgressEventArgs extends UIEventArgs {
+}
+
+interface UITouchEventArgs extends UIEventArgs {
+}
+
+interface UIWheelEventArgs extends UIEventArgs {
 }

@@ -32,16 +32,32 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         {
             switch (eventArgsType)
             {
-                case "mouse":
-                    return JsonUtil.Deserialize<UIMouseEventArgs>(eventArgsJson);
-                case "keyboard":
-                    return JsonUtil.Deserialize<UIKeyboardEventArgs>(eventArgsJson);
                 case "change":
                     return JsonUtil.Deserialize<UIChangeEventArgs>(eventArgsJson);
+                case "clipboard":
+                    return JsonUtil.Deserialize<UIClipboardEventArgs>(eventArgsJson);
+                case "drag":
+                    return JsonUtil.Deserialize<UIDragEventArgs>(eventArgsJson);
+                case "error":
+                    return JsonUtil.Deserialize<UIErrorEventArgs>(eventArgsJson);
+                case "focus":
+                    return JsonUtil.Deserialize<UIFocusEventArgs>(eventArgsJson);
+                case "keyboard":
+                    return JsonUtil.Deserialize<UIKeyboardEventArgs>(eventArgsJson);
+                case "mouse":
+                    return JsonUtil.Deserialize<UIMouseEventArgs>(eventArgsJson);
+                case "pointer":
+                    return JsonUtil.Deserialize<UIPointerEventArgs>(eventArgsJson);
+                case "progress":
+                    return JsonUtil.Deserialize<UIProgressEventArgs>(eventArgsJson);
+                case "touch":
+                    return JsonUtil.Deserialize<UITouchEventArgs>(eventArgsJson);
                 case "unknown":
                     return JsonUtil.Deserialize<UIEventArgs>(eventArgsJson);
+                case "wheel":
+                    return JsonUtil.Deserialize<UIWheelEventArgs>(eventArgsJson);
                 default:
-                    throw new ArgumentException($"Unsupported value '{eventArgsType}'.", nameof(eventArgsType));
+                     throw new ArgumentException($"Unsupported value '{eventArgsType}'.", nameof(eventArgsType));
             }
         }
 
