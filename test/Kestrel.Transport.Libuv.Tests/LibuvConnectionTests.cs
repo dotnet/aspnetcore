@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(listenerContext, socket);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
@@ -89,7 +90,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(listenerContext, socket);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
@@ -157,7 +159,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(listenerContext, socket);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
@@ -223,7 +226,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(listenerContext, socket);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
                     var ignored = new LibuvFunctions.uv_buf_t();
