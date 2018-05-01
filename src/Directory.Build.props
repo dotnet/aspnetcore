@@ -1,15 +1,6 @@
 <Project>
   <Import Project="..\Directory.Build.props" />
 
-  <ItemDefinitionGroup>
-    <ExcludePackageFileFromSigning>
-      <Visible>false</Visible>
-    </ExcludePackageFileFromSigning>
-    <SignedPackageFile>
-      <Visible>false</Visible>
-    </SignedPackageFile>
-  </ItemDefinitionGroup>
-
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>

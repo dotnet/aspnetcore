@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<DotNetCliTool>
-  <Commands>
-    <Command Name="dotnet-dev-certs" EntryPoint="dotnet-dev-certs.dll" Runner="dotnet" />
-  </Commands>
-</DotNetCliTool>

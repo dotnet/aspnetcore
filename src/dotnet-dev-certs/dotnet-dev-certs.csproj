@@ -1,11 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <Sdk Name="Microsoft.NET.Sdk" />
+  <Sdk Name="Microsoft.DotNet.GlobalTools.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to generate certificates used in ASP.NET Core during development.</Description>
-    <PackageType>DotnetTool</PackageType>
     <RootNamespace>Microsoft.AspNetCore.DeveloperCertificates.Tools</RootNamespace>
+    <PackageTags>dotnet;developercertificates</PackageTags>
+    <PackAsTool>true</PackAsTool>
+
+    <!-- This is a requirement for Microsoft tool packages only. -->
+    <GenerateToolShims>true</GenerateToolShims>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,8 +5,6 @@
     <Description>Package for the CLI first run experience.</Description>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
     <PackageTags>aspnet;cli</PackageTags>
-
-    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
   </PropertyGroup>
 
   <ItemGroup>
