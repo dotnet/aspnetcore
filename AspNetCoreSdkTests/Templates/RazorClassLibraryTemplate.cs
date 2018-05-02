@@ -6,9 +6,7 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class RazorClassLibraryTemplate : RazorBaseTemplate
     {
-        public new static RazorClassLibraryTemplate Instance { get; } = new RazorClassLibraryTemplate();
-
-        protected RazorClassLibraryTemplate() { }
+        public RazorClassLibraryTemplate() { }
 
         public override string Name => "razorclasslib";
 

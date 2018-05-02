@@ -57,7 +57,7 @@ namespace AspNetCoreSdkTests.Util
             IEnumerable<KeyValuePair<string, string>> environment = null, bool throwOnError = true)
         {
             var p = StartDotNet(arguments, workingDirectory, environment);
-            return WaitForExit(p.Process, p.OutputBuilder, p.ErrorBuilder, throwOnError: throwOnError);
+            return WaitForExit(p, throwOnError: throwOnError);
         }
 
         private static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) StartDotNet(
@@ -110,38 +110,38 @@ namespace AspNetCoreSdkTests.Util
             return (process, outputBuilder, errorBuilder);
         }
 
-        public static string StopProcess(Process process, ConcurrentStringBuilder outputBuilder, ConcurrentStringBuilder errorBuilder,
+        public static string StopProcess((Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) process,
             bool throwOnError = true)
         {
-            if (!process.HasExited)
+            if (!process.Process.HasExited)
             {
-                process.KillTree();
+                process.Process.KillTree();
             }
 
-            return WaitForExit(process, outputBuilder, errorBuilder, throwOnError: throwOnError);
+            return WaitForExit(process, throwOnError: throwOnError);
         }
 
-        public static string WaitForExit(Process process, ConcurrentStringBuilder outputBuilder, ConcurrentStringBuilder errorBuilder,
+        public static string WaitForExit((Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) process,
             bool throwOnError = true)
         {
             // Workaround issue where WaitForExit() blocks until child processes are killed, which is problematic
             // for the dotnet.exe NodeReuse child processes.  I'm not sure why this is problematic for dotnet.exe child processes
             // but not for MSBuild.exe child processes.  The workaround is to specify a large timeout.
             // https://stackoverflow.com/a/37983587/102052
-            process.WaitForExit(int.MaxValue);
+            process.Process.WaitForExit(int.MaxValue);
 
-            if (throwOnError && process.ExitCode != 0)
+            if (throwOnError && process.Process.ExitCode != 0)
             {
                 var sb = new ConcurrentStringBuilder();
 
-                sb.AppendLine($"Command {process.StartInfo.FileName} {process.StartInfo.Arguments} returned exit code {process.ExitCode}");
+                sb.AppendLine($"Command {process.Process.StartInfo.FileName} {process.Process.StartInfo.Arguments} returned exit code {process.Process.ExitCode}");
                 sb.AppendLine();
-                sb.AppendLine(outputBuilder.ToString());
+                sb.AppendLine(process.OutputBuilder.ToString());
 
                 throw new InvalidOperationException(sb.ToString());
             }
 
-            return outputBuilder.ToString();
+            return process.OutputBuilder.ToString();
         }
     }
 }

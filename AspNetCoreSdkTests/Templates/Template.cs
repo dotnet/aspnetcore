@@ -1,12 +1,75 @@
-﻿using System.Collections.Generic;
+﻿using AspNetCoreSdkTests.Util;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace AspNetCoreSdkTests.Templates
 {
     public abstract class Template
     {
+        private static readonly TimeSpan _sleepBetweenHttpRequests = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan _sleepBetweenOutputContains = TimeSpan.FromMilliseconds(100);
+
+        private static readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler()
+        {
+            // Allow self-signed certs
+            ServerCertificateCustomValidationCallback = (m, c, ch, p) => true
+        });
+
+        private static ConcurrentDictionary<(Type, NuGetConfig), Template> _templates = new ConcurrentDictionary<(Type, NuGetConfig), Template>();
+
+        public static T GetInstance<T>(NuGetConfig nuGetConfig) where T : Template, new()
+        {
+            return (T)_templates.GetOrAdd((typeof(T), nuGetConfig), (k) => new T() { NuGetConfig = nuGetConfig });
+        }
+
+        private Lazy<IEnumerable<string>> _objFilesAfterRestore;
+        private Lazy<(IEnumerable<string> ObjFiles, IEnumerable<string> BinFiles)> _filesAfterBuild;
+        private Lazy<IEnumerable<string>> _filesAfterPublish;
+        private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)> _httpResponsesAfterRun;
+        private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)> _httpResponsesAfterExec;
+
+        public NuGetConfig NuGetConfig { get; private set; }
+
+        protected Template()
+        {
+            _objFilesAfterRestore = new Lazy<IEnumerable<string>>(
+                GetObjFilesAfterRestore, LazyThreadSafetyMode.ExecutionAndPublication);
+
+            _filesAfterBuild = new Lazy<(IEnumerable<string> ObjFiles, IEnumerable<string> BinFiles)>(
+                GetFilesAfterBuild, LazyThreadSafetyMode.ExecutionAndPublication);
+
+            _filesAfterPublish = new Lazy<IEnumerable<string>>(
+                GetFilesAfterPublish, LazyThreadSafetyMode.ExecutionAndPublication);
+
+            _httpResponsesAfterRun = new Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)>(
+                GetHttpResponsesAfterRun, LazyThreadSafetyMode.ExecutionAndPublication);
+
+            _httpResponsesAfterExec = new Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)>(
+                GetHttpResponsesAfterExec, LazyThreadSafetyMode.ExecutionAndPublication);
+        }
+
+        public override string ToString() => $"{Name},{NuGetConfig}";
+
+        private string TempDir => Path.Combine(AssemblySetUp.TempDir, Name, NuGetConfig.ToString());
+
         public abstract string Name { get; }
         public abstract TemplateType Type { get; }
         public virtual string RelativeUrl => string.Empty;
+
+        public IEnumerable<string> ObjFilesAfterRestore => _objFilesAfterRestore.Value;
+        public IEnumerable<string> ObjFilesAfterBuild => _filesAfterBuild.Value.ObjFiles;
+        public IEnumerable<string> BinFilesAfterBuild => _filesAfterBuild.Value.BinFiles;
+        public IEnumerable<string> FilesAfterPublish => _filesAfterPublish.Value;
+        public HttpResponseMessage HttpResponseAfterRun => _httpResponsesAfterRun.Value.Http;
+        public HttpResponseMessage HttpsResponseAfterRun => _httpResponsesAfterRun.Value.Https;
+        public HttpResponseMessage HttpResponseAfterExec => _httpResponsesAfterExec.Value.Http;
+        public HttpResponseMessage HttpsResponseAfterExec => _httpResponsesAfterExec.Value.Https;
 
         public virtual IEnumerable<string> ExpectedObjFilesAfterRestore => new[]
         {
@@ -22,6 +85,101 @@ namespace AspNetCoreSdkTests.Templates
 
         public abstract IEnumerable<string> ExpectedFilesAfterPublish { get; }
 
-        public override string ToString() => Name;
+        private IEnumerable<string> GetObjFilesAfterRestore()
+        {
+            Directory.CreateDirectory(TempDir);
+            DotNetUtil.New(Name, TempDir);
+            DotNetUtil.Restore(TempDir, NuGetConfig);
+            return IOUtil.GetFiles(System.IO.Path.Combine(TempDir, "obj"));
+        }
+
+        private (IEnumerable<string> ObjFiles, IEnumerable<string> BinFiles) GetFilesAfterBuild()
+        {
+            // Build depends on Restore
+            _ = ObjFilesAfterRestore;
+
+            DotNetUtil.Build(TempDir);
+            return (IOUtil.GetFiles(System.IO.Path.Combine(TempDir, "obj")), IOUtil.GetFiles(System.IO.Path.Combine(TempDir, "bin")));
+        }
+
+        private IEnumerable<string> GetFilesAfterPublish()
+        {
+            // Publish depends on Build
+            _ = BinFilesAfterBuild;
+
+            DotNetUtil.Publish(TempDir);
+            return IOUtil.GetFiles(System.IO.Path.Combine(TempDir, DotNetUtil.PublishOutput));
+        }
+
+        private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponsesAfterRun()
+        {
+            // Run depends on Build
+            _ = BinFilesAfterBuild;
+
+            return GetHttpResponses(DotNetUtil.Run(TempDir));
+        }
+
+        private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponsesAfterExec()
+        {
+            // Exec depends on Publish
+            _ = FilesAfterPublish;
+
+            return GetHttpResponses(DotNetUtil.Exec(TempDir, Name));
+        }
+
+        private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponses(
+            (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) process)
+        {
+            try
+            {
+                var (httpUrl, httpsUrl) = ScrapeUrls(process);
+                return (GetAsync(new Uri(new Uri(httpUrl), RelativeUrl)), GetAsync(new Uri(new Uri(httpsUrl), RelativeUrl)));
+            }
+            finally
+            {
+                DotNetUtil.StopProcess(process, throwOnError: false);
+            }
+        }
+
+        private (string HttpUrl, string HttpsUrl) ScrapeUrls(
+            (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) process)
+        {
+            // Extract URLs from output
+            while (true)
+            {
+                var output = process.OutputBuilder.ToString();
+                if (output.Contains("Application started"))
+                {
+                    var httpUrl = Regex.Match(output, @"Now listening on: (http:\S*)").Groups[1].Value;
+                    var httpsUrl = Regex.Match(output, @"Now listening on: (https:\S*)").Groups[1].Value;
+                    return (httpUrl, httpsUrl);
+                }
+                else if (process.Process.HasExited)
+                {
+                    var startInfo = process.Process.StartInfo;
+                    throw new InvalidOperationException(
+                        $"Failed to start process '{startInfo.FileName} {startInfo.Arguments}'" + Environment.NewLine + output);
+                }
+                else
+                {
+                    Thread.Sleep(_sleepBetweenOutputContains);
+                }
+            }
+        }
+
+        private HttpResponseMessage GetAsync(Uri requestUri)
+        {
+            while (true)
+            {
+                try
+                {
+                    return _httpClient.GetAsync(requestUri).Result;
+                }
+                catch
+                {
+                    Thread.Sleep(_sleepBetweenHttpRequests);
+                }
+            }
+        }
     }
 }

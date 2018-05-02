@@ -6,9 +6,7 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class ClassLibraryTemplate : Template
     {
-        public static ClassLibraryTemplate Instance { get; } = new ClassLibraryTemplate();
-
-        protected ClassLibraryTemplate() { }
+        public ClassLibraryTemplate() { }
 
         public override string Name => "classlib";
 

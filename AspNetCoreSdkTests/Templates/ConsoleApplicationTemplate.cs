@@ -7,9 +7,7 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class ConsoleApplicationTemplate : ClassLibraryTemplate
     {
-        public new static ConsoleApplicationTemplate Instance { get; } = new ConsoleApplicationTemplate();
-
-        protected ConsoleApplicationTemplate() { }
+        public ConsoleApplicationTemplate() { }
 
         public override string Name => "console";
 

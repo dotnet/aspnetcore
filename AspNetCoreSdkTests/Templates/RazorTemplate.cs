@@ -6,9 +6,7 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class RazorTemplate : RazorBootstrapJQueryTemplate
     {
-        public new static RazorTemplate Instance { get; } = new RazorTemplate();
-
-        protected RazorTemplate() { }
+        public RazorTemplate() { }
 
         public override string Name => "razor";
 

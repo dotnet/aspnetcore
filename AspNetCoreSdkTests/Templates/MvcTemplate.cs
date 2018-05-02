@@ -6,9 +6,7 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class MvcTemplate : RazorBootstrapJQueryTemplate
     {
-        public new static MvcTemplate Instance { get; } = new MvcTemplate();
-
-        protected MvcTemplate() { }
+        public MvcTemplate() { }
 
         public override string Name => "mvc";
 

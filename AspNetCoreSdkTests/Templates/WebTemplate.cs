@@ -6,9 +6,7 @@ namespace AspNetCoreSdkTests.Templates
 {
     public class WebTemplate : ConsoleApplicationTemplate
     {
-        public new static WebTemplate Instance { get; } = new WebTemplate();
-
-        protected WebTemplate() { }
+        public WebTemplate() { }
 
         public override string Name => "web";
 
