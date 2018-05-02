@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns>The same instance of the <see cref="IConnectionBuilder"/> for chaining.</returns>
         public static IConnectionBuilder UseHub<THub>(this IConnectionBuilder connectionBuilder) where THub : Hub
         {
-            var marker = connectionBuilder.ApplicationServices.GetService(typeof(SignalRMarkerService));
+            var marker = connectionBuilder.ApplicationServices.GetService(typeof(SignalRCoreMarkerService));
             if (marker == null)
             {
                 throw new InvalidOperationException("Unable to find the required services. Please add all the required services by calling " +

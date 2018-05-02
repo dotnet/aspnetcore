@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    internal class SignalRMarkerService
+    internal class SignalRCoreMarkerService
     {
     }
 }

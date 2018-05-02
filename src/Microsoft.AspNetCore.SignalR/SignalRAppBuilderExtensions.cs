@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -19,6 +20,13 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The same instance of the <see cref="IApplicationBuilder"/> for chaining.</returns>
         public static IApplicationBuilder UseSignalR(this IApplicationBuilder app, Action<HubRouteBuilder> configure)
         {
+            var marker = app.ApplicationServices.GetService<SignalRMarkerService>();
+            if (marker == null)
+            {
+                throw new InvalidOperationException("Unable to find the required services. Please add all the required services by calling " +
+                                                    "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.");
+            }
+
             app.UseConnections(routes =>
             {
                 configure(new HubRouteBuilder(routes));
