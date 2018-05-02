@@ -223,27 +223,35 @@ describe("HttpConnection", () => {
     });
 
     eachTransport((requestedTransport: HttpTransportType) => {
-        // OPTIONS is not sent when WebSockets transport is explicitly requested
-        if (requestedTransport === HttpTransportType.WebSockets) {
-            return;
-        }
-        it(`cannot be started if requested ${HttpTransportType[requestedTransport]} transport not available on server`, async (done) => {
+        it(`cannot be started if requested ${HttpTransportType[requestedTransport]} transport not available on server`, async () => {
+            const negotiateResponse = {
+                availableTransports: [
+                    { transport: "WebSockets", transferFormats: [ "Text", "Binary" ] },
+                    { transport: "ServerSentEvents", transferFormats: [ "Text" ] },
+                    { transport: "LongPolling", transferFormats: [ "Text", "Binary" ] },
+                ],
+                connectionId: "abc123",
+            };
+
+            // Remove the requested transport from the response
+            negotiateResponse.availableTransports = negotiateResponse.availableTransports
+                .filter((f) => f.transport !== HttpTransportType[requestedTransport]);
+
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", (r) => ({ connectionId: "42", availableTransports: [] }))
-                    .on("GET", (r) => ""),
+                    .on("POST", (r) => negotiateResponse)
+                    .on("GET", (r) => new HttpResponse(204)),
                 transport: requestedTransport,
             } as IHttpConnectionOptions;
 
             const connection = new HttpConnection("http://tempuri.org", options);
+
             try {
                 await connection.start(TransferFormat.Text);
-                fail();
-                done();
+                fail("Expected connection.start to throw!");
             } catch (e) {
                 expect(e.message).toBe("Unable to initialize any of the available transports.");
-                done();
             }
         });
     });
