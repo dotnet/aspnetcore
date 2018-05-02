@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         private List<Func<RequestDelegate, RequestDelegate>> _middleware = new List<Func<RequestDelegate, RequestDelegate>>();
 
+        public bool Disposed { get; private set; }
+
         public IReadOnlyList<HttpRequestMessage> ReceivedRequests
         {
             get
@@ -50,6 +52,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                 });
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            Disposed = true;
+            base.Dispose(disposing);
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

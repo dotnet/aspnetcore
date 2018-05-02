@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
-            
+
             _httpConnectionOptions = options.Value;
             _loggerFactory = loggerFactory;
         }
@@ -44,8 +44,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public async Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             var connection = new HttpConnection(_httpConnectionOptions, _loggerFactory);
-            await connection.StartAsync(transferFormat, cancellationToken);
-            return connection;
+            try
+            {
+                await connection.StartAsync(transferFormat, cancellationToken);
+                return connection;
+            }
+            catch
+            {
+                // Make sure the connection is disposed, in case it allocated any resources before failing.
+                await connection.DisposeAsync();
+                throw;
+            }
         }
 
         /// <inheritdoc />
