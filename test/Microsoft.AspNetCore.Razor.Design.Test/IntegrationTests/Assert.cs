@@ -100,6 +100,30 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             throw new BuildOutputMissingException(result, match);
         }
 
+        public static void BuildOutputDoesNotContainLine(MSBuildResult result, string match)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (match == null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            // We don't really need to search line by line, I'm doing this so that it's possible/easy to debug.
+            var lines = result.Output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i].Trim();
+                if (line == match)
+                {
+                    throw new BuildOutputContainsLineException(result, match);
+                }
+            }
+        }
+
         public static void FileContains(MSBuildResult result, string filePath, string match)
         {
             if (result == null)
@@ -430,6 +454,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             public string Match { get; }
 
             protected override string Heading => $"Build did not contain the line: '{Match}'.";
+        }
+
+        private class BuildOutputContainsLineException : MSBuildXunitException
+        {
+            public BuildOutputContainsLineException(MSBuildResult result, string match)
+                : base(result)
+            {
+                Match = match;
+            }
+
+            public string Match { get; }
+
+            protected override string Heading => $"Build output contains the line: '{Match}'.";
         }
 
         private class FileContentFoundException : MSBuildXunitException

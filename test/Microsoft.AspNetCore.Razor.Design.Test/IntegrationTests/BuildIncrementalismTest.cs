@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -135,6 +136,84 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // File with error does not get written to disk.
                 Assert.FileDoesNotExist(result, IntermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs");
             }
+        }
+
+        [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
+        public async Task IncrementalBuild_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
+        {
+            // Simulates building the same way VS does by setting BuildProjectReferences=false.
+            // With this flag, the only target called is GetCopyToOutputDirectoryItems on the referenced project.
+            // We need to ensure that we continue providing Razor binaries and symbols as files to be copied over.
+            var result = await DotnetMSBuild(target: default);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
+
+            result = await DotnetMSBuild(target: "Clean", "/p:BuildProjectReferences=false", suppressRestore: true);
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.Views.pdb");
+
+            // dotnet msbuild /p:BuildProjectReferences=false
+            result = await DotnetMSBuild(target: default, "/p:BuildProjectReferences=false", suppressRestore: true);
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Build_TouchesUpToDateMarkerFile()
+        {
+            var classLibraryDll = Path.Combine(IntermediateOutputPath, "ClassLibrary.dll");
+            var classLibraryViewsDll = Path.Combine(IntermediateOutputPath, "ClassLibrary.Views.dll");
+            var markerFile = Path.Combine(IntermediateOutputPath, "ClassLibrary.csproj.CopyComplete");
+
+            var result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, classLibraryDll);
+            Assert.FileExists(result, classLibraryViewsDll);
+            Assert.FileExists(result, markerFile);
+
+            // Gather thumbprints before incremental build.
+            var classLibraryThumbPrint = GetThumbPrint(classLibraryDll);
+            var classLibraryViewsThumbPrint = GetThumbPrint(classLibraryViewsDll);
+            var markerFileThumbPrint = GetThumbPrint(markerFile);
+
+            result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result);
+
+            // Verify thumbprint file is unchanged between true incremental builds
+            Assert.Equal(classLibraryThumbPrint, GetThumbPrint(classLibraryDll));
+            Assert.Equal(classLibraryViewsThumbPrint, GetThumbPrint(classLibraryViewsDll));
+            // In practice, this should remain unchanged. However, since our tests reference
+            // binaries from other projects, this file gets updated by Microsoft.Common.targets
+            Assert.NotEqual(markerFileThumbPrint, GetThumbPrint(markerFile));
+
+            // Change a cshtml file and verify ClassLibrary.Views.dll and marker file are updated
+            File.AppendAllText(Path.Combine(Project.DirectoryPath, "Views", "_ViewImports.cshtml"), Environment.NewLine);
+
+            result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result);
+
+            Assert.Equal(classLibraryThumbPrint, GetThumbPrint(classLibraryDll));
+            Assert.NotEqual(classLibraryViewsThumbPrint, GetThumbPrint(classLibraryViewsDll));
+            Assert.NotEqual(markerFileThumbPrint, GetThumbPrint(markerFile));
         }
     }
 }
