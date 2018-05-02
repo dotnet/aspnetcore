@@ -81,6 +81,10 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
                 }
 
                 var textBuffer = textView.BufferGraph.GetRazorBuffers().FirstOrDefault();
+                if (textBuffer == null)
+                {
+                    return;
+                }
 
                 if (!_editorFactoryService.TryGetDocumentTracker(textBuffer, out _documentTracker))
                 {

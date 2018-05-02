@@ -56,7 +56,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 _currentProject = value;
                 OnPropertyChanged();
 
-                LoadProjectInfo(_currentProject.Snapshot.Project);
+                LoadProjectInfo();
             }
         }
 
@@ -100,11 +100,11 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 }
             }
         }
-
-        private async void LoadProjectInfo(ProjectSnapshot snapshot)
+        public async void LoadProjectInfo()
         {
             CurrentProjectInfo = new ProjectInfoViewModel();
 
+            var snapshot = CurrentProject?.Snapshot.Project;
             if (snapshot == null)
             {
                 return;

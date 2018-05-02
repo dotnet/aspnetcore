@@ -119,7 +119,7 @@
           Command="{Binding UpdateCommand}" />
       </Grid>
       <GridSplitter
-        Grid.Row="1" 
+        Grid.Row="1"
         IsEnabled="False" />
       <Grid
         Grid.Row="2"
@@ -168,10 +168,14 @@
         Grid.Row="4"
         IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
         <Expander.Header>
-          <Grid>
+          <!-- The complicated binding here makes the header stretch horizontally -->
+          <Grid
+            HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto"/>
-              <ColumnDefinition Width="*" />
+              <ColumnDefinition
+                Width="Auto" />
+              <ColumnDefinition
+                Width="*" />
             </Grid.ColumnDefinitions>
             <Label
               Grid.Column="0"
@@ -181,10 +185,9 @@
               Width="Auto"
               Height="20"
               Margin="5"
-              Visibility="{Binding CurrentProjectInfo.TagHelperProgressVisibility}"
+              Visibility="{Binding CurrentProjectInfo.TagHelperProgressVisibility, TargetNullValue=Visibility.Hidden}"
               IsIndeterminate="True" />
           </Grid>
-
         </Expander.Header>
         <ListView
           ItemsSource="{Binding CurrentProjectInfo.TagHelpers}">

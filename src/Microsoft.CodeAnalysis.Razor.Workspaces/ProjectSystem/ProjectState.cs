@@ -212,12 +212,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 difference |= ProjectDifference.WorkspaceProjectRemoved;
             }
-            else if (
-                WorkspaceProject?.Id != workspaceProject?.Id ||
-                WorkspaceProject?.Version != workspaceProject?.Version)
+            else
             {
-                // For now this is very naive. We will want to consider changing
-                // our logic here to be more robust.
+                // We always update the snapshot right now when the project changes. This is how
+                // we deal with changes to the content of C# sources.
                 difference |= ProjectDifference.WorkspaceProjectChanged;
             }
 

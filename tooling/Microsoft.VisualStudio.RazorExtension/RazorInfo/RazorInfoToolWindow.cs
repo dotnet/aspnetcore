@@ -120,6 +120,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                             {
                                 changed = project;
                                 changed.Snapshot = new ProjectSnapshotViewModel(_projectManager.GetLoadedProject(e.ProjectFilePath));
+                                DataContext.LoadProjectInfo();
                                 break;
                             }
                         }

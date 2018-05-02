@@ -538,8 +538,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
         }
 
+        // We always update the snapshot when someone calls WorkspaceProjectChanged. This is how we deal
+        // with changes to source code, which wouldn't result in a new project.
         [ForegroundFact]
-        public void WorkspaceProjectChanged_WithHostProject_CanNoOp()
+        public void WorkspaceProjectChanged_WithHostProject_NotifiesListeners()
         {
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
@@ -548,6 +550,24 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Act
             ProjectManager.WorkspaceProjectChanged(WorkspaceProject);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
+            Assert.True(snapshot.IsInitialized);
+
+            Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void WorkspaceProjectChanged_WithHostProject_CanNoOpForSecondProject()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.WorkspaceProjectChanged(WorkspaceProjectWithDifferentTfm);
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(WorkspaceProject);
