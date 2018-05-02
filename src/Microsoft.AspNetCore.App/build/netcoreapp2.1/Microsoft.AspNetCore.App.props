@@ -1,6 +1,14 @@
 <Project>
+  <!--
+    The _AspNetCoreAppSharedFxIsEnabled property is meant for internal use only. When set to 'false',
+    the default value of MicrosoftNETPlatformLibrary will be used. It was added to support
+    a better SDK exprience on platforms where the ASP.NET Core shared framework is not avaiable.
+    In these cases, ASP.NET Core can still be as if it were just a set of NuGet packages.
+
+    NB: this is _AspNetCore*App*SharedFxIsEnabled, not _AspNetCore*All*SharedFxIsEnabled
+  -->
   <PropertyGroup>
-    <MicrosoftNETPlatformLibrary>Microsoft.AspNetCore.App</MicrosoftNETPlatformLibrary>
+    <_AspNetCoreAppSharedFxIsEnabled Condition=" '$(_AspNetCoreAppSharedFxIsEnabled)' == '' ">true</_AspNetCoreAppSharedFxIsEnabled>
   </PropertyGroup>
 
   <!--
@@ -9,5 +17,5 @@
   <ItemGroup>
     <ProjectCapability Include="AspNetInProcessHosting" />
   </ItemGroup>
-  
+
 </Project>
