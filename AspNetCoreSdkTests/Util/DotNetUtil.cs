@@ -8,6 +8,15 @@ namespace AspNetCoreSdkTests.Util
 {
     internal static class DotNetUtil
     {
+        private const string _clearPackageSourcesNuGetConfig =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+  </packageSources>
+</configuration>
+";
+
         // Bind to dynamic port 0 to avoid port conflicts during parallel tests
         private const string _urls = "--urls http://127.0.0.1:0;https://127.0.0.1:0";
 
@@ -22,13 +31,16 @@ namespace AspNetCoreSdkTests.Util
 
         public static string New(string template, string workingDirectory)
         {
+            // Clear all packages sources by default.  May be overridden by NuGetPackageSource parameter.
+            File.WriteAllText(Path.Combine(workingDirectory, "NuGet.config"), _clearPackageSourcesNuGetConfig);
+
             return RunDotNet($"new {template} --name {template} --output . --no-restore", workingDirectory, GetEnvironment(workingDirectory));
         }
 
-        public static string Restore(string workingDirectory, NuGetConfig config)
+        public static string Restore(string workingDirectory, NuGetPackageSource packageSource)
         {
-            var configPath = Path.GetFullPath(Path.Combine("NuGetConfig", $"NuGet.{config}.config"));
-            return RunDotNet($"restore --no-cache --configfile {configPath}", workingDirectory, GetEnvironment(workingDirectory));
+            var sourceArgument = GetSourceArgument(packageSource);
+            return RunDotNet($"restore --no-cache{sourceArgument}", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         public static string Build(string workingDirectory)
@@ -50,6 +62,24 @@ namespace AspNetCoreSdkTests.Util
         public static string Publish(string workingDirectory)
         {
             return RunDotNet($"publish --no-build -o {PublishOutput}", workingDirectory, GetEnvironment(workingDirectory));
+        }
+
+        private static string GetSourceArgument(NuGetPackageSource packageSource)
+        {
+            switch (packageSource)
+            {
+                case NuGetPackageSource.None:
+                    return string.Empty;
+                case NuGetPackageSource.NuGetOrg:
+                    return " --source https://api.nuget.org/v3/index.json";
+                case NuGetPackageSource.EnvironmentVariable:
+                    var env = Environment.GetEnvironmentVariable("NUGET_PACKAGE_SOURCE");
+                    return string.IsNullOrEmpty(env) ?
+                        throw new InvalidOperationException("Environment variable NUGET_PACKAGE_SOURCE is required but not set") :
+                        $" --source env";
+                default:
+                    throw new ArgumentException("Invalid value", nameof(packageSource));
+            }
         }
 
         private static string RunDotNet(string arguments, string workingDirectory,

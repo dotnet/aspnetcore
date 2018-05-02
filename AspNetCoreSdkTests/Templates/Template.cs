@@ -21,11 +21,11 @@ namespace AspNetCoreSdkTests.Templates
             ServerCertificateCustomValidationCallback = (m, c, ch, p) => true
         });
 
-        private static ConcurrentDictionary<(Type, NuGetConfig), Template> _templates = new ConcurrentDictionary<(Type, NuGetConfig), Template>();
+        private static ConcurrentDictionary<(Type, NuGetPackageSource), Template> _templates = new ConcurrentDictionary<(Type, NuGetPackageSource), Template>();
 
-        public static T GetInstance<T>(NuGetConfig nuGetConfig) where T : Template, new()
+        public static T GetInstance<T>(NuGetPackageSource nuGetPackageSource) where T : Template, new()
         {
-            return (T)_templates.GetOrAdd((typeof(T), nuGetConfig), (k) => new T() { NuGetConfig = nuGetConfig });
+            return (T)_templates.GetOrAdd((typeof(T), nuGetPackageSource), (k) => new T() { NuGetPackageSource = nuGetPackageSource });
         }
 
         private Lazy<IEnumerable<string>> _objFilesAfterRestore;
@@ -34,7 +34,7 @@ namespace AspNetCoreSdkTests.Templates
         private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)> _httpResponsesAfterRun;
         private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)> _httpResponsesAfterExec;
 
-        public NuGetConfig NuGetConfig { get; private set; }
+        public NuGetPackageSource NuGetPackageSource { get; private set; }
 
         protected Template()
         {
@@ -54,9 +54,9 @@ namespace AspNetCoreSdkTests.Templates
                 GetHttpResponsesAfterExec, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public override string ToString() => $"{Name},{NuGetConfig}";
+        public override string ToString() => $"{Name},{NuGetPackageSource}";
 
-        private string TempDir => Path.Combine(AssemblySetUp.TempDir, Name, NuGetConfig.ToString());
+        private string TempDir => Path.Combine(AssemblySetUp.TempDir, Name, NuGetPackageSource.ToString());
 
         public abstract string Name { get; }
         public abstract TemplateType Type { get; }
@@ -89,8 +89,8 @@ namespace AspNetCoreSdkTests.Templates
         {
             Directory.CreateDirectory(TempDir);
             DotNetUtil.New(Name, TempDir);
-            DotNetUtil.Restore(TempDir, NuGetConfig);
-            return IOUtil.GetFiles(System.IO.Path.Combine(TempDir, "obj"));
+            DotNetUtil.Restore(TempDir, NuGetPackageSource);
+            return IOUtil.GetFiles(Path.Combine(TempDir, "obj"));
         }
 
         private (IEnumerable<string> ObjFiles, IEnumerable<string> BinFiles) GetFilesAfterBuild()
@@ -99,7 +99,7 @@ namespace AspNetCoreSdkTests.Templates
             _ = ObjFilesAfterRestore;
 
             DotNetUtil.Build(TempDir);
-            return (IOUtil.GetFiles(System.IO.Path.Combine(TempDir, "obj")), IOUtil.GetFiles(System.IO.Path.Combine(TempDir, "bin")));
+            return (IOUtil.GetFiles(Path.Combine(TempDir, "obj")), IOUtil.GetFiles(Path.Combine(TempDir, "bin")));
         }
 
         private IEnumerable<string> GetFilesAfterPublish()
@@ -108,7 +108,7 @@ namespace AspNetCoreSdkTests.Templates
             _ = BinFilesAfterBuild;
 
             DotNetUtil.Publish(TempDir);
-            return IOUtil.GetFiles(System.IO.Path.Combine(TempDir, DotNetUtil.PublishOutput));
+            return IOUtil.GetFiles(Path.Combine(TempDir, DotNetUtil.PublishOutput));
         }
 
         private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponsesAfterRun()

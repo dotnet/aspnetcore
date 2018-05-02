@@ -7,7 +7,7 @@ using System.Net;
 namespace AspNetCoreSdkTests
 {
     [TestFixture]
-    public class TemplateTests
+    public class FrameworkDependent
     {
         [Test]
         [TestCaseSource(nameof(RestoreData))]
@@ -48,19 +48,19 @@ namespace AspNetCoreSdkTests
 
         public static IEnumerable<Template> RestoreData = new[]
         {
-            Template.GetInstance<ClassLibraryTemplate>(NuGetConfig.Empty),
-            Template.GetInstance<ConsoleApplicationTemplate>(NuGetConfig.Empty),
+            Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None),
+            Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.None),
             
             // Offline restore currently not supported for RazorClassLibrary template (https://github.com/aspnet/Universe/issues/1123)
-            Template.GetInstance<RazorClassLibraryTemplate>(NuGetConfig.NuGetOrg),
+            Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg),
 
-            Template.GetInstance<WebTemplate>(NuGetConfig.Empty),
-            Template.GetInstance<RazorTemplate>(NuGetConfig.Empty),
-            Template.GetInstance<MvcTemplate>(NuGetConfig.Empty),
-            Template.GetInstance<AngularTemplate>(NuGetConfig.Empty),
-            Template.GetInstance<ReactTemplate>(NuGetConfig.Empty),
-            Template.GetInstance<ReactReduxTemplate>(NuGetConfig.Empty),
-            Template.GetInstance<WebApiTemplate>(NuGetConfig.Empty),
+            Template.GetInstance<WebTemplate>(NuGetPackageSource.None),
+            Template.GetInstance<RazorTemplate>(NuGetPackageSource.None),
+            Template.GetInstance<MvcTemplate>(NuGetPackageSource.None),
+            Template.GetInstance<AngularTemplate>(NuGetPackageSource.None),
+            Template.GetInstance<ReactTemplate>(NuGetPackageSource.None),
+            Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.None),
+            Template.GetInstance<WebApiTemplate>(NuGetPackageSource.None),
         };
 
         public static IEnumerable<Template> BuildData => RestoreData;
