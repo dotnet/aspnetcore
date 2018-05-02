@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Moq;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                     // Make sure another stream can be opened while the write stream is still open.
                     using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Write | FileShare.Delete))
-                    using (var reader = new StreamReader(fileStream))
+                    using (var reader = new StreamReader(fileStream, Encoding.UTF8))
                     {
                         var lines = reader.ReadToEnd().Split(Environment.NewLine);
                         Assert.Equal(new[] { expectedProcessId.ToString(), "rzc", expectedRzcPath, pipeName }, lines);
