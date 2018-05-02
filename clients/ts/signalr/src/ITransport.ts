@@ -1,14 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+// This will be treated as a bit flag in the future, so we keep it using power-of-two values.
 /** Specifies a specific HTTP transport type. */
 export enum HttpTransportType {
+    /** Specifies no transport preference. */
+    None = 0,
     /** Specifies the WebSockets transport. */
-    WebSockets,
+    WebSockets = 1,
     /** Specifies the Server-Sent Events transport. */
-    ServerSentEvents,
+    ServerSentEvents = 2,
     /** Specifies the Long Polling transport. */
-    LongPolling,
+    LongPolling = 4,
 }
 
 /** Specifies the transfer format for a connection. */
