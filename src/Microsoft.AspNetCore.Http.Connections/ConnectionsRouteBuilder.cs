@@ -18,12 +18,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         private readonly HttpConnectionDispatcher _dispatcher;
         private readonly RouteBuilder _routes;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConnectionsRouteBuilder"/> class.
-        /// </summary>
-        /// <param name="routes">The underlying <see cref="RouteBuilder"/>.</param>
-        /// <param name="dispatcher">The dispatcher.</param>
-        public ConnectionsRouteBuilder(RouteBuilder routes, HttpConnectionDispatcher dispatcher)
+        internal ConnectionsRouteBuilder(RouteBuilder routes, HttpConnectionDispatcher dispatcher)
         {
             _routes = routes;
             _dispatcher = dispatcher;

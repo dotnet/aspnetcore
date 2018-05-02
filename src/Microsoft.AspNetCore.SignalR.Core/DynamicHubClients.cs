@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets an object that can be used to invoke methods on all connections associated with all of the specified users.
         /// </summary>
-        /// <param name="users">The user IDs.</param>
+        /// <param name="userIds">The user IDs.</param>
         /// <returns>An object that can be used to invoke methods.</returns>
-        public dynamic Users(IReadOnlyList<string> users) => new DynamicClientProxy(_clients.Users(users));
+        public dynamic Users(IReadOnlyList<string> userIds) => new DynamicClientProxy(_clients.Users(userIds));
     }
 }

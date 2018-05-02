@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.SignalR
     /// <summary>
     /// Extension methods for <see cref="IHubClients{T}"/>.
     /// </summary>
-    public static class IHubClientsExtensions
+    public static class HubClientsExtensions
     {
         /// <summary>
         /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all clients connected to the hub excluding the specified connection.
