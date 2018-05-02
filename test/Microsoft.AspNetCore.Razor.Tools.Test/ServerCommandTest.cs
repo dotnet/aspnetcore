@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     public class ServerCommandTest
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/2320")]
         public void WritePidFile_WorksAsExpected()
         {
             // Arrange
