@@ -1,16 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <Sdk Name="Microsoft.NET.Sdk" />
+  <Sdk Name="Microsoft.DotNet.GlobalTools.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to watch for source file changes during development and restart the dotnet command.</Description>
-    <PackageType>DotnetTool</PackageType>
     <RootNamespace>Microsoft.DotNet.Watcher.Tools</RootNamespace>
+    <PackageTags>dotnet;watch</PackageTags>
+    <PackAsTool>true</PackAsTool>
+
+    <!-- This is a requirement for Microsoft tool packages only. -->
+    <GenerateToolShims>true</GenerateToolShims>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\shared\**\*.cs" />
-    <Content Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
