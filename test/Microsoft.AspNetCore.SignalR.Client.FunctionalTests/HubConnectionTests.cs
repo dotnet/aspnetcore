@@ -803,7 +803,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(TransportTypes))]
         public async Task ClientCanUseJwtBearerTokenForAuthenticationWhenRedirected(HttpTransportType transportType)
         {
-            using (StartVerifableLog(out var loggerFactory, $"{nameof(ClientCanUseJwtBearerTokenForAuthenticationWhenRedirected)}_{transportType}"))
+            using (StartVerifiableLog(out var loggerFactory, $"{nameof(ClientCanUseJwtBearerTokenForAuthenticationWhenRedirected)}_{transportType}"))
             {
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(loggerFactory)
