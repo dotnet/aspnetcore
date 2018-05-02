@@ -18,12 +18,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="THub">The hub type to configure.</typeparam>
         /// <param name="signalrBuilder">The <see cref="ISignalRServerBuilder"/>.</param>
-        /// <param name="options">A callback to configure the hub options.</param>
+        /// <param name="configure">A callback to configure the hub options.</param>
         /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
-        public static ISignalRServerBuilder AddHubOptions<THub>(this ISignalRServerBuilder signalrBuilder, Action<HubOptions<THub>> options) where THub : Hub
+        public static ISignalRServerBuilder AddHubOptions<THub>(this ISignalRServerBuilder signalrBuilder, Action<HubOptions<THub>> configure) where THub : Hub
         {
             signalrBuilder.Services.AddSingleton<IConfigureOptions<HubOptions<THub>>, HubOptionsSetup<THub>>();
-            signalrBuilder.Services.Configure(options);
+            signalrBuilder.Services.Configure(configure);
             return signalrBuilder;
         }
 
@@ -44,11 +44,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds SignalR services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <param name="options">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="HubOptions"/>.</param>
+        /// <param name="configure">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="HubOptions"/>.</param>
         /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
-        public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> options)
+        public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> configure)
         {
-            return services.Configure(options)
+            return services.Configure(configure)
                 .AddSignalR();
         }
     }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
+    internal class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
     {
         private Timer _timer;
         private Action _callback;

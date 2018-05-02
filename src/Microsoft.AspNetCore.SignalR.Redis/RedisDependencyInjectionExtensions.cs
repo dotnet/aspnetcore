@@ -16,22 +16,22 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
         /// </summary>
-        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="signalrBuilder">The <see cref="ISignalRServerBuilder"/>.</param>
         /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
-        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder)
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder signalrBuilder)
         {
-            return AddRedis(builder, o => { });
+            return AddRedis(signalrBuilder, o => { });
         }
 
         /// <summary>
         /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
         /// </summary>
-        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="signalrBuilder">The <see cref="ISignalRServerBuilder"/>.</param>
         /// <param name="redisConnectionString">The connection string used to connect to the Redis server.</param>
         /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
-        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, string redisConnectionString)
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder signalrBuilder, string redisConnectionString)
         {
-            return AddRedis(builder, o =>
+            return AddRedis(signalrBuilder, o =>
             {
                 o.Configuration = ConfigurationOptions.Parse(redisConnectionString);
             });
@@ -40,26 +40,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
         /// </summary>
-        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="signalrBuilder">The <see cref="ISignalRServerBuilder"/>.</param>
         /// <param name="configure">A callback to configure the Redis options.</param>
         /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
-        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, Action<RedisOptions> configure)
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder signalrBuilder, Action<RedisOptions> configure)
         {
-            builder.Services.Configure(configure);
-            builder.Services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisHubLifetimeManager<>));
-            return builder;
+            signalrBuilder.Services.Configure(configure);
+            signalrBuilder.Services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisHubLifetimeManager<>));
+            return signalrBuilder;
         }
 
         /// <summary>
         /// Adds scale-out to a <see cref="ISignalRServerBuilder"/>, using a shared Redis server.
         /// </summary>
-        /// <param name="builder">The <see cref="ISignalRServerBuilder"/>.</param>
+        /// <param name="signalrBuilder">The <see cref="ISignalRServerBuilder"/>.</param>
         /// <param name="redisConnectionString">The connection string used to connect to the Redis server.</param>
         /// <param name="configure">A callback to configure the Redis options.</param>
         /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
-        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder builder, string redisConnectionString, Action<RedisOptions> configure)
+        public static ISignalRServerBuilder AddRedis(this ISignalRServerBuilder signalrBuilder, string redisConnectionString, Action<RedisOptions> configure)
         {
-            return AddRedis(builder, o =>
+            return AddRedis(signalrBuilder, o =>
             {
                 o.Configuration = ConfigurationOptions.Parse(redisConnectionString);
                 configure(o);
