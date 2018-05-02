@@ -4,6 +4,10 @@
 using System;
 using System.IO;
 using System.IO.Pipes;
+#if NET46
+using System.Security.AccessControl;
+using System.Security.Principal;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,9 +71,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 ServerLogger.Log("Named pipe '{0}' connected", pipeName);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // The original code in Roslyn checks that the server pipe is owned by the same user for security.
-                // We plan to rely on the BCL for this but it's not yet implemented:
-                // See https://github.com/dotnet/corefx/issues/25427 
+#if NET46
+                // Verify that we own the pipe.
+                if (!CheckPipeConnectionOwnership(stream))
+                {
+                    ServerLogger.Log("Owner of named pipe is incorrect");
+                    return null;
+                }
+#endif
 
                 return new NamedPipeClient(stream, GetNextIdentifier());
             }
@@ -79,6 +88,44 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 return null;
             }
         }
+
+#if NET46
+        /// <summary>
+        /// Check to ensure that the named pipe server we connected to is owned by the same
+        /// user.
+        /// </summary>
+        private static bool CheckPipeConnectionOwnership(NamedPipeClientStream pipeStream)
+        {
+            try
+            {
+                if (PlatformInformation.IsWindows)
+                {
+                    using (var currentIdentity = WindowsIdentity.GetCurrent())
+                    {
+                        var currentOwner = currentIdentity.Owner;
+                        var remotePipeSecurity = GetPipeSecurity(pipeStream);
+                        var remoteOwner = remotePipeSecurity.GetOwner(typeof(SecurityIdentifier));
+
+                        return currentOwner.Equals(remoteOwner);
+                    }
+                }
+
+                // We don't need to verify on non-windows as that will be taken care of by the
+                // PipeOptions.CurrentUserOnly flag.
+                return false;
+            }
+            catch (Exception ex)
+            {
+                ServerLogger.LogException(ex, "Checking pipe connection");
+                return false;
+            }
+        }
+
+        private static ObjectSecurity GetPipeSecurity(PipeStream pipeStream)
+        {
+            return pipeStream.GetAccessControl();
+        }
+#endif
 
         private static PipeOptions GetPipeOptions()
         {
