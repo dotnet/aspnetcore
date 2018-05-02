@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetInProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(sitePath, serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "UpgradeFeatureDetection", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
