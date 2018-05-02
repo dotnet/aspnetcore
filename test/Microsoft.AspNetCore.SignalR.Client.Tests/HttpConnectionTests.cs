@@ -41,6 +41,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public void CannotSetConnectionId()
+        {
+            var connection = new HttpConnection(new Uri("http://fakeuri.org/"));
+            var exception = Assert.Throws<InvalidOperationException>(() => connection.ConnectionId = "custom conneciton ID");
+            Assert.Equal("The ConnectionId is set internally and should not be set by user code.", exception.Message);
+        }
+
+        [Fact]
         public async Task HttpOptionsSetOntoHttpClientHandler()
         {
             var testHttpHandler = TestHttpMessageHandler.CreateDefault();
