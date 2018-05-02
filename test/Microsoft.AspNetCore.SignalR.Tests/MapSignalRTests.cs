@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,9 +15,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var ex = Assert.Throws<NotSupportedException>(() =>
             {
-                using (var builder = BuildWebHost(routes => routes.MapHub<InvalidHub>("/overloads")))
+                using (var host = BuildWebHost(routes => routes.MapHub<InvalidHub>("/overloads")))
                 {
-                    builder.Start();
+                    host.Start();
                 }
             });
 
@@ -26,33 +27,44 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void NotAddingSignalRServiceThrows()
         {
-            var t = new WebHostBuilder()
-            .UseKestrel()
-            .Configure(app =>
-            {
-                var ex = Assert.Throws<InvalidOperationException>(() => {
-                    app.UseSignalR(routes =>
-                    {
-                        routes.MapHub<AuthHub>("/overloads");
+            var executedConfigure = false;
+            var builder = new WebHostBuilder();
+
+            builder
+                .UseKestrel()
+                .Configure(app =>
+                {
+                    executedConfigure = true;
+
+                    var ex = Assert.Throws<InvalidOperationException>(() => {
+                        app.UseSignalR(routes =>
+                        {
+                            routes.MapHub<AuthHub>("/overloads");
+                        });
                     });
+
+                    Assert.Equal("Unable to find the required services. Please add all the required services by calling " +
+                                 "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.", ex.Message);
                 });
 
-                Assert.Equal("Unable to find the SignalR service. Please add it by calling 'IServiceCollection.AddSignalR()'.", ex.Message);
-            })
-            .Build();
+            using (var host = builder.Build())
+            {
+                host.Start();
+            }
 
+            Assert.True(executedConfigure);
         }
 
         [Fact]
         public void MapHubFindsAuthAttributeOnHub()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
+            using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
             {
-                builder.Start();
+                host.Start();
             }
 
             Assert.Equal(1, authCount);
@@ -62,12 +74,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsAuthAttributeOnInheritedHub()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost(routes => routes.MapHub<InheritedAuthHub>("/path", options =>
+            using (var host = BuildWebHost(routes => routes.MapHub<InheritedAuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
             {
-                builder.Start();
+                host.Start();
             }
 
             Assert.Equal(1, authCount);
@@ -77,12 +89,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsMultipleAuthAttributesOnDoubleAuthHub()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost(routes => routes.MapHub<DoubleAuthHub>("/path", options =>
+            using (var host = BuildWebHost(routes => routes.MapHub<DoubleAuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
             {
-                builder.Start();
+                host.Start();
             }
 
             Assert.Equal(2, authCount);
