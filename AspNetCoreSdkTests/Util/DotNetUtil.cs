@@ -39,8 +39,7 @@ namespace AspNetCoreSdkTests.Util
 
         public static string Restore(string workingDirectory, NuGetPackageSource packageSource)
         {
-            var sourceArgument = GetSourceArgument(packageSource);
-            return RunDotNet($"restore --no-cache{sourceArgument}", workingDirectory, GetEnvironment(workingDirectory));
+            return RunDotNet($"restore --no-cache {packageSource.SourceArgument}", workingDirectory, GetEnvironment(workingDirectory));
         }
 
         public static string Build(string workingDirectory)
@@ -62,24 +61,6 @@ namespace AspNetCoreSdkTests.Util
         public static string Publish(string workingDirectory)
         {
             return RunDotNet($"publish --no-build -o {PublishOutput}", workingDirectory, GetEnvironment(workingDirectory));
-        }
-
-        private static string GetSourceArgument(NuGetPackageSource packageSource)
-        {
-            switch (packageSource)
-            {
-                case NuGetPackageSource.None:
-                    return string.Empty;
-                case NuGetPackageSource.NuGetOrg:
-                    return " --source https://api.nuget.org/v3/index.json";
-                case NuGetPackageSource.EnvironmentVariable:
-                    var env = Environment.GetEnvironmentVariable("NUGET_PACKAGE_SOURCE");
-                    return string.IsNullOrEmpty(env) ?
-                        throw new InvalidOperationException("Environment variable NUGET_PACKAGE_SOURCE is required but not set") :
-                        $" --source env";
-                default:
-                    throw new ArgumentException("Invalid value", nameof(packageSource));
-            }
         }
 
         private static string RunDotNet(string arguments, string workingDirectory,
