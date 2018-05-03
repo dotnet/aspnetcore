@@ -124,14 +124,16 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             string commandLineCommands,
             out int result)
         {
+#if !NET46
             if (!SuppressCurrentUserOnlyPipeOptions && !Enum.IsDefined(typeof(PipeOptions), PipeOptionCurrentUserOnly))
             {
                 // For security reasons, we don't want to spin up a server that doesn't
                 // restrict requests only to the current user.
                 result = -1;
 
-                return false;
+                return ForceServer;
             }
+#endif
 
             Log.LogMessage(StandardOutputLoggingImportance, "Server execution started.");
             using (_razorServerCts = new CancellationTokenSource())
