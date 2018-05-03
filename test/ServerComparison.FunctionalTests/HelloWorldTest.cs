@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Runtime.CompilerServices;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -19,77 +19,28 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task HelloWorld_WebListener(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllApplicationTypes()
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
+        [MemberData(nameof(TestVariants))]
+        public async Task HelloWorld(TestVariant variant)
         {
-            return HelloWorld(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, applicationType, hostingModel: hostingModel, ancmVersion: ancmVersion);
-        }
-
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
-        public Task HelloWorld_Kestrel_Clr(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
-        }
-
-        [Theory]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task HelloWorld_Kestrel(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
-        }
-
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task HelloWorld_Nginx(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.Nginx, runtimeFlavor, RuntimeArchitecture.x64, applicationType);
-        }
-
-
-        private async Task HelloWorld(ServerType serverType, 
-            RuntimeFlavor runtimeFlavor, 
-            RuntimeArchitecture architecture, 
-            ApplicationType applicationType, 
-            [CallerMemberName] string testName = null, 
-            HostingModel hostingModel = HostingModel.OutOfProcess,
-            ANCMVersion ancmVersion = ANCMVersion.AspNetCoreModule)
-        {
-            testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            var testName = $"HelloWorld_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorld");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(variant.ApplicationType),
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),
+                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "Http.config", "nginx.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    ApplicationType = applicationType,
-                    HostingModel = hostingModel,
-                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
@@ -112,6 +63,34 @@ namespace ServerComparison.FunctionalTests
                         logger.LogWarning(response.ToString());
                         logger.LogWarning(responseText);
                         throw;
+                    }
+
+                    // Make sure it was the right server.
+                    var serverHeader = response.Headers.Server.ToString();
+                    switch (variant.Server)
+                    {
+                        case ServerType.HttpSys:
+                            Assert.Equal("Microsoft-HTTPAPI/2.0", serverHeader);
+                            break;
+                        case ServerType.Nginx:
+                            Assert.StartsWith("nginx/", serverHeader);
+                            break;
+                        case ServerType.Kestrel:
+                            Assert.Equal("Kestrel", serverHeader);
+                            break;
+                        case ServerType.IIS:
+                        case ServerType.IISExpress:
+                            if (variant.HostingModel == HostingModel.OutOfProcess)
+                            {
+                                Assert.Equal("Kestrel", serverHeader);
+                            }
+                            else
+                            {
+                                Assert.StartsWith("Microsoft-IIS/", serverHeader);
+                            }
+                            break;
+                        default:
+                            throw new NotImplementedException(variant.Server.ToString());
                     }
                 }
             }

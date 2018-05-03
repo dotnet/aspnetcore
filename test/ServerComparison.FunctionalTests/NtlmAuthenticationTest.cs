@@ -20,39 +20,27 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
+
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, "net461", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, "netcoreapp2.2", RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public async Task NtlmAuthentication(ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
-            string targetFramework, 
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType,
-            HostingModel hostingModel = HostingModel.OutOfProcess,
-            ANCMVersion ancmVersion = ANCMVersion.AspNetCoreModule)
+        [MemberData(nameof(TestVariants))]
+        public async Task NtlmAuthentication(TestVariant variant)
         {
-            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            var testName = $"NtlmAuthentication_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(variant.ApplicationType),
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "NtlmAuthentication.config", nginxConfig: null),
+                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "NtlmAuthentication.config", nginxConfig: null),
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = targetFramework,
-                    ApplicationType = applicationType,
-                    HostingModel = hostingModel,
-                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

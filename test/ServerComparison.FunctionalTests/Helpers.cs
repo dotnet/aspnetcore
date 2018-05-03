@@ -45,23 +45,5 @@ namespace ServerComparison.FunctionalTests
 
             return content;
         }
-
-        public static string GetTargetFramework(RuntimeFlavor runtimeFlavor)
-        {
-            if (runtimeFlavor == RuntimeFlavor.Clr)
-            {
-                return "net461";
-            }
-            else if (runtimeFlavor == RuntimeFlavor.CoreClr)
-            {
-#if NETCOREAPP2_2 || NET461
-                return "netcoreapp2.2";
-#else
-#error Target frameworks need to be updated.
-#endif
-            }
-
-            throw new ArgumentException($"Unknown RuntimeFlavor '{runtimeFlavor}'");
-        }
     }
 }

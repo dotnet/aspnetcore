@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -30,210 +29,76 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
-        // IIS Express
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_NoCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
-        {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckNoCompressionAsync, 
-                applicationType,
-                hostCompression: false, 
-                hostingModel: hostingModel,
-                ancmVersion: ancmVersion);
-        }
+        public static TestMatrix NoCompressionTestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_HostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
+        [MemberData(nameof(NoCompressionTestVariants))]
+        public Task ResponseCompression_NoCompression(TestVariant variant)
         {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckHostCompressionAsync, 
-                applicationType,
-                hostCompression: true, 
-                hostingModel: hostingModel,
-                ancmVersion: ancmVersion);
+            return ResponseCompression(variant, CheckNoCompressionAsync, hostCompression: false);
         }
 
-        [ConditionalTheory(Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_AppCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
-        {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckAppCompressionAsync, 
-                applicationType,
-                hostCompression: true, 
-                hostingModel: hostingModel,
-                ancmVersion: ancmVersion);        
-        }
-
-        
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_AppAndHostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
-        {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckAppCompressionAsync, 
-                applicationType,
-                hostCompression: true, 
-                hostingModel: hostingModel, 
-                ancmVersion: ancmVersion);        
-        }
-
-        // WebListener
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task ResponseCompression_WebListener_NoCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return ResponseCompression(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, CheckNoCompressionAsync, applicationType, hostCompression: false);
-        }
-
-        // WebListener doesn't support HostCompression
-        // "The archive entry was compressed using an unsupported compression method."
+        public static TestMatrix HostCompressionTestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Nginx)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task ResponseCompression_WebListener_AppCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
+        [MemberData(nameof(HostCompressionTestVariants))]
+        public Task ResponseCompression_HostCompression(TestVariant variant)
         {
-            return ResponseCompression(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, CheckAppCompressionAsync, applicationType, hostCompression: false);
-        }
-        
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
-        public Task ResponseCompression_WebListener_AppAndHostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            return ResponseCompression(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, CheckAppCompressionAsync, applicationType, hostCompression: true);
+            return ResponseCompression(variant, CheckHostCompressionAsync, hostCompression: true);
         }
 
-        // Kestrel
-        [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Kestrel_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
-        }
-
-        [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Kestrel_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckAppCompressionAsync, applicationType, hostCompression: false);
-        }
-        
-        // Nginx
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
-        }
+        public static TestMatrix AppCompressionTestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys) // No pass-through compression for nginx
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_HostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [MemberData(nameof(AppCompressionTestVariants))]
+        public Task ResponseCompression_AppCompression(TestVariant variant)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckHostCompressionAsync, applicationType, hostCompression: true);
+            return ResponseCompression(variant, CheckAppCompressionAsync, hostCompression: false);
         }
 
-        [ConditionalTheory(Skip = "No pass-through compression https://github.com/aspnet/BasicMiddleware/issues/123")]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckHostCompressionAsync, applicationType, hostCompression: false);
-        }
+        public static TestMatrix HostAndAppCompressionTestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_AppAndHostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [MemberData(nameof(HostAndAppCompressionTestVariants))]
+        public Task ResponseCompression_AppAndHostCompression(TestVariant variant)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckAppCompressionAsync, applicationType, hostCompression: true);
+            return ResponseCompression(variant, CheckAppCompressionAsync, hostCompression: true);
         }
 
-        private async Task ResponseCompression(ServerType serverType,
-            RuntimeFlavor runtimeFlavor, 
-            RuntimeArchitecture architecture, 
+        private async Task ResponseCompression(TestVariant variant, 
             Func<HttpClient, ILogger, Task> scenario, 
-            ApplicationType applicationType, 
             bool hostCompression, 
-            [CallerMemberName] string testName = null,
-            HostingModel hostingModel = HostingModel.OutOfProcess,
-            ANCMVersion ancmVersion = ANCMVersion.AspNetCoreModule)
+            [CallerMemberName] string testName = null)
         {
-            testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            testName = $"{testName}_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("ResponseCompression");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(variant.ApplicationType),
                     EnvironmentName = "ResponseCompression",
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(serverType,
+                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server,
                         hostCompression ? "http.config" : "NoCompression.config",
                         hostCompression ? "nginx.conf" : "NoCompression.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    ApplicationType = applicationType,
-                    HostingModel = hostingModel,
-                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
