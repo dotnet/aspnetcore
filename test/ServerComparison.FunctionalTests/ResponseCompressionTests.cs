@@ -33,15 +33,15 @@ namespace ServerComparison.FunctionalTests
         // IIS Express
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_NoCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        public Task ResponseCompression_IISExpress_NoCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
         {
             return ResponseCompression(ServerType.IISExpress, 
                 runtimeFlavor, 
@@ -49,21 +49,21 @@ namespace ServerComparison.FunctionalTests
                 CheckNoCompressionAsync, 
                 applicationType,
                 hostCompression: false, 
-                hostingModel: hostingModel, 
-                additionalPublishParameters: additionalPublishParameters);
+                hostingModel: hostingModel,
+                ancmVersion: ancmVersion);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_HostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        public Task ResponseCompression_IISExpress_HostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
         {
             return ResponseCompression(ServerType.IISExpress, 
                 runtimeFlavor, 
@@ -71,21 +71,21 @@ namespace ServerComparison.FunctionalTests
                 CheckHostCompressionAsync, 
                 applicationType,
                 hostCompression: true, 
-                hostingModel: hostingModel, 
-                additionalPublishParameters: additionalPublishParameters);
+                hostingModel: hostingModel,
+                ancmVersion: ancmVersion);
         }
 
         [ConditionalTheory(Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_AppCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        public Task ResponseCompression_IISExpress_AppCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
         {
             return ResponseCompression(ServerType.IISExpress, 
                 runtimeFlavor, 
@@ -93,22 +93,22 @@ namespace ServerComparison.FunctionalTests
                 CheckAppCompressionAsync, 
                 applicationType,
                 hostCompression: true, 
-                hostingModel: hostingModel, 
-                additionalPublishParameters: additionalPublishParameters);        
+                hostingModel: hostingModel,
+                ancmVersion: ancmVersion);        
         }
 
         
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        public Task ResponseCompression_IISExpress_AppAndHostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        public Task ResponseCompression_IISExpress_AppAndHostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
         {
             return ResponseCompression(ServerType.IISExpress, 
                 runtimeFlavor, 
@@ -117,7 +117,7 @@ namespace ServerComparison.FunctionalTests
                 applicationType,
                 hostCompression: true, 
                 hostingModel: hostingModel, 
-                additionalPublishParameters: additionalPublishParameters);        
+                ancmVersion: ancmVersion);        
         }
 
         // WebListener
@@ -216,7 +216,7 @@ namespace ServerComparison.FunctionalTests
             bool hostCompression, 
             [CallerMemberName] string testName = null,
             HostingModel hostingModel = HostingModel.OutOfProcess,
-            string additionalPublishParameters = "")
+            ANCMVersion ancmVersion = ANCMVersion.AspNetCoreModule)
         {
             testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -233,7 +233,7 @@ namespace ServerComparison.FunctionalTests
                     TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
                     ApplicationType = applicationType,
                     HostingModel = hostingModel,
-                    AdditionalPublishParameters = additionalPublishParameters
+                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

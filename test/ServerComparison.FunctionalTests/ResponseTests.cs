@@ -27,44 +27,44 @@ namespace ServerComparison.FunctionalTests
         // IIS Express
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, " /p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, " /p:ANCMVersion=V2")]
-        public Task ResponseFormats_IISExpress_ContentLength(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        public Task ResponseFormats_IISExpress_ContentLength(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
         {
-            return ResponseFormats(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, CheckContentLengthAsync, applicationType, hostingModel: hostingModel, additionalPublishParameters: additionalPublishParameters);
+            return ResponseFormats(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, CheckContentLengthAsync, applicationType, hostingModel: hostingModel, ancmVersion: ancmVersion);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, " /p:ANCMVersion=V2", Skip = "Failing after dependencies.props update.  Issue to un-skip: https://github.com/aspnet/ServerTests/issues/110")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, " /p:ANCMVersion=V2", Skip = "Failing after dependencies.props update.  Issue to un-skip: https://github.com/aspnet/ServerTests/issues/110")]
-        public Task ResponseFormats_IISExpress_Chunked(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Failing after dependencies.props update.  Issue to un-skip: https://github.com/aspnet/ServerTests/issues/110")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2, Skip = "Failing after dependencies.props update.  Issue to un-skip: https://github.com/aspnet/ServerTests/issues/110")]
+        public Task ResponseFormats_IISExpress_Chunked(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
         {
-            return ResponseFormats(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, CheckChunkedAsync, applicationType, hostingModel: hostingModel, additionalPublishParameters: additionalPublishParameters);
+            return ResponseFormats(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, CheckChunkedAsync, applicationType, hostingModel: hostingModel, ancmVersion: ancmVersion);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, " /p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, " /p:ANCMVersion=V2")]
-        public Task ResponseFormats_IIS_ManuallyChunk(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule, Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModule)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, ANCMVersion.AspNetCoreModuleV2)]
+        public Task ResponseFormats_IIS_ManuallyChunk(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, ANCMVersion ancmVersion)
         {
-            return ResponseFormats(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, CheckManuallyChunkedAsync, applicationType, hostingModel: hostingModel, additionalPublishParameters: additionalPublishParameters);
+            return ResponseFormats(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, CheckManuallyChunkedAsync, applicationType, hostingModel: hostingModel, ancmVersion: ancmVersion);
         }
         
         // Weblistener
@@ -110,7 +110,6 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, CheckHttp11ConnectionCloseAsync, applicationType);
         }
 
-        
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
@@ -217,7 +216,7 @@ namespace ServerComparison.FunctionalTests
             ApplicationType applicationType, 
             [CallerMemberName] string testName = null,
             HostingModel hostingModel = HostingModel.OutOfProcess,
-            string additionalPublishParameters = "")
+            ANCMVersion ancmVersion = ANCMVersion.AspNetCoreModule)
         {
             testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -232,7 +231,7 @@ namespace ServerComparison.FunctionalTests
                     TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
                     ApplicationType = applicationType,
                     HostingModel = hostingModel,
-                    AdditionalPublishParameters = additionalPublishParameters
+                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
