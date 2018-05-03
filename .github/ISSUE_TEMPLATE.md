@@ -1,5 +1,7 @@
 To address your issues more quickly, please open the issue in the most appropriate repository. These are some of the most common repos:
 
+NOTE: If the repository has migrated their issue tracker to this repo, please continue to create your issue here.
+
 Common ASP.NET and Entity Framework repos and projects:
 
  - Documentation: https://github.com/aspnet/Docs
