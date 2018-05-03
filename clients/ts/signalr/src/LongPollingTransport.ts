@@ -108,9 +108,6 @@ export class LongPollingTransport implements ITransport {
                     if (response.statusCode === 204) {
                         this.logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server");
 
-                        // If we were on a timeout waiting for shutdown, unregister it.
-                        clearTimeout(this.shutdownTimer);
-
                         this.running = false;
                     } else if (response.statusCode !== 200) {
                         this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);

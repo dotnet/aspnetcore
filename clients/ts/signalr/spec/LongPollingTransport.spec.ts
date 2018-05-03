@@ -6,7 +6,8 @@ import { LongPollingTransport } from "../src/LongPollingTransport";
 import { ConsoleLogger } from "../src/Utils";
 
 import { TestHttpClient } from "./TestHttpClient";
-import { asyncit as it, PromiseSource } from "./Utils";
+import { asyncit as it, PromiseSource, delay } from "./Utils";
+import { HttpError, TimeoutError } from "../src/Errors";
 
 describe("LongPollingTransport", () => {
     it("shuts down poll after timeout even if server doesn't shut it down on receiving the DELETE", async () => {
@@ -48,6 +49,8 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(200);
                 } else {
                     await deleteReceived.promise;
+                    // Force the shutdown timer to be registered by not returning inline
+                    await delay(10);
                     pollCompleted.resolve();
                     return new HttpResponse(204);
                 }
@@ -56,7 +59,8 @@ describe("LongPollingTransport", () => {
                 deleteReceived.resolve();
                 return new HttpResponse(202);
             });
-        const transport = new LongPollingTransport(client, null, NullLogger.instance, false);
+        const logMessages: string[] = [];
+        const transport = new LongPollingTransport(client, null, NullLogger.instance, false, 100);
 
         await transport.connect("http://example.com", TransferFormat.Text);
         await transport.stop();
@@ -64,4 +68,56 @@ describe("LongPollingTransport", () => {
         // This should complete, because the DELETE request triggers it to stop.
         await pollCompleted.promise;
     });
+
+    for (const result of [200, 204, 300, new HttpError("Boom", 500), new TimeoutError()]) {
+        const resultName = typeof result === "number" ? result.toString() : result.constructor.name;
+        it(`does not fire shutdown timer when poll terminates with ${resultName}`, async () => {
+            let firstPoll = true;
+            const deleteReceived = new PromiseSource();
+            const pollCompleted = new PromiseSource();
+            const client = new TestHttpClient()
+                .on("GET", async (r) => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        return new HttpResponse(200);
+                    } else {
+                        await deleteReceived.promise;
+                        // Force the shutdown timer to be registered by not returning inline
+                        await delay(10);
+                        pollCompleted.resolve();
+
+                        if (typeof result === "number") {
+                            return new HttpResponse(result);
+                        } else {
+                            throw result;
+                        }
+                    }
+                })
+                .on("DELETE", (r) => {
+                    deleteReceived.resolve();
+                    return new HttpResponse(202);
+                });
+            const logMessages: string[] = [];
+            const transport = new LongPollingTransport(client, null, {
+                log(level: LogLevel, message: string) {
+                    logMessages.push(message);
+                },
+            }, false, 100);
+
+            await transport.connect("http://example.com", TransferFormat.Text);
+            await transport.stop();
+
+            // This should complete, because the DELETE request triggers it to stop.
+            await pollCompleted.promise;
+
+            // Wait for the shutdown timeout to elapse
+            // This can be much cleaner when we port to Jest because it has a built-in set of
+            // fake timers!
+            await delay(150);
+
+            expect(logMessages)
+                .not
+                .toContain("(LongPolling transport) server did not terminate after DELETE request, canceling poll.");
+        });
+    }
 });
