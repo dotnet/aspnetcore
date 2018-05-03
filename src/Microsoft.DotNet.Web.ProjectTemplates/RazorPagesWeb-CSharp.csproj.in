@@ -8,7 +8,9 @@
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
   </PropertyGroup>
+  <!--#if (IndividualLocalAuth && !UseLocalDB) -->
 
+  <!--#endif -->
   <ItemGroup Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True' ">
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -21,7 +23,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="${MicrosoftVisualStudioWebBrowserLinkPackageVersion}" Condition="'$(UseBrowserLink)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="${MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion}" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
   </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
     <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCorePackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True'" />
