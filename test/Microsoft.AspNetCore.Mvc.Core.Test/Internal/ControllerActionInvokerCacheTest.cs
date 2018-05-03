@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var descriptorProvider = new CustomActionDescriptorCollectionProvider(
                 new[] { controllerContext.ActionDescriptor });
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
             var mvcOptions = Options.Create(new MvcOptions
             {

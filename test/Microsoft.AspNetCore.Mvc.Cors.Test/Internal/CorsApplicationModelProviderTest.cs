@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var context = new ApplicationModelProviderContext(new[] { controllerType.GetTypeInfo() });
             var provider = new DefaultApplicationModelProvider(
                 Options.Create(new MvcOptions()),
-                TestModelMetadataProvider.CreateDefaultProvider());
+                new EmptyModelMetadataProvider());
             provider.OnProvidersExecuting(context);
 
             return context;

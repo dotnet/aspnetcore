@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
-            MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProvider(detailsProviders);
+            MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
             return new DefaultModelMetadataProvider(compositeDetailsProvider, Options.Create(new MvcOptions()));
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
-            MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProvider(detailsProviders);
+            MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
 
             detailsProviders.AddRange(providers);
 

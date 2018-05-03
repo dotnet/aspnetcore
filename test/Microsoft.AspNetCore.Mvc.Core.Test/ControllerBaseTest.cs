@@ -2327,7 +2327,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         public async Task TryUpdateModel_FallsBackOnEmptyPrefix_IfNotSpecified()
         {
             // Arrange
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2356,7 +2356,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2578,7 +2578,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2606,7 +2606,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2834,7 +2834,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
         private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider)
         {
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 

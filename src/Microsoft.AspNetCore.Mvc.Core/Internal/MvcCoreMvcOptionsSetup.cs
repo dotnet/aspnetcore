@@ -77,13 +77,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
 
             // Set up metadata providers
-            ConfigureAdditionalModelMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
+            ConfigureAdditionalModelMetadataDetailsProviders(options.ModelMetadataDetailsProviders);
 
             // Set up validators
             options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
         }
 
-        internal static void ConfigureAdditionalModelMetadataDetailsProvider(IList<IMetadataDetailsProvider> modelMetadataDetailsProviders)
+        internal static void ConfigureAdditionalModelMetadataDetailsProviders(IList<IMetadataDetailsProvider> modelMetadataDetailsProviders)
         {
             // Don't bind the Type class by default as it's expensive. A user can override this behavior
             // by altering the collection of providers.

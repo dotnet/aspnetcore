@@ -791,7 +791,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var manager = GetApplicationManager(controllerTypes);
 
-            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
+            var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
