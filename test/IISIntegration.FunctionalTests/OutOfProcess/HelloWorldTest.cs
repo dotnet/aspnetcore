@@ -20,22 +20,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task HelloWorld_IISExpress_Clr_X64_Portable(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task HelloWorld_IISExpress_Clr_X64_Portable(ANCMVersion ancmVersion)
         {
             return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, ancmVersion);
         }
 
         [Theory]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Portable(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task HelloWorld_IISExpress_CoreClr_X64_Portable(ANCMVersion ancmVersion)
         {
             return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, ancmVersion);
         }
 
-        private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, string ancmVersion)
+        private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, ANCMVersion ancmVersion)
         {
             var serverType = ServerType.IISExpress;
             var architecture = RuntimeArchitecture.x64;
@@ -51,13 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType,
-                    Configuration =
-#if DEBUG
-                        "Debug",
-#else
-                        "Release",
-#endif
-                    AdditionalPublishParameters = $" /p:ANCMVersion={ancmVersion}"
+                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

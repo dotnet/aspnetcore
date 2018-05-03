@@ -26,22 +26,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task NtlmAuthentication_Clr_X64(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task NtlmAuthentication_Clr_X64(ANCMVersion ancmVersion)
         {
             return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, ancmVersion);
         }
 
         [Theory]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task NtlmAuthentication_CoreClr_X64_Portable(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task NtlmAuthentication_CoreClr_X64_Portable(ANCMVersion ancmVersion)
         {
             return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, ancmVersion);
         }
 
-        private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, string ancmVersion)
+        private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, ANCMVersion ancmVersion)
         {
             var serverType = ServerType.IISExpress;
             var architecture = RuntimeArchitecture.x64;
@@ -50,16 +50,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
 
-                var windowsRid = architecture == RuntimeArchitecture.x64
-                    ? "win7-x64"
-                    : "win7-x86";
-                var additionalPublishParameters = $" /p:ANCMVersion={ancmVersion}";
-                if (ApplicationType.Standalone == applicationType && RuntimeFlavor.CoreClr == runtimeFlavor)
-                {
-                    additionalPublishParameters += " -r " + windowsRid;
-
-                }
-   
                 var deploymentParameters = new DeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = $"http://localhost:{port}",
@@ -68,13 +58,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType,
-                    AdditionalPublishParameters = additionalPublishParameters,
-                    Configuration =
-#if DEBUG
-                        "Debug"
-#else
-                        "Release"
-#endif
+                    ANCMVersion = ancmVersion,
+
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

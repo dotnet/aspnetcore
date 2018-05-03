@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests

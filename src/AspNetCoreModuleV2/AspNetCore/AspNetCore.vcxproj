@@ -24,7 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AspNetCoreModule</RootNamespace>
     <ProjectName>AspNetCore</ProjectName>
-    <TargetName>aspnetcore</TargetName>
+    <TargetName>aspnetcorev2</TargetName>
     <LinkIncremental>false</LinkIncremental>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -243,7 +243,7 @@
     <ResourceCompile Include="aspnetcoremodule.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="aspnetcore_schema.xml">
+    <Content Include="aspnetcore_schema_v2.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ancm.mof">
@@ -251,7 +251,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="aspnetcore_schema.xml" />
+    <Xml Include="aspnetcore_schema_v2.xml" />
   </ItemGroup>
   <Import Project="..\..\..\build\native.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

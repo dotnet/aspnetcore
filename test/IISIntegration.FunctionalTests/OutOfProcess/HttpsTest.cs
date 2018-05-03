@@ -26,22 +26,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Theory(Skip = "Full framework web.config generation is currently incorrect. See: https://github.com/aspnet/websdk/pull/322")]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task Https_HelloWorld_CLR_X64(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task Https_HelloWorld_CLR_X64(ANCMVersion ancmVersion)
         {
             return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396, ancmVersion);
         }
 
         [Theory]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task Https_HelloWorld_CoreCLR_X64_Portable(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task Https_HelloWorld_CoreCLR_X64_Portable(ANCMVersion ancmVersion)
         {
             return HttpsHelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44394, ancmVersion);
         }
 
-        private async Task HttpsHelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, string ancmVersion)
+        private async Task HttpsHelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, ANCMVersion ancmVersion)
         {
             var serverType = ServerType.IISExpress;
             var architecture = RuntimeArchitecture.x64;
@@ -60,19 +60,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType,
-                    Configuration =
-#if DEBUG
-                        "Debug",
-#else
-                        "Release",
-#endif
-                    AdditionalPublishParameters = $" /p:ANCMVersion={ancmVersion}"
-
+                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
+
                     var handler = new HttpClientHandler();
                     handler.ServerCertificateCustomValidationCallback = (a, b, c, d) => true;
                     var httpClient = deploymentResult.CreateHttpClient(handler);
@@ -100,42 +94,42 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Theory]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable(ANCMVersion ancmVersion)
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false, ancmVersion);
         }
 
         [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task Https_HelloWorld_NoClientCert_Clr_X64(string ancmVersion)
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        public Task Https_HelloWorld_NoClientCert_Clr_X64(ANCMVersion ancmVersion)
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false, ancmVersion);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Theory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [InlineData("V1")]
-        [InlineData("V2")]
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-        public Task Https_HelloWorld_ClientCert_Clr_X64(string ancmVersion)
+        public Task Https_HelloWorld_ClientCert_Clr_X64(ANCMVersion ancmVersion)
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44301, sendClientCert: true, ancmVersion);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Theory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [InlineData("V1")]
-        [InlineData("V2")]
+        [InlineData(ANCMVersion.AspNetCoreModule)]
+        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-        public Task Https_HelloWorld_ClientCert_CoreCLR_X64_Portable(string ancmVersion)
+        public Task Https_HelloWorld_ClientCert_CoreCLR_X64_Portable(ANCMVersion ancmVersion)
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44302, sendClientCert: true, ancmVersion);
         }
 
-        private async Task HttpsHelloWorldCerts(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, bool sendClientCert, string ancmVersion)
+        private async Task HttpsHelloWorldCerts(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, bool sendClientCert, ANCMVersion ancmVersion)
         {
             var serverType = ServerType.IISExpress;
             var architecture = RuntimeArchitecture.x64;
@@ -153,13 +147,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType,
-                    Configuration =
-#if DEBUG
-                        "Debug",
-#else
-                        "Release",
-#endif
-                    AdditionalPublishParameters = $" /p:ANCMVersion={ancmVersion}"
+                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

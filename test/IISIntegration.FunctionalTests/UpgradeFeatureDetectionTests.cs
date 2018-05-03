@@ -82,12 +82,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = "netcoreapp2.1",
                     ApplicationType = applicationType,
-                    Configuration =
-#if DEBUG
-                        "Debug"
-#else
-                        "Release"
-#endif
+                    ANCMVersion = ANCMVersion.AspNetCoreModuleV2
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

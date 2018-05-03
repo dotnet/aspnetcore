@@ -28,13 +28,11 @@
     <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
     
   </PropertyGroup>
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ('$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == '')">
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(ANCMVersion)' == 'V1'">
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
   </ItemGroup>
@@ -44,6 +42,7 @@
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
     <AncmPath>$(NativePlatform)\aspnetcore.dll</AncmPath>
+    <AncmV2Path>$(NativePlatform)\aspnetcorev2.dll</AncmV2Path>
     <AncmRHPath>$(NativePlatform)\aspnetcorerh.dll</AncmRHPath>
     <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
@@ -61,10 +60,9 @@
   </ItemGroup>
 
   
-  <Target Name="PrepareInjectionApp" Condition="'$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == ''">
+  <Target Name="PrepareInjectionApp">
     <PropertyGroup>
       <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\test\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
-
       <InjectDepsApp Condition="'$(TargetFramework)' == 'net461'">$(InjectDepsAssembly)</InjectDepsApp>
       <InjectDepsArguments>"win7-$(NativePlatform)" "$(AncmRHPath)"</InjectDepsArguments>
     </PropertyGroup>
@@ -81,11 +79,11 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == ''">
+  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile" DependsOnTargets="PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(ProjectDepsFilePath)&quot;" />
   </Target>
 
-  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == ''">
+  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile" DependsOnTargets="PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(PublishDepsFilePath)&quot;" />
   </Target>
 

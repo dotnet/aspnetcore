@@ -202,17 +202,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 SiteName = "HttpTestSite", // This is configured in the Http.config
                 TargetFramework = "netcoreapp2.1",
                 ApplicationType = ApplicationType.Portable,
-                Configuration = GetCurrentConfiguration()
+                ANCMVersion = ANCMVersion.AspNetCoreModuleV2
             };
-        }
-
-        private static string GetCurrentConfiguration()
-        {
-#if DEBUG
-            return "Debug";
-#else
-            return "Release";
-#endif
         }
 
         private class TestLoggerProvider : ILoggerProvider
