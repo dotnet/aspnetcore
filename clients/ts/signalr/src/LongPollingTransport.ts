@@ -147,6 +147,14 @@ export class LongPollingTransport implements ITransport {
                 }
             }
         } finally {
+            // Trigger the poll aborted token so we don't set the shutdown timer
+            this.pollAbort.abort();
+
+            // Clean up the shutdown timer if it was registered
+            if (this.shutdownTimer) {
+                clearTimeout(this.shutdownTimer);
+            }
+
             // Fire our onclosed event
             if (this.onclose) {
                 this.logger.log(LogLevel.Trace, `(LongPolling transport) Firing onclose event. Error: ${closeError || "<undefined>"}`);
@@ -179,7 +187,7 @@ export class LongPollingTransport implements ITransport {
 
             this.logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request accepted.");
         } finally {
-            // Abort the poll after 5 seconds if the server doesn't stop it.
+            // Abort the poll after the shutdown timeout if the server doesn't stop the poll.
             if (!this.pollAbort.aborted) {
                 this.shutdownTimer = setTimeout(() => {
                     this.logger.log(LogLevel.Warning, "(LongPolling transport) server did not terminate after DELETE request, canceling poll.");
