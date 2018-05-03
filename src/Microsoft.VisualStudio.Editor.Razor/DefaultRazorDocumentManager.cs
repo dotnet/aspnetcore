@@ -17,13 +17,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorEditorFactoryService _editorFactoryService;
-        private readonly TextBufferProjectService _projectService;
 
         [ImportingConstructor]
         public DefaultRazorDocumentManager(
             ForegroundDispatcher dispatcher,
-            RazorEditorFactoryService editorFactoryService,
-            TextBufferProjectService projectService)
+            RazorEditorFactoryService editorFactoryService)
         {
             if (dispatcher == null)
             {
@@ -35,14 +33,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(editorFactoryService));
             }
 
-            if (projectService == null)
-            {
-                throw new ArgumentNullException(nameof(projectService));
-            }
-
             _foregroundDispatcher = dispatcher;
             _editorFactoryService = editorFactoryService;
-            _projectService = projectService;
         }
 
         public override void OnTextViewOpened(ITextView textView, IEnumerable<ITextBuffer> subjectBuffers)
@@ -64,11 +56,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 if (!textBuffer.IsRazorBuffer())
                 {
                     continue;
-                }
-
-                if (!IsSupportedProject(textBuffer))
-                {
-                    return;
                 }
 
                 if (!_editorFactoryService.TryGetDocumentTracker(textBuffer, out var documentTracker) ||
@@ -119,26 +106,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     }
                 }
             }
-        }
-
-        private bool IsSupportedProject(ITextBuffer textBuffer)
-        {
-            // Fundamentally we have a Razor half of the world as soon as the document is open - and then later 
-            // the C# half of the world will be initialized. This code is in general pretty tolerant of 
-            // unexpected /impossible states.
-            //
-            // We also want to successfully shut down if the buffer is something other than .cshtml.
-            object project = null;
-            var isSupportedProject = false;
-
-            // We expect the document to have a hierarchy even if it's not a real 'project'.
-            // However the hierarchy can be null when the document is in the process of closing.
-            if ((project = _projectService.GetHostProject(textBuffer)) != null)
-            {
-                isSupportedProject = _projectService.IsSupportedProject(project);
-            }
-
-            return isSupportedProject;
         }
     }
 }
