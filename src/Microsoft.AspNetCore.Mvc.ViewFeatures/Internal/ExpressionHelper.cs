@@ -31,9 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            string expressionText;
             if (expressionTextCache != null &&
-                expressionTextCache.Entries.TryGetValue(expression, out expressionText))
+                expressionTextCache.Entries.TryGetValue(expression, out var expressionText))
             {
                 return expressionText;
             }
