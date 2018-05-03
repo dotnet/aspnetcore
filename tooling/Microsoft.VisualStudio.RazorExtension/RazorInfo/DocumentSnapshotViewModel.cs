@@ -9,9 +9,13 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
     public class DocumentSnapshotViewModel : NotifyPropertyChanged
     {
+        private double _progress;
+
         internal DocumentSnapshotViewModel(DocumentSnapshot document)
         {
             Document = document;
+
+            InitializeGeneratedDocument();
         }
 
         internal DocumentSnapshot Document { get; }
@@ -19,6 +23,28 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         public string FilePath => Document.FilePath;
 
         public string TargetPath => Document.TargetPath;
+
+        public bool CodeGenerationInProgress => _progress < 100;
+
+        public double CodeGenerationProgress => _progress;
+
+        private async void InitializeGeneratedDocument()
+        {
+            _progress = 0;
+            OnPropertyChanged(nameof(CodeGenerationInProgress));
+            OnPropertyChanged(nameof(CodeGenerationProgress));
+
+            try
+            {
+                await Document.GetGeneratedOutputAsync();
+            }
+            finally
+            {
+                _progress = 100;
+                OnPropertyChanged(nameof(CodeGenerationInProgress));
+                OnPropertyChanged(nameof(CodeGenerationProgress));
+            }
+        }
     }
 }
 #endif

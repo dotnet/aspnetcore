@@ -302,6 +302,22 @@
             <GridView
               AllowsColumnReorder="False">
               <GridViewColumn
+                Width="50">
+                <GridViewColumnHeader
+                  Content="Status" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Grid>
+                      <ProgressBar
+                        Height="15"
+                        Width="40"
+                        IsIndeterminate="{Binding Path=CodeGenerationInProgress, Mode=OneWay}"
+                        Value="{Binding Path=CodeGenerationProgress, Mode=OneWay}" />
+                    </Grid>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
                 Width="150">
                 <GridViewColumnHeader
                   Content="Target Path" />
