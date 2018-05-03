@@ -106,7 +106,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                         // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
                         // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
-
                         if (serverConfig.Contains("[ANCMPath]"))
                         {
                             // We need to pick the bitness based the OS / IIS Express, not the application.
@@ -166,8 +165,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                     if (DeploymentParameters.HostingModel == HostingModel.InProcess)
                     {
-                        ModifyWebConfigToInProcess();
+                        ModifyAspNetCoreSectionInWebConfig(key: "hostingModel", value: "inprocess");
                     }
+                    
+                    ModifyHandlerSectionInWebConfig(key: "modules", value: DeploymentParameters.ANCMVersion.ToString());
 
                     var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigLocation) ?
                                     string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, contentRoot) :
@@ -319,13 +320,22 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         // Transforms the web.config file to include the hostingModel="inprocess" element
         // and adds the server type = Microsoft.AspNetServer.IIS such that Kestrel isn't added again in ServerTests
-        private void ModifyWebConfigToInProcess()
+        private void ModifyAspNetCoreSectionInWebConfig(string key, string value)
         {
             var webConfigFile = $"{DeploymentParameters.PublishedApplicationRootPath}/web.config";
             var config = XDocument.Load(webConfigFile);
             var element = config.Descendants("aspNetCore").FirstOrDefault();
-            element.SetAttributeValue("hostingModel", "inprocess");
+            element.SetAttributeValue(key, value);
             config.Save(webConfigFile);
+        }
+
+        private void ModifyHandlerSectionInWebConfig(string key, string value)
+        {
+            var webConfigFile = $"{DeploymentParameters.PublishedApplicationRootPath}/web.config";
+            var config = XDocument.Load(webConfigFile);
+            var element = config.Descendants("handlers").FirstOrDefault().Descendants("add").FirstOrDefault();
+            element.SetAttributeValue(key, value);
+            config.Save(webConfigFile);        
         }
     }
 }

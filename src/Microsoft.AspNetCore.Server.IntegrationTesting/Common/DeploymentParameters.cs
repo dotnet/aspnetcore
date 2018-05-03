@@ -121,6 +121,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public HostingModel HostingModel { get; set; }
 
         /// <summary>
+        /// When using the IISExpressDeployer, determines whether to use the older or newer version
+        /// of ANCM.
+        /// </summary>
+        public ANCMVersion ANCMVersion { get; set; } = ANCMVersion.AspNetCoreModule;
+
+        /// <summary>
         /// Environment variables to be set before starting the host.
         /// Not applicable for IIS Scenarios.
         /// </summary>
