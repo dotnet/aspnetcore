@@ -254,6 +254,66 @@ describe("HttpConnection", () => {
                 expect(e.message).toBe("Unable to initialize any of the available transports.");
             }
         });
+
+        for (const [val, name] of [[null, "null"], [undefined, "undefined"], [0, "0"]]) {
+            it(`can be started using ${HttpTransportType[requestedTransport]} transport when transport mask is ${name}`, async () => {
+                const negotiateResponse = {
+                    availableTransports: [
+                        { transport: "WebSockets", transferFormats: [ "Text", "Binary" ] },
+                        { transport: "ServerSentEvents", transferFormats: [ "Text" ] },
+                        { transport: "LongPolling", transferFormats: [ "Text", "Binary" ] },
+                    ],
+                    connectionId: "abc123",
+                };
+
+                const options: IHttpConnectionOptions = {
+                    ...commonOptions,
+                    httpClient: new TestHttpClient()
+                        .on("POST", (r) => negotiateResponse)
+                        .on("GET", (r) => new HttpResponse(204)),
+                    transport: val,
+                } as IHttpConnectionOptions;
+
+                const connection = new HttpConnection("http://tempuri.org", options);
+
+                await connection.start(TransferFormat.Text);
+            });
+        }
+
+        it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async() => {
+            const negotiateResponse = {
+                availableTransports: [
+                    { transport: "WebSockets", transferFormats: [ "Text", "Binary" ] },
+                    { transport: "ServerSentEvents", transferFormats: [ "Text" ] },
+                    { transport: "LongPolling", transferFormats: [ "Text", "Binary" ] },
+                ],
+                connectionId: "abc123",
+            };
+
+            // Build the mask by inverting the requested transport
+            const transportMask = ~requestedTransport;
+
+            // Remove all transports other than the requested one
+            negotiateResponse.availableTransports = negotiateResponse.availableTransports
+                .filter((r) => r.transport === HttpTransportType[requestedTransport]);
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", (r) => negotiateResponse)
+                    .on("GET", (r) => new HttpResponse(204)),
+                transport: transportMask,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            try {
+                await connection.start(TransferFormat.Text);
+                fail("Expected connection.start to throw!");
+            } catch (e) {
+                expect(e.message).toBe("Unable to initialize any of the available transports.");
+            }
+        });
     });
 
     it("cannot be started if no transport available on server and no transport requested", async (done) => {

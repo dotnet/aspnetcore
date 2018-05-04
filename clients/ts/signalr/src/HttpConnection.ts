@@ -262,7 +262,7 @@ export class HttpConnection implements IConnection {
             this.logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
         } else {
             const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
-            if (!requestedTransport || transport === requestedTransport) {
+            if (transportMatches(requestedTransport, transport)) {
                 if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
                     if ((transport === HttpTransportType.WebSockets && typeof WebSocket === "undefined") ||
                         (transport === HttpTransportType.ServerSentEvents && typeof EventSource === "undefined")) {
@@ -282,7 +282,7 @@ export class HttpConnection implements IConnection {
     }
 
     private isITransport(transport: any): transport is ITransport {
-        return typeof (transport) === "object" && "connect" in transport;
+        return transport && typeof (transport) === "object" && "connect" in transport;
     }
 
     private changeState(from: ConnectionState, to: ConnectionState): boolean {
@@ -344,4 +344,8 @@ export class HttpConnection implements IConnection {
         negotiateUrl += index === -1 ? "" : url.substring(index);
         return negotiateUrl;
     }
+}
+
+function transportMatches(requestedTransport: HttpTransportType, actualTransport: HttpTransportType) {
+    return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
 }
