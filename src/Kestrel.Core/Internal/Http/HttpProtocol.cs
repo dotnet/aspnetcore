@@ -411,21 +411,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         /// <summary>
-        /// Immediate kill the connection and poison the request and response streams.
+        /// Immediately kill the connection and poison the request and response streams with an error if there is one.
         /// </summary>
         public void Abort(Exception error)
         {
-            if (Interlocked.Exchange(ref _requestAborted, 1) == 0)
+            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
             {
-                _keepAlive = false;
-
-                _streams?.Abort(error);
-
-                Output.Abort(error);
-
-                // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
+                return;
             }
+
+            _keepAlive = false;
+
+            // If Abort() isn't called with an exception, there was a FIN. In this case, even though the connection is
+            // still closed immediately, we allow the app to drain the data in the request buffer. If the request data
+            // was truncated, MessageBody will complete the RequestBodyPipe with an error.
+            if (error != null)
+            {
+                _streams?.Abort(error);
+            }
+
+            Output.Abort(error);
+
+            // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
+            ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
         }
 
         public void OnHeader(Span<byte> name, Span<byte> value)
