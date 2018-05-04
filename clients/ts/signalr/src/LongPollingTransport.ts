@@ -10,6 +10,7 @@ import { Arg, getDataDetail, sendMessage } from "./Utils";
 
 const SHUTDOWN_TIMEOUT = 5 * 1000;
 
+// Not exported from 'index', this type is internal.
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: HttpClient;
     private readonly accessTokenFactory: () => string | Promise<string>;
@@ -22,6 +23,12 @@ export class LongPollingTransport implements ITransport {
     private shutdownTimer: any; // We use 'any' because this is an object in NodeJS. But it still gets passed to clearTimeout, so it doesn't really matter
     private shutdownTimeout: number;
     private running: boolean;
+    private stopped: boolean;
+
+    // This is an internal type, not exported from 'index' so this is really just internal.
+    public get pollAborted() {
+        return this.pollAbort.aborted;
+    }
 
     constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean, shutdownTimeout?: number) {
         this.httpClient = httpClient;
@@ -108,9 +115,6 @@ export class LongPollingTransport implements ITransport {
                     if (response.statusCode === 204) {
                         this.logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server");
 
-                        // If we were on a timeout waiting for shutdown, unregister it.
-                        clearTimeout(this.shutdownTimer);
-
                         this.running = false;
                     } else if (response.statusCode !== 200) {
                         this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
@@ -147,6 +151,14 @@ export class LongPollingTransport implements ITransport {
                 }
             }
         } finally {
+            // Indicate that we've stopped so the shutdown timer doesn't get registered.
+            this.stopped = true;
+
+            // Clean up the shutdown timer if it was registered
+            if (this.shutdownTimer) {
+                clearTimeout(this.shutdownTimer);
+            }
+
             // Fire our onclosed event
             if (this.onclose) {
                 this.logger.log(LogLevel.Trace, `(LongPolling transport) Firing onclose event. Error: ${closeError || "<undefined>"}`);
@@ -179,10 +191,12 @@ export class LongPollingTransport implements ITransport {
 
             this.logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request accepted.");
         } finally {
-            // Abort the poll after 5 seconds if the server doesn't stop it.
-            if (!this.pollAbort.aborted) {
+            // Abort the poll after the shutdown timeout if the server doesn't stop the poll.
+            if (!this.stopped) {
                 this.shutdownTimer = setTimeout(() => {
                     this.logger.log(LogLevel.Warning, "(LongPolling transport) server did not terminate after DELETE request, canceling poll.");
+
+                    // Abort any outstanding poll
                     this.pollAbort.abort();
                 }, this.shutdownTimeout);
             }
