@@ -7,8 +7,7 @@
 param(
     [Parameter(Mandatory = $true)]
     $BuildXml,
-    [switch]
-    $NoCommit,
+    [switch]$NoCommit,
     [string]$GithubUpstreamBranch,
     [string]$GithubEmail,
     [string]$GithubUsername,
