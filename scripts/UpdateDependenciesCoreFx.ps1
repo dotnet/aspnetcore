@@ -1,6 +1,7 @@
 
 [CmdletBinding()]
 param(
+    [switch]$NoCommit,
     [string]$GithubEmail,
     [string]$GithubUsername,
     [string]$GithubToken
@@ -22,6 +23,9 @@ $coreFxRepo = "dotnet/corefx"
 $coreSetupVersions = "$githubRaw/$versionsRepo/$versionsBranch/build-info/$coreSetupRepo/master/Latest_Packages.txt"
 
 $tempDir = "$PSScriptRoot/../obj"
+
+mkdir -Path $tempDir -ErrorAction Ignore
+
 $localCoreSetupVersions = "$tempDir/coresetup.packages"
 Write-Host "Downloading $coreSetupVersions to $localCoreSetupVersions"
 Invoke-WebRequest -OutFile $localCoreSetupVersions -Uri $coreSetupVersions
@@ -103,21 +107,28 @@ $depsPath = Resolve-Path "$PSScriptRoot/../build/dependencies.props"
 Write-Host "Loading deps from $depsPath"
 [xml] $dependencies = LoadXml $depsPath
 
-$remote = "origin"
-$baseBranch = "release/2.1"
+if (-not $NoCommit) {
+    $baseBranch = "release/2.1"
+    Invoke-Block { & git fetch origin }
 
-$currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
-$destinationBranch = "rybrande/UpgradeDepsTest"
+    $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
+    $destinationBranch = "dotnetbot/UpdateCoreFxDeps"
 
-Invoke-Block { & git checkout -tb $destinationBranch "$remote/$baseBranch" }
+    Invoke-Block { & git checkout -tb $destinationBranch "origin/$baseBranch" }
+}
+
 try {
     $updatedVars = UpdateVersions $variables $dependencies $depsPath
-    $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+    if (-not $NoCommit) {
+        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
 
-    if ($body) {
-        CreatePR $baseBranch $destinationBranch $body $GithubToken
+        if ($body) {
+            CreatePR "aspnet" $GithubUsername $baseBranch $destinationBranch $body $GithubToken
+        }
     }
 }
 finally {
-    Invoke-Block { & git checkout $currentBranch }
+    if (-not $NoCommit) {
+        Invoke-Block { & git checkout $currentBranch }
+    }
 }

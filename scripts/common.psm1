@@ -15,7 +15,10 @@ function Invoke-Block([scriptblock]$cmd) {
     # - $?: did the powershell script block throw an error
     # - $lastexitcode: did a windows command executed by the script block end in error
     if ((-not $?) -or ($lastexitcode -ne 0)) {
-        Write-Warning $error[0]
+        if(($error -ne $null))
+        {
+            Write-Warning $error[0]
+        }
         throw "Command failed to execute: $cmd"
     }
 }
@@ -121,9 +124,8 @@ function Ensure-Hub() {
     if (-Not (Test-Path $hubLocation) ) {
         $source = "https://github.com/github/hub/releases/download/v2.3.0-pre9/hub-windows-amd64-2.3.0-pre9.zip"
         $zipLocation = "$tmpDir\hub.zip"
-        if(-not (Test-Path $zipLocation)) {
-            New-Item -ItemType directory -Path $tmpDir
-        }
+
+        mkdir -Path $tmpDir -ErrorAction Ignore | Out-Null
 
         Invoke-WebRequest -OutFile $zipLocation -Uri $source
 
@@ -136,11 +138,17 @@ function Ensure-Hub() {
     return $hubLocation
 }
 
-function CreatePR([string]$baseBranch, [string]$destinationBranch, [string]$body, [string]$gitHubToken) {
+function CreatePR(
+    [string]$baseFork,
+    [string]$headFork,
+    [string]$baseBranch,
+    [string]$destinationBranch,
+    [string]$body,
+    [string]$gitHubToken) {
     $hubLocation = Ensure-Hub
 
-    Invoke-Block { git push -f https://$gitHubToken@github.com/aspnet/Universe.git $destinationBranch }
-    & $hubLocation pull-request -f -b $baseBranch -h $destinationBranch -m $body
+    Invoke-Block { git push -f https://$gitHubToken@github.com/$headFork/Universe.git $destinationBranch }
+    & $hubLocation pull-request -f -b "${baseFork}:$baseBranch" -h "${headFork}:$destinationBranch" -m $body
 }
 
 function Set-GithubInfo(
@@ -163,8 +171,7 @@ function CommitUpdatedVersions(
 
         $subject = "Updating external dependencies"
 
-        # Have to pipe null so that the output from this doesn't end up as part of the return value
-        $null = Invoke-Block { & git commit -m $subject }
+        Invoke-Block { & git commit -m $subject } | Out-Null
 
         $body = "$subject`n`n"
 

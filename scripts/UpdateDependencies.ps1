@@ -7,8 +7,7 @@
 param(
     [Parameter(Mandatory = $true)]
     $BuildXml,
-    [switch]
-    $NoCommit,
+    [switch]$NoCommit,
     [string]$GithubUpstreamBranch,
     [string]$GithubEmail,
     [string]$GithubUsername,
@@ -68,7 +67,7 @@ try {
         $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
 
         if ($body) {
-            CreatePR $GithubUpstreamBranch $destinationBranch $body $GithubToken
+            CreatePR "aspnet" $GithubUsername $GithubUpstreamBranch $destinationBranch $body $GithubToken
         }
     }
 }
