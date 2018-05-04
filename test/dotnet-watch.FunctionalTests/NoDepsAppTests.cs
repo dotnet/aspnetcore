@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -47,6 +46,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.StartWatcherAsync();
             var pid = await _app.GetProcessId();
             await _app.HasExited(); // process should exit after run
+            await _app.IsWaitingForFileChange();
 
             var fileToChange = Path.Combine(_app.SourceDirectory, "Program.cs");
             var programCs = File.ReadAllText(fileToChange);

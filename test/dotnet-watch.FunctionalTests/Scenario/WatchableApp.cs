@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private const string StartedMessage = "Started";
         private const string ExitingMessage = "Exiting";
         private const string WatchExitedMessage = "watch : Exited";
+        private const string WaitingForFileChangeMessage = "watch : Waiting for a file to change";
 
         private readonly ITestOutputHelper _logger;
         private string _appName;
@@ -47,6 +48,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             await Process.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
             await Process.GetOutputLineAsync(WatchExitedMessage, DefaultMessageTimeOut);
+        }
+
+        public async Task IsWaitingForFileChange()
+        {
+            await Process.GetOutputLineStartsWithAsync(WaitingForFileChangeMessage, DefaultMessageTimeOut);
         }
 
         public bool UsePollingWatcher { get; set; }
