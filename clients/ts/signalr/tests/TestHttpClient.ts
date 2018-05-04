@@ -3,7 +3,7 @@
 
 import { HttpClient, HttpRequest, HttpResponse } from "../src/HttpClient";
 
-type TestHttpHandlerResult = string | HttpResponse | any;
+export type TestHttpHandlerResult = string | HttpResponse | any;
 export type TestHttpHandler = (request: HttpRequest, next?: (request: HttpRequest) => Promise<HttpResponse>) => Promise<TestHttpHandlerResult> | TestHttpHandlerResult;
 
 export class TestHttpClient extends HttpClient {

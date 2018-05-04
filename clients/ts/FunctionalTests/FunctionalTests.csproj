@@ -57,14 +57,14 @@
       </ItemGroup>
       <Copy SourceFiles="@(MsgPack5Files)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/msgpack5" />
       <ItemGroup>
-        <JasmineFiles Include="$(MSBuildThisFileDirectory)../node_modules/jasmine-core/lib/jasmine-core/*.js" />
-        <JasmineFiles Include="$(MSBuildThisFileDirectory)../node_modules/jasmine-core/lib/jasmine-core/*.css" />
+        <JasmineFiles Include="$(MSBuildThisFileDirectory)node_modules/jasmine-core/lib/jasmine-core/*.js" />
+        <JasmineFiles Include="$(MSBuildThisFileDirectory)node_modules/jasmine-core/lib/jasmine-core/*.css" />
       </ItemGroup>
       <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
 
       <ItemGroup>
-        <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)../signalr/dist/browser/*" />
-        <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)../signalr-protocol-msgpack/dist/browser/*" />
+        <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr/dist/browser/*" />
+        <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr-protocol-msgpack/dist/browser/*" />
       </ItemGroup>
       <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr" />
  </Target>

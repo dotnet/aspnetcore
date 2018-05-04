@@ -11,15 +11,14 @@
     "test": "spec"
   },
   "scripts": {
-    "clean": "node ../node_modules/rimraf/bin.js ./dist ./.rpt2_cache",
+    "clean": "node ../node_modules/rimraf/bin.js ./dist",
     "build": "npm run clean && npm run build:lint && npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
     "build:lint": "node ../node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
-    "build:esm": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm --target ES5 -d && node ./build/process-dts.js",
-    "build:cjs": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs --target ES5",
+    "build:esm": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d && node ./build/process-dts.js",
+    "build:cjs": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
     "build:browser": "node ../node_modules/rollup/bin/rollup -c",
     "build:uglify": "node ../node_modules/uglify-js/bin/uglifyjs --source-map \"url='signalr.min.js.map',content='./dist/browser/signalr.js.map'\" --comments -o ./dist/browser/signalr.min.js ./dist/browser/signalr.js",
-    "pretest": "node ../node_modules/rimraf/bin.js ./spec/obj && node ../node_modules/typescript/bin/tsc --project ./spec/tsconfig.json",
-    "test": "node ../node_modules/jasmine/bin/jasmine.js ./spec/obj/spec/**/*.spec.js"
+    "test": "echo \"Run 'npm test' in the 'clients\\ts' folder to test this package\" && exit 1"
   },
   "repository": {
     "type": "git",

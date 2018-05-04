@@ -149,16 +149,16 @@ describe("JsonHubProtocol", () => {
 
     ([
         ["message with empty payload", `{}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload.")],
-        ["Invocation message with invalid invocation id", `{"type":1,"invocationId":1,"target":"method"}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Invocation message.")],
-        ["Invocation message with empty string invocation id", `{"type":1,"invocationId":"","target":"method"}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Invocation message.")],
-        ["Invocation message with invalid target", `{"type":1,"invocationId":"1","target":1}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Invocation message.")],
-        ["StreamItem message with missing invocation id", `{"type":2}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for StreamItem message.")],
-        ["StreamItem message with invalid invocation id", `{"type":2,"invocationId":1}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for StreamItem message.")],
-        ["Completion message with missing invocation id", `{"type":3}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Completion message.")],
-        ["Completion message with invalid invocation id", `{"type":3,"invocationId":1}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Completion message.")],
-        ["Completion message with result and error", `{"type":3,"invocationId":"1","result":2,"error":"error"}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Completion message.")],
-        ["Completion message with non-string error", `{"type":3,"invocationId":"1","error":21}${TextMessageFormat.RecordSeparator}`, new Error("Invalid payload for Completion message.")],
-    ] as Array<[string, string, Error]>).forEach(([name, payload, expectedError]) =>
+        ["Invocation message with invalid invocation id", `{"type":1,"invocationId":1,"target":"method"}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Invocation message."],
+        ["Invocation message with empty string invocation id", `{"type":1,"invocationId":"","target":"method"}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Invocation message."],
+        ["Invocation message with invalid target", `{"type":1,"invocationId":"1","target":1}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Invocation message."],
+        ["StreamItem message with missing invocation id", `{"type":2}${TextMessageFormat.RecordSeparator}`, "Invalid payload for StreamItem message."],
+        ["StreamItem message with invalid invocation id", `{"type":2,"invocationId":1}${TextMessageFormat.RecordSeparator}`, "Invalid payload for StreamItem message."],
+        ["Completion message with missing invocation id", `{"type":3}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
+        ["Completion message with invalid invocation id", `{"type":3,"invocationId":1}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
+        ["Completion message with result and error", `{"type":3,"invocationId":"1","result":2,"error":"error"}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
+        ["Completion message with non-string error", `{"type":3,"invocationId":"1","error":21}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
+    ] as Array<[string, string, string]>).forEach(([name, payload, expectedError]) =>
         it("throws for " + name, () => {
             expect(() => new JsonHubProtocol().parseMessages(payload, NullLogger.instance))
                 .toThrow(expectedError);

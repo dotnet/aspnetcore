@@ -17,14 +17,14 @@ const enum ConnectionState {
     Disconnected,
 }
 
-interface INegotiateResponse {
-    connectionId: string;
-    availableTransports: IAvailableTransport[];
-    url: string;
-    accessToken: string;
+export interface INegotiateResponse {
+    connectionId?: string;
+    availableTransports?: IAvailableTransport[];
+    url?: string;
+    accessToken?: string;
 }
 
-interface IAvailableTransport {
+export interface IAvailableTransport {
     transport: keyof typeof HttpTransportType;
     transferFormats: Array<keyof typeof TransferFormat>;
 }

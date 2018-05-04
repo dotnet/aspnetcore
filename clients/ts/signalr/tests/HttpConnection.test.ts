@@ -2,30 +2,44 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpResponse } from "../src/HttpClient";
-import { HttpConnection } from "../src/HttpConnection";
+import { HttpConnection, INegotiateResponse } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
+
+import { HttpError } from "../src/Errors";
+import { LogLevel } from "../src/ILogger";
 import { eachEndpointUrl, eachTransport } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
+import { PromiseSource } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: null,
 };
 
+const defaultConnectionId = "abc123";
+const defaultNegotiateResponse: INegotiateResponse = {
+    availableTransports: [
+        { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
+        { transport: "ServerSentEvents", transferFormats: ["Text"] },
+        { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
+    ],
+    connectionId: defaultConnectionId,
+};
+
 describe("HttpConnection", () => {
     it("cannot be created with relative url if document object is not present", () => {
         expect(() => new HttpConnection("/test", commonOptions))
-            .toThrow(new Error("Cannot resolve '/test'."));
+            .toThrow("Cannot resolve '/test'.");
     });
 
     it("cannot be created with relative url if window object is not present", () => {
         (global as any).window = {};
         expect(() => new HttpConnection("/test", commonOptions))
-            .toThrow(new Error("Cannot resolve '/test'."));
+            .toThrow("Cannot resolve '/test'.");
         delete (global as any).window;
     });
 
-    it("starting connection fails if getting id fails", async (done) => {
+    it("starting connection fails if getting id fails", async () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
@@ -35,45 +49,48 @@ describe("HttpConnection", () => {
 
         const connection = new HttpConnection("http://tempuri.org", options);
 
-        try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-            expect(e).toBe("error");
-            done();
-        }
+        expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("error");
     });
 
-    it("cannot start a running connection", async (done) => {
+    it("cannot start a running connection", async () => {
+        const negotiating = new PromiseSource();
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", (r) => {
-                    connection.start(TransferFormat.Text)
-                        .then(() => {
-                            fail();
-                            done();
-                        })
-                        .catch((error: Error) => {
-                            expect(error.message).toBe("Cannot start a connection that is not in the 'Disconnected' state.");
-                            done();
-                        });
-                    return Promise.reject("error");
+                    negotiating.resolve();
+                    return defaultNegotiateResponse;
                 }),
+            transport: {
+                connect(url: string, transferFormat: TransferFormat) {
+                    return Promise.resolve();
+                },
+                send(data: any) {
+                    return Promise.resolve();
+                },
+                stop() {
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            },
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
-
         try {
             await connection.start(TransferFormat.Text);
-        } catch (e) {
-            // This exception is thrown after the actual verification is completed.
-            // The connection is not setup to be running so just ignore the error.
+
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Cannot start a connection that is not in the 'Disconnected' state.");
+        } finally {
+            await connection.stop();
         }
     });
 
-    it("can start a stopped connection", async (done) => {
+    it("can start a stopped connection", async () => {
         let negotiateCalls = 0;
         const options: IHttpConnectionOptions = {
             ...commonOptions,
@@ -87,22 +104,16 @@ describe("HttpConnection", () => {
 
         const connection = new HttpConnection("http://tempuri.org", options);
 
-        try {
-            await connection.start(TransferFormat.Text);
-        } catch (e) {
-            expect(e).toBe("reached negotiate");
-        }
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("reached negotiate");
 
-        try {
-            await connection.start(TransferFormat.Text);
-        } catch (e) {
-            expect(e).toBe("reached negotiate");
-        }
-
-        done();
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("reached negotiate");
     });
 
-    it("can stop a starting connection", async (done) => {
+    it("can stop a starting connection", async () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
@@ -118,22 +129,15 @@ describe("HttpConnection", () => {
 
         const connection = new HttpConnection("http://tempuri.org", options);
 
-        try {
-            await connection.start(TransferFormat.Text);
-            done();
-        } catch (e) {
-            fail();
-            done();
-        }
+        await connection.start(TransferFormat.Text);
     });
 
-    it("can stop a non-started connection", async (done) => {
+    it("can stop a non-started connection", async () => {
         const connection = new HttpConnection("http://tempuri.org", commonOptions);
         await connection.stop();
-        done();
     });
 
-    it("start throws after all transports fail", async (done) => {
+    it("start throws after all transports fail", async () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
@@ -142,25 +146,21 @@ describe("HttpConnection", () => {
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org?q=myData", options);
-        try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-            expect(e.message).toBe("Unable to initialize any of the available transports.");
-        }
-        done();
+
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("Unable to initialize any of the available transports.");
     });
 
-    it("preserves user's query string", async (done) => {
-        let connectUrl: string;
+    it("preserves user's query string", async () => {
+        const connectUrl = new PromiseSource<string>();
         const fakeTransport: ITransport = {
             connect(url: string): Promise<void> {
-                connectUrl = url;
-                return Promise.reject("");
+                connectUrl.resolve(url);
+                return Promise.resolve();
             },
             send(data: any): Promise<void> {
-                return Promise.reject("");
+                return Promise.resolve();
             },
             stop(): Promise<void> {
                 return Promise.resolve();
@@ -178,60 +178,50 @@ describe("HttpConnection", () => {
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org?q=myData", options);
-
         try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-        }
+            const startPromise = connection.start(TransferFormat.Text);
 
-        expect(connectUrl).toBe("http://tempuri.org?q=myData&id=42");
-        done();
+            expect(await connectUrl).toBe("http://tempuri.org?q=myData&id=42");
+
+            await startPromise;
+        } finally {
+            await connection.stop();
+        }
     });
 
     eachEndpointUrl((givenUrl: string, expectedUrl: string) => {
-        it("negotiate request puts 'negotiate' at the end of the path", async (done) => {
-            let negotiateUrl: string;
-            let connection: HttpConnection;
+        it(`negotiate request for '${givenUrl}' puts 'negotiate' at the end of the path`, async () => {
+            const negotiateUrl = new PromiseSource<string>();
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", (r) => {
-                        negotiateUrl = r.url;
-                        connection.stop();
-                        return "{}";
+                        negotiateUrl.resolve(r.url);
+                        throw new HttpError("We don't care how this turns out", 500);
                     })
                     .on("GET", (r) => {
-                        connection.stop();
-                        return "";
-                    }),
+                        return new HttpResponse(204);
+                    })
+                    .on("DELETE", (r) => new HttpResponse(202)),
             } as IHttpConnectionOptions;
 
-            connection = new HttpConnection(givenUrl, options);
-
+            const connection = new HttpConnection(givenUrl, options);
             try {
-                await connection.start(TransferFormat.Text);
-                done();
-            } catch (e) {
-                fail();
-                done();
-            }
+                const startPromise = connection.start(TransferFormat.Text);
 
-            expect(negotiateUrl).toBe(expectedUrl);
+                expect(await negotiateUrl).toBe(expectedUrl);
+
+                await expect(startPromise).rejects;
+            } finally {
+                await connection.stop();
+            }
         });
     });
 
     eachTransport((requestedTransport: HttpTransportType) => {
         it(`cannot be started if requested ${HttpTransportType[requestedTransport]} transport not available on server`, async () => {
-            const negotiateResponse = {
-                availableTransports: [
-                    { transport: "WebSockets", transferFormats: [ "Text", "Binary" ] },
-                    { transport: "ServerSentEvents", transferFormats: [ "Text" ] },
-                    { transport: "LongPolling", transferFormats: [ "Text", "Binary" ] },
-                ],
-                connectionId: "abc123",
-            };
+            // Clone the default response
+            const negotiateResponse = { ...defaultNegotiateResponse };
 
             // Remove the requested transport from the response
             negotiateResponse.availableTransports = negotiateResponse.availableTransports
@@ -247,12 +237,9 @@ describe("HttpConnection", () => {
 
             const connection = new HttpConnection("http://tempuri.org", options);
 
-            try {
-                await connection.start(TransferFormat.Text);
-                fail("Expected connection.start to throw!");
-            } catch (e) {
-                expect(e.message).toBe("Unable to initialize any of the available transports.");
-            }
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unable to initialize any of the available transports.");
         });
 
         for (const [val, name] of [[null, "null"], [undefined, "undefined"], [0, "0"]]) {
@@ -316,7 +303,7 @@ describe("HttpConnection", () => {
         });
     });
 
-    it("cannot be started if no transport available on server and no transport requested", async (done) => {
+    it("cannot be started if no transport available on server and no transport requested", async () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient()
@@ -325,17 +312,12 @@ describe("HttpConnection", () => {
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
-        try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-            expect(e.message).toBe("Unable to initialize any of the available transports.");
-            done();
-        }
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("Unable to initialize any of the available transports.");
     });
 
-    it("does not send negotiate request if WebSockets transport requested explicitly and skipNegotiation is true", async (done) => {
+    it("does not send negotiate request if WebSockets transport requested explicitly and skipNegotiation is true", async () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient(),
@@ -344,19 +326,12 @@ describe("HttpConnection", () => {
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
-        try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-            // WebSocket is created when the transport is connecting which happens after
-            // negotiate request would be sent. No better/easier way to test this.
-            expect(e.message).toBe("'WebSocket' is not supported in your environment.");
-            done();
-        }
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("'WebSocket' is not supported in your environment.");
     });
 
-    it("does not start non WebSockets transport requested explicitly and skipNegotiation is true", async (done) => {
+    it("does not start non WebSockets transport requested explicitly and skipNegotiation is true", async () => {
         const options: IHttpConnectionOptions = {
             ...commonOptions,
             httpClient: new TestHttpClient(),
@@ -365,19 +340,12 @@ describe("HttpConnection", () => {
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
-        try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-            // WebSocket is created when the transport is connecting which happens after
-            // negotiate request would be sent. No better/easier way to test this.
-            expect(e.message).toBe("Negotiation can only be skipped when using the WebSocket transport directly.");
-            done();
-        }
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("Negotiation can only be skipped when using the WebSocket transport directly.");
     });
 
-    it("redirects to url when negotiate returns it", async (done) => {
+    it("redirects to url when negotiate returns it", async () => {
         let firstNegotiate = true;
         let firstPoll = true;
         const httpClient = new TestHttpClient()
@@ -397,7 +365,8 @@ describe("HttpConnection", () => {
                     return "";
                 }
                 return new HttpResponse(204, "No Content", "");
-            });
+            })
+            .on("DELETE", (r) => new HttpResponse(202));
 
         const options: IHttpConnectionOptions = {
             ...commonOptions,
@@ -405,23 +374,21 @@ describe("HttpConnection", () => {
             transport: HttpTransportType.LongPolling,
         } as IHttpConnectionOptions;
 
+        const connection = new HttpConnection("http://tempuri.org", options);
         try {
-            const connection = new HttpConnection("http://tempuri.org", options);
             await connection.start(TransferFormat.Text);
-        } catch (e) {
-            fail(e);
-            done();
-        }
 
-        expect(httpClient.sentRequests.length).toBe(4);
-        expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
-        expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
-        expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
-        expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
-        done();
+            expect(httpClient.sentRequests.length).toBe(4);
+            expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
+            expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
+            expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
+            expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
+        } finally {
+            await connection.stop();
+        }
     });
 
-    it("fails to start if negotiate redirects more than 100 times", async (done) => {
+    it("fails to start if negotiate redirects more than 100 times", async () => {
         const httpClient = new TestHttpClient()
             .on("POST", /negotiate$/, (r) => ({ url: "https://another.domain.url/chat" }));
 
@@ -431,17 +398,13 @@ describe("HttpConnection", () => {
             transport: HttpTransportType.LongPolling,
         } as IHttpConnectionOptions;
 
-        try {
-            const connection = new HttpConnection("http://tempuri.org", options);
-            await connection.start(TransferFormat.Text);
-            fail();
-        } catch (e) {
-            expect(e.message).toBe("Negotiate redirection limit exceeded.");
-            done();
-        }
+        const connection = new HttpConnection("http://tempuri.org", options);
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("Negotiate redirection limit exceeded.");
     });
 
-    it("redirects to url when negotiate returns it with access token", async (done) => {
+    it("redirects to url when negotiate returns it with access token", async () => {
         let firstNegotiate = true;
         let firstPoll = true;
         const httpClient = new TestHttpClient()
@@ -475,7 +438,8 @@ describe("HttpConnection", () => {
                     return "";
                 }
                 return new HttpResponse(204, "No Content", "");
-            });
+            })
+            .on("DELETE", (r) => new HttpResponse(202));
 
         const options: IHttpConnectionOptions = {
             ...commonOptions,
@@ -484,23 +448,21 @@ describe("HttpConnection", () => {
             transport: HttpTransportType.LongPolling,
         } as IHttpConnectionOptions;
 
+        const connection = new HttpConnection("http://tempuri.org", options);
         try {
-            const connection = new HttpConnection("http://tempuri.org", options);
             await connection.start(TransferFormat.Text);
-        } catch (e) {
-            fail(e);
-            done();
-        }
 
-        expect(httpClient.sentRequests.length).toBe(4);
-        expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
-        expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
-        expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
-        expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
-        done();
+            expect(httpClient.sentRequests.length).toBe(4);
+            expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
+            expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
+            expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
+            expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
+        } finally {
+            await connection.stop();
+        }
     });
 
-    it("authorization header removed when token factory returns null and using LongPolling", async (done) => {
+    it("authorization header removed when token factory returns null and using LongPolling", async () => {
         const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
 
         let httpClientGetCount = 0;
@@ -535,23 +497,22 @@ describe("HttpConnection", () => {
                         }
                         throw new Error("fail");
                     }
-                }),
+                })
+                .on("DELETE", (r) => new HttpResponse(202)),
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
-
         try {
             await connection.start(TransferFormat.Text);
+
             expect(httpClientGetCount).toBeGreaterThanOrEqual(2);
             expect(accessTokenFactoryCount).toBeGreaterThanOrEqual(2);
-            done();
-        } catch (e) {
-            fail(e);
-            done();
+        } finally {
+            await connection.stop();
         }
     });
 
-    it("sets inherentKeepAlive feature when using LongPolling", async (done) => {
+    it("sets inherentKeepAlive feature when using LongPolling", async () => {
         const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
 
         let httpClientGetCount = 0;
@@ -567,22 +528,20 @@ describe("HttpConnection", () => {
                     } else {
                         throw new Error("fail");
                     }
-                }),
+                })
+                .on("DELETE", (r) => new HttpResponse(202)),
         } as IHttpConnectionOptions;
 
         const connection = new HttpConnection("http://tempuri.org", options);
-
         try {
             await connection.start(TransferFormat.Text);
             expect(connection.features.inherentKeepAlive).toBe(true);
-            done();
-        } catch (e) {
-            fail(e);
-            done();
+        } finally {
+            await connection.stop();
         }
     });
 
-    it("does not select ServerSentEvents transport when not available in environment", async (done) => {
+    it("does not select ServerSentEvents transport when not available in environment", async () => {
         const serverSentEventsTransport = { transport: "ServerSentEvents", transferFormats: ["Text"] };
 
         const options: IHttpConnectionOptions = {
@@ -593,19 +552,12 @@ describe("HttpConnection", () => {
 
         const connection = new HttpConnection("http://tempuri.org", options);
 
-        try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-            // ServerSentEvents is only transport returned from server but is not selected
-            // because there is no support in the environment, leading to the following error
-            expect(e.message).toBe("Unable to initialize any of the available transports.");
-            done();
-        }
+        await expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("Unable to initialize any of the available transports.");
     });
 
-    it("does not select WebSockets transport when not available in environment", async (done) => {
+    it("does not select WebSockets transport when not available in environment", async () => {
         const webSocketsTransport = { transport: "WebSockets", transferFormats: ["Text"] };
 
         const options: IHttpConnectionOptions = {
@@ -616,16 +568,9 @@ describe("HttpConnection", () => {
 
         const connection = new HttpConnection("http://tempuri.org", options);
 
-        try {
-            await connection.start(TransferFormat.Text);
-            fail();
-            done();
-        } catch (e) {
-            // WebSockets is only transport returned from server but is not selected
-            // because there is no support in the environment, leading to the following error
-            expect(e.message).toBe("Unable to initialize any of the available transports.");
-            done();
-        }
+        expect(connection.start(TransferFormat.Text))
+            .rejects
+            .toThrow("Unable to initialize any of the available transports.");
     });
 
     describe(".constructor", () => {

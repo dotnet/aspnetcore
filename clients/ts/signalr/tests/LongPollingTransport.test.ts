@@ -1,3 +1,4 @@
+import { HttpError, TimeoutError } from "../src/Errors";
 import { HttpResponse } from "../src/HttpClient";
 import { LogLevel } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
@@ -6,9 +7,7 @@ import { LongPollingTransport } from "../src/LongPollingTransport";
 import { ConsoleLogger } from "../src/Utils";
 
 import { TestHttpClient } from "./TestHttpClient";
-import { asyncit as it, PromiseSource, delay } from "./Utils";
-import { HttpError, TimeoutError } from "../src/Errors";
-import { AbortSignal } from "../src/AbortController";
+import { delay, PromiseSource } from "./Utils";
 
 describe("LongPollingTransport", () => {
     it("shuts down poll after timeout even if server doesn't shut it down on receiving the DELETE", async () => {
@@ -70,7 +69,10 @@ describe("LongPollingTransport", () => {
     });
 
     for (const result of [200, 204, 300, new HttpError("Boom", 500), new TimeoutError()]) {
-        const resultName = typeof result === "number" ? result.toString() : result.constructor.name;
+
+        // Function has a name property but TypeScript doesn't know about it.
+        const resultName = typeof result === "number" ? result.toString() : (result.constructor as any).name;
+
         it(`does not fire shutdown timer when poll terminates with ${resultName}`, async () => {
             let firstPoll = true;
             const deleteReceived = new PromiseSource();

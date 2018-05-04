@@ -116,9 +116,9 @@ describe("hubConnection", () => {
                     done();
                 });
 
-                const received = [];
+                const received: string[] = [];
                 hubConnection.start().then(() => {
-                    hubConnection.stream("Stream").subscribe({
+                    hubConnection.stream<string>("Stream").subscribe({
                         complete() {
                             expect(received).toEqual(["a", "b", "c"]);
                             hubConnection.stop();
@@ -686,7 +686,7 @@ describe("hubConnection", () => {
         }
     });
 
-    function getJwtToken(url): Promise<string> {
+    function getJwtToken(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
 
