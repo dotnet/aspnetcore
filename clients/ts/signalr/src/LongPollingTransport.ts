@@ -10,6 +10,7 @@ import { Arg, getDataDetail, sendMessage } from "./Utils";
 
 const SHUTDOWN_TIMEOUT = 5 * 1000;
 
+// Not exported from 'index', this type is internal.
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: HttpClient;
     private readonly accessTokenFactory: () => string | Promise<string>;
@@ -22,6 +23,12 @@ export class LongPollingTransport implements ITransport {
     private shutdownTimer: any; // We use 'any' because this is an object in NodeJS. But it still gets passed to clearTimeout, so it doesn't really matter
     private shutdownTimeout: number;
     private running: boolean;
+    private stopped: boolean;
+
+    // This is an internal type, not exported from 'index' so this is really just internal.
+    public get pollAborted() {
+        return this.pollAbort.aborted;
+    }
 
     constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean, shutdownTimeout?: number) {
         this.httpClient = httpClient;
@@ -144,8 +151,8 @@ export class LongPollingTransport implements ITransport {
                 }
             }
         } finally {
-            // Trigger the poll aborted token so we don't set the shutdown timer
-            this.pollAbort.abort();
+            // Indicate that we've stopped so the shutdown timer doesn't get registered.
+            this.stopped = true;
 
             // Clean up the shutdown timer if it was registered
             if (this.shutdownTimer) {
@@ -185,9 +192,11 @@ export class LongPollingTransport implements ITransport {
             this.logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request accepted.");
         } finally {
             // Abort the poll after the shutdown timeout if the server doesn't stop the poll.
-            if (!this.pollAbort.aborted) {
+            if (!this.stopped) {
                 this.shutdownTimer = setTimeout(() => {
                     this.logger.log(LogLevel.Warning, "(LongPolling transport) server did not terminate after DELETE request, canceling poll.");
+
+                    // Abort any outstanding poll
                     this.pollAbort.abort();
                 }, this.shutdownTimeout);
             }

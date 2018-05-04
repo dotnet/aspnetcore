@@ -8,6 +8,7 @@ import { ConsoleLogger } from "../src/Utils";
 import { TestHttpClient } from "./TestHttpClient";
 import { asyncit as it, PromiseSource, delay } from "./Utils";
 import { HttpError, TimeoutError } from "../src/Errors";
+import { AbortSignal } from "../src/AbortController";
 
 describe("LongPollingTransport", () => {
     it("shuts down poll after timeout even if server doesn't shut it down on receiving the DELETE", async () => {
@@ -59,7 +60,6 @@ describe("LongPollingTransport", () => {
                 deleteReceived.resolve();
                 return new HttpResponse(202);
             });
-        const logMessages: string[] = [];
         const transport = new LongPollingTransport(client, null, NullLogger.instance, false, 100);
 
         await transport.connect("http://example.com", TransferFormat.Text);
@@ -115,9 +115,8 @@ describe("LongPollingTransport", () => {
             // fake timers!
             await delay(150);
 
-            expect(logMessages)
-                .not
-                .toContain("(LongPolling transport) server did not terminate after DELETE request, canceling poll.");
+            // The pollAbort token should be left unaborted because we shut down gracefully.
+            expect(transport.pollAborted).toBe(false);
         });
     }
 });
