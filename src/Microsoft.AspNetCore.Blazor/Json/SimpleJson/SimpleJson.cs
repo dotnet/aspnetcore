@@ -1268,7 +1268,7 @@ namespace SimpleJson
 
         protected virtual string MapClrMemberNameToJsonFieldName(string clrPropertyName)
         {
-            return clrPropertyName;
+            return CamelCase.MemberNameToCamelCase(clrPropertyName);
         }
 
         internal virtual ReflectionUtils.ConstructorDelegate ConstructorDelegateFactory(Type key)
@@ -1302,7 +1302,20 @@ namespace SimpleJson
 
         internal virtual IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> SetterValueFactory(Type type)
         {
-            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result = new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>();
+            // BLAZOR-SPECIFIC MODIFICATION FROM STOCK SIMPLEJSON:
+            //
+            // For incoming keys we match case-insensitively. But if two .NET properties differ only by case,
+            // it's ambiguous which should be used: the one that matches the incoming JSON exactly, or the
+            // one that uses 'correct' PascalCase corresponding to the incoming camelCase? What if neither
+            // meets these descriptions?
+            //
+            // To resolve this:
+            // - If multiple public properties differ only by case, we throw
+            // - If multiple public fields differ only by case, we throw
+            // - If there's a public property and a public field that differ only by case, we prefer the property
+            // This unambiguously selects one member, and that's what we'll use.
+
+            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result = new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>(StringComparer.OrdinalIgnoreCase);
             foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
             {
                 if (propertyInfo.CanWrite)
@@ -1310,15 +1323,30 @@ namespace SimpleJson
                     MethodInfo setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
                     if (setMethod.IsStatic || !setMethod.IsPublic)
                         continue;
-                    result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
+                    if (result.ContainsKey(propertyInfo.Name))
+                    {
+                        throw new InvalidOperationException($"The type '{type.FullName}' contains multiple public properties with names case-insensitively matching '{propertyInfo.Name.ToLowerInvariant()}'. Such types cannot be used for JSON deserialization.");
+                    }
+                    result[propertyInfo.Name] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
                 }
             }
+
+            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> fieldResult = new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>(StringComparer.OrdinalIgnoreCase);
             foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
             {
                 if (fieldInfo.IsInitOnly || fieldInfo.IsStatic || !fieldInfo.IsPublic)
                     continue;
-                result[MapClrMemberNameToJsonFieldName(fieldInfo.Name)] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(fieldInfo.FieldType, ReflectionUtils.GetSetMethod(fieldInfo));
+                if (fieldResult.ContainsKey(fieldInfo.Name))
+                {
+                    throw new InvalidOperationException($"The type '{type.FullName}' contains multiple public fields with names case-insensitively matching '{fieldInfo.Name.ToLowerInvariant()}'. Such types cannot be used for JSON deserialization.");
+                }
+                fieldResult[fieldInfo.Name] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(fieldInfo.FieldType, ReflectionUtils.GetSetMethod(fieldInfo));
+                if (!result.ContainsKey(fieldInfo.Name))
+                {
+                    result[fieldInfo.Name] = fieldResult[fieldInfo.Name];
+                }
             }
+
             return result;
         }
 
@@ -1435,13 +1463,13 @@ namespace SimpleJson
                                 ?? throw new InvalidOperationException($"Cannot deserialize JSON into type '{type.FullName}' because it does not have a public parameterless constructor.");
                             obj = constructorDelegate();
 
-                            foreach (KeyValuePair<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> setter in SetCache[type])
+                            var setterCache = SetCache[type];
+                            foreach (var jsonKeyValuePair in jsonObject)
                             {
-                                object jsonValue;
-                                if (jsonObject.TryGetValue(setter.Key, out jsonValue))
+                                if (setterCache.TryGetValue(jsonKeyValuePair.Key, out var setter))
                                 {
-                                    jsonValue = DeserializeObject(jsonValue, setter.Value.Key);
-                                    setter.Value.Value(obj, jsonValue);
+                                    var jsonValue = DeserializeObject(jsonKeyValuePair.Value, setter.Key);
+                                    setter.Value(obj, jsonValue);
                                 }
                             }
                         }

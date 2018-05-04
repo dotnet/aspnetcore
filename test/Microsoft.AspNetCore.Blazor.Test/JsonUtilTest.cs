@@ -53,12 +53,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 Hobby = Hobbies.Swordfighting,
                 Nicknames = new List<string> { "Comte de la Fère", "Armand" },
                 BirthInstant = new DateTimeOffset(1825, 8, 6, 18, 45, 21, TimeSpan.FromHours(-6)),
-                Age = new TimeSpan(7665, 1, 30, 0)
+                Age = new TimeSpan(7665, 1, 30, 0),
+                Allergies = new Dictionary<string, object> { { "Ducks", true }, { "Geese", false } },
             };
 
             // Act/Assert
             Assert.Equal(
-                "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2,\"Nicknames\":[\"Comte de la Fère\",\"Armand\"],\"BirthInstant\":\"1825-08-06T18:45:21.0000000-06:00\",\"Age\":\"7665.01:30:00\"}",
+                "{\"id\":1844,\"name\":\"Athos\",\"pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"hobby\":2,\"nicknames\":[\"Comte de la Fère\",\"Armand\"],\"birthInstant\":\"1825-08-06T18:45:21.0000000-06:00\",\"age\":\"7665.01:30:00\",\"allergies\":{\"Ducks\":true,\"Geese\":false}}",
                 JsonUtil.Serialize(person));
         }
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void CanDeserializeClassFromJson()
         {
             // Arrange
-            var json = "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2,\"Nicknames\":[\"Comte de la Fère\",\"Armand\"],\"BirthInstant\":\"1825-08-06T18:45:21.0000000-06:00\",\"Age\":\"7665.01:30:00\"}";
+            var json = "{\"id\":1844,\"name\":\"Athos\",\"pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"hobby\":2,\"nicknames\":[\"Comte de la Fère\",\"Armand\"],\"birthInstant\":\"1825-08-06T18:45:21.0000000-06:00\",\"age\":\"7665.01:30:00\",\"allergies\":{\"Ducks\":true,\"Geese\":false}}";
 
             // Act
             var person = JsonUtil.Deserialize<Person>(json);
@@ -79,6 +80,35 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(new[] { "Comte de la Fère", "Armand" }, person.Nicknames);
             Assert.Equal(new DateTimeOffset(1825, 8, 6, 18, 45, 21, TimeSpan.FromHours(-6)), person.BirthInstant);
             Assert.Equal(new TimeSpan(7665, 1, 30, 0), person.Age);
+            Assert.Equal(new Dictionary<string, object> { { "Ducks", true }, { "Geese", false } }, person.Allergies);
+        }
+
+        [Fact]
+        public void CanDeserializeWithCaseInsensitiveKeys()
+        {
+            // Arrange
+            var json = "{\"ID\":1844,\"NamE\":\"Athos\"}";
+
+            // Act
+            var person = JsonUtil.Deserialize<Person>(json);
+
+            // Assert
+            Assert.Equal(1844, person.Id);
+            Assert.Equal("Athos", person.Name);
+        }
+
+        [Fact]
+        public void DeserializationPrefersPropertiesOverFields()
+        {
+            // Arrange
+            var json = "{\"member1\":\"Hello\"}";
+
+            // Act
+            var person = JsonUtil.Deserialize<PrefersPropertiesOverFields>(json);
+
+            // Assert
+            Assert.Equal("Hello", person.Member1);
+            Assert.Null(person.member1);
         }
 
         [Fact]
@@ -96,14 +126,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var result = JsonUtil.Serialize(commandResult);
             
             // Assert
-            Assert.Equal("{\"StringProperty\":\"Test\",\"BoolProperty\":true,\"NullableIntProperty\":1}", result);
+            Assert.Equal("{\"stringProperty\":\"Test\",\"boolProperty\":true,\"nullableIntProperty\":1}", result);
         }
 
         [Fact]
         public void CanDeserializeStructFromJson()
         {
             // Arrange
-            var json = "{\"StringProperty\":\"Test\",\"BoolProperty\":true,\"NullableIntProperty\":1}";
+            var json = "{\"stringProperty\":\"Test\",\"boolProperty\":true,\"nullableIntProperty\":1}";
 
             //Act
             var simpleError = JsonUtil.Deserialize<SimpleStruct>(json);
@@ -112,6 +142,34 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal("Test", simpleError.StringProperty);
             Assert.True(simpleError.BoolProperty);
             Assert.Equal(1, simpleError.NullableIntProperty);
+        }
+
+        [Fact]
+        public void RejectsTypesWithAmbiguouslyNamedProperties()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                JsonUtil.Deserialize<ClashingProperties>("{}");
+            });
+
+            Assert.Equal($"The type '{typeof(ClashingProperties).FullName}' contains multiple public properties " +
+                $"with names case-insensitively matching '{nameof(ClashingProperties.PROP1).ToLowerInvariant()}'. " +
+                $"Such types cannot be used for JSON deserialization.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void RejectsTypesWithAmbiguouslyNamedFields()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                JsonUtil.Deserialize<ClashingFields>("{}");
+            });
+
+            Assert.Equal($"The type '{typeof(ClashingFields).FullName}' contains multiple public fields " +
+                $"with names case-insensitively matching '{nameof(ClashingFields.Field1).ToLowerInvariant()}'. " +
+                $"Such types cannot be used for JSON deserialization.",
+                ex.Message);
         }
 
         [Fact]
@@ -143,6 +201,50 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal("{\"key1\":\"value1\",\"key2\":123}", json);
         }
 
+        // Test cases based on https://github.com/JamesNK/Newtonsoft.Json/blob/122afba9908832bd5ac207164ee6c303bfd65cf1/Src/Newtonsoft.Json.Tests/Utilities/StringUtilsTests.cs#L41
+        // The only difference is that our logic doesn't have to handle space-separated words,
+        // because we're only use this for camelcasing .NET member names
+        //
+        // Not all of the following cases are really valid .NET member names, but we have no reason
+        // to implement more logic to detect invalid member names besides the basics (null or empty).
+        [Theory]
+        [InlineData("URLValue", "urlValue")]
+        [InlineData("URL", "url")]
+        [InlineData("ID", "id")]
+        [InlineData("I", "i")]
+        [InlineData("Person", "person")]
+        [InlineData("xPhone", "xPhone")]
+        [InlineData("XPhone", "xPhone")]
+        [InlineData("X_Phone", "x_Phone")]
+        [InlineData("X__Phone", "x__Phone")]
+        [InlineData("IsCIA", "isCIA")]
+        [InlineData("VmQ", "vmQ")]
+        [InlineData("Xml2Json", "xml2Json")]
+        [InlineData("SnAkEcAsE", "snAkEcAsE")]
+        [InlineData("SnA__kEcAsE", "snA__kEcAsE")]
+        [InlineData("already_snake_case_", "already_snake_case_")]
+        [InlineData("IsJSONProperty", "isJSONProperty")]
+        [InlineData("SHOUTING_CASE", "shoutinG_CASE")]
+        [InlineData("9999-12-31T23:59:59.9999999Z", "9999-12-31T23:59:59.9999999Z")]
+        [InlineData("Hi!! This is text. Time to test.", "hi!! This is text. Time to test.")]
+        [InlineData("BUILDING", "building")]
+        [InlineData("BUILDINGProperty", "buildingProperty")]
+        public void MemberNameToCamelCase_Valid(string input, string expectedOutput)
+        {
+            Assert.Equal(expectedOutput, CamelCase.MemberNameToCamelCase(input));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void MemberNameToCamelCase_Invalid(string input)
+        {
+            var ex = Assert.Throws<ArgumentException>(() =>
+                CamelCase.MemberNameToCamelCase(input));
+            Assert.Equal("value", ex.ParamName);
+            Assert.StartsWith($"The value '{input ?? "null"}' is not a valid member name.", ex.Message);
+        }
+
         class NonEmptyConstructorPoco
         {
             public NonEmptyConstructorPoco(int parameter) {}
@@ -166,6 +268,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public IList<string> Nicknames { get; set; }
             public DateTimeOffset BirthInstant { get; set; }
             public TimeSpan Age { get; set; }
+            public IDictionary<string, object> Allergies { get; set; }
         }
 
         enum Hobbies { Reading = 1, Swordfighting = 2 }
@@ -181,5 +284,25 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 };
             }
         }
+
+#pragma warning disable 0649
+        class ClashingProperties
+        {
+            public string Prop1 { get; set; }
+            public int PROP1 { get; set; }
+        }
+
+        class ClashingFields
+        {
+            public string Field1;
+            public int field1;
+        }
+
+        class PrefersPropertiesOverFields
+        {
+            public string member1;
+            public string Member1 { get; set; }
+        }
+#pragma warning restore 0649
     }
 }

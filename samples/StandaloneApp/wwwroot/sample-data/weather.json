@@ -1,32 +1,32 @@
 ﻿[
   {
-    "DateFormatted": "06/05/2018",
-    "TemperatureC": 1,
-    "Summary": "Freezing",
-    "TemperatureF": 33
+    "dateFormatted": "06/05/2018",
+    "temperatureC": 1,
+    "summary": "Freezing",
+    "temperatureF": 33
   },
   {
-    "DateFormatted": "07/05/2018",
-    "TemperatureC": 14,
-    "Summary": "Bracing",
-    "TemperatureF": 57
+    "dateFormatted": "07/05/2018",
+    "temperatureC": 14,
+    "summary": "Bracing",
+    "temperatureF": 57
   },
   {
-    "DateFormatted": "08/05/2018",
-    "TemperatureC": -13,
-    "Summary": "Freezing",
-    "TemperatureF": 9
+    "dateFormatted": "08/05/2018",
+    "temperatureC": -13,
+    "summary": "Freezing",
+    "temperatureF": 9
   },
   {
-    "DateFormatted": "09/05/2018",
-    "TemperatureC": -16,
-    "Summary": "Balmy",
-    "TemperatureF": 4
+    "dateFormatted": "09/05/2018",
+    "temperatureC": -16,
+    "summary": "Balmy",
+    "temperatureF": 4
   },
   {
-    "DateFormatted": "10/05/2018",
-    "TemperatureC": -2,
-    "Summary": "Chilly",
-    "TemperatureF": 29
+    "dateFormatted": "10/05/2018",
+    "temperatureC": -2,
+    "summary": "Chilly",
+    "temperatureF": 29
   }
 ]
