@@ -121,7 +121,7 @@ To install a developer CI build of the Blazor Language Service extension for Vis
 
 ![image](https://user-images.githubusercontent.com/1874516/39077607-2729edb2-44b8-11e8-8798-701ba632fdd4.png)
 
-You should then be able to install or update the Blazor Language Service exension from the developer CI feed using the Extensions and Updates dialog.
+You should then be able to install or update the Blazor Language Service extension from the developer CI feed using the Extensions and Updates dialog.
 
 ## Contributing
 
