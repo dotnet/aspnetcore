@@ -82,11 +82,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             object modelAccessor(object container)
             {
-                var compiledExpression = CachedExpressionCompiler.Process(expression);
-                Debug.Assert(compiledExpression != null);
+                var model = (TModel)container;
+                var cachedFunc = CachedExpressionCompiler.Process(expression);
+                if (cachedFunc != null)
+                {
+                    return cachedFunc(model);
+                }
+
+                var func = expression.Compile();
                 try
                 {
-                    return compiledExpression((TModel)container);
+                    return func(model);
                 }
                 catch (NullReferenceException)
                 {

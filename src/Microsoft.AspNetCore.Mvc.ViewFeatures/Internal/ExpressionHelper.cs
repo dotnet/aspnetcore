@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             try
             {
-                func = CachedExpressionCompiler.Process(lambda);
+                func = CachedExpressionCompiler.Process(lambda) ?? lambda.Compile();
             }
             catch (InvalidOperationException ex)
             {
@@ -259,8 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public static bool IsSingleArgumentIndexer(Expression expression)
         {
-            var methodExpression = expression as MethodCallExpression;
-            if (methodExpression == null || methodExpression.Arguments.Count != 1)
+            if (!(expression is MethodCallExpression methodExpression) || methodExpression.Arguments.Count != 1)
             {
                 return false;
             }
