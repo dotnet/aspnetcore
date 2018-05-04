@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 #if NET461 // Flush not supported, compression disabled
             Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
-#elif NETCOREAPP2_0 || NETCOREAPP2_1 // Flush supported, compression enabled
+#elif NETCOREAPP2_2 // Flush supported, compression enabled
             IEnumerable<string> contentMD5 = null;
             Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 #if NET461 // Flush not supported, compression disabled
             Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
-#elif NETCOREAPP2_0 || NETCOREAPP2_1 // Flush supported, compression enabled
+#elif NETCOREAPP2_2 // Flush supported, compression enabled
             IEnumerable<string> contentMD5 = null;
             Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
