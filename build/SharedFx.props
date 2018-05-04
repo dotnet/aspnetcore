@@ -39,16 +39,31 @@
 
     <DotnetRuntimePackageName>dotnet-runtime</DotnetRuntimePackageName>
     <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21PackageVersion)</DotnetRuntimeInstallerPrefix>
+    <MicrosoftNETCoreApp21IdVersion>2.1</MicrosoftNETCoreApp21IdVersion>
+    <MicrosoftNETCoreApp21InstallerVersion>$(MicrosoftNETCoreApp21PackageVersion.Split('-')[0])</MicrosoftNETCoreApp21InstallerVersion>
+    <DotnetRuntimeUpgradeableInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21IdVersion)</DotnetRuntimeUpgradeableInstallerPrefix>
     <RuntimeArchiveLinkPrefix>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerPrefix)</RuntimeArchiveLinkPrefix>
 
     <SharedFxIntermediateArchiveFilePrefix>$(_SharedFxSourceDir)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)</SharedFxIntermediateArchiveFilePrefix>
+
+    <!-- installer versions -->
+    <!-- CLI would take a dependency such as 'aspnetcore-runtime-M.N >= M.N.P'. Here M.N is the InstallerIdVersion and M.N.P is the InstallerPackageVersion -->
+    <InstallerIdVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</InstallerIdVersion>
+    <InstallerPackageVersion>$(InstallerIdVersion).$(AspNetCorePatchVersion)</InstallerPackageVersion>
+    <!-- Deb installers are versioned as M.N.P~Build following the core-setup convention -->
+    <DebInstallerPackageVersion>$(InstallerPackageVersion)</DebInstallerPackageVersion>
+    <DebInstallerPackageVersion Condition="'$(PackageVersionSuffix)' != ''">$(DebInstallerPackageVersion)~$(PackageVersionSuffix)</DebInstallerPackageVersion>
+    <PackageRevision>1</PackageRevision>
+    <!-- While the revision number of Debian installers must stay at 1, the RPM installers will include the build number in the revision if available -->
+    <RpmPackageRevision>$(PackageRevision)</RpmPackageRevision>
+    <RpmPackageRevision Condition="'$(PackageVersionSuffix)' != ''">0.1.$(PackageVersionSuffix)</RpmPackageRevision>
+    <RpmPackageRevision>$([System.String]::Copy('$(RpmPackageRevision)').Replace('-', '_'))</RpmPackageRevision>
 
     <!-- installer metadata -->
     <MaintainerName>Microsoft</MaintainerName>
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
     <Homepage>https://www.asp.net/</Homepage>
     <InstallRoot>/usr/share/dotnet</InstallRoot>
-    <PackageRevision>1</PackageRevision>
     <LicenseType>Apache-2.0</LicenseType>
     <SharedFxSummary>Microsoft ASP.NET Core $(PackageVersion) Shared Framework</SharedFxSummary>
     <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub (https://github.com/aspnet/home). We happily accept issues and PRs.</SharedFxDescription>
