@@ -5,13 +5,13 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.Identity
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Default UI extensions to <see cref="IServiceCollection"/>.
