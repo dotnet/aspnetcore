@@ -399,6 +399,33 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 #endif
 
         [Fact]
+        public void GetMemoryAllocatesNewSegmentWhenInsufficientSpaceInCurrentSegment()
+        {
+            // Have the buffer writer rent only the minimum size segments from the pool.
+            using (var bufferWriter = new MemoryBufferWriter(MinimumSegmentSize))
+            {
+                var data = new byte[MinimumSegmentSize];
+                new Random().NextBytes(data);
+
+                // Write half the minimum segment size
+                bufferWriter.Write(data.AsSpan(0, MinimumSegmentSize / 2));
+
+                // Request a new buffer of MinimumSegmentSize
+                var buffer = bufferWriter.GetMemory(MinimumSegmentSize);
+                Assert.Equal(MinimumSegmentSize, buffer.Length);
+
+                // Write to the buffer
+                bufferWriter.Write(data);
+
+                // Verify the data was all written correctly
+                var expectedOutput = new byte[MinimumSegmentSize + (MinimumSegmentSize / 2)];
+                data.AsSpan(0, MinimumSegmentSize / 2).CopyTo(expectedOutput.AsSpan(0, MinimumSegmentSize / 2));
+                data.CopyTo(expectedOutput, MinimumSegmentSize / 2);
+                Assert.Equal(expectedOutput, bufferWriter.ToArray());
+            }
+        }
+
+        [Fact]
         public void ResetResetsTheMemoryBufferWriter()
         {
             var bufferWriter = new MemoryBufferWriter();

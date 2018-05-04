@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Internal
     internal sealed class Utf8BufferTextWriter : TextWriter
     {
         private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        private static readonly int MaximumBytesPerUtf8Char = 4;
 
         [ThreadStatic]
         private static Utf8BufferTextWriter _cachedInstance;
@@ -139,7 +140,12 @@ namespace Microsoft.AspNetCore.Internal
 
         private void EnsureBuffer()
         {
-            if (_memoryUsed == _memory.Length)
+            // We need at least enough bytes to encode a single UTF-8 character, or Encoder.Convert will throw.
+            // Normally, if there isn't enough space to write every character of a char buffer, Encoder.Convert just
+            // writes what it can. However, if it can't even write a single character, it throws. So if the buffer has only
+            // 2 bytes left and the next character to write is 3 bytes in UTF-8, an exception is thrown.
+            var remaining = _memory.Length - _memoryUsed;
+            if (remaining < MaximumBytesPerUtf8Char)
             {
                 // Used up the memory from the buffer writer so advance and get more
                 if (_memoryUsed > 0)
@@ -147,7 +153,7 @@ namespace Microsoft.AspNetCore.Internal
                     _bufferWriter.Advance(_memoryUsed);
                 }
 
-                _memory = _bufferWriter.GetMemory();
+                _memory = _bufferWriter.GetMemory(MaximumBytesPerUtf8Char);
                 _memoryUsed = 0;
             }
         }
