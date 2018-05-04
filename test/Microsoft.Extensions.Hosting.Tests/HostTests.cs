@@ -105,6 +105,38 @@ namespace Microsoft.Extensions.Hosting
         }
 
         [Fact]
+        public void HostedServiceCanAcceptSingletonDependencies()
+        {
+            using (var host = CreateBuilder()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddSingleton<IFakeService, FakeService>();
+                    services.AddHostedService<FakeHostedServiceWithDependency>();
+                })
+                .Start())
+            {
+            }
+        }
+
+        private class FakeHostedServiceWithDependency : IHostedService
+        {
+            public FakeHostedServiceWithDependency(IFakeService fakeService)
+            {
+                Assert.NotNull(fakeService);
+            }
+
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        [Fact]
         public async Task HostedServiceStartNotCalledIfHostNotStarted()
         {
             using (var host = CreateBuilder()
