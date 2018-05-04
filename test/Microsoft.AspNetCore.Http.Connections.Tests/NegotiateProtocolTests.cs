@@ -1,7 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
@@ -49,6 +53,38 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var exception = Assert.Throws<InvalidDataException>(() => NegotiateProtocol.ParseResponse(ms));
 
             Assert.Equal(expectedMessage, exception.InnerException.Message);
+        }
+
+        [Fact]
+        public void WriteNegotiateResponseWithNullAvailableTransports()
+        {
+            using (MemoryBufferWriter writer = new MemoryBufferWriter())
+            {
+                NegotiateProtocol.WriteResponse(new NegotiationResponse(), writer);
+
+                string json = Encoding.UTF8.GetString(writer.ToArray());
+
+                Assert.Equal("{\"availableTransports\":[]}", json);
+            }
+        }
+
+        [Fact]
+        public void WriteNegotiateResponseWithNullTransferFormats()
+        {
+            using (MemoryBufferWriter writer = new MemoryBufferWriter())
+            {
+                NegotiateProtocol.WriteResponse(new NegotiationResponse
+                {
+                    AvailableTransports = new List<AvailableTransport>
+                    {
+                        new AvailableTransport()
+                    }
+                }, writer);
+
+                string json = Encoding.UTF8.GetString(writer.ToArray());
+
+                Assert.Equal("{\"availableTransports\":[{\"transport\":null,\"transferFormats\":[]}]}", json);
+            }
         }
     }
 }

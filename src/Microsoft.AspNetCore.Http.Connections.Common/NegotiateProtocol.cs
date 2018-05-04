@@ -49,21 +49,27 @@ namespace Microsoft.AspNetCore.Http.Connections
                     jsonWriter.WritePropertyName(AvailableTransportsPropertyName);
                     jsonWriter.WriteStartArray();
 
-                    foreach (var availableTransport in response.AvailableTransports)
+                    if (response.AvailableTransports != null)
                     {
-                        jsonWriter.WriteStartObject();
-                        jsonWriter.WritePropertyName(TransportPropertyName);
-                        jsonWriter.WriteValue(availableTransport.Transport);
-                        jsonWriter.WritePropertyName(TransferFormatsPropertyName);
-                        jsonWriter.WriteStartArray();
-
-                        foreach (var transferFormat in availableTransport.TransferFormats)
+                        foreach (var availableTransport in response.AvailableTransports)
                         {
-                            jsonWriter.WriteValue(transferFormat);
-                        }
+                            jsonWriter.WriteStartObject();
+                            jsonWriter.WritePropertyName(TransportPropertyName);
+                            jsonWriter.WriteValue(availableTransport.Transport);
+                            jsonWriter.WritePropertyName(TransferFormatsPropertyName);
+                            jsonWriter.WriteStartArray();
 
-                        jsonWriter.WriteEndArray();
-                        jsonWriter.WriteEndObject();
+                            if (availableTransport.TransferFormats != null)
+                            {
+                                foreach (var transferFormat in availableTransport.TransferFormats)
+                                {
+                                    jsonWriter.WriteValue(transferFormat);
+                                }
+                            }
+
+                            jsonWriter.WriteEndArray();
+                            jsonWriter.WriteEndObject();
+                        }
                     }
 
                     jsonWriter.WriteEndArray();
