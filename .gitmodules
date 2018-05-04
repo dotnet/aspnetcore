@@ -182,10 +182,6 @@
 	path = modules/Templating
 	url = https://github.com/aspnet/Templating.git
 	branch = dev
-[submodule "modules/Testing"]
-	path = modules/Testing
-	url = https://github.com/aspnet/Testing.git
-	branch = dev
 [submodule "modules/WebSockets"]
 	path = modules/WebSockets
 	url = https://github.com/aspnet/WebSockets.git
