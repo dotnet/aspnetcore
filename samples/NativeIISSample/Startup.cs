@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IISIntegration;
 
 namespace NativeIISSample
@@ -66,12 +65,6 @@ namespace NativeIISSample
                 // accessing IIS server variables
                 await context.Response.WriteAsync("Server Variables:" + Environment.NewLine);
 
-                foreach (var varName in IISServerVarNames)
-                {
-                    await context.Response.WriteAsync(varName + ": " + context.GetIISServerVariable(varName) + Environment.NewLine);
-                }
-
-                await context.Response.WriteAsync(Environment.NewLine);
                 if (context.Features.Get<IHttpUpgradeFeature>() != null)
                 {
                     await context.Response.WriteAsync("Websocket feature is enabled.");
@@ -82,20 +75,6 @@ namespace NativeIISSample
                 }
             });
         }
-
-        private static readonly string[] IISServerVarNames =
-        {
-            "AUTH_TYPE",
-            "AUTH_USER",
-            "CONTENT_TYPE",
-            "HTTP_HOST",
-            "HTTPS",
-            "REMOTE_PORT",
-            "REMOTE_USER",
-            "REQUEST_METHOD",
-            "WEBSOCKET_VERSION"
-        };
-
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()

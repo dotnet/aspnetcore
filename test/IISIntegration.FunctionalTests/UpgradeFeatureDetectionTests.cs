@@ -23,26 +23,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Fact]
-        public Task UpgradeFeatureDetectionEnabled_InProcess_IISExpress_CoreClr_x64_Portable()
-        {
-            return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
-                ApplicationType.Portable,
-                "AppHostConfig/WebsocketsNotSupported.config",
-                Helpers.GetInProcessTestSitesPath(),
-                "Disabled");
-        }
-
-        [Fact]
-        public Task UpgradeFeatureDetectionDisabled_InProcess_IISExpress_CoreClr_x64_Portable()
-        {
-            return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
-                ApplicationType.Portable,
-                "AppHostConfig/Http.config",
-                Helpers.GetInProcessTestSitesPath(),
-                _isWebsocketsSupported);
-        }
-
-        [Fact]
         public Task UpgradeFeatureDetectionEnabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
         {
             return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
@@ -75,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetInProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(sitePath, serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "UpgradeFeatureDetection", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
