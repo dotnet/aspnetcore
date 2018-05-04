@@ -8,7 +8,8 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## Projects
 
-The repository contains command-line tools for ASP.NET Core that are bundled* in the .NET Core CLI. Follow the links below for more details on each tool.
+The repository contains command-line tools for ASP.NET Core that are bundled* in the [.NET Core CLI](https://github.com/dotnet/cli).
+Follow the links below for more details on each tool.
 
  - [dotnet-watch](src/dotnet-watch/README.md)
  - [dotnet-user-secrets](src/dotnet-user-secrets/README.md)
