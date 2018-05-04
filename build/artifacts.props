@@ -39,7 +39,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Metapackage="true" RuntimeStore="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Metapackage="true" RuntimeStore="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Buffering" Category="noship" />
