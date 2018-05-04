@@ -18,16 +18,16 @@ describe("Binary Message Formatter", () => {
     });
 
     ([
-        [[0x80], new Error("Cannot read message size.")],
-        [[0x02, 0x01, 0x80, 0x80], new Error("Cannot read message size.")],
-        [[0x07, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x80], new Error("Cannot read message size.")], // the size of the second message is cut
-        [[0x07, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01], new Error("Incomplete message.")], // second message has only size
-        [[0xff, 0xff, 0xff, 0xff, 0xff], new Error("Messages bigger than 2GB are not supported.")],
-        [[0x80, 0x80, 0x80, 0x80, 0x08], new Error("Messages bigger than 2GB are not supported.")],
-        [[0x80, 0x80, 0x80, 0x80, 0x80], new Error("Messages bigger than 2GB are not supported.")],
-        [[0x02, 0x00], new Error("Incomplete message.")],
-        [[0xff, 0xff, 0xff, 0xff, 0x07], new Error("Incomplete message.")],
-    ] as Array<[number[], Error]>).forEach(([payload, expectedError]) => {
+        [[0x80], "Cannot read message size."],
+        [[0x02, 0x01, 0x80, 0x80], "Cannot read message size."],
+        [[0x07, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x80], "Cannot read message size."], // the size of the second message is cut
+        [[0x07, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01], "Incomplete message."], // second message has only size
+        [[0xff, 0xff, 0xff, 0xff, 0xff], "Messages bigger than 2GB are not supported."],
+        [[0x80, 0x80, 0x80, 0x80, 0x08], "Messages bigger than 2GB are not supported."],
+        [[0x80, 0x80, 0x80, 0x80, 0x80], "Messages bigger than 2GB are not supported."],
+        [[0x02, 0x00], "Incomplete message."],
+        [[0xff, 0xff, 0xff, 0xff, 0x07], "Incomplete message."],
+    ] as Array<[number[], string]>).forEach(([payload, expectedError]) => {
         it(`should fail to parse '${payload}'`, () => {
             expect(() => BinaryMessageFormat.parse(new Uint8Array(payload).buffer)).toThrow(expectedError);
         });

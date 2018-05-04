@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortController } from "../src/AbortController";
-import { asyncit as it } from "./Utils";
 
 describe("AbortSignal", () => {
     describe("aborted", () => {

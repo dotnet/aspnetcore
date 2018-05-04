@@ -4,6 +4,7 @@
 console.log("SignalR Functional Tests Loaded");
 
 import "es6-promise/dist/es6-promise.auto.js";
+import "./ConnectionTests";
 import "./HubConnectionTests";
 import "./WebDriverReporter";
 import "./WebSocketTests";

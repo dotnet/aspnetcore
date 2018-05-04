@@ -11,7 +11,7 @@ import { HttpTransportType, TransferFormat } from "../src/ITransport";
 import { NullLogger } from "../src/Loggers";
 
 import { TestHttpClient } from "./TestHttpClient";
-import { asyncit as it, PromiseSource } from "./Utils";
+import { PromiseSource } from "./Utils";
 
 const allTransportsNegotiateResponse = {
     availableTransports: [
@@ -37,17 +37,17 @@ describe("HubConnectionBuilder", () => {
     eachMissingValue((val, name) => {
         it(`configureLogging throws if logger is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.configureLogging(val)).toThrow(new Error("The 'logging' argument is required."));
+            expect(() => builder.configureLogging(val)).toThrow("The 'logging' argument is required.");
         });
 
         it(`withUrl throws if url is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withUrl(val)).toThrow(new Error("The 'url' argument is required."));
+            expect(() => builder.withUrl(val)).toThrow("The 'url' argument is required.");
         });
 
         it(`withHubProtocol throws if protocol is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withHubProtocol(val)).toThrow(new Error("The 'protocol' argument is required."));
+            expect(() => builder.withHubProtocol(val)).toThrow("The 'protocol' argument is required.");
         });
     });
 

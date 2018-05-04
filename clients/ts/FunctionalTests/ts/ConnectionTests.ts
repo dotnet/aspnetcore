@@ -6,7 +6,7 @@ import { eachTransport, ECHOENDPOINT_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
 
 // We want to continue testing HttpConnection, but we don't export it anymore. So just pull it in directly from the source file.
-import { HttpConnection } from "../../signalr/src/HttpConnection";
+import { HttpConnection } from "@aspnet/signalr/dist/esm/HttpConnection";
 
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,

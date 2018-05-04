@@ -5,21 +5,47 @@
   "main": "index.js",
   "scripts": {
     "build": "cd ./signalr && npm run build && cd ../signalr-protocol-msgpack && npm run build",
-    "test": "cd ./signalr && npm run test && cd ../signalr-protocol-msgpack && npm run test"
+    "test": "jest"
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/jasmine": "^2.8.3",
+    "@types/jest": "^22.2.3",
     "@types/node": "^8.5.2",
-    "jasmine": "^2.8.0",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.2",
     "rollup": "^0.53.4",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.2",
     "rollup-plugin-sourcemaps": "^0.4.2",
+    "ts-jest": "^22.4.4",
     "tslint": "^5.9.1",
     "typescript": "^2.7.1",
     "uglify-js": "^3.3.5"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "./tsconfig.jest.json",
+        "skipBabel": true,
+        "enableTsDiagnostics": true
+      }
+    },
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleNameMapper": {
+      "^@aspnet/signalr$": "<rootDir>/signalr/src/index.ts"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }

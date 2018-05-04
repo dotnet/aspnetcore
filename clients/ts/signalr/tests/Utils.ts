@@ -3,42 +3,13 @@
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
-export function asyncit(expectation: string, assertion?: () => Promise<any> | void, timeout?: number): void {
-    let testFunction: (done: DoneFn) => void;
-    if (assertion) {
-        testFunction = (done) => {
-            const promise = assertion();
-            if (promise) {
-                promise.then(() => done())
-                    .catch((err) => {
-                        fail(err);
-                        done();
-                    });
-            } else {
-                done();
-            }
-        };
-    }
-
-    it(expectation, testFunction, timeout);
-}
-
-export async function captureException(fn: () => Promise<any>): Promise<Error> {
-    try {
-        await fn();
-        return null;
-    } catch (e) {
-        return e;
-    }
-}
-
 export function delay(durationInMilliseconds: number): Promise<void> {
     const source = new PromiseSource<void>();
     setTimeout(() => source.resolve(), durationInMilliseconds);
     return source.promise;
 }
 
-export class PromiseSource<T = void> {
+export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
     private resolver: (value?: T | PromiseLike<T>) => void;
@@ -57,5 +28,13 @@ export class PromiseSource<T = void> {
 
     public reject(reason?: any) {
         this.rejecter(reason);
+    }
+
+    // Look like a promise so we can be awaited directly;
+    public then<TResult1 = T, TResult2 = never>(onfulfilled?: (value: T) => TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>): Promise<TResult1 | TResult2> {
+        return this.promise.then(onfulfilled, onrejected);
+    }
+    public catch<TResult = never>(onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Promise<T | TResult> {
+        return this.promise.catch(onrejected);
     }
 }

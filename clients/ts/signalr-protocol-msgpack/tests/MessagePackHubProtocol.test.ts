@@ -146,16 +146,16 @@ describe("MessageHubProtocol", () => {
         }));
 
     ([
-        ["message with no payload", [0x00], new Error("Invalid payload.")],
-        ["message with empty array", [0x01, 0x90], new Error("Invalid payload.")],
-        ["message without outer array", [0x01, 0xc2], new Error("Invalid payload.")],
-        ["message with invalid headers", [0x03, 0x92, 0x01, 0x05], new Error("Invalid headers.")],
-        ["Invocation message with invalid invocation id", [0x03, 0x92, 0x01, 0x80], new Error("Invalid payload for Invocation message.")],
-        ["StreamItem message with invalid invocation id", [0x03, 0x92, 0x02, 0x80], new Error("Invalid payload for StreamItem message.")],
-        ["Completion message with invalid invocation id", [0x04, 0x93, 0x03, 0x80, 0xa0], new Error("Invalid payload for Completion message.")],
-        ["Completion message with missing result", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x01], new Error("Invalid payload for Completion message.")],
-        ["Completion message with missing error", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x03], new Error("Invalid payload for Completion message.")],
-    ] as Array<[string, number[], Error]>).forEach(([name, payload, expectedError]) =>
+        ["message with no payload", [0x00], "Invalid payload."],
+        ["message with empty array", [0x01, 0x90], "Invalid payload."],
+        ["message without outer array", [0x01, 0xc2], "Invalid payload."],
+        ["message with invalid headers", [0x03, 0x92, 0x01, 0x05], "Invalid headers."],
+        ["Invocation message with invalid invocation id", [0x03, 0x92, 0x01, 0x80], "Invalid payload for Invocation message."],
+        ["StreamItem message with invalid invocation id", [0x03, 0x92, 0x02, 0x80], "Invalid payload for StreamItem message."],
+        ["Completion message with invalid invocation id", [0x04, 0x93, 0x03, 0x80, 0xa0], "Invalid payload for Completion message."],
+        ["Completion message with missing result", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x01], "Invalid payload for Completion message."],
+        ["Completion message with missing error", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x03], "Invalid payload for Completion message."],
+    ] as Array<[string, number[], string]>).forEach(([name, payload, expectedError]) =>
         it("throws for " + name, () => {
             expect(() => new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, NullLogger.instance))
                 .toThrow(expectedError);
