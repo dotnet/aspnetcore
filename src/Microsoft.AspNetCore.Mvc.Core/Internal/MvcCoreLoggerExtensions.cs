@@ -34,6 +34,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, string, Exception> _actionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
 
+        private static readonly Action<ILogger, string, string, Exception> _pageExecuting;
+        private static readonly Action<ILogger, string, double, Exception> _pageExecuted;
+
         private static readonly Action<ILogger, string[], Exception> _challengeResultExecuting;
 
         private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
@@ -157,6 +160,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Information,
                 2,
                 "Executed action {ActionName} in {ElapsedMilliseconds}ms");
+
+            _pageExecuting = LoggerMessage.Define<string, string>(
+                LogLevel.Information,
+                3,
+                "Route matched with {RouteData}. Executing page {PageName}");
+
+            _pageExecuted = LoggerMessage.Define<string, double>(
+                LogLevel.Information,
+                4,
+                "Executed page {PageName} in {ElapsedMilliseconds}ms");
 
             _challengeResultExecuting = LoggerMessage.Define<string[]>(
                 LogLevel.Information,
@@ -682,8 +695,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\", ");
                     }
                 }
-
-                _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                if (action.RouteValues["page"] != null)
+                {
+                    _pageExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                }
+                else
+                {
+                    _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                }
             }
         }
 
@@ -765,7 +784,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
             if (logger.IsEnabled(LogLevel.Information))
             {
-                _actionExecuted(logger, action.DisplayName, timeSpan.TotalMilliseconds, null);
+                if (action.RouteValues["page"] != null)
+                {
+                    _pageExecuted(logger, action.DisplayName, timeSpan.TotalMilliseconds, null);
+                }
+                else
+                {
+                    _actionExecuted(logger, action.DisplayName, timeSpan.TotalMilliseconds, null);
+                }
             }
         }
 
