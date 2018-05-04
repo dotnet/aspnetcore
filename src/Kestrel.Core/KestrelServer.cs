@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private bool _hasStarted;
         private int _stopping;
-        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public KestrelServer(IOptions<KestrelServerOptions> options, ITransportFactory transportFactory, ILoggerFactory loggerFactory)
             : this(transportFactory, CreateServiceContext(options, loggerFactory))

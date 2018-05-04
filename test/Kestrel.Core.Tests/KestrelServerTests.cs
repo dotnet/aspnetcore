@@ -327,6 +327,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
         }
 
+        [Fact]
+        public async Task StopAsyncDispatchesSubsequentStopAsyncContinuations()
+        {
+            var options = new KestrelServerOptions
+            {
+                ListenOptions =
+                {
+                    new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                }
+            };
+
+            var unbindTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var mockTransport = new Mock<ITransport>();
+            mockTransport
+                .Setup(transport => transport.BindAsync())
+                .Returns(Task.CompletedTask);
+            mockTransport
+                .Setup(transport => transport.UnbindAsync())
+                .Returns(unbindTcs.Task);
+            mockTransport
+                .Setup(transport => transport.StopAsync())
+                .Returns(Task.CompletedTask);
+
+            var mockTransportFactory = new Mock<ITransportFactory>();
+            mockTransportFactory
+                .Setup(transportFactory => transportFactory.Create(It.IsAny<IEndPointInformation>(), It.IsAny<IConnectionDispatcher>()))
+                .Returns(mockTransport.Object);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            var mockLogger = new Mock<ILogger>();
+            mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
+            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            await server.StartAsync(new DummyApplication(), default);
+
+            var stopTask1 = server.StopAsync(default);
+            var stopTask2 = server.StopAsync(default);
+
+            Assert.False(stopTask1.IsCompleted);
+            Assert.False(stopTask2.IsCompleted);
+
+            var continuationTask = Task.Run(async () =>
+            {
+                await stopTask2;
+                stopTask1.Wait();
+            });
+
+            unbindTcs.SetResult(null);
+
+            // If stopTask2 is completed inline by the first call to StopAsync, stopTask1 will never complete.
+            await stopTask1.TimeoutAfter(TestConstants.DefaultTimeout);
+            await stopTask2.TimeoutAfter(TestConstants.DefaultTimeout);
+            await continuationTask.TimeoutAfter(TestConstants.DefaultTimeout);
+
+            mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
+        }
+
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
             return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
