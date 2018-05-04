@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [EventHandler("onclick", typeof(UIMouseEventArgs))]
     [EventHandler("ondblclick", typeof(UIMouseEventArgs))]
     [EventHandler("onmousewheel", typeof(UIWheelEventArgs))]
+    [EventHandler("oncontextmenu", typeof(UIMouseEventArgs))]
 
     // Drag events
     [EventHandler("ondrag", typeof(UIDragEventArgs))]
@@ -39,9 +40,6 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [EventHandler("onkeydown", typeof(UIKeyboardEventArgs))]
     [EventHandler("onkeyup", typeof(UIKeyboardEventArgs))]
     [EventHandler("onkeypress", typeof(UIKeyboardEventArgs))]
-
-    // Pointer events
-    [EventHandler("oncontextmenu", typeof(UIPointerEventArgs))]
 
     // Input events
     [EventHandler("onchange", typeof(UIChangeEventArgs))]
@@ -66,6 +64,18 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [EventHandler("ontouchend", typeof(UITouchEventArgs))]
     [EventHandler("ontouchmove", typeof(UITouchEventArgs))]
     [EventHandler("ontouchstart", typeof(UITouchEventArgs))]
+
+    // Pointer events
+    [EventHandler("gotpointercapture", typeof(UIPointerEventArgs))]
+    [EventHandler("lostpointercapture", typeof(UIPointerEventArgs))]
+    [EventHandler("pointercancel", typeof(UIPointerEventArgs))]
+    [EventHandler("pointerdown", typeof(UIPointerEventArgs))]
+    [EventHandler("pointerenter", typeof(UIPointerEventArgs))]
+    [EventHandler("pointerleave", typeof(UIPointerEventArgs))]
+    [EventHandler("pointermove", typeof(UIPointerEventArgs))]
+    [EventHandler("pointerout", typeof(UIPointerEventArgs))]
+    [EventHandler("pointerover", typeof(UIPointerEventArgs))]
+    [EventHandler("pointerup", typeof(UIPointerEventArgs))]
 
     // Media events
     [EventHandler("oncanplay", typeof(UIEventArgs))]

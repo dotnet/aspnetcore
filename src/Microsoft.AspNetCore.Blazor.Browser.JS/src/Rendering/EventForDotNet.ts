@@ -40,6 +40,7 @@
       case 'keypress':
         return new EventForDotNet<UIKeyboardEventArgs>('keyboard', { Type: event.type, Key: (event as any).key });
 
+      case 'contextmenu':
       case 'click':
       case 'mouseover':
       case 'mouseout':
@@ -49,9 +50,6 @@
       case 'dblclick':
         return new EventForDotNet<UIMouseEventArgs>('mouse', { Type: event.type });
 
-      case 'contextmenu':
-        return new EventForDotNet<UIPointerEventArgs>('pointer', { Type: event.type });
-
       case 'progress':
         return new EventForDotNet<UIProgressEventArgs>('progress', { Type: event.type });
 
@@ -60,6 +58,18 @@
       case 'touchmove':
       case 'touchstart':
         return new EventForDotNet<UITouchEventArgs>('touch', { Type: event.type });
+
+      case 'gotpointercapture':
+      case 'lostpointercapture':
+      case 'pointercancel':
+      case 'pointerdown':
+      case 'pointerenter':
+      case 'pointerleave':
+      case 'pointermove':
+      case 'pointerout':
+      case 'pointerover':
+      case 'pointerup':
+        return new EventForDotNet<UIPointerEventArgs>('pointer', { Type: event.type });
 
       case 'mousewheel':
         return new EventForDotNet<UIWheelEventArgs>('wheel', { Type: event.type });
