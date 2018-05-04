@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -12,6 +14,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ActionsMustNotBeAsyncVoidFacts : AnalyzerTestBase
     {
+        private static DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC7003_ActionsMustNotBeAsyncVoid;
+
         protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; }
             = new ActionsMustNotBeAsyncVoidAnalyzer();
 
@@ -57,13 +61,7 @@ public class UserViewModel
         public async Task DiagnosticsAreReturned_WhenMethodIsAControllerAction()
         {
             // Arrange
-            var expectedDiagnostic = new DiagnosticResult
-            {
-                Id = "MVC7003",
-                Message = "Controller actions must not have async void signature.",
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test.cs", 7, 18) }
-            };
+            var location = new DiagnosticLocation("Test.cs", 7, 18);
             var test =
 @"
 using Microsoft.AspNetCore.Mvc;
@@ -92,7 +90,7 @@ public class HomeController : Controller
 
             // Act & Assert
             var actualDiagnostics = await GetDiagnosticAsync(project);
-            Assert.DiagnosticsEqual(new[] { expectedDiagnostic }, actualDiagnostics);
+            AssertDiagnostic(location, actualDiagnostics);
             var actualFix = await ApplyCodeFixAsync(project, actualDiagnostics);
             Assert.Equal(expectedFix, actualFix, ignoreLineEndingDifferences: true);
         }
@@ -101,13 +99,7 @@ public class HomeController : Controller
         public async Task DiagnosticsAreReturned_WhenActionMethodIsExpressionBodied()
         {
             // Arrange
-            var expectedDiagnostic = new DiagnosticResult
-            {
-                Id = "MVC7003",
-                Message = "Controller actions must not have async void signature.",
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test.cs", 7, 18) }
-            };
+            var location = new DiagnosticLocation("Test.cs", 7, 18);
             var test =
 @"
 using Microsoft.AspNetCore.Mvc;
@@ -130,7 +122,7 @@ public class HomeController : Controller
 
             // Act & Assert
             var actualDiagnostics = await GetDiagnosticAsync(project);
-            Assert.DiagnosticsEqual(new[] { expectedDiagnostic }, actualDiagnostics);
+            AssertDiagnostic(location, actualDiagnostics);
             var actualFix = await ApplyCodeFixAsync(project, actualDiagnostics);
             Assert.Equal(expectedFix, actualFix, ignoreLineEndingDifferences: true);
         }
@@ -139,13 +131,7 @@ public class HomeController : Controller
         public async Task CodeFix_ProducesFullyQualifiedNamespaces()
         {
             // Arrange
-            var expectedDiagnostic = new DiagnosticResult
-            {
-                Id = "MVC7003",
-                Message = "Controller actions must not have async void signature.",
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test.cs", 6, 18) }
-            };
+            var location = new DiagnosticLocation("Test.cs", 6, 18);
             var test =
 @"
 using Microsoft.AspNetCore.Mvc;
@@ -166,9 +152,22 @@ public class HomeController : Controller
 
             // Act & Assert
             var actualDiagnostics = await GetDiagnosticAsync(project);
-            Assert.DiagnosticsEqual(new[] { expectedDiagnostic }, actualDiagnostics);
+            AssertDiagnostic(location, actualDiagnostics);
             var actualFix = await ApplyCodeFixAsync(project, actualDiagnostics);
             Assert.Equal(expectedFix, actualFix, ignoreLineEndingDifferences: true);
+        }
+
+        private void AssertDiagnostic(DiagnosticLocation expectedLocation, Diagnostic[] actualDiagnostics)
+        {
+            // Assert
+            Assert.Collection(
+                actualDiagnostics,
+                diagnostic =>
+                {
+                    Assert.Equal(DiagnosticDescriptor.Id, diagnostic.Id);
+                    Assert.Same(DiagnosticDescriptor, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(expectedLocation, diagnostic.Location);
+                });
         }
     }
 }

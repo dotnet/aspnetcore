@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -17,6 +18,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyModel;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
 {
@@ -30,9 +32,9 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
 
         protected virtual CodeFixProvider CodeFixProvider { get; }
 
-        public IDictionary<string, DiagnosticResultLocation> MarkerLocations { get; } = new Dictionary<string, DiagnosticResultLocation>();
+        public IDictionary<string, DiagnosticLocation> MarkerLocations { get; } = new Dictionary<string, DiagnosticLocation>();
 
-        public DiagnosticResultLocation? DefaultMarkerLocation { get; private set; }
+        public DiagnosticLocation DefaultMarkerLocation { get; private set; }
 
         protected Project CreateProjectFromFile([CallerMemberName] string fileName = "")
         {
@@ -57,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
                 {
                     var markerEndIndex = line.IndexOf(MarkerEnd, markerStartIndex, StringComparison.Ordinal);
                     var markerName = line.Substring(markerStartIndex + 2, markerEndIndex - markerStartIndex - 2);
-                    var resultLocation = new DiagnosticResultLocation(i + 1, markerStartIndex + 1); ;
+                    var resultLocation = new DiagnosticLocation(i + 1, markerStartIndex + 1); ;
 
                     if (DefaultMarkerLocation == null)
                     {

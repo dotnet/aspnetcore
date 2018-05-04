@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ApiActionsShouldUseActionResultOfTFacts : AnalyzerTestBase
     {
+        private static DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC7002_ApiActionsShouldReturnActionResultOf;
+
         protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; }
             = new ApiActionsShouldUseActionResultOfTAnalyzer();
 
@@ -156,13 +159,7 @@ public class PetController:  ControllerBase
         public async Task DiagnosticsAreReturned_WhenActionsReturnIActionResult()
         {
             // Arrange
-            var expectedDiagnostic = new DiagnosticResult
-            {
-                Id = "MVC7002",
-                Message = "Actions on types annotated with ApiControllerAttribute should return ActionResult<T>.",
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test.cs", 9, 12) }
-            };
+            var expectedLocation = new DiagnosticLocation("Test.cs", 9, 12);
             var test =
 @"
 using Microsoft.AspNetCore.Mvc;
@@ -195,7 +192,7 @@ public class PetController:  ControllerBase
 
             // Act
             var actualDiagnostics = await GetDiagnosticAsync(project);
-            Assert.DiagnosticsEqual(new[] { expectedDiagnostic }, actualDiagnostics);
+            AssertDiagnostic(expectedLocation, actualDiagnostics);
 
             var actualFix = await ApplyCodeFixAsync(project, actualDiagnostics);
             Assert.Equal(expectedFix, actualFix, ignoreLineEndingDifferences: true);
@@ -205,13 +202,7 @@ public class PetController:  ControllerBase
         public async Task DiagnosticsAreReturned_WhenActionReturnsAsyncIActionResult()
         {
             // Arrange
-            var expectedDiagnostic = new DiagnosticResult
-            {
-                Id = "MVC7002",
-                Message = "Actions on types annotated with ApiControllerAttribute should return ActionResult<T>.",
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test.cs", 8, 18) }
-            };
+            var expectedLocation = new DiagnosticLocation("Test.cs", 8, 18);
 
             var test =
 @"
@@ -248,10 +239,23 @@ public class Pet {}";
 
             // Act & Assert
             var actualDiagnostics = await GetDiagnosticAsync(project);
-            Assert.DiagnosticsEqual(new[] { expectedDiagnostic }, actualDiagnostics);
+            AssertDiagnostic(expectedLocation, actualDiagnostics);
 
             var actualFix = await ApplyCodeFixAsync(project, actualDiagnostics);
             Assert.Equal(expectedFix, actualFix, ignoreLineEndingDifferences: true);
+        }
+
+        private void AssertDiagnostic(DiagnosticLocation expectedLocation, Diagnostic[] actualDiagnostics)
+        {
+            // Assert
+            Assert.Collection(
+                actualDiagnostics,
+                diagnostic =>
+                {
+                    Assert.Equal(DiagnosticDescriptor.Id, diagnostic.Id);
+                    Assert.Same(DiagnosticDescriptor, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(expectedLocation, diagnostic.Location);
+                });
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ApiActionsAreAttributeRoutedFacts : AnalyzerTestBase
     {
+        private static DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC7000_ApiActionsMustBeAttributeRouted;
+
         protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; }
             = new ApiActionsAreAttributeRoutedAnalyzer();
 
@@ -128,13 +131,7 @@ public class PetController : Controller
         public async Task DiagnosticsAndCodeFixes_WhenApiControllerActionDoesNotHaveAttribute()
         {
             // Arrange
-            var expectedDiagnostic = new DiagnosticResult
-            {
-                Id = "MVC7000",
-                Message = "Actions on types annotated with ApiControllerAttribute must be attribute routed.",
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test.cs", 8, 16) }
-            };
+            var expectedLocation = new DiagnosticLocation("Test.cs", 8, 16);
             var test =
 @"
 using Microsoft.AspNetCore.Mvc;
@@ -160,7 +157,7 @@ public class PetController : Controller
 
             // Act & Assert
             var actualDiagnostics = await GetDiagnosticAsync(project);
-            Assert.DiagnosticsEqual(new[] { expectedDiagnostic }, actualDiagnostics);
+            AssertDiagnostic(expectedLocation, actualDiagnostics);
             var actualFix = await ApplyCodeFixAsync(project, actualDiagnostics);
             Assert.Equal(expectedFix, actualFix, ignoreLineEndingDifferences: true);
         }
@@ -289,6 +286,19 @@ public class PetController
             // expect to have 4 fixes.
             var actualFix = await ApplyCodeFixAsync(project, actualDiagnostics, codeFixIndex: 3);
             Assert.Equal(expectedFix, actualFix, ignoreLineEndingDifferences: true);
+        }
+
+        private void AssertDiagnostic(DiagnosticLocation expectedLocation, Diagnostic[] actualDiagnostics)
+        {
+            // Assert
+            Assert.Collection(
+                actualDiagnostics,
+                diagnostic =>
+                {
+                    Assert.Equal(DiagnosticDescriptor.Id, diagnostic.Id);
+                    Assert.Same(DiagnosticDescriptor, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(expectedLocation, diagnostic.Location);
+                });
         }
     }
 }
