@@ -8,12 +8,19 @@ using System.Linq;
 using System.Threading;
 using Microsoft.DotNet.Watcher.Internal;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class FileWatcherTests
     {
+        public FileWatcherTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         private const int DefaultTimeout = 10 * 1000; // 10 sec
+        private readonly ITestOutputHelper _output;
 
         [Theory]
         [InlineData(true)]
@@ -277,16 +284,24 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [InlineData(false)]
         public void MultipleTriggers(bool usePolling)
         {
+            var filesChanged = new HashSet<string>();
+
+            void Clear()
+            {
+                _output.WriteLine("Clear files changed list");
+                filesChanged.Clear();
+            }
+
             UsingTempDirectory(dir =>
             {
                 using (var changedEv = new AutoResetEvent(false))
                 using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
                 {
-                    var filesChanged = new HashSet<string>();
 
                     EventHandler<string> handler = null;
                     handler = (_, f) =>
                     {
+                        _output.WriteLine("File changed: " + f);
                         filesChanged.Add(f);
                         try
                         {
@@ -318,7 +333,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
                     var fileChanged = Assert.Single(filesChanged);
                     Assert.Equal(testFileFullPath, fileChanged);
-                    filesChanged.Clear();
+                    Clear();
                     changedEv.Reset();
 
                     // On Unix the file write time is in 1s increments;
@@ -331,7 +346,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
                     fileChanged = Assert.Single(filesChanged);
                     Assert.Equal(testFileFullPath, fileChanged);
-                    filesChanged.Clear();
+                    Clear();
                     changedEv.Reset();
 
                     // On Unix the file write time is in 1s increments;
@@ -342,8 +357,9 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     testFileFullPath = Path.Combine(dir, "foo3");
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
-                    Assert.Equal(testFileFullPath, filesChanged.Single());
-                    filesChanged.Clear();
+                    fileChanged = Assert.Single(filesChanged);
+                    Assert.Equal(testFileFullPath, fileChanged);
+                    Clear();
                     changedEv.Reset();
 
                     // On Unix the file write time is in 1s increments;
