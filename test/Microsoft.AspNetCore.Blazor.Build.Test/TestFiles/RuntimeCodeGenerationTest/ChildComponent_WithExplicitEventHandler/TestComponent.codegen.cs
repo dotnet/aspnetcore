@@ -8,6 +8,7 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Blazor;
+    using Microsoft.AspNetCore.Blazor.Components;
     public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
     {
         #pragma warning disable 1998
@@ -19,7 +20,7 @@ namespace Test
             builder.CloseComponent();
         }
         #pragma warning restore 1998
-#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private int counter;
     private void Increment(UIEventArgs e) {

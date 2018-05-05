@@ -494,7 +494,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@using Microsoft.AspNetCore.Blazor
 <button onclick=""@OnClick"" />
 @functions {
     public void OnClick(UIMouseEventArgs e) { Clicked = true; }

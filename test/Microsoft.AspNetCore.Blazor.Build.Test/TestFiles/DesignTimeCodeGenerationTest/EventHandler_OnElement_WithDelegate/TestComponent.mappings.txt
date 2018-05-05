@@ -1,19 +1,14 @@
-Source Location: (1:0,1 [33] x:\dir\subdir\Test\TestComponent.cshtml)
-|using Microsoft.AspNetCore.Blazor|
-Generated Location: (257:10,0 [33] )
-|using Microsoft.AspNetCore.Blazor|
-
-Source Location: (53:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (17:0,17 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |OnClick|
-Generated Location: (1032:27,136 [7] )
+Generated Location: (1005:24,136 [7] )
 |OnClick|
 
-Source Location: (78:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (42:1,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     void OnClick(UIMouseEventArgs e) {
     }
 |
-Generated Location: (1155:31,12 [49] )
+Generated Location: (1128:28,12 [49] )
 |
     void OnClick(UIMouseEventArgs e) {
     }

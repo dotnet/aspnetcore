@@ -5,7 +5,7 @@ Source Location: (96:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
         counter++;
     }
 |
-Generated Location: (850:21,12 [87] )
+Generated Location: (941:23,12 [87] )
 |
     private int counter;
     private void Increment() {

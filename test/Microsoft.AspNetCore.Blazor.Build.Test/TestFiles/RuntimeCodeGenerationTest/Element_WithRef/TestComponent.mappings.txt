@@ -1,13 +1,13 @@
 Source Location: (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 |myElem|
-Generated Location: (840:20,36 [6] )
+Generated Location: (931:22,36 [6] )
 |myElem|
 
 Source Location: (95:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Microsoft.AspNetCore.Blazor.ElementRef myElem;
 |
-Generated Location: (1115:31,12 [62] )
+Generated Location: (1206:33,12 [62] )
 |
     private Microsoft.AspNetCore.Blazor.ElementRef myElem;
 |

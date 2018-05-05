@@ -213,7 +213,6 @@ namespace Test
 
             var component = CompileToComponent($@"
 @addTagHelper *, TestAssembly
-@using Microsoft.AspNetCore.Blazor
 <MyComponent OnClick=""{expression}""/>
 
 @functions {{
@@ -261,7 +260,6 @@ namespace Test
 
             var component = CompileToComponent(@"
 @addTagHelper *, TestAssembly
-@using Microsoft.AspNetCore.Blazor
 <MyComponent OnClick=""@Increment""/>
 
 @functions {

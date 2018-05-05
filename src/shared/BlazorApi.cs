@@ -11,7 +11,8 @@ namespace Microsoft.AspNetCore.Blazor.Shared
 
         public static class BlazorComponent
         {
-            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Components.BlazorComponent";
+            public static readonly string Namespace = "Microsoft.AspNetCore.Blazor.Components";
+            public static readonly string FullTypeName = Namespace + ".BlazorComponent";
 
             public static readonly string BuildRenderTree = nameof(BuildRenderTree);
         }
@@ -40,7 +41,8 @@ namespace Microsoft.AspNetCore.Blazor.Shared
 
         public static class RenderFragment
         {
-            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.RenderFragment";
+            public static readonly string Namespace = "Microsoft.AspNetCore.Blazor";
+            public static readonly string FullTypeName = Namespace + ".RenderFragment";
         }
         
         public static class RenderTreeBuilder

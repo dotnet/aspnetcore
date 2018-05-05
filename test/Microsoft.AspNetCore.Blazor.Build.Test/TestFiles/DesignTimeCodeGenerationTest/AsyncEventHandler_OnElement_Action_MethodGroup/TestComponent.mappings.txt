@@ -3,24 +3,19 @@ Source Location: (1:0,1 [28] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (222:9,0 [28] )
 |using System.Threading.Tasks|
 
-Source Location: (32:1,1 [33] x:\dir\subdir\Test\TestComponent.cshtml)
-|using Microsoft.AspNetCore.Blazor|
-Generated Location: (335:14,0 [33] )
-|using Microsoft.AspNetCore.Blazor|
-
-Source Location: (84:2,17 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (48:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |OnClick|
-Generated Location: (1110:31,136 [7] )
+Generated Location: (1083:28,136 [7] )
 |OnClick|
 
-Source Location: (109:3,12 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (73:2,12 [73] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     Task OnClick() 
     {
         return Task.CompletedTask;
     }
 |
-Generated Location: (1233:35,12 [73] )
+Generated Location: (1206:32,12 [73] )
 |
     Task OnClick() 
     {

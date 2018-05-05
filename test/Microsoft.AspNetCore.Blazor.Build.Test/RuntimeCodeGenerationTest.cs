@@ -187,7 +187,6 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @addTagHelper *, TestAssembly
-@using Microsoft.AspNetCore.Blazor
 <MyComponent OnClick=""@Increment""/>
 
 @functions {
@@ -285,7 +284,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""@(() => { })"" />");
 
             // Assert
@@ -301,7 +299,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""@(x => { })"" />");
 
             // Assert
@@ -317,7 +314,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""@OnClick"" />
 @functions {
     void OnClick() {
@@ -337,7 +333,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""@OnClick"" />
 @functions {
     void OnClick(UIMouseEventArgs e) {
@@ -357,7 +352,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""@OnClick"" />
 @functions {
     void OnClick(UIEventArgs e) {
@@ -378,7 +372,6 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""@OnClick"" />
 @functions {
     Task OnClick() 
@@ -401,7 +394,6 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""@OnClick"" />
 @functions {
     Task OnClick(UIMouseEventArgs e) 
@@ -424,7 +416,6 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""async (e) => await Task.Delay(10)"" />
 ");
 
@@ -442,7 +433,6 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-@using Microsoft.AspNetCore.Blazor
 <input onclick=""async (e) => await Task.Delay(10)"" />
 ");
 

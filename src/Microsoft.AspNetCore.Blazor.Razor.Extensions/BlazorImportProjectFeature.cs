@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -17,12 +18,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         private static readonly char[] PathSeparators = new char[]{ '/', '\\' };
 
         // Using explicit newlines here to avoid fooling our baseline tests
-        private const string DefaultUsingImportContent =
+        private readonly static string DefaultUsingImportContent =
             "\r\n" +
             "@using System\r\n" +
             "@using System.Collections.Generic\r\n" +
             "@using System.Linq\r\n" +
-            "@using System.Threading.Tasks\r\n";
+            "@using System.Threading.Tasks\r\n" +
+            "@using " + BlazorApi.RenderFragment.Namespace + "\r\n" + // Microsoft.AspNetCore.Blazor
+            "@using " + BlazorApi.BlazorComponent.Namespace + "\r\n"; // Microsoft.AspNetCore.Blazor.Components
 
         public RazorProjectEngine ProjectEngine { get; set; }
 

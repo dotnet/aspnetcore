@@ -1,10 +1,5 @@
-Source Location: (1:0,1 [33] x:\dir\subdir\Test\TestComponent.cshtml)
-|using Microsoft.AspNetCore.Blazor|
-Generated Location: (257:10,0 [33] )
-|using Microsoft.AspNetCore.Blazor|
-
-Source Location: (54:1,18 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (18:0,18 [8] x:\dir\subdir\Test\TestComponent.cshtml)
 |x => { }|
-Generated Location: (1032:27,136 [8] )
+Generated Location: (1005:24,136 [8] )
 |x => { }|
 

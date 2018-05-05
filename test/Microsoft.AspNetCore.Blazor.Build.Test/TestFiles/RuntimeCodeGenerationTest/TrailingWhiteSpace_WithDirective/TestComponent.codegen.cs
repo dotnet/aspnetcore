@@ -7,6 +7,8 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Blazor;
+    using Microsoft.AspNetCore.Blazor.Components;
     [Microsoft.AspNetCore.Blazor.Components.RouteAttribute("/my/url")]
     public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
     {

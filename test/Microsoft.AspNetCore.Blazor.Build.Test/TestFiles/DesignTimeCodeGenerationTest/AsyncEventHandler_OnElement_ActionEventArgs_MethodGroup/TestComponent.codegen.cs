@@ -11,11 +11,8 @@ using System.Threading.Tasks;
 
 #line default
 #line hidden
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-using Microsoft.AspNetCore.Blazor;
-
-#line default
-#line hidden
+    using Microsoft.AspNetCore.Blazor;
+    using Microsoft.AspNetCore.Blazor.Components;
     public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
     {
         #pragma warning disable 219
@@ -32,7 +29,7 @@ using Microsoft.AspNetCore.Blazor;
             __o = Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(OnClick);
         }
         #pragma warning restore 1998
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     Task OnClick(UIMouseEventArgs e) 
     {

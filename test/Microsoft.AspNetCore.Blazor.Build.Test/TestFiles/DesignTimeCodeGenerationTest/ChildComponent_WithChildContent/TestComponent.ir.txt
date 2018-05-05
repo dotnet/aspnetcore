@@ -4,6 +4,8 @@ Document -
         UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [33] ) - Microsoft.AspNetCore.Blazor
+        UsingDirective - (140:6,1 [44] ) - Microsoft.AspNetCore.Blazor.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Blazor.Components.BlazorComponent - 
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [32] ) - "*, Microsoft.AspNetCore.Blazor"
