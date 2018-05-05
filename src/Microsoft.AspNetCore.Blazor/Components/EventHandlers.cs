@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [EventHandler("onmouseup", typeof(UIMouseEventArgs))]
     [EventHandler("onclick", typeof(UIMouseEventArgs))]
     [EventHandler("ondblclick", typeof(UIMouseEventArgs))]
+    [EventHandler("onwheel", typeof(UIWheelEventArgs))]
     [EventHandler("onmousewheel", typeof(UIWheelEventArgs))]
     [EventHandler("oncontextmenu", typeof(UIMouseEventArgs))]
 
@@ -64,6 +65,8 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [EventHandler("ontouchend", typeof(UITouchEventArgs))]
     [EventHandler("ontouchmove", typeof(UITouchEventArgs))]
     [EventHandler("ontouchstart", typeof(UITouchEventArgs))]
+    [EventHandler("ontouchenter", typeof(UITouchEventArgs))]
+    [EventHandler("ontouchleave", typeof(UITouchEventArgs))]
 
     // Pointer events
     [EventHandler("gotpointercapture", typeof(UIPointerEventArgs))]
@@ -96,14 +99,16 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [EventHandler("onvolumechange", typeof(UIEventArgs))]
     [EventHandler("onwaiting", typeof(UIEventArgs))]
 
-    // Error events
+    // Progress events
+    [EventHandler("onloadstart", typeof(UIProgressEventArgs))]
+    [EventHandler("ontimeout", typeof(UIProgressEventArgs))]
+    [EventHandler("onabort", typeof(UIProgressEventArgs))]
+    [EventHandler("onload", typeof(UIProgressEventArgs))]
+    [EventHandler("onloadend", typeof(UIProgressEventArgs))]
+    [EventHandler("onprogress", typeof(UIProgressEventArgs))]
     [EventHandler("onerror", typeof(UIErrorEventArgs))]
 
-    // Progress events
-    [EventHandler("onprogress", typeof(UIProgressEventArgs))]
-
     // General events
-    [EventHandler("onabort", typeof(UIEventArgs))]
     [EventHandler("onactivate", typeof(UIEventArgs))]
     [EventHandler("onbeforeactivate", typeof(UIEventArgs))]
     [EventHandler("onbeforedeactivate", typeof(UIEventArgs))]
@@ -111,10 +116,8 @@ namespace Microsoft.AspNetCore.Blazor.Components
     [EventHandler("onended", typeof(UIEventArgs))]
     [EventHandler("onfullscreenchange", typeof(UIEventArgs))]
     [EventHandler("onfullscreenerror", typeof(UIEventArgs))]
-    [EventHandler("onload", typeof(UIEventArgs))]
     [EventHandler("onloadeddata", typeof(UIEventArgs))]
     [EventHandler("onloadedmetadata", typeof(UIEventArgs))]
-    [EventHandler("onloadstart", typeof(UIEventArgs))]
     [EventHandler("onpointerlockchange", typeof(UIEventArgs))]
     [EventHandler("onpointerlockerror", typeof(UIEventArgs))]
     [EventHandler("onreadystatechange", typeof(UIEventArgs))]
