@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
             _renderHandle = renderHandle;
         }
-        
+
         /// <summary>
         /// Method invoked to apply initial or updated parameters to the component.
         /// </summary>
@@ -160,11 +160,19 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
                 // If you override OnInitAsync and return a nonnull task, then by default
                 // we automatically re-render once that task completes.
-                OnInitAsync()?.ContinueWith(ContinueAfterLifecycleTask);
+                var initTask = OnInitAsync();
+                if (initTask != null && initTask.Status != TaskStatus.RanToCompletion)
+                {
+                    initTask.ContinueWith(ContinueAfterLifecycleTask);
+                }
             }
 
             OnParametersSet();
-            OnParametersSetAsync()?.ContinueWith(ContinueAfterLifecycleTask);
+            var parametersTask = OnParametersSetAsync();
+            if (parametersTask != null && parametersTask.Status != TaskStatus.RanToCompletion)
+            {
+                parametersTask.ContinueWith(ContinueAfterLifecycleTask);
+            }
 
             StateHasChanged();
         }
@@ -200,7 +208,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
             // This just saves the developer the trouble of putting "StateHasChanged();"
             // at the end of every event callback.
             StateHasChanged();
-            
+
             if (task.Status == TaskStatus.RanToCompletion)
             {
                 return;
