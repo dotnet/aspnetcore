@@ -154,6 +154,11 @@ namespace Microsoft.AspNetCore.Routing
                 if (_options.LowercaseUrls)
                 {
                     urlWithoutQueryString = urlWithoutQueryString.ToLowerInvariant();
+
+                    if (!string.IsNullOrEmpty(queryString))
+                    {
+                        queryString = queryString.ToLowerInvariant();
+                    }
                 }
 
                 if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/"))
