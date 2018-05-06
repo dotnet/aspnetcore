@@ -3,25 +3,25 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17042</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorPagesPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreMvcRazorPagesPackageVersion>
-    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreRazorDesignPackageVersion>
-    <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreRazorRuntimePackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview3-34066</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34066</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17047</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorPagesPackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreMvcRazorPagesPackageVersion>
+    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreRazorDesignPackageVersion>
+    <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreRazorRuntimePackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34135</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34135</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildTasksCorePackageVersion>15.6.82</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34066</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34135</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34135</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34135</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34135</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34135</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.2.0-preview1-26424-04</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34066</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34135</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
