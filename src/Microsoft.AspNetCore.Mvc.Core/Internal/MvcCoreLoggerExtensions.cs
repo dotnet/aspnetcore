@@ -695,7 +695,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\", ");
                     }
                 }
-                if (action.RouteValues["page"] != null)
+                if (action.RouteValues.TryGetValue("page", out var page) && page != null)
                 {
                     _pageExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
                 }
