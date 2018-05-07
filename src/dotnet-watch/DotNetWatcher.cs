@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -69,13 +69,13 @@ namespace Microsoft.DotNet.Watcher
 
                     await Task.WhenAll(processTask, fileSetTask);
 
-                    if (processTask.Result == 0)
+                    if (processTask.Result != 0 && finishedTask == processTask)
                     {
-                        _reporter.Output("Exited");
+                        _reporter.Error($"Exited with error code {processTask.Result}");
                     }
                     else
                     {
-                        _reporter.Error($"Exited with error code {processTask.Result}");
+                        _reporter.Output("Exited");
                     }
 
                     if (finishedTask == cancelledTaskSource.Task || cancellationToken.IsCancellationRequested)

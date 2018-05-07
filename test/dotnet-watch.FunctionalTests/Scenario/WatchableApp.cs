@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public async Task HasExited()
         {
             await Process.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
-            await Process.GetOutputLineAsync(WatchExitedMessage, DefaultMessageTimeOut);
+            await Process.GetOutputLineStartsWithAsync(WatchExitedMessage, DefaultMessageTimeOut);
         }
 
         public async Task IsWaitingForFileChange()
