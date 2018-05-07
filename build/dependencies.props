@@ -80,7 +80,7 @@
     <MicrosoftNETCoreApp10PackageVersion>1.0.5</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.2</MicrosoftNETCoreApp11PackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.2.0-preview1-26424-04</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-rc1</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
