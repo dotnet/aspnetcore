@@ -9,6 +9,7 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -26,8 +27,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly ISocketsTrace _trace;
         private readonly SocketReceiver _receiver;
         private readonly SocketSender _sender;
+        private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
+        private readonly object _shutdownLock = new object();
         private volatile bool _aborted;
+        private long _totalBytesWritten;
 
         internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
         {
@@ -49,6 +53,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             RemoteAddress = remoteEndPoint.Address;
             RemotePort = remoteEndPoint.Port;
 
+            ConnectionClosed = _connectionClosedTokenSource.Token;
+
             // On *nix platforms, Sockets already dispatches to the ThreadPool.
             var awaiterScheduler = IsWindows ? _scheduler : PipeScheduler.Inline;
 
@@ -59,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public override MemoryPool<byte> MemoryPool { get; }
         public override PipeScheduler InputWriterScheduler => _scheduler;
         public override PipeScheduler OutputReaderScheduler => _scheduler;
+        public override long TotalBytesWritten => Interlocked.Read(ref _totalBytesWritten);
 
         public async Task StartAsync(IConnectionDispatcher connectionDispatcher)
         {
@@ -88,6 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 _socket.Dispose();
                 _receiver.Dispose();
                 _sender.Dispose();
+                ThreadPool.QueueUserWorkItem(state => ((SocketConnection)state).CancelConnectionClosedToken(), this);
             }
             catch (Exception ex)
             {
@@ -98,6 +106,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // Complete the output after disposing the socket
                 Output.Complete(sendError);
             }
+        }
+
+        public override void Abort()
+        {
+            // Try to gracefully close the socket to match libuv behavior.
+            Shutdown();
+            _socket.Dispose();
         }
 
         private async Task DoReceive()
@@ -216,15 +231,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 error = new IOException(ex.Message, ex);
             }
-            finally
-            {
-                // Make sure to close the connection only after the _aborted flag is set.
-                // Without this, the RequestsCanBeAbortedMidRead test will sometimes fail when
-                // a BadHttpRequestException is thrown instead of a TaskCanceledException.
-                _aborted = true;
-                _trace.ConnectionWriteFin(ConnectionId);
-                _socket.Shutdown(SocketShutdown.Both);
-            }
+
+            Shutdown();
 
             return error;
         }
@@ -249,12 +257,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     await _sender.SendAsync(buffer);
                 }
 
+                // This is not interlocked because there could be a concurrent writer.
+                // Instead it's to prevent read tearing on 32-bit systems.
+                Interlocked.Add(ref _totalBytesWritten, buffer.Length);
+
                 Output.AdvanceTo(end);
 
                 if (isCompleted)
                 {
                     break;
                 }
+            }
+        }
+
+        private void Shutdown()
+        {
+            lock (_shutdownLock)
+            {
+                if (!_aborted)
+                {
+                    // Make sure to close the connection only after the _aborted flag is set.
+                    // Without this, the RequestsCanBeAbortedMidRead test will sometimes fail when
+                    // a BadHttpRequestException is thrown instead of a TaskCanceledException.
+                    _aborted = true;
+                    _trace.ConnectionWriteFin(ConnectionId);
+
+                    // Try to gracefully close the socket even for aborts to match libuv behavior.
+                    _socket.Shutdown(SocketShutdown.Both);
+                }
+            }
+        }
+
+        private void CancelConnectionClosedToken()
+        {
+            try
+            {
+                _connectionClosedTokenSource.Cancel();
+                _connectionClosedTokenSource.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(CancelConnectionClosedToken)}.");
             }
         }
     }

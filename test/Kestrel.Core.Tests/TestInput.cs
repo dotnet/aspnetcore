@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -27,10 +28,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Transport = pair.Transport;
             Application = pair.Application;
 
+            var connectionFeatures = new FeatureCollection();
+            connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+            connectionFeatures.Set(Mock.Of<IBytesWrittenFeature>());
+
             Http1ConnectionContext = new Http1ConnectionContext
             {
                 ServiceContext = new TestServiceContext(),
-                ConnectionFeatures = new FeatureCollection(),
+                ConnectionFeatures = connectionFeatures,
                 Application = Application,
                 Transport = Transport,
                 MemoryPool = _memoryPool,

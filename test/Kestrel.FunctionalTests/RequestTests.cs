@@ -15,10 +15,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -567,6 +568,108 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
                     int result = socket.Receive(new byte[32]);
                     Assert.Equal(0, result);
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ConnectionClosedTokenFiresOnClientFIN(ListenOptions listenOptions)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var appStartedTcs = new TaskCompletionSource<object>();
+            var connectionClosedTcs = new TaskCompletionSource<object>();
+
+            using (var server = new TestServer(context =>
+            {
+                appStartedTcs.SetResult(null);
+
+                var connectionLifetimeFeature = context.Features.Get<IConnectionLifetimeFeature>();
+                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult(null));
+
+                return Task.CompletedTask;
+            }, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await appStartedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+
+                    connection.Socket.Shutdown(SocketShutdown.Send);
+
+                    await connectionClosedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var connectionClosedTcs = new TaskCompletionSource<object>();
+
+            using (var server = new TestServer(context =>
+            {
+                var connectionLifetimeFeature = context.Features.Get<IConnectionLifetimeFeature>();
+                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult(null));
+
+                return Task.CompletedTask;
+            }, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Connection: close",
+                        "",
+                        "");
+
+                    await connectionClosedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+
+                    await connection.ReceiveEnd($"HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ConnectionClosedTokenFiresOnServerAbort(ListenOptions listenOptions)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var connectionClosedTcs = new TaskCompletionSource<object>();
+
+            using (var server = new TestServer(context =>
+            {
+                var connectionLifetimeFeature = context.Features.Get<IConnectionLifetimeFeature>();
+                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult(null));
+
+                context.Abort();
+
+                return Task.CompletedTask;
+            }, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connectionClosedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await connection.ReceiveForcedEnd();
                 }
             }
         }

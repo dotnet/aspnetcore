@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
-        private static readonly Action<PipeWriter, ReadOnlyMemory<byte>> _writeChunk = WriteChunk;
+        private static readonly Func<PipeWriter, ReadOnlyMemory<byte>, long> _writeChunk = WriteChunk;
 
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
@@ -482,6 +482,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     OnRequestProcessingEnding();
                     await TryProduceInvalidRequestResponse();
+
+                    // Prevent RequestAborted from firing.
+                    Reset();
+
                     Output.Dispose();
                 }
                 catch (Exception ex)
@@ -919,16 +923,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Output.WriteAsync(_writeChunk, data);
         }
 
-        private static void WriteChunk(PipeWriter writableBuffer, ReadOnlyMemory<byte> buffer)
+        private static long WriteChunk(PipeWriter writableBuffer, ReadOnlyMemory<byte> buffer)
         {
-            var writer = new BufferWriter<PipeWriter>(writableBuffer);
+            var bytesWritten = 0L;
             if (buffer.Length > 0)
             {
+                var writer = new CountingBufferWriter<PipeWriter>(writableBuffer);
+
                 ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Length);
                 writer.Write(buffer.Span);
                 ChunkWriter.WriteEndChunkBytes(ref writer);
                 writer.Commit();
+
+                bytesWritten = writer.BytesCommitted;
             }
+
+            return bytesWritten;
         }
 
         private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)

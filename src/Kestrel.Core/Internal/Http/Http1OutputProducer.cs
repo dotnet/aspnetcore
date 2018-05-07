@@ -8,7 +8,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -22,11 +24,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly string _connectionId;
         private readonly ITimeoutControl _timeoutControl;
         private readonly IKestrelTrace _log;
+        private readonly IConnectionLifetimeFeature _lifetimeFeature;
+        private readonly IBytesWrittenFeature _transportBytesWrittenFeature;
 
         // This locks access to to all of the below fields
         private readonly object _contextLock = new object();
 
         private bool _completed = false;
+        private bool _aborted;
+        private long _unflushedBytes;
+        private long _totalBytesCommitted;
 
         private readonly PipeWriter _pipeWriter;
         private readonly PipeReader _outputPipeReader;
@@ -45,7 +52,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             PipeWriter pipeWriter,
             string connectionId,
             IKestrelTrace log,
-            ITimeoutControl timeoutControl)
+            ITimeoutControl timeoutControl,
+            IConnectionLifetimeFeature lifetimeFeature,
+            IBytesWrittenFeature transportBytesWrittenFeature)
         {
             _outputPipeReader = outputPipeReader;
             _pipeWriter = pipeWriter;
@@ -53,6 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _timeoutControl = timeoutControl;
             _log = log;
             _flushCompleted = OnFlushCompleted;
+            _lifetimeFeature = lifetimeFeature;
+            _transportBytesWrittenFeature = transportBytesWrittenFeature;
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
@@ -75,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteAsync(Constants.EmptyData, cancellationToken);
         }
 
-        public void Write<T>(Action<PipeWriter, T> callback, T state)
+        public void Write<T>(Func<PipeWriter, T, long> callback, T state)
         {
             lock (_contextLock)
             {
@@ -85,11 +96,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 var buffer = _pipeWriter;
-                callback(buffer, state);
+                var bytesCommitted = callback(buffer, state);
+                _unflushedBytes += bytesCommitted;
+                _totalBytesCommitted += bytesCommitted;
             }
         }
 
-        public Task WriteAsync<T>(Action<PipeWriter, T> callback, T state)
+        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state)
         {
             lock (_contextLock)
             {
@@ -99,7 +112,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 var buffer = _pipeWriter;
-                callback(buffer, state);
+                var bytesCommitted = callback(buffer, state);
+                _unflushedBytes += bytesCommitted;
+                _totalBytesCommitted += bytesCommitted;
             }
 
             return FlushAsync();
@@ -115,14 +130,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 var buffer = _pipeWriter;
-                var writer = new BufferWriter<PipeWriter>(buffer);
+                var writer = new CountingBufferWriter<PipeWriter>(buffer);
 
                 writer.Write(_bytesHttpVersion11);
                 var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
                 writer.Write(statusBytes);
                 responseHeaders.CopyTo(ref writer);
                 writer.Write(_bytesEndHeaders);
+
                 writer.Commit();
+
+                _unflushedBytes += writer.BytesCommitted;
+                _totalBytesCommitted += writer.BytesCommitted;
             }
         }
 
@@ -138,23 +157,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _log.ConnectionDisconnect(_connectionId);
                 _completed = true;
                 _pipeWriter.Complete();
+
+                var unsentBytes = _totalBytesCommitted - _transportBytesWrittenFeature.TotalBytesWritten;
+
+                if (unsentBytes > 0)
+                {
+                    // unsentBytes should never be over 64KB in the default configuration.
+                    _timeoutControl.StartTimingWrite((int)Math.Min(unsentBytes, int.MaxValue));
+                    _pipeWriter.OnReaderCompleted((ex, state) => ((ITimeoutControl)state).StopTimingWrite(), _timeoutControl);
+                }
             }
         }
 
         public void Abort(Exception error)
         {
+            // Abort can be called after Dispose if there's a flush timeout.
+            // It's important to still call _lifetimeFeature.Abort() in this case.
+
             lock (_contextLock)
             {
-                if (_completed)
+                if (_aborted)
                 {
                     return;
                 }
 
-                _log.ConnectionDisconnect(_connectionId);
-                _completed = true;
+                if (!_completed)
+                {
+                    _log.ConnectionDisconnect(_connectionId);
+                    _completed = true;
 
-                _outputPipeReader.CancelPendingRead();
-                _pipeWriter.Complete(error);
+                    _outputPipeReader.CancelPendingRead();
+                    _pipeWriter.Complete(error);
+                }
+
+                _aborted = true;
+                _lifetimeFeature.Abort();
             }
         }
 
@@ -177,13 +214,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 writableBuffer = _pipeWriter;
-                var writer = new BufferWriter<PipeWriter>(writableBuffer);
+                var writer = new CountingBufferWriter<PipeWriter>(writableBuffer);
                 if (buffer.Length > 0)
                 {
                     writer.Write(buffer);
-                    bytesWritten += buffer.Length;
+
+                    _unflushedBytes += buffer.Length;
+                    _totalBytesCommitted += buffer.Length;
                 }
                 writer.Commit();
+
+                bytesWritten = _unflushedBytes;
+                _unflushedBytes = 0;
             }
 
             return FlushAsync(writableBuffer, bytesWritten, cancellationToken);
