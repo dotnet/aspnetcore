@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // HttpClient re-tries the request because it doesn't know if the request was received.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Abort();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_2
 #else
 #error Target framework needs to be updated
 #endif
