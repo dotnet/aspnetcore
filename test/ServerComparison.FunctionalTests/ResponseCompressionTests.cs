@@ -35,10 +35,8 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.InProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.InProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         public Task ResponseCompression_IISExpress_NoCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
