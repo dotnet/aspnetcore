@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Fact]
-        public Task UpgradeFeatureDetectionEnabled_InProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionDisabled_InProcess_IISExpress_CoreClr_x64_Portable()
         {
             return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
                 ApplicationType.Portable,
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Fact]
-        public Task UpgradeFeatureDetectionDisabled_InProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionEnabled_InProcess_IISExpress_CoreClr_x64_Portable()
         {
             return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
                 ApplicationType.Portable,
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Fact]
-        public Task UpgradeFeatureDetectionEnabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionDisabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
         {
             return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
                 ApplicationType.Portable,
@@ -52,8 +52,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 "Disabled");
         }
 
+        // This test is failing on win7 and win2008
         [Fact]
-        public Task UpgradeFeatureDetectionDisabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionEnabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
         {
             return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
                 ApplicationType.Portable,
@@ -89,7 +90,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     var deploymentResult = await deployer.DeployAsync();
                     deploymentResult.HttpClient.Timeout = TimeSpan.FromSeconds(5);
-
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
                     {

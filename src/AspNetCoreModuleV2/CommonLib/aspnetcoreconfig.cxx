@@ -178,7 +178,6 @@ ASPNETCORE_CONFIG::Populate(
     IAppHostElement                *pWindowsAuthenticationElement = NULL;
     IAppHostElement                *pBasicAuthenticationElement = NULL;
     IAppHostElement                *pAnonymousAuthenticationElement = NULL;
-    IAppHostElement                *pWebSocketElement = NULL;
     IAppHostElement                *pEnvVarList = NULL;
     IAppHostElement                *pEnvVar = NULL;
     IAppHostElementCollection      *pEnvVarCollection = NULL;
@@ -192,7 +191,6 @@ ASPNETCORE_CONFIG::Populate(
     BSTR                            bstrBasicAuthSection = NULL;
     BSTR                            bstrAnonymousAuthSection = NULL;
     BSTR                            bstrAspNetCoreSection = NULL;
-    BSTR                            bstrWebsocketSection = NULL;
 
     m_pEnvironmentVariables = new ENVIRONMENT_VAR_HASH();
     if (m_pEnvironmentVariables == NULL)
@@ -322,29 +320,18 @@ ASPNETCORE_CONFIG::Populate(
         }
     }
 
-    bstrWebsocketSection = SysAllocString(CS_WEBSOCKET_SECTION);
-    if (bstrWebsocketSection == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
-
-    hr = pAdminManager->GetAdminSection(bstrWebsocketSection,
-        m_struConfigPath.QueryStr(),
-        &pWebSocketElement);
+    // Even though the applicationhost.config file contains the websocket element,
+    // the websocket module may still not be enabled. Check if the
+    PCWSTR pszVariableValue;
+    DWORD cbLength;
+    hr = pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszVariableValue, &cbLength);
     if (FAILED(hr))
     {
         m_fWebSocketEnabled = FALSE;
     }
     else
     {
-        hr = GetElementBoolProperty(pWebSocketElement,
-            CS_ENABLED,
-            &m_fWebSocketEnabled);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        m_fWebSocketEnabled = TRUE;
     }
 
     bstrAspNetCoreSection = SysAllocString(CS_ASPNETCORE_SECTION);
@@ -555,12 +542,6 @@ Finished:
     {
         pAspNetCoreElement->Release();
         pAspNetCoreElement = NULL;
-    }
-
-    if (pWebSocketElement != NULL)
-    {
-        pWebSocketElement->Release();
-        pWebSocketElement = NULL;
     }
 
     if (pWindowsAuthenticationElement != NULL)

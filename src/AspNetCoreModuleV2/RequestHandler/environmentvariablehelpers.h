@@ -362,7 +362,6 @@ public:
         return hr;
     }
 
-
     static
     HRESULT
     AddWebsocketEnabledToEnvironmentVariables
