@@ -101,14 +101,18 @@
       <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
       <ChangeLogProps>$(ChangeLogProps);MAINTAINER_NAME=$(RpmMaintainerName)</ChangeLogProps>
       <ChangeLogProps>$(ChangeLogProps);MAINTAINER_EMAIL=$(RpmMaintainerEmail)</ChangeLogProps>
-      <ChangeLogProps>$(ChangeLogProps);PACKAGE_VERSION=$(RpmVersion)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);PACKAGE_VERSION=$(RpmPackageVersion)</ChangeLogProps>
       <ChangeLogProps>$(ChangeLogProps);PACKAGE_REVISION=$(RpmRevision)</ChangeLogProps>
     </PropertyGroup>
 
     <GenerateFileFromTemplate TemplateFile="$(_PackagingDir)changelog.in" OutputPath="$(_WorkRoot)templates/changelog" Properties="$(ChangeLogProps)" />
 
     <!-- Run fpm -->
-    <Exec Command="docker run
+    <!-- Retry added due to fpm/docker race where .w/package_root directory cannot be resolved -->
+    <Run
+      FileName="docker"
+      Command="
+      run
       --rm
       -v $(RepositoryRoot):$(_DockerRootDir)
       docker-image-$(Image)
@@ -116,9 +120,9 @@
         --verbose
         -s dir
         -t rpm
-        -n $(RpmInstallerPrefix)-$(RpmVersion)
-        -p $(_DockerRootDir)artifacts/installers/$(RpmInstallerPrefix)-$(RpmVersion)-$(RpmFileSuffix)
-        -v $(RpmVersion)
+        -n $(RpmName)-$(RpmIdVersion)
+        -p $(_DockerRootDir)artifacts/installers/$(RpmName)-$(RpmFileVersion)-$(RpmFileSuffix)
+        -v $(RpmPackageVersion)
         --iteration $(RpmRevision)
         -a amd64
         $(RpmArguments)
@@ -129,7 +133,8 @@
         --vendor &quot;$(RpmVendor)&quot;
         --license &quot;$(RpmLicense)&quot;
         --url &quot;$(RpmHomepage)&quot;
-        $(_DockerRootDir).w/package_root/=&quot;$(RpmInstallRoot)/&quot;" />
+        $(_DockerRootDir).w/package_root/=&quot;$(RpmInstallRoot)/&quot;"
+      MaxRetries="5"/>
   </Target>
 
   <Target Name="GenerateRpms" DependsOnTargets="_EnsureInstallerPrerequisites">
@@ -143,31 +148,45 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
 
     <ItemGroup>
-      <RpmSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)" Version="$(MicrosoftNETCoreApp21PackageVersion)" />
+      <RpmNonUpgradeableSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)" Version="$(MicrosoftNETCoreApp21PackageVersion)" />
+      <RpmSharedFxDependencies Include="$(DotnetRuntimeUpgradeableInstallerPrefix)" Version="$(MicrosoftNETCoreApp21InstallerVersion)" />
       <RpmRHSharedFxDirectories Include="$(RHInstallRoot)/shared" />
       <RpmGenericSharedFxDirectories Include="$(InstallRoot)/shared" />
     </ItemGroup>
 
     <PropertyGroup>
+      <RpmNonUpgradeableSharedFxArguments>@(RpmNonUpgradeableSharedFxDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RpmNonUpgradeableSharedFxArguments>
       <RpmSharedFxArguments>@(RpmSharedFxDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RpmSharedFxArguments>
+      <RpmNonUpgradeableRHSharedFxArguments>$(RpmNonUpgradeableSharedFxArguments) @(RpmRHSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmNonUpgradeableRHSharedFxArguments>
+      <RpmNonUpgradeableGenericSharedFxArguments>$(RpmNonUpgradeableSharedFxArguments) @(RpmGenericSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmNonUpgradeableGenericSharedFxArguments>
       <RpmRHSharedFxArguments>$(RpmSharedFxArguments) @(RpmRHSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmRHSharedFxArguments>
       <RpmGenericSharedFxArguments>$(RpmSharedFxArguments) @(RpmGenericSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmGenericSharedFxArguments>
 
-      <RpmCommonArguments>Image=$(Image);RpmVendor=$(RpmVendor);RpmVersion=$(PackageVersion)</RpmCommonArguments>
-      <RpmCommonArguments>$(RpmCommonArguments);RpmMaintainerName=$(MaintainerName);RpmMaintainerEmail=$(MaintainerEmail)</RpmCommonArguments>
-      <RpmCommonArguments>$(RpmCommonArguments);RpmHomepage=$(Homepage);RpmRevision=$(PackageRevision)</RpmCommonArguments>
-      <RpmCommonArguments>$(RpmCommonArguments);RpmLicense=$(LicenseType)</RpmCommonArguments>
-      <RpmCommonArguments>$(RpmCommonArguments);RpmInstallerPrefix=$(SharedFxInstallerName);SharedFxArchive=$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz</RpmCommonArguments>
-      <RpmCommonArguments>$(RpmCommonArguments);RpmMSummary=$(SharedFxSummary);RpmDescription=$(SharedFxDescription)</RpmCommonArguments>
-      <RpmCommonGenericArguments>RpmFileSuffix=x64.rpm;RpmInstallRoot=$(InstallRoot)</RpmCommonGenericArguments>
-      <RpmCommonRHArguments>RpmFileSuffix=rh.rhel.7-x64.rpm;RpmInstallRoot=$(RHInstallRoot)</RpmCommonRHArguments>
+      <RpmCommonProps>Image=$(Image);RpmVendor=$(RpmVendor);RpmName=$(SharedFxInstallerName)</RpmCommonProps>
+      <RpmCommonProps>$(RpmCommonProps);RpmMaintainerName=$(MaintainerName);RpmMaintainerEmail=$(MaintainerEmail)</RpmCommonProps>
+      <RpmCommonProps>$(RpmCommonProps);RpmHomepage=$(Homepage);RpmRevision=$(RpmPackageRevision)</RpmCommonProps>
+      <RpmCommonProps>$(RpmCommonProps);RpmLicense=$(LicenseType)</RpmCommonProps>
+      <RpmCommonProps>$(RpmCommonProps);SharedFxArchive=$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz</RpmCommonProps>
+      <RpmCommonProps>$(RpmCommonProps);RpmMSummary=$(SharedFxSummary);RpmDescription=$(SharedFxDescription)</RpmCommonProps>
+      <RpmGenericProps>RpmInstallRoot=$(InstallRoot)</RpmGenericProps>
+      <RpmRHProps>RpmInstallRoot=$(RHInstallRoot)</RpmRHProps>
+      <RpmNonUpgradeableProps>RpmIdVersion=$(PackageVersion);RpmPackageVersion=$(PackageVersion);RpmFileVersion=$(PackageVersion)</RpmNonUpgradeableProps>
+      <RpmProps>RpmIdVersion=$(InstallerIdVersion);RpmPackageVersion=$(InstallerPackageVersion);RpmFileVersion=$(PackageVersion);RpmUpgradeableSuffix=-upgradeable</RpmProps>
 
-      <RpmSharedFxProps>$(RpmCommonArguments);$(RpmCommonGenericArguments);RpmArguments=$(RpmGenericSharedFxArguments)</RpmSharedFxProps>
-      <RpmRHSharedFxProps>$(RpmCommonArguments);$(RpmCommonRHArguments);RpmArguments=$(RpmRHSharedFxArguments)</RpmRHSharedFxProps>
+      <RpmNonUpgradeableSharedFxProps>$(RpmCommonProps);$(RpmGenericProps);$(RpmNonUpgradeableProps);RpmArguments=$(RpmNonUpgradeableGenericSharedFxArguments);RpmFileSuffix=x64.rpm</RpmNonUpgradeableSharedFxProps>
+      <RpmNonUpgradeableRHSharedFxProps>$(RpmCommonProps);$(RpmRHProps);$(RpmNonUpgradeableProps);RpmArguments=$(RpmNonUpgradeableRHSharedFxArguments);RpmFileSuffix=rh.rhel.7-x64.rpm</RpmNonUpgradeableRHSharedFxProps>
+      <RpmSharedFxProps>$(RpmCommonProps);$(RpmGenericProps);$(RpmProps);RpmArguments=$(RpmGenericSharedFxArguments);RpmFileSuffix=x64-upgrade.rpm</RpmSharedFxProps>
+      <RpmRHSharedFxProps>$(RpmCommonProps);$(RpmRHProps);$(RpmProps);RpmArguments=$(RpmRHSharedFxArguments);RpmFileSuffix=rh.rhel.7-x64-upgrade.rpm</RpmRHSharedFxProps>
     </PropertyGroup>
+
+    <!-- NonUpgradeable Generic installer-->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmNonUpgradeableSharedFxProps)" />
 
     <!-- Generic installer-->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmSharedFxProps)" />
+
+    <!-- NonUpgradeable RH installer-->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmNonUpgradeableRHSharedFxProps)" />
 
     <!-- RH installer-->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmRHSharedFxProps)" />
@@ -217,8 +236,8 @@
       --rm
       -v $(RepositoryRoot):$(_DockerRootDir)
       -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
-      -e INSTALLER_NAME=$(DebPrefix)-$(DebVersion)
-      -e INSTALLER_VERSION=$(DebVersion)
+      -e INSTALLER_NAME=$(DebPrefix)-$(DebIdVersion)
+      -e INSTALLER_VERSION=$(DebPackageVersion)
       docker-image-$(Image)
       ./build.sh /t:RunDebTool"
       ContinueOnError="WarnAndContinue" />
@@ -231,36 +250,46 @@
     <Error Text="@(GeneratedDebFiles->Count()) deb installer files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
 
     <Copy
-      DestinationFiles="$(_InstallersOutputDir)$(DebPrefix)-$(DebVersion)-x64.deb"
+      DestinationFiles="$(_InstallersOutputDir)$(DebPrefix)-$(DebFileVersion)-x64$(DebUpgradeSuffix).deb"
       SourceFiles="@(GeneratedDebFiles)"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
   </Target>
 
-  <Target Name="_GenerateDebOnPlatform">
-    <!-- Build Docker Image -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
+  <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
+    <PropertyGroup>
+      <NETCoreApp21DebVersion>$(MicrosoftNETCoreApp21PackageVersion)</NETCoreApp21DebVersion>
+      <!-- Needed some creativity to convert the PackageVersion M.N.P-Build to the installer version M.N.P~Build, The conditional handles stabilized builds -->
+      <NETCoreApp21DebVersion Condition="$(NETCoreApp21DebVersion.Contains('-'))">$(NETCoreApp21DebVersion.Substring(0, $(NETCoreApp21DebVersion.IndexOf('-'))))~$(NETCoreApp21DebVersion.Substring($([MSBuild]::Add($(NETCoreApp21DebVersion.IndexOf('-')), 1))))</NETCoreApp21DebVersion>
+    </PropertyGroup>
 
     <ItemGroup>
-      <_DebSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)"/>
+      <_DebNonUpgradeableSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)"/>
+      <_DebSharedFxDependencies Include="$(DotnetRuntimeUpgradeableInstallerPrefix)" Version="$(NETCoreApp21DebVersion)"/>
     </ItemGroup>
 
     <PropertyGroup>
-      <DebSharedFxDependencies>@(_DebSharedFxDependencies->'"%(Identity)": {}', ', ')</DebSharedFxDependencies>
+      <Image>ubuntu.14.04</Image>
 
-      <CommonProps>Image=$(Image);DebVersion=$(PackageVersion)</CommonProps>
-      <DebSharedFxProps>DebPrefix=$(SharedFxInstallerName);DebSummary=$(SharedFxSummary);DebDescription=$(SharedFxDescription)</DebSharedFxProps>
-      <DebSharedFxProps>$(DebSharedFxProps);DebDependencies=$(DebSharedFxDependencies);SharedFxArchive=$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz</DebSharedFxProps>
+      <DebNonUpgradeableSharedFxDependencies>@(_DebNonUpgradeableSharedFxDependencies->'"%(Identity)": { }', ', ')</DebNonUpgradeableSharedFxDependencies>
+      <DebSharedFxDependencies>@(_DebSharedFxDependencies->'"%(Identity)": { "package_version": "%(Version)" }', ', ')</DebSharedFxDependencies>
+
+      <DebCommonProps>Image=$(Image);DebPrefix=$(SharedFxInstallerName)</DebCommonProps>
+      <DebCommonProps>$(DebCommonProps);DebSummary=$(SharedFxSummary);DebDescription=$(SharedFxDescription)</DebCommonProps>
+      <DebCommonProps>$(DebCommonProps);SharedFxArchive=$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz</DebCommonProps>
+
+      <DebNonUpgradeableProps>DebIdVersion=$(PackageVersion);DebPackageVersion=$(PackageVersion);DebFileVersion=$(PackageVersion);DebDependencies=$(DebNonUpgradeableSharedFxDependencies)</DebNonUpgradeableProps>
+      <DebProps>DebIdVersion=$(InstallerIdVersion);DebPackageVersion=$(DebInstallerPackageVersion);DebFileVersion=$(PackageVersion);DebDependencies=$(DebSharedFxDependencies);DebUpgradeSuffix=-upgrade</DebProps>
     </PropertyGroup>
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(CommonProps);$(DebSharedFxProps)" />
+    <!-- Build Docker Image -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(DebCommonProps);$(DebNonUpgradeableProps)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(DebCommonProps);$(DebProps)" />
 
     <!-- Remove Docker Image to save disk space -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
-  </Target>
-
-  <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="PackageVersion=$(PackageVersion);Image=ubuntu.14.04" />
   </Target>
 </Project>

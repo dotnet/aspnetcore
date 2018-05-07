@@ -1,22 +1,26 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>2.2.0</VersionPrefix>
-    <VersionSuffix>preview1</VersionSuffix>
+    <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
+    <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
+    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
+    <PrereleaseVersionLabel>preview1</PrereleaseVersionLabel>
 
     <ExperimentalVersionPrefix>0.2.0</ExperimentalVersionPrefix>
     <ExperimentalVersionSuffix>alpha1</ExperimentalVersionSuffix>
 
+    <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(PrereleaseVersionLabel)' != '' ">$(PrereleaseVersionLabel)</PackageVersionSuffix>
+    <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(BuildNumber)' != '' ">$(PackageVersionSuffix)-$(BuildNumber)</PackageVersionSuffix>
+    <PackageVersionSuffix Condition=" '$(IsFinalBuild)' == 'true' AND '$(PrereleaseVersionLabel)' != 'rtm' ">$(PrereleaseVersionLabel)-final</PackageVersionSuffix>
+    <!-- NB: VersionSuffix is empty if '$(IsFinalBuild)' == 'true' AND '$(PrereleaseVersionLabel)' == 'rtm' -->
 
-    <PackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
-
-    <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-
-    <PackageVersion Condition=" '$(IsFinalBuild)' != 'true' ">$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition=" '$(IsFinalBuild)' != 'true' AND '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    <PackageVersion>$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition=" '$(PackageVersionSuffix)' != '' ">$(VersionPrefix)-$(PackageVersionSuffix)</PackageVersion>
 
     <!-- Add metadata to the suffix last so it does not appear in package versions. -->
     <VersionMetadata Condition=" '$(DotNetProductBuildId)' != '' ">pb-$(DotNetProductBuildId)</VersionMetadata>
+    <VersionSuffix>$(PrereleaseVersionLabel)</VersionSuffix>
+    <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
 
     <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' == 'rtm' ">$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
