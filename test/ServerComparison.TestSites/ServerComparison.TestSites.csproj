@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFrameworks Condition="">$(StandardTestTfms)</TargetFrameworks>
@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(TargetFramework)' == 'netcoreapp2.1'">
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(TargetFramework)' == 'netcoreapp2.2'">
     <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(MicrosoftAspNetCoreServerIISPackageVersion)" />
   </ItemGroup>
   
