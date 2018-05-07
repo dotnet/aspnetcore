@@ -1,11 +1,11 @@
-﻿<Project>
+<Project>
   <!-- Skip the parent directory so test websites do not get the test package references. -->
   <Import Project="..\..\Directory.Build.props" />
 
   <PropertyGroup>
-    <DeveloperBuildTestWebsiteTfms>netcoreapp2.1</DeveloperBuildTestWebsiteTfms>
+    <DeveloperBuildTestWebsiteTfms>netcoreapp2.2</DeveloperBuildTestWebsiteTfms>
     <StandardTestWebsiteTfms>$(DeveloperBuildTestWebsiteTfms)</StandardTestWebsiteTfms>
-    <StandardTestWebsiteTfms Condition=" '$(DeveloperBuild)' != 'true' ">$(StandardTestWebsiteTfms);netcoreapp2.0</StandardTestWebsiteTfms>
+    <StandardTestWebsiteTfms Condition=" '$(DeveloperBuild)' != 'true' ">$(StandardTestWebsiteTfms)</StandardTestWebsiteTfms>
     <StandardTestWebsiteTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestWebsiteTfms);net461</StandardTestWebsiteTfms>
   </PropertyGroup>
 </Project>

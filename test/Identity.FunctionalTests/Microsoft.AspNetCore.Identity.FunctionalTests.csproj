@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
+    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.2' "></PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
