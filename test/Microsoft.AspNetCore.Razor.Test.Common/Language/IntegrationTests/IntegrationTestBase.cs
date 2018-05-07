@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 CallContext.LogicalSetData("IntegrationTestBase_FileName", new ObjectHandle(value));
             }
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_2
             get { return _fileName.Value; }
             set { _fileName.Value = value; }
 #endif

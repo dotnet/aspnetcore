@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- To generate baselines, run tests with /p:GenerateBaselines=true -->
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net46</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
