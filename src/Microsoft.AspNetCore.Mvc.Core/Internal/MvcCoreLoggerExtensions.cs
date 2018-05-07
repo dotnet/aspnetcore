@@ -784,7 +784,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
             if (logger.IsEnabled(LogLevel.Information))
             {
-                if (action.RouteValues["page"] != null)
+                if (action.RouteValues.TryGetValue("page", out var page) && page != null)
                 {
                     _pageExecuted(logger, action.DisplayName, timeSpan.TotalMilliseconds, null);
                 }
