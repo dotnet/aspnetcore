@@ -68,6 +68,7 @@
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp11PackageVersion)" VariableName="MicrosoftNETCoreApp11PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" VariableName="MicrosoftNETCoreApp20PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp21PackageVersion)" VariableName="MicrosoftNETCoreApp21PackageVersion" />
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp22PackageVersion)" VariableName="MicrosoftNETCoreApp22PackageVersion" />
 
     <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security" Version="$(MicrosoftOwinSecurityPackageVersion)" />
