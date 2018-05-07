@@ -1657,7 +1657,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    // Send an invalid chunk prefix to cause an error.
+                    // Let the app finish
+                    await connection.Send(
+                        "1",
+                        "a",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    // This will be consumed by Http1Connection when it attempts to
+                    // consume the request body and will cause an error.
                     await connection.Send(
                         "gg");
 
@@ -1691,7 +1705,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task Sending100ContinueDoesNotPreventAutomatic400Responses()
         {
-            var foundMessage = false;
             using (var server = new TestServer(httpContext =>
             {
                 return httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
@@ -1729,7 +1742,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            Assert.True(foundMessage, "Expected log not found");
+            Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information && w.Exception is BadHttpRequestException
+                && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
         }
 
         [Fact]
