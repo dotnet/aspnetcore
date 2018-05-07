@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-#if NETCOREAPP2_0 || NETCOREAPP2_1
+#if NETCOREAPP2_1
 
 using System;
 using System.IO;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
                     ApplicationType = applicationType,
                     ANCMVersion = ancmVersion
                 };
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(ANCMVersion.AspNetCoreModuleV2)]
         public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable(ANCMVersion ancmVersion)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false, ancmVersion);
+            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44397, sendClientCert: false, ancmVersion);
         }
 
         [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
                     ApplicationType = applicationType,
                     ANCMVersion = ancmVersion
                 };

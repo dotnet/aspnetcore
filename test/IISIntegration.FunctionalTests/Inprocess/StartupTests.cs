@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-#if NETCOREAPP2_0 || NETCOREAPP2_1
+#if NETCOREAPP2_1
 
         [Fact] // Consistently fails on CI for net461
         public async Task StandaloneApplication_ExpectCorrectPublish()

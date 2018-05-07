@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/NtlmAuthentation.config") : null,
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
                     ApplicationType = applicationType,
                     ANCMVersion = ancmVersion,
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_1
 #else
 #error Target frameworks need to be updated
 #endif
