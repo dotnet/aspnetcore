@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.DataProtection
             var domain = AppDomain.CreateDomain("TestDomain", null, setupInfo);
             var wrappedTestClass = (TypeForwardingActivatorTests)domain.CreateInstanceAndUnwrap(GetType().Assembly.FullName, typeof(TypeForwardingActivatorTests).FullName);
             wrappedTestClass.CreateInstance_ForwardsAcrossVersionChangesImpl(version);
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_2
             CreateInstance_ForwardsAcrossVersionChangesImpl(version);
 #else
 #error Target framework should be updated
