@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
-    public abstract partial class TransportConnection : ConnectionContext
+    public partial class TransportConnection : ConnectionContext
     {
         private IDictionary<object, object> _items;
 
@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             _currentIApplicationTransportFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentITransportSchedulerFeature = this;
+            _currentIConnectionLifetimeFeature = this;
+            _currentIBytesWrittenFeature = this;
         }
 
         public IPAddress RemoteAddress { get; set; }
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public virtual MemoryPool<byte> MemoryPool { get; }
         public virtual PipeScheduler InputWriterScheduler { get; }
         public virtual PipeScheduler OutputReaderScheduler { get; }
+        public virtual long TotalBytesWritten { get; }
 
         public override IDuplexPipe Transport { get; set; }
         public IDuplexPipe Application { get; set; }
@@ -54,5 +57,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;
+
+        public CancellationToken ConnectionClosed { get; set; }
+
+        public virtual void Abort()
+        {
+        }
     }
 }

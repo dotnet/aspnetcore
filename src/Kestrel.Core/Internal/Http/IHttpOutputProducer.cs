@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public interface IHttpOutputProducer : IDisposable
     {
         void Abort(Exception error);
-        Task WriteAsync<T>(Action<PipeWriter, T> callback, T state);
+        Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state);
         Task FlushAsync(CancellationToken cancellationToken);
         Task Write100ContinueAsync(CancellationToken cancellationToken);
         void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders);

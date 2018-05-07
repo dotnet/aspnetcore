@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -304,6 +305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     outputProducer.Write((writableBuffer, state) =>
                     {
                         writableBuffer.Write(state);
+                        return state.Count;
                     },
                     halfWriteBehindBuffer);
 
@@ -729,10 +731,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
             var consumer = new LibuvOutputConsumer(pair.Application.Input, _libuvThread, socket, "0", transportContext.Log);
 
+            var connectionFeatures = new FeatureCollection();
+            connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+            connectionFeatures.Set(Mock.Of<IBytesWrittenFeature>());
+
             var http1Connection = new Http1Connection(new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
+                ConnectionFeatures = connectionFeatures,
                 MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
                 Application = pair.Application,

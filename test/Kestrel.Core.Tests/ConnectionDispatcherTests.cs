@@ -1,13 +1,10 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -23,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => tcs.Task);
 
-            var connection = new TestConnection();
+            var connection = new TransportConnection();
 
             dispatcher.OnConnection(connection);
 
@@ -43,15 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Verify the scope was disposed after request processing completed
             Assert.True(((TestKestrelTrace)serviceContext.Log).Logger.Scopes.IsEmpty);
-        }
-
-        private class TestConnection : TransportConnection
-        {
-            public override MemoryPool<byte> MemoryPool { get; } = KestrelMemoryPool.Create();
-
-            public override PipeScheduler InputWriterScheduler => PipeScheduler.ThreadPool;
-
-            public override PipeScheduler OutputReaderScheduler => PipeScheduler.ThreadPool;
         }
     }
 }

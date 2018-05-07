@@ -16,13 +16,11 @@
     <ProjectReference Include="..\..\src\Kestrel\Kestrel.csproj" />
     <ProjectReference Include="..\..\src\Kestrel.Transport.Libuv\Kestrel.Transport.Libuv.csproj" />
 
-    <PackageReference Include="Microsoft.Extensions.Buffers.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
   </ItemGroup>
 
   <!-- These references are used when running on the Benchmarks Server -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Buffers.Sources" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
   </ItemGroup>
 </Project>

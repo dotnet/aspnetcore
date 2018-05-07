@@ -234,7 +234,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
                     await sslStream.WriteAsync(request, 0, request.Length);
-                    await sslStream.ReadAsync(new byte[32], 0, 32);
+
+                    // Temporary workaround for a deadlock when reading from an aborted client SslStream on Mac and Linux.
+                    if (TestPlatformHelper.IsWindows)
+                    {
+                        await sslStream.ReadAsync(new byte[32], 0, 32);
+                    }
+                    else
+                    {
+                        await stream.ReadAsync(new byte[32], 0, 32);
+                    }
                 }
             }
 
@@ -285,7 +294,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
                     await sslStream.WriteAsync(request, 0, request.Length);
-                    await sslStream.ReadAsync(new byte[32], 0, 32);
+
+                    // Temporary workaround for a deadlock when reading from an aborted client SslStream on Mac and Linux.
+                    if (TestPlatformHelper.IsWindows)
+                    {
+                        await sslStream.ReadAsync(new byte[32], 0, 32);
+                    }
+                    else
+                    {
+                        await stream.ReadAsync(new byte[32], 0, 32);
+                    }
                 }
             }
 

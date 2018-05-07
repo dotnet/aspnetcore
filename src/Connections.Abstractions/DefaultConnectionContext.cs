@@ -6,22 +6,25 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
     public class DefaultConnectionContext : ConnectionContext,
+                                            IDisposable,
                                             IConnectionIdFeature,
                                             IConnectionItemsFeature,
                                             IConnectionTransportFeature,
-                                            IConnectionUserFeature
+                                            IConnectionUserFeature,
+                                            IConnectionLifetimeFeature
     {
+        private CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
+
         public DefaultConnectionContext() :
             this(Guid.NewGuid().ToString())
         {
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         /// <summary>
@@ -38,6 +41,7 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionItemsFeature>(this);
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
+            Features.Set<IConnectionLifetimeFeature>(this);
         }
 
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
@@ -58,5 +62,17 @@ namespace Microsoft.AspNetCore.Connections
         public IDuplexPipe Application { get; set; }
 
         public override IDuplexPipe Transport { get; set; }
+
+        public CancellationToken ConnectionClosed { get; set; }
+
+        public virtual void Abort()
+        {
+            ThreadPool.QueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+        }
+
+        public void Dispose()
+        {
+            _connectionClosedTokenSource.Dispose();
+        }
     }
 }
