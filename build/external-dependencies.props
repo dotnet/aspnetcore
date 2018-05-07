@@ -110,8 +110,8 @@
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
     <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" />
     <ExternalDependency Include="Oracle.ManagedDataAccess" Version="$(OracleManagedDataAccessPackageVersion)" />
-    <ExternalDependency Include="Polly-Signed" Version="$(PollySignedPackageVersion)" />
-    <ExternalDependency Include="Polly.Extensions.Http-Signed" Version="$(PollyExtensionsHttpSignedPackageVersion)" />
+    <ExternalDependency Include="Polly" Version="$(PollyPackageVersion)" />
+    <ExternalDependency Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpPackageVersion)" />
     <ExternalDependency Include="Remotion.Linq" Version="$(RemotionLinqPackageVersion)" />
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" />
     <ExternalDependency Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
