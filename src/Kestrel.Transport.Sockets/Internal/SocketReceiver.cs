@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public SocketAwaitable ReceiveAsync(Memory<byte> buffer)
         {
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
             _eventArgs.SetBuffer(buffer);
 #else
             var segment = buffer.GetArray();

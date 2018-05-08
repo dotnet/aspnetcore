@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             try
             {
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
                 // Adapt to the SslStream signature
                 ServerCertificateSelectionCallback selector = null;
                 if (_serverCertificateSelector != null)
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 timeoutFeature.CancelTimeout();
             }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
             feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
 #endif

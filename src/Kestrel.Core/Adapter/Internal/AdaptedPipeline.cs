@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                         }
                         else if (buffer.IsSingleSegment)
                         {
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
                             await stream.WriteAsync(buffer.First);
 #else
                             var array = buffer.First.GetArray();
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                         {
                             foreach (var memory in buffer)
                             {
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
                                 await stream.WriteAsync(memory);
 #else
                                 var array = memory.GetArray();
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 {
 
                     var outputBuffer = Input.Writer.GetMemory(MinAllocBufferSize);
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
                     var bytesRead = await stream.ReadAsync(outputBuffer);
 #else
                     var array = outputBuffer.GetArray();

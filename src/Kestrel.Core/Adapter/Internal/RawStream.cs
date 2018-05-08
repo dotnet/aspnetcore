@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return ReadAsyncInternal(new Memory<byte>(buffer, offset, count)).AsTask();
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             return ReadAsyncInternal(destination);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             await _output.FlushAsync(cancellationToken);
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             _output.Write(source.Span);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     if (!readableBuffer.IsEmpty)
                     {
                         // buffer.Count is int
-                        var count = (int) Math.Min(readableBuffer.Length, destination.Length);
+                        var count = (int)Math.Min(readableBuffer.Length, destination.Length);
                         readableBuffer = readableBuffer.Slice(0, count);
                         readableBuffer.CopyTo(destination.Span);
                         return count;

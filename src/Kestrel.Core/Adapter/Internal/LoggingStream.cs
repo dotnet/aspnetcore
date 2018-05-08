@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return read;
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
         public override int Read(Span<byte> destination)
         {
             int read = _inner.Read(destination);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return read;
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
         public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             int read = await _inner.ReadAsync(destination, cancellationToken);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             _inner.Write(buffer, offset, count);
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
         public override void Write(ReadOnlySpan<byte> source)
         {
             Log("Write", source);
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return _inner.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             Log("WriteAsync", source.Span);
