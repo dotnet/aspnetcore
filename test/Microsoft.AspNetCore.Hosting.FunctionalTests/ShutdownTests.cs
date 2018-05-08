@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.2",
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false

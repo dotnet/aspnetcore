@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     runtimeFlavor,
                     RuntimeArchitecture.x64)
                 {
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.2",
                     ApplicationType = ApplicationType.Portable,
                     StatusMessagesEnabled = false
                 };

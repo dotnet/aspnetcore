@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
                 Assert.Equal("HTTP/2.0", context.Request.Protocol);
 #elif NET461 || NETCOREAPP2_0
                 Assert.Equal("HTTP/1.1", context.Request.Protocol);
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
                 Assert.Equal("HTTP/2.0", features.Get<IHttpRequestFeature>().Protocol);
 #elif NET461 || NETCOREAPP2_0
                 Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
