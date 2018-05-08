@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
@@ -19,8 +21,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 .UseRequestCulture<TStartup>("en-GB", "en-US")
                 .UseEnvironment("Production")
                 .ConfigureServices(
-                    services => services.Configure<MvcCompatibilityOptions>(
-                        options => options.CompatibilityVersion = CompatibilityVersion.Version_2_1));
+                    services =>
+                    {
+                        var testSink = new TestSink();
+                        var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+                        services.Configure<MvcCompatibilityOptions>(
+                            options => options.CompatibilityVersion = CompatibilityVersion.Version_2_1);
+                    });
         }
 
         protected override TestServer CreateServer(IWebHostBuilder builder)
