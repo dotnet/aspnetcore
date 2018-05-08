@@ -75,7 +75,7 @@
     <SystemReflectionMetadataPackageVersion>1.5.0</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.4.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.4.0</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.4.2</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>4.4.0</SystemSecurityPrincipalWindowsPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.4.0</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingTasksDataflowPackageVersion>4.8.0</SystemThreadingTasksDataflowPackageVersion>
