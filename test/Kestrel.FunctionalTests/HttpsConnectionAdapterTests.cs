@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             Assert.NotNull(connection);
                             Assert.NotNull(connection.Features.Get<SslStream>());
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
                             Assert.Equal("localhost", name);
 #else
                             Assert.Null(name);
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             Assert.NotNull(connection);
                             Assert.NotNull(connection.Features.Get<SslStream>());
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
                             Assert.Equal("localhost", name);
 #else
                             Assert.Null(name);
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             Assert.NotNull(connection);
                             Assert.NotNull(connection.Features.Get<SslStream>());
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
                             Assert.Equal("localhost", name);
 #else
                             Assert.Null(name);
