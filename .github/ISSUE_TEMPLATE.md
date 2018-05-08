@@ -14,7 +14,6 @@ Common ASP.NET and Entity Framework repos and projects:
  - Kestrel HTTP Server: https://github.com/aspnet/KestrelHttpServer
  - ASP.NET Katana: https://github.com/aspnet/AspNetKatana
  - and more! See a full list here: https://github.com/aspnet
- - note: several repositories have migrated their issues tracker to this repo here
 
 Other common projects:
 
