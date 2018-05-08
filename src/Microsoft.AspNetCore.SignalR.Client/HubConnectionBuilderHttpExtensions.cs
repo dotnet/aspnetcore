@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType transports)
         {
-            hubConnectionBuilder.WithUrlCore(url, null, _ => { });
+            hubConnectionBuilder.WithUrlCore(url, transports, _ => { });
             return hubConnectionBuilder;
         }
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType transports, Action<HttpConnectionOptions> configureHttpConnection)
         {
-            hubConnectionBuilder.WithUrlCore(url, transports, _ => { });
+            hubConnectionBuilder.WithUrlCore(url, transports, configureHttpConnection);
             return hubConnectionBuilder;
         }
 
