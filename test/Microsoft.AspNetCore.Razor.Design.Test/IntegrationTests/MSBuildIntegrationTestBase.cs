@@ -67,9 +67,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // Disable node-reuse. We don't want msbuild processes to stick around
                 // once the test is completed.
                 "/nr:false",
-
-                $"/p:RuntimeFrameworkVersion={BuildVariables.MicrosoftNETCoreAppVersion}",
-                $"/p:NETStandardImplicitPackageVersion={BuildVariables.NETStandardLibraryVersion}",
             };
 
             if (!suppressRestore)

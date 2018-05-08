@@ -8,8 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         static partial void InitializeVariables()
         {
             _msBuildPath = @"${MSBuildLocation}";
-            _microsoftNETCoreAppVersion = "${MicrosoftNETCoreAppVersion}";
-            _netStandardLibraryVersion = "${NETStandardLibraryVersion}";
         }
     }
 }

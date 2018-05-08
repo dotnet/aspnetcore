@@ -1,3 +1,7 @@
 <Project>
   <Import Project="RazorTest.Introspection.targets" />
+
+  <PropertyGroup>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreApp22PackageVersion)</RuntimeFrameworkVersion>
+  </PropertyGroup>
 </Project>
