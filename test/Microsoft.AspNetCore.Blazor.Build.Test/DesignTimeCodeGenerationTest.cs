@@ -407,6 +407,38 @@ Welcome to your new app.
                 d => Assert.Equal("RZ1035", d.Id));
         }
 
+        [Fact] // https://github.com/aspnet/Blazor/issues/773
+        public void Regression_773()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class SurveyPrompt : BlazorComponent
+    {
+        [Parameter] private string Title { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@page ""/""
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title=""<div>Test!</div>"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        }
+
         [Fact]
         public void BindToComponent_SpecifiesValue_WithMatchingProperties()
         {

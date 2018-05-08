@@ -1,0 +1,36 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [33] ) - Microsoft.AspNetCore.Blazor
+        UsingDirective - (140:6,1 [44] ) - Microsoft.AspNetCore.Blazor.Components
+        RouteAttributeExtensionNode -  - /
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Blazor.Components.BlazorComponent - 
+            DesignTimeDirective - 
+                DirectiveToken - (14:0,14 [32] ) - "*, Microsoft.AspNetCore.Blazor"
+                DirectiveToken - (14:0,14 [9] ) - "*, Test"
+                DirectiveToken - (6:0,6 [3] x:\dir\subdir\Test\TestComponent.cshtml) - "/"
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                HtmlContent - (11:1,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (11:1,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlElement - (13:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (17:2,4 [13] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (17:2,4 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello, world!
+                HtmlContent - (35:2,22 [32] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (35:2,22 [32] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\nWelcome to your new app.\n\n
+                HtmlElement - (67:6,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - surveyprompt
+                    HtmlAttribute -  -  - 
+                        HtmlAttributeValue -  - 
+                            IntermediateToken -  - Html - <div>Test!</div>
+                HtmlContent - (108:6,41 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (108:6,41 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
