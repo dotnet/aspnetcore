@@ -25,21 +25,23 @@ namespace RepoTasks
 
         public override bool Execute()
         {
+            if (PackageFiles.Length == 0)
+            {
+                Log.LogError("Did not find any packages to verify for version coherence");
+                return false;
+            }
+
             var packageLookup = new Dictionary<string, PackageInfo>(StringComparer.OrdinalIgnoreCase);
-            var dependencyMap = new Dictionary<string, List<ExternalDependency>>(StringComparer.OrdinalIgnoreCase);
+            var dependencyMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var dep in ExternalDependencies)
             {
                 if (!dependencyMap.TryGetValue(dep.ItemSpec, out var list))
                 {
-                    dependencyMap[dep.ItemSpec] = list = new List<ExternalDependency>();
+                    dependencyMap[dep.ItemSpec] = list = new List<string>();
                 }
-                var externalDep = new ExternalDependency
-                {
-                    Version = dep.GetMetadata("Version"),
-                    IsPrivate = bool.TryParse(dep.GetMetadata("Private"), out var isPrivate) && isPrivate,
-                };
-                list.Add(externalDep);
+
+                list.Add(dep.GetMetadata("Version"));
             }
 
             foreach (var file in PackageFiles)
@@ -56,11 +58,12 @@ namespace RepoTasks
 
                 if (packageLookup.TryGetValue(package.Id, out var existingPackage))
                 {
-                    throw new Exception("Multiple copies of the following package were found: " +
+                    Log.LogError("Multiple copies of the following package were found: " +
                         Environment.NewLine +
                         existingPackage +
                         Environment.NewLine +
                         package);
+                    continue;
                 }
 
                 packageLookup[package.Id] = package;
@@ -75,15 +78,9 @@ namespace RepoTasks
             return !Log.HasLoggedErrors;
         }
 
-        private class ExternalDependency
-        {
-            public string Version { get; set; }
-            public bool IsPrivate { get; set; }
-        }
-
         private void Visit(
             IReadOnlyDictionary<string, PackageInfo> packageLookup,
-            IReadOnlyDictionary<string, List<ExternalDependency>> dependencyMap,
+            IReadOnlyDictionary<string, List<string>> dependencyMap,
             PackageInfo packageInfo)
         {
             Log.LogMessage(MessageImportance.Low, $"Processing package {packageInfo.Id}");
@@ -95,20 +92,17 @@ namespace RepoTasks
                     {
                         PackageInfo dependencyPackageInfo;
                         var depVersion = dependency.VersionRange.MinVersion.ToString();
-                        if (dependencyMap.TryGetValue(dependency.Id, out var externalDependencies))
+                        if (dependencyMap.TryGetValue(dependency.Id, out var externalDepVersions))
                         {
-                            var matchedVersion = externalDependencies.FirstOrDefault(d => depVersion.Equals(d.Version));
+                            var matchedVersion = externalDepVersions.FirstOrDefault(d => depVersion.Equals(d));
 
                             if (matchedVersion == null)
                             {
-                                var versions = string.Join(" or ", externalDependencies.Select(d => d.Version));
+                                var versions = string.Join(" or ", externalDepVersions);
                                 Log.LogError($"Package {packageInfo.Id} has an external dependency on the wrong version of {dependency.Id}. "
                                     + $"It uses {depVersion} but only {versions} is allowed.");
                             }
-                            else if (matchedVersion.IsPrivate)
-                            {
-                                Log.LogError($"Package {packageInfo.Id} has an external dependency on {dependency.Id}/{depVersion} which is marked as Private=true.");
-                            }
+
                             continue;
                         }
                         else if (!packageLookup.TryGetValue(dependency.Id, out dependencyPackageInfo))
