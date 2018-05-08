@@ -43,6 +43,36 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public void WithUrlUsingUriSetsTransport()
+        {
+            var connectionBuilder = new HubConnectionBuilder();
+            var uri = new Uri("http://tempuri.org");
+            connectionBuilder.WithUrl(uri, HttpTransportType.LongPolling);
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var value = serviceProvider.GetService<IOptions<HttpConnectionOptions>>().Value;
+
+            Assert.Equal(HttpTransportType.LongPolling, value.Transports);
+        }
+
+        [Fact]
+        public void WithUrlUsingUriHttpConnectionCallsConfigure()
+        {
+            var proxy = Mock.Of<IWebProxy>();
+
+            var connectionBuilder = new HubConnectionBuilder();
+            var uri = new Uri("http://tempuri.org");
+            connectionBuilder.WithUrl(uri, HttpTransportType.LongPolling, options => { options.Proxy = proxy; });
+
+            var serviceProvider = connectionBuilder.Services.BuildServiceProvider();
+
+            var value = serviceProvider.GetService<IOptions<HttpConnectionOptions>>().Value;
+
+            Assert.Same(proxy, value.Proxy);
+        }
+
+        [Fact]
         public void WithHttpConnectionCallsConfigure()
         {
             var proxy = Mock.Of<IWebProxy>();
