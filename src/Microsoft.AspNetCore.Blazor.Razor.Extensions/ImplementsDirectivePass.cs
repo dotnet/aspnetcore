@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 if (token != null)
                 {
                     @class.Interfaces.Add(token.Content);
-                    break;
                 }
             }
         }

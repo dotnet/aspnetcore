@@ -59,6 +59,25 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
+        public void SupportsMultipleImplementsDeclarations()
+        {
+            // Arrange/Act
+            var testInterfaceTypeName = FullTypeName<ITestInterface>();
+            var testInterfaceTypeName2 = FullTypeName<ITestInterface2>();
+            var component = CompileToComponent(
+                $"@implements {testInterfaceTypeName}\n" +
+                $"@implements {testInterfaceTypeName2}\n" +
+                $"Hello");
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.IsAssignableFrom<ITestInterface>(component);
+            Assert.IsAssignableFrom<ITestInterface2>(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Text(frame, "Hello"));
+        }
+
+        [Fact]
         public void SupportsInheritsDirective()
         {
             // Arrange/Act
@@ -134,6 +153,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         public interface ITestInterface { }
+
+        public interface ITestInterface2 { }
 
         public class TestBaseClass : BlazorComponent { }
 
