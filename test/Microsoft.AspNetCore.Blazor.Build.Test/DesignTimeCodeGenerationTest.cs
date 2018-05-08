@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
@@ -365,6 +366,45 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+        }
+
+        [Fact] // https://github.com/aspnet/Blazor/issues/772
+        public void Regression_772()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class SurveyPrompt : BlazorComponent
+    {
+        [Parameter] private string Title { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+@page ""/""
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title=""
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            // This has some errors
+            Assert.Collection(
+                generated.Diagnostics.OrderBy(d => d.Id),
+                d => Assert.Equal("RZ1034", d.Id),
+                d => Assert.Equal("RZ1035", d.Id));
         }
 
         [Fact]

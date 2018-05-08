@@ -125,13 +125,17 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     Content = $"{BlazorApi.BindMethods.GetEventHandlerValue}<{eventArgsType}>(",
                     Kind = TokenKind.CSharp
                 },
-                original,
                 new IntermediateToken()
                 {
                     Content = $")",
                     Kind = TokenKind.CSharp
                 }
             };
+
+            for (var i = 0; i < original.Count; i++)
+            {
+                tokens.Insert(i + 1, original[i]);
+            }
 
             if (parent is HtmlElementIntermediateNode)
             {
@@ -172,25 +176,20 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
-        private static IntermediateToken GetAttributeContent(TagHelperPropertyIntermediateNode node)
+        private static IReadOnlyList<IntermediateToken> GetAttributeContent(TagHelperPropertyIntermediateNode node)
         {
-            if (node.Children[0] is HtmlContentIntermediateNode htmlContentNode)
+            if (node.Children.Count == 1 && node.Children[0] is HtmlContentIntermediateNode htmlContentNode)
             {
                 // This case can be hit for a 'string' attribute. We want to turn it into
                 // an expression.
-                var content = "\"" + ((IntermediateToken)htmlContentNode.Children.Single()).Content + "\"";
-                return new IntermediateToken() { Content = content, Kind = TokenKind.CSharp, };
-            }
-            else if (node.Children[0] is CSharpExpressionIntermediateNode cSharpNode)
-            {
-                // This case can be hit when the attribute has an explicit @ inside, which
-                // 'escapes' any special sugar we provide for codegen.
-                return ((IntermediateToken)cSharpNode.Children.Single());
+                var tokens = htmlContentNode.FindDescendantNodes<IntermediateToken>();
+
+                var content = "\"" + string.Join(string.Empty, tokens.Select(t => t.Content))+ "\"";
+                return new[] { new IntermediateToken() { Content = content, Kind = TokenKind.CSharp, } };
             }
             else
             {
-                // This is the common case for 'mixed' content
-                return ((IntermediateToken)node.Children.Single());
+                return node.FindDescendantNodes<IntermediateToken>();
             }
         }
     }

@@ -347,63 +347,50 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // Minimized attributes always map to 'true'
                 context.CodeWriter.Write("true");
             }
-            else if (node.BoundAttribute?.IsDelegateProperty() ?? false)
+            else if (node.Children.Count > 1)
             {
-                // We always surround the expression with the delegate constructor. This makes type
-                // inference inside lambdas, and method group conversion do the right thing.
-                IntermediateToken token = null;
-                if ((node.Children[0] as CSharpExpressionIntermediateNode) != null)
-                {
-                    token = node.Children[0].Children[0] as IntermediateToken;
-                }
-                else
-                {
-                    token = node.Children[0] as IntermediateToken;
-                }
-
-                if (token != null)
-                {
-                    context.CodeWriter.Write("new ");
-                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
-                    context.CodeWriter.Write("(");
-                    context.CodeWriter.Write(token.Content);
-                    context.CodeWriter.Write(")");
-                }
+                // We don't expect this to happen, we just want to know if it can.
+                throw new InvalidOperationException("Attribute nodes should either be minimized or a single type of content." + string.Join(", ", node.Children));
             }
-            else if (node.Children[0] is CSharpExpressionIntermediateNode cSharpNode)
-            {
-                // We don't allow mixed content in component attributes. If this happens, then
-                // we should make sure that all of the tokens are the same kind. We report an
-                // error if user code tries to do this, so this check is to catch bugs in the
-                // compiler.
-                for (var i = 0; i < cSharpNode.Children.Count; i++)
-                {
-                    var token = (IntermediateToken)cSharpNode.Children[i];
-                    if (!token.IsCSharp)
-                    {
-                        throw new InvalidOperationException("Unexpected mixed content in a component.");
-                    }
-
-                    context.CodeWriter.Write(token.Content);
-                }
-            }
-            else if (node.Children[0] is HtmlContentIntermediateNode htmlNode)
+            else if (node.Children.Count == 1 && node.Children[0] is HtmlContentIntermediateNode htmlNode)
             {
                 // This is how string attributes are lowered by default, a single HTML node with a single HTML token.
                 context.CodeWriter.WriteStringLiteral(((IntermediateToken)htmlNode.Children[0]).Content);
             }
-            else if (node.Children[0] is IntermediateToken token)
-            {
-                // This is what we expect for non-string nodes.
-                context.CodeWriter.Write(((IntermediateToken)node.Children[0]).Content);
-            }
             else
             {
-                throw new InvalidOperationException("Unexpected node type " + node.Children[0].GetType().FullName);
+                // See comments in BlazorDesignTimeNodeWriter for a description of the cases that are possible.
+                var tokens = GetCSharpTokens(node);
+                if (node.BoundAttribute?.IsDelegateProperty() ?? false)
+                {
+                    context.CodeWriter.Write("new ");
+                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write("(");
+
+                    for (var i = 0; i < tokens.Count; i++)
+                    {
+                        context.CodeWriter.Write(tokens[i].Content);
+                    }
+
+                    context.CodeWriter.Write(")");
+                }
+                else
+                {
+                    for (var i = 0; i < tokens.Count; i++)
+                    {
+                        context.CodeWriter.Write(tokens[i].Content);
+                    }
+                }
             }
 
             context.CodeWriter.Write(");");
             context.CodeWriter.WriteLine();
+
+            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeExtensionNode attribute)
+            {
+                // We generally expect all children to be CSharp, this is here just in case.
+                return attribute.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
+            }
         }
 
         public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node)

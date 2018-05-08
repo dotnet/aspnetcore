@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Shared;
 using Microsoft.AspNetCore.Razor.Language;
@@ -368,73 +369,73 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // to handle here, since there are a few different cases for how an attribute might be structured.
             //
             // This roughly follows the design of the runtime writer for simplicity.
-            HtmlContentIntermediateNode htmlNode;
-            CSharpExpressionIntermediateNode cSharpNode;
             if (node.AttributeStructure == AttributeStructure.Minimized)
             {
                 // Do nothing
             }
-            else if (node.Children.Count != 1)
+            else if (node.Children.Count > 1)
             {
                 // We don't expect this to happen, we just want to know if it can.
-                throw new InvalidOperationException("Attribute nodes should either be minimized or a single type of content." + node.Children[0].ToString());
+                throw new InvalidOperationException("Attribute nodes should either be minimized or a single type of content." + string.Join(", ", node.Children));
             }
-            else if (node.BoundAttribute?.IsDelegateProperty() ?? false)
-            {
-                var tokens = node.Children;
-                if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
-                {
-                    tokens = node.Children[0].Children;
-                }
-
-                // We always surround the expression with the delegate constructor. This makes type
-                // inference inside lambdas, and method group conversion do the right thing.
-                context.CodeWriter.Write(DesignTimeVariable);
-                context.CodeWriter.Write(" = ");
-                context.CodeWriter.Write("new ");
-                context.CodeWriter.Write(node.BoundAttribute.TypeName);
-                context.CodeWriter.Write("(");
-                context.CodeWriter.WriteLine();
-
-                for (var i = 0; i < tokens.Count; i++)
-                {
-                    WriteCSharpToken(context, (IntermediateToken)tokens[i]);
-                }
-
-                context.CodeWriter.Write(");");
-                context.CodeWriter.WriteLine();
-            }
-            else if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
-            {
-                // This is the case when an attribute has an explicit C# transition like:
-                // <MyComponent Foo="@bar" />
-                context.CodeWriter.Write(DesignTimeVariable);
-                context.CodeWriter.Write(" = ");
-
-                for (var i = 0; i < cSharpNode.Children.Count; i++)
-                {
-                    WriteCSharpToken(context, (IntermediateToken)cSharpNode.Children[i]);
-                }
-
-                context.CodeWriter.Write(";");
-                context.CodeWriter.WriteLine();
-            }
-            else if ((htmlNode = node.Children[0] as HtmlContentIntermediateNode) != null)
+            else if (node.Children.Count == 1 && node.Children[0] is HtmlContentIntermediateNode)
             {
                 // Do nothing
             }
-            else if (node.Children[0] is IntermediateToken token && token.IsCSharp)
+            else
             {
-                context.CodeWriter.Write(DesignTimeVariable);
-                context.CodeWriter.Write(" = ");
+                // There are a few different forms that could be used to contain all of the tokens, but we don't really care
+                // exactly what it looks like - we just want all of the content.
+                //
+                // This can include an empty list in some cases like the following (sic):
+                //      <MyComponent Value="
+                //
+                // Or a CSharpExpressionIntermediateNode when the attribute has an explicit transition like:
+                //      <MyComponent Value="@value" />
+                //
+                // Of a list of tokens directly in the attribute.
+                var tokens = GetCSharpTokens(node);
 
-                for (var i = 0; i < node.Children.Count; i++)
+                if (node.BoundAttribute?.IsDelegateProperty() ?? false)
                 {
-                    WriteCSharpToken(context, (IntermediateToken)node.Children[i]);
-                }
+                    // We always surround the expression with the delegate constructor. This makes type
+                    // inference inside lambdas, and method group conversion do the right thing.
+                    context.CodeWriter.Write(DesignTimeVariable);
+                    context.CodeWriter.Write(" = ");
+                    context.CodeWriter.Write("new ");
+                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write("(");
+                    context.CodeWriter.WriteLine();
 
-                context.CodeWriter.Write(";");
-                context.CodeWriter.WriteLine();
+                    for (var i = 0; i < tokens.Count; i++)
+                    {
+                        WriteCSharpToken(context, tokens[i]);
+                    }
+
+                    context.CodeWriter.Write(");");
+                    context.CodeWriter.WriteLine();
+                }
+                else
+                {
+                    // This is the case when an attribute has an explicit C# transition like:
+                    // <MyComponent Foo="@bar" />
+                    context.CodeWriter.Write(DesignTimeVariable);
+                    context.CodeWriter.Write(" = ");
+
+                    for (var i = 0; i < tokens.Count; i++)
+                    {
+                        WriteCSharpToken(context, tokens[i]);
+                    }
+
+                    context.CodeWriter.Write(";");
+                    context.CodeWriter.WriteLine();
+                }
+            }
+
+            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeExtensionNode attribute)
+            {
+                // We generally expect all children to be CSharp, this is here just in case.
+                return attribute.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
             }
         }
 
