@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
     internal abstract class FileChangeTracker
     {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.VisualStudio.Editor.Razor.Documents;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {

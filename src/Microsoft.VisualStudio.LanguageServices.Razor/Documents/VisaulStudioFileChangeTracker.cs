@@ -2,15 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
-    internal class DefaultFileChangeTracker : FileChangeTracker, IVsFileChangeEvents
+    internal class VisualStudioFileChangeTracker : FileChangeTracker, IVsFileChangeEvents
     {
         private const uint FileChangeFlags = (uint)(_VSFILECHANGEFLAGS.VSFILECHG_Time | _VSFILECHANGEFLAGS.VSFILECHG_Size | _VSFILECHANGEFLAGS.VSFILECHG_Del | _VSFILECHANGEFLAGS.VSFILECHG_Add);
 
@@ -21,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
         public override event EventHandler<FileChangeEventArgs> Changed;
 
-        public DefaultFileChangeTracker(
+        public VisualStudioFileChangeTracker(
             string filePath,
             ForegroundDispatcher foregroundDispatcher,
             ErrorReporter errorReporter,

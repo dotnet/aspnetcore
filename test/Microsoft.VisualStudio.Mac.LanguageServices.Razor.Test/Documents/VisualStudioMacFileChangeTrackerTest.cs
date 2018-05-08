@@ -1,16 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
-using MonoDevelop.Core;
-using Moq;
 using Xunit;
 
-namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
-    public class DefaultFileChangeTrackerTest : ForegroundDispatcherTestBase
+    public class VisualStudioMacFileChangeTrackerTest : ForegroundDispatcherTestBase
     {
         [ForegroundFact]
         public void StartListening_AdvisesForFileChange()
@@ -69,7 +65,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             Assert.Equal(0, tracker.DetachFromFileServiceEventsCount);
         }
 
-        private class TestFileChangeTracker : DefaultFileChangeTracker
+        private class TestFileChangeTracker : VisualStudioMacFileChangeTracker
         {
             public TestFileChangeTracker(
                 string filePath, 

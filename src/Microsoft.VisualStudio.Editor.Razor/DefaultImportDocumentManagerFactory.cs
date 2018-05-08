@@ -6,6 +6,7 @@ using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.Editor.Razor.Documents;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -34,7 +35,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var errorReporter = languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>();
-            var fileChangeTrackerFactory = languageServices.GetRequiredService<FileChangeTrackerFactory>();
+            var fileChangeTrackerFactory = languageServices.WorkspaceServices.GetRequiredService<FileChangeTrackerFactory>();
 
             return new DefaultImportDocumentManager(_foregroundDispatcher, errorReporter, fileChangeTrackerFactory);
         }

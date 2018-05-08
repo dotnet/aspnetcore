@@ -39,15 +39,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return State.GeneratedOutput.GetGeneratedOutputInitializationTask(Project, this);
         }
 
-        public override bool TryGetGeneratedOutput(out RazorCodeDocument results)
+        public override bool TryGetGeneratedOutput(out RazorCodeDocument result)
         {
             if (State.GeneratedOutput.IsResultAvailable)
             {
-                results = State.GeneratedOutput.GetGeneratedOutputInitializationTask(Project, this).Result;
+                result = State.GeneratedOutput.GetGeneratedOutputInitializationTask(Project, this).Result;
                 return true;
             }
 
-            results = null;
+            result = null;
             return false;
         }
     }

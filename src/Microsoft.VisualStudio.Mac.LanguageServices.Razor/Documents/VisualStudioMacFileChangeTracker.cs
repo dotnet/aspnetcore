@@ -3,12 +3,11 @@
 
 using System;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 using MonoDevelop.Core;
 
-namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
-    internal class DefaultFileChangeTracker : FileChangeTracker
+    internal class VisualStudioMacFileChangeTracker : FileChangeTracker
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly string _normalizedFilePath;
@@ -16,7 +15,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 
         public override event EventHandler<FileChangeEventArgs> Changed;
 
-        public DefaultFileChangeTracker(
+        public VisualStudioMacFileChangeTracker(
             string filePath,
             ForegroundDispatcher foregroundDispatcher)
         {

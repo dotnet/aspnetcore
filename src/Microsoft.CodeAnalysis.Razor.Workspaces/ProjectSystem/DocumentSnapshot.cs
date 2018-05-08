@@ -14,6 +14,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract Task<RazorCodeDocument> GetGeneratedOutputAsync();
 
-        public abstract bool TryGetGeneratedOutput(out RazorCodeDocument results);
+        public abstract bool TryGetGeneratedOutput(out RazorCodeDocument result);
     }
 }

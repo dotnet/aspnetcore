@@ -77,9 +77,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var state = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[0])
-                .AddHostDocument(Documents[1])
-                .AddHostDocument(Documents[2]);
+                .WithAddedHostDocument(Documents[0])
+                .WithAddedHostDocument(Documents[1])
+                .WithAddedHostDocument(Documents[2]);
             var snapshot = new DefaultProjectSnapshot(state);
 
             // Act

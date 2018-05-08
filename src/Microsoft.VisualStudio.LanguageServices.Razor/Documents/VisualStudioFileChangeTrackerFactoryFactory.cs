@@ -6,21 +6,20 @@ using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
     [Shared]
-    [ExportLanguageServiceFactory(typeof(FileChangeTrackerFactory), RazorLanguage.Name, ServiceLayer.Default)]
-    internal class DefaultFileChangeTrackerFactoryFactory : ILanguageServiceFactory
+    [ExportWorkspaceServiceFactory(typeof(FileChangeTrackerFactory), ServiceLayer.Host)]
+    internal class VisualStudioFileChangeTrackerFactoryFactory : IWorkspaceServiceFactory
     {
         private readonly IVsFileChangeEx _fileChangeService;
         private readonly ForegroundDispatcher _foregroundDispatcher;
 
         [ImportingConstructor]
-        public DefaultFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher, SVsServiceProvider serviceProvider)
+        public VisualStudioFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher, SVsServiceProvider serviceProvider)
         {
             if (foregroundDispatcher == null)
             {
@@ -35,16 +34,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             _foregroundDispatcher = foregroundDispatcher;
             _fileChangeService = serviceProvider.GetService(typeof(SVsFileChangeEx)) as IVsFileChangeEx;
         }
-
-        public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
+        public IWorkspaceService CreateService(HostWorkspaceServices workspaceServices)
         {
-            if (languageServices == null)
+            if (workspaceServices == null)
             {
-                throw new ArgumentNullException(nameof(languageServices));
+                throw new ArgumentNullException(nameof(workspaceServices));
             }
 
-            var errorReporter = languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>();
-            return new DefaultFileChangeTrackerFactory(_foregroundDispatcher, errorReporter, _fileChangeService);
+            var errorReporter = workspaceServices.GetRequiredService<ErrorReporter>();
+            return new VisualStudioFileChangeTrackerFactory(_foregroundDispatcher, errorReporter, _fileChangeService);
         }
     }
 }

@@ -106,7 +106,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject);
 
             // Act
-            var state = original.AddHostDocument(Documents[0]);
+            var state = original.WithAddedHostDocument(Documents[0]);
 
             // Assert
             Assert.NotEqual(original.Version, state.Version);
@@ -121,11 +121,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Act
-            var state = original.AddHostDocument(Documents[0]);
+            var state = original.WithAddedHostDocument(Documents[0]);
 
             // Assert
             Assert.NotEqual(original.Version, state.Version);
@@ -142,15 +142,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
             GC.KeepAlive(original.TagHelpers);
 
             // Act
-            var state = original.AddHostDocument(Documents[0]);
+            var state = original.WithAddedHostDocument(Documents[0]);
 
             // Assert
             Assert.Same(original.ProjectEngine, state.ProjectEngine);
@@ -165,11 +165,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Act
-            var state = original.AddHostDocument(new HostDocument(Documents[1].FilePath, "SomePath.cshtml"));
+            var state = original.WithAddedHostDocument(new HostDocument(Documents[1].FilePath, "SomePath.cshtml"));
 
             // Assert
             Assert.Same(original, state);
@@ -180,11 +180,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Act
-            var state = original.RemoveHostDocument(Documents[1]);
+            var state = original.WithRemovedHostDocument(Documents[1]);
 
             // Assert
             Assert.NotEqual(original.Version, state.Version);
@@ -199,15 +199,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
             GC.KeepAlive(original.TagHelpers);
 
             // Act
-            var state = original.RemoveHostDocument(Documents[2]);
+            var state = original.WithRemovedHostDocument(Documents[2]);
 
             // Assert
             Assert.Same(original.ProjectEngine, state.ProjectEngine);
@@ -221,11 +221,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Act
-            var state = original.RemoveHostDocument(Documents[0]);
+            var state = original.WithRemovedHostDocument(Documents[0]);
 
             // Assert
             Assert.Same(original, state);
@@ -236,8 +236,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -262,8 +262,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -281,8 +281,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -307,8 +307,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, null)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -333,8 +333,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .AddHostDocument(Documents[2])
-                .AddHostDocument(Documents[1]);
+                .WithAddedHostDocument(Documents[2])
+                .WithAddedHostDocument(Documents[1]);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);

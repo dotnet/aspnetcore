@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.VisualStudio.Editor.Razor.Documents;
 using Moq;
 using Xunit;
 

@@ -27,6 +27,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync();
 
-        public abstract bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> results);
+        public abstract bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result);
     }
 }

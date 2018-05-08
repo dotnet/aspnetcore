@@ -149,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             if (_projects.TryGetValue(hostProject.FilePath, out var entry))
             {
-                var state = entry.State.AddHostDocument(document);
+                var state = entry.State.WithAddedHostDocument(document);
 
                 // Document updates can no-op.
                 if (!object.ReferenceEquals(state, entry.State))
@@ -175,7 +175,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
             if (_projects.TryGetValue(hostProject.FilePath, out var entry))
             {
-                var state = entry.State.RemoveHostDocument(document);
+                var state = entry.State.WithRemovedHostDocument(document);
 
                 // Document updates can no-op.
                 if (!object.ReferenceEquals(state, entry.State))

@@ -69,15 +69,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return State.TagHelpers.GetTagHelperInitializationTask(this);
         }
 
-        public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> results)
+        public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
         {
             if (State.TagHelpers.IsResultAvailable)
             {
-                results = State.TagHelpers.GetTagHelperInitializationTask(this).Result;
+                result = State.TagHelpers.GetTagHelperInitializationTask(this).Result;
                 return true;
             }
 
-            results = null;
+            result = null;
             return false;
         }
     }

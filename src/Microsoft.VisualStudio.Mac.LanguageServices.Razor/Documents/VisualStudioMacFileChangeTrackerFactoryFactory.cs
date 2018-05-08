@@ -6,18 +6,17 @@ using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 
-namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
     [Shared]
-    [ExportLanguageServiceFactory(typeof(FileChangeTrackerFactory), RazorLanguage.Name, ServiceLayer.Default)]
-    internal class DefaultFileChangeTrackerFactoryFactory : ILanguageServiceFactory
+    [ExportWorkspaceService(typeof(FileChangeTrackerFactory), ServiceLayer.Host)]
+    internal class VisualStudioMacFileChangeTrackerFactoryFactory : IWorkspaceServiceFactory
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
 
         [ImportingConstructor]
-        public DefaultFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher)
+        public VisualStudioMacFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher)
         {
             if (foregroundDispatcher == null)
             {
@@ -27,14 +26,14 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             _foregroundDispatcher = foregroundDispatcher;
         }
 
-        public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
+        public IWorkspaceService CreateService(HostWorkspaceServices workspaceServices)
         {
-            if (languageServices == null)
+            if (workspaceServices == null)
             {
-                throw new ArgumentNullException(nameof(languageServices));
+                throw new ArgumentNullException(nameof(workspaceServices));
             }
 
-            return new DefaultFileChangeTrackerFactory(_foregroundDispatcher);
+            return new VisualStudioMacFileChangeTrackerFactory(_foregroundDispatcher);
         }
     }
 }

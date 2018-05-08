@@ -3,15 +3,14 @@
 
 using System;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 
-namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
-    internal class DefaultFileChangeTrackerFactory : FileChangeTrackerFactory
+    internal class VisualStudioMacFileChangeTrackerFactory : FileChangeTrackerFactory
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
 
-        public DefaultFileChangeTrackerFactory(ForegroundDispatcher foregroundDispatcher)
+        public VisualStudioMacFileChangeTrackerFactory(ForegroundDispatcher foregroundDispatcher)
         {
             if (foregroundDispatcher == null)
             {
@@ -28,7 +27,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
-            var fileChangeTracker = new DefaultFileChangeTracker(filePath, _foregroundDispatcher);
+            var fileChangeTracker = new VisualStudioMacFileChangeTracker(filePath, _foregroundDispatcher);
             return fileChangeTracker;
         }
     }

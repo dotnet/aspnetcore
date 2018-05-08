@@ -66,9 +66,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return EmptyTagHelpers;
         }
 
-        public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> results)
+        public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
         {
-            results = EmptyTagHelpers.Result;
+            result = EmptyTagHelpers.Result;
             return true;
         }
 

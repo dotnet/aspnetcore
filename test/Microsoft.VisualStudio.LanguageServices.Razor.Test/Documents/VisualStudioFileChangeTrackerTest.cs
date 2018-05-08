@@ -3,14 +3,13 @@
 
 using System;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using Xunit;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
-    public class DefaultFileChangeTrackerTest : ForegroundDispatcherTestBase
+    public class VisualStudioFileChangeTrackerTest : ForegroundDispatcherTestBase
     {
         private ErrorReporter ErrorReporter { get; } = new DefaultErrorReporter();
 
@@ -24,7 +23,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 .Setup(f => f.AdviseFileChange(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<IVsFileChangeEvents>(), out cookie))
                 .Returns(VSConstants.S_OK)
                 .Verifiable();
-            var tracker = new DefaultFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
 
             // Act
             tracker.StartListening();
@@ -44,7 +43,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 .Setup(f => f.AdviseFileChange(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<IVsFileChangeEvents>(), out cookie))
                 .Returns(VSConstants.S_OK)
                 .Callback(() => callCount++);
-            var tracker = new DefaultFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
             tracker.StartListening();
 
             // Act
@@ -68,7 +67,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 .Setup(f => f.UnadviseFileChange(cookie))
                 .Returns(VSConstants.S_OK)
                 .Verifiable();
-            var tracker = new DefaultFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
             tracker.StartListening(); // Start listening for changes.
 
             // Act
@@ -87,7 +86,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             fileChangeService
                 .Setup(f => f.UnadviseFileChange(cookie))
                 .Throws(new InvalidOperationException());
-            var tracker = new DefaultFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
 
             // Act & Assert
             tracker.StopListening();
@@ -107,7 +106,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             fileChangeService
                 .Setup(f => f.AdviseFileChange(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<IVsFileChangeEvents>(), out cookie))
                 .Returns(VSConstants.S_OK);
-            var tracker = new DefaultFileChangeTracker(filePath, Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker(filePath, Dispatcher, ErrorReporter, fileChangeService.Object);
 
             var called = false;
             tracker.Changed += (sender, args) =>

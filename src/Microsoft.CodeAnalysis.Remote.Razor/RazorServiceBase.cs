@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
                 throw new NotImplementedException();
             }
 
-            public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> results)
+            public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
             {
                 throw new NotImplementedException();
             }

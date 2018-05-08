@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public ProjectState AddHostDocument(HostDocument hostDocument)
+        public ProjectState WithAddedHostDocument(HostDocument hostDocument)
         {
             if (hostDocument == null)
             {
@@ -153,7 +153,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return state;
         }
 
-        public ProjectState RemoveHostDocument(HostDocument hostDocument)
+        public ProjectState WithRemovedHostDocument(HostDocument hostDocument)
         {
             if (hostDocument == null)
             {
