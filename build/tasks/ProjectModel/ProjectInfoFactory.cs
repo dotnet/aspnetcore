@@ -106,12 +106,8 @@ namespace RepoTasks.ProjectModel
             foreach (var item in  project.GetItems("PackageReference"))
             {
                 bool.TryParse(item.GetMetadataValue("IsImplicitlyDefined"), out var isImplicit);
-                var noWarn = item.GetMetadataValue("NoWarn");
-                IReadOnlyList<string> noWarnItems = string.IsNullOrEmpty(noWarn)
-                    ? Array.Empty<string>()
-                    : MSBuildListSplitter.SplitItemList(noWarn).ToArray();
 
-                var info = new PackageReferenceInfo(item.EvaluatedInclude, item.GetMetadataValue("Version"), isImplicit, noWarnItems);
+                var info = new PackageReferenceInfo(item.EvaluatedInclude, item.GetMetadataValue("Version"), isImplicit);
 
                 if (references.ContainsKey(info.Id))
                 {

@@ -5,10 +5,6 @@
     <ExternalDependency>
       <!-- The NuGet package version. Floating versions not allowed. -->
       <Version></Version>
-      <!-- A list of warnings to suppress. -->
-      <NoWarn></NoWarn>
-      <!-- This dependency is 'Private', aka. it should not end up as a public-facing external dependency. This is validated by checking the nuspec on generated packages. -->
-      <Private>false</Private>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.App metapackage. -->
       <AppMetapackage>false</AppMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
@@ -17,13 +13,13 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="AngleSharp" Version="$(AngleSharpPackageVersion)" Private="true" />
-    <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" Private="true" />
+    <ExternalDependency Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
+    <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" />
-    <ExternalDependency Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" Private="true" />
-    <ExternalDependency Include="Google.Protobuf" Version="$(GoogleProtobufPackageVersion)" Private="true" />
-    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Private="true" />
-    <ExternalDependency Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" Private="true" />
+    <ExternalDependency Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
+    <ExternalDependency Include="Google.Protobuf" Version="$(GoogleProtobufPackageVersion)" />
+    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <ExternalDependency Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" />
     <ExternalDependency Include="Libuv" Version="$(LibuvPackageVersion)" />
     <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(MicrosoftApplicationInsightsAspNetCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="$(MicrosoftAspNetIdentityEntityFrameworkPackageVersion)" />
@@ -39,29 +35,29 @@
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
 
     <!-- Microsoft.NetCore.DotNetAppHost for global tools-->
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" Private="true" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
 
     <!-- Razor uses a custom version of roslyn packages -->
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(VSIX_MicrosoftCodeAnalysisCommonPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisCommonPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(VSIX_MicrosoftCodeAnalysisCommonPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCommonPackageVersion" />
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(VSIX_MicrosoftCodeAnalysisCSharpPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisCSharpPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(VSIX_MicrosoftCodeAnalysisCSharpPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCSharpPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion" />
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" Private="true" VariableName="VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion" />
 
     <ExternalDependency Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
-    <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="$(MicrosoftDotNetProjectModelPackageVersion)" Private="true" />
+    <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="$(MicrosoftDotNetProjectModelPackageVersion)" />
     <ExternalDependency Include="Microsoft.DiaSymReader.Native" Version="$(MicrosoftDiaSymReaderNativePackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="$(MicrosoftIdentityModelClientsActiveDirectoryPackageVersion)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="$(MicrosoftIdentityModelProtocolsWsFederationPackageVersion)" />
-    <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" Private="true" />
+    <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
 
     <!-- Multiple versions of this package required to support all netcoreapp versions -->
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp10PackageVersion)" VariableName="MicrosoftNETCoreApp10PackageVersion" />
@@ -73,29 +69,29 @@
     <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security" Version="$(MicrosoftOwinSecurityPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" Private="true" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion)" Private="true" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion" />
-    <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="$(MicrosoftVisualStudioOLEInteropPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Analyzers" Version="$(MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="$(MicrosoftVisualStudioProjectSystemManagedVSPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="$(MicrosoftVisualStudioShellInteropPackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="$(MicrosoftVisualStudioShellInterop100PackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="$(MicrosoftVisualStudioShellInterop110PackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="$(MicrosoftVisualStudioShellInterop120PackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="$(MicrosoftVisualStudioShellInterop80PackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="$(MicrosoftVisualStudioShellInterop90PackageVersion)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="$(MicrosoftVisualStudioTextUIPackageVersion)" Private="true" />
+    <ExternalDependency Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion" />
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion)" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion" />
+    <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="$(MicrosoftVisualStudioOLEInteropPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Analyzers" Version="$(MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="$(MicrosoftVisualStudioProjectSystemManagedVSPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="$(MicrosoftVisualStudioShellInteropPackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="$(MicrosoftVisualStudioShellInterop100PackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="$(MicrosoftVisualStudioShellInterop110PackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="$(MicrosoftVisualStudioShellInterop120PackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="$(MicrosoftVisualStudioShellInterop80PackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="$(MicrosoftVisualStudioShellInterop90PackageVersion)" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="$(MicrosoftVisualStudioTextUIPackageVersion)" />
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
-    <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" Private="true" />
-    <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" Private="true" />
-    <ExternalDependency Include="Moq" Version="$(MoqPackageVersion)" Private="true" />
+    <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
+    <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
+    <ExternalDependency Include="Moq" Version="$(MoqPackageVersion)" />
     <ExternalDependency Include="MessagePack" Version="$(MessagePackPackageVersion)" />
 
     <!-- netstandard1.x -->
@@ -117,11 +113,11 @@
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" />
     <ExternalDependency Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
     <ExternalDependency Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawBundleGreenPackageVersion)" />
-    <ExternalDependency Include="SQLitePCLRaw.bundle_sqlcipher" Version="$(SQLitePCLRawBundleSqlcipherPackageVersion)" Private="true" />
+    <ExternalDependency Include="SQLitePCLRaw.bundle_sqlcipher" Version="$(SQLitePCLRawBundleSqlcipherPackageVersion)" />
     <ExternalDependency Include="SQLitePCLRaw.core" Version="$(SQLitePCLRawCorePackageVersion)" />
     <ExternalDependency Include="StackExchange.Redis.StrongName" Version="$(StackExchangeRedisStrongNamePackageVersion)" />
     <ExternalDependency Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
-    <ExternalDependency Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" Private="true" />
+    <ExternalDependency Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
     <ExternalDependency Include="System.Buffers" Version="$(SystemBuffersPackageVersion)" />
     <ExternalDependency Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutablePackageVersion)" />
     <ExternalDependency Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
@@ -160,6 +156,6 @@
     <ExternalDependency Include="xunit.core" Version="$(XunitCorePackageVersion)" />
     <ExternalDependency Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
     <ExternalDependency Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
-    <ExternalDependency Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" Private="true" />
+    <ExternalDependency Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" />
   </ItemGroup>
 </Project>

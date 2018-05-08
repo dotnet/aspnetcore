@@ -38,5 +38,7 @@ namespace RepoTasks.ProjectModel
         /// </summary>
         public string Source { get; }
         public IReadOnlyList<PackageDependencyGroup> DependencyGroups { get; }
+
+        public override string ToString() => $"{Id}/{Version}";
     }
 }

@@ -205,7 +205,7 @@
 
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
-      <ShippingPackageFiles Include="$(ArtifactsDir)ship\*.nupkg" />
+      <ShippingPackageFiles Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
       <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(Version)" />
     </ItemGroup>
 

@@ -8,7 +8,7 @@ namespace RepoTasks.ProjectModel
 {
     internal class PackageReferenceInfo
     {
-        public PackageReferenceInfo(string id, string version, bool isImplicitlyDefined, IReadOnlyList<string> noWarn)
+        public PackageReferenceInfo(string id, string version, bool isImplicitlyDefined)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -18,12 +18,10 @@ namespace RepoTasks.ProjectModel
             Id = id;
             Version = version;
             IsImplicitlyDefined = isImplicitlyDefined;
-            NoWarn = noWarn;
         }
 
         public string Id { get; }
         public string Version { get; }
         public bool IsImplicitlyDefined { get; }
-        public IReadOnlyList<string> NoWarn { get; }
     }
 }
