@@ -275,15 +275,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override IModelBinder CreateBinder(ModelMetadata metadata)
             {
-                return CreateBinder(
-                    metadata,
-                    new BindingInfo()
-                    {
-                        BinderModelName = metadata.BinderModelName,
-                        BinderType = metadata.BinderType,
-                        BindingSource = metadata.BindingSource,
-                        PropertyFilterProvider = metadata.PropertyFilterProvider,
-                    });
+                var bindingInfo = new BindingInfo();
+                bindingInfo.TryApplyBindingInfo(metadata);
+
+                return CreateBinder(metadata, bindingInfo);
             }
 
             public override IModelBinder CreateBinder(ModelMetadata metadata, BindingInfo bindingInfo)
