@@ -108,10 +108,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 var called = false;
                 parser.DocumentStructureChanged += (sender, e) => called = true;
-                parser._latestChangeReference = new DefaultVisualStudioRazorParser.ChangeReference(null, new StringTextSnapshot(string.Empty));
-                var args = new DocumentStructureChangedEventArgs(
-                    new SourceChange(0, 0, string.Empty),
-                    new StringTextSnapshot(string.Empty),
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(null, new StringTextSnapshot(string.Empty));
+                var args = new BackgroundParserResultsReadyEventArgs(
+                    new BackgroundParser.ChangeReference(new SourceChange(0, 0, string.Empty), new StringTextSnapshot(string.Empty)),
                     TestRazorCodeDocument.CreateEmpty());
 
                 // Act
@@ -138,18 +137,57 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 parser.DocumentStructureChanged += (sender, e) => called = true;
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
-                parser._latestChangeReference = new DefaultVisualStudioRazorParser.ChangeReference(latestChange, latestSnapshot);
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
                 var codeDocument = TestRazorCodeDocument.CreateEmpty();
                 codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
-                var args = new DocumentStructureChangedEventArgs(
-                    latestChange,
-                    latestSnapshot,
+                var args = new BackgroundParserResultsReadyEventArgs(
+                    parser._latestChangeReference,
                     codeDocument);
 
                 // Act
                 parser.OnDocumentStructureChanged(args);
 
                 // Assert
+                Assert.True(called);
+            }
+        }
+
+        [ForegroundFact]
+        public void OnDocumentStructureChanged_FiresForOnlyLatestTextBufferReparseEdit()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker();
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                ProjectEngineFactory,
+                new DefaultErrorReporter(),
+                Mock.Of<VisualStudioCompletionBroker>()))
+            {
+                var called = false;
+                parser.DocumentStructureChanged += (sender, e) => called = true;
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(null, latestSnapshot);
+                var codeDocument = TestRazorCodeDocument.CreateEmpty();
+                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
+                var badArgs = new BackgroundParserResultsReadyEventArgs(
+                    // This is a different reparse edit, shouldn't be fired for this call
+                    new BackgroundParser.ChangeReference(null, latestSnapshot),
+                    codeDocument);
+                var goodArgs = new BackgroundParserResultsReadyEventArgs(
+                    parser._latestChangeReference,
+                    codeDocument);
+
+                // Act - 1
+                parser.OnDocumentStructureChanged(badArgs);
+
+                // Assert - 1
+                Assert.False(called);
+
+                // Act - 2
+                parser.OnDocumentStructureChanged(goodArgs);
+
+                // Assert - 2
                 Assert.True(called);
             }
         }

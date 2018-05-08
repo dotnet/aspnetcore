@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         /// <summary>
         /// Fired on the main thread.
         /// </summary>
-        public event EventHandler<DocumentStructureChangedEventArgs> ResultsReady;
+        public event EventHandler<BackgroundParserResultsReadyEventArgs> ResultsReady;
 
         public bool IsIdle
         {
@@ -47,10 +47,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _main.Cancel();
         }
 
-        public void QueueChange(SourceChange change, ITextSnapshot snapshot)
+        public ChangeReference QueueChange(SourceChange change, ITextSnapshot snapshot)
         {
-            var edit = new Edit(change, snapshot);
-            _main.QueueChange(edit);
+            var changeReference = new ChangeReference(change, snapshot);
+            _main.QueueChange(changeReference);
+            return changeReference;
         }
 
         public void Dispose()
@@ -63,7 +64,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return _main.Lock();
         }
 
-        protected virtual void OnResultsReady(DocumentStructureChangedEventArgs args)
+        protected virtual void OnResultsReady(BackgroundParserResultsReadyEventArgs args)
         {
             using (SynchronizeMainThreadState())
             {
@@ -115,7 +116,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             private string _fileName;
             private readonly object _stateLock = new object();
-            private IList<Edit> _changes = new List<Edit>();
+            private IList<ChangeReference> _changes = new List<ChangeReference>();
 
             public MainThreadState(string fileName)
             {
@@ -124,7 +125,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 SetThreadId(Thread.CurrentThread.ManagedThreadId);
             }
 
-            public event EventHandler<DocumentStructureChangedEventArgs> ResultsReady;
+            public event EventHandler<BackgroundParserResultsReadyEventArgs> ResultsReady;
 
             public CancellationToken CancelToken
             {
@@ -154,7 +155,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return new DisposableAction(() => Monitor.Exit(_stateLock));
             }
 
-            public void QueueChange(Edit edit)
+            public void QueueChange(ChangeReference change)
             {
                 // Any thread can queue a change.
 
@@ -166,7 +167,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         _currentParcelCancelSource.Cancel();
                     }
 
-                    _changes.Add(edit);
+                    _changes.Add(change);
                     _hasParcel.Set();
                 }
             }
@@ -182,12 +183,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     _currentParcelCancelSource = new CancellationTokenSource();
 
                     var changes = _changes;
-                    _changes = new List<Edit>();
+                    _changes = new List<ChangeReference>();
                     return new WorkParcel(changes, _currentParcelCancelSource.Token);
                 }
             }
 
-            public void ReturnParcel(DocumentStructureChangedEventArgs args)
+            public void ReturnParcel(BackgroundParserResultsReadyEventArgs args)
             {
                 lock (_stateLock)
                 {
@@ -242,7 +243,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             private CancellationToken _shutdownToken;
             private RazorProjectEngine _projectEngine;
             private RazorSyntaxTree _currentSyntaxTree;
-            private IList<Edit> _previouslyDiscarded = new List<Edit>();
+            private IList<ChangeReference> _previouslyDiscarded = new List<ChangeReference>();
 
             public BackgroundThread(MainThreadState main, RazorProjectEngine projectEngine, string filePath, string projectDirectory)
             {
@@ -274,30 +275,30 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     {
                         // Grab the parcel of work to do
                         var parcel = _main.GetParcel();
-                        if (parcel.Edits.Any())
+                        if (parcel.Changes.Any())
                         {
                             try
                             {
-                                DocumentStructureChangedEventArgs args = null;
+                                BackgroundParserResultsReadyEventArgs args = null;
                                 using (var linkedCancel = CancellationTokenSource.CreateLinkedTokenSource(_shutdownToken, parcel.CancelToken))
                                 {
                                     if (!linkedCancel.IsCancellationRequested)
                                     {
                                         // Collect ALL changes
-                                        List<Edit> allEdits;
+                                        List<ChangeReference> allChanges;
 
                                         if (_previouslyDiscarded != null)
                                         {
-                                            allEdits = Enumerable.Concat(_previouslyDiscarded, parcel.Edits).ToList();
+                                            allChanges = Enumerable.Concat(_previouslyDiscarded, parcel.Changes).ToList();
                                         }
                                         else
                                         {
-                                            allEdits = parcel.Edits.ToList();
+                                            allChanges = parcel.Changes.ToList();
                                         }
 
-                                        var finalEdit = allEdits.Last();
+                                        var finalChange = allChanges.Last();
 
-                                        var results = ParseChange(finalEdit.Snapshot, linkedCancel.Token);
+                                        var results = ParseChange(finalChange.Snapshot, linkedCancel.Token);
 
                                         if (results != null && !linkedCancel.IsCancellationRequested)
                                         {
@@ -307,15 +308,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                                             _currentSyntaxTree = results.GetSyntaxTree();
 
                                             // Build Arguments
-                                            args = new DocumentStructureChangedEventArgs(
-                                                finalEdit.Change,
-                                                finalEdit.Snapshot,
-                                                results);
+                                            args = new BackgroundParserResultsReadyEventArgs(finalChange, results);
                                         }
                                         else
                                         {
                                             // Parse completed but we were cancelled in the mean time. Add these to the discarded changes set
-                                            _previouslyDiscarded = allEdits;
+                                            _previouslyDiscarded = allChanges;
                                         }
                                     }
                                 }
@@ -378,20 +376,20 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private class WorkParcel
         {
-            public WorkParcel(IList<Edit> changes, CancellationToken cancelToken)
+            public WorkParcel(IList<ChangeReference> changes, CancellationToken cancelToken)
             {
-                Edits = changes;
+                Changes = changes;
                 CancelToken = cancelToken;
             }
 
             public CancellationToken CancelToken { get; }
 
-            public IList<Edit> Edits { get; }
+            public IList<ChangeReference> Changes { get; }
         }
 
-        private class Edit
+        internal class ChangeReference
         {
-            public Edit(SourceChange change, ITextSnapshot snapshot)
+            public ChangeReference(SourceChange change, ITextSnapshot snapshot)
             {
                 Change = change;
                 Snapshot = snapshot;
@@ -399,7 +397,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             public SourceChange Change { get; }
 
-            public ITextSnapshot Snapshot { get; set; }
+            public ITextSnapshot Snapshot { get; }
         }
     }
 }
