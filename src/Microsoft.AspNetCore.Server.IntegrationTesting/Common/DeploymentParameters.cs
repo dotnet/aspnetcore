@@ -13,6 +13,35 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// </summary>
     public class DeploymentParameters
     {
+        public DeploymentParameters()
+        {
+            EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
+
+            var configAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>();
+            if (configAttribute != null && !string.IsNullOrEmpty(configAttribute.Configuration))
+            {
+                Configuration = configAttribute.Configuration;
+            }
+        }
+
+        public DeploymentParameters(TestVariant variant)
+        {
+            EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
+
+            var configAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>();
+            if (configAttribute != null && !string.IsNullOrEmpty(configAttribute.Configuration))
+            {
+                Configuration = configAttribute.Configuration;
+            }
+
+            ServerType = variant.Server;
+            TargetFramework = variant.Tfm;
+            ApplicationType = variant.ApplicationType;
+            RuntimeArchitecture = variant.Architecture;
+            HostingModel = variant.HostingModel;
+            AncmVersion = variant.AncmVersion;
+        }
+
         /// <summary>
         /// Creates an instance of <see cref="DeploymentParameters"/>.
         /// </summary>
@@ -54,11 +83,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        public ServerType ServerType { get; }
+        public ServerType ServerType { get; set;  }
 
-        public RuntimeFlavor RuntimeFlavor { get; }
+        public RuntimeFlavor RuntimeFlavor { get; set;  }
 
-        public RuntimeArchitecture RuntimeArchitecture { get; } = RuntimeArchitecture.x64;
+        public RuntimeArchitecture RuntimeArchitecture { get; set; } = RuntimeArchitecture.x64;
 
         /// <summary>
         /// Suggested base url for the deployed application. The final deployed url could be
@@ -80,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public string SiteName { get; set; }
 
-        public string ApplicationPath { get; }
+        public string ApplicationPath { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the application. This is used to execute the application when deployed.
@@ -124,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// When using the IISExpressDeployer, determines whether to use the older or newer version
         /// of ANCM.
         /// </summary>
-        public ANCMVersion ANCMVersion { get; set; } = ANCMVersion.AspNetCoreModule;
+        public AncmVersion AncmVersion { get; set; } = AncmVersion.AspNetCoreModule;
 
         /// <summary>
         /// Environment variables to be set before starting the host.

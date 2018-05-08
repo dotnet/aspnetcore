@@ -35,16 +35,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
         }
 
-        public bool IsWin8OrLater
-        {
-            get
-            {
-                var win8Version = new Version(6, 2);
-
-                return (Environment.OSVersion.Version >= win8Version);
-            }
-        }
-
         public bool Is64BitHost
         {
             get
@@ -61,13 +51,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 StartTimer();
 
                 // For now we always auto-publish. Otherwise we'll have to write our own local web.config for the HttpPlatformHandler
-                DeploymentParameters.PublishApplicationBeforeDeployment = true;
-                if (DeploymentParameters.PublishApplicationBeforeDeployment)
-                {
-                    DotnetPublish();
-                }
+                DotnetPublish();
 
-                var contentRoot = DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath;
+                var contentRoot = DeploymentParameters.PublishedApplicationRootPath;
 
                 var testUri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
 
@@ -141,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         ModifyAspNetCoreSectionInWebConfig(key: "hostingModel", value: "inprocess");
                     }
                     
-                    ModifyHandlerSectionInWebConfig(key: "modules", value: DeploymentParameters.ANCMVersion.ToString());
+                    ModifyHandlerSectionInWebConfig(key: "modules", value: DeploymentParameters.AncmVersion.ToString());
 
                     var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigLocation) ?
                                     string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, contentRoot) :

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// <summary>
     /// Abstract base class of all deployers with implementation of some of the common helpers.
     /// </summary>
-    public abstract class ApplicationDeployer : IApplicationDeployer
+    public abstract class ApplicationDeployer : IDisposable
     {
         public static readonly string DotnetCommandName = "dotnet";
 
@@ -31,11 +31,56 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             DeploymentParameters = deploymentParameters;
             LoggerFactory = loggerFactory;
             Logger = LoggerFactory.CreateLogger(GetType().FullName);
+
+            ValidateParameters();
+        }
+
+        private void ValidateParameters()
+        {
+            if (DeploymentParameters.ServerType == ServerType.None)
+            {
+                throw new ArgumentException($"Invalid ServerType '{DeploymentParameters.ServerType}'.");
+            }
+
+            if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.None && !string.IsNullOrEmpty(DeploymentParameters.TargetFramework))
+            {
+                DeploymentParameters.RuntimeFlavor = GetRuntimeFlavor(DeploymentParameters.TargetFramework);
+            }
+
+            if (DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86 && DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr)
+            {
+                throw new NotSupportedException("32 bit deployment is not yet supported for CoreCLR. Don't remove the tests, just disable them for now.");
+            }
+
+            if (string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
+            {
+                throw new ArgumentException("ApplicationPath cannot be null.");
+            }
+
+            if (!Directory.Exists(DeploymentParameters.ApplicationPath))
+            {
+                throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", DeploymentParameters.ApplicationPath));
+            }
+
+            if (string.IsNullOrEmpty(DeploymentParameters.ApplicationName))
+            {
+                DeploymentParameters.ApplicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
+            }
+        }
+
+        private RuntimeFlavor GetRuntimeFlavor(string tfm)
+        {
+            if (Tfm.Matches(Tfm.Net461, tfm))
+            {
+                return RuntimeFlavor.Clr;
+            }
+            return RuntimeFlavor.CoreClr;
         }
 
         protected DeploymentParameters DeploymentParameters { get; }
 
         protected ILoggerFactory LoggerFactory { get; }
+
         protected ILogger Logger { get; }
 
         public abstract Task<DeploymentResult> DeployAsync();
@@ -217,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private string GetRuntimeIdentifier()
         {
-            var architecture = GetArchitecture();
+            var architecture = DeploymentParameters.RuntimeArchitecture;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return "win7-" + architecture;
@@ -233,19 +278,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             else
             {
                 throw new InvalidOperationException("Unrecognized operation system platform");
-            }
-        }
-
-        private string GetArchitecture()
-        {
-            switch (RuntimeInformation.OSArchitecture)
-            {
-                case Architecture.X86:
-                    return "x86";
-                case Architecture.X64:
-                    return "x64";
-                default:
-                    throw new NotSupportedException($"Unsupported architecture: {RuntimeInformation.OSArchitecture}");
             }
         }
     }

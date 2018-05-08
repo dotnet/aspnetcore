@@ -33,10 +33,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             if (_deploymentParameters.ServerType != ServerType.IIS
                 && _deploymentParameters.ServerType != ServerType.Kestrel
-                && _deploymentParameters.ServerType != ServerType.WebListener)
+                && _deploymentParameters.ServerType != ServerType.HttpSys)
             {
                 throw new InvalidOperationException($"Server type {_deploymentParameters.ServerType} is not supported for remote deployment." +
-                    $" Supported server types are {nameof(ServerType.Kestrel)}, {nameof(ServerType.IIS)} and {nameof(ServerType.WebListener)}");
+                    $" Supported server types are {nameof(ServerType.Kestrel)}, {nameof(ServerType.IIS)} and {nameof(ServerType.HttpSys)}");
             }
 
             if (string.IsNullOrWhiteSpace(_deploymentParameters.ServerName))

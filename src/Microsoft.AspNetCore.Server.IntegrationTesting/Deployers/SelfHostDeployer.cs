@@ -76,12 +76,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : "";
                     var executable = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, DeploymentParameters.ApplicationName + executableExtension);
 
-                    if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        executableName = "mono";
-                        executableArgs = executable;
-                    }
-                    else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr && DeploymentParameters.ApplicationType == ApplicationType.Portable)
+                    if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr && DeploymentParameters.ApplicationType == ApplicationType.Portable)
                     {
                         executableName = "dotnet";
                         executableArgs = executable;
@@ -94,14 +89,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 else
                 {
                     workingDirectory = DeploymentParameters.ApplicationPath;
-                    var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.2");
-
+                    var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? Tfm.Net461 : Tfm.NetCoreApp22);
                     executableName = DotnetCommandName;
                     executableArgs = $"run --no-build -c {DeploymentParameters.Configuration} --framework {targetFramework} {DotnetArgumentSeparator}";
                 }
 
-                executableArgs += $" --server.urls {hintUrl} "
-                + $" --server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.HttpSys" : "Microsoft.AspNetCore.Server.Kestrel")}";
+                executableArgs += $" --urls {hintUrl} "
+                + $" --server {(DeploymentParameters.ServerType == ServerType.HttpSys ? "Microsoft.AspNetCore.Server.HttpSys" : "Microsoft.AspNetCore.Server.Kestrel")}";
 
                 Logger.LogInformation($"Executing {executableName} {executableArgs}");
 

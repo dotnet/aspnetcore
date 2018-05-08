@@ -3,8 +3,9 @@
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
-    public enum ANCMVersion
+    public enum AncmVersion
     {
+        None,
         AspNetCoreModule,
         AspNetCoreModuleV2
     }
