@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     if (!readableBuffer.IsEmpty)
                     {
                         // buffer.Count is int
-                        var count = (int)Math.Min(readableBuffer.Length, destination.Length);
+                        var count = (int) Math.Min(readableBuffer.Length, destination.Length);
                         readableBuffer = readableBuffer.Slice(0, count);
                         readableBuffer.CopyTo(destination.Span);
                         return count;
