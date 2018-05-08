@@ -34,11 +34,11 @@ async function sendAsync(id: number, method: string, requestUri: string, body: s
 
 function dispatchSuccessResponse(id: number, response: Response, responseText: string) {
   const responseDescriptor: ResponseDescriptor = {
-    StatusCode: response.status,
-    Headers: []
+    statusCode: response.status,
+    headers: []
   };
   response.headers.forEach((value, name) => {
-    responseDescriptor.Headers.push([name, value]);
+    responseDescriptor.headers.push([name, value]);
   });
 
   dispatchResponse(
@@ -81,6 +81,6 @@ interface ResponseDescriptor {
   // We don't have BodyText in here because if we did, then in the JSON-response case (which
   // is the most common case), we'd be double-encoding it, since the entire ResponseDescriptor
   // also gets JSON encoded. It would work but is twice the amount of string processing.
-  StatusCode: number;
-  Headers: string[][];
+  statusCode: number;
+  headers: string[][];
 }

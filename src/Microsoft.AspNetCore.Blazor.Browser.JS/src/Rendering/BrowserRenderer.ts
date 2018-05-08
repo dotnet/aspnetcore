@@ -318,10 +318,10 @@ function raiseEvent(event: Event, browserRendererId: number, componentId: number
   }
 
   const eventDescriptor = {
-    BrowserRendererId: browserRendererId,
-    ComponentId: componentId,
-    EventHandlerId: eventHandlerId,
-    EventArgsType: eventArgs.type
+    browserRendererId,
+    componentId,
+    eventHandlerId,
+    eventArgsType: eventArgs.type
   };
 
   platform.callMethod(raiseEventMethod, null, [
