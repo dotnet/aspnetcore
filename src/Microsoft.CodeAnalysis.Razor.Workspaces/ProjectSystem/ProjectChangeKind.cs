@@ -8,7 +8,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         ProjectAdded,
         ProjectRemoved,
         ProjectChanged,
-        DocumentsChanged,
-        DocumentContentChanged,
+        DocumentAdded,
+        DocumentRemoved,
+
+        // This could be a state change (opened/closed) or a content change.
+        DocumentChanged,
     }
 }

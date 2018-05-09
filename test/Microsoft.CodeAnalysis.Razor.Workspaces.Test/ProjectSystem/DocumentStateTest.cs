@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
 
@@ -47,6 +49,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
 
             Document = new HostDocument("c:\\MyProject\\File.cshtml", "File.cshtml");
+
+            Text = SourceText.From("Hello, world!");
+            TextLoader = () => Task.FromResult(TextAndVersion.Create(Text, VersionStamp.Create()));
         }
 
         private HostDocument Document { get; }
@@ -65,29 +70,127 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private List<TagHelperDescriptor> SomeTagHelpers { get; }
 
+        private Func<Task<TextAndVersion>> TextLoader { get; }
+
+        private SourceText Text { get; }
+
         [Fact]
-        public void DocumentState_ConstructedNew()
+        public async Task DocumentState_CreatedNew_HasEmptyText()
         {
-            // Arrange
-
-            // Act
-            var state = new DocumentState(Workspace.Services, Document);
-
+            // Arrange & Act
+            var state = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
+            
             // Assert
-            Assert.NotEqual(VersionStamp.Default, state.Version);
+            var text = await state.GetTextAsync();
+            Assert.Equal(0, text.Length);
         }
 
-        [Fact] // There's no magic in the constructor.
-        public void ProjectState_ConstructedFromCopy()
+        [Fact]
+        public async Task DocumentState_WithText_CreatesNewState()
         {
             // Arrange
-            var original = new DocumentState(Workspace.Services, Document);
+            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
 
             // Act
-            var state = new DocumentState(original, ProjectDifference.ConfigurationChanged);
+            var state = original.WithText(Text, VersionStamp.Create());
 
             // Assert
-            Assert.NotEqual(original.Version, state.Version);
+            var text = await state.GetTextAsync();
+            Assert.Same(Text, text);
+        }
+
+        [Fact]
+        public async Task DocumentState_WithTextLoader_CreatesNewState()
+        {
+            // Arrange
+            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
+
+            // Act
+            var state = original.WithTextLoader(TextLoader);
+
+            // Assert
+            var text = await state.GetTextAsync();
+            Assert.Same(Text, text);
+        }
+
+        [Fact]
+        public void DocumentState_WithConfigurationChange_CachesSnapshotText()
+        {
+            // Arrange
+            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+                .WithText(Text, VersionStamp.Create());
+
+            // Act
+            var state = original.WithConfigurationChange();
+
+            // Assert
+            Assert.True(state.TryGetText(out _));
+            Assert.True(state.TryGetTextVersion(out _));
+        }
+
+        [Fact]
+        public async Task DocumentState_WithConfigurationChange_CachesLoadedText()
+        {
+            // Arrange
+            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+                .WithTextLoader(TextLoader);
+
+            await original.GetTextAsync();
+
+            // Act
+            var state = original.WithConfigurationChange();
+
+            // Assert
+            Assert.True(state.TryGetText(out _));
+            Assert.True(state.TryGetTextVersion(out _));
+        }
+
+        [Fact]
+        public void DocumentState_WithWorkspaceProjectChange_CachesSnapshotText()
+        {
+            // Arrange
+            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+                .WithText(Text, VersionStamp.Create());
+
+            // Act
+            var state = original.WithWorkspaceProjectChange();
+
+            // Assert
+            Assert.True(state.TryGetText(out _));
+            Assert.True(state.TryGetTextVersion(out _));
+        }
+
+
+        [Fact]
+        public async Task DocumentState_WithWorkspaceProjectChange_CachesLoadedText()
+        {
+            // Arrange
+            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+                .WithTextLoader(TextLoader);
+
+            await original.GetTextAsync();
+
+            // Act
+            var state = original.WithWorkspaceProjectChange();
+
+            // Assert
+            Assert.True(state.TryGetText(out _));
+            Assert.True(state.TryGetTextVersion(out _));
+        }
+
+        [Fact]
+        public void DocumentState_WithWorkspaceProjectChange_TriesToCacheGeneratedOutput()
+        {
+            // Arrange
+            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
+
+            GC.KeepAlive(original.GeneratedOutput);
+
+            // Act
+            var state = original.WithWorkspaceProjectChange();
+
+            // Assert
+            Assert.Same(state.GeneratedOutput.Older, original.GeneratedOutput);
         }
     }
 }

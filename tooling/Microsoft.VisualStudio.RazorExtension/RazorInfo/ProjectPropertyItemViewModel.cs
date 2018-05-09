@@ -5,9 +5,9 @@
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
-    public class PropertyViewModel : NotifyPropertyChanged
+    public class ProjectPropertyItemViewModel : NotifyPropertyChanged
     {
-        internal PropertyViewModel(string name, string value)
+        internal ProjectPropertyItemViewModel(string name, string value)
         {
             Name = name;
             Value = value;

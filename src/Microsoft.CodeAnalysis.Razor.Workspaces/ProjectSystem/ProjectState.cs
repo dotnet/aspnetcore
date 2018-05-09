@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -17,10 +19,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private ProjectEngineTracker _projectEngine;
         private ProjectTagHelperTracker _tagHelpers;
 
-        public ProjectState(
-            HostWorkspaceServices services,
-            HostProject hostProject,
-            Project workspaceProject)
+        public static ProjectState Create(HostWorkspaceServices services, HostProject hostProject, Project workspaceProject = null)
         {
             if (services == null)
             {
@@ -32,6 +31,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(hostProject));
             }
 
+            return new ProjectState(services, hostProject, workspaceProject);
+        }
+        
+        private ProjectState(
+            HostWorkspaceServices services,
+            HostProject hostProject,
+            Project workspaceProject)
+        {
             Services = services;
             HostProject = hostProject;
             WorkspaceProject = workspaceProject;
@@ -41,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _lock = new object();
         }
 
-        public ProjectState(
+        private ProjectState(
             ProjectState older,
             ProjectDifference difference,
             HostProject hostProject,
@@ -126,11 +133,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public ProjectState WithAddedHostDocument(HostDocument hostDocument)
+        public ProjectState WithAddedHostDocument(HostDocument hostDocument, Func<Task<TextAndVersion>> loader)
         {
             if (hostDocument == null)
             {
                 throw new ArgumentNullException(nameof(hostDocument));
+            }
+
+            if (loader == null)
+            {
+                throw new ArgumentNullException(nameof(loader));
             }
 
             // Ignore attempts to 'add' a document with different data, we only
@@ -145,10 +157,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 documents.Add(kvp.Key, kvp.Value);
             }
+            
+            documents.Add(hostDocument.FilePath, DocumentState.Create(Services, hostDocument, loader));
 
-            documents.Add(hostDocument.FilePath, new DocumentState(Services, hostDocument));
-
-            var difference = ProjectDifference.DocumentsChanged;
+            var difference = ProjectDifference.DocumentAdded;
             var state = new ProjectState(this, difference, HostProject, WorkspaceProject, documents);
             return state;
         }
@@ -173,8 +185,62 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             documents.Remove(hostDocument.FilePath);
 
-            var difference = ProjectDifference.DocumentsChanged;
+            var difference = ProjectDifference.DocumentRemoved;
             var state = new ProjectState(this, difference, HostProject, WorkspaceProject, documents);
+            return state;
+        }
+
+        public ProjectState WithChangedHostDocument(HostDocument hostDocument, SourceText sourceText, VersionStamp version)
+        {
+            if (hostDocument == null)
+            {
+                throw new ArgumentNullException(nameof(hostDocument));
+            }
+
+            if (!Documents.ContainsKey(hostDocument.FilePath))
+            {
+                return this;
+            }
+
+            var documents = new Dictionary<string, DocumentState>(FilePathComparer.Instance);
+            foreach (var kvp in Documents)
+            {
+                documents.Add(kvp.Key, kvp.Value);
+            }
+
+            if (documents.TryGetValue(hostDocument.FilePath, out var document))
+            {
+                documents[hostDocument.FilePath] = document.WithText(sourceText, version);
+            }
+
+            var state = new ProjectState(this, ProjectDifference.DocumentChanged, HostProject, WorkspaceProject, documents);
+            return state;
+        }
+
+        public ProjectState WithChangedHostDocument(HostDocument hostDocument, Func<Task<TextAndVersion>> loader)
+        {
+            if (hostDocument == null)
+            {
+                throw new ArgumentNullException(nameof(hostDocument));
+            }
+
+            if (!Documents.ContainsKey(hostDocument.FilePath))
+            {
+                return this;
+            }
+
+            var documents = new Dictionary<string, DocumentState>(FilePathComparer.Instance);
+            foreach (var kvp in Documents)
+            {
+                documents.Add(kvp.Key, kvp.Value);
+            }
+
+            if (documents.TryGetValue(hostDocument.FilePath, out var document))
+            {
+                documents[hostDocument.FilePath] = document.WithTextLoader(loader);
+            }
+
+            var state = new ProjectState(this, ProjectDifference.DocumentChanged, HostProject, WorkspaceProject, documents);
             return state;
         }
 
@@ -194,7 +260,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documents = new Dictionary<string, DocumentState>(FilePathComparer.Instance);
             foreach (var kvp in Documents)
             {
-                documents.Add(kvp.Key, new DocumentState(kvp.Value, difference));
+                documents.Add(kvp.Key, kvp.Value.WithConfigurationChange());
             }
 
             var state = new ProjectState(this, difference, hostProject, WorkspaceProject, documents);
@@ -227,7 +293,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documents = new Dictionary<string, DocumentState>(FilePathComparer.Instance);
             foreach (var kvp in Documents)
             {
-                documents.Add(kvp.Key, new DocumentState(kvp.Value, difference));
+                documents.Add(kvp.Key, kvp.Value.WithConfigurationChange());
             }
 
             var state = new ProjectState(this, difference, HostProject, workspaceProject, documents);

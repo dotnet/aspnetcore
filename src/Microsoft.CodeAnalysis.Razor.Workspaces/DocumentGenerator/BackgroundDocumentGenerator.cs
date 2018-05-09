@@ -8,17 +8,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
     // Deliberately not exported for now, until this feature is working end to end.
+    // [Export(typeof(ProjectSnapshotChangeTrigger))]
     internal class BackgroundDocumentGenerator : ProjectSnapshotChangeTrigger
     {
         private ForegroundDispatcher _foregroundDispatcher;
         private ProjectSnapshotManagerBase _projectManager;
 
-        private readonly Dictionary<Key, DocumentSnapshot> _files;
+        private readonly Dictionary<DocumentKey, DocumentSnapshot> _files;
         private Timer _timer;
 
         [ImportingConstructor]
@@ -31,7 +31,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             _foregroundDispatcher = foregroundDispatcher;
 
-            _files = new Dictionary<Key, DocumentSnapshot>();
+            _files = new Dictionary<DocumentKey, DocumentSnapshot>();
         }
 
         public bool HasPendingNotifications
@@ -127,7 +127,7 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 // We only want to store the last 'seen' version of any given document. That way when we pick one to process
                 // it's always the best version to use.
-                _files.Add(new Key(project.FilePath, document.FilePath), document);
+                _files[new DocumentKey(project.FilePath, document.FilePath)] = document;
 
                 StartWorker();
             }
@@ -217,7 +217,6 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 case ProjectChangeKind.ProjectAdded:
                 case ProjectChangeKind.ProjectChanged:
-                case ProjectChangeKind.DocumentsChanged:
                     {
                         var project = _projectManager.GetLoadedProject(e.ProjectFilePath);
                         foreach (var documentFilePath in project.DocumentFilePaths)
@@ -228,50 +227,26 @@ namespace Microsoft.CodeAnalysis.Razor
                         break;
                     }
 
-                case ProjectChangeKind.DocumentContentChanged:
+                case ProjectChangeKind.ProjectRemoved:
+                    // ignore
+                    break;
+
+                case ProjectChangeKind.DocumentAdded:
+                case ProjectChangeKind.DocumentChanged:
                     {
-                        throw null;
+                        var project = _projectManager.GetLoadedProject(e.ProjectFilePath);
+                        Enqueue(project, project.GetDocument(e.DocumentFilePath));
+
+                        break;
                     }
 
-                case ProjectChangeKind.ProjectRemoved:
+                
+                case ProjectChangeKind.DocumentRemoved:
                     // ignore
                     break;
 
                 default:
                     throw new InvalidOperationException($"Unknown ProjectChangeKind {e.Kind}");
-            }
-        }
-
-        private struct Key : IEquatable<Key>
-        {
-            public Key(string projectFilePath, string documentFilePath)
-            {
-                ProjectFilePath = projectFilePath;
-                DocumentFilePath = documentFilePath;
-            }
-
-            public string ProjectFilePath { get; }
-
-            public string DocumentFilePath { get; }
-
-            public bool Equals(Key other)
-            {
-                return
-                    FilePathComparer.Instance.Equals(ProjectFilePath, other.ProjectFilePath) &&
-                    FilePathComparer.Instance.Equals(DocumentFilePath, other.DocumentFilePath);
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is Key key ? Equals(key) : false;
-            }
-
-            public override int GetHashCode()
-            {
-                var hash = new HashCodeCombiner();
-                hash.Add(ProjectFilePath, FilePathComparer.Instance);
-                hash.Add(DocumentFilePath, FilePathComparer.Instance);
-                return hash;
             }
         }
     }

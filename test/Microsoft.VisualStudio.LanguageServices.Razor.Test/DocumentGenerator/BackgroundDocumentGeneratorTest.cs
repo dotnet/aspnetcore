@@ -71,8 +71,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             projectManager.HostProjectAdded(HostProject2);
             projectManager.WorkspaceProjectAdded(WorkspaceProject1);
             projectManager.WorkspaceProjectAdded(WorkspaceProject2);
-            projectManager.DocumentAdded(HostProject1, Documents[0]);
-            projectManager.DocumentAdded(HostProject1, Documents[1]);
+            projectManager.DocumentAdded(HostProject1, Documents[0], null);
+            projectManager.DocumentAdded(HostProject1, Documents[1], null);
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
@@ -110,8 +110,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             projectManager.HostProjectAdded(HostProject2);
             projectManager.WorkspaceProjectAdded(WorkspaceProject1);
             projectManager.WorkspaceProjectAdded(WorkspaceProject2);
-            projectManager.DocumentAdded(HostProject1, Documents[0]);
-            projectManager.DocumentAdded(HostProject1, Documents[1]);
+            projectManager.DocumentAdded(HostProject1, Documents[0], null);
+            projectManager.DocumentAdded(HostProject1, Documents[1], null);
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 

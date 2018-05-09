@@ -42,18 +42,16 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             _projectManager = _workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<ProjectSnapshotManager>();
             _projectManager.Changed += ProjectManager_Changed;
 
-            DataContext = new RazorInfoViewModel(this, _workspace, _projectManager, OnException);
+            DataContext = new RazorInfoViewModel(_workspace, _projectManager, OnException);
+            
             foreach (var project in _projectManager.Projects)
             {
-                DataContext.Projects.Add(new ProjectViewModel(project.FilePath)
-                {
-                    Snapshot = new ProjectSnapshotViewModel(project),
-                });
+                DataContext.Projects.Add(new ProjectViewModel(project.FilePath));
             }
 
             if (DataContext.Projects.Count > 0)
             {
-                DataContext.CurrentProject = DataContext.Projects[0];
+                DataContext.SelectedProject = DataContext.Projects[0];
             }
         }
 
@@ -69,70 +67,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
         private void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
         {
-            switch (e.Kind)
-            {
-                case ProjectChangeKind.ProjectAdded:
-                    {
-                        var added = new ProjectViewModel(e.ProjectFilePath)
-                        {
-                            Snapshot = new ProjectSnapshotViewModel(_projectManager.GetLoadedProject(e.ProjectFilePath)),
-                        };
-
-                        DataContext.Projects.Add(added);
-
-                        if (DataContext.Projects.Count == 1)
-                        {
-                            DataContext.CurrentProject = added;
-                        }
-                        break;
-                    }
-
-                case ProjectChangeKind.ProjectRemoved:
-                    {
-                        ProjectViewModel removed = null;
-                        for (var i = DataContext.Projects.Count - 1; i >= 0; i--)
-                        {
-                            var project = DataContext.Projects[i];
-                            if (project.FilePath == e.ProjectFilePath)
-                            {
-                                removed = project;
-                                DataContext.Projects.RemoveAt(i);
-                                break;
-                            }
-                        }
-
-                        if (DataContext.CurrentProject == removed)
-                        {
-                            DataContext.CurrentProject = null;
-                        }
-
-                        break;
-                    }
-
-                case ProjectChangeKind.ProjectChanged:
-                case ProjectChangeKind.DocumentsChanged:
-                    {
-                        ProjectViewModel changed = null;
-                        for (var i = DataContext.Projects.Count - 1; i >= 0; i--)
-                        {
-                            var project = DataContext.Projects[i];
-                            if (project.FilePath == e.ProjectFilePath)
-                            {
-                                changed = project;
-                                changed.Snapshot = new ProjectSnapshotViewModel(_projectManager.GetLoadedProject(e.ProjectFilePath));
-                                DataContext.LoadProjectInfo();
-                                break;
-                            }
-                        }
-                        
-                        break;
-                    }
-
-                case ProjectChangeKind.DocumentContentChanged:
-                    {
-                        break;
-                    }
-            }
+            DataContext.OnChange(e);
         }
 
         private void OnException(Exception ex)

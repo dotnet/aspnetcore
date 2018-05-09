@@ -16,6 +16,11 @@ namespace Microsoft.VisualStudio.Test
         public TestTextBuffer(ITextSnapshot initialSnapshot)
         {
             _currentSnapshot = initialSnapshot;
+            if (_currentSnapshot is StringTextSnapshot testSnapshot)
+            {
+                testSnapshot.TextBuffer = this;
+            }
+
             _attachedChangedEvents = new List<EventHandler<TextContentChangedEventArgs>>();
 
             ReadOnlyRegionsChanged += (sender, args) => { };
@@ -41,6 +46,10 @@ namespace Microsoft.VisualStudio.Test
             }
 
             _currentSnapshot = edits[edits.Length - 1].NewSnapshot;
+            if (_currentSnapshot is StringTextSnapshot testSnapshot)
+            {
+                testSnapshot.TextBuffer = this;
+            }
 
             foreach (var changedEvent in AttachedChangedEvents)
             {

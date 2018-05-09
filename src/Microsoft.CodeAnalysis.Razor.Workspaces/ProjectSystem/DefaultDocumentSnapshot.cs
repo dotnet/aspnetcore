@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -33,10 +35,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override string TargetPath => State.HostDocument.TargetPath;
 
+        public override Task<SourceText> GetTextAsync()
+        {
+            return State.GetTextAsync();
+        }
+
+        public override Task<VersionStamp> GetTextVersionAsync()
+        {
+            return State.GetTextVersionAsync();
+        }
+
         public override Task<RazorCodeDocument> GetGeneratedOutputAsync()
         {
             // IMPORTANT: Don't put more code here. We want this to return a cached task.
             return State.GeneratedOutput.GetGeneratedOutputInitializationTask(Project, this);
+        }
+
+        public override bool TryGetText(out SourceText result)
+        {
+            return State.TryGetText(out result);
+        }
+
+        public override bool TryGetTextVersion(out VersionStamp result)
+        {
+            return State.TryGetTextVersion(out result);
         }
 
         public override bool TryGetGeneratedOutput(out RazorCodeDocument result)

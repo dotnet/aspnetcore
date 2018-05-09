@@ -13,6 +13,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         WorkspaceProjectAdded = 2,
         WorkspaceProjectRemoved = 4,
         WorkspaceProjectChanged = 8,
-        DocumentsChanged = 16,
+        DocumentAdded = 16,
+        DocumentRemoved = 32,
+        DocumentChanged = 64,
     }
 }

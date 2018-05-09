@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
 
@@ -85,6 +86,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             SomeTagHelpers = TagHelperResolver.TagHelpers;
             SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
+
+            SourceText = SourceText.From("Hello world");
         }
 
         private HostDocument[] Documents { get; }
@@ -109,6 +112,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private Workspace Workspace { get; }
 
+        private SourceText SourceText { get; }
+
         private IList<TagHelperDescriptor> SomeTagHelpers { get; }
 
         [ForegroundFact]
@@ -120,13 +125,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.Reset();
 
             // Act
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(HostProject);
             Assert.Collection(snapshot.DocumentFilePaths, d => Assert.Equal(Documents[0].FilePath, d));
 
-            Assert.Equal(ProjectChangeKind.DocumentsChanged, ProjectManager.ListenersNotifiedOf);
+            Assert.Equal(ProjectChangeKind.DocumentAdded, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -135,11 +140,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
             ProjectManager.Reset();
 
             // Act
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(HostProject);
@@ -154,11 +159,51 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
 
             // Act
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(HostProject);
             Assert.Null(snapshot);
+        }
+
+        [ForegroundFact]
+        public async Task DocumentAdded_NullLoader_HasEmptyText()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var document = snapshot.GetDocument(snapshot.DocumentFilePaths.Single());
+
+            var text = await document.GetTextAsync();
+            Assert.Equal(0, text.Length);
+        }
+
+        [ForegroundFact]
+        public async Task DocumentAdded_WithLoader_LoadesText()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            var expected = SourceText.From("Hello");
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0], TextLoader.From(TextAndVersion.Create(expected,VersionStamp.Default)));
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var document = snapshot.GetDocument(snapshot.DocumentFilePaths.Single());
+
+            var actual = await document.GetTextAsync();
+            Assert.Same(expected, actual);
         }
 
         [ForegroundFact]
@@ -175,7 +220,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await snapshot.GetTagHelpersAsync();
 
             // Act
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
 
             // Assert
             snapshot = ProjectManager.GetSnapshot(HostProject);
@@ -193,7 +238,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var projectEngine = snapshot.GetProjectEngine();
 
             // Act
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
 
             // Assert
             snapshot = ProjectManager.GetSnapshot(HostProject);
@@ -206,9 +251,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
-            ProjectManager.DocumentAdded(HostProject, Documents[1]);
-            ProjectManager.DocumentAdded(HostProject, Documents[2]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.DocumentAdded(HostProject, Documents[1], null);
+            ProjectManager.DocumentAdded(HostProject, Documents[2], null);
             ProjectManager.Reset();
 
             // Act
@@ -221,7 +266,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 d => Assert.Equal(Documents[0].FilePath, d),
                 d => Assert.Equal(Documents[2].FilePath, d));
 
-            Assert.Equal(ProjectChangeKind.DocumentsChanged, ProjectManager.ListenersNotifiedOf);
+            Assert.Equal(ProjectChangeKind.DocumentRemoved, ProjectManager.ListenersNotifiedOf);
         }
 
         [ForegroundFact]
@@ -261,9 +306,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
-            ProjectManager.DocumentAdded(HostProject, Documents[1]);
-            ProjectManager.DocumentAdded(HostProject, Documents[2]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.DocumentAdded(HostProject, Documents[1], null);
+            ProjectManager.DocumentAdded(HostProject, Documents[2], null);
             ProjectManager.Reset();
 
             // Adding some computed state
@@ -284,9 +329,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-            ProjectManager.DocumentAdded(HostProject, Documents[0]);
-            ProjectManager.DocumentAdded(HostProject, Documents[1]);
-            ProjectManager.DocumentAdded(HostProject, Documents[2]);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.DocumentAdded(HostProject, Documents[1], null);
+            ProjectManager.DocumentAdded(HostProject, Documents[2], null);
             ProjectManager.Reset();
 
             var snapshot = ProjectManager.GetSnapshot(HostProject);
@@ -298,6 +343,126 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             snapshot = ProjectManager.GetSnapshot(HostProject);
             Assert.Same(projectEngine, snapshot.GetProjectEngine());
+        }
+
+        [ForegroundFact]
+        public async Task DocumentOpened_UpdatesDocument()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.DocumentOpened(HostProject.FilePath, Documents[0].FilePath, SourceText);
+
+            // Assert
+            Assert.Equal(ProjectChangeKind.DocumentChanged, ProjectManager.ListenersNotifiedOf);
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var text = await snapshot.GetDocument(Documents[0].FilePath).GetTextAsync();
+            Assert.Same(SourceText, text);
+
+            Assert.True(ProjectManager.IsDocumentOpen(Documents[0].FilePath));
+        }
+
+        [ForegroundFact]
+        public async Task DocumentClosed_UpdatesDocument()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.DocumentOpened(HostProject.FilePath, Documents[0].FilePath, SourceText);
+            ProjectManager.Reset();
+
+            var expected = SourceText.From("Hi");
+            var textAndVersion = TextAndVersion.Create(expected, VersionStamp.Create());
+
+            Assert.True(ProjectManager.IsDocumentOpen(Documents[0].FilePath));
+
+            // Act
+            ProjectManager.DocumentClosed(HostProject.FilePath, Documents[0].FilePath, TextLoader.From(textAndVersion));
+
+            // Assert
+            Assert.Equal(ProjectChangeKind.DocumentChanged, ProjectManager.ListenersNotifiedOf);
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var text = await snapshot.GetDocument(Documents[0].FilePath).GetTextAsync();
+            Assert.Same(expected, text);
+            Assert.False(ProjectManager.IsDocumentOpen(Documents[0].FilePath));
+        }
+       
+
+        [ForegroundFact]
+        public async Task DocumentClosed_AcceptsChange()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.Reset();
+
+            var expected = SourceText.From("Hi");
+            var textAndVersion = TextAndVersion.Create(expected, VersionStamp.Create());
+
+            // Act
+            ProjectManager.DocumentClosed(HostProject.FilePath, Documents[0].FilePath, TextLoader.From(textAndVersion));
+
+            // Assert
+            Assert.Equal(ProjectChangeKind.DocumentChanged, ProjectManager.ListenersNotifiedOf);
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var text = await snapshot.GetDocument(Documents[0].FilePath).GetTextAsync();
+            Assert.Same(expected, text);
+        }
+
+        [ForegroundFact]
+        public async Task DocumentChanged_Snapshot_UpdatesDocument()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.DocumentOpened(HostProject.FilePath, Documents[0].FilePath, SourceText);
+            ProjectManager.Reset();
+
+            var expected = SourceText.From("Hi");
+
+            // Act
+            ProjectManager.DocumentChanged(HostProject.FilePath, Documents[0].FilePath, expected);
+
+            // Assert
+            Assert.Equal(ProjectChangeKind.DocumentChanged, ProjectManager.ListenersNotifiedOf);
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var text = await snapshot.GetDocument(Documents[0].FilePath).GetTextAsync();
+            Assert.Same(expected, text);
+        }
+
+        [ForegroundFact]
+        public async Task DocumentChanged_Loader_UpdatesDocument()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+            ProjectManager.DocumentOpened(HostProject.FilePath, Documents[0].FilePath, SourceText);
+            ProjectManager.Reset();
+
+            var expected = SourceText.From("Hi");
+            var textAndVersion = TextAndVersion.Create(expected, VersionStamp.Create());
+
+            // Act
+            ProjectManager.DocumentChanged(HostProject.FilePath, Documents[0].FilePath, TextLoader.From(textAndVersion));
+
+            // Assert
+            Assert.Equal(ProjectChangeKind.DocumentChanged, ProjectManager.ListenersNotifiedOf);
+
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            var text = await snapshot.GetDocument(Documents[0].FilePath).GetTextAsync();
+            Assert.Same(expected, text);
         }
 
         [ForegroundFact]

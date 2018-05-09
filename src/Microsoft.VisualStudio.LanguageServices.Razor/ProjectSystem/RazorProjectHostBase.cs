@@ -199,7 +199,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return;
             }
 
-            projectManager.DocumentAdded(_current, document);
+            projectManager.DocumentAdded(_current, document, new FileTextLoader(document.FilePath, null));
             _currentDocuments.Add(document.FilePath, document);
         }
 

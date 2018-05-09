@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
 
@@ -54,6 +56,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 // linked file
                 new HostDocument("c:\\SomeOtherProject\\Index.cshtml", "Pages\\Index.cshtml"),
             };
+
+            Text = SourceText.From("Hello, world!");
+            TextLoader = () => Task.FromResult(TextAndVersion.Create(Text, VersionStamp.Create()));
         }
 
         private HostDocument[] Documents { get; }
@@ -72,41 +77,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private List<TagHelperDescriptor> SomeTagHelpers { get; }
 
+        private Func<Task<TextAndVersion>> TextLoader { get; }
+
+        private SourceText Text { get; }
+
         [Fact]
         public void ProjectState_ConstructedNew()
         {
             // Arrange
              
             // Act
-            var state = new ProjectState(Workspace.Services, HostProject, WorkspaceProject);
+            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject);
 
             // Assert
             Assert.Empty(state.Documents);
             Assert.NotEqual(VersionStamp.Default, state.Version);
         }
 
-        [Fact] // There's no magic in the constructor.
-        public void ProjectState_ConstructedFromCopy()
-        {
-            // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject);
-
-            // Act
-            var state = new ProjectState(original, ProjectDifference.None, HostProject, WorkspaceProject, original.Documents);
-            
-            // Assert
-            Assert.Same(original.Documents, state.Documents);
-            Assert.NotEqual(original.Version, state.Version);
-        }
-
         [Fact]
         public void ProjectState_AddHostDocument_ToEmpty()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject);
 
             // Act
-            var state = original.WithAddedHostDocument(Documents[0]);
+            var state = original.WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
 
             // Assert
             Assert.NotEqual(original.Version, state.Version);
@@ -116,16 +111,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 d => Assert.Same(Documents[0], d.Value.HostDocument));
         }
 
+        [Fact] // When we first add a document, we have no way to read the text, so it's empty.
+        public async Task ProjectState_AddHostDocument_DocumentIsEmpty()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject);
+
+            // Act
+            var state = original.WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
+
+            // Assert
+            var text = await state.Documents[Documents[0].FilePath].GetTextAsync();
+            Assert.Equal(0, text.Length);
+        }
+
         [Fact]
         public void ProjectState_AddHostDocument_ToProjectWithDocuments()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Act
-            var state = original.WithAddedHostDocument(Documents[0]);
+            var state = original.WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
 
             // Assert
             Assert.NotEqual(original.Version, state.Version);
@@ -141,16 +150,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_AddHostDocument_RetainsComputedState()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
             GC.KeepAlive(original.TagHelpers);
 
             // Act
-            var state = original.WithAddedHostDocument(Documents[0]);
+            var state = original.WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
 
             // Assert
             Assert.Same(original.ProjectEngine, state.ProjectEngine);
@@ -164,12 +173,122 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_AddHostDocument_DuplicateNoops()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Act
-            var state = original.WithAddedHostDocument(new HostDocument(Documents[1].FilePath, "SomePath.cshtml"));
+            var state = original.WithAddedHostDocument(new HostDocument(Documents[1].FilePath, "SomePath.cshtml"), DocumentState.EmptyLoader);
+
+            // Assert
+            Assert.Same(original, state);
+        }
+
+        [Fact]
+        public async Task ProjectState_WithChangedHostDocument_Loader()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+
+            // Act
+            var state = original.WithChangedHostDocument(Documents[1], TextLoader);
+
+            // Assert
+            Assert.NotEqual(original.Version, state.Version);
+
+            var text = await state.Documents[Documents[1].FilePath].GetTextAsync();
+            Assert.Same(Text, text);
+        }
+
+        [Fact]
+        public async Task ProjectState_WithChangedHostDocument_Snapshot()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+
+            // Act
+            var state = original.WithChangedHostDocument(Documents[1], Text, VersionStamp.Create());
+
+            // Assert
+            Assert.NotEqual(original.Version, state.Version);
+
+            var text = await state.Documents[Documents[1].FilePath].GetTextAsync();
+            Assert.Same(Text, text);
+        }
+
+        [Fact]
+        public void ProjectState_WithChangedHostDocument_Loader_RetainsComputedState()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+
+            // Force init
+            GC.KeepAlive(original.ProjectEngine);
+            GC.KeepAlive(original.TagHelpers);
+
+            // Act
+            var state = original.WithChangedHostDocument(Documents[1], TextLoader);
+
+            // Assert
+            Assert.Same(original.ProjectEngine, state.ProjectEngine);
+            Assert.Same(original.TagHelpers, state.TagHelpers);
+
+            Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
+        }
+
+        [Fact]
+        public void ProjectState_WithChangedHostDocument_Snapshot_RetainsComputedState()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+
+            // Force init
+            GC.KeepAlive(original.ProjectEngine);
+            GC.KeepAlive(original.TagHelpers);
+
+            // Act
+            var state = original.WithChangedHostDocument(Documents[1], Text, VersionStamp.Create());
+
+            // Assert
+            Assert.Same(original.ProjectEngine, state.ProjectEngine);
+            Assert.Same(original.TagHelpers, state.TagHelpers);
+
+            Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
+        }
+
+        [Fact]
+        public void ProjectState_WithChangedHostDocument_Loader_NotFoundNoops()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+
+            // Act
+            var state = original.WithChangedHostDocument(Documents[0], TextLoader);
+
+            // Assert
+            Assert.Same(original, state);
+        }
+
+        [Fact]
+        public void ProjectState_WithChangedHostDocument_Snapshot_NotFoundNoops()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+
+            // Act
+            var state = original.WithChangedHostDocument(Documents[0], Text, VersionStamp.Create());
 
             // Assert
             Assert.Same(original, state);
@@ -179,9 +298,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_RemoveHostDocument_FromProjectWithDocuments()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Act
             var state = original.WithRemovedHostDocument(Documents[1]);
@@ -198,9 +317,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_RemoveHostDocument_RetainsComputedState()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -220,9 +339,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_RemoveHostDocument_NotFoundNoops()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Act
             var state = original.WithRemovedHostDocument(Documents[0]);
@@ -235,9 +354,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_WithHostProject_ConfigurationChange_UpdatesComputedState()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -261,9 +380,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_WithHostProject_NoConfigurationChange_Noops()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -280,9 +399,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_WithWorkspaceProject_Removed()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -306,9 +425,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_WithWorkspaceProject_Added()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, null)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, null)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);
@@ -332,9 +451,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_WithWorkspaceProject_Changed()
         {
             // Arrange
-            var original = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[2])
-                .WithAddedHostDocument(Documents[1]);
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
             GC.KeepAlive(original.ProjectEngine);

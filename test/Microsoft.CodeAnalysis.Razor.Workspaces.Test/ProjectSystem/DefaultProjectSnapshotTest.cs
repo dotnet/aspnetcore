@@ -1,13 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -76,10 +74,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectSnapshot_CachesDocumentSnapshots()
         {
             // Arrange
-            var state = new ProjectState(Workspace.Services, HostProject, WorkspaceProject)
-                .WithAddedHostDocument(Documents[0])
-                .WithAddedHostDocument(Documents[1])
-                .WithAddedHostDocument(Documents[2]);
+            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader);
             var snapshot = new DefaultProjectSnapshot(state);
 
             // Act
@@ -101,7 +99,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             try
             {
-                var state = new ProjectState(Workspace.Services, HostProject, WorkspaceProject);
+                var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject);
                 var snapshot = new DefaultProjectSnapshot(state);
 
                 // Act

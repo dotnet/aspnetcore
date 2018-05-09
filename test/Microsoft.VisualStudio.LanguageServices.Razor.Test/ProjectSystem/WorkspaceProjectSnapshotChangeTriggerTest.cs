@@ -3,12 +3,13 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class WorkspaceProjectSnapshotChangeTriggerTest
+    public class WorkspaceProjectSnapshotChangeTriggerTest : ForegroundDispatcherTestBase
     {
         public WorkspaceProjectSnapshotChangeTriggerTest()
         {
@@ -73,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private Workspace Workspace { get; }
 
-        [Theory]
+        [ForegroundTheory]
         [InlineData(WorkspaceChangeKind.SolutionAdded)]
         [InlineData(WorkspaceChangeKind.SolutionChanged)]
         [InlineData(WorkspaceChangeKind.SolutionCleared)]
@@ -99,7 +100,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
-        [Theory]
+        [ForegroundTheory]
         [InlineData(WorkspaceChangeKind.SolutionAdded)]
         [InlineData(WorkspaceChangeKind.SolutionChanged)]
         [InlineData(WorkspaceChangeKind.SolutionCleared)]
@@ -131,13 +132,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
-        [Theory]
+        [ForegroundTheory]
         [InlineData(WorkspaceChangeKind.ProjectChanged)]
         [InlineData(WorkspaceChangeKind.ProjectReloaded)]
-        public void WorkspaceChanged_ProjectChangeEvents_UpdatesProject(WorkspaceChangeKind kind)
+        public async Task WorkspaceChanged_ProjectChangeEvents_UpdatesProject_AfterDelay(WorkspaceChangeKind kind)
         {
             // Arrange
-            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
+            var trigger = new WorkspaceProjectSnapshotChangeTrigger()
+            {
+                ProjectChangeDelay = 50,
+            };
+
             var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
             projectManager.HostProjectAdded(HostProjectOne);
             projectManager.HostProjectAdded(HostProjectTwo);
@@ -153,6 +158,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
+            //
+            // The change hasn't come through yet.
+            Assert.Equal("One", projectManager.Projects.Single().WorkspaceProject.AssemblyName);
+
+            await trigger._deferredUpdates.Single().Value;
+
             Assert.Collection(
                 projectManager.Projects.OrderBy(p => p.WorkspaceProject.Name),
                 p =>
@@ -163,7 +174,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
-        [Fact]
+        [ForegroundFact]
         public void WorkspaceChanged_ProjectRemovedEvent_RemovesProject()
         {
             // Arrange
@@ -189,7 +200,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
-        [Fact]
+        [ForegroundFact]
         public void WorkspaceChanged_ProjectAddedEvent_AddsProject()
         {
             // Arrange

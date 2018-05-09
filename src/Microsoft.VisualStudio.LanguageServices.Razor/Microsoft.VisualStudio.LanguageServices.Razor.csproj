@@ -40,10 +40,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Xaml"/>
+    <Reference Include="System.Xaml" />
   </ItemGroup>
+  
+  <!-- Workaround for Microsoft.VisualStudio.SDK.EmbedInteropTypes not working correctly-->
+  <Target Name="_EmbeddedAssemblyWorkaround" DependsOnTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)'=='Microsoft.VisualStudio.Shell.Interop.11.0'">
+        <EmbedInteropTypes>false</EmbedInteropTypes>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
 
-    <!--
+  <!--
     The ProjectSystem.SDK tasks that handle XamlPropertyRule don't work on the dotnet core version
     of MSBuild. The workaround here is to only hardcode the generated code location such that it gets
     checked in. Then we don't need to generate it at build time.

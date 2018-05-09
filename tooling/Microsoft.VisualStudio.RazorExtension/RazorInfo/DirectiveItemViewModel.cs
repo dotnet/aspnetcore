@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
-    public class DirectiveDescriptorViewModel : NotifyPropertyChanged
+    public class DirectiveItemViewModel : NotifyPropertyChanged
     {
         private readonly DirectiveDescriptor _directive;
 
-        internal DirectiveDescriptorViewModel(DirectiveDescriptor directive)
+        internal DirectiveItemViewModel(DirectiveDescriptor directive)
         {
             _directive = directive;
 

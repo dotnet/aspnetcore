@@ -10,11 +10,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class DocumentGeneratedOutputTracker
     {
-        // Don't keep anything if the configuration has changed. It's OK if the
-        // workspace project has changes, we'll consider whether the tag helpers are
-        // difference before reusing a previous result.
-        private const ProjectDifference Mask = ProjectDifference.ConfigurationChanged;
-
         private readonly object _lock;
 
         private DocumentGeneratedOutputTracker _older;
@@ -30,6 +25,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         public bool IsResultAvailable => _task?.IsCompleted == true;
+
+        public DocumentGeneratedOutputTracker Older => _older;
 
         public Task<RazorCodeDocument> GetGeneratedOutputInitializationTask(ProjectSnapshot project, DocumentSnapshot document)
         {
@@ -57,18 +54,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return _task;
         }
 
-        public DocumentGeneratedOutputTracker ForkFor(DocumentState state, ProjectDifference difference)
+        public DocumentGeneratedOutputTracker Fork()
         {
-            if (state == null)
-            {
-                throw new ArgumentNullException(nameof(state));
-            }
-
-            if ((difference & Mask) != 0)
-            {
-                return null;
-            }
-
             return new DocumentGeneratedOutputTracker(this);
         }
 

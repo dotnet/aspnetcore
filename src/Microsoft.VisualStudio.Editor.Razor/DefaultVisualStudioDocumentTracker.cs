@@ -292,7 +292,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 switch (e.Kind)
                 {
-                    case ProjectChangeKind.DocumentsChanged:
+                    case ProjectChangeKind.DocumentAdded:
+                    case ProjectChangeKind.DocumentRemoved:
+                    case ProjectChangeKind.DocumentChanged:
 
                         // Nothing to do.
                         break;
@@ -309,11 +311,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         // Fall back to ephemeral project
                         _projectSnapshot = _projectManager.GetOrCreateProject(ProjectPath);
                         OnContextChanged(ContextChangeKind.ProjectChanged);
-                        break;
-
-                    case ProjectChangeKind.DocumentContentChanged:
-
-                        // Do nothing
                         break;
 
                     default:

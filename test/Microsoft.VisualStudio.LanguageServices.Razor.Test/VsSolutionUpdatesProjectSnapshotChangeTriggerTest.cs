@@ -92,8 +92,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var projectSnapshots = new[]
             {
-                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeProject, SomeWorkspaceProject)),
-                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, SomeWorkspaceProject)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
             };
 
             var called = false;
@@ -140,8 +140,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var projectSnapshots = new[]
             {
-                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeProject, null)),
-                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, null)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
             };
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
@@ -183,8 +183,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var projectSnapshots = new[]
             {
-                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeProject, SomeWorkspaceProject)),
-                new DefaultProjectSnapshot(new ProjectState(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, SomeWorkspaceProject)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
             };
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();

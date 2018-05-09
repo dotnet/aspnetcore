@@ -13,6 +13,7 @@
   d:DesignWidth="300"
   Name="RazorInfoToolWindow">
   <UserControl.Resources>
+    <local:NullToEnabledConverter x:Key="EnabledConverter"/>
     <Style
       x:Key="{x:Type Button}">
       <Setter
@@ -101,7 +102,7 @@
         <ComboBox
           Grid.Column="1"
           ItemsSource="{Binding Projects}"
-          SelectedValue="{Binding CurrentProject}">
+          SelectedValue="{Binding SelectedProject}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <StackPanel
@@ -123,10 +124,10 @@
         IsEnabled="False" />
       <Grid
         Grid.Row="2"
-        IsEnabled="{Binding CurrentProject.HasSnapshot}"
+        IsEnabled="{Binding ProjectProperties, Converter={StaticResource EnabledConverter}}"
         Height="150">
         <ListView
-          ItemsSource="{Binding CurrentProject.Snapshot.Properties}">
+          ItemsSource="{Binding ProjectProperties.Properties}">
           <ListView.View>
             <GridView
               AllowsColumnReorder="False">
@@ -166,7 +167,7 @@
         Grid.Row="3" />
       <Expander
         Grid.Row="4"
-        IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
+        IsEnabled="{Binding TagHelpers, Converter={StaticResource EnabledConverter}}">
         <Expander.Header>
           <!-- The complicated binding here makes the header stretch horizontally -->
           <Grid
@@ -185,12 +186,12 @@
               Width="Auto"
               Height="20"
               Margin="5"
-              Visibility="{Binding CurrentProjectInfo.TagHelperProgressVisibility, TargetNullValue=Visibility.Hidden}"
+              Visibility="{Binding TagHelpers.ProgressVisibility, TargetNullValue=Hidden, FallbackValue=Hidden}"
               IsIndeterminate="True" />
           </Grid>
         </Expander.Header>
         <ListView
-          ItemsSource="{Binding CurrentProjectInfo.TagHelpers}">
+          ItemsSource="{Binding TagHelpers.TagHelpers}">
           <ListView.View>
             <GridView
               AllowsColumnReorder="False">
@@ -245,13 +246,13 @@
         Grid.Row="5" />
       <Expander
         Grid.Row="6"
-        IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
+        IsEnabled="{Binding Directives, Converter={StaticResource EnabledConverter}}">
         <Expander.Header>
           <Label
             Content="Directives" />
         </Expander.Header>
         <ListView
-          ItemsSource="{Binding CurrentProjectInfo.Directives}">
+          ItemsSource="{Binding Directives.Directives}">
           <ListView.View>
             <GridView
               AllowsColumnReorder="False">
@@ -291,13 +292,13 @@
         Grid.Row="7" />
       <Expander
         Grid.Row="8"
-        IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
+        IsEnabled="{Binding Documents, Converter={StaticResource EnabledConverter}}">
         <Expander.Header>
           <Label
             Content="Documents" />
         </Expander.Header>
         <ListView
-          ItemsSource="{Binding CurrentProjectInfo.Documents}">
+          ItemsSource="{Binding Documents.Documents}">
           <ListView.View>
             <GridView
               AllowsColumnReorder="False">
@@ -307,12 +308,17 @@
                   Content="Status" />
                 <GridViewColumn.CellTemplate>
                   <DataTemplate>
-                    <Grid>
+                    <Grid
+                      HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
                       <ProgressBar
                         Height="15"
                         Width="40"
-                        IsIndeterminate="{Binding Path=CodeGenerationInProgress, Mode=OneWay}"
-                        Value="{Binding Path=CodeGenerationProgress, Mode=OneWay}" />
+                        IsIndeterminate="True"
+                        Visibility="{Binding Path=ProgressVisibility, FallbackValue=Hidden}" />
+                      <TextBlock
+                        TextWrapping="NoWrap"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding Path=StatusText, Mode=OneWay}" />
                     </Grid>
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>

@@ -40,11 +40,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 "/TestPath/SomePath/Test.csproj",
                 new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Blazor-0.1", Array.Empty<RazorExtension>()));
 
-            Snapshot_For_1_0 = new DefaultProjectSnapshot(new ProjectState(Workspace.Services, HostProject_For_1_0, WorkspaceProject));
-            Snapshot_For_1_1 = new DefaultProjectSnapshot(new ProjectState(Workspace.Services, HostProject_For_1_1, WorkspaceProject));
-            Snapshot_For_2_0 = new DefaultProjectSnapshot(new ProjectState(Workspace.Services, HostProject_For_2_0, WorkspaceProject));
-            Snapshot_For_2_1 = new DefaultProjectSnapshot(new ProjectState(Workspace.Services, HostProject_For_2_1, WorkspaceProject));
-            Snapshot_For_UnknownConfiguration = new DefaultProjectSnapshot(new ProjectState(Workspace.Services, HostProject_For_UnknownConfiguration, WorkspaceProject));
+            Snapshot_For_1_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_0, WorkspaceProject));
+            Snapshot_For_1_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_1, WorkspaceProject));
+            Snapshot_For_2_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_0, WorkspaceProject));
+            Snapshot_For_2_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_1, WorkspaceProject));
+            Snapshot_For_UnknownConfiguration = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_UnknownConfiguration, WorkspaceProject));
 
             CustomFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
             {
