@@ -17,7 +17,9 @@ namespace AspNetCoreSdkTests.Templates
                         Path.Combine("Razor", RazorPath, "_ViewImports.g.cshtml.cs"),
                     }.Select(p => Path.Combine(OutputPath, p))
                 },
-                { RuntimeIdentifier.Win_x64, () => Enumerable.Concat(_additionalObjFilesAfterBuild[RuntimeIdentifier.None](), new[]
+                { RuntimeIdentifier.Win_x64, () =>
+                    _additionalObjFilesAfterBuild[RuntimeIdentifier.None]()
+                    .Concat(new[]
                     {
                         Path.Combine("netcoreapp2.1", RuntimeIdentifier.Path, "host", $"{Name}.exe"),
                     })

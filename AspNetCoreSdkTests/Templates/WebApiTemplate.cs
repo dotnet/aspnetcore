@@ -11,10 +11,12 @@ namespace AspNetCoreSdkTests.Templates
 
         public override string RelativeUrl => "/api/values";
 
-        public override IEnumerable<string> ExpectedFilesAfterPublish => Enumerable.Concat(base.ExpectedFilesAfterPublish, new[]
-        {
-            "appsettings.Development.json",
-            "appsettings.json",
-        });
+        public override IEnumerable<string> ExpectedFilesAfterPublish =>
+            base.ExpectedFilesAfterPublish
+            .Concat(new[]
+            {
+                "appsettings.Development.json",
+                "appsettings.json",
+            });
     }
 }

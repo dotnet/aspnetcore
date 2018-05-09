@@ -27,7 +27,8 @@ namespace AspNetCoreSdkTests.Templates
             };
 
         public override IEnumerable<string> ExpectedObjFilesAfterBuild =>
-            Enumerable.Concat(base.ExpectedObjFilesAfterBuild, _additionalObjFilesAfterBuild[RuntimeIdentifier]());
+            base.ExpectedObjFilesAfterBuild
+            .Concat(_additionalObjFilesAfterBuild[RuntimeIdentifier]());
 
         private IDictionary<RuntimeIdentifier, Func<IEnumerable<string>>> _additionalBinFilesAfterBuild =>
             new Dictionary<RuntimeIdentifier, Func<IEnumerable<string>>>()
@@ -38,7 +39,9 @@ namespace AspNetCoreSdkTests.Templates
                         $"{Name}.runtimeconfig.json",
                     }.Select(p => Path.Combine(OutputPath, p))
                 },
-                { RuntimeIdentifier.Win_x64, () => Enumerable.Concat(_additionalBinFilesAfterBuild[RuntimeIdentifier.None](), new[] 
+                { RuntimeIdentifier.Win_x64, () => 
+                    _additionalBinFilesAfterBuild[RuntimeIdentifier.None]()
+                    .Concat(new[] 
                     {
                         $"{Name}.exe",
                         "hostfxr.dll",
@@ -48,7 +51,8 @@ namespace AspNetCoreSdkTests.Templates
             };
 
         public override IEnumerable<string> ExpectedBinFilesAfterBuild =>
-            Enumerable.Concat(base.ExpectedBinFilesAfterBuild, _additionalBinFilesAfterBuild[RuntimeIdentifier]());
+            base.ExpectedBinFilesAfterBuild
+            .Concat(_additionalBinFilesAfterBuild[RuntimeIdentifier]());
 
         private IDictionary<RuntimeIdentifier, Func<IEnumerable<string>>> _additionalFilesAfterPublish =>
             new Dictionary<RuntimeIdentifier, Func<IEnumerable<string>>>()
@@ -58,7 +62,9 @@ namespace AspNetCoreSdkTests.Templates
                         $"{Name}.runtimeconfig.json",
                     }
                 },
-                { RuntimeIdentifier.Win_x64, () => Enumerable.Concat(_additionalFilesAfterPublish[RuntimeIdentifier.None](), new[]
+                { RuntimeIdentifier.Win_x64, () =>
+                    _additionalFilesAfterPublish[RuntimeIdentifier.None]()
+                    .Concat(new[]
                     {
                         $"{Name}.exe",
                         "api-ms-win-core-console-l1-1-0.dll",
@@ -278,7 +284,8 @@ namespace AspNetCoreSdkTests.Templates
             };
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>
-            Enumerable.Concat(base.ExpectedFilesAfterPublish, _additionalFilesAfterPublish[RuntimeIdentifier]());
+            base.ExpectedFilesAfterPublish
+            .Concat(_additionalFilesAfterPublish[RuntimeIdentifier]());
     }
 }
 

@@ -256,7 +256,9 @@ namespace AspNetCoreSdkTests.Templates
         private IDictionary<RuntimeIdentifier, Func<IEnumerable<string>>> _additionalFilesAfterPublish =>
             new Dictionary<RuntimeIdentifier, Func<IEnumerable<string>>>()
             {
-                { RuntimeIdentifier.None, () => Enumerable.Concat(_commonAdditionalFilesAfterPublish, new[]
+                { RuntimeIdentifier.None, () => 
+                    _commonAdditionalFilesAfterPublish
+                    .Concat(new[]
                     {
                         Path.Combine("runtimes", "debian.8-x64", "native", "System.Security.Cryptography.Native.OpenSsl.so"),
                         Path.Combine("runtimes", "fedora.23-x64", "native", "System.Security.Cryptography.Native.OpenSsl.so"),
@@ -295,7 +297,9 @@ namespace AspNetCoreSdkTests.Templates
                         Path.Combine("runtimes", "win", "lib", "netstandard2.0", "System.Security.Cryptography.Pkcs.dll"),
                     })
                 },
-                { RuntimeIdentifier.Win_x64, () => Enumerable.Concat(_commonAdditionalFilesAfterPublish, new[]
+                { RuntimeIdentifier.Win_x64, () => 
+                    _commonAdditionalFilesAfterPublish
+                    .Concat(new[]
                     {
                         "System.Collections.dll",
                         "System.Console.dll",

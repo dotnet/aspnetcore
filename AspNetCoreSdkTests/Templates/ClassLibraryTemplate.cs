@@ -14,17 +14,19 @@ namespace AspNetCoreSdkTests.Templates
 
         public override TemplateType Type => TemplateType.ClassLibrary;
 
-        public override IEnumerable<string> ExpectedObjFilesAfterBuild => Enumerable.Concat(base.ExpectedObjFilesAfterBuild, new[]
-        {
-            $"{Name}.AssemblyInfo.cs",
-            $"{Name}.AssemblyInfoInputs.cache",
-            $"{Name}.assets.cache",
-            $"{Name}.csproj.CoreCompileInputs.cache",
-            $"{Name}.csproj.FileListAbsolute.txt",
-            $"{Name}.csprojAssemblyReference.cache",
-            $"{Name}.dll",
-            $"{Name}.pdb",
-        }.Select(p => Path.Combine(OutputPath, p)));
+        public override IEnumerable<string> ExpectedObjFilesAfterBuild => 
+            base.ExpectedObjFilesAfterBuild
+            .Concat(new[]
+            {
+                $"{Name}.AssemblyInfo.cs",
+                $"{Name}.AssemblyInfoInputs.cache",
+                $"{Name}.assets.cache",
+                $"{Name}.csproj.CoreCompileInputs.cache",
+                $"{Name}.csproj.FileListAbsolute.txt",
+                $"{Name}.csprojAssemblyReference.cache",
+                $"{Name}.dll",
+                $"{Name}.pdb",
+            }.Select(p => Path.Combine(OutputPath, p)));
 
         public override IEnumerable<string> ExpectedBinFilesAfterBuild => new[]
         {

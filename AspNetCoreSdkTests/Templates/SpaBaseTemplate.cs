@@ -8,9 +8,11 @@ namespace AspNetCoreSdkTests.Templates
     {
         protected override string RazorPath => "Pages";
 
-        public override IEnumerable<string> ExpectedObjFilesAfterBuild => Enumerable.Concat(base.ExpectedObjFilesAfterBuild, new[]
-        {
-            Path.Combine("Razor", RazorPath, "Error.g.cshtml.cs"),
-        }.Select(p => Path.Combine(OutputPath, p)));
+        public override IEnumerable<string> ExpectedObjFilesAfterBuild =>
+            base.ExpectedObjFilesAfterBuild
+            .Concat(new[]
+            {
+                Path.Combine("Razor", RazorPath, "Error.g.cshtml.cs"),
+            }.Select(p => Path.Combine(OutputPath, p)));
     }
 }

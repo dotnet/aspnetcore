@@ -13,12 +13,14 @@ namespace AspNetCoreSdkTests.Templates
 
         public override TemplateType Type => TemplateType.WebApplication;
 
-        public override IEnumerable<string> ExpectedObjFilesAfterBuild => Enumerable.Concat(base.ExpectedObjFilesAfterBuild, new[]
-        {
-            $"{Name}.RazorAssemblyInfo.cache",
-            $"{Name}.RazorAssemblyInfo.cs",
-            $"{Name}.RazorTargetAssemblyInfo.cache",
-        }.Select(p => Path.Combine(OutputPath, p)));
+        public override IEnumerable<string> ExpectedObjFilesAfterBuild => 
+            base.ExpectedObjFilesAfterBuild
+            .Concat(new[]
+            {
+                $"{Name}.RazorAssemblyInfo.cache",
+                $"{Name}.RazorAssemblyInfo.cs",
+                $"{Name}.RazorTargetAssemblyInfo.cache",
+            }.Select(p => Path.Combine(OutputPath, p)));
 
         private IDictionary<RuntimeIdentifier, Func<IEnumerable<string>>> _additionalFilesAfterPublish =>
             new Dictionary<RuntimeIdentifier, Func<IEnumerable<string>>>()
@@ -30,7 +32,9 @@ namespace AspNetCoreSdkTests.Templates
                         "web.config",
                     }
                 },
-                { RuntimeIdentifier.Win_x64, () => Enumerable.Concat(_additionalFilesAfterPublish[RuntimeIdentifier.None](), new[]
+                { RuntimeIdentifier.Win_x64, () =>
+                    _additionalFilesAfterPublish[RuntimeIdentifier.None]()
+                    .Concat(new[]
                     {
                         "Microsoft.AspNetCore.Antiforgery.dll",
                         "Microsoft.AspNetCore.Authentication.Abstractions.dll",
@@ -204,6 +208,7 @@ namespace AspNetCoreSdkTests.Templates
             };
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>
-            Enumerable.Concat(base.ExpectedFilesAfterPublish, _additionalFilesAfterPublish[RuntimeIdentifier]());
+            base.ExpectedFilesAfterPublish
+            .Concat(_additionalFilesAfterPublish[RuntimeIdentifier]());
     }
 }
