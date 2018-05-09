@@ -10,7 +10,7 @@ namespace AspNetCoreSdkTests.Templates
 
         public override string Name => "classlib";
 
-        public virtual string OutputPath { get; } = Path.Combine("Debug", "netstandard2.0");
+        public override string OutputPath => Path.Combine("Debug", "netstandard2.0", RuntimeIdentifier.Path);
 
         public override TemplateType Type => TemplateType.ClassLibrary;
 

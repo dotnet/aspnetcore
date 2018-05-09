@@ -21,11 +21,13 @@ namespace AspNetCoreSdkTests.Templates
             ServerCertificateCustomValidationCallback = (m, c, ch, p) => true
         });
 
-        private static ConcurrentDictionary<(Type, NuGetPackageSource), Template> _templates = new ConcurrentDictionary<(Type, NuGetPackageSource), Template>();
+        private static ConcurrentDictionary<(Type Type, NuGetPackageSource NuGetPackageSource, RuntimeIdentifier RuntimeIdentifier), Template> _templates =
+            new ConcurrentDictionary<(Type Type, NuGetPackageSource NuGetPackageSource, RuntimeIdentifier RuntimeIdentifier), Template>();
 
-        public static T GetInstance<T>(NuGetPackageSource nuGetPackageSource) where T : Template, new()
+        public static T GetInstance<T>(NuGetPackageSource nuGetPackageSource, RuntimeIdentifier runtimeIdentifier) where T : Template, new()
         {
-            return (T)_templates.GetOrAdd((typeof(T), nuGetPackageSource), (k) => new T() { NuGetPackageSource = nuGetPackageSource });
+            return (T)_templates.GetOrAdd((typeof(T), nuGetPackageSource, runtimeIdentifier),
+                (k) => new T() { NuGetPackageSource = nuGetPackageSource, RuntimeIdentifier = runtimeIdentifier });
         }
 
         private Lazy<IEnumerable<string>> _objFilesAfterRestore;
@@ -35,6 +37,7 @@ namespace AspNetCoreSdkTests.Templates
         private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)> _httpResponsesAfterExec;
 
         public NuGetPackageSource NuGetPackageSource { get; private set; }
+        public RuntimeIdentifier RuntimeIdentifier { get; private set; }
 
         protected Template()
         {
@@ -54,11 +57,12 @@ namespace AspNetCoreSdkTests.Templates
                 GetHttpResponsesAfterExec, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public override string ToString() => $"{Name},{NuGetPackageSource}";
+        public override string ToString() => $"{Name}, source: {NuGetPackageSource}, rid: {RuntimeIdentifier}";
 
-        private string TempDir => Path.Combine(AssemblySetUp.TempDir, Name, NuGetPackageSource.ToString());
+        private string TempDir => Path.Combine(AssemblySetUp.TempDir, Name, NuGetPackageSource.Name, RuntimeIdentifier.Name );
 
         public abstract string Name { get; }
+        public abstract string OutputPath { get; }
         public abstract TemplateType Type { get; }
         public virtual string RelativeUrl => string.Empty;
 
@@ -89,7 +93,7 @@ namespace AspNetCoreSdkTests.Templates
         {
             Directory.CreateDirectory(TempDir);
             DotNetUtil.New(Name, TempDir);
-            DotNetUtil.Restore(TempDir, NuGetPackageSource);
+            DotNetUtil.Restore(TempDir, NuGetPackageSource, RuntimeIdentifier);
             return IOUtil.GetFiles(Path.Combine(TempDir, "obj"));
         }
 
@@ -98,7 +102,7 @@ namespace AspNetCoreSdkTests.Templates
             // Build depends on Restore
             _ = ObjFilesAfterRestore;
 
-            DotNetUtil.Build(TempDir);
+            DotNetUtil.Build(TempDir, RuntimeIdentifier);
             return (IOUtil.GetFiles(Path.Combine(TempDir, "obj")), IOUtil.GetFiles(Path.Combine(TempDir, "bin")));
         }
 
@@ -107,7 +111,7 @@ namespace AspNetCoreSdkTests.Templates
             // Publish depends on Build
             _ = BinFilesAfterBuild;
 
-            DotNetUtil.Publish(TempDir);
+            DotNetUtil.Publish(TempDir, RuntimeIdentifier);
             return IOUtil.GetFiles(Path.Combine(TempDir, DotNetUtil.PublishOutput));
         }
 
@@ -116,7 +120,7 @@ namespace AspNetCoreSdkTests.Templates
             // Run depends on Build
             _ = BinFilesAfterBuild;
 
-            return GetHttpResponses(DotNetUtil.Run(TempDir));
+            return GetHttpResponses(DotNetUtil.Run(TempDir, RuntimeIdentifier));
         }
 
         private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponsesAfterExec()
@@ -124,7 +128,7 @@ namespace AspNetCoreSdkTests.Templates
             // Exec depends on Publish
             _ = FilesAfterPublish;
 
-            return GetHttpResponses(DotNetUtil.Exec(TempDir, Name));
+            return GetHttpResponses(DotNetUtil.Exec(TempDir, Name, RuntimeIdentifier));
         }
 
         private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponses(

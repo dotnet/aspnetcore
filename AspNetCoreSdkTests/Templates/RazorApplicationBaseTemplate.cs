@@ -1,34 +1,47 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace AspNetCoreSdkTests.Templates
 {
-    public abstract class RazorApplicationBaseTemplate : RazorBaseTemplate
+    public abstract class RazorApplicationBaseTemplate : WebTemplate
     {
         protected abstract string RazorPath { get; }
+    
+        private IDictionary<RuntimeIdentifier, Func<IEnumerable<string>>> _additionalObjFilesAfterBuild =>
+            new Dictionary<RuntimeIdentifier, Func<IEnumerable<string>>>()
+            {
+                { RuntimeIdentifier.None, () => new[]
+                    {
+                        Path.Combine("Razor", RazorPath, "_ViewImports.g.cshtml.cs"),
+                    }.Select(p => Path.Combine(OutputPath, p))
+                },
+                { RuntimeIdentifier.Win_x64, () => Enumerable.Concat(_additionalObjFilesAfterBuild[RuntimeIdentifier.None](), new[]
+                    {
+                        Path.Combine("netcoreapp2.1", RuntimeIdentifier.Path, "host", $"{Name}.exe"),
+                    })
+                }
+            };
 
-        public override string OutputPath { get; } = Path.Combine("Debug", "netcoreapp2.1");
+        public override IEnumerable<string> ExpectedObjFilesAfterBuild =>
+            base.ExpectedObjFilesAfterBuild
+            .Concat(RazorUtil.GetExpectedObjFilesAfterBuild(this))
+            .Concat(_additionalObjFilesAfterBuild[RuntimeIdentifier]())
+            // Some files are duplicated in WebTemplate and RazorUtil, since they are needed by RazorClassLibraryTemplate
+            .Distinct();
 
-        public override TemplateType Type => TemplateType.WebApplication;
+        public override IEnumerable<string> ExpectedBinFilesAfterBuild =>
+            base.ExpectedBinFilesAfterBuild
+            .Concat(RazorUtil.GetExpectedBinFilesAfterBuild(this));
 
-        public override IEnumerable<string> ExpectedObjFilesAfterBuild => Enumerable.Concat(base.ExpectedObjFilesAfterBuild, new[]
-         {
-            Path.Combine("Razor", RazorPath, "_ViewImports.g.cshtml.cs"),
-        }.Select(p => Path.Combine(OutputPath, p)));
-
-        public override IEnumerable<string> ExpectedBinFilesAfterBuild => Enumerable.Concat(base.ExpectedBinFilesAfterBuild, new[]
-        {
-            $"{Name}.runtimeconfig.dev.json",
-            $"{Name}.runtimeconfig.json",
-        }.Select(p => Path.Combine(OutputPath, p)));
-
-        public override IEnumerable<string> ExpectedFilesAfterPublish => Enumerable.Concat(base.ExpectedFilesAfterPublish, new[]
-        {
-            "appsettings.Development.json",
-            "appsettings.json",
-            $"{Name}.runtimeconfig.json",
-            "web.config",
-        });
+        public override IEnumerable<string> ExpectedFilesAfterPublish =>
+            base.ExpectedFilesAfterPublish
+            .Concat(RazorUtil.GetExpectedFilesAfterPublish(this))
+            .Concat(new[]
+            {
+                "appsettings.Development.json",
+                "appsettings.json",
+            });
     }
 }

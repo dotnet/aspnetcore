@@ -22,11 +22,13 @@ namespace AspNetCoreSdkTests.Util
 
         public static string PublishOutput => "pub";
 
-        private static IEnumerable<KeyValuePair<string, string>> GetEnvironment(string workingDirectory)
+        private static IEnumerable<KeyValuePair<string, string>> GetEnvironment(NuGetPackageSource nuGetPackageSource)
         {
-            // Set NUGET_PACKAGES to an empty folder to ensure all packages are loaded from either NuGetFallbackFolder or configured sources,
-            // and *not* loaded from the default per-user global-packages folder.
-            yield return new KeyValuePair<string, string>("NUGET_PACKAGES", Path.Combine(workingDirectory, ".nuget", "packages"));
+            // Set NUGET_PACKAGES to an initially-empty, distinct folder for each NuGetPackageSource.  This ensures packages are loaded
+            // from either NuGetFallbackFolder or configured sources, and *not* loaded from the default per-user global-packages folder.
+            // 
+            // [5/7/2018] NUGET_PACKAGES cannot be set to a folder under the application due to https://github.com/dotnet/cli/issues/9216.
+            yield return new KeyValuePair<string, string>("NUGET_PACKAGES", Path.Combine(AssemblySetUp.TempDir, nuGetPackageSource.Name));
         }
 
         public static string New(string template, string workingDirectory)
@@ -34,33 +36,44 @@ namespace AspNetCoreSdkTests.Util
             // Clear all packages sources by default.  May be overridden by NuGetPackageSource parameter.
             File.WriteAllText(Path.Combine(workingDirectory, "NuGet.config"), _clearPackageSourcesNuGetConfig);
 
-            return RunDotNet($"new {template} --name {template} --output . --no-restore", workingDirectory, GetEnvironment(workingDirectory));
+            return RunDotNet($"new {template} --name {template} --output . --no-restore", workingDirectory);
         }
 
-        public static string Restore(string workingDirectory, NuGetPackageSource packageSource)
+        public static string Restore(string workingDirectory, NuGetPackageSource packageSource, RuntimeIdentifier runtimeIdentifier)
         {
-            return RunDotNet($"restore --no-cache {packageSource.SourceArgument}", workingDirectory, GetEnvironment(workingDirectory));
+            return RunDotNet($"restore --no-cache {packageSource.SourceArgument} {runtimeIdentifier.RuntimeArgument}",
+                workingDirectory, GetEnvironment(packageSource));
         }
 
-        public static string Build(string workingDirectory)
+        public static string Build(string workingDirectory, RuntimeIdentifier runtimeIdentifier)
         {
-            return RunDotNet("build --no-restore", workingDirectory, GetEnvironment(workingDirectory));
+            return RunDotNet($"build --no-restore {runtimeIdentifier.RuntimeArgument}", workingDirectory);
         }
 
-        public static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Run(string workingDirectory)
+        public static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Run(
+            string workingDirectory, RuntimeIdentifier runtimeIdentifier)
         {
-            return StartDotNet($"run --no-build {_urls}", workingDirectory, GetEnvironment(workingDirectory));
+            return StartDotNet($"run --no-build {_urls} {runtimeIdentifier.RuntimeArgument}", workingDirectory);
         }
 
-        internal static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Exec(string workingDirectory, string name)
+        public static string Publish(string workingDirectory, RuntimeIdentifier runtimeIdentifier)
         {
-            var path = Path.Combine(PublishOutput, $"{name}.dll");
-            return StartDotNet($"exec {path} {_urls}", workingDirectory, GetEnvironment(workingDirectory));
+            return RunDotNet($"publish --no-build -o {PublishOutput} {runtimeIdentifier.RuntimeArgument}", workingDirectory);
         }
 
-        public static string Publish(string workingDirectory)
+        internal static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Exec(
+            string workingDirectory, string name, RuntimeIdentifier runtimeIdentifier)
         {
-            return RunDotNet($"publish --no-build -o {PublishOutput}", workingDirectory, GetEnvironment(workingDirectory));
+            if (runtimeIdentifier == RuntimeIdentifier.None)
+            {
+                var path = Path.Combine(PublishOutput, $"{name}.dll");
+                return StartDotNet($"exec {path} {_urls}", workingDirectory);
+            }
+            else
+            {
+                var path = Path.Combine(workingDirectory, PublishOutput, $"{name}.exe");
+                return StartProcess(path, _urls, workingDirectory);
+            }
         }
 
         private static string RunDotNet(string arguments, string workingDirectory,
