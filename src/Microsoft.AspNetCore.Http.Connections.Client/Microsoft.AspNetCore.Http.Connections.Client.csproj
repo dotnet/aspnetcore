@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Client for ASP.NET Core Connection Handlers</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

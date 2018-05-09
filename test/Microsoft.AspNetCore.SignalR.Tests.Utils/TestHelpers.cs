@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public static bool IsWebSocketsSupported()
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
             // .NET Core 2.1 and greater has sockets
             return true;
 #else

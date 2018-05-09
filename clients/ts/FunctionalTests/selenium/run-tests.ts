@@ -100,7 +100,7 @@ if (chromePath) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp2.1", "FunctionalTests.dll");
+        const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp2.2", "FunctionalTests.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         const dotnet = spawn("dotnet", [serverPath], {
