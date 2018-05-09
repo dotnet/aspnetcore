@@ -9,6 +9,9 @@
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore.App</Description>
     <EnableApiCheck>false</EnableApiCheck>
+
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup>
