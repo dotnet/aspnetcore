@@ -23,7 +23,14 @@ namespace AspNetCoreSdkTests.Templates
                     {
                         Path.Combine("netcoreapp2.1", RuntimeIdentifier.Path, "host", $"{Name}.exe"),
                     })
-                }
+                },
+                { RuntimeIdentifier.Linux_x64, () =>
+                    _additionalObjFilesAfterBuild[RuntimeIdentifier.None]()
+                    .Concat(new[]
+                    {
+                        Path.Combine("netcoreapp2.1", RuntimeIdentifier.Path, "host", $"{Name}"),
+                    })
+                },
             };
 
         public override IEnumerable<string> ExpectedObjFilesAfterBuild =>

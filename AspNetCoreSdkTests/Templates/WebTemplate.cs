@@ -33,6 +33,13 @@ namespace AspNetCoreSdkTests.Templates
                     }
                 },
                 { RuntimeIdentifier.Win_x64, () =>
+                    _additionalFilesAfterPublish[RuntimeIdentifier.Linux_x64]()
+                    .Concat(new[]
+                    {
+                        "sni.dll",
+                    })
+                },
+                { RuntimeIdentifier.Linux_x64, () =>
                     _additionalFilesAfterPublish[RuntimeIdentifier.None]()
                     .Concat(new[]
                     {
@@ -129,7 +136,6 @@ namespace AspNetCoreSdkTests.Templates
                         "Microsoft.CodeAnalysis.CSharp.dll",
                         "Microsoft.CodeAnalysis.dll",
                         "Microsoft.CodeAnalysis.Razor.dll",
-                        "System.Data.SqlClient.dll",
                         "Microsoft.DotNet.PlatformAbstractions.dll",
                         "Microsoft.EntityFrameworkCore.Abstractions.dll",
                         "Microsoft.EntityFrameworkCore.Design.dll",
@@ -190,7 +196,7 @@ namespace AspNetCoreSdkTests.Templates
                         "Newtonsoft.Json.Bson.dll",
                         "Newtonsoft.Json.dll",
                         "Remotion.Linq.dll",
-                        "sni.dll",
+                        "System.Data.SqlClient.dll",
                         "System.IdentityModel.Tokens.Jwt.dll",
                         "System.Interactive.Async.dll",
                         "System.IO.Pipelines.dll",
@@ -204,7 +210,7 @@ namespace AspNetCoreSdkTests.Templates
                         "System.Text.Encodings.Web.dll",
                         "System.Threading.Channels.dll",
                     })
-                }
+                },
             };
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>

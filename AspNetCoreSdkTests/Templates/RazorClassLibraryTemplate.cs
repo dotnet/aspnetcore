@@ -143,7 +143,7 @@ namespace AspNetCoreSdkTests.Templates
                 Path.Combine("refs", "System.Xml.XPath.XDocument.dll"),
             }.Select(p => Path.Combine(OutputPath, p)));
 
-        private IEnumerable<string> _commonAdditionalFilesAfterPublish = new[]
+        private IEnumerable<string> _additionalFilesAfterPublishCommon = new[]
         {
             "Microsoft.AspNetCore.Antiforgery.dll",
             "Microsoft.AspNetCore.Authentication.Abstractions.dll",
@@ -253,11 +253,43 @@ namespace AspNetCoreSdkTests.Templates
             "System.Xml.XPath.XDocument.dll",
         };
 
+        private IEnumerable<string> _additionalFilesAfterPublishSelfContained = new[]
+        {
+            "System.Collections.dll",
+            "System.Console.dll",
+            "System.Diagnostics.Debug.dll",
+            "System.Diagnostics.FileVersionInfo.dll",
+            "System.Diagnostics.Tools.dll",
+            "System.Diagnostics.Tracing.dll",
+            "System.Globalization.Calendars.dll",
+            "System.Globalization.dll",
+            "System.IO.Compression.dll",
+            "System.IO.dll",
+            "System.IO.FileSystem.dll",
+            "System.Reflection.dll",
+            "System.Reflection.Extensions.dll",
+            "System.Reflection.Primitives.dll",
+            "System.Resources.ResourceManager.dll",
+            "System.Runtime.dll",
+            "System.Runtime.Extensions.dll",
+            "System.Runtime.Handles.dll",
+            "System.Runtime.InteropServices.dll",
+            "System.Runtime.InteropServices.RuntimeInformation.dll",
+            "System.Security.Cryptography.Algorithms.dll",
+            "System.Security.Cryptography.Csp.dll",
+            "System.Security.Cryptography.Encoding.dll",
+            "System.Security.Cryptography.X509Certificates.dll",
+            "System.Text.Encoding.CodePages.dll",
+            "System.Text.Encoding.dll",
+            "System.Text.Encoding.Extensions.dll",
+            "System.Threading.Tasks.dll",
+        };
+
         private IDictionary<RuntimeIdentifier, Func<IEnumerable<string>>> _additionalFilesAfterPublish =>
             new Dictionary<RuntimeIdentifier, Func<IEnumerable<string>>>()
             {
                 { RuntimeIdentifier.None, () => 
-                    _commonAdditionalFilesAfterPublish
+                    _additionalFilesAfterPublishCommon
                     .Concat(new[]
                     {
                         Path.Combine("runtimes", "debian.8-x64", "native", "System.Security.Cryptography.Native.OpenSsl.so"),
@@ -298,40 +330,21 @@ namespace AspNetCoreSdkTests.Templates
                     })
                 },
                 { RuntimeIdentifier.Win_x64, () => 
-                    _commonAdditionalFilesAfterPublish
+                    _additionalFilesAfterPublishCommon
+                    .Concat(_additionalFilesAfterPublishSelfContained)
                     .Concat(new[]
                     {
-                        "System.Collections.dll",
-                        "System.Console.dll",
-                        "System.Diagnostics.Debug.dll",
-                        "System.Diagnostics.FileVersionInfo.dll",
-                        "System.Diagnostics.Tools.dll",
-                        "System.Diagnostics.Tracing.dll",
-                        "System.Globalization.Calendars.dll",
-                        "System.Globalization.dll",
-                        "System.IO.Compression.dll",
-                        "System.IO.dll",
-                        "System.IO.FileSystem.dll",
-                        "System.Reflection.dll",
-                        "System.Reflection.Extensions.dll",
-                        "System.Reflection.Primitives.dll",
-                        "System.Resources.ResourceManager.dll",
-                        "System.Runtime.dll",
-                        "System.Runtime.Extensions.dll",
-                        "System.Runtime.Handles.dll",
-                        "System.Runtime.InteropServices.dll",
-                        "System.Runtime.InteropServices.RuntimeInformation.dll",
-                        "System.Security.Cryptography.Algorithms.dll",
-                        "System.Security.Cryptography.Csp.dll",
-                        "System.Security.Cryptography.Encoding.dll",
-                        "System.Security.Cryptography.X509Certificates.dll",
-                        "System.Text.Encoding.CodePages.dll",
-                        "System.Text.Encoding.dll",
-                        "System.Text.Encoding.Extensions.dll",
                         "System.Threading.Overlapped.dll",
-                        "System.Threading.Tasks.dll",
                     })
-                }
+                },
+                { RuntimeIdentifier.Linux_x64, () =>
+                    _additionalFilesAfterPublishCommon
+                    .Concat(_additionalFilesAfterPublishSelfContained)
+                    .Concat(new[]
+                    {
+                        "System.Private.Uri.dll",
+                    })
+                },
             };
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>
