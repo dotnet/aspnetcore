@@ -171,7 +171,16 @@ function CommitUpdatedVersions(
 
         $subject = "Updating external dependencies"
 
-        Invoke-Block { & git commit -m $subject } | Out-Null
+        $gitConfigArgs = @()
+        if ($env:GITHUB_USER) {
+            $gitConfigArgs += '-c',"user.name=$env:GITHUB_USER"
+        }
+
+        if ($env:GITHUB_EMAIL) {
+            $gitConfigArgs += '-c',"user.email=$env:GITHUB_EMAIL"
+        }
+
+        Invoke-Block { & git @gitConfigArgs commit -m $subject } | Out-Null
 
         $body = "$subject`n`n"
 
