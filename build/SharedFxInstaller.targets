@@ -148,8 +148,8 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
 
     <ItemGroup>
-      <RpmNonUpgradeableSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)" Version="$(MicrosoftNETCoreApp21PackageVersion)" />
-      <RpmSharedFxDependencies Include="$(DotnetRuntimeUpgradeableInstallerPrefix)" Version="$(MicrosoftNETCoreApp21InstallerVersion)" />
+      <RpmNonUpgradeableSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)" Version="$(MicrosoftNETCoreApp22PackageVersion)" />
+      <RpmSharedFxDependencies Include="$(DotnetRuntimeUpgradeableInstallerPrefix)" Version="$(MicrosoftNETCoreApp22InstallerVersion)" />
       <RpmRHSharedFxDirectories Include="$(RHInstallRoot)/shared" />
       <RpmGenericSharedFxDirectories Include="$(InstallRoot)/shared" />
     </ItemGroup>
@@ -259,14 +259,14 @@
 
   <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
     <PropertyGroup>
-      <NETCoreApp21DebVersion>$(MicrosoftNETCoreApp21PackageVersion)</NETCoreApp21DebVersion>
+      <DotnetCoreDebianPackageVersion>$(MicrosoftNETCoreApp22PackageVersion)</DotnetCoreDebianPackageVersion>
       <!-- Needed some creativity to convert the PackageVersion M.N.P-Build to the installer version M.N.P~Build, The conditional handles stabilized builds -->
-      <NETCoreApp21DebVersion Condition="$(NETCoreApp21DebVersion.Contains('-'))">$(NETCoreApp21DebVersion.Substring(0, $(NETCoreApp21DebVersion.IndexOf('-'))))~$(NETCoreApp21DebVersion.Substring($([MSBuild]::Add($(NETCoreApp21DebVersion.IndexOf('-')), 1))))</NETCoreApp21DebVersion>
+      <DotnetCoreDebianPackageVersion Condition="$(DotnetCoreDebianPackageVersion.Contains('-'))">$(DotnetCoreDebianPackageVersion.Substring(0, $(DotnetCoreDebianPackageVersion.IndexOf('-'))))~$(DotnetCoreDebianPackageVersion.Substring($([MSBuild]::Add($(DotnetCoreDebianPackageVersion.IndexOf('-')), 1))))</DotnetCoreDebianPackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
       <_DebNonUpgradeableSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)"/>
-      <_DebSharedFxDependencies Include="$(DotnetRuntimeUpgradeableInstallerPrefix)" Version="$(NETCoreApp21DebVersion)"/>
+      <_DebSharedFxDependencies Include="$(DotnetRuntimeUpgradeableInstallerPrefix)" Version="$(DotnetCoreDebianPackageVersion)"/>
     </ItemGroup>
 
     <PropertyGroup>

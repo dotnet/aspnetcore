@@ -5,7 +5,7 @@
   <PropertyGroup>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore.App</Description>
     <EnableApiCheck>false</EnableApiCheck>

@@ -23,6 +23,7 @@
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
     <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
     <ExeExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</ExeExtension>
+    <SharedFrameworkTargetFramework>netcoreapp2.2</SharedFrameworkTargetFramework>
 
     <!-- installers -->
     <SharedFxInstallerName>aspnetcore-runtime</SharedFxInstallerName>
@@ -38,11 +39,11 @@
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
 
     <DotnetRuntimePackageName>dotnet-runtime</DotnetRuntimePackageName>
-    <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21PackageVersion)</DotnetRuntimeInstallerPrefix>
-    <MicrosoftNETCoreApp21IdVersion>2.1</MicrosoftNETCoreApp21IdVersion>
-    <MicrosoftNETCoreApp21InstallerVersion>$(MicrosoftNETCoreApp21PackageVersion.Split('-')[0])</MicrosoftNETCoreApp21InstallerVersion>
-    <DotnetRuntimeUpgradeableInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21IdVersion)</DotnetRuntimeUpgradeableInstallerPrefix>
-    <RuntimeArchiveLinkPrefix>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerPrefix)</RuntimeArchiveLinkPrefix>
+    <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp22PackageVersion)</DotnetRuntimeInstallerPrefix>
+    <MicrosoftNETCoreApp22IdVersion>2.2</MicrosoftNETCoreApp22IdVersion>
+    <MicrosoftNETCoreApp22InstallerVersion>$(MicrosoftNETCoreApp22PackageVersion.Split('-')[0])</MicrosoftNETCoreApp22InstallerVersion>
+    <DotnetRuntimeUpgradeableInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp22IdVersion)</DotnetRuntimeUpgradeableInstallerPrefix>
+    <RuntimeArchiveLinkPrefix>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp22PackageVersion)/$(DotnetRuntimeInstallerPrefix)</RuntimeArchiveLinkPrefix>
 
     <SharedFxIntermediateArchiveFilePrefix>$(_SharedFxSourceDir)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)</SharedFxIntermediateArchiveFilePrefix>
 

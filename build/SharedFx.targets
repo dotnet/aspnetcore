@@ -47,7 +47,7 @@
       <CommonProps>$(CommonProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonProps>
       <CommonProps>$(CommonProps);DotNetBuildOffline=true</CommonProps>
       <CommonProps>$(CommonProps);AspNetUniverseBuildOffline=true</CommonProps>
-      <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</CommonProps>
+      <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion)</CommonProps>
       <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
     </PropertyGroup>
 
@@ -173,10 +173,10 @@
   <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
     <PropertyGroup>
       <AppSharedFxProps>SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
-      <AppSharedFxProps>$(AppSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion)</AppSharedFxProps>
       <AppSharedFxProps>$(AppSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.App</AppSharedFxProps>
       <AllSharedFxProps>SharedFxWorkDirectory=$(AllSharedFxWorkDirectory)</AllSharedFxProps>
-      <AllSharedFxProps>$(AllSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp22PackageVersion)</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.All</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxDep=Microsoft.AspNetCore.App</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxDepVersion=$(PackageVersion)</AllSharedFxProps>
@@ -456,41 +456,41 @@
       Condition="Exists('$(_SymbolsSourceDir)%(AllPortablePDBsToPublish.SymbolsPackageFilename)')" />
     <Copy
       SourceFiles="$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)%(AppPortablePDBsToPublish.SymbolsRecursivePath)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)\%(AppPortablePDBsToPublish.SymbolsRecursivePath)')" />
     <Copy
       SourceFiles="$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)%(AllPortablePDBsToPublish.SymbolsRecursivePath)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)\%(AllPortablePDBsToPublish.SymbolsRecursivePath)')" />
 
     <!-- Copy over DLLs and PDBs -->
     <Copy
       SourceFiles="%(AppPortablePDBsToPublish.PortablePDB)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('%(AppPortablePDBsToPublish.PortablePDB)')" />
     <Copy
       SourceFiles="%(AllPortablePDBsToPublish.PortablePDB)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True"
       Condition="Exists('%(AllPortablePDBsToPublish.PortablePDB)')" />
     <Copy
       SourceFiles="@(AppCrossGenSymbols)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
     <Copy
       SourceFiles="@(AllCrossGenSymbols)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
     <Copy
       SourceFiles="$(AppSharedFxCrossgenDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
     <Copy
       SourceFiles="$(AllSharedFxCrossgenDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
       OverwriteReadOnlyFiles="True" />
 
     <!-- Create symbols nupkg -->
