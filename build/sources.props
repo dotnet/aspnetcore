@@ -21,7 +21,6 @@
       https://vside.myget.org/F/vssdk/api/v3/index.json;
       https://vside.myget.org/F/vsmac/api/v3/index.json;
       https://www.myget.org/F/xunit/api/v3/index.json;
-      https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
 </Project>
