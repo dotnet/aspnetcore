@@ -2184,6 +2184,38 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task ServerSendsCloseWithErrorWhenConnectionClosedWithPartialMessage()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR(options => options.EnableDetailedErrors = true);
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<SimpleHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                await client.Connection.Application.Output.WriteAsync(Encoding.UTF8.GetBytes(new[] { '{' })).OrTimeout();
+
+                // Close connection
+                client.Connection.Application.Output.Complete();
+
+                // Ignore message from OnConnectedAsync
+                await client.ReadAsync().OrTimeout();
+
+                var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().OrTimeout());
+
+                Assert.Equal("Connection closed with an error. InvalidDataException: Connection terminated while reading a message.", closeMessage.Error);
+
+                // Shut down
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;
