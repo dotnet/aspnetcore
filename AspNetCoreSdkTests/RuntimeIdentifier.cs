@@ -22,6 +22,12 @@ namespace AspNetCoreSdkTests
             OSPlatforms = new[] { OSPlatform.Linux, },
         };
 
+        public static RuntimeIdentifier OSX_x64 = new RuntimeIdentifier()
+        {
+            Name = "osx-x64",
+            OSPlatforms = new[] { OSPlatform.OSX, },
+        };
+
         private RuntimeIdentifier() { }
 
         public string Name { get; private set; }

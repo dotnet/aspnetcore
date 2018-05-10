@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AspNetCoreSdkTests.Templates
 {
@@ -29,6 +30,7 @@ namespace AspNetCoreSdkTests.Templates
                         Path.Combine("netcoreapp2.1", RuntimeIdentifier.Path, "host", $"{Name}"),
                     }
                 },
+                { RuntimeIdentifier.OSX_x64, () => _additionalObjFilesAfterBuild[RuntimeIdentifier.Linux_x64]() },
             };
 
         public override IEnumerable<string> ExpectedObjFilesAfterBuild =>
@@ -61,6 +63,10 @@ namespace AspNetCoreSdkTests.Templates
                         "libhostfxr.so",
                         "libhostpolicy.so",
                     }.Select(p => Path.Combine(OutputPath, p)))
+                },
+                { RuntimeIdentifier.OSX_x64, () =>
+                    _additionalBinFilesAfterBuild[RuntimeIdentifier.Linux_x64]()
+                    .Select(f => Regex.Replace(f, ".so$", ".dylib"))
                 },
             };
 
@@ -334,6 +340,18 @@ namespace AspNetCoreSdkTests.Templates
                         "System.Security.Cryptography.Native.OpenSsl.so",
                     })
                 },
+                { RuntimeIdentifier.OSX_x64, () =>
+                    _additionalFilesAfterPublish[RuntimeIdentifier.Linux_x64]()
+                    .Where(f => f != "createdump")
+                    .Where(f => f != "libcoreclrtraceptprovider.so")
+                    .Where(f => f != "libsosplugin.so")
+                    .Select(f => Regex.Replace(f, ".so$", ".dylib"))
+                    .Concat(new[]
+                    {
+                        "System.Security.Cryptography.Native.Apple.a",
+                        "System.Security.Cryptography.Native.Apple.dylib",
+                    })
+                }
             };
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>

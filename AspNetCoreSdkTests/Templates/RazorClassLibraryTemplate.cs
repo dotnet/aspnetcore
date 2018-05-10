@@ -345,6 +345,7 @@ namespace AspNetCoreSdkTests.Templates
                         "System.Private.Uri.dll",
                     })
                 },
+                { RuntimeIdentifier.OSX_x64, () => _additionalFilesAfterPublish[RuntimeIdentifier.Linux_x64]() },
             };
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>
