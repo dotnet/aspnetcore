@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _connectionDisposed =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionDisposed"), "Connection Id {TransportConnectionId} was disposed.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionDisposed"), "Connection {TransportConnectionId} was disposed.");
 
             private static readonly Action<ILogger, string, string, Exception> _connectionAlreadyActive =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(2, "ConnectionAlreadyActive"), "Connection Id {TransportConnectionId} is already active via {RequestId}.");
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(2, "ConnectionAlreadyActive"), "Connection {TransportConnectionId} is already active via {RequestId}.");
 
             private static readonly Action<ILogger, string, string, Exception> _pollCanceled =
                 LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(3, "PollCanceled"), "Previous poll canceled for {TransportConnectionId} on {RequestId}.");
@@ -45,6 +45,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             private static readonly Action<ILogger, Exception> _terminatingConnection =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(12, "TerminatingConection"), "Terminating Long Polling connection due to a DELETE request.");
+
+            private static readonly Action<ILogger, string, Exception> _connectionDisposedWhileWriteInProgress =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(13, "ConnectionDisposedWhileWriteInProgress"), "Connection {TransportConnectionId} was disposed while a write was in progress.");
 
             public static void ConnectionDisposed(ILogger logger, string connectionId)
             {
@@ -104,6 +107,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             public static void TerminatingConection(ILogger logger)
             {
                 _terminatingConnection(logger, null);
+            }
+
+            public static void ConnectionDisposedWhileWriteInProgress(ILogger logger, string connectionId, Exception ex)
+            {
+                _connectionDisposedWhileWriteInProgress(logger, connectionId, ex);
             }
         }
     }

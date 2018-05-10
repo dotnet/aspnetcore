@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public async Task DisposeAsync(bool closeGracefully = false)
         {
-            var disposeTask = Task.CompletedTask;
+            Task disposeTask;
 
             await StateLock.WaitAsync();
             try
@@ -266,6 +266,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 else
                 {
                     Log.ShuttingDownTransportAndApplication(_logger, TransportType);
+
+                    // Cancel any pending flushes from back pressure
+                    Application?.Output.CancelPendingFlush();
 
                     // Shutdown both sides and wait for nothing
                     Transport?.Output.Complete(applicationTask.Exception?.InnerException);

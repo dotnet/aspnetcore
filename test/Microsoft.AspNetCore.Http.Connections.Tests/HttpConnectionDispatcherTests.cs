@@ -1797,6 +1797,134 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        private class ControllableMemoryStream : MemoryStream
+        {
+            private readonly SyncPoint _syncPoint;
+
+            public ControllableMemoryStream(SyncPoint syncPoint)
+            {
+                _syncPoint = syncPoint;
+            }
+
+            public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+            {
+                await _syncPoint.WaitToContinue();
+
+                await base.CopyToAsync(destination, bufferSize, cancellationToken);
+            }
+        }
+
+        [Fact]
+        public async Task WriteThatIsDisposedBeforeCompleteReturns404()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
+                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                SyncPoint streamCopySyncPoint = new SyncPoint();
+
+                using (var responseBody = new MemoryStream())
+                using (var requestBody = new ControllableMemoryStream(streamCopySyncPoint))
+                {
+                    var context = new DefaultHttpContext();
+                    context.Request.Body = requestBody;
+                    context.Response.Body = responseBody;
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = connection.ConnectionId;
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
+                    var buffer = Encoding.UTF8.GetBytes("Hello, world");
+                    requestBody.Write(buffer, 0, buffer.Length);
+                    requestBody.Seek(0, SeekOrigin.Begin);
+
+                    // Write
+                    var sendTask = dispatcher.ExecuteAsync(context, options, app);
+
+                    // Wait on the sync point inside ApplicationStream.CopyToAsync
+                    await streamCopySyncPoint.WaitForSyncPoint();
+
+                    // Start disposing. This will close the output and cause the write to error
+                    var disposeTask = connection.DisposeAsync().OrTimeout();
+
+                    // Continue writing on a completed writer
+                    streamCopySyncPoint.Continue();
+
+                    await sendTask.OrTimeout();
+                    await disposeTask.OrTimeout();
+
+                    // Ensure response status is correctly set
+                    Assert.Equal(404, context.Response.StatusCode);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanDisposeWhileWriteLockIsBlockedOnBackpressureAndResponseReturns404()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
+                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                using (var responseBody = new MemoryStream())
+                using (var requestBody = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Request.Body = requestBody;
+                    context.Response.Body = responseBody;
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = connection.ConnectionId;
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
+                    var buffer = Encoding.UTF8.GetBytes("Hello, world");
+                    requestBody.Write(buffer, 0, buffer.Length);
+                    requestBody.Seek(0, SeekOrigin.Begin);
+
+                    // Write some data to the pipe to fill it up and make the next write wait
+                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+
+                    // Write. This will take the WriteLock and block because of back pressure
+                    var sendTask = dispatcher.ExecuteAsync(context, options, app);
+
+                    // Start disposing. This will take the StateLock and attempt to take the WriteLock
+                    // Dispose will cancel pending flush and should unblock WriteLock
+                    await connection.DisposeAsync().OrTimeout();
+
+                    // Sends were unblocked
+                    await sendTask.OrTimeout();
+
+                    Assert.Equal(404, context.Response.StatusCode);
+                }
+            }
+        }
+
         [Fact]
         public async Task LongPollingCanPollIfWritePipeHasBackpressure()
         {
