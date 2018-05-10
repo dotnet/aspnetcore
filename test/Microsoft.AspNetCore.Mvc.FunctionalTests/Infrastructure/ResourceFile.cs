@@ -7,6 +7,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -190,7 +191,8 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 // The build system compiles every file under the resources folder as a resource available at runtime
                 // with the same name as the file name. Need to update this file on disc.
-                var projectPath = SolutionPathUtility.GetProjectPath("test", assembly);
+                var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Mvc");
+                var projectPath = Path.Combine(solutionPath, "test", assembly.GetName().Name);
                 var fullPath = Path.Combine(projectPath, resourceName);
                 WriteFile(fullPath, content);
             }

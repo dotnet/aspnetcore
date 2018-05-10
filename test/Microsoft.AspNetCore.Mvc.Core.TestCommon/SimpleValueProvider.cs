@@ -37,8 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         public ValueProviderResult GetValue(string key)
         {
-            object rawValue;
-            if (TryGetValue(key, out rawValue))
+            if (TryGetValue(key, out var rawValue))
             {
                 if (rawValue != null && rawValue.GetType().IsArray)
                 {

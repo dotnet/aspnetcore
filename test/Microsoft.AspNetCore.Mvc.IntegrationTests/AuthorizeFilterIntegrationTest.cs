@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             serviceCollection.AddAuthorization();
             serviceCollection.AddMvc();
             serviceCollection
-                .AddTransient<ILoggerFactory, LoggerFactory>()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>()
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             return serviceCollection.BuildServiceProvider();

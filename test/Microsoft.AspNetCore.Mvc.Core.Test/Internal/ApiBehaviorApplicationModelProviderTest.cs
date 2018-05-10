@@ -668,13 +668,13 @@ Environment.NewLine + "int b";
 
         [ApiController]
         [Route("TestApi")]
-        private class TestApiController : Controller
+        private class TestApiController : ControllerBase
         {
             [HttpGet]
             public IActionResult TestAction() => null;
         }
 
-        private class SimpleController : Controller
+        private class SimpleController : ControllerBase
         {
             public IActionResult ActionWithoutFilter() => null;
 

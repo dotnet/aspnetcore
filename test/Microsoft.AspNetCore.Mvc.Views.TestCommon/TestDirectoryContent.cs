@@ -5,9 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Mvc.TestCommon
+namespace Microsoft.Extensions.FileProviders
 {
     public class TestDirectoryContent : IDirectoryContents, IFileInfo
     {

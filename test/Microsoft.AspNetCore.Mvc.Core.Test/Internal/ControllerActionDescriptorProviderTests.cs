@@ -2024,7 +2024,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class UserController : Controller
+        private class UserController : ControllerBase
         {
             public string GetUser(int id)
             {

@@ -1315,12 +1315,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             {
                 using (new CultureReplacer(string.Empty, string.Empty))
                 {
-                    var hashcode = HashCodeCombiner.Start();
-
-                    hashcode.Add(obj.Key.Name);
-                    hashcode.Add(obj.Key.Group);
-
-                    return hashcode.CombinedHash;
+                    return obj.Key.GetHashCode();
                 }
             }
         }

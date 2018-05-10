@@ -91,12 +91,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             // Mono issue - https://github.com/aspnet/External/issues/29
-            Assert.Equal(PlatformNormalizer.NormalizeContent(
+            Assert.Equal(
                 "The field Id must be between 1 and 2000.," +
                 "The field Name must be a string or array type with a minimum length of '5'.," +
                 "The field Alias must be a string with a minimum length of 3 and a maximum length of 15.," +
                 "The field Designation must match the regular expression " +
-                (TestPlatformHelper.IsMono ? "[0-9a-zA-Z]*." : "'[0-9a-zA-Z]*'.")),
+                "'[0-9a-zA-Z]*'.",
                 await response.Content.ReadAsStringAsync());
         }
 

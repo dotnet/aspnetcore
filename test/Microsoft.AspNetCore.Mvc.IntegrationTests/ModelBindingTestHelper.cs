@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             serviceCollection
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
-                .AddTransient<ILoggerFactory, LoggerFactory>()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
 
             if (updateOptions != null)

@@ -1243,7 +1243,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         private class DerivedFromControllerAndExplicitIDisposableImplementationController
-            : Mvc.Controller, IDisposable
+            : ViewFeaturesController, IDisposable
         {
             void IDisposable.Dispose()
             {
@@ -1251,11 +1251,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class DerivedFromControllerAndHidesBaseDisposeMethodController : Mvc.Controller
+        private class DerivedFromControllerAndHidesBaseDisposeMethodController : ViewFeaturesController
         {
             public new void Dispose()
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class ViewFeaturesController : ControllerBase, IDisposable
+        {
+            public virtual void Dispose()
+            {
             }
         }
 

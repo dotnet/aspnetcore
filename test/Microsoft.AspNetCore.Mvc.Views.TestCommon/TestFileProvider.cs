@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Mvc.TestCommon;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.Extensions.FileProviders
 {
     public class TestFileProvider : IFileProvider
     {

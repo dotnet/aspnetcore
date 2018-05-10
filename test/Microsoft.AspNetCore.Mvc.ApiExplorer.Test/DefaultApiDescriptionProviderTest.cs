@@ -1744,7 +1744,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        public class BaseProducesController : Controller
+        public class BaseProducesController : ControllerBase
         {
             public IActionResult ReturnsActionResult()
             {

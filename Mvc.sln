@@ -75,7 +75,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControllersFromServicesWebS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControllersFromServicesClassLibrary", "test\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.csproj", "{551DC89E-2A13-4CF2-83D7-1ADD802443D5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.TestCommon", "test\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj", "{F504357E-C2E1-4818-BA5C-9A2EAC25FEE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core.TestCommon", "test\Microsoft.AspNetCore.Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj", "{F504357E-C2E1-4818-BA5C-9A2EAC25FEE5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorsWebSite", "test\WebSites\CorsWebSite\CorsWebSite.csproj", "{94BA134D-04B3-48AA-BA55-5A4DB8640F2D}"
 EndProject
@@ -169,6 +169,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers.Experimental.Test", "test\Microsoft.AspNetCore.Mvc.Analyzers.Experimental.Test\Microsoft.AspNetCore.Mvc.Analyzers.Experimental.Test.csproj", "{E83D3745-9BCF-40E8-8D34-AFBA604C2439}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesClassLibrary", "test\WebSites\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj", "{17122147-ADFD-41C8-87D9-CCC582CCA8F9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Views.TestCommon", "test\Microsoft.AspNetCore.Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj", "{51E3E785-A9D1-4196-BAFE-A17FF4304B89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -892,6 +894,18 @@ Global
 		{17122147-ADFD-41C8-87D9-CCC582CCA8F9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{17122147-ADFD-41C8-87D9-CCC582CCA8F9}.Release|x86.ActiveCfg = Release|Any CPU
 		{17122147-ADFD-41C8-87D9-CCC582CCA8F9}.Release|x86.Build.0 = Release|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Debug|x86.Build.0 = Debug|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|x86.ActiveCfg = Release|Any CPU
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -961,6 +975,7 @@ Global
 		{CBF23034-2249-4FE5-BD48-5F3CEAC0DF61} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{E83D3745-9BCF-40E8-8D34-AFBA604C2439} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{17122147-ADFD-41C8-87D9-CCC582CCA8F9} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
+		{51E3E785-A9D1-4196-BAFE-A17FF4304B89} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {63D344F6-F86D-40E6-85B9-0AABBE338C4A}

@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc
 // independent.
 namespace Microsoft.AspNetCore.Mvc.MvcServiceCollectionExtensionsTestControllers
 {
-    public class ControllerTypeA : Microsoft.AspNetCore.Mvc.Controller
+    public class ControllerTypeA : ControllerBase
     {
 
     }

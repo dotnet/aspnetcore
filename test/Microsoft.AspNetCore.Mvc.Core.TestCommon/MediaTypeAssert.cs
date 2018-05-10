@@ -5,7 +5,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Mvc.TestCommon
+namespace Microsoft.AspNetCore.Mvc
 {
     public class MediaTypeAssert
     {
@@ -35,11 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.TestCommon
                 throw new EqualException(left.ToString(), right.ToString());
             }
 
-            MediaTypeHeaderValue leftMediaType = null;
-            MediaTypeHeaderValue rightMediaType = null;
-
-            if (!MediaTypeHeaderValue.TryParse(left.Value, out leftMediaType) ||
-                !MediaTypeHeaderValue.TryParse(right.Value, out rightMediaType) ||
+            if (!MediaTypeHeaderValue.TryParse(left.Value, out var leftMediaType) ||
+                !MediaTypeHeaderValue.TryParse(right.Value, out var rightMediaType) ||
                 !leftMediaType.Equals(rightMediaType))
             {
                 throw new EqualException(left.ToString(), right.ToString());

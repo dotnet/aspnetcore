@@ -4,9 +4,8 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.Extensions.FileProviders
 {
     public class TestFileInfo : IFileInfo
     {
