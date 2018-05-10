@@ -5,16 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Localization.Internal
+namespace Microsoft.AspNetCore.Mvc.Localization
 {
     public class MvcLocalizationServicesTest
     {
@@ -27,8 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
             // Act
             MvcLocalizationServices.AddMvcViewLocalizationServices(
                 collection,
-                LanguageViewLocationExpanderFormat.Suffix,
-                setupAction: null);
+                LanguageViewLocationExpanderFormat.Suffix);
 
             // Assert
             AssertContainsSingle(collection, typeof(IHtmlLocalizerFactory), typeof(HtmlLocalizerFactory));
@@ -49,8 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
 
             MvcLocalizationServices.AddMvcViewLocalizationServices(
                 collection,
-                LanguageViewLocationExpanderFormat.Suffix,
-                setupAction: null);
+                LanguageViewLocationExpanderFormat.Suffix);
 
             AssertContainsSingle(collection, typeof(IHtmlLocalizerFactory), typeof(TestHtmlLocalizerFactory));
             AssertContainsSingle(collection, typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>));
@@ -84,21 +79,10 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
 
         public class TestViewLocalizer : IViewLocalizer
         {
-            public LocalizedHtmlString this[string name]
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            public LocalizedHtmlString this[string name] => throw new NotImplementedException();
 
             public LocalizedHtmlString this[string name, params object[] arguments]
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+                => throw new NotImplementedException();
 
             public LocalizedString GetString(string name)
             {
@@ -123,21 +107,10 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
 
         public class TestHtmlLocalizer<HomeController> : IHtmlLocalizer<HomeController>
         {
-            public LocalizedHtmlString this[string name]
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            public LocalizedHtmlString this[string name] => throw new NotImplementedException();
 
             public LocalizedHtmlString this[string name, params object[] arguments]
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+                => throw new NotImplementedException();
 
             public LocalizedString GetString(string name)
             {

@@ -7,16 +7,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNetCore.Mvc.Localization.Internal
+namespace Microsoft.AspNetCore.Mvc.Localization
 {
-    public static class MvcLocalizationServices
+    internal static class MvcLocalizationServices
     {
         public static void AddLocalizationServices(
             IServiceCollection services,
             LanguageViewLocationExpanderFormat format,
             Action<LocalizationOptions> setupAction)
         {
-            AddMvcViewLocalizationServices(services, format, setupAction);
+            AddMvcViewLocalizationServices(services, format);
 
             if (setupAction == null)
             {
@@ -31,8 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
         // To enable unit testing only 'MVC' specific services
         public static void AddMvcViewLocalizationServices(
             IServiceCollection services,
-            LanguageViewLocationExpanderFormat format,
-            Action<LocalizationOptions> setupAction)
+            LanguageViewLocationExpanderFormat format)
         {
             services.Configure<RazorViewEngineOptions>(
                 options =>
