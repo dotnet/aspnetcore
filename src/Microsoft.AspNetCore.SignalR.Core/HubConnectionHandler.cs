@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -198,8 +199,13 @@ namespace Microsoft.AspNetCore.SignalR
                             await _dispatcher.DispatchMessageAsync(connection, message);
                         }
                     }
-                    else if (result.IsCompleted)
+
+                    if (result.IsCompleted)
                     {
+                        if (!buffer.IsEmpty)
+                        {
+                            throw new InvalidDataException("Connection terminated while reading a message.");
+                        }
                         break;
                     }
                 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     testConnection.StartAsync,
                     connection => ((TestConnection)connection).DisposeAsync());
                 builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
-				
+
                 return builder.Build();
             }
 
@@ -448,6 +449,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await hubConnection.DisposeAsync().OrTimeout();
                     await connection.DisposeAsync().OrTimeout();
                 }
+            }
+
+            [Fact]
+            public async Task HubConnectionClosesWithErrorIfTerminatedWithPartialMessage()
+            {
+                var builder = new HubConnectionBuilder();
+                var innerConnection = new TestConnection();
+
+                var delegateConnectionFactory = new DelegateConnectionFactory(
+                    format => innerConnection.StartAsync(format),
+                    connection => ((TestConnection)connection).DisposeAsync());
+                builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+                var hubConnection = builder.Build();
+                var closedEventTcs = new TaskCompletionSource<Exception>();
+                hubConnection.Closed += e =>
+                {
+                    closedEventTcs.SetResult(e);
+                    return Task.CompletedTask;
+                };
+
+                await hubConnection.StartAsync().OrTimeout();
+
+                await innerConnection.Application.Output.WriteAsync(Encoding.UTF8.GetBytes(new[] { '{' })).OrTimeout();
+                innerConnection.Application.Output.Complete();
+
+                var exception = await closedEventTcs.Task.OrTimeout();
+                Assert.Equal("Connection terminated while reading a message.", exception.Message);
             }
 
             private static async Task ForceLastInvocationToComplete(TestConnection testConnection)
