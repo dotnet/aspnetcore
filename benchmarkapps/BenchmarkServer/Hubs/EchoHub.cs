@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -31,9 +30,9 @@ namespace BenchmarkServer.Hubs
             Console.WriteLine("Broadcast exited: Sent {0} messages", sent);
         }
 
-        public Task Echo(DateTime time)
+        public DateTime Echo(DateTime time)
         {
-            return Clients.Client(Context.ConnectionId).SendAsync("send", time);
+            return time;
         }
 
         public Task EchoAll(DateTime time)
