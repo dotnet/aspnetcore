@@ -4,8 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using Microsoft.AspNetCore.Http.Features;
+using System.Threading;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
@@ -16,7 +17,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                                                IConnectionItemsFeature,
                                                IMemoryPoolFeature,
                                                IApplicationTransportFeature,
-                                               ITransportSchedulerFeature
+                                               ITransportSchedulerFeature,
+                                               IConnectionLifetimeFeature,
+                                               IBytesWrittenFeature
     {
         private static readonly Type IHttpConnectionFeatureType = typeof(IHttpConnectionFeature);
         private static readonly Type IConnectionIdFeatureType = typeof(IConnectionIdFeature);
@@ -25,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private static readonly Type IMemoryPoolFeatureType = typeof(IMemoryPoolFeature);
         private static readonly Type IApplicationTransportFeatureType = typeof(IApplicationTransportFeature);
         private static readonly Type ITransportSchedulerFeatureType = typeof(ITransportSchedulerFeature);
+        private static readonly Type IConnectionLifetimeFeatureType = typeof(IConnectionLifetimeFeature);
+        private static readonly Type IBytesWrittenFeatureType = typeof(IBytesWrittenFeature);
 
         private object _currentIHttpConnectionFeature;
         private object _currentIConnectionIdFeature;
@@ -33,6 +38,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private object _currentIMemoryPoolFeature;
         private object _currentIApplicationTransportFeature;
         private object _currentITransportSchedulerFeature;
+        private object _currentIConnectionLifetimeFeature;
+        private object _currentIBytesWrittenFeature;
 
         private int _featureRevision;
 
@@ -127,6 +134,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => Items = value;
         }
 
+        CancellationToken IConnectionLifetimeFeature.ConnectionClosed
+        {
+            get => ConnectionClosed;
+            set => ConnectionClosed = value;
+        }
+
+        void IConnectionLifetimeFeature.Abort() => Abort();
+
+        long IBytesWrittenFeature.TotalBytesWritten => TotalBytesWritten;
+
         PipeScheduler ITransportSchedulerFeature.InputWriterScheduler => InputWriterScheduler;
         PipeScheduler ITransportSchedulerFeature.OutputReaderScheduler => OutputReaderScheduler;
 
@@ -169,6 +186,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                     return _currentITransportSchedulerFeature;
                 }
 
+                if (key == IConnectionLifetimeFeatureType)
+                {
+                    return _currentIConnectionLifetimeFeature;
+                }
+
+                if (key == IBytesWrittenFeatureType)
+                {
+                    return _currentIBytesWrittenFeature;
+                }
+
                 if (MaybeExtra != null)
                 {
                     return ExtraFeatureGet(key);
@@ -208,6 +235,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     _currentITransportSchedulerFeature = value;
                 }
+                else if (key == IConnectionLifetimeFeatureType)
+                {
+                    _currentIConnectionLifetimeFeature = value;
+                }
+                else if (key == IBytesWrittenFeatureType)
+                {
+                    _currentIBytesWrittenFeature = value;
+                }
                 else
                 {
                     ExtraFeatureSet(key, value);
@@ -244,6 +279,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             else if (typeof(TFeature) == typeof(ITransportSchedulerFeature))
             {
                 return (TFeature)_currentITransportSchedulerFeature;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
+            {
+                return (TFeature)_currentIConnectionLifetimeFeature;
+            }
+            else if (typeof(TFeature) == typeof(IBytesWrittenFeature))
+            {
+                return (TFeature)_currentIBytesWrittenFeature;
             }
             else if (MaybeExtra != null)
             {
@@ -284,6 +327,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             else if (typeof(TFeature) == typeof(ITransportSchedulerFeature))
             {
                 _currentITransportSchedulerFeature = instance;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
+            {
+                _currentIConnectionLifetimeFeature = instance;
+            }
+            else if (typeof(TFeature) == typeof(IBytesWrittenFeature))
+            {
+                _currentIBytesWrittenFeature = instance;
             }
             else
             {
@@ -330,6 +381,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             if (_currentITransportSchedulerFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(ITransportSchedulerFeatureType, _currentITransportSchedulerFeature);
+            }
+
+            if (_currentIConnectionLifetimeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IConnectionLifetimeFeatureType, _currentIConnectionLifetimeFeature);
+            }
+
+            if (_currentIBytesWrittenFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IBytesWrittenFeatureType, _currentIBytesWrittenFeature);
             }
 
             if (MaybeExtra != null)

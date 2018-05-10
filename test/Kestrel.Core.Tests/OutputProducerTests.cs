@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -49,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 socketOutput.Write((buffer, state) =>
                 {
                     called = true;
+                    return 0;
                 },
                 0);
 
@@ -56,8 +58,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        private Http1OutputProducer CreateOutputProducer(PipeOptions pipeOptions)
+        [Fact]
+        public void AbortsTransportEvenAfterDispose()
         {
+            var mockLifetimeFeature = new Mock<IConnectionLifetimeFeature>();
+
+            var outputProducer = CreateOutputProducer(lifetimeFeature: mockLifetimeFeature.Object);
+
+            outputProducer.Dispose();
+
+            mockLifetimeFeature.Verify(f => f.Abort(), Times.Never());
+
+            outputProducer.Abort(null);
+
+            mockLifetimeFeature.Verify(f => f.Abort(), Times.Once());
+
+            outputProducer.Abort(null);
+
+            mockLifetimeFeature.Verify(f => f.Abort(), Times.Once());
+        }
+
+        private Http1OutputProducer CreateOutputProducer(
+            PipeOptions pipeOptions = null,
+            IConnectionLifetimeFeature lifetimeFeature = null)
+        {
+            pipeOptions = pipeOptions ?? new PipeOptions();
+            lifetimeFeature = lifetimeFeature ?? Mock.Of<IConnectionLifetimeFeature>();
+
             var pipe = new Pipe(pipeOptions);
             var serviceContext = new TestServiceContext();
             var socketOutput = new Http1OutputProducer(
@@ -65,7 +92,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 pipe.Writer,
                 "0",
                 serviceContext.Log,
-                Mock.Of<ITimeoutControl>());
+                Mock.Of<ITimeoutControl>(),
+                lifetimeFeature,
+                Mock.Of<IBytesWrittenFeature>());
 
             return socketOutput;
         }

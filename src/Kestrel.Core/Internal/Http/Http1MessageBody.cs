@@ -89,6 +89,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         else if (result.IsCompleted)
                         {
+                            // Treat any FIN from an upgraded request as expected.
+                            // It's up to higher-level consumer (i.e. WebSocket middleware) to determine 
+                            // if the end is actually expected based on higher-level framing.
+                            if (RequestUpgrade)
+                            {
+                                break;
+                            }
+
                             BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
                         }
 

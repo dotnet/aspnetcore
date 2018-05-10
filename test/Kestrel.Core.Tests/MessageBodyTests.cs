@@ -786,7 +786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingReads(), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingReads(), Times.Never);

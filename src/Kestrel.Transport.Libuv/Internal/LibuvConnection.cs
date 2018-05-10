@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
 
         private readonly UvStreamHandle _socket;
+        private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private MemoryHandle _bufferHandle;
 
@@ -42,6 +43,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 LocalAddress = localEndPoint.Address;
                 LocalPort = localEndPoint.Port;
+
+                ConnectionClosed = _connectionClosedTokenSource.Token;
             }
 
             Log = log;
@@ -54,6 +57,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
         public override PipeScheduler InputWriterScheduler => Thread;
         public override PipeScheduler OutputReaderScheduler => Thread;
+
+        public override long TotalBytesWritten => OutputConsumer?.TotalBytesWritten ?? 0;
 
         public async Task Start()
         {
@@ -91,12 +96,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     // We're done with the socket now
                     _socket.Dispose();
+                    ThreadPool.QueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
                 }
             }
             catch (Exception e)
             {
                 Log.LogCritical(0, e, $"{nameof(LibuvConnection)}.{nameof(Start)}() {ConnectionId}");
             }
+        }
+
+        public override void Abort()
+        {
+            // This cancels any pending I/O.
+            Thread.Post(s => s.Dispose(), _socket);
         }
 
         // Called on Libuv thread
@@ -203,6 +215,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 var error = new IOException(ex.Message, ex);
 
                 Input.Complete(error);
+            }
+        }
+
+        private void CancelConnectionClosedToken()
+        {
+            try
+            {
+                _connectionClosedTokenSource.Cancel();
+                _connectionClosedTokenSource.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Log.LogError(0, ex, $"Unexpected exception in {nameof(LibuvConnection)}.{nameof(CancelConnectionClosedToken)}.");
             }
         }
     }

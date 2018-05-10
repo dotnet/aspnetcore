@@ -297,5 +297,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(60)));
             Assert.Equal(CoreStrings.UpgradedConnectionLimitReached, exception.Message);
         }
+
+        [Fact]
+        public async Task DoesNotThrowOnFin()
+        {
+            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+                var duplexStream = await feature.UpgradeAsync();
+
+                try
+                {
+                    await duplexStream.CopyToAsync(Stream.Null);
+                    appCompletedTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    appCompletedTcs.SetException(ex);
+                    throw;
+                }
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEmptyGetWithUpgrade();
+                    await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                        "Connection: Upgrade",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+
+                await appCompletedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+            }
+        }
     }
 }
