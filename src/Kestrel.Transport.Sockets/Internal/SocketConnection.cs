@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     internal sealed class SocketConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
-        private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly Socket _socket;
         private readonly PipeScheduler _scheduler;
@@ -55,11 +54,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
 
-            // On *nix platforms, Sockets already dispatches to the ThreadPool.
-            var awaiterScheduler = IsWindows ? _scheduler : PipeScheduler.Inline;
-
-            _receiver = new SocketReceiver(_socket, awaiterScheduler);
-            _sender = new SocketSender(_socket, awaiterScheduler);
+            _receiver = new SocketReceiver(_socket, _scheduler);
+            _sender = new SocketSender(_socket, _scheduler);
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
@@ -69,28 +65,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public async Task StartAsync()
         {
-            Exception sendError = null;
             try
             {
                 // Spawn send and receive logic
-                Task receiveTask = DoReceive();
-                Task<Exception> sendTask = DoSend();
-
-                // If the sending task completes then close the receive
-                // We don't need to do this in the other direction because the kestrel
-                // will trigger the output closing once the input is complete.
-                if (await Task.WhenAny(receiveTask, sendTask) == sendTask)
-                {
-                    // Tell the reader it's being aborted
-                    _socket.Dispose();
-                }
+                var receiveTask = DoReceive();
+                var sendTask = DoSend();
 
                 // Now wait for both to complete
                 await receiveTask;
-                sendError = await sendTask;
+                await sendTask;
 
-                // Dispose the socket(should noop if already called)
-                _socket.Dispose();
                 _receiver.Dispose();
                 _sender.Dispose();
                 ThreadPool.QueueUserWorkItem(state => ((SocketConnection)state).CancelConnectionClosedToken(), this);
@@ -99,18 +83,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(StartAsync)}.");
             }
-            finally
-            {
-                // Complete the output after disposing the socket
-                Output.Complete(sendError);
-            }
         }
 
         public override void Abort()
         {
             // Try to gracefully close the socket to match libuv behavior.
             Shutdown();
-            _socket.Dispose();
         }
 
         private async Task DoReceive()
@@ -205,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        private async Task<Exception> DoSend()
+        private async Task DoSend()
         {
             Exception error = null;
 
@@ -229,10 +207,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 error = new IOException(ex.Message, ex);
             }
+            finally
+            {
+                Shutdown();
 
-            Shutdown();
-
-            return error;
+                // Complete the output after disposing the socket
+                Output.Complete(error);
+            }
         }
 
         private async Task ProcessSends()
@@ -280,8 +261,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     _aborted = true;
                     _trace.ConnectionWriteFin(ConnectionId);
 
-                    // Try to gracefully close the socket even for aborts to match libuv behavior.
-                    _socket.Shutdown(SocketShutdown.Both);
+                    try
+                    {
+                        // Try to gracefully close the socket even for aborts to match libuv behavior.
+                        _socket.Shutdown(SocketShutdown.Both);
+                    }
+                    catch
+                    {
+                        // Ignore any errors from Socket.Shutdown since we're tearing down the connection anyway.
+                    }
+
+                    _socket.Dispose();
                 }
             }
         }

@@ -49,6 +49,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public Socket Socket => _socket;
 
+        public Stream Stream => _stream;
+
         public StreamReader Reader => _reader;
 
         public void Dispose()
