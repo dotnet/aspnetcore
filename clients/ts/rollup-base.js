@@ -19,7 +19,10 @@ export default function(rootDir, moduleGlobals) {
             format: "umd",
             name: pkg.umd_name,
             sourcemap: true,
-            banner: "/* @license\r\n" +
+            banner: "/** \r\n" +
+                " * @overview ASP.NET Core SignalR JavaScript Client.\r\n" +
+                " * @version 0.0.0-DEV_BUILD.\r\n" +
+                " * @license\r\n" +
                 " * Copyright (c) .NET Foundation. All rights reserved.\r\n" +
                 " * Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.\r\n" +
                 " */",
