@@ -71,7 +71,8 @@ namespace AspNetCoreSdkTests.Util
             }
             else
             {
-                var path = Path.Combine(workingDirectory, PublishOutput, $"{name}.exe");
+                var file = (runtimeIdentifier == RuntimeIdentifier.Win_x64) ? $"{name}.exe" : name;
+                var path = Path.Combine(workingDirectory, PublishOutput, file);
                 return StartProcess(path, _urls, workingDirectory);
             }
         }

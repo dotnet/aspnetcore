@@ -33,8 +33,8 @@ namespace AspNetCoreSdkTests.Templates
         private Lazy<IEnumerable<string>> _objFilesAfterRestore;
         private Lazy<(IEnumerable<string> ObjFiles, IEnumerable<string> BinFiles)> _filesAfterBuild;
         private Lazy<IEnumerable<string>> _filesAfterPublish;
-        private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)> _httpResponsesAfterRun;
-        private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)> _httpResponsesAfterExec;
+        private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https, string ServerOutput, string ServerError )> _httpResponsesAfterRun;
+        private Lazy<(HttpResponseMessage Http, HttpResponseMessage Https, string ServerOutput, string ServerError)> _httpResponsesAfterExec;
 
         public NuGetPackageSource NuGetPackageSource { get; private set; }
         public RuntimeIdentifier RuntimeIdentifier { get; private set; }
@@ -50,10 +50,10 @@ namespace AspNetCoreSdkTests.Templates
             _filesAfterPublish = new Lazy<IEnumerable<string>>(
                 GetFilesAfterPublish, LazyThreadSafetyMode.ExecutionAndPublication);
 
-            _httpResponsesAfterRun = new Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)>(
+            _httpResponsesAfterRun = new Lazy<(HttpResponseMessage Http, HttpResponseMessage Https, string ServerOutput, string ServerError)>(
                 GetHttpResponsesAfterRun, LazyThreadSafetyMode.ExecutionAndPublication);
 
-            _httpResponsesAfterExec = new Lazy<(HttpResponseMessage Http, HttpResponseMessage Https)>(
+            _httpResponsesAfterExec = new Lazy<(HttpResponseMessage Http, HttpResponseMessage Https, string ServerOutput, string ServerError)>(
                 GetHttpResponsesAfterExec, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
@@ -69,11 +69,15 @@ namespace AspNetCoreSdkTests.Templates
         public IEnumerable<string> ObjFilesAfterRestore => _objFilesAfterRestore.Value;
         public IEnumerable<string> ObjFilesAfterBuild => _filesAfterBuild.Value.ObjFiles;
         public IEnumerable<string> BinFilesAfterBuild => _filesAfterBuild.Value.BinFiles;
-        public IEnumerable<string> FilesAfterPublish => _filesAfterPublish.Value;
+        public virtual IEnumerable<string> FilesAfterPublish => _filesAfterPublish.Value;
         public HttpResponseMessage HttpResponseAfterRun => _httpResponsesAfterRun.Value.Http;
         public HttpResponseMessage HttpsResponseAfterRun => _httpResponsesAfterRun.Value.Https;
+        public string ServerOutputAfterRun => _httpResponsesAfterRun.Value.ServerOutput;
+        public string ServerErrorAfterRun => _httpResponsesAfterRun.Value.ServerError;
         public HttpResponseMessage HttpResponseAfterExec => _httpResponsesAfterExec.Value.Http;
         public HttpResponseMessage HttpsResponseAfterExec => _httpResponsesAfterExec.Value.Https;
+        public string ServerOutputAfterExec => _httpResponsesAfterExec.Value.ServerOutput;
+        public string ServerErrorAfterExec => _httpResponsesAfterExec.Value.ServerError;
 
         public virtual IEnumerable<string> ExpectedObjFilesAfterRestore => new[]
         {
@@ -115,7 +119,7 @@ namespace AspNetCoreSdkTests.Templates
             return IOUtil.GetFiles(Path.Combine(TempDir, DotNetUtil.PublishOutput));
         }
 
-        private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponsesAfterRun()
+        private (HttpResponseMessage Http, HttpResponseMessage Https, string ServerOutput, string ServerError) GetHttpResponsesAfterRun()
         {
             // Run depends on Build
             _ = BinFilesAfterBuild;
@@ -123,7 +127,7 @@ namespace AspNetCoreSdkTests.Templates
             return GetHttpResponses(DotNetUtil.Run(TempDir, RuntimeIdentifier));
         }
 
-        private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponsesAfterExec()
+        private (HttpResponseMessage Http, HttpResponseMessage Https, string ServerOutput, string ServerError) GetHttpResponsesAfterExec()
         {
             // Exec depends on Publish
             _ = FilesAfterPublish;
@@ -131,13 +135,18 @@ namespace AspNetCoreSdkTests.Templates
             return GetHttpResponses(DotNetUtil.Exec(TempDir, Name, RuntimeIdentifier));
         }
 
-        private (HttpResponseMessage Http, HttpResponseMessage Https) GetHttpResponses(
+        private (HttpResponseMessage Http, HttpResponseMessage Https, string ServerOutput, string ServerError) GetHttpResponses(
             (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) process)
         {
             try
             {
                 var (httpUrl, httpsUrl) = ScrapeUrls(process);
-                return (GetAsync(new Uri(new Uri(httpUrl), RelativeUrl)), GetAsync(new Uri(new Uri(httpsUrl), RelativeUrl)));
+                return (
+                    Get(new Uri(new Uri(httpUrl), RelativeUrl)),
+                    Get(new Uri(new Uri(httpsUrl), RelativeUrl)),
+                    process.OutputBuilder.ToString(),
+                    process.ErrorBuilder.ToString()
+                    );
             }
             finally
             {
@@ -171,7 +180,7 @@ namespace AspNetCoreSdkTests.Templates
             }
         }
 
-        private HttpResponseMessage GetAsync(Uri requestUri)
+        private HttpResponseMessage Get(Uri requestUri)
         {
             while (true)
             {
