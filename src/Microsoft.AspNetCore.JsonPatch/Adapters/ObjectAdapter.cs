@@ -18,16 +18,36 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
         public ObjectAdapter(
             IContractResolver contractResolver,
-            Action<JsonPatchError> logErrorAction)
+            Action<JsonPatchError> logErrorAction):
+            this(contractResolver, logErrorAction, new AdapterFactory())
         {
-            ContractResolver = contractResolver ?? throw new ArgumentNullException(nameof(contractResolver));
-            LogErrorAction = logErrorAction;
         }
+
+        /// <summary>
+         /// Initializes a new instance of <see cref="ObjectAdapter"/>.
+         /// </summary>
+         /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
+         /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
+        /// <param name="adapterFactory">The <see cref="IAdapterFactory"/> to use when creating adaptors.</param>
+         public ObjectAdapter(
+            IContractResolver contractResolver,
+            Action<JsonPatchError> logErrorAction,
+            IAdapterFactory adapterFactory)
+         {
+             ContractResolver = contractResolver ?? throw new ArgumentNullException(nameof(contractResolver));
+            LogErrorAction = logErrorAction;
+            AdapterFactory = adapterFactory ?? throw new ArgumentNullException(nameof(adapterFactory));
+         }
 
         /// <summary>
         /// Gets or sets the <see cref="IContractResolver"/>.
         /// </summary>
         public IContractResolver ContractResolver { get; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IAdapterFactory"/>
+        /// </summary>
+        public IAdapterFactory AdapterFactory { get; set; }
 
         /// <summary>
         /// Action for logging <see cref="JsonPatchError"/>.
@@ -75,7 +95,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             }
 
             var parsedPath = new ParsedPath(path);
-            var visitor = new ObjectVisitor(parsedPath, ContractResolver);
+            var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
 
             var target = objectToApplyTo;
             if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -144,7 +164,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         private void Remove(string path, object objectToApplyTo, Operation operationToReport)
         {
             var parsedPath = new ParsedPath(path);
-            var visitor = new ObjectVisitor(parsedPath, ContractResolver);
+            var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
 
             var target = objectToApplyTo;
             if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -175,7 +195,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             }
 
             var parsedPath = new ParsedPath(operation.path);
-            var visitor = new ObjectVisitor(parsedPath, ContractResolver);
+            var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
 
             var target = objectToApplyTo;
             if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -239,7 +259,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             }
 
             var parsedPath = new ParsedPath(operation.path);
-            var visitor = new ObjectVisitor(parsedPath, ContractResolver);
+            var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
 
             var target = objectToApplyTo;
             if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
@@ -281,7 +301,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             propertyValue = null;
 
             var parsedPath = new ParsedPath(fromLocation);
-            var visitor = new ObjectVisitor(parsedPath, ContractResolver);
+            var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
 
             var target = objectToGetValueFrom;
             if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
