@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Security.Claims;
@@ -250,16 +251,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 throw new InvalidOperationException("CoreStrings.UpgradeCannotBeCalledMultipleTimes");
             }
+
             _wasUpgraded = true;
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
-            _readWebSocketsOperation = new IISAwaitable();
-            _writeWebSocketsOperation = new IISAwaitable();
-            NativeMethods.HttpEnableWebsockets(_pInProcessHandler);
+
+            // If we started reading before calling Upgrade Task should be completed at this point
+            // because read would return 0 syncronosly
+            Debug.Assert(_readBodyTask == null || _readBodyTask.IsCompleted);
+
+            // Reset reading status to allow restarting with new IO
+            _hasRequestReadingStarted = false;
 
             // Upgrade async will cause the stream processing to go into duplex mode
-            await UpgradeAsync();
+            AsyncIO = new WebSocketsAsyncIOEngine(_pInProcessHandler);
+
+            await InitializeResponse(flushHeaders: true);
 
             return new DuplexStream(RequestBody, ResponseBody);
         }

@@ -2,25 +2,30 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IISIntegration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace IISTestSite
 {
-    public class Startup
+    public partial class Startup
     {
         public void Configure(IApplicationBuilder app)
         {
@@ -369,14 +374,58 @@ namespace IISTestSite
 
         private void ReadAndWriteEcho(IApplicationBuilder app)
         {
-            app.Run(async context =>
-            {
+            app.Run(async context => {
                 var readBuffer = new byte[4096];
                 var result = await context.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
                 while (result != 0)
                 {
                     await context.Response.WriteAsync(Encoding.UTF8.GetString(readBuffer, 0, result));
                     result = await context.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
+                }
+            });
+        }
+
+        private void ReadAndWriteEchoLines(IApplicationBuilder app)
+        {
+            app.Run(async context => {
+                //Send headers
+                await context.Response.Body.FlushAsync();
+
+                var reader = new StreamReader(context.Request.Body);
+                while (!reader.EndOfStream)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if (line == "")
+                    {
+                        return;
+                    }
+                    await context.Response.WriteAsync(line + Environment.NewLine);
+                    await context.Response.Body.FlushAsync();
+                }
+            });
+        }
+
+        private void ReadPartialBody(IApplicationBuilder app)
+        {
+            app.Run(async context => {
+                var data = new byte[5];
+                var count = 0;
+                do
+                {
+                    count += await context.Request.Body.ReadAsync(data, count, data.Length - count);
+                } while (count != data.Length);
+                await context.Response.Body.WriteAsync(data, 0, data.Length);
+            });
+        }
+
+        private void SetHeaderFromBody(IApplicationBuilder app)
+        {
+            app.Run(async context => {
+                using (var reader = new StreamReader(context.Request.Body))
+                {
+                    var value = await reader.ReadToEndAsync();
+                    context.Response.Headers["BodyAsString"] = value;
+                    await context.Response.WriteAsync(value);
                 }
             });
         }
@@ -414,14 +463,6 @@ namespace IISTestSite
             {
                 await context.Response.WriteAsync("hello world");
             }
-        }
-
-        private void WebsocketRequest(IApplicationBuilder app)
-        {
-            app.Run(async context =>
-            {
-                await context.Response.WriteAsync("test");
-            });
         }
 
         private void ReadAndWriteCopyToAsync(IApplicationBuilder app)

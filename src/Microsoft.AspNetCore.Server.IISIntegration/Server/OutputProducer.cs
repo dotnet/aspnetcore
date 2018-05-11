@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal class OutputProducer
     {
-        private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
-
         // This locks access to to all of the below fields
         private readonly object _contextLock = new object();
 
@@ -36,9 +34,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public PipeReader Reader => _pipe.Reader;
 
-        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public Task FlushAsync(CancellationToken cancellationToken)
         {
-            return WriteAsync(_emptyData, cancellationToken);
+            _pipe.Reader.CancelPendingRead();
+            // Await backpressure
+            return FlushAsync(_pipe.Writer, cancellationToken);
         }
 
         public void Dispose()
@@ -71,9 +71,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
         }
 
-        public Task WriteAsync(
-            ReadOnlyMemory<byte> buffer,
-            CancellationToken cancellationToken)
+        public Task WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -88,8 +86,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return FlushAsync(_pipe.Writer, cancellationToken);
         }
 
-        private Task FlushAsync(PipeWriter pipeWriter,
-            CancellationToken cancellationToken)
+        private Task FlushAsync(PipeWriter pipeWriter, CancellationToken cancellationToken)
         {
             var awaitable = pipeWriter.FlushAsync(cancellationToken);
             if (awaitable.IsCompleted)

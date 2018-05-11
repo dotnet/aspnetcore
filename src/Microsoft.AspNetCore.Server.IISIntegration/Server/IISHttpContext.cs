@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -33,15 +34,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private readonly IISOptions _options;
 
-        private bool _reading; // To know whether we are currently in a read operation.
         private volatile bool _hasResponseStarted;
+        private volatile bool _hasRequestReadingStarted;
 
         private int _statusCode;
         private string _reasonPhrase;
         private readonly object _onStartingSync = new object();
         private readonly object _onCompletedSync = new object();
-        private readonly object _stateSync = new object();
-        protected readonly object _createReadWriteBodySync = new object();
 
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
@@ -51,15 +50,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private readonly IISHttpServer _server;
 
         private GCHandle _thisHandle;
-        private MemoryHandle _inputHandle;
-        private IISAwaitable _operation = new IISAwaitable();
-        protected Task _processBodiesTask;
+        protected Task _readBodyTask;
+        protected Task _writeBodyTask;
 
+        private bool _wasUpgraded;
         protected int _requestAborted;
+
+        protected Pipe _bodyInputPipe;
+        protected OutputProducer _bodyOutput;
 
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
+
 
         internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
@@ -89,8 +92,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         internal WindowsPrincipal WindowsUser { get; set; }
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
-        public Pipe Input { get; set; }
-        public OutputProducer Output { get; set; }
+
+        protected IAsyncIOEngine AsyncIO { get; set; }
 
         public IHeaderDictionary RequestHeaders { get; set; }
         public IHeaderDictionary ResponseHeaders { get; set; }
@@ -153,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             RequestBody = new IISHttpRequestBody(this);
             ResponseBody = new IISHttpResponseBody(this);
 
-            Input = new Pipe(new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.ThreadPool, minimumSegmentSize: MinAllocBufferSize));
+
             var pipe = new Pipe(
                 new PipeOptions(
                     _memoryPool,
@@ -161,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     pauseWriterThreshold: PauseWriterThreshold,
                     resumeWriterThreshold: ResumeWriterTheshold,
                     minimumSegmentSize: MinAllocBufferSize));
-            Output = new OutputProducer(pipe);
+            _bodyOutput = new OutputProducer(pipe);
         }
 
         public int StatusCode
@@ -169,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             get { return _statusCode; }
             set
             {
-                if (_hasResponseStarted)
+                if (HasResponseStarted)
                 {
                     ThrowResponseAlreadyStartedException(nameof(StatusCode));
                 }
@@ -182,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             get { return _reasonPhrase; }
             set
             {
-                if (_hasResponseStarted)
+                if (HasResponseStarted)
                 {
                     ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
                 }
@@ -190,12 +193,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
         }
 
-        internal IISHttpServer Server
-        {
-            get { return _server; }
-        }
+        internal IISHttpServer Server => _server;
 
-        private async Task InitializeResponseAwaited()
+        private async Task InitializeResponse(bool flushHeaders)
         {
             await FireOnStarting();
 
@@ -204,7 +204,46 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 ThrowResponseAbortedException();
             }
 
-            await ProduceStart(appCompleted: false);
+            await ProduceStart(flushHeaders);
+        }
+
+        private async Task ProduceStart(bool flushHeaders)
+        {
+            Debug.Assert(_hasResponseStarted == false);
+
+            _hasResponseStarted = true;
+
+            SetResponseHeaders();
+
+            EnsureIOInitialized();
+
+            if (flushHeaders)
+            {
+                await AsyncIO.FlushAsync();
+            }
+
+            _writeBodyTask = WriteBody(!flushHeaders);
+        }
+
+        private void InitializeRequestIO()
+        {
+            Debug.Assert(!_hasRequestReadingStarted);
+
+            _hasRequestReadingStarted = true;
+
+            EnsureIOInitialized();
+
+            _bodyInputPipe = new Pipe(new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.ThreadPool, minimumSegmentSize: MinAllocBufferSize));
+            _readBodyTask = ReadBody();
+        }
+
+        private void EnsureIOInitialized()
+        {
+            // If at this point request was not upgraded just start a normal IO engine
+            if (AsyncIO == null)
+            {
+                AsyncIO = new AsyncIOEngine(_pInProcessHandler);
+            }
         }
 
         private void ThrowResponseAbortedException()
@@ -212,38 +251,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             throw new ObjectDisposedException("Unhandled application exception", _applicationException);
         }
 
-        private async Task ProduceStart(bool appCompleted)
-        {
-            if (_hasResponseStarted)
-            {
-                return;
-            }
-
-            _hasResponseStarted = true;
-
-            SendResponseHeaders(appCompleted);
-
-            // On first flush for websockets, we need to flush the headers such that
-            // IIS will know that an upgrade occured.
-            // If we don't have anything on the Output pipe, the TryRead in ReadAndWriteLoopAsync
-            // will fail and we will signal the upgradeTcs that we are upgrading. However, we still
-            // didn't flush. To fix this, we flush 0 bytes right after writing the headers.
-            Task flushTask;
-            lock (_stateSync)
-            {
-                DisableReads();
-                flushTask = Output.FlushAsync();
-            }
-            await flushTask;
-
-            StartProcessingRequestAndResponseBody();
-        }
-
         protected Task ProduceEnd()
         {
             if (_applicationException != null)
             {
-                if (_hasResponseStarted)
+                if (HasResponseStarted)
                 {
                     // We can no longer change the response, so we simply close the connection.
                     return Task.CompletedTask;
@@ -258,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
             }
 
-            if (!_hasResponseStarted)
+            if (!HasResponseStarted)
             {
                 return ProduceEndAwaited();
             }
@@ -275,27 +287,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private async Task ProduceEndAwaited()
         {
-            if (_hasResponseStarted)
-            {
-                return;
-            }
-
-            _hasResponseStarted = true;
-
-            SendResponseHeaders(appCompleted: true);
-            StartProcessingRequestAndResponseBody();
-
-            Task flushAsync;
-
-            lock (_stateSync)
-            {
-                DisableReads();
-                flushAsync = Output.FlushAsync();
-            }
-            await flushAsync;
+            await ProduceStart(flushHeaders: true);
+            await _bodyOutput.FlushAsync(default);
         }
 
-        public unsafe void SendResponseHeaders(bool appCompleted)
+        public unsafe void SetResponseHeaders()
         {
             // Verifies we have sent the statuscode before writing a header
             var reasonPhrase = string.IsNullOrEmpty(ReasonPhrase) ? ReasonPhrases.GetReasonPhrase(StatusCode) : ReasonPhrase;
@@ -348,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             lock (_onStartingSync)
             {
-                if (_hasResponseStarted)
+                if (HasResponseStarted)
                 {
                     throw new InvalidOperationException("Response already started");
                 }
@@ -439,8 +435,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
         {
-            Debug.Assert(!_operation.HasContinuation, "Pending async operation!");
-
             NativeMethods.HttpSetCompletionStatus(_pInProcessHandler, requestNotificationStatus);
             NativeMethods.HttpPostCompletion(_pInProcessHandler, 0);
         }
@@ -450,18 +444,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             NativeMethods.HttpIndicateCompletion(_pInProcessHandler, notificationStatus);
         }
 
-        internal void OnAsyncCompletion(int hr, int cbBytes)
+        internal void OnAsyncCompletion(int hr, int bytes)
         {
-            // Must acquire the _stateSync here as anytime we call complete, we need to hold the lock
-            // to avoid races with cancellation.
-            Action continuation;
-            lock (_stateSync)
-            {
-                _reading = false;
-                continuation = _operation.GetCompletion(hr, cbBytes);
-            }
-
-            continuation?.Invoke();
+            AsyncIO.NotifyCompletion(hr, bytes);
         }
 
         private bool disposedValue = false; // To detect redundant calls

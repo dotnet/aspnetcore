@@ -4,9 +4,13 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\shared\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
+    <PackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 

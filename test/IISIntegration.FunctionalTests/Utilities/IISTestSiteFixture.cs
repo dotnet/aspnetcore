@@ -40,6 +40,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public CancellationToken ShutdownToken { get; }
         public DeploymentResult DeploymentResult { get; }
 
+        public TestConnection CreateTestConnection()
+        {
+            return new TestConnection(Client.BaseAddress.Port);
+        }
+
         public void Dispose()
         {
             _deployer.Dispose();

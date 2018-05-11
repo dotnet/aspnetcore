@@ -6,9 +6,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ANCMStressTestApp
+namespace IISIntegration.FunctionalTests
 {
-    // Removed all the 
     internal static class HandshakeHelpers
     {
         public static IEnumerable<KeyValuePair<string, string>> GenerateResponseHeaders(string key)

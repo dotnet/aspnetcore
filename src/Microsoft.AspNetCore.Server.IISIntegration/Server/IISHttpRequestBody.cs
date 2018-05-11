@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
         }
 
-        public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             var memory = new Memory<byte>(buffer, offset, count);
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             throw new NotSupportedException();
         }
 
-        public unsafe override void Write(byte[] buffer, int offset, int count)
+        public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }
