@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -2325,6 +2326,185 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // RequestAborted tripped
                 Assert.True(requestAbortedWh.Wait(TestConstants.DefaultTimeout));
             }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task WritingToConnectionAfterUnobservedCloseTriggersRequestAbortedToken(ListenOptions listenOptions)
+        {
+            const int connectionPausedEventId = 4;
+            const int maxRequestBufferSize = 2048;
+
+            var requestAborted = false;
+            var readCallbackUnwired = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var clientClosedConnection = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var writeTcs = new TaskCompletionSource<Exception>(TaskContinuationOptions.RunContinuationsAsynchronously);
+
+            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
+                .Returns(true);
+            mockLogger
+                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
+                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+                {
+                    if (eventId.Id == connectionPausedEventId)
+                    {
+                        readCallbackUnwired.TrySetResult(null);
+                    }
+
+                    Logger.Log(logLevel, eventId, state, exception, formatter);
+                });
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
+                .Returns(Logger);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
+                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
+                .Returns(mockLogger.Object);
+
+            var testContext = new TestServiceContext(mockLoggerFactory.Object)
+            {
+                Log = mockKestrelTrace.Object,
+                ServerOptions =
+                {
+                    Limits =
+                    {
+                        MaxRequestBufferSize = maxRequestBufferSize,
+                        MaxRequestLineSize = maxRequestBufferSize,
+                        MaxRequestHeadersTotalSize = maxRequestBufferSize,
+                    }
+                }
+            };
+
+            var scratchBuffer = new byte[4096];
+
+            using (var server = new TestServer(async context =>
+            {
+                context.RequestAborted.Register(() =>
+                {
+                    requestAborted = true;
+                });
+
+                await clientClosedConnection.Task;
+
+                try
+                {
+                    for (var i = 0; i < 1000; i++)
+                    {
+                        await context.Response.Body.WriteAsync(scratchBuffer, 0, scratchBuffer.Length, context.RequestAborted);
+                        await Task.Delay(10);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // TaskContinuationOptions.RunContinuationsAsynchronously sometimes runs inline anyway in
+                    // situations such as this where the awaiter starts awaiting right when SetResult is called.
+                    _ = Task.Run(() => writeTcs.SetException(ex));
+                    throw;
+                }
+
+                writeTcs.SetException(new Exception("This shouldn't be reached."));
+            }, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        $"Content-Length: {scratchBuffer.Length}",
+                        "",
+                        "");
+
+                    var ignore = connection.Stream.WriteAsync(scratchBuffer, 0, scratchBuffer.Length);
+
+                    // Wait until the read callback is no longer hooked up so that the connection disconnect isn't observed.
+                    await readCallbackUnwired.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                }
+
+                clientClosedConnection.SetResult(null);
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeTcs.Task).TimeoutAfter(TestConstants.DefaultTimeout);
+            }
+
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.True(requestAborted);
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
+        {
+            const int responseBodySegmentSize = 65536;
+            const int responseBodySegmentCount = 100;
+            const int responseBodySize = responseBodySegmentSize * responseBodySegmentCount;
+
+            var requestAborted = false;
+            var appCompletedTcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+
+            var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
+            var testContext = new TestServiceContext()
+            {
+                Log = mockKestrelTrace.Object,
+            };
+
+            var scratchBuffer = new byte[responseBodySegmentSize];
+
+            using (var server = new TestServer(async context =>
+            {
+                context.RequestAborted.Register(() =>
+                {
+                    requestAborted = true;
+                });
+
+                context.Response.ContentLength = responseBodySize;
+
+                try
+                {
+                    for (var i = 0; i < responseBodySegmentCount; i++)
+                    {
+                        await context.Response.Body.WriteAsync(scratchBuffer, 0, scratchBuffer.Length);
+                        await Task.Delay(10);
+                    }
+                }
+                finally
+                {
+                    // WriteAsync shouldn't throw without a CancellationToken passed in. Unfortunately a ECONNRESET UvException sometimes gets thrown.
+                    // This will be fixed by https://github.com/aspnet/KestrelHttpServer/pull/2547
+                    // TaskContinuationOptions.RunContinuationsAsynchronously sometimes runs inline anyway in
+                    // situations such as this where the awaiter starts awaiting right when SetResult is called.
+                    _ = Task.Run(() => appCompletedTcs.SetResult(null));
+                }
+            }, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    var readCount = 0;
+
+                    // Read just part of the response and close the connection.
+                    // https://github.com/aspnet/KestrelHttpServer/issues/2554
+                    for (var i = 0; i < responseBodySegmentCount / 10; i++)
+                    {
+                        readCount += await connection.Stream.ReadAsync(scratchBuffer, 0, scratchBuffer.Length);
+                    }
+
+                    connection.Socket.Shutdown(SocketShutdown.Send);
+
+                    await appCompletedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                }
+            }
+
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.True(requestAborted);
         }
 
         [Theory]

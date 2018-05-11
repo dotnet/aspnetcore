@@ -263,8 +263,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     _aborted = true;
                     _trace.ConnectionWriteFin(ConnectionId);
 
-                    // Try to gracefully close the socket even for aborts to match libuv behavior.
-                    _socket.Shutdown(SocketShutdown.Both);
+                    try
+                    {
+                        // Try to gracefully close the socket even for aborts to match libuv behavior.
+                        _socket.Shutdown(SocketShutdown.Both);
+                    }
+                    catch
+                    {
+                        // Ignore any errors from Socket.Shutdown since we're tearing down the connection anyway.
+                    }
+
                     _socket.Dispose();
                 }
             }
