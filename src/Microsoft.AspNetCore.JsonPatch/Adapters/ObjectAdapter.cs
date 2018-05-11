@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         /// <summary>
         /// Gets or sets the <see cref="IAdapterFactory"/>
         /// </summary>
-        public IAdapterFactory AdapterFactory { get; set; }
+        public IAdapterFactory AdapterFactory { get; }
 
         /// <summary>
         /// Action for logging <see cref="JsonPatchError"/>.

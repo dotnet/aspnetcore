@@ -15,6 +15,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         /// <inheritdoc />
         public virtual IAdapter Create(object target, IContractResolver contractResolver)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (contractResolver == null)
+            {
+                throw new ArgumentNullException(nameof(contractResolver));
+            }
+
             var jsonContract = contractResolver.ResolveContract(target.GetType());
 
             if (target is IList)
