@@ -2337,9 +2337,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int maxRequestBufferSize = 4096;
 
             var requestAborted = false;
-            var readCallbackUnwired = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
-            var clientClosedConnection = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
-            var writeTcs = new TaskCompletionSource<Exception>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var readCallbackUnwired = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
             var mockLogger = new Mock<ILogger>();
@@ -2402,9 +2402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
                 catch (Exception ex)
                 {
-                    // TaskContinuationOptions.RunContinuationsAsynchronously sometimes runs inline anyway in
-                    // situations such as this where the awaiter starts awaiting right when SetResult is called.
-                    _ = Task.Run(() => writeTcs.SetException(ex));
+                    writeTcs.SetException(ex);
                     throw;
                 }
 
@@ -2444,7 +2442,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int responseBodySize = responseBodySegmentSize * responseBodySegmentCount;
 
             var requestAborted = false;
-            var appCompletedTcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
             var testContext = new TestServiceContext()
@@ -2475,9 +2473,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     // WriteAsync shouldn't throw without a CancellationToken passed in. Unfortunately a ECONNRESET UvException sometimes gets thrown.
                     // This will be fixed by https://github.com/aspnet/KestrelHttpServer/pull/2547
-                    // TaskContinuationOptions.RunContinuationsAsynchronously sometimes runs inline anyway in
-                    // situations such as this where the awaiter starts awaiting right when SetResult is called.
-                    _ = Task.Run(() => appCompletedTcs.SetResult(null));
+                    appCompletedTcs.SetResult(null);
                 }
             }, testContext, listenOptions))
             {
