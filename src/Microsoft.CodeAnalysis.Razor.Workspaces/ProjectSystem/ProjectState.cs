@@ -83,7 +83,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _tagHelpers = older._tagHelpers?.ForkFor(this, difference);
         }
 
-        public IReadOnlyDictionary<string, DocumentState> Documents { get; }
+        // Internal set for testing.
+        public IReadOnlyDictionary<string, DocumentState> Documents { get; internal set; }
 
         public HostProject HostProject { get; }
 
@@ -293,7 +294,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documents = new Dictionary<string, DocumentState>(FilePathComparer.Instance);
             foreach (var kvp in Documents)
             {
-                documents.Add(kvp.Key, kvp.Value.WithConfigurationChange());
+                documents.Add(kvp.Key, kvp.Value.WithWorkspaceProjectChange());
             }
 
             var state = new ProjectState(this, difference, HostProject, workspaceProject, documents);

@@ -57,6 +57,22 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
+        public void GetAndSetTagHelpers_ReturnsTagHelpers()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = new[] { TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build() };
+            codeDocument.SetTagHelpers(expected);
+
+            // Act
+            var actual = codeDocument.GetTagHelpers();
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
         public void GetIRDocument_ReturnsIRDocument()
         {
             // Arrange

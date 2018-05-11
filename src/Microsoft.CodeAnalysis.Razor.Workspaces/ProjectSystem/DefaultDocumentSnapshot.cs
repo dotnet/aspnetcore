@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Text;
@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class DefaultDocumentSnapshot : DocumentSnapshot
     {
-        public DefaultDocumentSnapshot(ProjectSnapshot project, DocumentState state)
+        public DefaultDocumentSnapshot(DefaultProjectSnapshot project, DocumentState state)
         {
             if (project == null)
             {
@@ -27,13 +27,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             State = state;
         }
 
-        public ProjectSnapshot Project { get; }
+        public DefaultProjectSnapshot Project { get; }
 
         public DocumentState State { get; }
 
         public override string FilePath => State.HostDocument.FilePath;
 
         public override string TargetPath => State.HostDocument.TargetPath;
+
+        public override IReadOnlyList<DocumentSnapshot> GetImports()
+        {
+            return State.Imports.GetImports(Project, this);
+        }
 
         public override Task<SourceText> GetTextAsync()
         {

@@ -4,12 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
-using Moq;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -373,7 +371,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.NotSame(original.TagHelpers, state.TagHelpers);
 
             Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
-            Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
+            Assert.NotSame(original.Documents[Documents[2].FilePath], state.Documents[Documents[2].FilePath]);
         }
 
         [Fact]
@@ -393,6 +391,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.Same(original, state);
+        }
+
+        [Fact]
+        public void ProjectState_WithHostProject_CallsConfigurationChangeOnDocumentState()
+        {
+            // Arrange
+            var callCount = 0;
+
+            var documents = new Dictionary<string, DocumentState>();
+            documents[Documents[1].FilePath] = TestDocumentState.Create(Workspace.Services, Documents[1], onConfigurationChange: () => callCount++);
+            documents[Documents[2].FilePath] = TestDocumentState.Create(Workspace.Services, Documents[2], onConfigurationChange: () => callCount++);
+
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject);
+            original.Documents = documents;
+
+            var changed = WorkspaceProject.WithAssemblyName("Test1");
+
+            // Act
+            var state = original.WithHostProject(HostProjectWithConfigurationChange);
+
+            // Assert
+            Assert.NotEqual(original.Version, state.Version);
+            Assert.Same(HostProjectWithConfigurationChange, state.HostProject);
+            Assert.Equal(2, callCount);
         }
 
         [Fact]
@@ -418,7 +440,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.NotSame(original.TagHelpers, state.TagHelpers);
 
             Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
-            Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
+            Assert.NotSame(original.Documents[Documents[2].FilePath], state.Documents[Documents[2].FilePath]);
         }
 
         [Fact]
@@ -472,7 +494,92 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.NotSame(original.TagHelpers, state.TagHelpers);
 
             Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
-            Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
+            Assert.NotSame(original.Documents[Documents[2].FilePath], state.Documents[Documents[2].FilePath]);
+        }
+
+        [Fact]
+        public void ProjectState_WithWorkspaceProject_CallsWorkspaceProjectChangeOnDocumentState()
+        {
+            // Arrange
+            var callCount = 0;
+
+            var documents = new Dictionary<string, DocumentState>();
+            documents[Documents[1].FilePath] = TestDocumentState.Create(Workspace.Services, Documents[1], onWorkspaceProjectChange: () => callCount++);
+            documents[Documents[2].FilePath] = TestDocumentState.Create(Workspace.Services, Documents[2], onWorkspaceProjectChange: () => callCount++);
+
+            var original = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject);
+            original.Documents = documents;
+
+            var changed = WorkspaceProject.WithAssemblyName("Test1");
+
+            // Act
+            var state = original.WithWorkspaceProject(changed);
+
+            // Assert
+            Assert.NotEqual(original.Version, state.Version);
+            Assert.Equal(2, callCount);
+        }
+
+        private class TestDocumentState : DocumentState
+        {
+            public static TestDocumentState Create(
+                HostWorkspaceServices services,
+                HostDocument hostDocument,
+                Func<Task<TextAndVersion>> loader = null,
+                Action onTextChange = null,
+                Action onTextLoaderChange = null,
+                Action onConfigurationChange = null,
+                Action onWorkspaceProjectChange = null)
+            {
+                return new TestDocumentState(services, hostDocument, null, null, loader, onTextChange, onTextLoaderChange, onConfigurationChange, onWorkspaceProjectChange);
+            }
+
+            Action _onTextChange;
+            Action _onTextLoaderChange;
+            Action _onConfigurationChange;
+            Action _onWorkspaceProjectChange;
+
+            private TestDocumentState(
+                HostWorkspaceServices services,
+                HostDocument hostDocument,
+                SourceText text,
+                VersionStamp? version,
+                Func<Task<TextAndVersion>> loader,
+                Action onTextChange,
+                Action onTextLoaderChange,
+                Action onConfigurationChange,
+                Action onWorkspaceProjectChange)
+                : base(services, hostDocument, text, version, loader)
+            {
+                _onTextChange = onTextChange;
+                _onTextLoaderChange = onTextLoaderChange;
+                _onConfigurationChange = onConfigurationChange;
+                _onWorkspaceProjectChange = onWorkspaceProjectChange;
+            }
+
+            public override DocumentState WithText(SourceText sourceText, VersionStamp version)
+            {
+                _onTextChange?.Invoke();
+                return base.WithText(sourceText, version);
+            }
+
+            public override DocumentState WithTextLoader(Func<Task<TextAndVersion>> loader)
+            {
+                _onTextLoaderChange?.Invoke();
+                return base.WithTextLoader(loader);
+            }
+
+            public override DocumentState WithConfigurationChange()
+            {
+                _onConfigurationChange?.Invoke();
+                return base.WithConfigurationChange();
+            }
+
+            public override DocumentState WithWorkspaceProjectChange()
+            {
+                _onWorkspaceProjectChange?.Invoke();
+                return base.WithWorkspaceProjectChange();
+            }
         }
     }
 }

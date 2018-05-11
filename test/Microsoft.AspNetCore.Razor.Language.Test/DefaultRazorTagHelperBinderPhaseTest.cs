@@ -172,6 +172,129 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
+        public void Execute_WithTagHelperDescriptorsFromCodeDocument_RewritesTagHelpers()
+        {
+            // Arrange
+            var projectEngine = RazorProjectEngine.Create();
+            var tagHelpers = new[]
+            {
+                CreateTagHelperDescriptor(
+                    tagName: "form",
+                    typeName: "TestFormTagHelper",
+                    assemblyName: "TestAssembly"),
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "TestInputTagHelper",
+                    assemblyName: "TestAssembly"),
+            };
+
+            var phase = new DefaultRazorTagHelperBinderPhase()
+            {
+                Engine = projectEngine.Engine,
+            };
+
+            var sourceDocument = CreateTestSourceDocument();
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
+            codeDocument.SetTagHelpers(tagHelpers);
+
+            // Act
+            phase.Execute(codeDocument);
+
+            // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
+            Assert.Empty(rewrittenTree.Diagnostics);
+            Assert.Equal(3, rewrittenTree.Root.Children.Count);
+            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
+            Assert.Equal("form", formTagHelper.TagName);
+            Assert.Equal(3, formTagHelper.Children.Count);
+            var inputTagHelper = Assert.IsType<TagHelperBlock>(formTagHelper.Children[1]);
+            Assert.Equal("input", inputTagHelper.TagName);
+        }
+
+        [Fact]
+        public void Execute_NullTagHelperDescriptorsFromCodeDocument_FallsBackToTagHelperFeature()
+        {
+            // Arrange
+            var tagHelpers = new[]
+            {
+                CreateTagHelperDescriptor(
+                    tagName: "form",
+                    typeName: "TestFormTagHelper",
+                    assemblyName: "TestAssembly"),
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "TestInputTagHelper",
+                    assemblyName: "TestAssembly"),
+            };
+            var projectEngine = RazorProjectEngine.Create(builder => builder.AddTagHelpers(tagHelpers));
+
+            var phase = new DefaultRazorTagHelperBinderPhase()
+            {
+                Engine = projectEngine.Engine,
+            };
+
+            var sourceDocument = CreateTestSourceDocument();
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
+            codeDocument.SetTagHelpers(tagHelpers: null);
+
+            // Act
+            phase.Execute(codeDocument);
+
+            // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
+            Assert.Empty(rewrittenTree.Diagnostics);
+            Assert.Equal(3, rewrittenTree.Root.Children.Count);
+            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
+            Assert.Equal("form", formTagHelper.TagName);
+            Assert.Equal(3, formTagHelper.Children.Count);
+            var inputTagHelper = Assert.IsType<TagHelperBlock>(formTagHelper.Children[1]);
+            Assert.Equal("input", inputTagHelper.TagName);
+        }
+
+        [Fact]
+        public void Execute_EmptyTagHelperDescriptorsFromCodeDocument_DoesNotFallbackToTagHelperFeature()
+        {
+            // Arrange
+            var tagHelpers = new[]
+            {
+                CreateTagHelperDescriptor(
+                    tagName: "form",
+                    typeName: "TestFormTagHelper",
+                    assemblyName: "TestAssembly"),
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "TestInputTagHelper",
+                    assemblyName: "TestAssembly"),
+            };
+            var projectEngine = RazorProjectEngine.Create(builder => builder.AddTagHelpers(tagHelpers));
+
+            var phase = new DefaultRazorTagHelperBinderPhase()
+            {
+                Engine = projectEngine.Engine,
+            };
+
+            var sourceDocument = CreateTestSourceDocument();
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
+            codeDocument.SetTagHelpers(tagHelpers: Array.Empty<TagHelperDescriptor>());
+
+            // Act
+            phase.Execute(codeDocument);
+
+            // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
+            Assert.Empty(rewrittenTree.Diagnostics);
+            Assert.Equal(7, rewrittenTree.Root.Children.Count);
+            var rewrittenNodes = rewrittenTree.Root.Children.OfType<TagHelperBlock>();
+            Assert.Empty(rewrittenNodes);
+        }
+
+        [Fact]
         public void Execute_DirectiveWithoutQuotes_RewritesTagHelpers_TagHelperMatchesElementTwice()
         {
             // Arrange
@@ -278,35 +401,58 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Execute_NoopsWhenNoTagHelperFeature()
+        public void Execute_TagHelpersFromCodeDocumentAndFeature_PrefersCodeDocument()
         {
             // Arrange
-            var projectEngine = RazorProjectEngine.Create();
+            var featureTagHelpers = new[]
+            {
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "TestInputTagHelper",
+                    assemblyName: "TestAssembly"),
+            };
+            var projectEngine = RazorProjectEngine.Create(builder => builder.AddTagHelpers(featureTagHelpers));
+
             var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = projectEngine.Engine,
             };
+
             var sourceDocument = CreateTestSourceDocument();
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(originalTree);
 
+            var codeDocumentTagHelpers = new[]
+            {
+                CreateTagHelperDescriptor(
+                    tagName: "form",
+                    typeName: "TestFormTagHelper",
+                    assemblyName: "TestAssembly"),
+            };
+            codeDocument.SetTagHelpers(codeDocumentTagHelpers);
+
             // Act
             phase.Execute(codeDocument);
 
             // Assert
-            var outputTree = codeDocument.GetSyntaxTree();
-            Assert.Empty(outputTree.Diagnostics);
-            Assert.Same(originalTree, outputTree);
+            var rewrittenTree = codeDocument.GetSyntaxTree();
+            Assert.Empty(rewrittenTree.Diagnostics);
+            Assert.Equal(3, rewrittenTree.Root.Children.Count);
+            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
+            Assert.Equal("form", formTagHelper.TagName);
+            Assert.Collection(
+                formTagHelper.Children,
+                node => Assert.IsNotType<TagHelperBlock>(node),
+                node => Assert.IsNotType<TagHelperBlock>(node),
+                node => Assert.IsNotType<TagHelperBlock>(node));
         }
 
         [Fact]
-        public void Execute_NoopsWhenNoFeature()
+        public void Execute_NoopsWhenNoTagHelpersFromCodeDocumentOrFeature()
         {
             // Arrange
-            var projectEngine = RazorProjectEngine.Create(builder =>
-            {
-            });
+            var projectEngine = RazorProjectEngine.Create();
             var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = projectEngine.Engine,

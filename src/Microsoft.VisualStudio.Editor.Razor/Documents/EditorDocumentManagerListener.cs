@@ -32,6 +32,16 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             _onClosed = Document_Closed;
         }
 
+        // For testing purposes only.
+        internal EditorDocumentManagerListener(EditorDocumentManager documentManager, EventHandler onChangedOnDisk, EventHandler onChangedInEditor, EventHandler onOpened, EventHandler onClosed)
+        {
+            _documentManager = documentManager;
+            _onChangedOnDisk = onChangedOnDisk;
+            _onChangedInEditor = onChangedInEditor;
+            _onOpened = onOpened;
+            _onClosed = onClosed;
+        }
+
         public override void Initialize(ProjectSnapshotManagerBase projectManager)
         {
             if (projectManager == null)
@@ -45,17 +55,18 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             _projectManager.Changed += ProjectManager_Changed;
         }
 
-        private void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
+        // Internal for testing.
+        internal void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
         {
             switch (e.Kind)
             {
                 case ProjectChangeKind.DocumentAdded:
                     {
                         var key = new DocumentKey(e.ProjectFilePath, e.DocumentFilePath);
-                        var document = _documentManager.GetOrCreateDocument(key, _onChangedOnDisk, _onChangedOnDisk, _onOpened, _onClosed);
+                        var document = _documentManager.GetOrCreateDocument(key, _onChangedOnDisk, _onChangedInEditor, _onOpened, _onClosed);
                         if (document.IsOpenInEditor)
                         {
-                            Document_Opened(document, EventArgs.Empty);
+                            _onOpened(document, EventArgs.Empty);
                         }
 
                         break;

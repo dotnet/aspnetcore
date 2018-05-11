@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -16,6 +18,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private Task<RazorCodeDocument> _task;
         
         private IReadOnlyList<TagHelperDescriptor> _tagHelpers;
+        private IReadOnlyList<ImportItem> _imports;
 
         public DocumentGeneratedOutputTracker(DocumentGeneratedOutputTracker older)
         {
@@ -62,13 +65,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private async Task<RazorCodeDocument> GetGeneratedOutputInitializationTaskCore(ProjectSnapshot project, DocumentSnapshot document)
         {
             var tagHelpers = await project.GetTagHelpersAsync().ConfigureAwait(false);
+            var imports = await GetImportsAsync(project, document);
+
             if (_older != null && _older.IsResultAvailable)
             {
-                var difference = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
-                difference.UnionWith(_older._tagHelpers);
-                difference.SymmetricExceptWith(tagHelpers);
+                var tagHelperDifference = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
+                tagHelperDifference.UnionWith(_older._tagHelpers);
+                tagHelperDifference.SymmetricExceptWith(tagHelpers);
 
-                if (difference.Count == 0)
+                var importDifference = new HashSet<ImportItem>();
+                importDifference.UnionWith(_older._imports);
+                importDifference.SymmetricExceptWith(imports);
+
+                if (tagHelperDifference.Count == 0 && importDifference.Count == 0)
                 {
                     // We can use the cached result.
                     var result = _older._task.Result;
@@ -76,8 +85,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     // Drop reference so it can be GC'ed
                     _older = null;
 
-                    // Cache the tag helpers so the next version can use them
+                    // Cache the tag helpers and imports so the next version can use them
                     _tagHelpers = tagHelpers;
+                    _imports = imports;
 
                     return result;
                 }
@@ -86,13 +96,77 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Drop reference so it can be GC'ed
             _older = null;
 
-
-            // Cache the tag helpers so the next version can use them
+            // Cache the tag helpers and imports so the next version can use them
             _tagHelpers = tagHelpers;
+            _imports = imports;
+
+            var importSources = new List<RazorSourceDocument>();
+            foreach (var item in imports)
+            {
+                var sourceDocument = await GetRazorSourceDocumentAsync(item.Import);
+                importSources.Add(sourceDocument);
+            }
+
+            var documentSource = await GetRazorSourceDocumentAsync(document);
 
             var projectEngine = project.GetProjectEngine();
-            var projectItem = projectEngine.FileSystem.GetItem(document.FilePath);
-            return projectItem == null ? null : projectEngine.ProcessDesignTime(projectItem);
+
+            return projectEngine.ProcessDesignTime(documentSource, importSources, tagHelpers);
+        }
+
+        private async Task<RazorSourceDocument> GetRazorSourceDocumentAsync(DocumentSnapshot document)
+        {
+            var sourceText = await document.GetTextAsync();
+
+            return sourceText.GetRazorSourceDocument(document.FilePath);
+        }
+
+        private async Task<IReadOnlyList<ImportItem>> GetImportsAsync(ProjectSnapshot project, DocumentSnapshot document)
+        {
+            var imports = new List<ImportItem>();
+            foreach (var snapshot in document.GetImports())
+            {
+                var versionStamp = await snapshot.GetTextVersionAsync();
+                imports.Add(new ImportItem(snapshot.FilePath, versionStamp, snapshot));
+            }
+
+            return imports;
+        }
+
+        private struct ImportItem : IEquatable<ImportItem>
+        {
+            public ImportItem(string filePath, VersionStamp versionStamp, DocumentSnapshot import)
+            {
+                FilePath = filePath;
+                VersionStamp = versionStamp;
+                Import = import;
+            }
+
+            public string FilePath { get; }
+
+            public VersionStamp VersionStamp { get; }
+
+            public DocumentSnapshot Import { get; }
+
+            public bool Equals(ImportItem other)
+            {
+                return
+                    FilePathComparer.Instance.Equals(FilePath, other.FilePath) &&
+                    VersionStamp == other.VersionStamp;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is ImportItem item ? Equals(item) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                var hash = new HashCodeCombiner();
+                hash.Add(FilePath, FilePathComparer.Instance);
+                hash.Add(VersionStamp);
+                return hash;
+            }
         }
     }
 }

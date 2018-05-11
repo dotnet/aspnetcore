@@ -81,32 +81,5 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 Assert.Null(document.EditorTextContainer);
             }
         }
-
-        private class TestSourceTextContainer : SourceTextContainer
-        {
-            public override event EventHandler<TextChangeEventArgs> TextChanged;
-
-            private SourceText _currentText;
-
-            public TestSourceTextContainer()
-                : this(SourceText.From(string.Empty))
-            {
-            }
-
-            public TestSourceTextContainer(SourceText text)
-            {
-                _currentText = text;
-            }
-
-            public override SourceText CurrentText => _currentText;
-
-            public void PushChange(SourceText text)
-            {
-                var args = new TextChangeEventArgs(_currentText, text);
-                _currentText = text;
-
-                TextChanged?.Invoke(this, args);
-            }
-        }
     }
 }

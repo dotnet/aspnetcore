@@ -24,6 +24,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private VersionStamp? _version;
 
         private DocumentGeneratedOutputTracker _generatedOutput;
+        private DocumentImportsTracker _imports;
 
         public static DocumentState Create(
             HostWorkspaceServices services,
@@ -44,7 +45,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return new DocumentState(services, hostDocument, null, null, loader);
         }
 
-        private DocumentState(
+        // Internal for testing
+        internal DocumentState(
             HostWorkspaceServices services,
             HostDocument hostDocument,
             SourceText text,
@@ -79,6 +81,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 return _generatedOutput;
+            }
+        }
+
+        public DocumentImportsTracker Imports
+        {
+            get
+            {
+                if (_imports == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_imports == null)
+                        {
+                            _imports = new DocumentImportsTracker();
+                        }
+                    }
+                }
+
+                return _imports;
             }
         }
 
@@ -148,7 +169,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return false;
         }
 
-        public DocumentState WithConfigurationChange()
+        public virtual DocumentState WithConfigurationChange()
         {
             var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);
 
@@ -160,7 +181,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return state;
         }
 
-        public DocumentState WithWorkspaceProjectChange()
+        public virtual DocumentState WithWorkspaceProjectChange()
         {
             var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);
 
@@ -175,7 +196,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return state;
         }
 
-        public DocumentState WithText(SourceText sourceText, VersionStamp version)
+        public virtual DocumentState WithText(SourceText sourceText, VersionStamp version)
         {
             if (sourceText == null)
             {
@@ -185,8 +206,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return new DocumentState(Services, HostDocument, sourceText, version, null);
         }
 
-
-        public DocumentState WithTextLoader(Func<Task<TextAndVersion>> loader)
+        public virtual DocumentState WithTextLoader(Func<Task<TextAndVersion>> loader)
         {
             if (loader == null)
             {
