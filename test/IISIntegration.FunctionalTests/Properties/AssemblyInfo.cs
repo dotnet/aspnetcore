@@ -4,5 +4,4 @@
 // All functional tests in this project require a version of IIS express with an updated schema
 using Xunit;
 
-[assembly: Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests.IISExpressSupportsInProcessHosting]
 [assembly: CollectionBehavior(DisableTestParallelization = true)]

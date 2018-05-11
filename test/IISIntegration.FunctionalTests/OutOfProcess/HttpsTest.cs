@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-#if NETCOREAPP2_1
 
 using System;
 using System.IO;
@@ -8,6 +7,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -25,42 +25,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task Https_HelloWorld_CLR_X64(ANCMVersion ancmVersion)
-        {
-            return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396, ancmVersion);
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllAncmVersions();
 
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task Https_HelloWorld_CoreCLR_X64_Portable(ANCMVersion ancmVersion)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task HttpsHelloWorld(TestVariant variant)
         {
-            return HttpsHelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44394, ancmVersion);
-        }
-
-        private async Task HttpsHelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, ANCMVersion ancmVersion)
-        {
-            var serverType = ServerType.IISExpress;
-            var architecture = RuntimeArchitecture.x64;
-
-            var applicationBaseUrl = $"https://localhost:{port}/";
-            var testName = $"HttpsHelloWorld_{runtimeFlavor}";
+            var applicationBaseUrl = $"https://localhost:44394/";
+            var testName = $"HttpsHelloWorld_{variant.Tfm}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/Https.config") : null,
+                    ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Https.config"),
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
-                    ApplicationType = applicationType,
-                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
@@ -93,61 +79,37 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable(ANCMVersion ancmVersion)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public Task HttpsHelloWorld_NoClientCert(TestVariant variant)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44397, sendClientCert: false, ancmVersion);
-        }
-
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task Https_HelloWorld_NoClientCert_Clr_X64(ANCMVersion ancmVersion)
-        {
-            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false, ancmVersion);
+            return HttpsHelloWorldCerts(variant, port: 44397, sendClientCert: false);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Theory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
+        [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
+        [MemberData(nameof(TestVariants))]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-        public Task Https_HelloWorld_ClientCert_Clr_X64(ANCMVersion ancmVersion)
+        public Task HttpsHelloWorld_ClientCert(TestVariant variant)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44301, sendClientCert: true, ancmVersion);
+            return HttpsHelloWorldCerts(variant, port: 44301, sendClientCert: true);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Theory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
-        public Task Https_HelloWorld_ClientCert_CoreCLR_X64_Portable(ANCMVersion ancmVersion)
+        private async Task HttpsHelloWorldCerts(TestVariant variant, int port, bool sendClientCert)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44302, sendClientCert: true, ancmVersion);
-        }
-
-        private async Task HttpsHelloWorldCerts(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, bool sendClientCert, ANCMVersion ancmVersion)
-        {
-            var serverType = ServerType.IISExpress;
-            var architecture = RuntimeArchitecture.x64;
             var applicationBaseUrl = $"https://localhost:{port}/";
-            var testName = $"HttpsHelloWorldCerts_{runtimeFlavor}";
+            var testName = $"HttpsHelloWorldCerts_{variant.Tfm}_{sendClientCert}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/Https.config") : null,
+                    ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Https.config"),
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
-                    ApplicationType = applicationType,
-                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
@@ -230,7 +192,3 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NET461
-#else
-#error Target frameworks need to be updated
-#endif

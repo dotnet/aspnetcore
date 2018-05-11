@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET461
-
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
+    [SkipIfIISExpressSchemaMissingInProcess]
     public class AuthenticationTests
     {
         private readonly IISTestSiteFixture _fixture;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task Authentication_InProcess_IISExpressAsync()
+        public async Task Authentication_InProcess()
         {
             var response = await _fixture.Client.GetAsync("/AuthenticationAnonymous");
 
@@ -61,7 +61,3 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NETCOREAPP2_1
-#else
-#error Target frameworks need to be updated
-#endif

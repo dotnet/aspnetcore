@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-#if NETCOREAPP2_1
 
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -19,47 +19,27 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task HelloWorld_IISExpress_Clr_X64_Portable(ANCMVersion ancmVersion)
-        {
-            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, ancmVersion);
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllApplicationTypes()
+                .WithAllAncmVersions();
 
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Portable(ANCMVersion ancmVersion)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task HelloWorld(TestVariant variant)
         {
-            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, ancmVersion);
-        }
-
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Standalone(ANCMVersion ancmVersion)
-        {
-            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Standalone, ancmVersion);
-        }
-
-        private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, ANCMVersion ancmVersion)
-        {
-            var serverType = ServerType.IISExpress;
-            var architecture = RuntimeArchitecture.x64;
-            var testName = $"HelloWorld_{runtimeFlavor}";
+            var testName = $"HelloWorld_{variant.Tfm}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/Http.config") : null,
+                    ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Http.config"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
-                    ApplicationType = applicationType,
-                    ANCMVersion = ancmVersion
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
@@ -107,7 +87,3 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NET461
-#else
-#error Target frameworks need to be updated
-#endif

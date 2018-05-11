@@ -15,6 +15,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [SkipIfIISExpressSchemaMissingInProcess]
     public class StartupTests : LoggedTest
     {
         public StartupTests(ITestOutputHelper output) : base(output)
@@ -25,12 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Fact]
         public async Task ExpandEnvironmentVariableInWebConfig()
         {
-#if NET461
-            // use the dotnet on PATH
-            var dotnetLocation = "dotnet";
-#else
             var dotnetLocation = DotNetMuxer.MuxerPathOrDefault();
-#endif
             using (StartLog(out var loggerFactory))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
@@ -96,9 +92,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-#if NETCOREAPP2_1
-
-        [Fact] // Consistently fails on CI for net461
+        [Fact]
         public async Task StandaloneApplication_ExpectCorrectPublish()
         {
             using (StartLog(out var loggerFactory))
@@ -133,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [Fact] // Consistently fails on CI for net461
+        [Fact]
         public async Task StandaloneApplication_AbsolutePathToExe_ExpectCorrectPublish()
         {
             using (StartLog(out var loggerFactory))
@@ -170,11 +164,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-#elif NET461
-#else
-#error Target frameworks need to be updated
-#endif
-
         [Fact]
         public async Task DetectsOveriddenServer()
         {
@@ -200,9 +189,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Http.config"),
                 SiteName = "HttpTestSite", // This is configured in the Http.config
-                TargetFramework = "netcoreapp2.1",
+                TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
-                ANCMVersion = ANCMVersion.AspNetCoreModuleV2
+                AncmVersion = AncmVersion.AspNetCoreModuleV2
             };
         }
 

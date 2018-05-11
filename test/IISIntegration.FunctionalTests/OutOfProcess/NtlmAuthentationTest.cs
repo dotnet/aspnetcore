@@ -1,16 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET461
-// Per https://github.com/dotnet/corefx/issues/5045, HttpClientHandler.UseDefaultCredentials does not work correctly in CoreFx.
-// We'll require the desktop HttpClient to run these tests.
-
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -25,41 +22,27 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task NtlmAuthentication_Clr_X64(ANCMVersion ancmVersion)
-        {
-            return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, ancmVersion);
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithAllAncmVersions();
 
-        [Theory]
-        [InlineData(ANCMVersion.AspNetCoreModule)]
-        [InlineData(ANCMVersion.AspNetCoreModuleV2)]
-        public Task NtlmAuthentication_CoreClr_X64_Portable(ANCMVersion ancmVersion)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task NtlmAuthentication(TestVariant variant)
         {
-            return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, ancmVersion);
-        }
-
-        private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, ANCMVersion ancmVersion)
-        {
-            var serverType = ServerType.IISExpress;
-            var architecture = RuntimeArchitecture.x64;
-            var testName = $"NtlmAuthentication_{runtimeFlavor}";
+            var testName = $"NtlmAuthentication_{variant.Tfm}_{variant.AncmVersion}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
-                    ApplicationBaseUriHint = $"http://localhost:{port}",
+                    ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
+                    ApplicationBaseUriHint = $"http://localhost:5052",
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("AppHostConfig/NtlmAuthentation.config") : null,
+                    ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/NtlmAuthentation.config"),
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.1",
-                    ApplicationType = applicationType,
-                    ANCMVersion = ancmVersion,
-
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
@@ -126,7 +109,3 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NETCOREAPP2_1
-#else
-#error Target frameworks need to be updated
-#endif

@@ -23,67 +23,52 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Fact]
-        public Task UpgradeFeatureDetectionDisabled_InProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionDisabled_InProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
-                ApplicationType.Portable,
-                "AppHostConfig/WebsocketsNotSupported.config",
+            return UpgradeFeatureDetectionDeployer("AppHostConfig/WebsocketsNotSupported.config",
                 Helpers.GetInProcessTestSitesPath(),
                 "Disabled");
         }
 
         [Fact]
-        public Task UpgradeFeatureDetectionEnabled_InProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionEnabled_InProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
-                ApplicationType.Portable,
-                "AppHostConfig/Http.config",
+            return UpgradeFeatureDetectionDeployer("AppHostConfig/Http.config",
                 Helpers.GetInProcessTestSitesPath(),
                 _isWebsocketsSupported);
         }
 
         [Fact]
-        public Task UpgradeFeatureDetectionDisabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionDisabled_OutOfProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
-                ApplicationType.Portable,
-                "AppHostConfig/WebsocketsNotSupported.config",
+            return UpgradeFeatureDetectionDeployer("AppHostConfig/WebsocketsNotSupported.config",
                 Helpers.GetOutOfProcessTestSitesPath(),
                 "Disabled");
         }
 
-        // This test is failing on win7 and win2008
         [Fact]
-        public Task UpgradeFeatureDetectionEnabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
+        public Task UpgradeFeatureDetectionEnabled_OutOfProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,
-                ApplicationType.Portable,
-                "AppHostConfig/Http.config",
+            return UpgradeFeatureDetectionDeployer("AppHostConfig/Http.config",
                 Helpers.GetOutOfProcessTestSitesPath(),
                 _isWebsocketsSupported);
         }
 
-        private async Task UpgradeFeatureDetectionDeployer(RuntimeFlavor runtimeFlavor,
-            ApplicationType applicationType,
-            string configPath,
-            string sitePath,
-            string expected)
+        private async Task UpgradeFeatureDetectionDeployer(string configPath, string sitePath, string expected)
         {
-            var serverType = ServerType.IISExpress;
-            var architecture = RuntimeArchitecture.x64;
-            var testName = $"HelloWorld_{runtimeFlavor}";
+            var testName = $"HelloWorld";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(sitePath, serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(sitePath, ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "UpgradeFeatureDetection", // Will pick the Start class named 'StartupHelloWorld',
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
+                    ServerConfigTemplateContent = File.ReadAllText(configPath),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = "netcoreapp2.1",
-                    ApplicationType = applicationType,
-                    ANCMVersion = ANCMVersion.AspNetCoreModuleV2
+                    TargetFramework = Tfm.NetCoreApp22,
+                    ApplicationType = ApplicationType.Portable,
+                    AncmVersion = AncmVersion.AspNetCoreModuleV2
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

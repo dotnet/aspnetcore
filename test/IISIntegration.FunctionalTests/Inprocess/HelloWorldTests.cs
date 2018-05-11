@@ -3,12 +3,14 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
+    [SkipIfIISExpressSchemaMissingInProcess]
     public class HelloWorldInProcessTests
     {
         private readonly IISTestSiteFixture _fixture;
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task HelloWorld_InProcess_IISExpress_CoreClr_X64_Portable()
+        public async Task HelloWorld_InProcess()
         {
             Assert.Equal("Hello World", await _fixture.Client.GetStringAsync("/HelloWorld"));
 
