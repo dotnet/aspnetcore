@@ -2,9 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Prevent the SDK from validating the supported tfm. Can be removed when a new SDK supporting netcoreapp2.2 is available. -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
   
   <ItemGroup>
