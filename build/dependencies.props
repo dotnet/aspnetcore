@@ -1,22 +1,22 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17048</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.2.0-preview1-34140</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34140</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34140</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34140</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17051</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.2.0-preview1-26424-04</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26502-01</MicrosoftNETCoreApp22PackageVersion>
-    <MicrosoftNetHttpHeadersPackageVersion>2.2.0-preview1-34140</MicrosoftNetHttpHeadersPackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-rc1</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26509-06</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNetHttpHeadersPackageVersion>2.2.0-preview1-34184</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.5.0-preview3-26423-04</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26508-04</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0-preview3-26423-04</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview3-26423-04</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview1-26508-04</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.6.0-preview1-26508-04</SystemSecurityPrincipalWindowsPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
