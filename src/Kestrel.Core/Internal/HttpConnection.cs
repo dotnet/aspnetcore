@@ -238,10 +238,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             });
         }
 
-        public void OnConnectionClosed(Exception ex)
+        public void OnConnectionClosed()
         {
-            Abort(ex);
-
             _socketClosedTcs.TrySetResult(null);
         }
 
