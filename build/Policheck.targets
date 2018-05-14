@@ -68,6 +68,9 @@
         $(PoliCheckPath)**\jquery-validation\dist\additional-methods*.js">
         <Justification>Third party code shipping in our packages</Justification>
       </FileExclusions>
+      <FileExclusions Include="$(PoliCheckPath)**\*.deps.json">
+        <Justification>Contains generated shasums in base64 which may contain violations.</Justification>
+      </FileExclusions>
     </ItemGroup>
   </Target>
 
