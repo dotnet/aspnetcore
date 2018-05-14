@@ -59,6 +59,24 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
 
         /// <summary>
+        /// Indicates the state of the <see cref="HubConnection"/> to the server.
+        /// </summary>
+        public HubConnectionState State
+        {
+            get
+            {
+                // Copy reference for thread-safety
+                var connectionState = _connectionState;
+                if (connectionState == null || connectionState.Stopped)
+                {
+                    return HubConnectionState.Disconnected;
+                }
+
+                return HubConnectionState.Connected;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="HubConnection"/> class.
         /// </summary>
         /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
@@ -993,6 +1011,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 get => _stopping;
                 set => _stopping = value;
             }
+
+            public bool Stopped => _stopTcs?.Task.Status == TaskStatus.RanToCompletion;
 
             public ConnectionState(ConnectionContext connection, HubConnection hubConnection)
             {
