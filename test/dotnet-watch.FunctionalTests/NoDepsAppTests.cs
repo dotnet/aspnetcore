@@ -5,6 +5,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,10 +17,34 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
         private readonly WatchableApp _app;
+        private readonly ITestOutputHelper _output;
 
         public NoDepsAppTests(ITestOutputHelper logger)
         {
             _app = new WatchableApp("NoDepsApp", logger);
+            _output = logger;
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing SIGINT is specific to macOS/Linux")]
+        public async Task KillsProcessOnSigInt()
+        {
+            void SendSigInt(int pid)
+            {
+                _output.WriteLine($"kill -SIGINT {pid}");
+                Process.Start("kill", $"-SIGINT {pid}");
+            }
+
+            await _app.StartWatcherAsync(new[] { "--no-exit" });
+
+            var childPid = await _app.GetProcessId();
+
+            SendSigInt(_app.Process.Id);
+            SendSigInt(childPid);
+
+            await _app.Process.Exited.TimeoutAfter(TimeSpan.FromSeconds(30));
+
+            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code"));
         }
 
         [Fact]
@@ -33,6 +59,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.WriteAllText(fileToChange, programCs);
 
             await _app.HasRestarted();
+            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code"));
+
             var pid2 = await _app.GetProcessId();
             Assert.NotEqual(pid, pid2);
 

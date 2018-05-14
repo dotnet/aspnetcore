@@ -69,8 +69,10 @@ namespace Microsoft.DotNet.Watcher
 
                     await Task.WhenAll(processTask, fileSetTask);
 
-                    if (processTask.Result != 0 && finishedTask == processTask)
+                    if (processTask.Result != 0 && finishedTask == processTask && !cancellationToken.IsCancellationRequested)
                     {
+                        // Only show this error message if the process exited non-zero due to a normal process exit.
+                        // Don't show this if dotnet-watch killed the inner process due to file change or CTRL+C by the user
                         _reporter.Error($"Exited with error code {processTask.Result}");
                     }
                     else

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,15 +17,25 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
     {
         private Process _process;
         private readonly ProcessSpec _spec;
+        private readonly List<string> _lines;
         private BufferBlock<string> _source;
         private ITestOutputHelper _logger;
+        private TaskCompletionSource<int> _exited;
 
         public AwaitableProcess(ProcessSpec spec, ITestOutputHelper logger)
         {
             _spec = spec;
             _logger = logger;
             _source = new BufferBlock<string>();
+            _lines = new List<string>();
+            _exited = new TaskCompletionSource<int>();
         }
+
+        public IEnumerable<string> Output => _lines;
+
+        public Task Exited => _exited.Task;
+
+        public int Id => _process.Id;
 
         public void Start()
         {
@@ -52,6 +62,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 }
             };
 
+            foreach (var env in _spec.EnvironmentVariables)
+            {
+                _process.StartInfo.EnvironmentVariables[env.Key] = env.Value;
+            }
+
             _process.OutputDataReceived += OnData;
             _process.ErrorDataReceived += OnData;
             _process.Exited += OnExit;
@@ -65,13 +80,13 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public async Task<string> GetOutputLineAsync(string message, TimeSpan timeout)
         {
             _logger.WriteLine($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
-            return await GetOutputLineAsync(m => message == m).TimeoutAfter(timeout);
+            return await GetOutputLineAsync(m => string.Equals(m, message, StringComparison.Ordinal)).TimeoutAfter(timeout);
         }
 
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
         {
             _logger.WriteLine($"Waiting for output line [msg.StartsWith('{message}')]. Will wait for {timeout.TotalSeconds} sec.");
-            return await GetOutputLineAsync(m => m.StartsWith(message)).TimeoutAfter(timeout);
+            return await GetOutputLineAsync(m => m != null && m.StartsWith(message, StringComparison.Ordinal)).TimeoutAfter(timeout);
         }
 
         private async Task<string> GetOutputLineAsync(Predicate<string> predicate)
@@ -81,6 +96,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 while (await _source.OutputAvailableAsync())
                 {
                     var next = await _source.ReceiveAsync();
+                    _lines.Add(next);
                     _logger.WriteLine($"{DateTime.Now}: recv: '{next}'");
                     if (predicate(next))
                     {
@@ -119,6 +135,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             // Wait to ensure the process has exited and all output consumed
             _process.WaitForExit();
             _source.Complete();
+            _exited.TrySetResult(_process.ExitCode);
+            _logger.WriteLine($"Process {_process.Id} has exited");
         }
 
         public void Dispose()
@@ -135,6 +153,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 _process.ErrorDataReceived -= OnData;
                 _process.OutputDataReceived -= OnData;
                 _process.Exited -= OnExit;
+                _process.Dispose();
             }
         }
     }

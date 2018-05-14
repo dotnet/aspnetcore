@@ -102,6 +102,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.PrepareAsync();
             _app.Start(new [] { "--list" });
             var lines = await _app.Process.GetAllOutputLines();
+            var files = lines.Where(l => !l.StartsWith("watch :"));
 
             AssertEx.EqualFileList(
                 _app.Scenario.WorkFolder,
@@ -111,7 +112,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     "GlobbingApp/include/Foo.cs",
                     "GlobbingApp/GlobbingApp.csproj",
                 },
-                lines);
+                files);
         }
 
         public void Dispose()

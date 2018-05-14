@@ -121,7 +121,8 @@ namespace Microsoft.DotNet.Watcher
                 _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.");
             }
 
-            _cts.Cancel();
+            // Invoke the cancellation on the default thread pool to workaround https://github.com/dotnet/corefx/issues/29699
+            ThreadPool.QueueUserWorkItem(_ => _cts.Cancel());
         }
 
         private async Task<int> MainInternalAsync(
