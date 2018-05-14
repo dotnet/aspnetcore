@@ -12,15 +12,23 @@ namespace BenchmarkServer
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR()
-                .AddMessagePackProtocol();
+            services.AddSignalR(o =>
+            {
+                o.EnableDetailedErrors = true;
+            })
+            .AddMessagePackProtocol();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseSignalR(routes =>
             {
-                routes.MapHub<EchoHub>("/echo");
+                routes.MapHub<EchoHub>("/echo", o =>
+                {
+                    // Remove backpressure for benchmarking
+                    o.TransportMaxBufferSize = 0;
+                    o.ApplicationMaxBufferSize = 0;
+                });
             });
         }
     }
