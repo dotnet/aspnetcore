@@ -24,7 +24,7 @@ namespace E2ETests
         {
             return RunTests(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable);
         }
-#if !NETCOREAPP2_0 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task DotnetRunTests_X64_Kestrel_Clr()
@@ -32,7 +32,7 @@ namespace E2ETests
             // CLR must be published as standalone to perform rid specific deployment
             return RunTests(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Standalone);
         }
-#endif
+
         private Task RunTests(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
             => _testRunner.RunTests(serverType, runtimeFlavor, applicationType, RuntimeArchitecture.x64);
     }
