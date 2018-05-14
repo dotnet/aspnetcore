@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
             public AckInfo()
             {
                 Created = DateTime.UtcNow;
-                Tcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+                Tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
     }
