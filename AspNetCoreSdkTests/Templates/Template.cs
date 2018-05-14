@@ -12,7 +12,6 @@ namespace AspNetCoreSdkTests.Templates
 {
     public abstract class Template
     {
-        private static readonly TimeSpan _sleepBetweenHttpRequests = TimeSpan.FromMilliseconds(100);
         private static readonly TimeSpan _sleepBetweenOutputContains = TimeSpan.FromMilliseconds(100);
 
         private static readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler()
@@ -182,17 +181,7 @@ namespace AspNetCoreSdkTests.Templates
 
         private HttpResponseMessage Get(Uri requestUri)
         {
-            while (true)
-            {
-                try
-                {
-                    return _httpClient.GetAsync(requestUri).Result;
-                }
-                catch
-                {
-                    Thread.Sleep(_sleepBetweenHttpRequests);
-                }
-            }
+            return _httpClient.GetAsync(requestUri).Result;
         }
     }
 }
