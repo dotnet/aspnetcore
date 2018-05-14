@@ -355,7 +355,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             else if (node.Children.Count == 1 && node.Children[0] is HtmlContentIntermediateNode htmlNode)
             {
                 // This is how string attributes are lowered by default, a single HTML node with a single HTML token.
-                context.CodeWriter.WriteStringLiteral(((IntermediateToken)htmlNode.Children[0]).Content);
+                var content = string.Join(string.Empty, GetHtmlTokens(htmlNode).Select(t => t.Content));
+                context.CodeWriter.WriteStringLiteral(content);
             }
             else
             {
@@ -390,6 +391,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 // We generally expect all children to be CSharp, this is here just in case.
                 return attribute.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
+            }
+
+            IReadOnlyList<IntermediateToken> GetHtmlTokens(HtmlContentIntermediateNode html)
+            {
+                // We generally expect all children to be HTML, this is here just in case.
+                return html.FindDescendantNodes<IntermediateToken>().Where(t => t.IsHtml).ToArray();
             }
         }
 

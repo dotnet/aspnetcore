@@ -660,6 +660,8 @@ Welcome to your new app.
         [Fact] // https://github.com/aspnet/Blazor/issues/773
         public void Regression_773()
         {
+            GenerateBaselines = true;
+
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Blazor.Components;
@@ -675,6 +677,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
 @page ""/""
 
 <h1>Hello, world!</h1>
@@ -687,6 +690,7 @@ Welcome to your new app.
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
         }
 
         [Fact]

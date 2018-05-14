@@ -409,5 +409,38 @@ namespace Test
                 GetFrames((RenderFragment)innerFrames[1].AttributeValue),
                 frame => AssertFrame.Text(frame, "Some text", 4));
         }
+
+        [Fact] // https://github.com/aspnet/Blazor/issues/773
+        public void Regression_773()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class SurveyPrompt : BlazorComponent
+    {
+        [Parameter] private string Title { get; set; }
+    }
+}
+"));
+
+            var component = CompileToComponent(@"
+@addTagHelper *, TestAssembly
+@page ""/""
+
+<SurveyPrompt Title=""<div>Test!</div>"" />
+");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Component(frame, "Test.SurveyPrompt", 2, 0),
+                frame => AssertFrame.Attribute(frame, "Title", "<div>Test!</div>", 1));
+        }
     }
 }

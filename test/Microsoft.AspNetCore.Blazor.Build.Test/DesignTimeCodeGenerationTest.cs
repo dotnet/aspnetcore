@@ -425,6 +425,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
 @page ""/""
 
 <h1>Hello, world!</h1>
@@ -437,6 +438,7 @@ Welcome to your new app.
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
         }
 
         [Fact]

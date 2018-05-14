@@ -80,6 +80,21 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     RewriteChildren(_source, node);
                 }
             }
+            
+            public override void VisitHtmlAttribute(HtmlAttributeIntermediateNode node)
+            {
+                // Don't rewrite inside of attributes
+            }
+
+            public override void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
+            {
+                // Don't rewrite inside of attributes
+            }
+
+            public override void VisitTagHelperProperty(TagHelperPropertyIntermediateNode node)
+            {
+                // Don't rewrite inside of attributes
+            }
 
             private void RewriteChildren(RazorSourceDocument source, IntermediateNode node)
             {

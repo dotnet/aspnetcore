@@ -15,6 +15,10 @@ namespace Test
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+global::System.Object __typeHelper = "*, TestAssembly";
+        }
+        ))();
+        ((System.Action)(() => {
 global::System.Object __typeHelper = "/";
         }
         ))();
@@ -27,6 +31,9 @@ global::System.Object __typeHelper = "/";
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+            builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
+            }
+            ));
         }
         #pragma warning restore 1998
     }

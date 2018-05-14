@@ -18,3 +18,5 @@ Document -
                     IntermediateToken - (66:3,22 [32] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\nWelcome to your new app.\n\n
                 ComponentExtensionNode - (98:7,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - SurveyPrompt - Test.SurveyPrompt
                     ComponentAttributeExtensionNode - (119:7,21 [0] x:\dir\subdir\Test\TestComponent.cshtml) - Title - Title
+                        HtmlContent - (119:7,21 [0] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (119:7,21 [0] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 

@@ -21,7 +21,7 @@ namespace Test
             builder.CloseElement();
             builder.AddContent(2, "\n\nWelcome to your new app.\n\n");
             builder.OpenComponent<Test.SurveyPrompt>(3);
-            builder.AddAttribute(4, "Title", );
+            builder.AddAttribute(4, "Title", "");
             builder.CloseComponent();
         }
         #pragma warning restore 1998

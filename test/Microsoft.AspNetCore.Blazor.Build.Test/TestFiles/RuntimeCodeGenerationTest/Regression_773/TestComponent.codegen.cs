@@ -20,9 +20,9 @@ namespace Test
             builder.AddContent(1, "Hello, world!");
             builder.CloseElement();
             builder.AddContent(2, "\n\nWelcome to your new app.\n\n");
-            builder.OpenElement(3, "surveyprompt");
-            builder.AddAttribute(4, "title", "<div>Test!</div>");
-            builder.CloseElement();
+            builder.OpenComponent<Test.SurveyPrompt>(3);
+            builder.AddAttribute(4, "Title", "<div>Test!</div>");
+            builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

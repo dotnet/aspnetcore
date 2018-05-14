@@ -11,12 +11,12 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlElement - (13:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - h1
-                    HtmlContent - (17:2,4 [13] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (17:2,4 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello, world!
-                HtmlContent - (35:2,22 [32] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:2,22 [32] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\nWelcome to your new app.\n\n
-                HtmlElement - (67:6,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - surveyprompt
-                    HtmlAttribute -  -  - 
-                        HtmlAttributeValue -  - 
-                            IntermediateToken -  - Html - <div>Test!</div>
+                HtmlElement - (44:3,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (48:3,4 [13] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (48:3,4 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello, world!
+                HtmlContent - (66:3,22 [32] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (66:3,22 [32] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\nWelcome to your new app.\n\n
+                ComponentExtensionNode - (98:7,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - SurveyPrompt - Test.SurveyPrompt
+                    ComponentAttributeExtensionNode - (119:7,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Title - Title
+                        HtmlContent - (119:7,21 [16] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (119:7,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <div>Test!</div>
