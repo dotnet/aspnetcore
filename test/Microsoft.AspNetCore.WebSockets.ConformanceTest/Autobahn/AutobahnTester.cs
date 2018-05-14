@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 {
     public class AutobahnTester : IDisposable
     {
-        private readonly List<IApplicationDeployer> _deployers = new List<IApplicationDeployer>();
+        private readonly List<ApplicationDeployer> _deployers = new List<ApplicationDeployer>();
         private readonly List<DeploymentResult> _deployments = new List<DeploymentResult>();
         private readonly List<AutobahnExpectations> _expectations = new List<AutobahnExpectations>();
         private readonly ILoggerFactory _loggerFactory;

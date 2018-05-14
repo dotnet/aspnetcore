@@ -9,7 +9,7 @@
     <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
     <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerHttpSysPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34184</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-a-preview1-inttesting-17017</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreStaticFilesPackageVersion>
