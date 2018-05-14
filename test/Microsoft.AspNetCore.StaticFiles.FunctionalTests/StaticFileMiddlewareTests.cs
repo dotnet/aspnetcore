@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void ClientDisconnect_WebListener_NoWriteExceptionThrown()
         {
-            ClientDisconnect_NoWriteExceptionThrown(ServerType.WebListener);
+            ClientDisconnect_NoWriteExceptionThrown(ServerType.HttpSys);
         }
 
         private void ClientDisconnect_NoWriteExceptionThrown(ServerType serverType)
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                     app.UseStaticFiles();
                 });
 
-            if (serverType == ServerType.WebListener)
+            if (serverType == ServerType.HttpSys)
             {
                 builder.UseHttpSys();
             }
