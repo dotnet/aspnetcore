@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,8 +19,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis
     public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable where THub : Hub
     {
         private readonly HubConnectionStore _connections = new HubConnectionStore();
-        // TODO: Investigate "memory leak" entries never get removed
-        private readonly ConcurrentDictionary<string, GroupData> _groups = new ConcurrentDictionary<string, GroupData>(StringComparer.Ordinal);
+        private readonly RedisSubscriptionManager _groups = new RedisSubscriptionManager();
+        private readonly RedisSubscriptionManager _users = new RedisSubscriptionManager();
         private IConnectionMultiplexer _redisServerConnection;
         private ISubscriber _bus;
         private readonly ILogger _logger;
@@ -54,17 +53,16 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var feature = new RedisFeature();
             connection.Features.Set<IRedisFeature>(feature);
 
-            var redisSubscriptions = feature.Subscriptions;
             var connectionTask = Task.CompletedTask;
             var userTask = Task.CompletedTask;
 
             _connections.Add(connection);
 
-            connectionTask = SubscribeToConnection(connection, redisSubscriptions);
+            connectionTask = SubscribeToConnection(connection);
 
             if (!string.IsNullOrEmpty(connection.UserIdentifier))
             {
-                userTask = SubscribeToUser(connection, redisSubscriptions);
+                userTask = SubscribeToUser(connection);
             }
 
             await Task.WhenAll(connectionTask, userTask);
@@ -76,18 +74,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             var tasks = new List<Task>();
 
+            var connectionChannel = _channels.Connection(connection.ConnectionId);
+            RedisLog.Unsubscribe(_logger, connectionChannel);
+            tasks.Add(_bus.UnsubscribeAsync(connectionChannel));
+
             var feature = connection.Features.Get<IRedisFeature>();
-
-            var redisSubscriptions = feature.Subscriptions;
-            if (redisSubscriptions != null)
-            {
-                foreach (var subscription in redisSubscriptions)
-                {
-                    RedisLog.Unsubscribe(_logger, subscription);
-                    tasks.Add(_bus.UnsubscribeAsync(subscription));
-                }
-            }
-
             var groupNames = feature.Groups;
 
             if (groupNames != null)
@@ -100,6 +91,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     // accidentally go to other servers with our remove request.
                     tasks.Add(RemoveGroupAsyncCore(connection, group));
                 }
+            }
+
+            if (!string.IsNullOrEmpty(connection.UserIdentifier))
+            {
+                tasks.Add(RemoveUserAsync(connection));
             }
 
             return Task.WhenAll(tasks);
@@ -290,25 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
 
             var groupChannel = _channels.Group(groupName);
-            var group = _groups.GetOrAdd(groupChannel, _ => new GroupData());
-
-            await group.Lock.WaitAsync();
-            try
-            {
-                group.Connections.Add(connection);
-
-                // Subscribe once
-                if (group.Connections.Count > 1)
-                {
-                    return;
-                }
-
-                await SubscribeToGroup(groupChannel, group);
-            }
-            finally
-            {
-                group.Lock.Release();
-            }
+            await _groups.AddSubscriptionAsync(groupChannel, connection, SubscribeToGroupAsync);
         }
 
         /// <summary>
@@ -319,10 +297,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         {
             var groupChannel = _channels.Group(groupName);
 
-            if (!_groups.TryGetValue(groupChannel, out var group))
+            await _groups.RemoveSubscriptionAsync(groupChannel, connection, async channelName =>
             {
-                return;
-            }
+                RedisLog.Unsubscribe(_logger, channelName);
+                await _bus.UnsubscribeAsync(channelName);
+            });
 
             var feature = connection.Features.Get<IRedisFeature>();
             var groupNames = feature.Groups;
@@ -332,25 +311,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 {
                     groupNames.Remove(groupName);
                 }
-            }
-
-            await group.Lock.WaitAsync();
-            try
-            {
-                if (group.Connections.Count > 0)
-                {
-                    group.Connections.Remove(connection);
-
-                    if (group.Connections.Count == 0)
-                    {
-                        RedisLog.Unsubscribe(_logger, groupChannel);
-                        await _bus.UnsubscribeAsync(groupChannel);
-                    }
-                }
-            }
-            finally
-            {
-                group.Lock.Release();
             }
         }
 
@@ -363,6 +323,17 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await PublishAsync(_channels.GroupManagement, message);
 
             await ack;
+        }
+
+        private Task RemoveUserAsync(HubConnectionContext connection)
+        {
+            var userChannel = _channels.User(connection.UserIdentifier);
+
+            return _users.RemoveSubscriptionAsync(userChannel, connection, async channelName =>
+            {
+                RedisLog.Unsubscribe(_logger, channelName);
+                await _bus.UnsubscribeAsync(channelName);
+            });
         }
 
         public void Dispose()
@@ -448,10 +419,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             });
         }
 
-        private Task SubscribeToConnection(HubConnectionContext connection, HashSet<string> redisSubscriptions)
+        private Task SubscribeToConnection(HubConnectionContext connection)
         {
             var connectionChannel = _channels.Connection(connection.ConnectionId);
-            redisSubscriptions.Add(connectionChannel);
 
             RedisLog.Subscribing(_logger, connectionChannel);
             return _bus.SubscribeAsync(connectionChannel, async (c, data) =>
@@ -461,20 +431,35 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             });
         }
 
-        private Task SubscribeToUser(HubConnectionContext connection, HashSet<string> redisSubscriptions)
+        private Task SubscribeToUser(HubConnectionContext connection)
         {
             var userChannel = _channels.User(connection.UserIdentifier);
-            redisSubscriptions.Add(userChannel);
 
-            // TODO: Look at optimizing (looping over connections checking for Name)
-            return _bus.SubscribeAsync(userChannel, async (c, data) =>
+            return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
             {
-                var invocation = _protocol.ReadInvocation((byte[])data);
-                await connection.WriteAsync(invocation.Message);
+                await _bus.SubscribeAsync(channelName, async (c, data) =>
+                {
+                    try
+                    {
+                        var invocation = _protocol.ReadInvocation((byte[])data);
+
+                        var tasks = new List<Task>();
+                        foreach (var userConnection in subscriptions)
+                        {
+                            tasks.Add(userConnection.WriteAsync(invocation.Message).AsTask());
+                        }
+
+                        await Task.WhenAll(tasks);
+                    }
+                    catch (Exception ex)
+                    {
+                        RedisLog.FailedWritingMessage(_logger, ex);
+                    }
+                });
             });
         }
 
-        private Task SubscribeToGroup(string groupChannel, GroupData group)
+        private Task SubscribeToGroupAsync(string groupChannel, HubConnectionStore groupConnections)
         {
             RedisLog.Subscribing(_logger, groupChannel);
             return _bus.SubscribeAsync(groupChannel, async (c, data) =>
@@ -484,7 +469,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     var invocation = _protocol.ReadInvocation((byte[])data);
 
                     var tasks = new List<Task>();
-                    foreach (var groupConnection in group.Connections)
+                    foreach (var groupConnection in groupConnections)
                     {
                         if (invocation.ExcludedConnectionIds?.Contains(groupConnection.ConnectionId) == true)
                         {
@@ -515,6 +500,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                         var writer = new LoggerTextWriter(_logger);
                         _redisServerConnection = await _options.ConnectAsync(writer);
                         _bus = _redisServerConnection.GetSubscriber();
+
                         _redisServerConnection.ConnectionRestored += (_, e) =>
                         {
                             // We use the subscription connection type
@@ -589,21 +575,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        private class GroupData
-        {
-            public readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
-            public readonly HubConnectionStore Connections = new HubConnectionStore();
-        }
-
         private interface IRedisFeature
         {
-            HashSet<string> Subscriptions { get; }
             HashSet<string> Groups { get; }
         }
 
         private class RedisFeature : IRedisFeature
         {
-            public HashSet<string> Subscriptions { get; } = new HashSet<string>();
             public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
     }

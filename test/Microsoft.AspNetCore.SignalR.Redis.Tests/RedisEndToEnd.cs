@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             _serverFixture = serverFixture;
         }
 
-        [ConditionalTheory()]
+        [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveMessages(HttpTransportType transportType, string protocolName)
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             }
         }
 
-        [ConditionalTheory()]
+        [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveGroupMessages(HttpTransportType transportType, string protocolName)
@@ -91,11 +90,77 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             }
         }
 
-        private static HubConnection CreateConnection(string url, HttpTransportType transportType, IHubProtocol protocol, ILoggerFactory loggerFactory)
+        [ConditionalTheory]
+        [SkipIfDockerNotPresent]
+        [MemberData(nameof(TransportTypesAndProtocolTypes))]
+        public async Task CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser(HttpTransportType transportType, string protocolName)
+        {
+            using (StartVerifableLog(out var loggerFactory, testName:
+                $"{nameof(CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser)}_{transportType.ToString()}_{protocolName}"))
+            {
+                var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
+
+                var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
+                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
+
+                var tcs = new TaskCompletionSource<string>();
+                connection.On<string>("Echo", message => tcs.TrySetResult(message));
+                var tcs2 = new TaskCompletionSource<string>();
+                secondConnection.On<string>("Echo", message => tcs2.TrySetResult(message));
+
+                await secondConnection.StartAsync().OrTimeout();
+                await connection.StartAsync().OrTimeout();
+                await connection.InvokeAsync("EchoUser", "userA", "Hello, World!").OrTimeout();
+
+                Assert.Equal("Hello, World!", await tcs.Task.OrTimeout());
+                Assert.Equal("Hello, World!", await tcs2.Task.OrTimeout());
+
+                await connection.DisposeAsync().OrTimeout();
+                await secondConnection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [ConditionalTheory]
+        [SkipIfDockerNotPresent]
+        [MemberData(nameof(TransportTypesAndProtocolTypes))]
+        public async Task CanSendAndReceiveUserMessagesWhenOneConnectionWithUserDisconnects(HttpTransportType transportType, string protocolName)
+        {
+            // Regression test:
+            // When multiple connections from the same user were connected and one left, it used to unsubscribe from the user channel
+            // Now we keep track of users connections and only unsubscribe when no users are listening
+            using (StartVerifableLog(out var loggerFactory, testName:
+                $"{nameof(CanSendAndReceiveUserMessagesWhenOneConnectionWithUserDisconnects)}_{transportType.ToString()}_{protocolName}"))
+            {
+                var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
+
+                var firstConnection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
+                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
+
+                var tcs = new TaskCompletionSource<string>();
+                firstConnection.On<string>("Echo", message => tcs.TrySetResult(message));
+
+                await secondConnection.StartAsync().OrTimeout();
+                await firstConnection.StartAsync().OrTimeout();
+                await secondConnection.DisposeAsync().OrTimeout();
+                await firstConnection.InvokeAsync("EchoUser", "userA", "Hello, World!").OrTimeout();
+
+                Assert.Equal("Hello, World!", await tcs.Task.OrTimeout());
+
+                await firstConnection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        private static HubConnection CreateConnection(string url, HttpTransportType transportType, IHubProtocol protocol, ILoggerFactory loggerFactory, string userName = null)
         {
             var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithLoggerFactory(loggerFactory)
-                .WithUrl(url, transportType);
+                .WithUrl(url, transportType, httpConnectionOptions =>
+                {
+                    if (!string.IsNullOrEmpty(userName))
+                    {
+                        httpConnectionOptions.Headers["UserName"] = userName;
+                    }
+                });
 
             hubConnectionBuilder.Services.AddSingleton(protocol);
 
