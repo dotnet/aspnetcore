@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
-using GitHubProvider;
-using TeamCityApi;
+using Octokit;
+using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
 {
@@ -68,7 +68,7 @@ namespace TriageBuildFailures.Handlers
                     var tags = new List<string> { "Flaky" };
 
                     var issue = await GHClient.CreateIssue(repo, subject, body, tags);
-                    await GHClient.AddIssueToProject(issue, new GitHubProjectColumn { Id = GHClient.Config.FlakyProjectColumn });
+                    await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else
@@ -155,7 +155,7 @@ namespace TriageBuildFailures.Handlers
             return percentSame >= 0.7;
         }
 
-        private static string GetExceptionFromIssue(GithubIssue issue)
+        private static string GetExceptionFromIssue(Issue issue)
         {
             // We put exceptions inside of triple ticks on GitHub, split by that then figure out what was inside it.
             var parts = issue.Body.Split(new string[] { "```" }, StringSplitOptions.RemoveEmptyEntries);
@@ -180,13 +180,13 @@ namespace TriageBuildFailures.Handlers
             }
         }
 
-        private IEnumerable<GithubIssue> GetApplicableIssues(IEnumerable<GithubIssue> issues, TestOccurrence failure)
+        private IEnumerable<Issue> GetApplicableIssues(IEnumerable<Issue> issues, TestOccurrence failure)
         {
             var testError = TCClient.GetTestFailureText(failure);
             var testException = SafeGetExceptionMessage(testError); ;
             var shortTestName = GetTestName(failure);
 
-            var applicableIssues = new List<GithubIssue>();
+            var applicableIssues = new List<Issue>();
 
             foreach (var issue in issues)
             {

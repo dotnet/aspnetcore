@@ -1,10 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace GitHubProvider
+
+namespace TriageBuildFailures.GitHub
 {
-    public class GitHubProjectColumn
+    public class GitHubConfig
     {
-        public int Id { get; set; }
+        public string AccessToken { get; set; }
+        public int FlakyProjectColumn { get; set; }
     }
 }

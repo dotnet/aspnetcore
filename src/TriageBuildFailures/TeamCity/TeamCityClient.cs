@@ -13,9 +13,9 @@ using System.Xml.Serialization;
 using Common;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace TeamCityApi
+namespace TriageBuildFailures.TeamCity
 {
-    public class TeamCityClient
+    public class TeamCityClientWrapper
     {
         private readonly IReporter _reporter;
 
@@ -23,11 +23,11 @@ namespace TeamCityApi
 
         public TeamCityConfig Config { get; private set; }
 
-        public TeamCityClient(TeamCityConfig config, IReporter reporter)
+        public TeamCityClientWrapper(TeamCityConfig config, IReporter reporter)
         {
             Config = config;
             _reporter = reporter;
-
+            
             if (TeamCityBuild.BuildNames == null)
             {
                 TeamCityBuild.BuildNames = GetBuildTypes();

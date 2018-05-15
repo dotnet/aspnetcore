@@ -3,20 +3,12 @@
 
 using Common;
 using McMaster.Extensions.CommandLineUtils;
-using System;
 using System.IO;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
-namespace EmailProvider
+namespace TriageBuildFailures.Email
 {
-    public class EmailConfig
-    {
-        public string EngineringAlias { get; set; }
-        public string BuildBuddyEmail { get; set; }
-        public string FromEmail { get; set; }
-    }
-
     public class EmailClient
     {
         private IReporter _reporter;

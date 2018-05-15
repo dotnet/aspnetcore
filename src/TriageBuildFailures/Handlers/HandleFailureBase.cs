@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using EmailProvider;
-using GitHubProvider;
 using McMaster.Extensions.CommandLineUtils;
-using TeamCityApi;
+using TriageBuildFailures.Email;
+using TriageBuildFailures.GitHub;
+using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
 {
@@ -14,8 +14,8 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public abstract class HandleFailureBase : IFailureHandler
     {
-        public TeamCityClient TCClient { get; set; }
-        public GitHubClient GHClient { get; set; }
+        public TeamCityClientWrapper TCClient { get; set; }
+        public GitHubClientWrapper GHClient { get; set; }
         public EmailClient EmailClient { get; set; }
         public IReporter Reporter { get; set; }
 

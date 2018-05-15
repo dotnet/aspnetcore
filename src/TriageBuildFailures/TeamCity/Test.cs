@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace TeamCityApi
+namespace TriageBuildFailures.TeamCity
 {
     [XmlRoot("testOccurrences")]
     public class TestOccurrences

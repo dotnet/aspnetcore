@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using TeamCityApi;
+using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
 {

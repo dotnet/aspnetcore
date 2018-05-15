@@ -122,6 +122,5 @@ namespace Common
             // De-uniquify the port
             return Regex.Replace(exceptionMessage, @"127.0.0.1(:\d*)?", "127.0.0.1").Trim();
         }
-
     }
 }

@@ -7,12 +7,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using EmailProvider;
-using GitHubProvider;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
-using TeamCityApi;
+using TriageBuildFailures.Email;
+using TriageBuildFailures.GitHub;
 using TriageBuildFailures.Handlers;
+using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures
 {
@@ -30,8 +30,8 @@ namespace TriageBuildFailures
     {
         public static string TriagedTag = "Triaged";
 
-        private readonly TeamCityClient _tcClient;
-        private readonly GitHubClient _ghClient;
+        private readonly TeamCityClientWrapper _tcClient;
+        private readonly GitHubClientWrapper _ghClient;
         private readonly EmailClient _emailClient;
         private IReporter _reporter;
 
@@ -57,7 +57,6 @@ namespace TriageBuildFailures
         /// <returns>A task indicating completion.</returns>
         public async Task TriageFailures()
         {
-
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var builds = GetUnTriagedFailures();
@@ -126,9 +125,9 @@ namespace TriageBuildFailures
             return new ConsoleReporter(PhysicalConsole.Singleton);
         }
 
-        private GitHubClient GetGitHubClient(Config config)
+        private GitHubClientWrapper GetGitHubClient(Config config)
         {
-            return new GitHubClient(config.GitHub, _reporter);
+            return new GitHubClientWrapper(config.GitHub, _reporter);
         }
 
         private EmailClient GetEmailClient(Config config)
@@ -136,9 +135,9 @@ namespace TriageBuildFailures
             return new EmailClient(config.Email ,_reporter);
         }
 
-        private TeamCityClient GetTeamCityClient(Config config)
+        private TeamCityClientWrapper GetTeamCityClient(Config config)
         {
-            return new TeamCityClient(config.TeamCity, _reporter);
+            return new TeamCityClientWrapper(config.TeamCity, _reporter);
         }
     }
 }

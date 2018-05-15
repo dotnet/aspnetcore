@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace TeamCityApi
+namespace TriageBuildFailures.TeamCity
 {
     [XmlRoot("buildTypes")]
     public class BuildTypes

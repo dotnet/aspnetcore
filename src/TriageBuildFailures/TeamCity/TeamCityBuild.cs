@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
-using Common;
 
-namespace TeamCityApi
+namespace TriageBuildFailures.TeamCity
 {
     [XmlRoot("builds")]
     public class Builds
