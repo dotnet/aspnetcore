@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -875,7 +876,7 @@ this should fail";
                 Action<RoslynCompilationContext> compilationCallback,
                 IList<CompiledViewDescriptor> precompiledViews,
                 Func<string, CompiledViewDescriptor> compile = null) :
-                base(fileProvider, projectEngine, csharpCompiler, compilationCallback, precompiledViews, NullLogger.Instance)
+                base(fileProvider, projectEngine, csharpCompiler, compilationCallback, precompiledViews, new MemoryCache(new MemoryCacheOptions()), NullLogger.Instance)
             {
                 Compile = compile;
                 if (Compile == null)

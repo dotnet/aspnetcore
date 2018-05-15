@@ -172,6 +172,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return viewEngine;
             });
             services.TryAddSingleton<IViewCompilerProvider, RazorViewCompilerProvider>();
+            services.TryAddSingleton<IViewCompilationMemoryCacheProvider, RazorViewCompilationMemoryCacheProvider>();
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
             // creating the singleton RazorViewEngine instance.

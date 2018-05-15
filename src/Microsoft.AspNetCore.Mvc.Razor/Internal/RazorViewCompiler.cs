@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly IFileProvider _fileProvider;
         private readonly RazorProjectEngine _projectEngine;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
+        private readonly IMemoryCache _cache;
         private readonly ILogger _logger;
         private readonly CSharpCompiler _csharpCompiler;
-        private readonly IMemoryCache _cache;
 
         public RazorViewCompiler(
             IFileProvider fileProvider,
@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             CSharpCompiler csharpCompiler,
             Action<RoslynCompilationContext> compilationCallback,
             IList<CompiledViewDescriptor> precompiledViews,
+            IMemoryCache cache,
             ILogger logger)
         {
             if (fileProvider == null)
@@ -82,11 +83,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _compilationCallback = compilationCallback;
             _logger = logger;
 
+
             _normalizedPathCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 
             // This is our L0 cache, and is a durable store. Views migrate into the cache as they are requested
             // from either the set of known precompiled views, or by being compiled.
-            _cache = new MemoryCache(new MemoryCacheOptions());
+            _cache = cache;
 
             // We need to validate that the all of the precompiled views are unique by path (case-insenstive).
             // We do this because there's no good way to canonicalize paths on windows, and it will create
