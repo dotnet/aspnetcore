@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public void OnConnection(TransportConnection connection)
+        public Task OnConnection(TransportConnection connection)
         {
             // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
             // for the scheduler and limits are specified here
@@ -44,9 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // This *must* be set before returning from OnConnection
             connection.Application = pair.Application;
 
-            // REVIEW: This task should be tracked by the server for graceful shutdown
-            // Today it's handled specifically for http but not for aribitrary middleware
-            _ = Execute(connection);
+            return Execute(connection);
         }
 
         private async Task Execute(ConnectionContext connectionContext)

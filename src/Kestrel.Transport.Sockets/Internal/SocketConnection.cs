@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection
+    internal sealed class SocketConnection : TransportConnection, IDisposable
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 
@@ -89,6 +89,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             // Try to gracefully close the socket to match libuv behavior.
             Shutdown();
+        }
+
+        // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
+        public void Dispose()
+        {
+            _connectionClosedTokenSource.Dispose();
         }
 
         private async Task DoReceive()
@@ -281,7 +287,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             try
             {
                 _connectionClosedTokenSource.Cancel();
-                _connectionClosedTokenSource.Dispose();
             }
             catch (Exception ex)
             {

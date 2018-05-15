@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             };
 
             var connectionFeature = connectionContext.Features.Get<IHttpConnectionFeature>();
+            var lifetimeFeature = connectionContext.Features.Get<IConnectionLifetimeFeature>();
 
             if (connectionFeature != null)
             {
@@ -70,46 +71,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             var connection = new HttpConnection(httpConnectionContext);
-            var inputCompletionState = new PipeCompletionState(connection);
-            var outputCompletionState = new PipeCompletionState(connection);
 
             var processingTask = connection.StartRequestProcessing(_application);
 
             connectionContext.Transport.Input.OnWriterCompleted(
-                (error, state) => ((PipeCompletionState)state).CompletionCallback(error),
-                inputCompletionState);
+                (error, state) => ((HttpConnection)state).Abort(error),
+                connection);
 
             connectionContext.Transport.Output.OnReaderCompleted(
-                (error, state) => ((PipeCompletionState)state).CompletionCallback(error),
-                outputCompletionState);
+                (error, state) => ((HttpConnection)state).Abort(error),
+                connection);
 
-            await inputCompletionState.CompletionTask;
-            await outputCompletionState.CompletionTask;
+            await AsTask(lifetimeFeature.ConnectionClosed);
 
             connection.OnConnectionClosed();
 
             await processingTask;
         }
 
-        private class PipeCompletionState
+        private Task AsTask(CancellationToken token)
         {
-            private readonly HttpConnection _connection;
-            private readonly TaskCompletionSource<object> _completionTcs = new TaskCompletionSource<object>();
-
-            public PipeCompletionState(HttpConnection connection)
-            {
-                _connection = connection;
-                CompletionTask = _completionTcs.Task;
-            }
-
-
-            public Task CompletionTask { get; }
-
-            public void CompletionCallback(Exception error)
-            {
-                _connection.Abort(error);
-                _completionTcs.SetResult(null);
-            }
+            var tcs = new TaskCompletionSource<object>();
+            token.Register(() => tcs.SetResult(null));
+            return tcs.Task;
         }
     }
 }

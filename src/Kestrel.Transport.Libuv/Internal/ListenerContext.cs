@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
@@ -35,6 +37,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     return AcceptHandle();
                 default:
                     throw new InvalidOperationException();
+            }
+        }
+
+        protected async Task HandleConnectionAsync(UvStreamHandle socket)
+        {
+            try
+            {
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread);
+                var middlewareTask = TransportContext.ConnectionDispatcher.OnConnection(connection);
+                var transportTask = connection.Start();
+
+                await transportTask;
+                await middlewareTask;
+
+                connection.Dispose();
+            }
+            catch (Exception ex)
+            {
+                TransportContext.Log.LogCritical(ex, $"Unexpected exception in {nameof(ListenerContext)}.{nameof(HandleConnectionAsync)}.");
             }
         }
 

@@ -158,9 +158,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
                             var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
 
-                            _dispatcher.OnConnection(connection);
-
-                            _ = connection.StartAsync();
+                            // REVIEW: This task should be tracked by the server for graceful shutdown
+                            // Today it's handled specifically for http but not for aribitrary middleware
+                            _ = HandleConnectionAsync(connection);
                         }
                         catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
                         {
@@ -182,13 +182,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 }
                 else
                 {
-                    _trace.LogCritical(ex, $"Unexpected exeption in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
+                    _trace.LogCritical(ex, $"Unexpected exception in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
                     _listenException = ex;
 
                     // Request shutdown so we can rethrow this exception
                     // in Stop which should be observable.
                     _appLifetime.StopApplication();
                 }
+            }
+        }
+
+        private async Task HandleConnectionAsync(SocketConnection connection)
+        {
+            try
+            {
+                var middlewareTask = _dispatcher.OnConnection(connection);
+                var transportTask = connection.StartAsync();
+
+                await transportTask;
+                await middlewareTask;
+
+                connection.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _trace.LogCritical(ex, $"Unexpected exception in {nameof(SocketTransport)}.{nameof(HandleConnectionAsync)}.");
             }
         }
 

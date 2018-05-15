@@ -181,11 +181,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {
-            var connection = new LibuvConnection(socket, Log, Thread);
-
-            TransportContext.ConnectionDispatcher.OnConnection(connection);
-
-            _ = connection.Start();
+            // REVIEW: This task should be tracked by the server for graceful shutdown
+            // Today it's handled specifically for http but not for aribitrary middleware
+            _ = HandleConnectionAsync(socket);
         }
 
         public virtual async Task DisposeAsync()

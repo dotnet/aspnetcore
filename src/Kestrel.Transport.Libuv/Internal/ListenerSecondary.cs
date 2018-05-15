@@ -159,19 +159,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 return;
             }
 
-            try
-            {
-                var connection = new LibuvConnection(acceptSocket, Log, Thread);
-
-                TransportContext.ConnectionDispatcher.OnConnection(connection);
-
-                _ = connection.Start();
-            }
-            catch (UvException ex)
-            {
-                Log.LogError(0, ex, "ListenerSecondary.OnConnection");
-                acceptSocket.Dispose();
-            }
+            // REVIEW: This task should be tracked by the server for graceful shutdown
+            // Today it's handled specifically for http but not for aribitrary middleware
+            _ = HandleConnectionAsync(acceptSocket);
         }
 
         private void FreeBuffer()
