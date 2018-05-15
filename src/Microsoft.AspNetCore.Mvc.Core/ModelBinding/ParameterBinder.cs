@@ -205,6 +205,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (parameter.BindingInfo?.RequestPredicate?.Invoke(actionContext) == false)
             {
+                Logger.ParameterBinderRequestPredicateShortCircuit(metadata, parameter);
+
                 return ModelBindingResult.Failed();
             }
 
