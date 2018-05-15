@@ -5,7 +5,11 @@
     ],
     "packages": {
       "Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources": {},
-      "RazorPageGenerator": {}
+      "RazorPageGenerator": {},
+      "Microsoft.CodeAnalysis.Remote.Razor": {},
+      "Microsoft.VisualStudio.Editor.Razor": {},
+      "Microsoft.VisualStudio.LanguageServices.Razor": {},
+      "Microsoft.VisualStudio.Mac.LanguageServices.Razor": {}
     }
   },
   "Default": { // Rules to run for packages not listed in any other set.
