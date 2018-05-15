@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 // Async method returning awaitable-of-nonvoid
                 var returnValue = await executor.ExecuteAsync(controller, arguments);
-                var actionResult = ConvertToActionResult(mapper, returnValue, executor.MethodReturnType);
+                var actionResult = ConvertToActionResult(mapper, returnValue, executor.AsyncResultType);
                 return actionResult;
             }
 
