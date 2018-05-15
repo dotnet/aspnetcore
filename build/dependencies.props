@@ -8,8 +8,8 @@
     <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
     <MicrosoftAspNetCoreResponseCompressionPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreResponseCompressionPackageVersion>
     <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerHttpSysPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIISPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerIISPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-a-preview1-useiis-16873</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIISPackageVersion>2.2.0-a-preview1-useiis-16873</MicrosoftAspNetCoreServerIISPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34184</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
