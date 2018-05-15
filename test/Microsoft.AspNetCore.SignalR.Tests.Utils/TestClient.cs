@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public TransferFormat ActiveFormat { get; set; }
 
-        public TestClient(IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
+        public TestClient(IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, string userIdentifier = null)
         {
             var options = new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var claimValue = Interlocked.Increment(ref _id).ToString();
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, claimValue) };
-            if (addClaimId)
+            if (userIdentifier != null)
             {
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, claimValue));
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, userIdentifier));
             }
 
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(claims));

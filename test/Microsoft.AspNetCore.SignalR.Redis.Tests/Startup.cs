@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 {
@@ -21,11 +22,28 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                     // We start the servers before starting redis so we want to time them out ASAP
                     options.Configuration.ConnectTimeout = 1;
                 });
+
+            services.AddSingleton<IUserIdProvider, UserNameIdProvider>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseSignalR(options => options.MapHub<EchoHub>("/echo"));
+        }
+
+        private class UserNameIdProvider : IUserIdProvider
+        {
+            public string GetUserId(HubConnectionContext connection)
+            {
+                // This is an AWFUL way to authenticate users! We're just using it for test purposes.
+                var userNameHeader = connection.GetHttpContext().Request.Headers["UserName"];
+                if (!StringValues.IsNullOrEmpty(userNameHeader))
+                {
+                    return userNameHeader;
+                }
+
+                return null;
+            }
         }
     }
 }

@@ -1100,9 +1100,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(hubType);
 
-            using (var firstClient = new TestClient(addClaimId: true))
-            using (var secondClient = new TestClient(addClaimId: true))
-            using (var thirdClient = new TestClient(addClaimId: true))
+            using (var firstClient = new TestClient(userIdentifier: "userA"))
+            using (var secondClient = new TestClient(userIdentifier: "userB"))
+            using (var thirdClient = new TestClient(userIdentifier: "userC"))
             {
                 var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
                 var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
@@ -1110,10 +1110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected, thirdClient.Connected).OrTimeout();
 
-                var secondAndThirdClients = new HashSet<string> {secondClient.Connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-                    thirdClient.Connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value };
-
-                await firstClient.SendInvocationAsync(nameof(MethodHub.SendToMultipleUsers), secondAndThirdClients, "Second and Third").OrTimeout();
+                await firstClient.SendInvocationAsync(nameof(MethodHub.SendToMultipleUsers), new[] { "userB", "userC" }, "Second and Third").OrTimeout();
 
                 var secondClientResult = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(secondClientResult);
@@ -1344,15 +1341,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(hubType);
 
-            using (var firstClient = new TestClient(addClaimId: true))
-            using (var secondClient = new TestClient(addClaimId: true))
+            using (var firstClient = new TestClient(userIdentifier: "userA"))
+            using (var secondClient = new TestClient(userIdentifier: "userB"))
             {
                 var firstConnectionHandlerTask = await firstClient.ConnectAsync(connectionHandler);
                 var secondConnectionHandlerTask = await secondClient.ConnectAsync(connectionHandler);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
-                await firstClient.SendInvocationAsync("ClientSendMethod", secondClient.Connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, "test").OrTimeout();
+                await firstClient.SendInvocationAsync("ClientSendMethod", "userB", "test").OrTimeout();
 
                 // check that 'secondConnection' has received the group send
                 var hubMessage = await secondClient.ReadAsync().OrTimeout();
