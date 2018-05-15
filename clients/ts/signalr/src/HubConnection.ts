@@ -10,6 +10,14 @@ import { Arg, Subject } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 
+/** Describes the current state of the {@link HubConnection} to the server. */
+export enum HubConnectionState {
+    /** The hub connection is disconnected. */
+    Disconnected,
+    /** The hub connection is connected. */
+    Connected,
+}
+
 /** Represents a connection to a SignalR Hub. */
 export class HubConnection {
     private readonly connection: IConnection;
@@ -22,6 +30,7 @@ export class HubConnection {
     private closedCallbacks: Array<(error?: Error) => void>;
     private timeoutHandle: NodeJS.Timer;
     private receivedHandshakeResponse: boolean;
+    private connectionState: HubConnectionState;
 
     /** The server timeout in milliseconds.
      *
@@ -58,6 +67,12 @@ export class HubConnection {
         this.methods = {};
         this.closedCallbacks = [];
         this.id = 0;
+        this.connectionState = HubConnectionState.Disconnected;
+    }
+
+    /** Indicates the state of the {@link HubConnection} to the server. */
+    get state(): HubConnectionState {
+        return this.connectionState;
     }
 
     /** Starts the connection.
@@ -85,6 +100,8 @@ export class HubConnection {
         // defensively cleanup timeout in case we receive a message from the server before we finish start
         this.cleanupTimeout();
         this.configureTimeout();
+
+        this.connectionState = HubConnectionState.Connected;
     }
 
     /** Stops the connection.
@@ -379,6 +396,8 @@ export class HubConnection {
     private connectionClosed(error?: Error) {
         const callbacks = this.callbacks;
         this.callbacks = {};
+
+        this.connectionState = HubConnectionState.Disconnected;
 
         Object.keys(callbacks)
             .forEach((key) => {

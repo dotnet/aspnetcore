@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HubConnection } from "../src/HubConnection";
+import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
 import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
@@ -32,6 +32,33 @@ describe("HubConnection", () => {
                 });
             } finally {
                 await hubConnection.stop();
+            }
+        });
+
+        it("state connected", async () => {
+            const connection = new TestConnection();
+            const hubConnection = createHubConnection(connection);
+            expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
+            try {
+                await hubConnection.start();
+                expect(hubConnection.state).toBe(HubConnectionState.Connected);
+            } finally {
+                await hubConnection.stop();
+            }
+        });
+    });
+
+    describe("stop", () => {
+        it("state disconnected", async () => {
+            const connection = new TestConnection();
+            const hubConnection = createHubConnection(connection);
+            expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
+            try {
+                await hubConnection.start();
+                expect(hubConnection.state).toBe(HubConnectionState.Connected);
+            } finally {
+                await hubConnection.stop();
+                expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
             }
         });
     });
@@ -830,6 +857,21 @@ describe("HubConnection", () => {
                 // Typically this would be called by the transport
                 connection.onclose();
                 // expect no errors
+            } finally {
+                hubConnection.stop();
+            }
+        });
+
+        it("state disconnected", async () => {
+            const connection = new TestConnection();
+            const hubConnection = createHubConnection(connection);
+            try {
+                let state: HubConnectionState;
+                hubConnection.onclose((e) => state = hubConnection.state);
+                // Typically this would be called by the transport
+                connection.onclose();
+                
+                expect(state).toBe(HubConnectionState.Disconnected);
             } finally {
                 hubConnection.stop();
             }
