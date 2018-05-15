@@ -9,18 +9,11 @@ using System.Text;
 
 namespace CodeGenerator
 {
-    // This project can output the Class library as a NuGet Package.
-    // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class KnownHeaders
     {
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
         {
             return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
-        }
-
-        static string If(bool condition, Func<string> formatter)
-        {
-            return condition ? formatter() : "";
         }
 
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className) =>

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -16,8 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpProtocol : IFeatureCollection,
-                                        IHttpRequestFeature,
+    public partial class HttpProtocol : IHttpRequestFeature,
                                         IHttpResponseFeature,
                                         IHttpConnectionFeature,
                                         IHttpRequestLifetimeFeature,
@@ -29,53 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
-        // See also: tools/Microsoft.AspNetCore.Server.Kestrel.GeneratedCode/HttpProtocolFeatureCollection.cs
-
-        private int _featureRevision;
-
-        private List<KeyValuePair<Type, object>> MaybeExtra;
-
-        public void ResetFeatureCollection()
-        {
-            FastReset();
-            MaybeExtra?.Clear();
-            _featureRevision++;
-        }
-
-        private object ExtraFeatureGet(Type key)
-        {
-            if (MaybeExtra == null)
-            {
-                return null;
-            }
-            for (var i = 0; i < MaybeExtra.Count; i++)
-            {
-                var kv = MaybeExtra[i];
-                if (kv.Key == key)
-                {
-                    return kv.Value;
-                }
-            }
-            return null;
-        }
-
-        private void ExtraFeatureSet(Type key, object value)
-        {
-            if (MaybeExtra == null)
-            {
-                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
-            }
-
-            for (var i = 0; i < MaybeExtra.Count; i++)
-            {
-                if (MaybeExtra[i].Key == key)
-                {
-                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
-                    return;
-                }
-            }
-            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
-        }
+        // See also: tools/CodeGenerator/HttpProtocolFeatureCollection.cs
 
         string IHttpRequestFeature.Protocol
         {
@@ -175,9 +126,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
-        bool IFeatureCollection.IsReadOnly => false;
-
-        int IFeatureCollection.Revision => _featureRevision;
 
         IPAddress IHttpConnectionFeature.RemoteIpAddress
         {
@@ -276,10 +224,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             OnCompleted(callback, state);
         }
-
-        IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
 
         void IHttpRequestLifetimeFeature.Abort()
         {

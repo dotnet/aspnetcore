@@ -25,17 +25,27 @@ namespace CodeGenerator
                 Console.Error.WriteLine("Missing path to HttpUtilities.Generated.cs");
                 return 1;
             }
+            else if (args.Length < 4)
+            {
+                Console.Error.WriteLine("Missing path to TransportConnection.Generated.cs");
+                return 1;
+            }
 
-            Run(args[0], args[1], args[2]);
+            Run(args[0], args[1], args[2], args[3]);
 
             return 0;
         }
 
-        public static void Run(string knownHeadersPath, string httpProtocolFeatureCollectionPath, string httpUtilitiesPath)
+        public static void Run(
+            string knownHeadersPath,
+            string httpProtocolFeatureCollectionPath,
+            string httpUtilitiesPath,
+            string transportConnectionFeatureCollectionPath)
         {
             var knownHeadersContent = KnownHeaders.GeneratedFile();
-            var httpProtocolFeatureCollectionContent = HttpProtocolFeatureCollection.GeneratedFile("HttpProtocol");
+            var httpProtocolFeatureCollectionContent = HttpProtocolFeatureCollection.GenerateFile();
             var httpUtilitiesContent = HttpUtilities.HttpUtilities.GeneratedFile();
+            var transportConnectionFeatureCollectionContent = TransportConnectionFeatureCollection.GenerateFile();
 
             var existingKnownHeaders = File.Exists(knownHeadersPath) ? File.ReadAllText(knownHeadersPath) : "";
             if (!string.Equals(knownHeadersContent, existingKnownHeaders))
@@ -53,6 +63,12 @@ namespace CodeGenerator
             if (!string.Equals(httpUtilitiesContent, existingHttpUtilities))
             {
                 File.WriteAllText(httpUtilitiesPath, httpUtilitiesContent);
+            }
+
+            var existingTransportConnectionFeatureCollection = File.Exists(transportConnectionFeatureCollectionPath) ? File.ReadAllText(transportConnectionFeatureCollectionPath) : "";
+            if (!string.Equals(transportConnectionFeatureCollectionContent, existingTransportConnectionFeatureCollection))
+            {
+                File.WriteAllText(transportConnectionFeatureCollectionPath, transportConnectionFeatureCollectionContent);
             }
         }
     }

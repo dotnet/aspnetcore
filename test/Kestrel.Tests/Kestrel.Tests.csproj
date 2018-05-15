@@ -11,6 +11,10 @@
     <Content Include="..\shared\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
+    <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kestrel\Kestrel.csproj" />
     <ProjectReference Include="..\..\src\Kestrel.Transport.Libuv\Kestrel.Transport.Libuv.csproj" />

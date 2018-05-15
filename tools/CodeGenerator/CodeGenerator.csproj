@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\src\Kestrel.Core</StartWorkingDirectory>
-    <StartArguments>Internal/Http/HttpHeaders.Generated.cs Internal/Http/HttpProtocol.Generated.cs Internal/Infrastructure/HttpUtilities.Generated.cs</StartArguments>
+    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\</StartWorkingDirectory>
+    <StartArguments>src/Kestrel.Core/Internal/Http/HttpHeaders.Generated.cs src/Kestrel.Core/Internal/Http/HttpProtocol.Generated.cs src/Kestrel.Core/Internal/Infrastructure/HttpUtilities.Generated.cs src/Kestrel.Transport.Abstractions/Internal/TransportConnection.Generated.cs</StartArguments>
   </PropertyGroup>
 
 </Project>
