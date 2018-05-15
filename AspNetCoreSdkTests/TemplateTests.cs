@@ -81,61 +81,50 @@ namespace AspNetCoreSdkTests
                 serverError);
         }
 
-        private static readonly IEnumerable<Template> _restoreTemplates = new[]
+        private static IEnumerable<Template> GetTemplates(RuntimeIdentifier runtimeIdentifier)
         {
-            // Framework-dependent
-            Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            // Offline restore currently not supported for RazorClassLibrary template (https://github.com/aspnet/Universe/issues/1123)
-            Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.None),
-            Template.GetInstance<WebTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            Template.GetInstance<RazorTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            Template.GetInstance<MvcTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            Template.GetInstance<AngularTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            Template.GetInstance<ReactTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
-            Template.GetInstance<WebApiTemplate>(NuGetPackageSource.None, RuntimeIdentifier.None),
+            if (runtimeIdentifier == RuntimeIdentifier.None)
+            {
+                // Framework-dependent
+                return new[]
+                {
+                    Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    // Offline restore currently not supported for RazorClassLibrary template (https://github.com/aspnet/Universe/issues/1123)
+                    Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<WebTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<RazorTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<MvcTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<AngularTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<ReactTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<WebApiTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                };
+            }
+            else
+            {
+                // Self-contained
+                return new[]
+                {
+                    // ClassLibrary does not require a package source, even for self-contained deployments
+                    Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<WebTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<RazorTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<MvcTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<AngularTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<ReactTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<WebApiTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                };
+            }
+        }
 
-            // Self-contained, win-x64
-            // ClassLibrary does not require a package source, even for self-contained deployments
-            Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<WebTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<RazorTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<MvcTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<AngularTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<ReactTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
-            Template.GetInstance<WebApiTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Win_x64),
+        private static readonly IEnumerable<Template> _restoreTemplates = RuntimeIdentifier.All.SelectMany(r => GetTemplates(r));
 
-            // Self-contained, linux-x64
-            // ClassLibrary does not require a package source, even for self-contained deployments
-            Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<WebTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<RazorTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<MvcTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<AngularTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<ReactTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-            Template.GetInstance<WebApiTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.Linux_x64),
-
-            // Self-contained, osx-x64
-            // ClassLibrary does not require a package source, even for self-contained deployments
-            Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<WebTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<RazorTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<MvcTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<AngularTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<ReactTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-            Template.GetInstance<WebApiTemplate>(NuGetPackageSource.NuGetOrg, RuntimeIdentifier.OSX_x64),
-        };
-
+        // Must call ToList() or similar on RestoreData to ensure TestCaseData instances can be compared to each other,
+        // which is required to use Except() in RunData.
         public static IEnumerable<TestCaseData> RestoreData = _restoreTemplates.Select(t => new TestCaseData(t)).ToList();
 
         public static IEnumerable<TestCaseData> BuildData => RestoreData;

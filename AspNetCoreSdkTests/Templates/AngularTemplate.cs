@@ -15,7 +15,7 @@ namespace AspNetCoreSdkTests.Templates
         // the file contents being identical.  Replacing the generated hash with "[HASH]" allows the tests to pass
         // on both platforms.
         public override IEnumerable<string> FilesAfterPublish =>
-            base.FilesAfterPublish.Select(f => Regex.Replace(f, @"main\.[0-9a-f]*\.bundle\.js$", "main.[HASH].bundle.js"));
+            base.FilesAfterPublish.Select(f => Regex.Replace(f, @"main\.[0-9a-f]+\.bundle\.js$", "main.[HASH].bundle.js"));
 
         public override IEnumerable<string> ExpectedFilesAfterPublish => 
             base.ExpectedFilesAfterPublish

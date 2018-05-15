@@ -16,6 +16,12 @@ namespace AspNetCoreSdkTests
             SourceArgumentLazy = new Lazy<string>("--source https://api.nuget.org/v3/index.json"),
         };
 
+        public static NuGetPackageSource DotNetCore { get; } = new NuGetPackageSource
+        {
+            Name = nameof(DotNetCore),
+            SourceArgumentLazy = new Lazy<string>("--source https://dotnet.myget.org/F/dotnet-core/api/v3/index.json"),
+        };
+
         public static NuGetPackageSource EnvironmentVariable { get; } = new NuGetPackageSource
         {
             Name = nameof(EnvironmentVariable),

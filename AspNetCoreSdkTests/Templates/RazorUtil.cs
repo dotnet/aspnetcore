@@ -8,6 +8,8 @@ namespace AspNetCoreSdkTests.Templates
     {
         public static IEnumerable<string> GetExpectedObjFilesAfterBuild(Template template) => new[]
          {
+            // Added between 2.1.300-rc1 and 2.1.300-rtm (https://github.com/aspnet/Razor/pull/2316)
+            $"{template.Name}.csproj.CopyComplete",
             $"{template.Name}.RazorAssemblyInfo.cache",
             $"{template.Name}.RazorAssemblyInfo.cs",
             $"{template.Name}.RazorCoreGenerate.cache",

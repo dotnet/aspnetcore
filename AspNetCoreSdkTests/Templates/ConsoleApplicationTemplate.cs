@@ -74,6 +74,12 @@ namespace AspNetCoreSdkTests.Templates
             base.ExpectedBinFilesAfterBuild
             .Concat(_additionalBinFilesAfterBuild[RuntimeIdentifier]());
 
+        // A few files included in self-contained deployments contain version numbers in the filename, which must
+        // be replaced so tests can pass on all versions.
+        public override IEnumerable<string> FilesAfterPublish =>
+            base.FilesAfterPublish
+            .Select(f => Regex.Replace(f, @"_amd64_amd64_[0-9\.]+\.dll$", "_amd64_amd64_[VERSION].dll"));
+
         private Func<IEnumerable<string>> _additionalFilesAfterPublishCommon = () => new[]
         {
             "Microsoft.CSharp.dll",
@@ -298,13 +304,13 @@ namespace AspNetCoreSdkTests.Templates
                         "hostpolicy.dll",
                         "Microsoft.DiaSymReader.Native.amd64.dll",
                         "mscordaccore.dll",
-                        "mscordaccore_amd64_amd64_4.6.26426.02.dll",
+                        "mscordaccore_amd64_amd64_[VERSION].dll",
                         "mscordbi.dll",
                         "mscorrc.debug.dll",
                         "mscorrc.dll",
                         "sos.dll",
                         "SOS.NETCore.dll",
-                        "sos_amd64_amd64_4.6.26426.02.dll",
+                        "sos_amd64_amd64_[VERSION].dll",
                         "ucrtbase.dll",
                     })
                 },
