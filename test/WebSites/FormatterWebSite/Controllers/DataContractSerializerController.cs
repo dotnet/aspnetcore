@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -30,6 +31,22 @@ namespace FormatterWebSite
             // The XmlSerializer should skip and the
             // DataContractSerializer should pick up this output.
             return new Person(name);
+        }
+
+        [HttpPost]
+        public Task<Person> GetTaskOfPerson(string name)
+        {
+            // The XmlSerializer should skip and the
+            // DataContractSerializer should pick up this output.
+            return Task.FromResult(new Person(name));
+        }
+
+        [HttpPost]
+        public Task<object> GetTaskOfPersonAsObject(string name)
+        {
+            // The XmlSerializer should skip and the
+            // DataContractSerializer should pick up this output.
+            return Task.FromResult<object>(new Person(name));
         }
     }
 }

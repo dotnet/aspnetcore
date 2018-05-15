@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -44,6 +45,18 @@ namespace FormatterWebSite
             {
                 { "Hello", "World" }
             };
+        }
+
+        [HttpPost]
+        public Task<DummyClass> GetTaskOfDummyClass()
+        {
+            return Task.FromResult(new DummyClass { SampleInt = 10 });
+        }
+
+        [HttpPost]
+        public Task<object> GetTaskOfDummyClassAsObject()
+        {
+            return Task.FromResult<object>(new DummyClass { SampleInt = 10 });
         }
     }
 }

@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
             Assert.NotNull(result.Value);
             Assert.IsType<TestModel>(result.Value);
+            Assert.Equal(typeof(TestModel), result.DeclaredType);
         }
 
         [Fact]
@@ -97,6 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
             Assert.NotNull(result.Value);
             Assert.IsType<TestModel>(result.Value);
+            Assert.Equal(typeof(TestModel), result.DeclaredType);
         }
 
         [Fact]
@@ -115,6 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
             Assert.NotNull(result.Value);
             Assert.IsType<TestModel>(result.Value);
+            Assert.Equal(typeof(object), result.DeclaredType);
         }
 
         [Fact]
@@ -199,6 +202,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
             Assert.NotNull(result.Value);
             Assert.IsType<TestModel>(result.Value);
+            Assert.Equal(typeof(TestModel), result.DeclaredType);
         }
 
         [Fact]
@@ -217,6 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
             Assert.NotNull(result.Value);
             Assert.IsType<TestModel>(result.Value);
+            Assert.Equal(typeof(object), result.DeclaredType);
         }
 
         [Fact]
@@ -251,6 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var result = Assert.IsType<ObjectResult>(valueTask.Result);
             Assert.NotNull(result.Value);
             Assert.IsType<TestModel>(result.Value);
+            Assert.Equal(typeof(TestModel), result.DeclaredType);
         }
 
         [Fact]
