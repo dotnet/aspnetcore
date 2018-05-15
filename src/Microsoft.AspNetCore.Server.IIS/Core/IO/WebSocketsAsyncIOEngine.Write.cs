@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
     internal partial class WebSocketsAsyncIOEngine
     {

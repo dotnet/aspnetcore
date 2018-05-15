@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.IIS
     /// <summary>
     /// Extensions to <see cref="HttpContext"/> that enable access to IIS features.
     /// </summary>
-    public static class IISHttpContextExtensions
+    public static class HttpContextExtensions
     {
         /// <summary>
         /// Gets the value of a server variable for the current request.

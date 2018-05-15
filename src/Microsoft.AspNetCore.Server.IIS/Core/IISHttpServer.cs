@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal class IISHttpServer : IServer
     {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private GCHandle _httpServerHandle;
         private readonly IApplicationLifetime _applicationLifetime;
         private readonly IAuthenticationSchemeProvider _authentication;
-        private readonly IISOptions _options;
+        private readonly IISServerOptions _options;
 
         private volatile int _stopping;
         private bool Stopping => _stopping == 1;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return _websocketAvailable.Value;
         }
 
-        public IISHttpServer(IApplicationLifetime applicationLifetime, IAuthenticationSchemeProvider authentication, IOptions<IISOptions> options)
+        public IISHttpServer(IApplicationLifetime applicationLifetime, IAuthenticationSchemeProvider authentication, IOptions<IISServerOptions> options)
         {
             _applicationLifetime = applicationLifetime;
             _authentication = authentication;
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             if (_options.ForwardWindowsAuthentication)
             {
-                authentication.AddScheme(new AuthenticationScheme(IISDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
+                authentication.AddScheme(new AuthenticationScheme(IISServerDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
             }
         }
 
@@ -197,10 +197,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             private readonly IHttpApplication<T> _application;
             private readonly MemoryPool<byte> _memoryPool;
-            private readonly IISOptions _options;
+            private readonly IISServerOptions _options;
             private readonly IISHttpServer _server;
 
-            public IISContextFactory(MemoryPool<byte> memoryPool, IHttpApplication<T> application, IISOptions options, IISHttpServer server)
+            public IISContextFactory(MemoryPool<byte> memoryPool, IHttpApplication<T> application, IISServerOptions options, IISHttpServer server)
             {
                 _application = application;
                 _memoryPool = memoryPool;

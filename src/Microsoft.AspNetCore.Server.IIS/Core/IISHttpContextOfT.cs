@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal class IISHttpContextOfT<TContext> : IISHttpContext
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
+        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server)
             : base(memoryPool, pInProcessHandler, options, server)
         {
             _application = application;

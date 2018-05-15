@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct IISConfigurationData

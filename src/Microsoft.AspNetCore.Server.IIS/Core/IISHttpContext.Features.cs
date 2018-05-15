@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext
     {

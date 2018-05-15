@@ -6,26 +6,22 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    // TODO redudant file, remove
-    // See https://github.com/aspnet/IISIntegration/issues/426
-    internal class DuplexStream : Stream
+    internal class IISHttpRequestBody : Stream
     {
-        private Stream _requestBody;
-        private Stream _responseBody;
+        private readonly IISHttpContext _httpContext;
 
-        public DuplexStream(Stream requestBody, Stream responseBody)
+        public IISHttpRequestBody(IISHttpContext httpContext)
         {
-            _requestBody = requestBody;
-            _responseBody = responseBody;
+            _httpContext = httpContext;
         }
 
         public override bool CanRead => true;
 
         public override bool CanSeek => false;
 
-        public override bool CanWrite => true;
+        public override bool CanWrite => false;
 
         public override long Length => throw new NotSupportedException();
 
@@ -33,12 +29,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public override void Flush()
         {
-            _responseBody.Flush();
+            throw new NotSupportedException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return _requestBody.Read(buffer, offset, count);
+            return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            var memory = new Memory<byte>(buffer, offset, count);
+
+            return _httpContext.ReadAsync(memory, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -53,17 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            _responseBody.Write(buffer, offset, count);
-        }
-
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return _requestBody.ReadAsync(buffer, offset, count, cancellationToken);
-        }
-
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return _responseBody.WriteAsync(buffer, offset, count, cancellationToken);
+            throw new NotSupportedException();
         }
     }
 }

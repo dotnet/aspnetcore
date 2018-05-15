@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -18,10 +17,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal abstract partial class IISHttpContext : NativeRequestContext, IDisposable
     {
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         protected readonly IntPtr _pInProcessHandler;
 
-        private readonly IISOptions _options;
+        private readonly IISServerOptions _options;
 
         private volatile bool _hasResponseStarted;
         private volatile bool _hasRequestReadingStarted;
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string BasicString = "Basic";
 
 
-        internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
+        internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
         {
             _memoryPool = memoryPool;

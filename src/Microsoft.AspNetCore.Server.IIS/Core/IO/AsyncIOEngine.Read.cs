@@ -4,7 +4,7 @@
 using System;
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
     internal partial class AsyncIOEngine
     {

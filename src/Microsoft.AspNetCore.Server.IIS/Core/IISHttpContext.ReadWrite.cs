@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext
     {

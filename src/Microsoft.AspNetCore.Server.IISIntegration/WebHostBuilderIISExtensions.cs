@@ -40,13 +40,6 @@ namespace Microsoft.AspNetCore.Hosting
                 return hostBuilder;
             }
 
-            // Check if in process
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.IsAspNetCoreModuleLoaded())
-            {
-
-                return SetupInProcessServer(hostBuilder);
-            }
-
             var port = hostBuilder.GetSetting(ServerPort) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPort}");
             var path = hostBuilder.GetSetting(ServerPath) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPath}");
             var pairingToken = hostBuilder.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
@@ -106,24 +99,6 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             return hostBuilder;
-        }
-
-        private static IWebHostBuilder SetupInProcessServer(IWebHostBuilder hostBuilder)
-        {
-            hostBuilder.UseSetting(nameof(UseIISIntegration), "true");
-            hostBuilder.CaptureStartupErrors(true);
-
-            var iisConfigData = NativeMethods.HttpGetApplicationProperties();
-            hostBuilder.UseContentRoot(iisConfigData.pwzFullApplicationPath);
-            return hostBuilder.ConfigureServices(
-                services => {
-                    services.AddSingleton<IServer, IISHttpServer>();
-                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
-                    services.AddAuthenticationCore();
-                    services.Configure<IISOptions>(
-                        options => { options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled; }
-                    );
-                });
         }
     }
 }

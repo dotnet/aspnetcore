@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public IISTestSiteFixture()
         {
+            var logging = AssemblyTestLog.ForAssembly(typeof(IISTestSiteFixture).Assembly);
+
             var deploymentParameters = new DeploymentParameters(Helpers.GetInProcessTestSitesPath(),
                 ServerType.IISExpress,
                 RuntimeFlavor.CoreClr,
@@ -25,10 +28,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 SiteName = "HttpTestSite",
                 TargetFramework = "netcoreapp2.1",
                 ApplicationType = ApplicationType.Portable,
-                ANCMVersion = ANCMVersion.AspNetCoreModuleV2
+                ANCMVersion = ANCMVersion.AspNetCoreModuleV2,
             };
 
-            _deployer = ApplicationDeployerFactory.Create(deploymentParameters, NullLoggerFactory.Instance);
+            _deployer = ApplicationDeployerFactory.Create(deploymentParameters, logging.CreateLoggerFactory(null, nameof(IISTestSiteFixture)));
             DeploymentResult = _deployer.DeployAsync().Result;
             Client = DeploymentResult.HttpClient;
             BaseUri = DeploymentResult.ApplicationBaseUri;

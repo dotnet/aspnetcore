@@ -18,7 +18,7 @@ namespace IISTestSite
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseIISIntegration()
+                .UseIIS()
                 .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
                 .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }))
                 .Build();

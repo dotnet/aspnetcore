@@ -1,56 +1,36 @@
-<Project>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
     <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
-    <IncludeSource>false</IncludeSource>
-    <IncludeSymbols>false</IncludeSymbols>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <EnableApiCheck>false</EnableApiCheck>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <NuspecFile>$(PackageId).nuspec</NuspecFile>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;iis</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/netstandard2.0/Microsoft.AspNetCore.Server.IIS.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorerh_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.HttpSys.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreHttpSysSourcesPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Buffers.Sources" Version="$(MicrosoftExtensionsBuffersSourcesPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Version="$(MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion)" PrivateAssets="All" />
+
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(MicrosoftAspNetCoreAuthenticationCorePackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
   </ItemGroup>
 
-  <Target Name="SetPackageProperties" BeforeTargets="GenerateNuspec">
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        tfm=$(TargetFramework);
-        tfmGroup=$(TargetFrameworkIdentifier)$(_TargetFrameworkVersionWithoutV);
-        configuration=$(Configuration);
-        copyright=$(Copyright);
-        author=$(Authors);
-        licenseUrl=$(PackageLicenseUrl);
-        iconUrl=$(PackageIconUrl);
-        projectUrl=$(PackageProjectUrl);
-        repositoryUrl=$(RepositoryUrl);
-        repositoryType=$(RepositoryType);
-        repositoryCommit=$(RepositoryCommit);
-        version=$(PackageVersion);
-        description=$(Description);
-        serviceable=$([MSBuild]::ValueOrDefault('$(Serviceable)', 'false'));
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-  <!-- This project doesn't actually compile anything. It's a shim into packing a nuspec -->
-  <Target Name="Compile" />
-  <Target Name="CopyFilesToOutputDirectory" />
-
+  <ItemGroup>
+    <Content Include="..\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" />
+    <Content Include="..\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" />
+  </ItemGroup>
 </Project>

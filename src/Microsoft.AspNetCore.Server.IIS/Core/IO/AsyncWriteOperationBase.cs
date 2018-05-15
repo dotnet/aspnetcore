@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
     internal abstract class AsyncWriteOperationBase : AsyncIOOperation
     {

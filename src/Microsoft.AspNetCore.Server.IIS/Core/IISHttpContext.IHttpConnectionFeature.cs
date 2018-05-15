@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext : IHttpConnectionFeature
     {
