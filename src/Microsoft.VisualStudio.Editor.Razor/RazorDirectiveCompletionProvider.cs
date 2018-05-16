@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Projection;
@@ -139,7 +140,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     // This groups all Razor directives together
                     sortText: "_RazorDirective_",
                     rules: CompletionItemRules.Create(formatOnCommit: false),
-                    tags: ImmutableArray.Create(CompletionTags.Intrinsic),
+                    tags: ImmutableArray.Create(WellKnownTags.Intrinsic),
                     properties: propertyDictionary.ToImmutableDictionary());
                 completionItems.Add(completionItem);
             }

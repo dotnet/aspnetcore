@@ -45,16 +45,16 @@
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview3-26331-02</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemValueTuplePackageVersion>4.5.0-preview3-26331-02</SystemValueTuplePackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
-    <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
