@@ -6,7 +6,7 @@
         <PackageId>Microsoft.VisualStudio.SecretManager</PackageId>
         <Description xml:space="preserve">Enables IVsProjectSecrets for ASP.NET Core projects that use Microsoft.Extensions.Configuration.UserSecrets.</Description>
     </Metadata>
-    <Installation AllUsers="true">
+    <Installation AllUsers="true" SystemComponent="true">
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0.26228.04,)" />
     </Installation>
     <Dependencies>
