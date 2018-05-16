@@ -686,6 +686,24 @@ describe("hubConnection", () => {
         }
     });
 
+    it("populates the Content-Type header when sending XMLHttpRequest", async (done) => {
+        const hubConnection = getConnectionBuilder(HttpTransportType.LongPolling, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
+            .withHubProtocol(new JsonHubProtocol())
+            .build();
+
+        try {
+            await hubConnection.start();
+
+            // Check what transport was used by asking the server to tell us.
+            expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
+            // Check to see that the Content-Type header is set the expected value
+            expect(await hubConnection.invoke("GetContentTypeHeader")).toEqual("text/plain;charset=UTF-8");
+            done();
+        } catch (e) {
+            fail(e);
+        }
+    });
+
     function getJwtToken(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
