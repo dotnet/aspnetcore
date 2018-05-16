@@ -16,7 +16,7 @@ namespace E2ETests
     public class SmokeTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
                 .WithAllApplicationTypes();
 
@@ -34,7 +34,7 @@ namespace E2ETests
                 {
                     ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "SocialTesting",
-                    ServerConfigTemplateContent = (variant.Server == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "Http.config"),
                     SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,

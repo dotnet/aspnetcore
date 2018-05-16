@@ -30,5 +30,18 @@ namespace E2ETests
                 return false;
             }
         }
+
+        public static string GetConfigContent(ServerType serverType, string iisConfig)
+        {
+            var applicationBasePath = AppContext.BaseDirectory;
+
+            string content = null;
+            if (serverType == ServerType.IISExpress)
+            {
+                content = File.ReadAllText(Path.Combine(applicationBasePath, iisConfig));
+            }
+
+            return content;
+        }
     }
 }
