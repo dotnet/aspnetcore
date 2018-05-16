@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -11,33 +12,32 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    public class PublishAndRunTestRunner : LoggedTest
+    [Trait("E2Etests", "PublishAndRun")]
+    public class PublishAndRunTests : LoggedTest
     {
-        public PublishAndRunTestRunner(ITestOutputHelper output) 
-            : base(output)
-        {
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
+                .WithAllApplicationTypes()
+                .WithAllArchitectures()
+                .Skip("https://github.com/aspnet/Hosting/issues/601",
+                    v => v.Tfm != Tfm.Net461 && v.Architecture == RuntimeArchitecture.x86);
 
-        public async Task RunTests(
-            ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
-            ApplicationType applicationType,
-            RuntimeArchitecture runtimeArchitecture)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task PublishAndRun_Test(TestVariant variant)
         {
-            var testName = $"PublishAndRunTests_{serverType}_{runtimeFlavor}_{applicationType}";
+            var testName = $"PublishAndRunTests_{variant}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("Publish_And_Run_Tests");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(), serverType, runtimeFlavor, runtimeArchitecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
-                    ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
@@ -72,7 +72,7 @@ namespace E2ETests
                     logger.LogInformation("Verifying static files are served from static file middleware");
                     await validator.VerifyStaticContentServed();
 
-                    if (serverType != ServerType.IISExpress)
+                    if (variant.Server != ServerType.IISExpress)
                     {
                         if (Directory.GetFiles(
                             deploymentParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)

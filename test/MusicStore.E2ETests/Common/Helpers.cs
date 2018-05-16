@@ -13,15 +13,6 @@ namespace E2ETests
             return Path.GetFullPath(Path.Combine(solutionDirectory, "samples", "MusicStore"));
         }
 
-        public static string GetCurrentBuildConfiguration()
-        {
-#if DEBUG
-            return "Debug";
-#else
-            return "Release";
-#endif
-        }
-
         public static bool PreservePublishedApplicationForDebugging
         {
             get
@@ -38,20 +29,6 @@ namespace E2ETests
                 // do not preserve the published folder and delete it
                 return false;
             }
-        }
-
-        public static string GetTargetFramework(RuntimeFlavor flavor)
-        {
-            if (flavor == RuntimeFlavor.Clr)
-            {
-                return "net461";
-            }
-            else if (flavor == RuntimeFlavor.CoreClr)
-            {
-                return "netcoreapp2.2";
-            }
-
-            throw new ArgumentException($"Unknown runtime flavor '{flavor}.");
         }
     }
 }

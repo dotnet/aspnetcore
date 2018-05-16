@@ -1,14 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -16,33 +12,28 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    public class DotnetRunTestRunner : LoggedTest
+    [Trait("E2Etests", "DotnetRun")]
+    public class DotnetRunTests : LoggedTest
     {
-        public DotnetRunTestRunner(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.Kestrel)
+                .WithAllApplicationTypes()
+                .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461);
 
-        public async Task RunTests(
-            ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
-            ApplicationType applicationType,
-            RuntimeArchitecture runtimeArchitecture)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task DotnetRun_Tests(TestVariant variant)
         {
-            var testName = $"DotnetRunTests_{serverType}_{runtimeFlavor}_{applicationType}";
+            var testName = $"DotnetRunTests_{variant}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("DotnetRunTests");
                 var musicStoreDbName = DbUtils.GetUniqueName();
-                var applicationPath = Helpers.GetApplicationPath();
-                var deploymentParameters = new DeploymentParameters(
-                    applicationPath, serverType, runtimeFlavor, runtimeArchitecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     PublishApplicationBeforeDeployment = false,
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
                     EnvironmentName = "Development",
-                    ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);

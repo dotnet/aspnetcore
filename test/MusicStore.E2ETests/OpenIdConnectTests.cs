@@ -13,45 +13,25 @@ namespace E2ETests
     [Trait("E2Etests", "E2Etests")]
     public class OpenIdConnectTests : LoggedTest
     {
-        public OpenIdConnectTests(ITestOutputHelper output) : base(output)
-        {
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461);
 
-        [Fact]
-        public Task OpenIdConnect_Kestrel_CoreCLR_Portable()
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task OpenIdConnectTestSuite(TestVariant variant)
         {
-            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [Fact]
-        public Task OpenIdConnect_Kestrel_CoreCLR_Standalone()
-        {
-            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public Task OpenIdConnect_Kestrel_CLR()
-        {
-            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Portable);
-        }
-
-        private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            var architecture = RuntimeArchitecture.x64;
-            var testName = $"OpenIdConnectTestSuite_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            var testName = $"OpenIdConnectTestSuite_{variant}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("OpenIdConnectTestSuite");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
-                    ApplicationType = applicationType,
                     EnvironmentName = "OpenIdConnectTesting",
                     UserAdditionalCleanup = parameters =>
                     {

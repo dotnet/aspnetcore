@@ -13,67 +13,30 @@ using Xunit.Abstractions;
 namespace E2ETests
 {
     [Trait("E2Etests", "E2Etests")]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public class NtlmAuthenticationTests : LoggedTest
     {
-        public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
-        {
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
+                .WithAllApplicationTypes();
 
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_WebListener_CoreCLR_Portable()
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        private async Task NtlmAuthenticationTest(TestVariant variant)
         {
-            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_WebListener_CoreCLR_Standalone()
-        {
-            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Portable()
-        {
-            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Standalone()
-        {
-            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_WebListener_CLR()
-        {
-            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.Clr, ApplicationType.Portable);
-        }
-
-        [ConditionalFact(Skip = "https://github.com/aspnet/websdk/pull/322")]
-        public Task NtlmAuthenticationTest_IISExpress_CLR()
-        {
-            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.Clr, ApplicationType.Standalone);
-        }
-
-        private async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            var architecture = RuntimeArchitecture.x64;
-            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{applicationType}";
+            var testName = $"NtlmAuthentication_{variant}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
-                    ApplicationType = applicationType,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "NtlmAuthentation.config")) : null,
+                    ServerConfigTemplateContent = (variant.Server == ServerType.IISExpress) ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "NtlmAuthentation.config")) : null,
                     SiteName = "MusicStoreNtlmAuthentication", //This is configured in the NtlmAuthentication.config
                     UserAdditionalCleanup = parameters =>
                     {

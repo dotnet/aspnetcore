@@ -1,32 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace E2ETests.SmokeTestsUsingStore
+namespace E2ETests
 {
-    public class TestHelper : LoggedTest
+    public class StoreSmokeTests : LoggedTest
     {
-        public TestHelper(ITestOutputHelper output) : base(output)
+        [SkipIfEnvironmentVariableNotEnabled("RUN_RUNTIME_STORE_TESTS")]
+        [ConditionalFact]
+        [Trait("smoketests", "usestore")]
+        public async Task DefaultLocation_Kestrel()
         {
-        }
-
-        public async Task SmokeTestSuite(ServerType serverType)
-        {
-            var targetFramework = Helpers.GetTargetFramework(RuntimeFlavor.CoreClr);
+            var serverType = ServerType.Kestrel;
             var testName = $"SmokeTestsUsingStore_{serverType}";
             using (StartLog(out var loggerFactory, testName))
             {
-                var logger = loggerFactory.CreateLogger(nameof(TestHelper));
+                var logger = loggerFactory.CreateLogger(nameof(StoreSmokeTests));
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
@@ -36,8 +35,7 @@ namespace E2ETests.SmokeTestsUsingStore
                     SiteName = "MusicStoreTestSiteUsingStore",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = targetFramework,
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
+                    TargetFramework = Tfm.NetCoreApp20, // There's only a Store on 2.0
                     ApplicationType = ApplicationType.Portable,
                     UserAdditionalCleanup = parameters =>
                     {
@@ -70,7 +68,7 @@ namespace E2ETests.SmokeTestsUsingStore
 
                     logger.LogInformation($"Published output does not have the dll '{mvcCoreDll}', so the output seems to be trimmed");
 
-                    await SmokeTestRunner.RunTestsAsync(deploymentResult, logger);
+                    await SmokeTests.RunTestsAsync(deploymentResult, logger);
                 }
             }
         }

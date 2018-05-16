@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -11,35 +12,32 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    public class SmokeTestRunner : LoggedTest
+    [Trait("E2Etests", "Smoke")]
+    public class SmokeTests : LoggedTest
     {
-        public SmokeTestRunner(ITestOutputHelper output) : base(output)
-        {
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
+                .WithAllApplicationTypes();
 
-        public async Task SmokeTestSuite(
-            ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task Smoke_Tests(TestVariant variant)
         {
-            var testName = $"SmokeTestSuite_{serverType}_{applicationType}";
+            var testName = $"SmokeTestSuite_{variant}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("SmokeTestSuite");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "SocialTesting",
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    ServerConfigTemplateContent = (variant.Server == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
-                    ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
@@ -61,7 +59,7 @@ namespace E2ETests
             }
         }
 
-        public static async Task RunTestsAsync(DeploymentResult deploymentResult, ILogger logger)
+        internal static async Task RunTestsAsync(DeploymentResult deploymentResult, ILogger logger)
         {
             var httpClientHandler = new HttpClientHandler();
             var httpClient = deploymentResult.CreateHttpClient(httpClientHandler);

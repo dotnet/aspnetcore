@@ -21,7 +21,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore.E2ETests", "test
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{88A30728-49E5-46C5-9CEC-9D8FD346A043}"
 	ProjectSection(SolutionItems) = preProject
+		build\dependencies.props = build\dependencies.props
+		build\repo.props = build\repo.props
 		build\repo.targets = build\repo.targets
+		build\sources.props = build\sources.props
 	EndProjectSection
 EndProject
 Global
