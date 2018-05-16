@@ -15,7 +15,7 @@ namespace FunctionalTests
         private const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
         private static readonly SemaphoreSlim _deploymentLock = new SemaphoreSlim(initialCount: 1);
         private Task<DeploymentResult> _deploymentTask;
-        private IApplicationDeployer _deployer;
+        private ApplicationDeployer _deployer;
 
         protected ApplicationTestFixture(string applicationName, string applicationPath)
         {
