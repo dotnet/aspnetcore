@@ -50,64 +50,74 @@ namespace PlatformBenchmarks
                 }
 
                 var result = await task;
-                if (!ParseHttpRequest(ref result))
+                var buffer = result.Buffer;
+                while (true)
                 {
+                    if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
+                    {
+                        return;
+                    }
+
+                    if (_state == State.Body)
+                    {
+                        await ProcessRequestAsync();
+
+                        _state = State.StartLine;
+
+                        if (!buffer.IsEmpty)
+                        {
+                            // More input data to parse
+                            continue;
+                        }
+                    }
+
+                    // No more input or incomplete data, Advance the Reader
+                    Reader.AdvanceTo(buffer.Start, examined);
                     break;
-                }
-
-                if (_state == State.Body)
-                {
-                    await ProcessRequestAsync();
-
-                    _state = State.StartLine;
                 }
             }
         }
 
-        // Should be `in` but ReadResult isn't readonly struct
-        private bool ParseHttpRequest(ref ReadResult result)
+        private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition examined)
         {
-            var buffer = result.Buffer;
+            examined = buffer.End;
+
             var consumed = buffer.Start;
-            var examined = buffer.End;
             var state = _state;
 
             if (!buffer.IsEmpty)
             {
-                var parsingStartLine = state == State.StartLine;
-                if (parsingStartLine)
+                if (state == State.StartLine)
                 {
                     if (Parser.ParseRequestLine(new ParsingAdapter(this), buffer, out consumed, out examined))
                     {
                         state = State.Headers;
                     }
+
+                    buffer = buffer.Slice(consumed);
                 }
 
                 if (state == State.Headers)
                 {
-                    if (parsingStartLine)
-                    {
-                        buffer = buffer.Slice(consumed);
-                    }
-
                     if (Parser.ParseHeaders(new ParsingAdapter(this), buffer, out consumed, out examined, out int consumedBytes))
                     {
                         state = State.Body;
                     }
+
+                    buffer = buffer.Slice(consumed);
                 }
 
-                if (state != State.Body && result.IsCompleted)
+                if (state != State.Body && isCompleted)
                 {
                     ThrowUnexpectedEndOfData();
                 }
             }
-            else if (result.IsCompleted)
+            else if (isCompleted)
             {
                 return false;
             }
 
             _state = state;
-            Reader.AdvanceTo(consumed, examined);
             return true;
         }
 
