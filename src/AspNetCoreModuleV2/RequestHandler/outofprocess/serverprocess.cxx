@@ -22,23 +22,23 @@ SERVER_PROCESS::Initialize(
     BOOL                  fAnonymousAuthEnabled,
     ENVIRONMENT_VAR_HASH *pEnvironmentVariables,
     BOOL                  fStdoutLogEnabled,
-    BOOL                  fWebsocketsEnabled,
+    BOOL                  fWebSocketSupported,
     STRU                  *pstruStdoutLogFile,
     STRU                  *pszAppPhysicalPath,
     STRU                  *pszAppPath,
     STRU                  *pszAppVirtualPath
 )
 {
-    HRESULT                                 hr = S_OK;
+    HRESULT hr = S_OK;
 
     m_pProcessManager = pProcessManager;
     m_dwStartupTimeLimitInMS = dwStartupTimeLimitInMS;
     m_dwShutdownTimeLimitInMS = dwShtudownTimeLimitInMS;
     m_fStdoutLogEnabled = fStdoutLogEnabled;
+    m_fWebSocketSupported = fWebSocketSupported;
     m_fWindowsAuthEnabled = fWindowsAuthEnabled;
     m_fBasicAuthEnabled = fBasicAuthEnabled;
     m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
-    m_fWebsocketsEnabled = fWebsocketsEnabled;
     m_pProcessManager->ReferenceProcessManager();
     m_fDebuggerAttached = FALSE;
 
@@ -790,7 +790,7 @@ SERVER_PROCESS::StartProcess(
 
         if (FAILED(hr = ENVIRONMENT_VAR_HELPERS::AddWebsocketEnabledToEnvironmentVariables(
             pHashTable,
-            m_fWebsocketsEnabled
+            m_fWebSocketSupported
         )))
         {
             pStrStage = L"AddWebsocketEnabledToEnvironmentVariables";

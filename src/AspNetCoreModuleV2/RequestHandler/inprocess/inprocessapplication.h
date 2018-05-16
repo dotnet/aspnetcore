@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]); // TODO these may need to be BSTRs
 
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
@@ -10,9 +11,14 @@ typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_MANAGED_CONTEXT_HANDLER)(void *
 class IN_PROCESS_APPLICATION : public APPLICATION
 {
 public:
-    IN_PROCESS_APPLICATION(IHttpServer* pHttpServer, ASPNETCORE_CONFIG* pConfig);
+    IN_PROCESS_APPLICATION(IHttpServer* pHttpServer, REQUESTHANDLER_CONFIG *pConfig);
 
     ~IN_PROCESS_APPLICATION();
+
+    HRESULT
+	Initialize(
+		VOID
+	);
 
     __override
     VOID
@@ -37,7 +43,6 @@ public:
     HRESULT
     CreateHandler(
         _In_  IHttpContext       *pHttpContext,
-        _In_  HTTP_MODULE_ID     *pModuleId,
         _Out_ IREQUEST_HANDLER   **pRequestHandler)
     override;
 
@@ -106,8 +111,14 @@ public:
         return s_Application;
     }
 
-    ASPNETCORE_CONFIG*
+    REQUESTHANDLER_CONFIG*
     QueryConfig() const;
+
+    PCWSTR
+    QueryExeLocation()
+    {
+        return m_struExeLocation.QueryStr();
+    }
 
 private:
     static
@@ -144,6 +155,7 @@ private:
     HANDLE                          m_hErrReadPipe;
     HANDLE                          m_hErrWritePipe;
     STRU                            m_struLogFilePath;
+    STRU                            m_struExeLocation;
 
     // The exit code of the .NET Core process
     INT                             m_ProcessExitCode;
@@ -166,7 +178,7 @@ private:
     DWORD                           m_dwStdErrReadTotal;
     static IN_PROCESS_APPLICATION*  s_Application;
 
-    ASPNETCORE_CONFIG*              m_pConfig;
+    REQUESTHANDLER_CONFIG*          m_pConfig;
 
     VOID
     SetStdOut(

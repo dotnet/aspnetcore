@@ -42,8 +42,8 @@ APPLICATION_INFO::~APPLICATION_INFO()
 
 HRESULT
 APPLICATION_INFO::Initialize(
-    _In_ ASPNETCORE_CONFIG   *pConfiguration,
-    _In_ FILE_WATCHER        *pFileWatcher
+    _In_ ASPNETCORE_SHIM_CONFIG   *pConfiguration,
+    _In_ FILE_WATCHER             *pFileWatcher
 )
 {
     HRESULT hr = S_OK;
@@ -177,11 +177,14 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
 }
 
 HRESULT
-APPLICATION_INFO::EnsureApplicationCreated()
+APPLICATION_INFO::EnsureApplicationCreated(
+    IHttpContext *pHttpContext,
+    STRU* struExeLocation
+)
 {
     HRESULT             hr = S_OK;
     BOOL                fLocked = FALSE;
-    IAPPLICATION*        pApplication = NULL;
+    IAPPLICATION       *pApplication = NULL;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
     STRU                struHostFxrDllLocation;
 
@@ -222,11 +225,8 @@ APPLICATION_INFO::EnsureApplicationCreated()
                 goto Finished;
             }
 
-            hr = m_pfnAspNetCoreCreateApplication(m_pServer, m_pConfiguration, &pApplication);
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
+            hr = m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext, struExeLocation->QueryStr(), &pApplication);
+
             m_pApplication = pApplication;
         }
     }
@@ -314,6 +314,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
             hr = HRESULT_FROM_WIN32(GetLastError());
             goto Finished;
         }
+
         g_fAspnetcoreRHAssemblyLoaded = TRUE;
     }
 
@@ -323,6 +324,7 @@ Finished:
     // User needs to check whether the fuction pointer is NULL
     //
     m_pfnAspNetCoreCreateApplication = g_pfnAspNetCoreCreateApplication;
+
     if (!g_fAspnetcoreRHLoadedError && FAILED(hr))
     {
         g_fAspnetcoreRHLoadedError = TRUE;

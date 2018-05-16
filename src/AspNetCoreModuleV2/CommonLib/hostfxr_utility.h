@@ -11,20 +11,6 @@ typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]);
 class HOSTFXR_UTILITY
 {
 public:
-    HOSTFXR_UTILITY();
-    ~HOSTFXR_UTILITY();
-
-	static
-	HRESULT
-	GetHostFxrParameters(
-        HANDLE              hEventLog,
-        PCWSTR				pcwzProcessPath,
-        PCWSTR              pcwzApplicationPhysicalPath,
-        PCWSTR              pcwzArguments,
-        _Inout_ STRU*       pStruHostFxrDllLocation,
-        _Out_ DWORD*        pdwArgCount,
-        _Out_ BSTR**       ppwzArgv
-	);
 
     static
     HRESULT
@@ -42,11 +28,30 @@ public:
     HRESULT
     ParseHostfxrArguments(
         PCWSTR              pwzArgumentsFromConfig,
-        PCWSTR              pwzExePath, 
-        PCWSTR				pcwzApplicationPhysicalPath,
+        PCWSTR              pwzExePath,
+        PCWSTR              pcwzApplicationPhysicalPath,
         HANDLE              hEventLog,
         _Out_ DWORD*        pdwArgCount,
-        _Out_ BSTR**        ppwzArgv
+        _Out_ BSTR**        pbstrArgv
+    );
+
+    static
+    BOOL
+    IsDotnetExecutable(
+        STRU*  struExecutablePath
+    );
+
+    static
+    HRESULT
+    GetHostFxrParameters(
+        _In_ HANDLE         hEventLog,
+        _In_ PCWSTR         pcwzProcessPath,
+        _In_ PCWSTR         pcwzApplicationPhysicalPath,
+        _In_ PCWSTR         pcwzArguments,
+        _Inout_ STRU       *pStruHostFxrDllLocation,
+        _Inout_ STRU       *struExeAbsolutePath,
+        _Out_ DWORD        *pdwArgCount,
+        _Out_ BSTR        **ppwzArgv
     );
 
     static
@@ -74,5 +79,22 @@ public:
     GetAbsolutePathToDotnetFromProgramFiles(
         _Inout_ STRU* pStruAbsolutePathToDotnet
     );
+
+    static
+    HRESULT
+    FindHighestDotNetVersion(
+        _In_ std::vector<std::wstring> vFolders,
+        _Out_ STRU *pstrResult
+    );
+
+    static
+    VOID
+    FindDotNetFolders(
+        _In_ PCWSTR pszPath,
+        _Out_ std::vector<std::wstring> *pvFolders
+    );
+
+    HOSTFXR_UTILITY();
+    ~HOSTFXR_UTILITY();
 };
 

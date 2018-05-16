@@ -165,7 +165,7 @@ http_get_application_properties(
     _In_ IISConfigurationData* pIISCofigurationData
 )
 {
-    ASPNETCORE_CONFIG* pConfiguration = NULL;
+    REQUESTHANDLER_CONFIG* pConfiguration = NULL;
     IN_PROCESS_APPLICATION* pApplication = IN_PROCESS_APPLICATION::GetInstance();
 
     if (pApplication == NULL)
@@ -373,11 +373,6 @@ http_enable_websockets(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler
 )
 {
-    //if (!g_fWebSocketSupported)
-    //{
-    //    return E_FAIL;
-    //}
-
     ((IHttpContext3*)pInProcessHandler->QueryHttpContext())->EnableFullDuplex();
     ((IHttpResponse2*)pInProcessHandler->QueryHttpContext()->GetResponse())->DisableBuffering();
 

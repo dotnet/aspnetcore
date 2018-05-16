@@ -94,7 +94,7 @@ WEBSOCKET_HANDLER::StaticInitialize(
 
 --*/
 {
-    if (!g_fWebSocketSupported)
+    if (!g_fWebSocketStaticInitialize)
     {
         return S_OK;
     }
@@ -120,7 +120,7 @@ WEBSOCKET_HANDLER::StaticTerminate(
     VOID
     )
 {
-    if (!g_fWebSocketSupported)
+    if (!g_fWebSocketStaticInitialize)
     {
         return;
     }

@@ -103,8 +103,9 @@ PROCESS_MANAGER::~PROCESS_MANAGER()
 
 HRESULT
 PROCESS_MANAGER::GetProcess(
-    _In_    ASPNETCORE_CONFIG      *pConfig,
-    _Out_   SERVER_PROCESS        **ppServerProcess
+    _In_    REQUESTHANDLER_CONFIG      *pConfig,
+    _In_    BOOL                        fWebsocketSupported,
+    _Out_   SERVER_PROCESS            **ppServerProcess
 )
 {
     HRESULT          hr = S_OK;
@@ -220,7 +221,7 @@ PROCESS_MANAGER::GetProcess(
                     pConfig->QueryAnonymousAuthEnabled(),
                     pConfig->QueryEnvironmentVariables(),
                     pConfig->QueryStdoutLogEnabled(),
-                    pConfig->QueryWebSocketEnabled(),
+                    fWebsocketSupported,
                     pConfig->QueryStdoutLogFile(),
                     pConfig->QueryApplicationPhysicalPath(),   // physical path
                     pConfig->QueryApplicationPath(),           // app path

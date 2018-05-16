@@ -126,6 +126,7 @@ TEST(GetHostFxrArguments, InvalidParams)
     DWORD retVal = 0;
     BSTR* bstrArray;
     STRU  struHostFxrDllLocation;
+    STRU  struExeLocation;
 
     HRESULT hr = HOSTFXR_UTILITY::GetHostFxrParameters(
         INVALID_HANDLE_VALUE,
@@ -133,6 +134,7 @@ TEST(GetHostFxrArguments, InvalidParams)
         L"",  // application physical path, ignored.
         L"ignored",  //arguments
         NULL, // event log
+        &struExeLocation,
         &retVal, // arg count
         &bstrArray); // args array.
 

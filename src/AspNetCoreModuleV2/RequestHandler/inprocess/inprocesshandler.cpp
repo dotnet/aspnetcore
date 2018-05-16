@@ -2,11 +2,9 @@
 
 IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ IHttpContext   *pW3Context,
-    _In_ HTTP_MODULE_ID *pModuleId,
     _In_ IN_PROCESS_APPLICATION    *pApplication
 ):  m_pW3Context(pW3Context),
-    m_pApplication(pApplication),
-    m_pModuleId(*pModuleId)
+    m_pApplication(pApplication)
 {
     m_fManagedRequestComplete = FALSE;
 }
@@ -22,7 +20,9 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
 {
     // First get the in process Application
     HRESULT hr;
+
     hr = m_pApplication->LoadManagedApplication();
+
     if (FAILED(hr))
     {
         // TODO remove com_error?

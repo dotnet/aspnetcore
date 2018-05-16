@@ -30,8 +30,9 @@ public:
 
     HRESULT 
     GetProcess(
-        _In_    ASPNETCORE_CONFIG      *pConfig,
-        _Out_   SERVER_PROCESS        **ppServerProcess
+        _In_    REQUESTHANDLER_CONFIG      *pConfig,
+        _In_    BOOL                        fWebsocketEnabled,
+        _Out_   SERVER_PROCESS            **ppServerProcess
     );
 
     HANDLE

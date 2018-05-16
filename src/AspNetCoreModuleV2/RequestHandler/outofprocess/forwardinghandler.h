@@ -21,10 +21,9 @@ class FORWARDING_HANDLER : public REQUEST_HANDLER
 {
 public:
     FORWARDING_HANDLER(
-
-        _In_ IHttpContext     *pW3Context,
-        _In_  HTTP_MODULE_ID  *pModuleId,
-        _In_ OUT_OF_PROCESS_APPLICATION  *pApplication);
+        _In_ IHttpContext *pW3Context,
+        _In_ OUT_OF_PROCESS_APPLICATION  *pApplication
+    );
 
     ~FORWARDING_HANDLER();
 
@@ -178,6 +177,7 @@ private:
     FORWARDING_REQUEST_STATUS           m_RequestStatus;
 
     BOOL                                m_fWebSocketEnabled;
+    BOOL                                m_fWebSocketSupported;
     BOOL                                m_fResponseHeadersReceivedAndSet;
     BOOL                                m_fResetConnection;
     BOOL                                m_fDoReverseRewriteHeaders;

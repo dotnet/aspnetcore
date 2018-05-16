@@ -3,6 +3,8 @@
 
 #pragma once
 
+class IREQUEST_HANDLER;
+
 enum APPLICATION_STATUS
 {
     UNKNOWN = 0,
@@ -15,6 +17,7 @@ enum APPLICATION_STATUS
 class IAPPLICATION
 {
 public:
+
     virtual
     VOID
     ShutDown() = 0;
@@ -42,6 +45,5 @@ public:
     HRESULT
     CreateHandler(
         _In_  IHttpContext       *pHttpContext,
-        _In_  HTTP_MODULE_ID     *pModuleId,
-        _Out_ IREQUEST_HANDLER   **pRequestHandler) = 0;
+        _Out_ IREQUEST_HANDLER  **pRequestHandler) = 0;
 };

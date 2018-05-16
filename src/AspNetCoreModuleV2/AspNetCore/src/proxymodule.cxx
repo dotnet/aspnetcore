@@ -46,7 +46,6 @@ Return value:
     WEBSOCKET_HANDLER::StaticTerminate();*/
 
     ALLOC_CACHE_HANDLER::StaticTerminate();
-
     delete this;
 }
 
@@ -78,18 +77,20 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 )
 {
     HRESULT hr = S_OK;
-    ASPNETCORE_CONFIG     *pConfig = NULL;
+    ASPNETCORE_SHIM_CONFIG *pConfig = NULL;
     APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     IAPPLICATION* pApplication = NULL;
+    STRU struExeLocation;
     STACK_STRU(struFileName, 256);
+
     if (g_fInShutdown)
     {
         hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
         goto Finished;
     }
 
-    hr = ASPNETCORE_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext, g_hEventLog, &pConfig);
+    hr = ASPNETCORE_SHIM_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext->GetApplication(), g_hEventLog, &struExeLocation, &pConfig);
     if (FAILED(hr))
     {
         goto Finished;
@@ -143,7 +144,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
 
     // make sure assmebly is loaded and application is created
-    hr = m_pApplicationInfo->EnsureApplicationCreated();
+    hr = m_pApplicationInfo->EnsureApplicationCreated(pHttpContext, &struExeLocation);
     if (FAILED(hr))
     {
         goto Finished;
@@ -163,7 +164,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
     // Create RequestHandler and process the request
     hr = pApplication->CreateHandler(pHttpContext,
-                    (HTTP_MODULE_ID*) &g_pModuleId,
                     &m_pHandler);
 
     if (FAILED(hr))

@@ -42,7 +42,6 @@
 
 #include "hostfxr_utility.h"
 #include "environmentvariablehash.h"
-#include "aspnetcoreconfig.h"
 #include "iapplication.h"
 #include "utility.h"
 #include "debugutil.h"

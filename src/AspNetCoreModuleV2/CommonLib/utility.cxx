@@ -506,30 +506,6 @@ Finished:
     return hr;
 }
 
-HRESULT
-UTILITY::FindHighestDotNetVersion(
-    _In_ std::vector<std::wstring> vFolders,
-    _Out_ STRU *pstrResult
-)
-{
-    HRESULT hr = S_OK;
-    fx_ver_t max_ver(-1, -1, -1);
-    for (const auto& dir : vFolders)
-    {
-        fx_ver_t fx_ver(-1, -1, -1);
-        if (fx_ver_t::parse(dir, &fx_ver, false))
-        {
-            // TODO using max instead of std::max works
-            max_ver = max(max_ver, fx_ver);
-        }
-    }
-
-    hr = pstrResult->Copy(max_ver.as_str().c_str());
-
-    // we check FAILED(hr) outside of function
-    return hr;
-}
-
 BOOL
 UTILITY::DirectoryExists(
     _In_ STRU *pstrPath
@@ -543,30 +519,6 @@ UTILITY::DirectoryExists(
     }
 
     return GetFileAttributesExW(pstrPath->QueryStr(), GetFileExInfoStandard, &data);
-}
-
-VOID
-UTILITY::FindDotNetFolders(
-    _In_ PCWSTR pszPath,
-    _Out_ std::vector<std::wstring> *pvFolders
-)
-{
-    HANDLE handle = NULL;
-    WIN32_FIND_DATAW data = { 0 };
-
-    handle = FindFirstFileExW(pszPath, FindExInfoStandard, &data, FindExSearchNameMatch, NULL, 0);
-    if (handle == INVALID_HANDLE_VALUE)
-    {
-        return;
-    }
-
-    do
-    {
-        std::wstring folder(data.cFileName);
-        pvFolders->push_back(folder);
-    } while (FindNextFileW(handle, &data));
-
-    FindClose(handle);
 }
 
 BOOL

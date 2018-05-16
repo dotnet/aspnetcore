@@ -33,7 +33,7 @@ public:
         _In_ BOOL                  fAnonymousAuthEnabled,
         _In_ ENVIRONMENT_VAR_HASH* pEnvironmentVariables,
         _In_ BOOL                  fStdoutLogEnabled,
-        _In_ BOOL                  fWebsocketsEnabled,
+        _In_ BOOL                  fWebSocketSupported,
         _In_ STRU                 *pstruStdoutLogFile,
         _In_ STRU                 *pszAppPhysicalPath,
         _In_ STRU                 *pszAppPath,
@@ -234,10 +234,10 @@ private:
 
     FORWARDER_CONNECTION   *m_pForwarderConnection;
     BOOL                    m_fStdoutLogEnabled;
+    BOOL                    m_fWebSocketSupported;
     BOOL                    m_fWindowsAuthEnabled;
     BOOL                    m_fBasicAuthEnabled;
     BOOL                    m_fAnonymousAuthEnabled;
-    BOOL                    m_fWebsocketsEnabled;
     BOOL                    m_fDebuggerAttached;
 
     STTIMER                 m_Timer;

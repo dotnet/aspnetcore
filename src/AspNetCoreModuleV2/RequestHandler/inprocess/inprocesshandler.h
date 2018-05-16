@@ -8,7 +8,6 @@ public:
     IN_PROCESS_HANDLER(
 
         _In_ IHttpContext   *pW3Context,
-        _In_ HTTP_MODULE_ID *pModuleId,
         _In_ IN_PROCESS_APPLICATION  *pApplication);
 
     ~IN_PROCESS_HANDLER() override;
@@ -67,11 +66,9 @@ public:
 
 private:
     PVOID m_pManagedHttpContext;
-    IHttpContext* m_pHttpContext;
     BOOL m_fManagedRequestComplete;
     REQUEST_NOTIFICATION_STATUS m_requestNotificationStatus;
 
     IHttpContext*               m_pW3Context;
     IN_PROCESS_APPLICATION*     m_pApplication;
-    HTTP_MODULE_ID              m_pModuleId;
 };

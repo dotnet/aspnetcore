@@ -4,7 +4,7 @@ IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer*        pHttpServer,
-    ASPNETCORE_CONFIG*  pConfig) :
+    REQUESTHANDLER_CONFIG *pConfig) :
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
@@ -16,15 +16,15 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_fInitialized(FALSE),
     m_fShutdownCalledFromNative(FALSE),
     m_fShutdownCalledFromManaged(FALSE),
-    m_srwLock(),
-    m_pConfig(pConfig)
+    m_srwLock()
 {
     // is it guaranteed that we have already checked app offline at this point?
     // If so, I don't think there is much to do here.
     DBG_ASSERT(pHttpServer != NULL);
     DBG_ASSERT(pConfig != NULL);
-    InitializeSRWLock(&m_srwLock);
 
+    InitializeSRWLock(&m_srwLock);
+    m_pConfig = pConfig;
     // TODO we can probably initialized as I believe we are the only ones calling recycle.
     m_status = APPLICATION_STATUS::STARTING;
 }
@@ -36,6 +36,12 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
         m_Timer.CancelTimer();
         CloseHandle(m_hLogFileHandle);
         m_hLogFileHandle = INVALID_HANDLE_VALUE;
+    }
+
+    if (m_pConfig != NULL)
+    {
+        delete m_pConfig;
+        m_pConfig = NULL;
     }
 
     m_hThread = NULL;
@@ -110,7 +116,7 @@ Finished:
         // Managed layer may block the shutdown and lead to shutdown timeout
         // Assumption: only one inprocess application is hosted.
         // Call process exit to force shutdown
-        //
+        // 
         exit(hr);
     }
 }
@@ -807,7 +813,9 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
 
     DBG_ASSERT(m_status == APPLICATION_STATUS::STARTING);
 
-    hModule = LoadLibraryW(m_pConfig->QueryHostFxrFullPath());
+    // hostfxr should already be loaded by the shim. If not, then we will need
+    // to load it ourselves by finding hostfxr again.
+    hModule = LoadLibraryW(L"hostfxr.dll");
 
     if (hModule == NULL)
     {
@@ -986,7 +994,7 @@ IN_PROCESS_APPLICATION::FilterException(unsigned int, struct _EXCEPTION_POINTERS
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
-ASPNETCORE_CONFIG*
+REQUESTHANDLER_CONFIG*
 IN_PROCESS_APPLICATION::QueryConfig() const
 {
     return m_pConfig;
@@ -995,12 +1003,12 @@ IN_PROCESS_APPLICATION::QueryConfig() const
 HRESULT
 IN_PROCESS_APPLICATION::CreateHandler(
     _In_  IHttpContext       *pHttpContext,
-    _In_  HTTP_MODULE_ID     *pModuleId,
-    _Out_ IREQUEST_HANDLER   **pRequestHandler)
+    _Out_ IREQUEST_HANDLER  **pRequestHandler)
 {
     HRESULT hr = S_OK;
     IREQUEST_HANDLER* pHandler = NULL;
-    pHandler = new IN_PROCESS_HANDLER(pHttpContext, pModuleId, this);
+
+    pHandler = new IN_PROCESS_HANDLER(pHttpContext, this);
 
     if (pHandler == NULL)
     {

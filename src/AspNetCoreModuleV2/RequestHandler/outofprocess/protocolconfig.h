@@ -16,7 +16,7 @@ class PROTOCOL_CONFIG
 
     VOID
     OverrideConfig(
-        ASPNETCORE_CONFIG *pAspNetCoreConfig
+        REQUESTHANDLER_CONFIG *pAspNetCoreConfig
     );
 
     BOOL

@@ -26,14 +26,13 @@ WINHTTP_HELPER::StaticInitialize(
 {
     HRESULT hr = S_OK;
 
-    if (!g_fWebSocketSupported)
-    {
-        return S_OK;
-    }
-
     //
     // Initialize the function pointers for WinHttp Websocket API's.
     //
+    if (!g_fWebSocketStaticInitialize)
+    {
+        return S_OK;
+    }
 
     HMODULE  hWinHttp = GetModuleHandleA("winhttp.dll");
     if (hWinHttp == NULL)

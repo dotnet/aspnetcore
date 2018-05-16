@@ -101,16 +101,17 @@ inline bool IsSpace(char ch)
 #include <acache.h>
 #include <time.h>
 
-#include "..\..\CommonLib\environmentvariablehash.h"
-#include "..\..\CommonLib\aspnetcoreconfig.h"
-#include "..\..\CommonLib\hostfxr_utility.h"
-#include "..\..\CommonLib\iapplication.h"
-#include "..\..\CommonLib\utility.h"
-#include "..\..\CommonLib\debugutil.h"
-#include "..\..\CommonLib\requesthandler.h"
-#include "..\..\CommonLib\resources.h"
-#include "..\..\CommonLib\aspnetcore_msg.h"
+#include "environmentvariablehash.h"
+#include "hostfxr_utility.h"
+#include "utility.h"
+#include "debugutil.h"
+#include "requesthandler.h"
+#include "resources.h"
+#include "aspnetcore_msg.h"
 //#include "aspnetcore_event.h"
+#include "aspnetcore_shim_config.h"
+#include "fx_ver.h"
+
 #include "appoffline.h"
 #include "filewatcher.h"
 #include "applicationinfo.h"

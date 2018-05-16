@@ -43,4 +43,3 @@ private:
 
     static int compare(const fx_ver_t&a, const fx_ver_t& b);
 };
-

@@ -18,9 +18,8 @@ PROTOCOL_CONFIG             FORWARDING_HANDLER::sm_ProtocolConfig;
 RESPONSE_HEADER_HASH *      FORWARDING_HANDLER::sm_pResponseHeaderHash = NULL;
 
 FORWARDING_HANDLER::FORWARDING_HANDLER(
-    _In_ IHttpContext                   *pW3Context,
-    _In_  HTTP_MODULE_ID                *pModuleId,
-    _In_ OUT_OF_PROCESS_APPLICATION     *pApplication
+    _In_ IHttpContext                  *pW3Context,
+    _In_ OUT_OF_PROCESS_APPLICATION    *pApplication
 ) : IREQUEST_HANDLER(),
     m_Signature(FORWARDING_HANDLER_SIGNATURE),
     m_RequestStatus(FORWARDER_START),
@@ -42,14 +41,14 @@ FORWARDING_HANDLER::FORWARDING_HANDLER(
     m_fServerResetConn(FALSE),
     m_cRefs(1),
     m_pW3Context(pW3Context),
-    m_pApplication(pApplication),
-    m_pModuleId(*pModuleId)
+    m_pApplication(pApplication)
 {
 #ifdef DEBUG
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
         "FORWARDING_HANDLER::FORWARDING_HANDLER");
 #endif
 
+    m_fWebSocketSupported = m_pApplication->QueryWebsocketStatus();
     InitializeSRWLock(&m_RequestLock);
 }
 
@@ -182,7 +181,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     //
     // Mark request as websocket if upgrade header is present.
     //
-    if (pApplication->QueryConfig()->QueryWebSocketEnabled())
+    if (m_fWebSocketSupported)
     {
         USHORT cchHeader = 0;
         PCSTR pszWebSocketHeader = pRequest->GetHeader("Upgrade", &cchHeader);

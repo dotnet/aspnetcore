@@ -209,6 +209,7 @@
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="environmentvariablehelpers.h" />
+    <ClInclude Include="requesthandler_config.h" />
     <ClInclude Include="sttimer.h" />
     <ClInclude Include="outofprocess\forwarderconnection.h" />
     <ClInclude Include="outofprocess\processmanager.h" />
@@ -237,6 +238,7 @@
     <ClCompile Include="outofprocess\serverprocess.cxx" />
     <ClCompile Include="outofprocess\websockethandler.cxx" />
     <ClCompile Include="outofprocess\winhttphelper.cxx" />
+    <ClCompile Include="requesthandler_config.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">

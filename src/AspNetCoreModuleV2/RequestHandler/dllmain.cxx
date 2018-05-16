@@ -4,7 +4,7 @@
 #include <VersionHelpers.h>
 
 BOOL                g_fNsiApiNotSupported = FALSE;
-BOOL                g_fWebSocketSupported = FALSE;
+BOOL                g_fWebSocketStaticInitialize = FALSE;
 BOOL                g_fEnableReferenceCountTracing = FALSE;
 BOOL                g_fGlobalInitialize = FALSE;
 BOOL                g_fOutOfProcessInitialize = FALSE;
@@ -21,7 +21,7 @@ IHttpServer *       g_pHttpServer = NULL;
 HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
-
+PCSTR               g_szDebugLabel = "ASPNET_CORE_MODULE_REQUEST_HANDLER";
 
 VOID
 InitializeGlobalConfiguration(
@@ -113,7 +113,7 @@ InitializeGlobalConfiguration(
             g_fNsiApiNotSupported = TRUE;
         }
 
-        g_fWebSocketSupported = IsWindows8OrGreater();
+        g_fWebSocketStaticInitialize = IsWindows8OrGreater();
 
         g_fGlobalInitialize = TRUE;
     }
@@ -167,7 +167,7 @@ EnsureOutOfProcessInitializtion()
         {
             if (hr == HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND))
             {
-                g_fWebSocketSupported = FALSE;
+                g_fWebSocketStaticInitialize = FALSE;
             }
             else
             {
@@ -272,19 +272,27 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     return TRUE;
 }
 
+// TODO remove pHttpContext from the CreateApplication call.
 HRESULT
 __stdcall
 CreateApplication(
     _In_  IHttpServer        *pServer,
-    _In_  ASPNETCORE_CONFIG  *pConfig,
-    _Out_ IAPPLICATION       **ppApplication
+    _In_  IHttpContext       *pHttpContext,
+    _In_  PCWSTR             pwzExeLocation,
+    _Out_ IAPPLICATION      **ppApplication
 )
 {
     HRESULT      hr = S_OK;
     IAPPLICATION *pApplication = NULL;
-
+    REQUESTHANDLER_CONFIG *pConfig = NULL;
     // Initialze some global variables here
     InitializeGlobalConfiguration(pServer);
+
+    hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), pwzExeLocation, g_hEventLog, &pConfig);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
 
     if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
     {
@@ -302,7 +310,6 @@ CreateApplication(
         {
             goto Finished;
         }
-
 
         pApplication = new OUT_OF_PROCESS_APPLICATION(pConfig);
         if (pApplication == NULL)

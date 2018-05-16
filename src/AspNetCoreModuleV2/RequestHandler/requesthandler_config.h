@@ -50,27 +50,21 @@ enum APP_HOSTING_MODEL
     HOSTING_OUT_PROCESS
 };
 
-class ASPNETCORE_CONFIG : IHttpStoredContext
+class REQUESTHANDLER_CONFIG
 {
 public:
 
     virtual
-    ~ASPNETCORE_CONFIG();
-
-    VOID
-    CleanupStoredContext()
-    {
-        DereferenceConfiguration();
-    }
+        ~REQUESTHANDLER_CONFIG();
 
     static
     HRESULT
-    GetConfig(
+    CreateRequestHandlerConfig(
         _In_  IHttpServer             *pHttpServer,
-        _In_  HTTP_MODULE_ID           pModuleId,
-        _In_  IHttpContext            *pHttpContext,
+        _In_  IHttpApplication        *pHttpApplication,
+        _In_  PCWSTR  				   pwzExeLocation,
         _In_  HANDLE                   hEventLog,
-        _Out_ ASPNETCORE_CONFIG       **ppAspNetCoreConfig
+        _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
     );
 
     ENVIRONMENT_VAR_HASH*
@@ -155,7 +149,7 @@ public:
 
     STRU*
     QueryProcessPath(
-            VOID
+        VOID
     )
     {
         return &m_struProcessPath;
@@ -173,12 +167,6 @@ public:
     QueryStdoutLogEnabled()
     {
         return m_fStdoutLogEnabled;
-    }
-
-    BOOL
-    QueryWebSocketEnabled()
-    {
-        return m_fWebSocketEnabled;
     }
 
     BOOL
@@ -242,22 +230,6 @@ public:
     }
 
     CONST
-    PCWSTR
-    QueryHostFxrFullPath(
-        VOID
-    )
-    {
-        return m_struHostFxrLocation.QueryStr();
-    }
-
-    HRESULT
-    SetHostFxrFullPath(
-        PCWSTR pStrHostFxrFullPath
-    )
-    {
-        return m_struHostFxrLocation.Copy(pStrHostFxrFullPath);
-    }
-
     VOID
     SetHostFxrArguments(
         DWORD dwArgc,
@@ -273,34 +245,24 @@ public:
         m_ppStrArguments = ppStrArguments;
     }
 
-    VOID
-    ReferenceConfiguration(
-        VOID
-    ) const;
-
-    VOID
-    DereferenceConfiguration(
-        VOID
-    ) const;
-
 private:
 
     //
     // private constructor
     //    
-    ASPNETCORE_CONFIG():
-        m_fStdoutLogEnabled( FALSE ),
-        m_pEnvironmentVariables( NULL ),
-        m_cRefs( 1 ),
-        m_hostingModel( HOSTING_UNKNOWN ),
+    REQUESTHANDLER_CONFIG() :
+        m_fStdoutLogEnabled(FALSE),
+        m_pEnvironmentVariables(NULL),
+        m_cRefs(1),
+        m_hostingModel(HOSTING_UNKNOWN),
         m_ppStrArguments(NULL)
     {
     }
 
     HRESULT
     Populate(
-        IHttpServer  *pHttpServer,
-        IHttpContext *pHttpContext
+        IHttpServer      *pHttpServer,
+        IHttpApplication *pHttpApplication
     );
 
     mutable LONG           m_cRefs;
@@ -323,10 +285,9 @@ private:
     BOOL                   m_fWindowsAuthEnabled;
     BOOL                   m_fBasicAuthEnabled;
     BOOL                   m_fAnonymousAuthEnabled;
-    BOOL                   m_fWebSocketEnabled;
     APP_HOSTING_MODEL      m_hostingModel;
     ENVIRONMENT_VAR_HASH*  m_pEnvironmentVariables;
     STRU                   m_struHostFxrLocation;
-    PWSTR*                m_ppStrArguments;
+    PWSTR*                 m_ppStrArguments;
     DWORD                  m_dwArgc;
 };

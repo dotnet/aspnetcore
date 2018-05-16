@@ -41,7 +41,7 @@ Finished:
 
 VOID
 PROTOCOL_CONFIG::OverrideConfig(
-    ASPNETCORE_CONFIG *pAspNetCoreConfig
+    REQUESTHANDLER_CONFIG *pAspNetCoreConfig
 )
 {
     m_msTimeout = pAspNetCoreConfig->QueryRequestTimeoutInMS();

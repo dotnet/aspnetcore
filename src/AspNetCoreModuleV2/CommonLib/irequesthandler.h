@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "stdafx.h"
-
 //
 // Pure abstract class
 //

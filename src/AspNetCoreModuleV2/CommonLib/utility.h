@@ -92,20 +92,6 @@ public:
     );
 
     static
-    VOID
-    FindDotNetFolders(
-        _In_ PCWSTR pszPath,
-        _Out_ std::vector<std::wstring> *pvFolders
-    );
-
-    static
-    HRESULT
-    FindHighestDotNetVersion(
-        _In_ std::vector<std::wstring> vFolders,
-        _Out_ STRU *pstrResult
-    );
-
-    static
     BOOL
     CheckIfFileExists(
         PCWSTR pszFilePath

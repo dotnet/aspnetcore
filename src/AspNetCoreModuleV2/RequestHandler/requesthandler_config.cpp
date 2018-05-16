@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
-#include "aspnetcoreconfig.h"
+#include "requesthandler_config.h"
 #include "debugutil.h"
 
-ASPNETCORE_CONFIG::~ASPNETCORE_CONFIG()
+REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 {
     if (m_ppStrArguments != NULL)
     {
@@ -21,42 +21,21 @@ ASPNETCORE_CONFIG::~ASPNETCORE_CONFIG()
     }
 }
 
-VOID
-ASPNETCORE_CONFIG::ReferenceConfiguration(
-    VOID
-) const
-{
-    InterlockedIncrement(&m_cRefs);
-}
-
-VOID
-ASPNETCORE_CONFIG::DereferenceConfiguration(
-    VOID
-) const
-{
-    DBG_ASSERT(m_cRefs != 0);
-    LONG cRefs = 0;
-    if ((cRefs = InterlockedDecrement(&m_cRefs)) == 0)
-    {
-        delete this;
-    }
-}
-
 HRESULT
-ASPNETCORE_CONFIG::GetConfig(
+REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
     _In_  IHttpServer             *pHttpServer,
-    _In_  HTTP_MODULE_ID           pModuleId,
-    _In_  IHttpContext            *pHttpContext,
+    _In_  IHttpApplication        *pHttpApplication,
+    _In_  PCWSTR                   pwzExeLocation,
     _In_  HANDLE                   hEventLog,
-    _Out_ ASPNETCORE_CONFIG      **ppAspNetCoreConfig
+    _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
 )
 {
     HRESULT                 hr = S_OK;
-    IHttpApplication       *pHttpApplication = pHttpContext->GetApplication();
-    ASPNETCORE_CONFIG      *pAspNetCoreConfig = NULL;
+    REQUESTHANDLER_CONFIG  *pRequestHandlerConfig = NULL;
     STRU                    struHostFxrDllLocation;
-    PWSTR*                  pwzArgv;
+    BSTR*                   pwzArgv;
     DWORD                   dwArgCount;
+    STRU                    struExeLocation;
 
     if (ppAspNetCoreConfig == NULL)
     {
@@ -66,105 +45,101 @@ ASPNETCORE_CONFIG::GetConfig(
 
     *ppAspNetCoreConfig = NULL;
 
-    // potential bug if user sepcific config at virtual dir level
-    pAspNetCoreConfig = (ASPNETCORE_CONFIG*)
-        pHttpApplication->GetModuleContextContainer()->GetModuleContext(pModuleId);
-
-    if (pAspNetCoreConfig != NULL)
-    {
-        *ppAspNetCoreConfig = pAspNetCoreConfig;
-        pAspNetCoreConfig = NULL;
-        goto Finished;
-    }
-
-    pAspNetCoreConfig = new ASPNETCORE_CONFIG;
-    if (pAspNetCoreConfig == NULL)
+    pRequestHandlerConfig = new REQUESTHANDLER_CONFIG;
+    if (pRequestHandlerConfig == NULL)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
 
-    hr = pAspNetCoreConfig->Populate(pHttpServer, pHttpContext);
+    hr = pRequestHandlerConfig->Populate(pHttpServer, pHttpApplication);
     if (FAILED(hr))
     {
         goto Finished;
     }
 
     // Modify config for inprocess.
-    if (pAspNetCoreConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+    if (pRequestHandlerConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
     {
-        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
-            hEventLog,
-            pAspNetCoreConfig->QueryProcessPath()->QueryStr(),
-            pAspNetCoreConfig->QueryApplicationPhysicalPath()->QueryStr(),
-            pAspNetCoreConfig->QueryArguments()->QueryStr(),
-            &struHostFxrDllLocation,
-            &dwArgCount,
-            &pwzArgv)))
+        if (FAILED(struExeLocation.Copy(pwzExeLocation)))
         {
             goto Finished;
         }
-
-        if (FAILED(hr = pAspNetCoreConfig->SetHostFxrFullPath(struHostFxrDllLocation.QueryStr())))
+        // If the exe was not provided by the shim, reobtain the hostfxr parameters (which finds dotnet).
+        if (struExeLocation.IsEmpty())
         {
-            goto Finished;
+            if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
+                hEventLog,
+                pRequestHandlerConfig->QueryProcessPath()->QueryStr(),
+                pRequestHandlerConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                pRequestHandlerConfig->QueryArguments()->QueryStr(),
+                &struHostFxrDllLocation,
+                &struExeLocation,
+                &dwArgCount,
+                &pwzArgv)))
+            {
+                goto Finished;
+            }
         }
-
-        pAspNetCoreConfig->SetHostFxrArguments(dwArgCount, pwzArgv);
-    }
-
-    hr = pHttpApplication->GetModuleContextContainer()->
-        SetModuleContext(pAspNetCoreConfig, pModuleId);
-    if (FAILED(hr))
-    {
-        if (hr == HRESULT_FROM_WIN32(ERROR_ALREADY_ASSIGNED))
+        else if (HOSTFXR_UTILITY::IsDotnetExecutable(&struExeLocation))
         {
-            delete pAspNetCoreConfig;
-
-            pAspNetCoreConfig = (ASPNETCORE_CONFIG*)pHttpApplication->
-                GetModuleContextContainer()->
-                GetModuleContext(pModuleId);
-
-            _ASSERT(pAspNetCoreConfig != NULL);
-
-            hr = S_OK;
+            if (FAILED(hr = HOSTFXR_UTILITY::ParseHostfxrArguments(
+                pRequestHandlerConfig->QueryArguments()->QueryStr(),
+                pwzExeLocation,
+                pRequestHandlerConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                hEventLog,
+                &dwArgCount,
+                &pwzArgv)))
+            {
+                goto Finished;
+            }
         }
         else
         {
-            goto Finished;
+            if (FAILED(hr = HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
+                pwzExeLocation,
+                pRequestHandlerConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                pRequestHandlerConfig->QueryArguments()->QueryStr(),
+                hEventLog,
+                &struHostFxrDllLocation,
+                &dwArgCount,
+                &pwzArgv)))
+            {
+                goto Finished;
+            }
         }
-    }
-    else
-    {
-        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-            "ASPNETCORE_CONFIG::GetConfig, set config to ModuleContext");
-        // set appliction info here instead of inside Populate()
-        // as the destructor will delete the backend process
-        hr = pAspNetCoreConfig->QueryApplicationPath()->Copy(pHttpApplication->GetApplicationId());
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+
+        pRequestHandlerConfig->SetHostFxrArguments(dwArgCount, pwzArgv);
     }
 
-    *ppAspNetCoreConfig = pAspNetCoreConfig;
-    pAspNetCoreConfig = NULL;
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
+        "REQUESTHANDLER_CONFIG::GetConfig, set config to ModuleContext");
+    // set appliction info here instead of inside Populate()
+    // as the destructor will delete the backend process
+    hr = pRequestHandlerConfig->QueryApplicationPath()->Copy(pHttpApplication->GetApplicationId());
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    *ppAspNetCoreConfig = pRequestHandlerConfig;
+    pRequestHandlerConfig = NULL;
 
 Finished:
 
-    if (pAspNetCoreConfig != NULL)
+    if (pRequestHandlerConfig != NULL)
     {
-        delete pAspNetCoreConfig;
-        pAspNetCoreConfig = NULL;
+        delete pRequestHandlerConfig;
+        pRequestHandlerConfig = NULL;
     }
 
     return hr;
 }
 
 HRESULT
-ASPNETCORE_CONFIG::Populate(
+REQUESTHANDLER_CONFIG::Populate(
     IHttpServer    *pHttpServer,
-    IHttpContext   *pHttpContext
+    IHttpApplication   *pHttpApplication
 )
 {
     STACK_STRU(strHostingModel, 300);
@@ -206,13 +181,13 @@ ASPNETCORE_CONFIG::Populate(
     }
 
     pAdminManager = pHttpServer->GetAdminManager();
-    hr = m_struConfigPath.Copy(pHttpContext->GetApplication()->GetAppConfigPath());
+    hr = m_struConfigPath.Copy(pHttpApplication->GetAppConfigPath());
     if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = m_struApplicationPhysicalPath.Copy(pHttpContext->GetApplication()->GetApplicationPhysicalPath());
+    hr = m_struApplicationPhysicalPath.Copy(pHttpApplication->GetApplicationPhysicalPath());
     if (FAILED(hr))
     {
         goto Finished;
@@ -318,20 +293,6 @@ ASPNETCORE_CONFIG::Populate(
         {
             goto Finished;
         }
-    }
-
-    // Even though the applicationhost.config file contains the websocket element,
-    // the websocket module may still not be enabled. Check if the
-    PCWSTR pszVariableValue;
-    DWORD cbLength;
-    hr = pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszVariableValue, &cbLength);
-    if (FAILED(hr))
-    {
-        m_fWebSocketEnabled = FALSE;
-    }
-    else
-    {
-        m_fWebSocketEnabled = TRUE;
     }
 
     bstrAspNetCoreSection = SysAllocString(CS_ASPNETCORE_SECTION);
