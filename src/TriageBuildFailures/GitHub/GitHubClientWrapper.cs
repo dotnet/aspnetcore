@@ -50,8 +50,10 @@ namespace TriageBuildFailures.GitHub
             var apiConnection = new ApiConnection(new Connection(ProductHeader));
             _reporter = reporter;
             Config = config;
-            Client = new GitHubClient(ProductHeader);
-            Client.Credentials = new Credentials(Config.AccessToken);
+            Client = new GitHubClient(ProductHeader)
+            {
+                Credentials = new Credentials(Config.AccessToken)
+            };
             ColumnsClient = new ProjectColumnsClient(apiConnection);
             CardClient = new ProjectCardsClient(apiConnection);
         }
@@ -73,7 +75,7 @@ namespace TriageBuildFailures.GitHub
 
             var request = new RepositoryIssueRequest
             {
-                State = ItemStateFilter.Open,
+                State = ItemStateFilter.Open
             };
             if (repoLabel != null)
             {
@@ -103,6 +105,13 @@ namespace TriageBuildFailures.GitHub
             return _issuesOnHomeRepo.Contains(repo);
         }
 
+        private static string GetRepoFromIssue(Issue issue)
+        {
+            var url = issue.Url;
+
+            return url.Split('/')[5];
+        }
+
         public async Task AddIssueToProject(Issue issue, int columnId)
         {
             if (Constants.BeQuite)
@@ -116,14 +125,16 @@ namespace TriageBuildFailures.GitHub
             }
             else
             {
-                var newCard = new NewProjectCard($"{_owner}/{issue.Repository}#{issue.Number}");
+                var repo = GetRepoFromIssue(issue);
+                var newCard = new NewProjectCard($"{_owner}/{repo}#{issue.Number}");
                 await CardClient.Create(columnId, newCard);
             }
         }
 
         public async Task<IEnumerable<IssueComment>> GetIssueComments(Issue issue)
         {
-            return await Client.Issue.Comment.GetAllForIssue(_owner, issue.Repository.Name, issue.Number);
+            var repo = GetRepoFromIssue(issue);
+            return await Client.Issue.Comment.GetAllForIssue(_owner, repo, issue.Number);
         }
 
         public async Task CreateComment(Issue issue, string comment)
@@ -166,7 +177,9 @@ namespace TriageBuildFailures.GitHub
                     fileStream.Write(tempMsg);
                 }
 
-                return null;
+                var repository = await Client.Repository.Get(_owner, repo);
+
+                return new Issue(url: null, htmlUrl: null, commentsUrl: null, eventsUrl: null, number: _random.Next(), ItemState.Open, subject, body, null, null, null, null, null, null, 0, null, null, DateTimeOffset.Now, DateTimeOffset.Now, _random.Next(), false, repository);
             }
             else
             {
@@ -183,87 +196,5 @@ namespace TriageBuildFailures.GitHub
                 return await Client.Issue.Create(_owner, repo, newIssue);
             }
         }
-
-        //private async Task<IEnumerable<T>> MakePagedGithubRequest<T>(HttpMethod method, string requestUri)
-        //{
-        //    var responses = await MakePagedGithubRequest(method, requestUri);
-
-        //    var objs = new List<T>();
-        //    foreach (var response in responses)
-        //    {
-        //        objs.AddRange(await ResponseToObject<IEnumerable<T>>(response));
-        //    }
-
-        //    return objs;
-        //}
-
-        //private async Task<T> ResponseToObject<T>(HttpResponseMessage response)
-        //{
-        //    var contentStream = await response.Content.ReadAsStringAsync();
-        //    return JsonConvert.DeserializeObject<T>(contentStream);
-        //}
-
-        //private async Task<T> MakeGithubRequest<T>(HttpMethod method, string requestUri, string body = null)
-        //{
-        //    var request = await MakeGithubRequest(method, requestUri, body);
-
-        //    return await ResponseToObject<T>(request);
-        //}
-
-        //private async Task<HttpResponseMessage> MakeGithubRequest(HttpMethod method, string requestUri, string body = null)
-        //{
-        //    using (var client = new HttpClient { BaseAddress = new Uri("https://api.github.com/") })
-        //    {
-        //        var request = new HttpRequestMessage(method, requestUri);
-
-        //        request.Headers.Authorization = new AuthenticationHeaderValue("Token", Config.AccessToken);
-        //        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.inertia-preview+json"));
-        //        request.Headers.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue("rybrandeRAAS")));
-
-        //        if (body != null)
-        //        {
-        //            request.Content = new StringContent(body);
-        //        }
-
-        //        var response = await client.SendAsync(request);
-
-        //        if (!response.IsSuccessStatusCode)
-        //        {
-        //            var content = await response.Content.ReadAsStringAsync();
-
-        //            throw new HttpRequestException($"Failed status code {response.StatusCode} on {request.RequestUri}. Content: {content}");
-        //        }
-
-        //        return response;
-        //    }
-        //}
-
-        //private async Task<IEnumerable<HttpResponseMessage>> MakePagedGithubRequest(HttpMethod method, string requestUri)
-        //{
-        //    var responses = new List<HttpResponseMessage>();
-
-        //    bool morePages;
-        //    do
-        //    {
-        //        morePages = false;
-        //        var response = await MakeGithubRequest(method, requestUri);
-
-        //        if (response.Headers.Contains("Link"))
-        //        {
-        //            var links = response.Headers.GetValues("Link").First().Split(',');
-        //            var next = links.SingleOrDefault(l => l.EndsWith("rel=\"next\""));
-
-        //            if (next != null)
-        //            {
-        //                morePages = true;
-        //                requestUri = next.Split(';')[0].Trim('<', '>', ' ');
-        //            }
-        //        }
-
-        //        responses.Add(response);
-        //    } while (morePages);
-
-        //    return responses;
-        //}
     }
 }
