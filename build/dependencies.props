@@ -3,6 +3,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
+    <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <DotNetEfPackageVersion>2.2.0-preview1-34184</DotNetEfPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17051</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAllPackageVersion>

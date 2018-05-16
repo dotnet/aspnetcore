@@ -1,107 +1,171 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using AngleSharp.Dom.Html;
+using AngleSharp.Parser.Html;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class CdnScriptTagTests
+    public class CdnScriptTagTests : IDisposable
     {
         private readonly ITestOutputHelper _output;
+        private readonly HttpClient _httpClient;
+        private static readonly string _solutionDir;
+        private static readonly string _artifactsDir;
+        private static List<ScriptTag> _scriptTags;
+
+        static CdnScriptTagTests()
+        {
+            _solutionDir = GetSolutionDir();
+            _artifactsDir = Path.Combine(_solutionDir, "artifacts", "build");
+            var packages = Directory.GetFiles(_artifactsDir, "*.nupkg");
+
+            _scriptTags = new List<ScriptTag>();
+            foreach (var packagePath in packages)
+            {
+                _scriptTags.AddRange(GetScriptTags(packagePath));
+            }
+        }
 
         public CdnScriptTagTests(ITestOutputHelper output)
         {
             _output = output;
+            _httpClient = new HttpClient();
         }
 
-        [Fact]
-        public async Task CheckSubresourceIntegrity()
+        public static IEnumerable<object[]> SubresourceIntegrityCheckData
         {
-            var dir = GetSolutionDir();
-            var artifactsDir = Path.Combine(dir, "artifacts", "build");
-            var packages = Directory.GetFiles(artifactsDir, "*.nupkg");
-
-            var scriptTags = new List<ScriptTag>();
-            foreach (var packagePath in packages)
+            get
             {
-                scriptTags.AddRange(GetScriptTags(packagePath));
+                var scriptTags = _scriptTags
+                    .Where(st => st.Integrity != null)
+                    .Select(st => new object[] { st });
+                Assert.NotEmpty(scriptTags);
+                return scriptTags;
             }
-
-            Assert.NotEmpty(scriptTags);
-            var shasum = new Dictionary<string, string>();
-
-            var client = new HttpClient();
-            foreach (var script in scriptTags)
-            {
-                if (shasum.ContainsKey(script.Src))
-                {
-                    continue;
-                }
-
-                using (var resp = await client.GetStreamAsync(script.Src))
-                using (var alg = SHA384.Create())
-                {
-                    var hash = alg.ComputeHash(resp);
-                    shasum.Add(script.Src, "sha384-" + Convert.ToBase64String(hash));
-                }
-            }
-
-            Assert.All(scriptTags, t =>
-            {
-                Assert.True(shasum[t.Src] == t.Integrity, userMessage: $"Expected integrity on script tag to be {shasum[t.Src]} but it was {t.Integrity}. {t.FileName}:{t.Entry}");
-            });
         }
 
-        private struct ScriptTag
+        [Theory]
+        [MemberData(nameof(SubresourceIntegrityCheckData))]
+        public async Task CheckSubresourceIntegrity(ScriptTag scriptTag)
+        {
+            string expectedIntegrity;
+            using (var responseStream = await _httpClient.GetStreamAsync(scriptTag.Src))
+            using (var alg = SHA384.Create())
+            {
+                var hash = alg.ComputeHash(responseStream);
+                expectedIntegrity = "sha384-" + Convert.ToBase64String(hash);
+            }
+
+            Assert.Equal(expectedIntegrity, scriptTag.Integrity);
+        }
+
+        public static IEnumerable<object[]> FallbackSrcCheckData
+        {
+            get
+            {
+                var scriptTags = _scriptTags
+                    .Where(st => st.FallbackSrc != null)
+                    .Select(st => new object[] { st });
+                Assert.NotEmpty(scriptTags);
+                return scriptTags;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FallbackSrcCheckData))]
+        public async Task FallbackSrcContent_Matches_CDNContent(ScriptTag scriptTag)
+        {
+            var fallbackSrc = scriptTag.FallbackSrc
+                .TrimStart('~')
+                .TrimStart('/');
+
+            var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
+            var fallbackSrcContent = GetFileContentFromArchive(scriptTag, fallbackSrc);
+
+            Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
+        }
+
+        public struct ScriptTag
         {
             public string Src;
             public string Integrity;
+            public string FallbackSrc;
             public string FileName;
             public string Entry;
+
+            public override string ToString()
+            {
+                return $"{Src}, {Entry}";
+            }
         }
 
-        private static readonly Regex _scriptRegex = new Regex(@"<script[^>]*src=""(?'src'http[^""]+)""[^>]*integrity=""(?'integrity'[^""]+)""([^>]*)>", RegexOptions.Multiline);
-
-        private IEnumerable<ScriptTag> GetScriptTags(string zipFile)
+        private static string GetFileContentFromArchive(ScriptTag scriptTag, string relativeFilePath)
         {
+            var file = Path.Combine(_artifactsDir, scriptTag.FileName);
+            using (var zip = new ZipArchive(File.OpenRead(file), ZipArchiveMode.Read, leaveOpen: false))
+            {
+                var entry = zip.Entries
+                    .Where(e => e.FullName.EndsWith(relativeFilePath, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault();
+
+                if (entry != null)
+                {
+                    using (var reader = new StreamReader(entry.Open()))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static List<ScriptTag> GetScriptTags(string zipFile)
+        {
+            var scriptTags = new List<ScriptTag>();
             using (var zip = new ZipArchive(File.OpenRead(zipFile), ZipArchiveMode.Read, leaveOpen: false))
             {
                 foreach (var entry in zip.Entries)
                 {
-                    if (string.Equals(".cshtml", Path.GetExtension(entry.Name), StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(".cshtml", Path.GetExtension(entry.Name), StringComparison.OrdinalIgnoreCase))
                     {
-                        string contents;
-                        using (var reader = new StreamReader(entry.Open()))
-                        {
-                            contents = reader.ReadToEnd();
-                        }
+                        continue;
+                    }
 
-                        var match = _scriptRegex.Match(contents);
-                        while (match != null && match != Match.Empty)
+                    IHtmlDocument htmlDocument;
+                    var htmlParser = new HtmlParser();
+                    using (var reader = new StreamReader(entry.Open()))
+                    {
+                        htmlDocument = htmlParser.Parse(entry.Open());
+                    }
+
+                    foreach (var scriptElement in htmlDocument.Scripts)
+                    {
+                        var fallbackSrcAttribute = scriptElement.Attributes
+                            .FirstOrDefault(attr => string.Equals("asp-fallback-src", attr.Name, StringComparison.OrdinalIgnoreCase));
+
+                        scriptTags.Add(new ScriptTag
                         {
-                            var tag = new ScriptTag
-                            {
-                                Src = match.Groups["src"].Value,
-                                Integrity = match.Groups["integrity"].Value,
-                                FileName = Path.GetFileName(zipFile),
-                                Entry = entry.FullName,
-                            };
-                            yield return tag;
-                            _output.WriteLine($"Found script tag in {tag.FileName}:{tag.Entry}, src='{tag.Src}' integrity='{tag.Integrity}'");
-                            match = match.NextMatch();
-                        }
+                            Src = scriptElement.Source,
+                            Integrity = scriptElement.Integrity,
+                            FallbackSrc = fallbackSrcAttribute?.Value,
+                            FileName = Path.GetFileName(zipFile),
+                            Entry = entry.FullName
+                        });
                     }
                 }
             }
+            return scriptTags;
         }
 
         private static string GetSolutionDir()
@@ -116,6 +180,16 @@ namespace Templates.Test
                 dir = dir.Parent;
             }
             return dir.FullName;
+        }
+
+        private static string RemoveLineEndings(string originalString)
+        {
+            return originalString.Replace("\r\n", "").Replace("\n", "");
+        }
+
+        public void Dispose()
+        {
+            _httpClient.Dispose();
         }
     }
 }
