@@ -106,36 +106,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                         // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
                         // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
-                        if (serverConfig.Contains("[ANCMPath]"))
-                        {
-                            // We need to pick the bitness based the OS / IIS Express, not the application.
-                            // We'll eventually add support for choosing which IIS Express bitness to run: https://github.com/aspnet/Hosting/issues/880
-                            var ancmFile = Path.Combine(contentRoot, Is64BitHost ? @"x64\aspnetcore.dll" : @"x86\aspnetcore.dll");
-                            // Bin deployed by Microsoft.AspNetCore.AspNetCoreModule.nupkg
+                        serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", dllName: "aspnetcore.dll", serverConfig, contentRoot);
 
-                            if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
-                            {
-                                throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmFile);
-                            }
-
-                            Logger.LogDebug("Writing ANCMPath '{ancmFile}' to config", ancmFile);
-                            serverConfig =
-                                serverConfig.Replace("[ANCMPath]", ancmFile);
-                        }
-
-                        if (serverConfig.Contains("[ANCMV2Path]"))
-                        {
-                            var ancmFile = Path.Combine(contentRoot, Is64BitHost ? @"x64\aspnetcorev2.dll" : @"x86\aspnetcorev2.dll");
-
-                            if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
-                            {
-                                throw new FileNotFoundException("AspNetCoreModuleV2 could not be found.", ancmFile);
-                            }
-
-                            Logger.LogDebug("Writing ANCMV2Path '{ancmFile}' to config", ancmFile);
-                            serverConfig =
-                                serverConfig.Replace("[ANCMV2Path]", ancmFile);
-                        }
+                        serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", dllName: "aspnetcorev2.dll", serverConfig, contentRoot);
 
                         Logger.LogDebug("Writing ApplicationPhysicalPath '{applicationPhysicalPath}' to config", contentRoot);
                         Logger.LogDebug("Writing Port '{port}' to config", port);
@@ -263,6 +236,26 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 Logger.LogError(message);
                 throw new TimeoutException(message);
             }
+        }
+
+        private string ModifyANCMPathInConfig(string replaceFlag, string dllName, string serverConfig, string contentRoot)
+        {
+            if (serverConfig.Contains(replaceFlag))
+            {
+                var ancmFile = Path.Combine(contentRoot, Is64BitHost ? $@"x64\{dllName}" : $@"x86\{dllName}");
+                if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
+                {
+                    ancmFile = Path.Combine(contentRoot, dllName);
+                    if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
+                    {
+                        throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmFile);
+                    }
+                }
+
+                Logger.LogDebug($"Writing '{replaceFlag}' '{ancmFile}' to config");
+                return serverConfig.Replace(replaceFlag, ancmFile);
+            }
+            return serverConfig;
         }
 
         private string GetIISExpressPath()
