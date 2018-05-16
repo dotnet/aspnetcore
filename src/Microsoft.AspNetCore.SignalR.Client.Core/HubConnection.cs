@@ -175,6 +175,16 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return new Subscription(invocationHandler, invocationList);
         }
+        /// <summary>
+        /// Removes all handlers associated with the method with the specified method name.
+        /// </summary>
+        /// <param name="methodName">The name of the hub method from which handlers are being removed</param>
+        public void Remove(string methodName)
+        {
+            CheckDisposed();
+            Log.RemovingHandlers(_logger, methodName);
+            _handlers.TryRemove(methodName, out _);
+        }
 
         /// <summary>
         /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
