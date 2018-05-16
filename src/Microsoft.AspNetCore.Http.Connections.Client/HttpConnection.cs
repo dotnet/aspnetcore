@@ -486,10 +486,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 {
                     httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
                 }
-                if (_httpConnectionOptions.ClientCertificates != null)
+
+                // Only access HttpClientHandler.ClientCertificates if the user has configured client certs
+                // Mono does not support client certs and will throw NotImplementedException
+                // https://github.com/aspnet/SignalR/issues/2232
+                var clientCertificates = _httpConnectionOptions.ClientCertificates;
+                if (clientCertificates?.Count > 0)
                 {
-                    httpClientHandler.ClientCertificates.AddRange(_httpConnectionOptions.ClientCertificates);
+                    httpClientHandler.ClientCertificates.AddRange(clientCertificates);
                 }
+
                 if (_httpConnectionOptions.UseDefaultCredentials != null)
                 {
                     httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
