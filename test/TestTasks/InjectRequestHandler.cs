@@ -14,9 +14,9 @@ namespace TestTasks
     {
         private static void Main(string[] args)
         {
-            var depsFile = args[2];
-            var rid = args[0];
-            var libraryLocation = args[1];
+            string rid = args[0];
+            string libraryLocation = args[1];
+            string depsFile = args[2];
 
             JToken deps;
             using (var file = File.OpenText(depsFile))

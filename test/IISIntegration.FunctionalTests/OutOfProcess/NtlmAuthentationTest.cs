@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
+        [Theory]
         [InlineData(ANCMVersion.AspNetCoreModule)]
         [InlineData(ANCMVersion.AspNetCoreModuleV2)]
         public Task NtlmAuthentication_Clr_X64(ANCMVersion ancmVersion)
