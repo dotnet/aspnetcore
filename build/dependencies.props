@@ -27,7 +27,6 @@
     <MicrosoftAspNetCorePackageVersion>2.2.0-preview1-34203</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreRewritePackageVersion>2.2.0-preview1-34203</MicrosoftAspNetCoreRewritePackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34203</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34203</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0-preview1-34203</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34203</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34203</MicrosoftAspNetCoreStaticFilesPackageVersion>
