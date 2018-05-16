@@ -104,6 +104,8 @@
         /p:TargetVSIXContainer=$(VSIXOutputPath);
         /p:SymbolsPublishDir=$(BuildDir);
         /p:Configuration=$(Configuration);
+        /p:FeatureBranchVersionSuffix=$(FeatureBranchVersionSuffix);
+        /p:BuildNumber=$(BuildNumber);
         /p:LangVersion=7.1" />
     </ItemGroup>
 
