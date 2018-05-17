@@ -203,10 +203,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(metadata));
             }
 
+            Logger.AttemptingToBindParameterOrProperty(parameter, metadata);
+
             if (parameter.BindingInfo?.RequestPredicate?.Invoke(actionContext) == false)
             {
-                Logger.ParameterBinderRequestPredicateShortCircuit(metadata, parameter);
-
+                Logger.ParameterBinderRequestPredicateShortCircuit(parameter, metadata);
                 return ModelBindingResult.Failed();
             }
 
@@ -217,8 +218,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 parameter.BindingInfo,
                 parameter.Name);
             modelBindingContext.Model = value;
-
-            Logger.AttemptingToBindParameterOrProperty(parameter, modelBindingContext);
 
             var parameterModelName = parameter.BindingInfo?.BinderModelName ?? metadata.BinderModelName;
             if (parameterModelName != null)
@@ -239,14 +238,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             await modelBinder.BindModelAsync(modelBindingContext);
 
-            Logger.DoneAttemptingToBindParameterOrProperty(parameter, modelBindingContext);
+            Logger.DoneAttemptingToBindParameterOrProperty(parameter, metadata);
 
             var modelBindingResult = modelBindingContext.Result;
 
             if (_mvcOptions.AllowValidatingTopLevelNodes &&
                 _objectModelValidator is ObjectModelValidator baseObjectValidator)
             {
-                Logger.AttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+                Logger.AttemptingToValidateParameterOrProperty(parameter, metadata);
 
                 EnforceBindRequiredAndValidate(
                     baseObjectValidator,
@@ -256,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     modelBindingContext,
                     modelBindingResult);
 
-                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, metadata);
             }
             else
             {
@@ -321,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     // and we ended up with an empty prefix.
                     modelName = modelBindingContext.FieldName;
                 }
-                
+
                 // Run validation, we expect this to validate [Required].
                 baseObjectValidator.Validate(
                     actionContext,
