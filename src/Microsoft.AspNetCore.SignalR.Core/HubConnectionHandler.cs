@@ -46,7 +46,10 @@ namespace Microsoft.AspNetCore.SignalR
                                     IOptions<HubOptions<THub>> hubOptions,
                                     ILoggerFactory loggerFactory,
                                     IUserIdProvider userIdProvider,
-                                    HubDispatcher<THub> dispatcher)
+#pragma warning disable PUB0001 // Pubternal type in public API
+                                    HubDispatcher<THub> dispatcher
+#pragma warning restore PUB0001
+                                    )
         {
             _protocolResolver = protocolResolver;
             _lifetimeManager = lifetimeManager;
