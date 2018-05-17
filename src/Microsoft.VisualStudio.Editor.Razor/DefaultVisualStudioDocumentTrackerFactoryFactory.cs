@@ -17,23 +17,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
     internal class DefaultVisualStudioDocumentTrackerFactoryFactory : ILanguageServiceFactory
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly TextBufferProjectService _projectService;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
 
         [ImportingConstructor]
         public DefaultVisualStudioDocumentTrackerFactoryFactory(
             ForegroundDispatcher foregroundDispatcher,
-            TextBufferProjectService projectService,
             ITextDocumentFactoryService textDocumentFactory)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
-            if (projectService == null)
-            {
-                throw new ArgumentNullException(nameof(projectService));
             }
 
             if (textDocumentFactory == null)
@@ -42,7 +35,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _projectService = projectService;
             _textDocumentFactory = textDocumentFactory;
         }
 
@@ -57,11 +49,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var workspaceEditorSettings = languageServices.GetRequiredService<WorkspaceEditorSettings>();
             var importDocumentManager = languageServices.GetRequiredService<ImportDocumentManager>();
 
+            var projectPathProvider = languageServices.WorkspaceServices.GetRequiredService<ProjectPathProvider>();
+
             return new DefaultVisualStudioDocumentTrackerFactory(
                 _foregroundDispatcher,
                 projectManager,
                 workspaceEditorSettings,
-                _projectService,
+                projectPathProvider,
                 _textDocumentFactory,
                 importDocumentManager,
                 languageServices.WorkspaceServices.Workspace);
