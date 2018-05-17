@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class VerifiableServerLoggedTest : VerifiableLoggedTest, IDisposable
+    public class VerifiableServerLoggedTest : VerifiableLoggedTest
     {
         private readonly Func<WriteContext, bool> _globalExpectedErrorsFilter;
 
@@ -56,12 +56,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return new ServerLogScope(ServerFixture, loggerFactory, disposable);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             // Unit tests in a fixture reuse the server.
             // A small delay prevents server logging from a previous tests from showing up in the next test's logs
             // by giving the server time to finish any in-progress request logic.
             Thread.Sleep(TimeSpan.FromMilliseconds(100));
+            base.Dispose();
         }
     }
 }
