@@ -33,7 +33,7 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp2.1/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp2.2/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

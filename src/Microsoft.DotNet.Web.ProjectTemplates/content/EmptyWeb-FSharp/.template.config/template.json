@@ -9,7 +9,7 @@
   "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Empty",
   "precedence": "3000",
-  "identity": "Microsoft.Web.Empty.FSharp.2.1",
+  "identity": "Microsoft.Web.Empty.FSharp.2.2",
   "shortName": "web",
   "tags": {
     "language": "F#",
@@ -95,12 +95,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp2.2",
+          "description": "Target netcoreapp2.2"
         }
       ],
-      "replaces": "netcoreapp2.1",
-      "defaultValue": "netcoreapp2.1"
+      "replaces": "netcoreapp2.2",
+      "defaultValue": "netcoreapp2.2"
     },
     "copyrightYear": {
       "type": "generated",

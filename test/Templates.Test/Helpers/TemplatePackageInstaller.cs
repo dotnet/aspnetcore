@@ -18,6 +18,7 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.1.x",
             "Microsoft.DotNet.Web.ProjectTemplates.2.0",
             "Microsoft.DotNet.Web.ProjectTemplates.2.1",
+            "Microsoft.DotNet.Web.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
         };
 

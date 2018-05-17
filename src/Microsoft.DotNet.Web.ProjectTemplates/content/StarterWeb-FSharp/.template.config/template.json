@@ -10,7 +10,7 @@
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core MVC Views and Controllers. This template can also be used for RESTful HTTP services.",
   "groupIdentity": "Microsoft.Web.Mvc",
   "precedence": "3000",
-  "identity": "Microsoft.Web.Mvc.FSharp.2.1",
+  "identity": "Microsoft.Web.Mvc.FSharp.2.2",
   "shortName": "mvc",
   "thirdPartyNotices": "https://aka.ms/aspnetcore-template-3pn-210",
   "tags": {
@@ -106,12 +106,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp2.2",
+          "description": "Target netcoreapp2.2"
         }
       ],
-      "replaces": "netcoreapp2.1",
-      "defaultValue": "netcoreapp2.1"
+      "replaces": "netcoreapp2.2",
+      "defaultValue": "netcoreapp2.2"
     },
     "copyrightYear": {
       "type": "generated",

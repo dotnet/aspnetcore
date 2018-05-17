@@ -75,7 +75,7 @@ $@"<Project>
 
             if (!string.IsNullOrEmpty(auth))
             {
-                args += $" -au {auth}";
+                args += $" --auth {auth}";
             }
 
             if (!string.IsNullOrEmpty(language))
@@ -85,7 +85,7 @@ $@"<Project>
 
             if (useLocalDB)
             {
-                args += $" -uld";
+                args += $" --use-local-db";
             }
 
             if (noHttps)

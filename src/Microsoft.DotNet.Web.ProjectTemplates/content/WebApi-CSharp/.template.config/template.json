@@ -10,7 +10,7 @@
   "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
   "groupIdentity": "Microsoft.Web.WebApi",
   "precedence": "3000",
-  "identity": "Microsoft.Web.WebApi.CSharp.2.1",
+  "identity": "Microsoft.Web.WebApi.CSharp.2.2",
   "shortName": "webapi",
   "tags": {
     "language": "C#",
@@ -222,12 +222,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp2.2",
+          "description": "Target netcoreapp2.2"
         }
       ],
-      "replaces": "netcoreapp2.1",
-      "defaultValue": "netcoreapp2.1"
+      "replaces": "netcoreapp2.2",
+      "defaultValue": "netcoreapp2.2"
     },
     "copyrightYear": {
       "type": "generated",

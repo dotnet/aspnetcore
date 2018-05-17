@@ -11,8 +11,11 @@
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Razor Pages content",
   "groupIdentity": "Microsoft.Web.RazorPages",
   "precedence": "3000",
-  "identity": "Microsoft.Web.RazorPages.CSharp.2.1",
-  "shortName": [ "razor", "webapp" ],
+  "identity": "Microsoft.Web.RazorPages.CSharp.2.2",
+  "shortName": [
+    "razor",
+    "webapp"
+  ],
   "thirdPartyNotices": "https://aka.ms/aspnetcore-template-3pn-210",
   "tags": {
     "language": "C#",
@@ -326,12 +329,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp2.2",
+          "description": "Target netcoreapp2.2"
         }
       ],
-      "replaces": "netcoreapp2.1",
-      "defaultValue": "netcoreapp2.1"
+      "replaces": "netcoreapp2.2",
+      "defaultValue": "netcoreapp2.2"
     },
     "copyrightYear": {
       "type": "generated",

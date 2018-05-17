@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <Description>Single Page Application templates for ASP.NET Core</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
   </PropertyGroup>

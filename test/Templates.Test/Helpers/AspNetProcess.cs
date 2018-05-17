@@ -18,7 +18,7 @@ namespace Templates.Test.Helpers
 {
     public class AspNetProcess : IDisposable
     {
-        private const string DefaultFramework = "netcoreapp2.1";
+        private const string DefaultFramework = "netcoreapp2.2";
         private const string ListeningMessagePrefix = "Now listening on: ";
         private static int Port = 5000 + new Random().Next(3000);
 

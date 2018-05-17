@@ -1,16 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.1</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.2</TargetFramework>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+    <RuntimeFrameworkVersion>${MicrosoftNETCoreApp22PackageVersion}</RuntimeFrameworkVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="${MicrosoftNETCoreApp22PackageVersion}" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="${MicrosoftAspNetCoreAppPackageVersion}" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
     <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCorePackageVersion}" />

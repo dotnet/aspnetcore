@@ -4,42 +4,42 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
-    <DotNetEfPackageVersion>2.2.0-preview1-34184</DotNetEfPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17051</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAllPackageVersion>
-    <MicrosoftAspNetCoreAppPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAppPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
-    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
-    <MicrosoftAspNetCoreCookiePolicyPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreCookiePolicyPackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreIdentityUIPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreIdentityUIPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
-    <MicrosoftAspNetCorePackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>
-    <MicrosoftAspNetCoreSpaServicesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreSpaServicesPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreTestingPackageVersion>
+    <DotNetEfPackageVersion>2.2.0-preview1-34228</DotNetEfPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17057</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreAllPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
+    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
+    <MicrosoftAspNetCoreCookiePolicyPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreCookiePolicyPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityUIPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreIdentityUIPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
+    <MicrosoftAspNetCorePackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>
+    <MicrosoftAspNetCoreSpaServicesPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreSpaServicesPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34228</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.2.0-preview1-34184</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-preview1-34184</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.0-preview1-34184</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsProcessSourcesPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.2.0-preview1-34228</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-preview1-34228</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.0-preview1-34228</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview1-34228</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview1-34228</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-rc1</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26509-06</MicrosoftNETCoreApp22PackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34184</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34228</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.2.0-preview1-34184</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
-    <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.2.0-preview1-34184</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
+    <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.2.0-preview1-34228</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.2.0-preview1-34228</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
     <SeleniumSupportPackageVersion>3.7.0</SeleniumSupportPackageVersion>

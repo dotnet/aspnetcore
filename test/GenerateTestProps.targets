@@ -9,12 +9,12 @@
 
       <!-- Overriding this property to fix tests until 2.1.0 is released or we have updated the tfm to netcoreapp2.2 https://github.com/aspnet/templating/issues/488 -->
       <!-- <TargetsProperties>BundledAspNetCoreAllTargetFrameworkVersion=$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[1])</TargetsProperties> -->
-      <TargetsProperties>BundledAspNetCoreAllTargetFrameworkVersion=2.1</TargetsProperties>
+      <TargetsProperties>BundledAspNetCoreAllTargetFrameworkVersion=2.2</TargetsProperties>
       <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion)</TargetsProperties>
 
       <!-- Overriding this property to fix tests until 2.1.0 is released or we have updated the tfm to netcoreapp2.2 https://github.com/aspnet/templating/issues/488 -->
       <!-- <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppTargetFrameworkVersion=$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[1])</TargetsProperties> -->
-      <TargetsProperties>BundledAspNetCoreAppTargetFrameworkVersion=2.1</TargetsProperties>
+      <TargetsProperties>BundledAspNetCoreAppTargetFrameworkVersion=2.2</TargetsProperties>
       <TargetsProperties>$(TargetsProperties);BundledAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion)</TargetsProperties>
     </PropertyGroup>
 

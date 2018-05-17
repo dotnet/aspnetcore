@@ -1,13 +1,18 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": ["Web", "Razor", "Library", "Razor Class Library"],
+  "classifications": [
+    "Web",
+    "Razor",
+    "Library",
+    "Razor Class Library"
+  ],
   "name": "Razor Class Library",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project for creating a Razor class library that targets .NET Standard",
   "groupIdentity": "Microsoft.Web.Razor",
   "precedence": "3000",
-  "identity": "Microsoft.Web.Razor.Library.CSharp.2.1",
+  "identity": "Microsoft.Web.Razor.Library.CSharp.2.2",
   "shortName": "razorclasslib",
   "tags": {
     "language": "C#",
@@ -29,11 +34,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp2.2",
+          "description": "Target netcoreapp2.2"
         }
       ],
-      "defaultValue": "netcoreapp2.1"
+      "defaultValue": "netcoreapp2.2"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -47,7 +52,9 @@
     }
   },
   "primaryOutputs": [
-    { "path": "Company.RazorClassLibrary1.csproj" },
+    {
+      "path": "Company.RazorClassLibrary1.csproj"
+    },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Areas/MyFeature/Pages/Page1.cshtml"
@@ -59,7 +66,9 @@
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
-        { "text": "Run 'dotnet restore'" }
+        {
+          "text": "Run 'dotnet restore'"
+        }
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": true
