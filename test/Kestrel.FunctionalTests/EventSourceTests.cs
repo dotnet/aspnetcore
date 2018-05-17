@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class EventSourceTests : LoggedTest, IDisposable
+    public class EventSourceTests : LoggedTest
     {
         private readonly TestEventListener _listener = new TestEventListener();
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _listener.Dispose();
         }
