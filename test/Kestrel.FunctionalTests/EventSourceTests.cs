@@ -107,6 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public override void Dispose()
         {
             _listener.Dispose();
+            base.Dispose();
         }
     }
 }
