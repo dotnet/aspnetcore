@@ -1,0 +1,537 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Connections.Client, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.Client.HttpConnection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Connections.ConnectionContext",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Connections.Features.IConnectionInherentKeepAliveFeature"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Transport",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Features",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConnectionId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Items",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartAsync",
+          "Parameters": [
+            {
+              "Name": "transferFormat",
+              "Type": "Microsoft.AspNetCore.Connections.TransferFormat"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DisposeAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "url",
+              "Type": "System.Uri"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "url",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "transports",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "url",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "transports",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "httpConnectionOptions",
+              "Type": "Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HttpMessageHandlerFactory",
+          "Parameters": [],
+          "ReturnType": "System.Func<System.Net.Http.HttpMessageHandler, System.Net.Http.HttpMessageHandler>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpMessageHandlerFactory",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<System.Net.Http.HttpMessageHandler, System.Net.Http.HttpMessageHandler>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Headers",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Headers",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClientCertificates",
+          "Parameters": [],
+          "ReturnType": "System.Security.Cryptography.X509Certificates.X509CertificateCollection",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClientCertificates",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Cryptography.X509Certificates.X509CertificateCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Cookies",
+          "Parameters": [],
+          "ReturnType": "System.Net.CookieContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Cookies",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.CookieContainer"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Url",
+          "Parameters": [],
+          "ReturnType": "System.Uri",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Url",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Uri"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Transports",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Connections.HttpTransportType",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Transports",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SkipNegotiation",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SkipNegotiation",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AccessTokenProvider",
+          "Parameters": [],
+          "ReturnType": "System.Func<System.Threading.Tasks.Task<System.String>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AccessTokenProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<System.Threading.Tasks.Task<System.String>>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CloseTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CloseTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Credentials",
+          "Parameters": [],
+          "ReturnType": "System.Net.ICredentials",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Credentials",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.ICredentials"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Proxy",
+          "Parameters": [],
+          "ReturnType": "System.Net.IWebProxy",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Proxy",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.IWebProxy"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UseDefaultCredentials",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Boolean>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UseDefaultCredentials",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_WebSocketConfiguration",
+          "Parameters": [],
+          "ReturnType": "System.Action<System.Net.WebSockets.ClientWebSocketOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_WebSocketConfiguration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Action<System.Net.WebSockets.ClientWebSocketOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.IO.Pipelines.DuplexPipe+DuplexPipePair",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Application",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "transport",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            },
+            {
+              "Name": "application",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

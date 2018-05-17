@@ -1,0 +1,1011 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Exception",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "innerException",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "info",
+              "Type": "System.Runtime.Serialization.SerializationInfo"
+            },
+            {
+              "Name": "context",
+              "Type": "System.Runtime.Serialization.StreamingContext"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IInvocationBinder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetReturnType",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Type",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetParameterTypes",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<System.Type>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.ISignalRBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Services",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.CloseMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Error",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "error",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Empty",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.CloseMessage",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Error",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Result",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HasResult",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithError",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "error",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithResult",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "payload",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Empty",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "error",
+              "Type": "System.String"
+            },
+            {
+              "Name": "result",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "hasResult",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WriteRequestMessage",
+          "Parameters": [
+            {
+              "Name": "requestMessage",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage"
+            },
+            {
+              "Name": "output",
+              "Type": "System.Buffers.IBufferWriter<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteResponseMessage",
+          "Parameters": [
+            {
+              "Name": "responseMessage",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage"
+            },
+            {
+              "Name": "output",
+              "Type": "System.Buffers.IBufferWriter<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseResponseMessage",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Buffers.ReadOnlySequence<System.Byte>",
+              "Direction": "Ref"
+            },
+            {
+              "Name": "responseMessage",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseRequestMessage",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Buffers.ReadOnlySequence<System.Byte>",
+              "Direction": "Ref"
+            },
+            {
+              "Name": "requestMessage",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "SuccessHandshakeData",
+          "Parameters": [],
+          "ReturnType": "System.ReadOnlyMemory<System.Byte>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Protocol",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Version",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "protocol",
+              "Type": "System.String"
+            },
+            {
+              "Name": "version",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Error",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "error",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Empty",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Headers",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Headers",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_InvocationId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Target",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Arguments",
+          "Parameters": [],
+          "ReturnType": "System.Object[]",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "target",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arguments",
+              "Type": "System.Object[]"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "target",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arguments",
+              "Type": "System.Object[]"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "target",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arguments",
+              "Type": "System.Object[]"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "target",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arguments",
+              "Type": "System.Object[]"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "InvocationMessageType",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "StreamItemMessageType",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "CompletionMessageType",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "StreamInvocationMessageType",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "CancelInvocationMessageType",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "5"
+        },
+        {
+          "Kind": "Field",
+          "Name": "PingMessageType",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "6"
+        },
+        {
+          "Kind": "Field",
+          "Name": "CloseMessageType",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "7"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.HubProtocolExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetMessageBytes",
+          "Parameters": [
+            {
+              "Name": "hubProtocol",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol"
+            },
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Version",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TransferFormat",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Connections.TransferFormat",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseMessage",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Buffers.ReadOnlySequence<System.Byte>",
+              "Direction": "Ref"
+            },
+            {
+              "Name": "binder",
+              "Type": "Microsoft.AspNetCore.SignalR.IInvocationBinder"
+            },
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteMessage",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage"
+            },
+            {
+              "Name": "output",
+              "Type": "System.Buffers.IBufferWriter<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetMessageBytes",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage"
+            }
+          ],
+          "ReturnType": "System.ReadOnlyMemory<System.Byte>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsVersionSupported",
+          "Parameters": [
+            {
+              "Name": "version",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BindingFailure",
+          "Parameters": [],
+          "ReturnType": "System.Runtime.ExceptionServices.ExceptionDispatchInfo",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Target",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "target",
+              "Type": "System.String"
+            },
+            {
+              "Name": "bindingFailure",
+              "Type": "System.Runtime.ExceptionServices.ExceptionDispatchInfo"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.PingMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.PingMessage",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "invocationId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "item",
+              "Type": "System.Object"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
