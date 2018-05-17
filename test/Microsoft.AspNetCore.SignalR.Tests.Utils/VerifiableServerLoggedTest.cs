@@ -5,13 +5,14 @@ using System;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class VerifiableServerLoggedTest : VerifiableLoggedTest
+    public class VerifiableServerLoggedTest : VerifiableLoggedTest, IDisposable
     {
         private readonly Func<WriteContext, bool> _globalExpectedErrorsFilter;
 
@@ -21,18 +22,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             ServerFixture = serverFixture;
 
-            _globalExpectedErrorsFilter = (writeContext) =>
-            {
-                // Suppress https://github.com/aspnet/SignalR/issues/2034
-                if (writeContext.LoggerName == "Microsoft.AspNetCore.Http.Connections.Client.Internal.ServerSentEventsTransport" &&
-                    writeContext.Message.StartsWith("Error while sending to") &&
-                    writeContext.Exception is HttpRequestException)
-                {
-                    return true;
-                }
-
-                return false;
-            };
+            // Suppress errors globally here
+            _globalExpectedErrorsFilter = (writeContext) => false;
         }
 
         private Func<WriteContext, bool> ResolveExpectedErrorsFilter(Func<WriteContext, bool> expectedErrorsFilter)
@@ -63,6 +54,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var disposable = base.StartVerifiableLog(out loggerFactory, testName, ResolveExpectedErrorsFilter(expectedErrorsFilter));
             return new ServerLogScope(ServerFixture, loggerFactory, disposable);
+        }
+
+        public void Dispose()
+        {
+            // Unit tests in a fixture reuse the server.
+            // A small delay prevents server logging from a previous tests from showing up in the next test's logs
+            // by giving the server time to finish any in-progress request logic.
+            Thread.Sleep(TimeSpan.FromMilliseconds(100));
         }
     }
 }

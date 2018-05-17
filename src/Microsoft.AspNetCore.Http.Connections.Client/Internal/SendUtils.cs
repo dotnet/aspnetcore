@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class SendUtils
     {
-        public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger)
+        public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken = default)
         {
             Log.SendStarted(logger);
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                             // rather than buffer the entire response. This gives a small perf boost.
                             // Note that it is important to dispose of the response when doing this to
                             // avoid leaving the connection open.
-                            using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                            using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                             {
                                 response.EnsureSuccessStatusCode();
                             }

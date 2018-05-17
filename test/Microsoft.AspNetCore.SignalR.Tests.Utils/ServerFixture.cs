@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var testLog = AssemblyTestLog.ForAssembly(typeof(TStartup).Assembly);
                 _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}",
-                    out _loggerFactory, "ServerFixture");
+                    out _loggerFactory, nameof(ServerFixture));
             }
             else
             {
