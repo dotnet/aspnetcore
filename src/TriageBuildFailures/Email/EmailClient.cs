@@ -25,14 +25,15 @@ namespace TriageBuildFailures.Email
 
         public async Task SendEmail(string to, string subject, string body)
         {
-            if (Constants.BeQuite)
+            if (true)
             {
                 var tempMsg = $"We tried to send an email to {to} about {subject} with {body}";
 
                 _reporter.Output(tempMsg);
-                Directory.CreateDirectory(to);
+                var folder = Path.Combine("temp", to);
+                Directory.CreateDirectory(folder);
 
-                using (var streamWriter = File.CreateText(Path.Combine(to, $"{Path.GetRandomFileName()}.txt")))
+                using (var streamWriter = File.CreateText(Path.Combine(folder, $"{Path.GetRandomFileName()}.txt")))
                 {
                     streamWriter.Write(tempMsg);
                 }

@@ -14,6 +14,7 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public abstract class HandleFailureBase : IFailureHandler
     {
+        public Config Config { get; set; }
         public TeamCityClientWrapper TCClient { get; set; }
         public GitHubClientWrapper GHClient { get; set; }
         public EmailClient EmailClient { get; set; }

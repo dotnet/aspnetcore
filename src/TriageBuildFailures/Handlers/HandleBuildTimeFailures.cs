@@ -16,49 +16,11 @@ namespace TriageBuildFailures.Handlers
     {
         private IEnumerable<string> BuildTimeErrors = new string[] { "E:	 ", "error NU1603:", "error KRB4005:", "Failed to publish artifacts:", "error :", "The active test run was aborted. Reason:" };
 
-        private IEnumerable<string> Release21SharedFxBuilds = new string[] { "Releases_21Public_CoherencePackageCacheLinux", "Releases_21Public_SharedFxLinuxMusl",
-            "Releases_21Public_CoherencePackageCacheOsx", "Releases_21Public_CoherencePackageCacheWin", "Releases_21Public_CoherencePackageCacheWin86", "Releases_21Public_RuntimeStoreInstallers", };
-        private IEnumerable<string> Release21MainBuilds = new string[] { "Releases_21Public_UpdateRepos", "Releases_21Public_UpdateUniverse", "Releases_21Public_BuildTools",
-            "Releases_21Public_UniverseCoherence", "Releases_21Public_Publish", "Releases_21Public_Signed", "Releases_21Public_Finale", "Releases_21Public_SiteExtension",
-            "Releases_21Public_SetupSharedFramework", "Releases_21Public_WindowsHostingBundle" };
-        private IEnumerable<string> Release21Builds {
-            get
-            {
-                return Release21MainBuilds.Concat(Release21SharedFxBuilds);
-            }
-        }
-
-        private IEnumerable<string> DevSharedFxBuilds = new string[] { "Coherence_CoherencePackageCacheLinux", "Coherence_CoherencePackageCacheWin",
-            "Coherence_SharedFxLinuxMusl", "Coherence_CoherencePackageCacheOsx", "Coherence_CoherencePackageCacheWin86", "Coherence_RuntimeStoreInstallers" };
-        private IEnumerable<string> DevMainBuilds = new string[] { "Lite_Public_DnxTools", "Coherence_UpdateUniverse", "UniverseCoherence",
-            "CoherenceSigned", "Coherence_Finale", "Coherence_SiteExtension", "AspNetCore_Publish",
-            "Lite_Infrastructure_SetupSharedFramework", "Lite_Infrastructure_WindowsHostingBundle" };
-
-        private IEnumerable<string> DevBuilds {
-            get
-            {
-                return DevMainBuilds.Concat(DevSharedFxBuilds);
-            }
-        }
-
-        private IEnumerable<string> ImportantBuilds {
-            get
-            {
-                return Release21Builds.Concat(DevBuilds);
-            }
-        }
-
         public override bool CanHandleFailure(TeamCityBuild build)
         {
-            // "Lite_" builds are per-repo and should never fail. 
-            if ((build.BuildTypeID.StartsWith("Lite_") || ImportantBuilds.Contains(build.BuildTypeID)))
-            {
-                var log = TCClient.GetBuildLog(build);
-                var errors = GetErrorsFromLog(log);
-                return errors != null && errors.Count() > 0;
-            }
-
-            return false;
+            var log = TCClient.GetBuildLog(build);
+            var errors = GetErrorsFromLog(log);
+            return errors != null && errors.Count() > 0;
         }
 
         public override async Task HandleFailure(TeamCityBuild build)

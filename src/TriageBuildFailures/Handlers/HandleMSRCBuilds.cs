@@ -1,28 +1,25 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
 {
     /// <summary>
-    /// Never ever post anything about any config with MSRC in the name publicly. Notify the build buddy, who will likely forward to the engineering alias.
+    /// Never ever post anything about any config we don't explicitly allow. Notify the build buddy, who will likely forward to the engineering alias.
     /// </summary>
-    public class HandleMSRCBuilds : HandleFailureBase
+    public class HandleNonAllowedBuilds : HandleFailureBase
     {
         public override bool CanHandleFailure(TeamCityBuild build)
         {
-            // TODO: Have an allowlist of projects which don't contain MSRC configs.
-            // If anything NOT on that allowlist fails, this FailureHandler should send it straight to my inbox.
-            return build.BuildTypeID.Contains("MSRC", StringComparison.InvariantCultureIgnoreCase);
+            return !Config.BuildIdAllowList.Contains(build.BuildTypeID);
         }
 
         public override async Task HandleFailure(TeamCityBuild build)
         {
-            var subject = $"Failure of MSRC {build.BuildName}";
-            var body = $"{build.WebURL} failed, we don't want to do anything automatic to it because the name says MSRC.";
+            var subject = $"Failure of unknown build '{build.BuildTypeID}'";
+            var body = $"{build.WebURL} failed, we don't want to do anything automatic to it because it's not on the allow-list.";
 
             // We don't want to create issues or anything public about MSRC builds, send an email to BBFL and he'll deal with it
             await EmailClient.SendEmail(EmailClient.Config.BuildBuddyEmail, subject, body);

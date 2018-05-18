@@ -209,7 +209,7 @@ namespace TriageBuildFailures.TeamCity
 
         public string GetBuildLog(TeamCityBuild build)
         {
-            var buildLogDir = Path.Combine("tmp", "BuildLogs");
+            var buildLogDir = Path.Combine("temp", "BuildLogs");
             var buildLogFile = Path.Combine(buildLogDir, $"{build.Id}.txt");
 
             Directory.CreateDirectory(buildLogDir);

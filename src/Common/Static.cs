@@ -28,70 +28,89 @@ namespace Common
         /// <remarks>We don't have a good way to know what repo a test came out of, so we have this hidious method which attempts to figure it out based on the namespace of the test.</remarks>
         public static string FindRepo(string testName, IReporter reporter)
         {
-            if (testName.StartsWith(Constants.VSTestPrefix))
+            if (true)
             {
-                var name = testName.Replace(Constants.VSTestPrefix, string.Empty);
-
-                if (name.StartsWith("Microsoft.AspNetCore.Server"))
-                {
-                    var parts = name.Split('.');
-                    switch (parts[3])
-                    {
-                        case "Kestrel":
-                            return "KestrelHttpServer";
-                        case "HttpSys":
-                            return "HttpSysServer";
-                        default:
-                            return parts[3];
-                    }
-                }
-                else if (name.StartsWith("Microsoft.AspNetCore."))
-                {
-                    var parts = name.Split('.');
-
-                    switch (parts[2])
-                    {
-                        default:
-                            return parts[2];
-                    }
-                }
-                else if (name.StartsWith("AuthSamples"))
-                {
-                    return name.Split('.')[0];
-                }
-                else if (name.StartsWith("ServerComparison"))
-                {
-                    return "ServerTests";
-                }
-                else if (name.StartsWith("E2ETests"))
-                {
-                    return "MusicStore";
-                }
-                else if (name.StartsWith("Microsoft.DotNet.Watcher"))
-                {
-                    return "DotNetTools";
-                }
-                else if (name.StartsWith("Microsoft.EntityFrameworkCore"))
-                {
-                    return "EntityFrameworkCore";
-                }
-                else if (name.StartsWith("FunctionalTests"))
-                {
-                    return "MvcPrecompilation";
-                }
-                else if (name.StartsWith("Templates"))
-                {
-                    return "Templating";
-                }
-                else if (name.StartsWith("MvcBenchmarks"))
-                {
-                    return "Performance";
-                }
+                return "TriageTest";
             }
+            else
+            {
+                if (testName.StartsWith(Constants.VSTestPrefix))
+                {
+                    var name = testName.Replace(Constants.VSTestPrefix, string.Empty);
 
-            reporter.Error($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/Home");
+                    if (name.StartsWith("Microsoft.AspNetCore.Server"))
+                    {
+                        var parts = name.Split('.');
+                        switch (parts[3])
+                        {
+                            case "Kestrel":
+                                return "KestrelHttpServer";
+                            case "HttpSys":
+                                return "HttpSysServer";
+                            default:
+                                return parts[3];
+                        }
+                    }
+                    else if (name.StartsWith("Microsoft.AspNetCore."))
+                    {
+                        var parts = name.Split('.');
 
-            return "Home";
+                        switch (parts[2])
+                        {
+                            default:
+                                return parts[2];
+                        }
+                    }
+                    else if (name.StartsWith("AuthSamples"))
+                    {
+                        return name.Split('.')[0];
+                    }
+                    else if (name.StartsWith("ServerComparison"))
+                    {
+                        return "ServerTests";
+                    }
+                    else if (name.StartsWith("E2ETests"))
+                    {
+                        return "MusicStore";
+                    }
+                    else if (name.StartsWith("Microsoft.DotNet.Watcher"))
+                    {
+                        return "DotNetTools";
+                    }
+                    else if (name.StartsWith("Microsoft.EntityFrameworkCore"))
+                    {
+                        return "EntityFrameworkCore";
+                    }
+                    else if (name.StartsWith("FunctionalTests"))
+                    {
+                        return "MvcPrecompilation";
+                    }
+                    else if (name.StartsWith("Templates"))
+                    {
+                        return "Templating";
+                    }
+                    else if (name.StartsWith("MvcBenchmarks"))
+                    {
+                        return "Performance";
+                    }
+                }
+
+                reporter.Error($"Don't know how to find the repo of tests like {testName}, defaulting to aspnet/Home");
+
+                return "Home";
+            }
+        }
+
+        public static string FindOwner(string name, IReporter reporter)
+        {
+            if(true)
+            {
+                return "ryanbrandenburg";
+            }
+            else
+            {
+                return "aspnet";
+            }
         }
     }
 

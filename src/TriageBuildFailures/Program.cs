@@ -34,14 +34,15 @@ namespace TriageBuildFailures
         private readonly GitHubClientWrapper _ghClient;
         private readonly EmailClient _emailClient;
         private IReporter _reporter;
+        private readonly Config _config;
 
         public Triage()
         {
-            var config = GetConfig();
+            _config = GetConfig();
             _reporter = GetReporter();
-            _tcClient = GetTeamCityClient(config);
-            _ghClient = GetGitHubClient(config);
-            _emailClient = GetEmailClient(config);
+            _tcClient = GetTeamCityClient(_config);
+            _ghClient = GetGitHubClient(_config);
+            _emailClient = GetEmailClient(_config);
         }
 
         public static Config GetConfig()
@@ -61,7 +62,7 @@ namespace TriageBuildFailures
             stopWatch.Start();
             var builds = GetUnTriagedFailures();
 
-            foreach(var build in builds)
+            foreach (var build in builds)
             {
                 await HandleFailure(build);
             }
@@ -70,6 +71,10 @@ namespace TriageBuildFailures
             _reporter.Output($"There were {builds.Count()} untriaged failures since {CutoffDate} and we handled them in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
         }
 
+        private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase> { new HandleNonAllowedBuilds(), new HandleLowValueBuilds(),
+                new HandleUniverseMovedOn(), new HandleTestFailures(),
+                new HandleBuildTimeFailures(), new HandleUnhandled() };
+
         /// <summary>
         /// Take the appropriate action for a CI failure.
         /// </summary>
@@ -77,18 +82,15 @@ namespace TriageBuildFailures
         /// <returns></returns>
         private async Task HandleFailure(TeamCityBuild build)
         {
-            var handlers = new List<HandleFailureBase> { new HandleMSRCBuilds(), new HandleLowValueBuilds(),
-                new HandleUniverseMovedOn(), new HandleTestFailures(),
-                new HandleBuildTimeFailures(), new HandleUnhandled() };
-
-            foreach(var handler in handlers)
+            foreach (var handler in Handlers)
             {
                 handler.TCClient = _tcClient;
                 handler.GHClient = _ghClient;
                 handler.EmailClient = _emailClient;
                 handler.Reporter = _reporter;
-                
-                if(handler.CanHandleFailure(build))
+                handler.Config = _config;
+
+                if (handler.CanHandleFailure(build))
                 {
                     await handler.HandleFailure(build);
                     MarkTriaged(build);
@@ -119,7 +121,7 @@ namespace TriageBuildFailures
         {
             _tcClient.SetTag(build, TriagedTag);
         }
-        
+
         private static IReporter GetReporter()
         {
             return new ConsoleReporter(PhysicalConsole.Singleton);
@@ -132,7 +134,7 @@ namespace TriageBuildFailures
 
         private EmailClient GetEmailClient(Config config)
         {
-            return new EmailClient(config.Email ,_reporter);
+            return new EmailClient(config.Email, _reporter);
         }
 
         private TeamCityClientWrapper GetTeamCityClient(Config config)

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Octokit;
+using TriageBuildFailures.GitHub;
 using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
@@ -26,17 +27,7 @@ namespace TriageBuildFailures.Handlers
 
         private string SafeGetExceptionMessage(string errors)
         {
-            string exceptionMessage;
-            if (string.IsNullOrEmpty(errors))
-            {
-                exceptionMessage = NoStackTraceAvailable;
-            }
-            else
-            {
-                exceptionMessage = ErrorParsing.GetExceptionMessage(errors);
-            }
-
-            return exceptionMessage;
+            return string.IsNullOrEmpty(errors) ? NoStackTraceAvailable : ErrorParsing.GetExceptionMessage(errors);
         }
 
         public override async Task HandleFailure(TeamCityBuild build)
@@ -47,8 +38,9 @@ namespace TriageBuildFailures.Handlers
             foreach (var failure in failures)
             {
                 var repo = TestToRepoMapper.FindRepo(failure.Name, Reporter);
+                var owner = TestToRepoMapper.FindOwner(failure.Name, Reporter);
 
-                var issuesTask = GHClient.GetFlakyIssues(repo: repo);
+                var issuesTask = GHClient.GetFlakyIssues(owner, repo);
                 
                 var errors = TCClient.GetTestFailureText(failure);
 
@@ -67,7 +59,7 @@ namespace TriageBuildFailures.Handlers
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
                     var tags = new List<string> { "Flaky" };
 
-                    var issue = await GHClient.CreateIssue(repo, subject, body, tags);
+                    var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags);
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
@@ -165,28 +157,17 @@ namespace TriageBuildFailures.Handlers
             }
             else
             {
-                string insideTicks;
-                if (issue.Body.StartsWith("```"))
-                {
-                    insideTicks = parts[0];
-                }
-                else
-                {
-                    insideTicks = parts[1];
-                }
-
+                var insideTicks = issue.Body.StartsWith("```") ? parts[0] : parts[1];
                 insideTicks = insideTicks.Trim();
                 return ErrorParsing.GetExceptionMessage(insideTicks);
             }
         }
 
-        private IEnumerable<Issue> GetApplicableIssues(IEnumerable<Issue> issues, TestOccurrence failure)
+        private IEnumerable<GithubIssue> GetApplicableIssues(IEnumerable<GithubIssue> issues, TestOccurrence failure)
         {
             var testError = TCClient.GetTestFailureText(failure);
             var testException = SafeGetExceptionMessage(testError); ;
             var shortTestName = GetTestName(failure);
-
-            var applicableIssues = new List<Issue>();
 
             foreach (var issue in issues)
             {
@@ -199,11 +180,9 @@ namespace TriageBuildFailures.Handlers
                     || (issueException != null && issueException.Equals(testException))
                     || LevenstienClose(issueException, testException))
                 {
-                    applicableIssues.Add(issue);
+                    yield return issue;
                 }
             }
-
-            return applicableIssues;
         }
     }
 }

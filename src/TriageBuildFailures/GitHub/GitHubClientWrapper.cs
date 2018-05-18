@@ -14,13 +14,13 @@ namespace TriageBuildFailures.GitHub
 {
     public class GitHubClientWrapper
     {
-        private const string _owner = "aspnet";
         public GitHubConfig Config { get; private set; }
         public GitHubClient Client { get; private set; }
         public ProjectColumnsClient ColumnsClient { get; private set; }
         public ProjectCardsClient CardClient { get; private set; }
         private IReporter _reporter;
         private static Random _random = new Random();
+        private const string _tempFolder = "temp";
 
         private static readonly IEnumerable<string> _issuesOnHomeRepo = new List<string> {
             "Antiforgery",
@@ -64,7 +64,7 @@ namespace TriageBuildFailures.GitHub
         /// <param name="repo">The repo to retrieve issues for.</param>
         /// <returns>The issues which apply to the given repo.</returns>
         /// <remarks>We take care of repos which keep their issues on the home repo within this function.</remarks>
-        public async Task<IEnumerable<Issue>> GetIssues(string repo)
+        public async Task<IEnumerable<GithubIssue>> GetIssues(string owner, string repo)
         {
             string repoLabel = null;
             if (IssuesOnHomeRepo(repo))
@@ -82,7 +82,8 @@ namespace TriageBuildFailures.GitHub
                 request.Labels.Add(repoLabel);
             }
 
-            return await Client.Issue.GetAllForRepository(_owner, repo, request);
+            var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
+            return issues.Select(i => new GithubIssue(i));
         }
 
         /// <summary>
@@ -90,14 +91,14 @@ namespace TriageBuildFailures.GitHub
         /// </summary>
         /// <param name="repo">The repo to search.</param>
         /// <returns>The list of flaky issues.</returns>
-        public async Task<IEnumerable<Issue>> GetFlakyIssues(string repo)
+        public async Task<IEnumerable<GithubIssue>> GetFlakyIssues(string owner, string repo)
         {
-            var issues = await GetIssues(repo);
+            var issues = await GetIssues(owner, repo);
 
             return issues.Where(i =>
             i.Title.StartsWith("Flaky", StringComparison.InvariantCultureIgnoreCase)
             || i.Title.StartsWith("flakey", StringComparison.InvariantCultureIgnoreCase)
-            || i.Labels.Any(l => l.Name.Contains("Flaky")));
+            || i.Labels.Any(l => l.Name.Contains("Flaky", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         private static bool IssuesOnHomeRepo(string repo)
@@ -105,43 +106,35 @@ namespace TriageBuildFailures.GitHub
             return _issuesOnHomeRepo.Contains(repo);
         }
 
-        private static string GetRepoFromIssue(Issue issue)
-        {
-            var url = issue.Url;
-
-            return url.Split('/')[5];
-        }
-
-        public async Task AddIssueToProject(Issue issue, int columnId)
+        public async Task AddIssueToProject(GithubIssue issue, int columnId)
         {
             if (Constants.BeQuite)
             {
-                Directory.CreateDirectory("Project");
+                var folder = Path.Combine("temp", "Project");
+                Directory.CreateDirectory(folder);
 
-                using (var fileStream = File.CreateText(Path.Combine("Project", $"{ issue.Number}.txt")))
+                using (var fileStream = File.CreateText(Path.Combine(folder, $"{issue.Number}.txt")))
                 {
                     fileStream.Write(issue.Id);
                 }
             }
             else
             {
-                var repo = GetRepoFromIssue(issue);
-                var newCard = new NewProjectCard($"{_owner}/{repo}#{issue.Number}");
+                var newCard = new NewProjectCard($"{issue.RepositoryOwner}/{issue.RepositoryName}#{issue.Number}");
                 await CardClient.Create(columnId, newCard);
             }
         }
 
-        public async Task<IEnumerable<IssueComment>> GetIssueComments(Issue issue)
+        public async Task<IEnumerable<IssueComment>> GetIssueComments(GithubIssue issue)
         {
-            var repo = GetRepoFromIssue(issue);
-            return await Client.Issue.Comment.GetAllForIssue(_owner, repo, issue.Number);
+            return await Client.Issue.Comment.GetAllForIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number);
         }
 
-        public async Task CreateComment(Issue issue, string comment)
+        public async Task CreateComment(GithubIssue issue, string comment)
         {
             if (Constants.BeQuite)
             {
-                var tempComments = Path.Combine("Comments", issue.Id.ToString());
+                var tempComments = Path.Combine(_tempFolder, issue.RepositoryOwner, issue.RepositoryName, issue.Number.ToString());
                 Directory.CreateDirectory(tempComments);
 
                 using (var fileStream = File.CreateText(Path.Combine(tempComments, $"{Path.GetRandomFileName()}.txt")))
@@ -151,11 +144,11 @@ namespace TriageBuildFailures.GitHub
             }
             else
             {
-                await Client.Issue.Comment.Create(_owner, issue.Repository.Name, issue.Number, comment);
+                await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
             }
         }
 
-        public async Task<Issue> CreateIssue(string repo, string subject, string body, IEnumerable<string> labels)
+        public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IEnumerable<string> labels)
         {
             if (Constants.BeQuite)
             {
@@ -167,19 +160,20 @@ namespace TriageBuildFailures.GitHub
 
                 _reporter.Output(tempMsg);
 
-                if (!Directory.Exists(repo))
-                {
-                    Directory.CreateDirectory(repo);
-                }
+                var repoFolder = Path.Combine(_tempFolder, owner, repo);
+                Directory.CreateDirectory(repoFolder);
 
-                using (var fileStream = File.CreateText(Path.Combine(repo, $"{Path.GetRandomFileName()}.txt")))
+                using (var fileStream = File.CreateText(Path.Combine(repoFolder, $"{Path.GetRandomFileName()}.txt")))
                 {
                     fileStream.Write(tempMsg);
                 }
 
-                var repository = await Client.Repository.Get(_owner, repo);
+                var repository = await Client.Repository.Get(owner, repo);
 
-                return new Issue(url: null, htmlUrl: null, commentsUrl: null, eventsUrl: null, number: _random.Next(), ItemState.Open, subject, body, null, null, null, null, null, null, 0, null, null, DateTimeOffset.Now, DateTimeOffset.Now, _random.Next(), false, repository);
+                var issue = new Issue(url: null, htmlUrl: null, commentsUrl: null, eventsUrl: null, number: _random.Next(),
+                    ItemState.Open, subject, body, null, null, null, null, null, null, 0, null, null, DateTimeOffset.Now,
+                    DateTimeOffset.Now, _random.Next(), false, repository);
+                return new GithubIssue(issue);
             }
             else
             {
@@ -187,13 +181,40 @@ namespace TriageBuildFailures.GitHub
                 {
                     Body = body,
                 };
-                
-                foreach(var label in labels)
+
+                foreach (var label in labels)
                 {
                     newIssue.Labels.Add(label);
                 }
 
-                return await Client.Issue.Create(_owner, repo, newIssue);
+                return new GithubIssue(await Client.Issue.Create(owner, repo, newIssue));
+            }
+        }
+    }
+
+    public class GithubIssue : Issue
+    {
+        public GithubIssue(Issue issue)
+            : base(issue.Url, issue.HtmlUrl, issue.CommentsUrl, issue.EventsUrl, issue.Number, issue.State.Value, issue.Title,
+                  issue.Body, issue.ClosedBy, issue.User, issue.Labels, issue.Assignee, issue.Assignees, issue.Milestone,
+                  issue.Comments, issue.PullRequest, issue.ClosedAt, issue.CreatedAt, issue.UpdatedAt, issue.Id, issue.Locked,
+                  issue.Repository)
+        {
+        }
+
+        public string RepositoryName
+        {
+            get
+            {
+                return Repository?.Name == null ? Url.Split('/')[5] : Repository.Name;
+            }
+        }
+
+        public string RepositoryOwner
+        {
+            get
+            {
+                return Repository?.Owner == null ? Url.Split('/')[4] : Repository.Owner.Name;
             }
         }
     }
