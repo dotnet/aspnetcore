@@ -2,216 +2,116 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using IISIntegration.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [SkipIfIISExpressSchemaMissingInProcess]
-    public class StartupTests : LoggedTest
+    public class StartupTests : IISFunctionalTestBase
     {
         public StartupTests(ITestOutputHelper output) : base(output)
         {
-
         }
 
         [Fact]
         public async Task ExpandEnvironmentVariableInWebConfig()
         {
             var dotnetLocation = DotNetMuxer.MuxerPathOrDefault();
-            using (StartLog(out var loggerFactory))
-            {
-                var logger = loggerFactory.CreateLogger("HelloWorldTest");
+            var deploymentParameters = GetBaseDeploymentParameters();
 
-                var deploymentParameters = GetBaseDeploymentParameters();
+            // Point to dotnet installed in user profile.
+            deploymentParameters.EnvironmentVariables["DotnetPath"] = dotnetLocation;
 
-                // Point to dotnet installed in user profile.
-                deploymentParameters.EnvironmentVariables["DotnetPath"] = dotnetLocation;
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
-                {
-                    var deploymentResult = await deployer.DeployAsync();
+            ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
 
-                    Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
+            var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
-                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = await RetryHelper.RetryRequest(() =>
-                    {
-                        return deploymentResult.HttpClient.GetAsync("HelloWorld");
-                    }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
-
-                    var responseText = await response.Content.ReadAsStringAsync();
-                    try
-                    {
-                        Assert.Equal("Hello World", responseText);
-                    }
-                    catch (XunitException)
-                    {
-                        logger.LogWarning(response.ToString());
-                        logger.LogWarning(responseText);
-                        throw;
-                    }
-                }
-            }
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello World", responseText);
         }
 
         [Fact]
         public async Task InvalidProcessPath_ExpectServerError()
         {
             var dotnetLocation = "bogus";
-            using (StartLog(out var loggerFactory))
-            {
-                var logger = loggerFactory.CreateLogger("HelloWorldTest");
-                var deploymentParameters = GetBaseDeploymentParameters();
 
-                // Point to dotnet installed in user profile.
-                deploymentParameters.EnvironmentVariables["DotnetPath"] = Environment.ExpandEnvironmentVariables(dotnetLocation); // Path to dotnet.
+            var deploymentParameters = GetBaseDeploymentParameters();
+            // Point to dotnet installed in user profile.
+            deploymentParameters.EnvironmentVariables["DotnetPath"] = Environment.ExpandEnvironmentVariables(dotnetLocation); // Path to dotnet.
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
-                {
-                    var deploymentResult = await deployer.DeployAsync();
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-                    Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
+            ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
 
-                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = await RetryHelper.RetryRequest(() =>
-                    {
-                        return deploymentResult.HttpClient.GetAsync("HelloWorld");
-                    }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
+            // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+            var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
-                    Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-                }
-            }
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         }
 
-        [Fact]
-        public async Task StandaloneApplication_ExpectCorrectPublish()
+
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress)
+                .WithTfms(Tfm.NetCoreApp22)
+                .WithAllApplicationTypes()
+                .WithAncmV2InProcess();
+
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task HelloWorld(TestVariant variant)
         {
-            using (StartLog(out var loggerFactory))
+            var deploymentParameters = new DeploymentParameters(variant)
             {
-                var logger = loggerFactory.CreateLogger("HelloWorldTest");
+                ApplicationPath = Helpers.GetInProcessTestSitesPath(),
+            };
 
-                var deploymentParameters = GetBaseDeploymentParameters();
-                deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
-                {
-                    var deploymentResult = await deployer.DeployAsync();
+            var response = await deploymentResult.RetryingHttpClient.GetAsync("/HelloWorld");
+            var responseText = await response.Content.ReadAsStringAsync();
 
-                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = await RetryHelper.RetryRequest(() =>
-                    {
-                        return deploymentResult.HttpClient.GetAsync("HelloWorld");
-                    }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
-
-                    var responseText = await response.Content.ReadAsStringAsync();
-                    try
-                    {
-                        Assert.Equal("Hello World", responseText);
-                    }
-                    catch (XunitException)
-                    {
-                        logger.LogWarning(response.ToString());
-                        logger.LogWarning(responseText);
-                        throw;
-                    }
-                }
-            }
-        }
-
-        [Fact]
-        public async Task StandaloneApplication_AbsolutePathToExe_ExpectCorrectPublish()
-        {
-            using (StartLog(out var loggerFactory))
-            {
-                var logger = loggerFactory.CreateLogger("HelloWorldTest");
-
-                var deploymentParameters = GetBaseDeploymentParameters();
-                deploymentParameters.ApplicationType = ApplicationType.Standalone;
-
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
-                {
-                    var deploymentResult = await deployer.DeployAsync();
-
-                    Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", $"{deploymentResult.ContentRoot}\\InProcessWebSite.exe");
-
-                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = await RetryHelper.RetryRequest(() =>
-                    {
-                        return deploymentResult.HttpClient.GetAsync("HelloWorld");
-                    }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
-
-                    var responseText = await response.Content.ReadAsStringAsync();
-                    try
-                    {
-                        Assert.Equal("Hello World", responseText);
-                    }
-                    catch (XunitException)
-                    {
-                        logger.LogWarning(response.ToString());
-                        logger.LogWarning(responseText);
-                        throw;
-                    }
-                }
-            }
+            Assert.Equal("Hello World", responseText);
         }
 
         [Fact]
         public async Task DetectsOveriddenServer()
         {
-            var testSink = new TestSink();
-            using (StartLog(out var loggerFactory))
-            {
-                var testLoggerFactory = new TestLoggerFactory(testSink, true);
-                loggerFactory.AddProvider(new TestLoggerProvider(testLoggerFactory));
-
-                using (var deployer = ApplicationDeployerFactory.Create(GetBaseDeploymentParameters("OverriddenServerWebSite"), loggerFactory))
-                {
-                    var deploymentResult = await deployer.DeployAsync();
-                    var response = await deploymentResult.HttpClient.GetAsync("/");
-                    Assert.False(response.IsSuccessStatusCode);
-                }
-            }
-            Assert.Contains(testSink.Writes, context => context.State.ToString().Contains("Application is running inside IIS process but is not configured to use IIS server"));
+            var deploymentResult = await DeployAsync(GetBaseDeploymentParameters("OverriddenServerWebSite"));
+            var response = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains("Application is running inside IIS process but is not configured to use IIS server"));
         }
 
         private DeploymentParameters GetBaseDeploymentParameters(string site = null)
         {
             return new DeploymentParameters(Helpers.GetTestWebSitePath(site ?? "InProcessWebSite"), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Http.config"),
-                SiteName = "HttpTestSite", // This is configured in the Http.config
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
                 AncmVersion = AncmVersion.AspNetCoreModuleV2
             };
         }
 
-        private class TestLoggerProvider : ILoggerProvider
+        private static void ModifyAspNetCoreSectionInWebConfig(IISDeploymentResult deploymentResult, string key, string value)
         {
-            private readonly TestLoggerFactory _loggerFactory;
-
-            public TestLoggerProvider(TestLoggerFactory loggerFactory)
-            {
-                _loggerFactory = loggerFactory;
-            }
-
-            public void Dispose()
-            {
-            }
-
-            public ILogger CreateLogger(string categoryName)
-            {
-                return _loggerFactory.CreateLogger(categoryName);
-            }
+            // modify the web.config after publish
+            var root = deploymentResult.DeploymentResult.ContentRoot;
+            var webConfigFile = $"{root}/web.config";
+            var config = XDocument.Load(webConfigFile);
+            var element = config.Descendants("aspNetCore").FirstOrDefault();
+            element.SetAttributeValue(key, value);
+            config.Save(webConfigFile);
         }
     }
 }

@@ -4,13 +4,13 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -21,16 +21,7 @@ namespace IISTestSite
     {
         public void Configure(IApplicationBuilder app)
         {
-            foreach (var method in GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-            {
-                var parameters = method.GetParameters();
-                if (method.Name != nameof(Configure) &&
-                    parameters.Length == 1 &&
-                    parameters[0].ParameterType == typeof(IApplicationBuilder))
-                {
-                    app.Map("/" + method.Name, innerAppBuilder => method.Invoke(this, new[] { innerAppBuilder }));
-                }
-            }
+            TestStartup.Register(app, this);
         }
 
         private void ServerVariable(IApplicationBuilder app)
@@ -38,7 +29,7 @@ namespace IISTestSite
             app.Run(async ctx =>
             {
                 var varName = ctx.Request.Query["q"];
-                await ctx.Response.WriteAsync($"{varName}: {HttpContextExtensions.GetIISServerVariable(ctx, varName) ?? "(null)"}");
+                await ctx.Response.WriteAsync($"{varName}: {ctx.GetIISServerVariable(varName) ?? "(null)"}");
             });
         }
 

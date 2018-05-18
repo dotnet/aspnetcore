@@ -3,20 +3,18 @@
 
 using System;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
+using IISIntegration.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    public class UpgradeFeatureDetectionTests : LoggedTest
+    public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
     {
-        private string _isWebsocketsSupported = Environment.OSVersion.Version >= new Version(6, 2) ? "Enabled" : "Disabled";
+        private readonly string _isWebsocketsSupported = Environment.OSVersion.Version >= new Version(6, 2) ? "Enabled" : "Disabled";
 
         public UpgradeFeatureDetectionTests(ITestOutputHelper output) : base(output)
         {
@@ -25,7 +23,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Fact]
         public Task UpgradeFeatureDetectionDisabled_InProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer("AppHostConfig/WebsocketsNotSupported.config",
+            return UpgradeFeatureDetectionDeployer(
+                disableWebSocket: true,
                 Helpers.GetInProcessTestSitesPath(),
                 "Disabled");
         }
@@ -33,7 +32,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Fact]
         public Task UpgradeFeatureDetectionEnabled_InProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer("AppHostConfig/Http.config",
+            return UpgradeFeatureDetectionDeployer(
+                disableWebSocket: false,
                 Helpers.GetInProcessTestSitesPath(),
                 _isWebsocketsSupported);
         }
@@ -41,7 +41,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Fact]
         public Task UpgradeFeatureDetectionDisabled_OutOfProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer("AppHostConfig/WebsocketsNotSupported.config",
+            return UpgradeFeatureDetectionDeployer(
+                disableWebSocket: true,
                 Helpers.GetOutOfProcessTestSitesPath(),
                 "Disabled");
         }
@@ -49,51 +50,34 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Fact]
         public Task UpgradeFeatureDetectionEnabled_OutOfProcess_IISExpress()
         {
-            return UpgradeFeatureDetectionDeployer("AppHostConfig/Http.config",
+            return UpgradeFeatureDetectionDeployer(
+                disableWebSocket: false,
                 Helpers.GetOutOfProcessTestSitesPath(),
                 _isWebsocketsSupported);
         }
 
-        private async Task UpgradeFeatureDetectionDeployer(string configPath, string sitePath, string expected)
+        private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string sitePath, string expected)
         {
-            var testName = $"HelloWorld";
-            using (StartLog(out var loggerFactory, testName))
+            var deploymentParameters = new DeploymentParameters(sitePath, ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                var logger = loggerFactory.CreateLogger("HelloWorldTest");
+                TargetFramework = Tfm.NetCoreApp22,
+                ApplicationType = ApplicationType.Portable,
+                AncmVersion = AncmVersion.AspNetCoreModuleV2
+            };
 
-                var deploymentParameters = new DeploymentParameters(sitePath, ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
-                {
-                    EnvironmentName = "UpgradeFeatureDetection", // Will pick the Start class named 'StartupHelloWorld',
-                    ServerConfigTemplateContent = File.ReadAllText(configPath),
-                    SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = Tfm.NetCoreApp22,
-                    ApplicationType = ApplicationType.Portable,
-                    AncmVersion = AncmVersion.AspNetCoreModuleV2
-                };
-
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
-                {
-                    var deploymentResult = await deployer.DeployAsync();
-                    deploymentResult.HttpClient.Timeout = TimeSpan.FromSeconds(5);
-                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = await RetryHelper.RetryRequest(() =>
-                    {
-                        return deploymentResult.HttpClient.GetAsync("UpgradeFeatureDetection");
-                    }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
-
-                    var responseText = await response.Content.ReadAsStringAsync();
-                    try
-                    {
-                        Assert.Equal(expected, responseText);
-                    }
-                    catch (XunitException)
-                    {
-                        logger.LogWarning(response.ToString());
-                        logger.LogWarning(responseText);
-                        throw;
-                    }
-                }
+            if (disableWebSocket)
+            {
+                deploymentParameters.ServerConfigTemplateContent = GetServerConfig(
+                    element => element.Descendants("webSocket")
+                        .Single()
+                        .SetAttributeValue("enabled", "false"));
             }
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.RetryingHttpClient.GetAsync("UpgradeFeatureDetection");
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expected, responseText);
         }
     }
 }
