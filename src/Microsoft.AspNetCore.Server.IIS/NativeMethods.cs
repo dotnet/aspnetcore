@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         private const string KERNEL32 = "kernel32.dll";
 
-        private const string AspNetCoreModuleDll = "aspnetcorerh.dll";
+        private const string AspNetCoreModuleDll = "aspnetcorev2_inprocess.dll";
 
         [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
 

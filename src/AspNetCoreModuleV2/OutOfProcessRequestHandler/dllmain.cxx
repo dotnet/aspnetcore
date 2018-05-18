@@ -294,41 +294,24 @@ CreateApplication(
         return hr;
     }
 
-    if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+    hr = EnsureOutOfProcessInitializtion();
+    if (FAILED(hr))
     {
-        pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig);
-        if (pApplication == NULL)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
-            goto Finished;
-        }
+        goto Finished;
     }
-    else if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
+
+    pApplication = new OUT_OF_PROCESS_APPLICATION(pConfig);
+    if (pApplication == NULL)
     {
-        hr = EnsureOutOfProcessInitializtion();
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        pApplication = new OUT_OF_PROCESS_APPLICATION(pConfig);
-        if (pApplication == NULL)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
-            goto Finished;
-        }
-
-        hr = ((OUT_OF_PROCESS_APPLICATION*)pApplication)->Initialize();
-        if (FAILED(hr))
-        {
-            delete pApplication;
-            pApplication = NULL;
-            goto Finished;
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
+        goto Finished;
     }
-    else
+
+    hr = ((OUT_OF_PROCESS_APPLICATION*)pApplication)->Initialize();
+    if (FAILED(hr))
     {
-        hr = HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+        delete pApplication;
+        pApplication = NULL;
         goto Finished;
     }
 

@@ -21,8 +21,10 @@
   <files>
     <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\Win32\aspnetcorev2.dll" target="contentFiles\any\any\x86\aspnetcorev2.dll" />
     <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\x64\aspnetcorev2.dll" target="contentFiles\any\any\x64\aspnetcorev2.dll" />
-    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\Win32\aspnetcorerh.dll" target="contentFiles\any\any\x86\aspnetcorerh.dll" />
-    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\x64\aspnetcorerh.dll" target="contentFiles\any\any\x64\aspnetcorerh.dll" />
+    <file src="src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$Configuration$\Win32\aspnetcorev2_outofprocess.dll" target="contentFiles\any\any\x86\aspnetcorev2_outofprocess.dll" />
+    <file src="src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$Configuration$\x64\aspnetcorev2_outofprocess.dll" target="contentFiles\any\any\x64\aspnetcorev2_outofprocess.dll" />
+    <file src="src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$Configuration$\Win32\aspnetcorev2_inprocess.dll" target="contentFiles\any\any\x86\aspnetcorev2_inprocess.dll" />
+    <file src="src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$Configuration$\x64\aspnetcorev2_inprocess.dll" target="contentFiles\any\any\x64\aspnetcorev2_inprocess.dll" />
     <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\x64\*.xml"/>
     <file src="tools\installancm.ps1"/>
     <file src="LICENSE.txt"/>

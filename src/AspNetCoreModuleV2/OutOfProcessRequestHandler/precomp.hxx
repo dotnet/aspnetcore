@@ -62,11 +62,9 @@
 #include "aspnetcore_event.h"
 #include "aspnetcore_msg.h"
 #include "disconnectcontext.h"
+#include "requesthandler_config.h"
 
 #include "sttimer.h"
-#include ".\requesthandler_config.h"
-#include ".\inprocess\InProcessHandler.h"
-#include ".\inprocess\inprocessapplication.h"
 #include ".\outofprocess\websockethandler.h"
 #include ".\outofprocess\responseheaderhash.h"
 #include ".\outofprocess\protocolconfig.h"
@@ -76,7 +74,6 @@
 #include ".\outofprocess\forwardinghandler.h"
 #include ".\outofprocess\outprocessapplication.h"
 #include ".\outofprocess\winhttphelper.h"
-#include ".\outofprocess\outprocessapplication.h"
 
 #include "environmentvariablehelpers.h"
 

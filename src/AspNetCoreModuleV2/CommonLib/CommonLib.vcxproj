@@ -181,6 +181,7 @@
     <ClInclude Include="environmentvariablehash.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="requesthandler.h" />
+    <ClInclude Include="requesthandler_config.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="SRWLockWrapper.h" />
     <ClInclude Include="stdafx.h" />
@@ -189,6 +190,7 @@
   <ItemGroup>
     <ClCompile Include="fx_ver.cxx" />
     <ClCompile Include="hostfxr_utility.cpp" />
+    <ClCompile Include="requesthandler_config.cpp" />
     <ClCompile Include="SRWLockWrapper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

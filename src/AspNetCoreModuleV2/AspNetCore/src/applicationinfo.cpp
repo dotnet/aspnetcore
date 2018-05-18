@@ -365,7 +365,7 @@ APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
         else if ((dwReturnedSize == dwSize) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
         {
             dwSize *= 2; // smaller buffer. increase the buffer and retry
-            if (FAILED(hr = struFilename->Resize(dwSize + 20))) // + 20 for aspnetcorerh.dll
+            if (FAILED(hr = struFilename->Resize(dwSize + 40))) // + 40 for aspnetcorerh.dll
             {
                 goto Finished;
             }
@@ -385,7 +385,7 @@ APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
 
     if (FAILED(hr = struFilename->SyncWithBuffer()) ||
         FAILED(hr = struFilename->Append(L"\\")) ||
-        FAILED(hr = struFilename->Append(g_pwzAspnetcoreRequestHandlerName)))
+        FAILED(hr = struFilename->Append(g_pwzAspnetcoreOutOfProcessRequestHandlerName)))
     {
         goto Finished;
     }
@@ -498,7 +498,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
             }
         }
 
-        if (FAILED(hr = struNativeDllLocation.Append(g_pwzAspnetcoreRequestHandlerName)))
+        if (FAILED(hr = struNativeDllLocation.Append(g_pwzAspnetcoreInProcessRequestHandlerName)))
         {
             goto Finished;
         }

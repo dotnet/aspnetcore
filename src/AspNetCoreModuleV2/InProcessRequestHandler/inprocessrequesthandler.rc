@@ -78,9 +78,9 @@ BEGIN
             VALUE "CompanyName", "Microsoft"
             VALUE "FileDescription", FileDescription
             VALUE "FileVersion", FileVersionStr
-            VALUE "InternalName", "aspnetcorerh.dll"
+            VALUE "InternalName", "aspnetcorev2_inprocess.dll"
             VALUE "LegalCopyright", "Copyright (C) Microsoft Corporation"
-            VALUE "OriginalFilename", "aspnetcorerh.dll"
+            VALUE "OriginalFilename", "aspnetcorev2_inprocess.dll"
             VALUE "ProductName", "ASP.NET Core Module Request Handler"
             VALUE "ProductVersion", ProductVersionStr
         END

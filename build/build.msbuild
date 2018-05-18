@@ -5,7 +5,8 @@
    <ItemGroup> 
      <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" /> 
      <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" /> 
-     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\RequestHandler\RequestHandler.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" /> 
      <Projects Include="$(SolutionDir)\test\CommonLibTests\CommonLibTests.vcxproj">
    </ItemGroup> 
  

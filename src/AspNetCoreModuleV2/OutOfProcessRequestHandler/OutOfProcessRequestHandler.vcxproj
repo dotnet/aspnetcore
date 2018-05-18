@@ -21,11 +21,11 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{D57EA297-6DC2-4BC0-8C91-334863327863}</ProjectGuid>
+    <ProjectGuid>{7F87406C-A3C8-4139-A68D-E4C344294A67}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>RequestHandler</RootNamespace>
+    <RootNamespace>OutOfProcessRequestHandler</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
-    <ProjectName>RequestHandler</ProjectName>
+    <ProjectName>OutOfProcessRequestHandler</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -73,7 +73,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName>aspnetcorerh</TargetName>
+    <TargetName>aspnetcorev2_outofprocess</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -209,7 +209,6 @@
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="environmentvariablehelpers.h" />
-    <ClInclude Include="requesthandler_config.h" />
     <ClInclude Include="sttimer.h" />
     <ClInclude Include="outofprocess\forwarderconnection.h" />
     <ClInclude Include="outofprocess\processmanager.h" />
@@ -219,18 +218,13 @@
     <ClInclude Include="outofprocess\websockethandler.h" />
     <ClInclude Include="outofprocess\winhttphelper.h" />
     <ClInclude Include="precomp.hxx" />
-    <ClInclude Include=".\inprocess\inprocessapplication.h" />
-    <ClInclude Include=".\inprocess\inprocesshandler.h" />
     <ClInclude Include=".\outofprocess\forwardinghandler.h" />
     <ClInclude Include=".\outofprocess\outprocessapplication.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cxx" />
-    <ClCompile Include=".\inprocess\inprocessapplication.cpp" />
-    <ClCompile Include=".\inprocess\inprocesshandler.cpp" />
     <ClCompile Include=".\outofprocess\forwardinghandler.cpp" />
     <ClCompile Include=".\outofprocess\outprocessapplication.cpp" />
-    <ClCompile Include="managedexports.cxx" />
     <ClCompile Include="outofprocess\forwarderconnection.cxx" />
     <ClCompile Include="outofprocess\processmanager.cxx" />
     <ClCompile Include="outofprocess\protocolconfig.cxx" />
@@ -238,7 +232,6 @@
     <ClCompile Include="outofprocess\serverprocess.cxx" />
     <ClCompile Include="outofprocess\websockethandler.cxx" />
     <ClCompile Include="outofprocess\winhttphelper.cxx" />
-    <ClCompile Include="requesthandler_config.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
@@ -249,7 +242,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="requesthandler.rc" />
+    <ResourceCompile Include="outofprocessrequesthandler.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def" />

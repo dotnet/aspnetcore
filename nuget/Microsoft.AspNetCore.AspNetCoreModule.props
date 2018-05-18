@@ -3,8 +3,10 @@
   <PropertyGroup>
     <AspNetCoreModuleX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcore.dll</AspNetCoreModuleX64Location>
     <AspNetCoreModuleX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcore.dll</AspNetCoreModuleX86Location>
-    <RequestHandlerX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcorerh.dll</RequestHandlerX64Location>
-    <RequestHandlerX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcorerh.dll</RequestHandlerX86Location>
+    <InProcessRequestHandlerX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcorev2_inprocess.dll</InProcessRequestHandlerX64Location>
+    <InProcessRequestHandlerX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcorev2_inprocess.dll</RequestHandlerX86Location>
+    <OutOfProcessRequestHandlerX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcorev2_outofprocess.dll</OutOfProcessRequestHandlerX64Location>
+    <OutOfProcessRequestHandlerX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcorev2_outofprocess.dll</OutOfProcessRequestHandlerX86Location>
   </PropertyGroup>
 
 </Project>

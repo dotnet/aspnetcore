@@ -1,11 +1,48 @@
 <Project>
 
   <PropertyGroup>
+    <PrepareDependsOn>InitializeComponents;$(PrepareDependsOn)</PrepareDependsOn>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
-    <TestDependsOn>RunNativeTest;$(TestDependsOn)</TestDependsOn>
+    <TestDependsOn>$(TestDependsOn);RunNativeTest</TestDependsOn>
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
+    <SourceBase>$(RepositoryRoot)src\</SourceBase>
+    <NativeOutput>bin\$(Configuration)\</NativeOutput>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Platforms Include="x86" VCPlatform="Win32" />
+    <Platforms Include="x64" VCPlatform="x64" />
+
+    <NativeProjects
+        Include="$(SourceBase)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj"
+        NativeAsset="aspnetcore"
+        BaseOutputPath="AspNetCoreModuleV1" />
+
+    <NativeProjects
+        Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"
+        NativeAsset="aspnetcorev2"
+        BaseOutputPath="AspNetCoreModuleV2" />
+
+    <NativeProjects
+        Include="$(SourceBase)AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj"
+        NativeAsset="aspnetcorev2_inprocess"
+        BaseOutputPath="AspNetCoreModuleV2" />
+
+    <NativeProjects
+        Include="$(SourceBase)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
+        NativeAsset="aspnetcorev2_outofprocess"
+        BaseOutputPath="AspNetCoreModuleV2" />
+  </ItemGroup>
+
+  <Target Name="InitializeComponents">
+    <ItemGroup>
+      <Components
+          Include="@(NativeProjects)"
+          Platform="%(Platforms.Identity)"
+          VCPlatform="%(Platforms.VCPlatform)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="BuildNativeAssets" DependsOnTargets="Prepare;GetToolsets" >
     <PropertyGroup>
@@ -13,20 +50,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Platforms Include="Win32;x64" />
+      <ANCMProject Include="%(Components.Identity) $(BuildArgs) -p:Platform=%(Components.VCPlatform) -bl:$(LogOutputDir)native.%(Components.VCPlatform)%(Components.FileName).binlog"/>
     </ItemGroup>
 
     <Error
       Text="Could not find an installation of Visual Studio with the C++ development tools."
       Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
 
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
-      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
-      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\RequestHandler.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
-      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; %(ANCMProject.Identity)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
@@ -54,12 +85,8 @@
     </ArtifactInfo>
 
     <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
-    <FilesToSign Include="AspNetCoreModuleV1/x64/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV1/x86/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x64/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x86/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x64/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x86/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+
+    <FilesToSign Include="%(Components.BaseOutputPath)/%(Components.Platform)/%(Components.NativeAsset).dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <Target Name="PackageNativeProjects">
@@ -76,24 +103,13 @@
       BasePath="$(RepositoryRoot)" />
 
     <ItemGroup>
-      <!-- x64 -->
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" Link="AspNetCoreModuleV1\x64\aspnetcore.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb" Link="AspNetCoreModuleV1\x64\aspnetcore.pdb" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" Link="AspNetCoreModuleV2\x64\aspnetcorev2.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" Link="AspNetCoreModuleV2\x64\aspnetcorev2.pdb" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" Link="AspNetCoreModuleV2\x64\aspnetcorerh.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.pdb" Link="AspNetCoreModuleV2\x64\aspnetcorerh.pdb" />
-      <!-- x86 -->
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" Link="AspNetCoreModuleV1\x86\aspnetcore.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="AspNetCoreModuleV1\x86\aspnetcore.pdb" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcorev2.dll" Link="AspNetCoreModuleV2\x86\aspnetcorev2.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcorev2.pdb" Link="AspNetCoreModuleV2\x86\aspnetcorev2.pdb" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" Link="AspNetCoreModuleV2\x86\aspnetcorerh.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.pdb" Link="AspNetCoreModuleV2\x86\aspnetcorerh.pdb" />
+      <AncmFiles Include="%(Components.RootDir)%(Components.Directory)$(NativeOutput)%(Components.VCPlatform)\%(Components.NativeAsset).dll" Link="%(Components.BaseOutputPath)\%(Components.Platform)\%(Components.NativeAsset).dll" />
+      <AncmFiles Include="%(Components.RootDir)%(Components.Directory)$(NativeOutput)%(Components.VCPlatform)\%(Components.NativeAsset).pdb" Link="%(Components.BaseOutputPath)\%(Components.Platform)\%(Components.NativeAsset).pdb" />
+
       <!-- Schema-->
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore_schema.xml" Link="AspNetCoreModuleV1\aspnetcore_schema.xml" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcore_schema_v2.xml" Link="AspNetCoreModuleV2\aspnetcore_schema_v2.xml" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
+      <AncmFiles Include="$(SourceBase)AspNetCoreModuleV1\AspNetCore\aspnetcore_schema.xml" Link="AspNetCoreModuleV1\aspnetcore_schema.xml" />
+      <AncmFiles Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" Link="AspNetCoreModuleV2\aspnetcore_schema_v2.xml" />
+      <AncmFiles Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
     </ItemGroup>
 
     <ZipArchive File="$(AncmZipOutputPath)"
@@ -103,11 +119,7 @@
   </Target>
 
   <Target Name="RunNativeTest" DependsOnTargets="GetToolsets">
-    <ItemGroup>
-      <Platforms Include="Win32;x64" />
-    </ItemGroup>
-
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.Identity)"
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.VCPlatform)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 </Project>
