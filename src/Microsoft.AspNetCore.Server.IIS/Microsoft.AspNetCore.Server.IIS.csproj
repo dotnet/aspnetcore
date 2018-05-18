@@ -4,18 +4,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
-    <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackNativeAssets Condition="'$(OS)' == 'Windows_NT'">true</PackNativeAssets>
   </PropertyGroup>
-
-  <ItemGroup>
-    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/netstandard2.0/Microsoft.AspNetCore.Server.IIS.dll" Certificate="Microsoft" />
-    <SignedPackageFile Include="aspnetcorerh_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
-    <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.HttpSys.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreHttpSysSourcesPackageVersion)" />
@@ -30,6 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/netstandard2.0/Microsoft.AspNetCore.Server.IIS.dll" Certificate="Microsoft" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(PackNativeAssets) == 'true'">
+    <SignedPackageFile Include="aspnetcorerh_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
+    <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
+
     <Content Include="..\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" />
     <Content Include="..\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" />
   </ItemGroup>
