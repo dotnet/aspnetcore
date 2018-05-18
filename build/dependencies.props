@@ -5,6 +5,7 @@
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>2.2.0-a-preview1-aan-16524</InternalAspNetCoreAnalyzersPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17051</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftAspNetCoreAntiforgeryPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreAntiforgeryPackageVersion>

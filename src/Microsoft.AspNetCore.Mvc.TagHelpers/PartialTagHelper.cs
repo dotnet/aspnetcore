@@ -32,7 +32,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         public PartialTagHelper(
             ICompositeViewEngine viewEngine,
-            IViewBufferScope viewBufferScope)
+#pragma warning disable PUB0001 // Pubternal type in public API
+            IViewBufferScope viewBufferScope
+#pragma warning restore PUB0001
+            )
         {
             _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
             _viewBufferScope = viewBufferScope ?? throw new ArgumentNullException(nameof(viewBufferScope));

@@ -204,7 +204,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         protected JavaScriptEncoder JavaScriptEncoder { get; }
 
         // Internal for ease of use when testing.
+#pragma warning disable PUB0001 // Pubternal type in public API
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
+#pragma warning restore PUB0001
 
         // Shared writer for determining the string content of a TagHelperAttribute's Value.
         private StringWriter StringWriter

@@ -43,7 +43,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="factory">The factory containing the private <see cref="IMemoryCache"/> instance
         /// used by the <see cref="CacheTagHelper"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
-        public CacheTagHelper(CacheTagHelperMemoryCacheFactory factory, HtmlEncoder htmlEncoder) : base(htmlEncoder)
+        public CacheTagHelper(
+#pragma warning disable PUB0001 // Pubternal type in public API
+            CacheTagHelperMemoryCacheFactory factory,
+#pragma warning restore PUB0001
+            HtmlEncoder htmlEncoder)
+            : base(htmlEncoder)
         {
             MemoryCache = factory.Cache;
         }

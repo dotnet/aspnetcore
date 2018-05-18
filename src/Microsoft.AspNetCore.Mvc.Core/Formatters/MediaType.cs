@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     throw new ArgumentException(Resources.FormatArgument_InvalidOffsetLength(nameof(offset), nameof(length)));
                 }
             }
-            
+
             _parameterParser = default(MediaTypeParameterParser);
 
             var typeLength = GetTypeLength(mediaType, offset, out var type);
@@ -393,7 +393,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="mediaType">The media type to parse.</param>
         /// <param name="start">The position at which the parsing starts.</param>
         /// <returns>The parsed media type with its associated quality.</returns>
+#pragma warning disable PUB0001 // Pubternal type in public API
         public static MediaTypeSegmentWithQuality CreateMediaTypeSegmentWithQuality(string mediaType, int start)
+#pragma warning restore PUB0001
         {
             var parsedMediaType = new MediaType(mediaType, start, length: null);
 

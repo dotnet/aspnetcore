@@ -26,7 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public ValidationVisitor(
             ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
+#pragma warning disable PUB0001 // Pubternal type in public API
             ValidatorCache validatorCache,
+#pragma warning restore PUB0001
             IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState)
         {
@@ -58,11 +60,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         protected IModelValidatorProvider ValidatorProvider { get; }
         protected IModelMetadataProvider MetadataProvider { get; }
+#pragma warning disable PUB0001 // Pubternal type in public API
         protected ValidatorCache Cache { get; }
+#pragma warning restore PUB0001
         protected ActionContext Context { get; }
         protected ModelStateDictionary ModelState { get; }
         protected ValidationStateDictionary ValidationState { get; }
+#pragma warning disable PUB0001 // Pubternal type in public API
         protected ValidationStack CurrentPath { get; }
+#pragma warning restore PUB0001
 
         protected object Container { get; set; }
         protected string Key { get; set; }

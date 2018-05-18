@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Creates a new <see cref="RouteValueProvider"/>. 
+        /// Creates a new <see cref="RouteValueProvider"/>.
         /// </summary>
         /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
         /// <param name="values">The values.</param>
@@ -57,7 +57,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Culture = culture;
         }
 
+#pragma warning disable PUB0001 // Pubternal type in public API
         protected PrefixContainer PrefixContainer
+#pragma warning restore PUB0001
         {
             get
             {
