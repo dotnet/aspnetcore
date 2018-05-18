@@ -36,6 +36,20 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 // Start timer
                 StartTimer();
 
+                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr
+                        && DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
+                {
+                    // Publish is required to rebuild for the right bitness
+                    DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                }
+
+                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
+                        && DeploymentParameters.ApplicationType == ApplicationType.Standalone)
+                {
+                    // Publish is required to get the correct files in the output directory
+                    DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                }
+
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     DotnetPublish();
@@ -65,37 +79,42 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             using (Logger.BeginScope("StartSelfHost"))
             {
-                string executableName;
-                string executableArgs = string.Empty;
-                string workingDirectory = string.Empty;
+                var executableName = string.Empty;
+                var executableArgs = string.Empty;
+                var workingDirectory = string.Empty;
+                var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll"
+                    : (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "");
+
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     workingDirectory = DeploymentParameters.PublishedApplicationRootPath;
-                    var executableExtension =
-                        DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" :
-                        DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : "";
-                    var executable = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, DeploymentParameters.ApplicationName + executableExtension);
-
-                    if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr && DeploymentParameters.ApplicationType == ApplicationType.Portable)
-                    {
-                        executableName = "dotnet";
-                        executableArgs = executable;
-                    }
-                    else
-                    {
-                        executableName = executable;
-                    }
                 }
                 else
                 {
-                    workingDirectory = DeploymentParameters.ApplicationPath;
-                    var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? Tfm.Net461 : Tfm.NetCoreApp22);
-                    executableName = DotnetCommandName;
-                    executableArgs = $"run --no-build -c {DeploymentParameters.Configuration} --framework {targetFramework} {DotnetArgumentSeparator}";
+                    // Core+Standalone always publishes. This must be Clr+Standalone or Core+Portable.
+                    // Run from the pre-built bin/{config}/{tfm} directory.
+                    var targetFramework = DeploymentParameters.TargetFramework
+                        ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? Tfm.Net461 : Tfm.NetCoreApp22);
+                    workingDirectory = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.Configuration, targetFramework);
+                    // CurrentDirectory will point to bin/{config}/{tfm}, but the config and static files aren't copied, point to the app base instead.
+                    DeploymentParameters.EnvironmentVariables["ASPNETCORE_CONTENTROOT"] = DeploymentParameters.ApplicationPath;
                 }
 
-                executableArgs += $" --urls {hintUrl} "
-                + $" --server {(DeploymentParameters.ServerType == ServerType.HttpSys ? "Microsoft.AspNetCore.Server.HttpSys" : "Microsoft.AspNetCore.Server.Kestrel")}";
+                var executable = Path.Combine(workingDirectory, DeploymentParameters.ApplicationName + executableExtension);
+
+                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr && DeploymentParameters.ApplicationType == ApplicationType.Portable)
+                {
+                    executableName = GetDotNetExeForArchitecture();
+                    executableArgs = executable;
+                }
+                else
+                {
+                    executableName = executable;
+                }
+
+                var server = DeploymentParameters.ServerType == ServerType.HttpSys
+                    ? "Microsoft.AspNetCore.Server.HttpSys" : "Microsoft.AspNetCore.Server.Kestrel";
+                executableArgs += $" --urls {hintUrl} --server {server}";
 
                 Logger.LogInformation($"Executing {executableName} {executableArgs}");
 
@@ -173,6 +192,22 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token);
             }
+        }
+
+        private string GetDotNetExeForArchitecture()
+        {
+            var executableName = DotnetCommandName;
+            // We expect x64 dotnet.exe to be on the path but we have to go searching for the x86 version.
+            if (DotNetCommands.IsRunningX86OnX64(DeploymentParameters.RuntimeArchitecture))
+            {
+                executableName = DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture);
+                if (!File.Exists(executableName))
+                {
+                    throw new Exception($"Unable to find '{executableName}'.'");
+                }
+            }
+
+            return executableName;
         }
 
         public override void Dispose()

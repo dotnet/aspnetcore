@@ -35,6 +35,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 var redirectUri = TestUriHelper.BuildTestUri(ServerType.Nginx);
 
+                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
+                        && DeploymentParameters.ApplicationType == ApplicationType.Standalone)
+                {
+                    // Publish is required to get the correct files in the output directory
+                    DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                }
+
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     DotnetPublish();

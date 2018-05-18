@@ -65,11 +65,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", applicationPath));
             }
 
-            if (runtimeArchitecture == RuntimeArchitecture.x86 && runtimeFlavor == RuntimeFlavor.CoreClr)
-            {
-                throw new NotSupportedException("32 bit deployment is not yet supported for CoreCLR. Don't remove the tests, just disable them for now.");
-            }
-
             ApplicationPath = applicationPath;
             ApplicationName = new DirectoryInfo(ApplicationPath).Name;
             ServerType = serverType;

@@ -246,9 +246,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             foreach (var arch in Architectures)
             {
+                if (!IsArchitectureSupportedOnServer(arch, server))
+                {
+                    continue;
+                }
+                var archSkip = skip ?? SkipIfArchitectureNotSupportedOnCurrentSystem(arch);
+
                 if (server == ServerType.IISExpress)
                 {
-                    VaryByAncmVersion(variants, server, tfm, type, arch, skip);
+                    VaryByAncmVersion(variants, server, tfm, type, arch, archSkip);
                 }
                 else
                 {
@@ -258,10 +264,29 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         Tfm = tfm,
                         ApplicationType = type,
                         Architecture = arch,
-                        Skip = skip,
+                        Skip = archSkip,
                     });
                 }
             }
+        }
+
+        private string SkipIfArchitectureNotSupportedOnCurrentSystem(RuntimeArchitecture arch)
+        {
+            if (arch == RuntimeArchitecture.x64)
+            {
+                // Can't run x64 on a x86 OS.
+                return (RuntimeInformation.OSArchitecture == Architecture.Arm || RuntimeInformation.OSArchitecture == Architecture.X86)
+                    ? $"Cannot run {arch} on your current system." : null;
+            }
+
+            // No x86 runtimes available on MacOS or Linux.
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? null : $"No {arch} available for non-Windows systems.";
+        }
+
+        private bool IsArchitectureSupportedOnServer(RuntimeArchitecture arch, ServerType server)
+        {
+            // No x86 Mac/Linux runtime, don't generate a test variation that will always be skipped.
+            return !(arch == RuntimeArchitecture.x86 && ServerType.Nginx == server);
         }
 
         private void VaryByAncmVersion(IList<TestVariant> variants, ServerType server, string tfm, ApplicationType type, RuntimeArchitecture arch, string skip)

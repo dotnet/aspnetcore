@@ -21,7 +21,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public override string ToString()
         {
             // For debug and test explorer view
-            return $"Server: {Server}, TFM: {Tfm}, Type: {ApplicationType}, Host: {HostingModel}, ANCM: {AncmVersion}, Arch: {Architecture}";
+            var description = $"Server: {Server}, TFM: {Tfm}, Type: {ApplicationType}, Arch: {Architecture}";
+            if (Server == ServerType.IISExpress)
+            {
+                var version = AncmVersion == AncmVersion.AspNetCoreModule ? "V1" : "V2";
+                description += $", ANCM: {version}, Host: {HostingModel}";
+            }
+            return description;
         }
 
         public void Serialize(IXunitSerializationInfo info)

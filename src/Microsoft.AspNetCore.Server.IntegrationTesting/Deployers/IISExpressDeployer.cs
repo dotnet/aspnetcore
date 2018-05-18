@@ -35,14 +35,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
         }
 
-        public bool Is64BitHost
-        {
-            get
-            {
-                return Environment.Is64BitOperatingSystem;
-            }
-        }
-
         public override async Task<DeploymentResult> DeployAsync()
         {
             using (Logger.BeginScope("Deployment"))
@@ -128,6 +120,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
                     
                     ModifyHandlerSectionInWebConfig(key: "modules", value: DeploymentParameters.AncmVersion.ToString());
+                    ModifyDotNetExePathInWebConfig();
 
                     var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigLocation) ?
                                     string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, contentRoot) :
@@ -228,7 +221,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             if (serverConfig.Contains(replaceFlag))
             {
-                var ancmFile = Path.Combine(contentRoot, Is64BitHost ? $@"x64\{dllName}" : $@"x86\{dllName}");
+                var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{dllName}" : $@"x86\{dllName}";
+                var ancmFile = Path.Combine(contentRoot, arch);
                 if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
                 {
                     ancmFile = Path.Combine(contentRoot, dllName);
@@ -246,8 +240,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private string GetIISExpressPath()
         {
+            var programFiles = "Program Files";
+            if (DotNetCommands.IsRunningX86OnX64(DeploymentParameters.RuntimeArchitecture))
+            {
+                programFiles = "Program Files (x86)";
+            }
+
             // Get path to program files
-            var iisExpressPath = Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + "\\", "Program Files", "IIS Express", "iisexpress.exe");
+            var iisExpressPath = Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + "\\", programFiles, "IIS Express", "iisexpress.exe");
 
             if (!File.Exists(iisExpressPath))
             {
@@ -297,8 +297,24 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        // Transforms the web.config file to include the hostingModel="inprocess" element
-        // and adds the server type = Microsoft.AspNetServer.IIS such that Kestrel isn't added again in ServerTests
+        private void ModifyDotNetExePathInWebConfig()
+        {
+            // We assume the x64 dotnet.exe is on the path so we need to provide an absolute path for x86 scenarios.
+            // Only do it for scenarios that rely on dotnet.exe (Core, portable, etc.).
+            if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
+                && DeploymentParameters.ApplicationType == ApplicationType.Portable
+                && DotNetCommands.IsRunningX86OnX64(DeploymentParameters.RuntimeArchitecture))
+            {
+                var executableName = DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture);
+                if (!File.Exists(executableName))
+                {
+                    throw new Exception($"Unable to find '{executableName}'.'");
+                }
+                ModifyAspNetCoreSectionInWebConfig("processPath", executableName);
+            }
+        }
+
+        // Transforms the web.config file to set attributes like hostingModel="inprocess" element
         private void ModifyAspNetCoreSectionInWebConfig(string key, string value)
         {
             var webConfigFile = $"{DeploymentParameters.PublishedApplicationRootPath}/web.config";

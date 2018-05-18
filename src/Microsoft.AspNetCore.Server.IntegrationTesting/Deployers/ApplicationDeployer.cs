@@ -47,11 +47,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 DeploymentParameters.RuntimeFlavor = GetRuntimeFlavor(DeploymentParameters.TargetFramework);
             }
 
-            if (DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86 && DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr)
-            {
-                throw new NotSupportedException("32 bit deployment is not yet supported for CoreCLR. Don't remove the tests, just disable them for now.");
-            }
-
             if (string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
             {
                 throw new ArgumentException("ApplicationPath cannot be null.");
