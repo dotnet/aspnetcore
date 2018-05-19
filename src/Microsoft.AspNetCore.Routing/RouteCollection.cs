@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Routing
 
             var url = pathData.VirtualPath;
 
-            if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
+            if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.LowercaseQueryStrings || _options.AppendTrailingSlash))
             {
                 var indexOfSeparator = url.IndexOfAny(UrlQueryDelimiters);
                 var urlWithoutQueryString = url;
@@ -154,11 +154,11 @@ namespace Microsoft.AspNetCore.Routing
                 if (_options.LowercaseUrls)
                 {
                     urlWithoutQueryString = urlWithoutQueryString.ToLowerInvariant();
+                }
 
-                    if (!string.IsNullOrEmpty(queryString))
-                    {
-                        queryString = queryString.ToLowerInvariant();
-                    }
+                if (_options.LowercaseQueryStrings)
+                {
+                    queryString = queryString.ToLowerInvariant();
                 }
 
                 if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/"))
