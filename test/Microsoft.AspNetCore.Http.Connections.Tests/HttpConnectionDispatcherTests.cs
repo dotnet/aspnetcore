@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -715,6 +716,44 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                     await strm.FlushAsync();
                     Assert.Equal("Connection ID required", Encoding.UTF8.GetString(strm.ToArray()));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        public async Task IOExceptionWhenReadingRequestReturns400Response(HttpTransportType transportType)
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = transportType;
+
+                var mockStream = new Mock<Stream>();
+                mockStream.Setup(m => m.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).Throws(new IOException());
+
+                using (var responseBody = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Request.Body = mockStream.Object;
+                    context.Response.Body = responseBody;
+
+                    var services = new ServiceCollection();
+                    services.AddSingleton<TestConnectionHandler>();
+                    services.AddOptions();
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = connection.ConnectionId;
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
+
+                    await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), c => Task.CompletedTask);
+
+                    Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 }
             }
         }
