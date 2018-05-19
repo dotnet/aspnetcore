@@ -2,19 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel.Composition;
+using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
-using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [System.Composition.Shared]
-    [ExportWorkspaceService(typeof(ProjectPathProvider), ServiceLayer.Default)]
+    [Shared]
+    [ExportWorkspaceServiceFactory(typeof(ProjectPathProvider), ServiceLayer.Default)]
     internal class DefaultProjectPathProviderFactory : IWorkspaceServiceFactory
     {
         private readonly TextBufferProjectService _projectService;
-
+        
         [ImportingConstructor]
         public DefaultProjectPathProviderFactory(TextBufferProjectService projectService)
         {
