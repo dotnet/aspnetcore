@@ -168,12 +168,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                         error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
                                         break;
                                     case ResultPropertyName:
-                                        JsonUtils.CheckRead(reader);
-
                                         hasResult = true;
 
                                         if (string.IsNullOrEmpty(invocationId))
                                         {
+                                            JsonUtils.CheckRead(reader);
+
                                             // If we don't have an invocation id then we need to store it as a JToken so we can parse it later
                                             resultToken = JToken.Load(reader);
                                         }
@@ -181,6 +181,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                         {
                                             // If we have an invocation id already we can parse the end result
                                             var returnType = binder.GetReturnType(invocationId);
+
+                                            if (!JsonUtils.ReadForType(reader, returnType))
+                                            {
+                                                throw new JsonReaderException("Unexpected end when reading JSON");
+                                            }
+
                                             result = PayloadSerializer.Deserialize(reader, returnType);
                                         }
                                         break;
@@ -599,6 +605,18 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new InvocationMessage(invocationId, target, arguments);
         }
 
+        private bool ReadArgumentAsType(JsonTextReader reader, IReadOnlyList<Type> paramTypes, int paramIndex)
+        {
+            if (paramIndex < paramTypes.Count)
+            {
+                var paramType = paramTypes[paramIndex];
+
+                return JsonUtils.ReadForType(reader, paramType);
+            }
+
+            return reader.Read();
+        }
+
         private object[] BindArguments(JsonTextReader reader, IReadOnlyList<Type> paramTypes)
         {
             object[] arguments = null;
@@ -606,7 +624,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             var argumentsCount = 0;
             var paramCount = paramTypes.Count;
 
-            while (reader.Read())
+            while (ReadArgumentAsType(reader, paramTypes, paramIndex))
             {
                 if (reader.TokenType == JsonToken.EndArray)
                 {
