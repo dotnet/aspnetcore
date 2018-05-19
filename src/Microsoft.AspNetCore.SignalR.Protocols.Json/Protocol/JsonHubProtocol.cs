@@ -209,6 +209,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     case ArgumentsPropertyName:
                                         JsonUtils.CheckRead(reader);
 
+                                        int initialDepth = reader.Depth;
                                         if (reader.TokenType != JsonToken.StartArray)
                                         {
                                             throw new InvalidDataException($"Expected '{ArgumentsPropertyName}' to be of type {JTokenType.Array}.");
@@ -231,6 +232,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                             catch (Exception ex)
                                             {
                                                 argumentBindingException = ExceptionDispatchInfo.Capture(ex);
+
+                                                // Could be at any point in argument array JSON when an error is thrown
+                                                // Read until the end of the argument JSON array
+                                                while (reader.Depth == initialDepth && reader.TokenType == JsonToken.StartArray ||
+                                                       reader.Depth > initialDepth)
+                                                {
+                                                    JsonUtils.CheckRead(reader);
+                                                }
                                             }
                                         }
                                         break;
