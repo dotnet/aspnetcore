@@ -149,9 +149,17 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 _fileTracker.Changed -= ChangeTracker_Changed;
                 _fileTracker.StopListening();
 
-                EditorTextContainer.TextChanged -= TextContainer_Changed;
-                EditorTextContainer = null;
-                EditorTextBuffer = null;
+                if (EditorTextBuffer != null)
+                {
+                    _snapshotTracker.StopTracking(EditorTextBuffer);
+                    EditorTextBuffer = null;
+                }
+
+                if (EditorTextContainer != null)
+                {
+                    EditorTextContainer.TextChanged -= TextContainer_Changed;
+                    EditorTextContainer = null;
+                }
 
                 _documentManager.RemoveDocument(this);
 

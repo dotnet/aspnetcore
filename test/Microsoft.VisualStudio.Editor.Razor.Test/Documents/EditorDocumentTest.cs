@@ -40,7 +40,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         public void EditorDocument_CreatedWhileOpened()
         {
             // Arrange & Act
-            var document = new EditorDocument(
+            using (var document = new EditorDocument(
                 DocumentManager,
                 ProjectFilePath,
                 DocumentFilePath,
@@ -50,19 +50,20 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 changedOnDisk: null,
                 changedInEditor: null,
                 opened: null,
-                closed: null);
-
-            // Assert
-            Assert.True(document.IsOpenInEditor);
-            Assert.Same(TextBuffer, document.EditorTextBuffer);
-            Assert.NotNull(document.EditorTextContainer);
+                closed: null))
+            {
+                // Assert
+                Assert.True(document.IsOpenInEditor);
+                Assert.Same(TextBuffer, document.EditorTextBuffer);
+                Assert.NotNull(document.EditorTextContainer);
+            }
         }
 
         [Fact]
         public void EditorDocument_CreatedWhileClosed()
         {
             // Arrange & Act
-            var document = new EditorDocument(
+            using (var document = new EditorDocument(
                 DocumentManager,
                 ProjectFilePath,
                 DocumentFilePath,
@@ -72,12 +73,13 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 changedOnDisk: null,
                 changedInEditor: null,
                 opened: null,
-                closed: null);
-            
-            // Assert
-            Assert.False(document.IsOpenInEditor);
-            Assert.Null(document.EditorTextBuffer);
-            Assert.Null(document.EditorTextContainer);
+                closed: null))
+            {
+                // Assert
+                Assert.False(document.IsOpenInEditor);
+                Assert.Null(document.EditorTextBuffer);
+                Assert.Null(document.EditorTextContainer);
+            }
         }
 
         private class TestSourceTextContainer : SourceTextContainer
