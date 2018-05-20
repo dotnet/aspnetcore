@@ -3,21 +3,21 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17051</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreDiagnosticsPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcTagHelpersPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreMvcTagHelpersPackageVersion>
-    <MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreWebSocketsPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreWebSocketsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17060</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcTagHelpersPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreMvcTagHelpersPackageVersion>
+    <MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreWebSocketsPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreWebSocketsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-rc1</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26509-06</MicrosoftNETCoreApp22PackageVersion>
