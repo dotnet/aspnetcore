@@ -3,17 +3,17 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17051</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34184</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.2.0-preview1-34184</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17060</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34255</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.2.0-preview1-34255</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-rc1</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26509-06</MicrosoftNETCoreApp22PackageVersion>
