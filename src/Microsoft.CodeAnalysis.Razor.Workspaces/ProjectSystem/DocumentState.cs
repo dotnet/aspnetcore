@@ -65,6 +65,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public HostWorkspaceServices Services { get; }
 
+        public GeneratedCodeContainer GeneratedCodeContainer => HostDocument.GeneratedCodeContainer;
+
         public DocumentGeneratedOutputTracker GeneratedOutput
         {
             get
