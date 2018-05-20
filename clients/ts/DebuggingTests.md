@@ -6,6 +6,14 @@ Prerequisites: NodeJS, have run `./build.cmd /t:Restore` at least once since cle
 
 All commands must be run from this directory (the `clients/ts` directory).
 
+## Building the library before running tests
+
+You need to build the libraries any time you make a change, before you can run the tests. Do this by running the following command from the `clients/ts` folder:
+
+```
+> npm run build
+```
+
 ## Running all tests
 
 ```
