@@ -182,7 +182,19 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
                 var groupedDisplayNamesAndValues = new List<KeyValuePair<EnumGroupAndName, string>>();
                 var namesAndValues = new Dictionary<string, string>();
-                var enumLocalizer = _stringLocalizerFactory?.Create(underlyingType);
+
+                IStringLocalizer enumLocalizer = null;
+                if (_localizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes)
+                {
+                    if (_stringLocalizerFactory != null && _localizationOptions.DataAnnotationLocalizerProvider != null)
+                    {
+                        enumLocalizer = _localizationOptions.DataAnnotationLocalizerProvider(underlyingType, _stringLocalizerFactory);
+                    }
+                }
+                else
+                {
+                    enumLocalizer = _stringLocalizerFactory?.Create(underlyingType);
+                }
 
                 var enumFields = Enum.GetNames(underlyingType)
                     .Select(name => underlyingType.GetField(name))

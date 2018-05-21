@@ -3,10 +3,8 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -72,21 +70,5 @@ namespace RazorWebSite
 
             app.UseMvcWithDefaultRoute();
         }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseKestrel()
-                .UseIISIntegration();
     }
 }
-

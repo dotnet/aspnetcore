@@ -659,6 +659,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
 
@@ -701,6 +702,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
@@ -742,6 +744,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
 
@@ -784,6 +787,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.

@@ -16,6 +16,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
+        private static DataAnnotationsMetadataProvider CreateDefaultDataAnnotationsProvider(IStringLocalizerFactory stringLocalizerFactory)
+        {
+            var options = Options.Create(new MvcDataAnnotationsLocalizationOptions());
+            options.Value.DataAnnotationLocalizerProvider = (modelType, localizerFactory) => localizerFactory.Create(modelType);
+
+            return new DataAnnotationsMetadataProvider(options, stringLocalizerFactory);
+        }
+
         // Creates a provider with all the defaults - includes data annotations
         public static ModelMetadataProvider CreateDefaultProvider(IStringLocalizerFactory stringLocalizerFactory = null)
         {
@@ -23,9 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
-                new DataAnnotationsMetadataProvider(
-                    Options.Create(new MvcDataAnnotationsLocalizationOptions()),
-                    stringLocalizerFactory),
+                CreateDefaultDataAnnotationsProvider(stringLocalizerFactory),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 

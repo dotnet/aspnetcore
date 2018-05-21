@@ -60,6 +60,18 @@ namespace Microsoft.AspNetCore.Mvc
         Version_2_1,
 
         /// <summary>
+        /// Sets the default value of settings on <see cref="MvcOptions"/> to match the behavior of
+        /// ASP.NET Core MVC 2.2.
+        /// </summary>
+        /// <remarks>
+        /// ASP.NET Core MVC 2.2 introduces compatibility switches for the following:
+        /// <list type="bullet">
+        ///     <item><description><c>MvcDataAnnotationsLocalizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes</c></description></item>
+        /// </list>
+        /// </remarks>
+        Version_2_2,
+
+        /// <summary>
         /// Sets the default value of settings on <see cref="MvcOptions"/> to match the latest release. Use this
         /// value with care, upgrading minor versions will cause breaking changes when using <see cref="Latest"/>.
         /// </summary>
