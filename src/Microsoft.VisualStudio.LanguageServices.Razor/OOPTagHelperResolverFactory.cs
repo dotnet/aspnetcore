@@ -16,36 +16,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            if (!IsRemoteClientWorking())
-            {
-                return new DefaultTagHelperResolver();
-            }
-
             return new OOPTagHelperResolver(
                 languageServices.WorkspaceServices.GetRequiredService<ProjectSnapshotProjectEngineFactory>(),
                 languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>(),
                 languageServices.WorkspaceServices.Workspace);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool IsRemoteClientWorking()
-        {
-            try
-            {
-                LoadType();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LoadType()
-        {
-            // During 15.8 Roslyn renamed our OOP client from RazorLangaugeServiceClient to RazorLanguageServiceClient.
-            GC.KeepAlive(typeof(RazorLangaugeServiceClient));
         }
     }
 }
