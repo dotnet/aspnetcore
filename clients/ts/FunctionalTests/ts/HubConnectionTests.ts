@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, HubConnectionBuilder, IHttpConnectionOptions, IStreamSubscriber, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
+import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, HubConnectionBuilder, IHttpConnectionOptions, IStreamSubscriber, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol } from "./Common";
@@ -546,32 +546,6 @@ describe("hubConnection", () => {
                 }
             });
 
-            it("can connect to hub with authorization using async token factory", async (done) => {
-                const message = "你好，世界！";
-
-                try {
-                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
-                        accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
-                    }).build();
-
-                    hubConnection.onclose((error) => {
-                        expect(error).toBe(undefined);
-                        done();
-                    });
-                    await hubConnection.start();
-                    const response = await hubConnection.invoke("Echo", message);
-
-                    expect(response).toEqual(message);
-
-                    await hubConnection.stop();
-
-                    done();
-                } catch (err) {
-                    fail(err);
-                    done();
-                }
-            });
-
             if (transportType !== HttpTransportType.LongPolling) {
                 it("terminates if no messages received within timeout interval", (done) => {
                     const hubConnection = getConnectionBuilder(transportType).build();
@@ -677,7 +651,16 @@ describe("hubConnection", () => {
             // Stop the connection and await the poll terminating
             const stopPromise = hubConnection.stop();
 
-            await testClient.pollPromise;
+            try {
+                await testClient.pollPromise;
+            } catch (e) {
+                if (e instanceof AbortError) {
+                    // Poll request may have been aborted
+                } else {
+                    throw e;
+                }
+            }
+
             await stopPromise;
         } catch (e) {
             fail(e);

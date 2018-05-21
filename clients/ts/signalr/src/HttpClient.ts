@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortSignal } from "./AbortController";
-import { HttpError, TimeoutError } from "./Errors";
+import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { ILogger, LogLevel } from "./ILogger";
 
 /** Represents an HTTP request. */
@@ -158,6 +158,12 @@ export class DefaultHttpClient extends HttpClient {
     /** @inheritDoc */
     public send(request: HttpRequest): Promise<HttpResponse> {
         return new Promise<HttpResponse>((resolve, reject) => {
+            // Check that abort was not signaled before calling send
+            if (request.abortSignal && request.abortSignal.aborted) {
+                reject(new AbortError());
+                return;
+            }
+
             const xhr = new XMLHttpRequest();
 
             xhr.open(request.method, request.url, true);
@@ -178,6 +184,7 @@ export class DefaultHttpClient extends HttpClient {
             if (request.abortSignal) {
                 request.abortSignal.onabort = () => {
                     xhr.abort();
+                    reject(new AbortError());
                 };
             }
 

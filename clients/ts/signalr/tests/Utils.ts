@@ -38,3 +38,26 @@ export class PromiseSource<T = void> implements Promise<T> {
         return this.promise.catch(onrejected);
     }
 }
+
+export class SyncPoint {
+    private atSyncPoint: PromiseSource;
+    private continueFromSyncPoint: PromiseSource;
+
+    constructor() {
+        this.atSyncPoint = new PromiseSource();
+        this.continueFromSyncPoint = new PromiseSource();
+    }
+
+    public waitForSyncPoint(): Promise<void> {
+        return this.atSyncPoint.promise;
+    }
+
+    public continue() {
+        this.continueFromSyncPoint.resolve();
+    }
+
+    public waitToContinue(): Promise<void> {
+        this.atSyncPoint.resolve();
+        return this.continueFromSyncPoint.promise;
+    }
+}
