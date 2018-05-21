@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         public void CreateActivator_ThrowsIfModelTypeInfoOnActionDescriptorIsNull()
         {
             // Arrange
-
             var activatorProvider = new ServiceBasedPageModelActivatorProvider();
             var descriptor = new CompiledPageActionDescriptor();
 
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             serviceProvider.Setup(s => s.GetService(typeof(DISimpleModel)))
                            .Returns(simpleModel)
                            .Verifiable();
-           
+
             var activatorProvider = new ServiceBasedPageModelActivatorProvider();
             var pageContext = new PageContext
             {
@@ -140,13 +139,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Assert
             Assert.Null(releaser);
         }
-        
+
         private class SimpleModel
         {
         }
 
         private class DISimpleModel : SimpleModel
         {
-        }       
+        }
     }
 }
