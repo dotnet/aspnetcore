@@ -7,6 +7,8 @@ simpleNode('Windows_NT','latest') {
         checkout scm
     }
     stage ('Build') {
-        bat ".\\run.cmd -CI default-build /p:Configuration=${params.Configuration}"
+        def logFolder = getLogFolder()
+        def environment = "set ASPNETCORE_TEST_LOG_DIR=${WORKSPACE}\\${logFolder}"
+        bat "${environment}&.\\run.cmd -CI default-build /p:Configuration=${params.Configuration}"
     }
 }

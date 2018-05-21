@@ -5,6 +5,8 @@ simpleNode('Ubuntu16.04', 'latest-or-auto-docker') {
         checkout scm
     }
     stage ('Build') {
-        sh "./build.sh --ci /p:Configuration=${params.Configuration}"
+        def logFolder = getLogFolder()
+        def environment = "ASPNETCORE_TEST_LOG_DIR=${WORKSPACE}/${logFolder}"
+        sh "${environment} ./build.sh --ci /p:Configuration=${params.Configuration}"
     }
 }
