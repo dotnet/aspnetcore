@@ -900,21 +900,16 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
             const hubConnection = createHubConnection(connection);
             try {
-                hubConnection.serverTimeoutInMilliseconds = 100;
+                hubConnection.serverTimeoutInMilliseconds = 200;
 
                 const p = new PromiseSource<Error>();
                 hubConnection.onclose((e) => p.resolve(e));
 
                 await hubConnection.start();
 
-                await connection.receive({ type: MessageType.Ping });
-                await delay(50);
-                await connection.receive({ type: MessageType.Ping });
-                await delay(50);
-                await connection.receive({ type: MessageType.Ping });
-                await delay(50);
-                await connection.receive({ type: MessageType.Ping });
-                await delay(50);
+                for (let i = 0; i < 6; i++) {
+                    await pingAndWait(connection);
+                }
 
                 connection.stop();
 
@@ -930,7 +925,7 @@ describe("HubConnection", () => {
             const connection = new TestConnection();
             const hubConnection = createHubConnection(connection);
             try {
-                hubConnection.serverTimeoutInMilliseconds = 100;
+                hubConnection.serverTimeoutInMilliseconds = 200;
 
                 const p = new PromiseSource<Error>();
                 hubConnection.onclose((e) => p.resolve(e));
@@ -941,12 +936,9 @@ describe("HubConnection", () => {
 
                 await hubConnection.start();
 
-                await connection.receive({ type: MessageType.Ping });
-                await delay(50);
-                await connection.receive({ type: MessageType.Ping });
-                await delay(50);
-                await connection.receive({ type: MessageType.Ping });
-                await delay(50);
+                for (let i = 0; i < 6; i++) {
+                    await pingAndWait(connection);
+                }
 
                 connection.stop();
 
@@ -978,6 +970,11 @@ describe("HubConnection", () => {
         });
     });
 });
+
+async function pingAndWait(connection: TestConnection): Promise<void> {
+    await connection.receive({ type: MessageType.Ping });
+    await delay(50);
+}
 
 class TestConnection implements IConnection {
     public readonly features: any = {};
