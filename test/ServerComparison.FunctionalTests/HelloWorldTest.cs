@@ -24,7 +24,8 @@ namespace ServerComparison.FunctionalTests
                 .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
                 .WithAllApplicationTypes()
                 .WithAllAncmVersions()
-                .WithAllHostingModels();
+                .WithAllHostingModels()
+                .WithAllArchitectures();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
@@ -56,7 +57,14 @@ namespace ServerComparison.FunctionalTests
                     var responseText = await response.Content.ReadAsStringAsync();
                     try
                     {
-                        Assert.Equal("Hello World", responseText);
+                        if (variant.Architecture == RuntimeArchitecture.x64)
+                        {
+                            Assert.Equal("Hello World X64", responseText);
+                        }
+                        else
+                        {
+                            Assert.Equal("Hello World X86", responseText);
+                        }
                     }
                     catch (XunitException)
                     {
