@@ -1,1 +1,5 @@
-{ "sdk": { "version": "2.1.300-preview2-008367" } }
+{ "sdk": { 
+"version": "2.1.300-rtm-008823" },
+"msbuild-sdks": {
+"Microsoft.DotNet.GlobalTools.Sdk": "2.1.0-rtm-15789"}
+ }

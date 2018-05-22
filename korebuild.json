@@ -1,11 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
-  "channel": "dev",
+  "channel": "release/2.1",
   "toolsets": {
     "visualstudio": {
       "required": false,
       "includePrerelease": true,
-      "minVersion": "15.0.26730.03",
+      "minVersion": "[15.0.26730.03, 15.9)",
       "requiredWorkloads": [
         "Microsoft.VisualStudio.Component.VSSDK"
       ]
