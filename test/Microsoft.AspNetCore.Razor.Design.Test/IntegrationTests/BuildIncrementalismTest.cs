@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // There is some quirkiness with MsBuild in unix where it regenerates this file
                 // even though it shouldn't. This is tracked here https://github.com/aspnet/Razor/issues/2219.
                 filesToIgnore.Add(Path.Combine(directoryPath, "SimpleMvc.TagHelpers.input.cache"));
+                filesToIgnore.Add(Path.Combine(directoryPath, "SimpleMvc.AssemblyInfo.cs"));
             }
 
             var files = Directory.GetFiles(directoryPath).Where(p => !filesToIgnore.Contains(p));
