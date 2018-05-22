@@ -368,6 +368,43 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Regression_609()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class User : BlazorComponent
+    {
+        public string Name { get; set; }
+        public Action<string> NameChanged { get; set; }
+        public bool IsActive { get; set; }
+        public Action<bool> IsActiveChanged { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<User bind-Name=""@UserName"" bind-IsActive=""@UserIsActive"" />
+
+@functions {
+    public string UserName { get; set; }
+    public bool UserIsActive { get; set; }
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         [Fact] // https://github.com/aspnet/Blazor/issues/772
         public void Regression_772()
         {
