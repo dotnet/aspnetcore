@@ -65,7 +65,7 @@
         /t:Restore;
         /v:m;
         /p:Configuration=$(Configuration);
-        /p:BuildNumber=$(VSIXBuildNumber);" />
+        /p:BuildNumber=$(BuildNumber);" />
       <MSBuildArguments Include="/p:DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
       <MSBuildArguments Include="/p:DotNetRestoreSourcePropsPath=$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''" />
     </ItemGroup>
@@ -103,7 +103,7 @@
         /p:SymbolsPublishDir=$(BuildDir);
         /p:Configuration=$(Configuration);
         /p:FeatureBranchVersionSuffix=$(FeatureBranchVersionSuffix);
-        /p:BuildNumber=$(VSIXBuildNumber);
+        /p:BuildNumber=$(BuildNumber);
         /p:LangVersion=7.1" />
     </ItemGroup>
 

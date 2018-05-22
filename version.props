@@ -8,10 +8,7 @@
     <FeatureBranchVersionPrefix Condition="'$(FeatureBranchVersionPrefix)' == ''">a-</FeatureBranchVersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-    
-    <!-- VS does not like letters in package versions -->
-    <VSIXBuildNumber Condition="'$(BuildNumber)' == 't000'">99999</VSIXBuildNumber>
-    <VSIXBuildNumber Condition="'$(VSIXBuildNumber)' == ''">$(BuildNumber)</VSIXBuildNumber>
+    <!-- VS for Mac does not like letters in package versions -->
     <AddinBuildNumber Condition="'$(BuildNumber)' == 't000'">99999</AddinBuildNumber>
     <AddinBuildNumber Condition="'$(AddinBuildNumber)' == ''">$(BuildNumber)</AddinBuildNumber>
 
