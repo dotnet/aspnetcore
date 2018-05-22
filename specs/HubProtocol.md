@@ -32,7 +32,7 @@ In the SignalR protocol, the following types of messages can be sent:
 | `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 
-After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection.
+After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection. Both the `HandshakeRequest` and `HandshakeResponse` messages must be terminated by the ASCII character `0x1E` (record separator).
 
 The `HandshakeRequest` message contains the following properties:
 
@@ -279,6 +279,8 @@ C->S: Ping
 
 In the JSON Encoding of the SignalR Protocol, each Message is represented as a single JSON object, which should be the only content of the underlying message from the Transport. All property names are case-sensitive. The underlying protocol is expected to handle encoding and decoding of the text, so the JSON string should be encoded in whatever form is expected by the underlying transport. For example, when using the ASP.NET Sockets transports, UTF-8 encoding is always used for text.
 
+All JSON messages must be terminated by the ASCII character `0x1E` (record separator).
+
 ### Invocation Message Encoding
 
 An `Invocation` message is a JSON object with the following properties:
@@ -476,8 +478,6 @@ Message headers are encoded into a JSON object, with string values, that are sto
 ### JSON Payload Encoding
 
 Items in the arguments array within the `Invocation` message type, as well as the `item` value of the `StreamItem` message and the `result` value of the `Completion` message, encode values which have meaning to each particular Binder. A general guideline for encoding/decoding these values is provided in the "Type Mapping" section at the end of this document, but Binders should provide configuration to applications to allow them to customize these mappings. These mappings need not be self-describing, because when decoding the value, the Binder is expected to know the destination type (by looking up the definition of the method indicated by the Target).
-
-JSON payloads are separated with the record separator (0x1e) to ease the parsing.
 
 ## MessagePack (MsgPack) encoding
 
