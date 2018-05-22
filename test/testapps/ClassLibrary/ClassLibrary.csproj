@@ -21,6 +21,11 @@
     <Description>ClassLibrary Description</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(RunningAsTest)' == ''">
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
   <!-- Test Placeholder -->
 
   <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />

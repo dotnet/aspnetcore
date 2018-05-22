@@ -67,6 +67,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // Disable node-reuse. We don't want msbuild processes to stick around
                 // once the test is completed.
                 "/nr:false",
+
+                // Let the test app know it is running as part of a test.
+                "/p:RunningAsTest=true",
             };
 
             if (!suppressRestore)
