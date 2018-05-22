@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             // Arrange
             var simpleModel = new DISimpleModel();
-            var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
+            var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);  
             serviceProvider.Setup(s => s.GetService(typeof(DISimpleModel)))
-                           .Returns(simpleModel)
-                           .Verifiable();
+                .Returns(simpleModel)
+                .Verifiable();                         
 
             var activatorProvider = new ServiceBasedPageModelActivatorProvider();
             var pageContext = new PageContext
@@ -62,11 +62,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         public void CreateActivator_CreatesModelInstance()
         {
             // Arrange
-            var controller = new DISimpleModel();
+            var simpleModel = new DISimpleModel();
             var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
             serviceProvider.Setup(s => s.GetService(typeof(DISimpleModel)))
-                           .Returns(controller)
-                           .Verifiable();
+                .Returns(simpleModel)
+                .Verifiable();
 
             var activatorProvider = new ServiceBasedPageModelActivatorProvider();
             var pageContext = new PageContext
@@ -86,8 +86,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var model = activator(pageContext);
 
             // Assert
-            var simpleModel = Assert.IsType<DISimpleModel>(model);
-            Assert.NotNull(simpleModel);
+            var simpleModel2 = Assert.IsType<DISimpleModel>(model);
+            Assert.NotNull(simpleModel2);
         }
 
         [Fact]

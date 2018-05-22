@@ -110,10 +110,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IActionInvokerProvider, PageActionInvokerProvider>());
 
             // Page and Page model creation and activation
-            services.TryAddSingleton<IPageModelActivatorProvider, DefaultPageModelActivatorProvider>();       
+            services.TryAddSingleton<IPageModelActivatorProvider, DefaultPageModelActivatorProvider>();
             services.TryAddSingleton<IPageModelFactoryProvider, DefaultPageModelFactoryProvider>();
-
-            services.TryAddSingleton<IPageModelActivatorProvider, ServiceBasedPageModelActivatorProvider>();          
 
             services.TryAddSingleton<IPageActivatorProvider, DefaultPageActivatorProvider>();
             services.TryAddSingleton<IPageFactoryProvider, DefaultPageFactoryProvider>();

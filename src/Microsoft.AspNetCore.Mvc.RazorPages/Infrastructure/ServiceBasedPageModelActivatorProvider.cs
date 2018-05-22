@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var modelTypeInfo = descriptor.ModelTypeInfo?.AsType();
-            if (modelTypeInfo == null)
+            var modelType = descriptor.ModelTypeInfo?.AsType();
+            if (modelType == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
                     nameof(descriptor.ModelTypeInfo),
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             return context =>
             {
-                return context.HttpContext.RequestServices.GetRequiredService(modelTypeInfo);
+                return context.HttpContext.RequestServices.GetRequiredService(modelType);
             };
         }
 
