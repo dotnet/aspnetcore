@@ -27,9 +27,8 @@ namespace FunctionalTests
         public async Task PublishingPrintsParseErrors()
         {
             // Arrange
-            var applicationPath = ApplicationPaths.GetTestAppDirectory("ApplicationWithParseErrors");
-            var indexPath = Path.Combine(applicationPath, "Views", "Home", "Index.cshtml");
-            var viewImportsPath = Path.Combine(applicationPath, "Views", "Home", "About.cshtml");
+            var indexPath = Path.Combine(Fixture.TestProjectDirectory, "Views", "Home", "Index.cshtml");
+            var viewImportsPath = Path.Combine(Fixture.TestProjectDirectory, "Views", "Home", "About.cshtml");
             var expectedErrors = new[]
             {
                 indexPath + " (0): The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" character for all the \"{\" characters within this block, and that none of the \"}\" characters are being interpreted as markup.",

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -22,7 +21,7 @@ namespace FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact(Skip = "Unblocking the build - https://github.com/aspnet/MvcPrecompilation/issues/224")]
+        [Fact]
         public async Task Precompilation_WorksForSimpleApps()
         {
             using (StartLog(out var loggerFactory))

@@ -1,5 +1,9 @@
 <Project>
-  <Import Project="..\Directory.Build.props" />
+  <PropertyGroup>
+    <SolutionDirectory Condition="'$(SolutionDirectory)'==''">$(MSBuildThisFileDirectory)..\</SolutionDirectory>
+  </PropertyGroup>
+
+  <Import Project="$(SolutionDirectory)Directory.Build.props" />
 
   <PropertyGroup>
     <DeveloperBuildTestAppTfms>netcoreapp2.2</DeveloperBuildTestAppTfms>

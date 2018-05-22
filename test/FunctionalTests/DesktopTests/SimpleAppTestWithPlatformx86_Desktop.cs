@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -13,11 +12,11 @@ namespace FunctionalTests
 {
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
-    public class PublishWithDebugTest_Desktop :
-        LoggedTest, IClassFixture<PublishWithDebugTest_Desktop.TestFixture>
+    public class SimpleAppTestWithPlatformx86_Desktop :
+        LoggedTest, IClassFixture<DesktopApplicationTestFixture<SimpleApp.Startup>>
     {
-        public PublishWithDebugTest_Desktop(
-            TestFixture fixture,
+        public SimpleAppTestWithPlatformx86_Desktop(
+            DesktopApplicationTestFixture<SimpleApp.Startup> fixture,
             ITestOutputHelper output)
             : base(output)
         {
@@ -27,32 +26,31 @@ namespace FunctionalTests
         public ApplicationTestFixture Fixture { get; }
 
         [ConditionalFact]
-        public async Task PublishingInDebugWorks()
+        public async Task Precompilation_PublishingForPlatform()
         {
             using (StartLog(out var loggerFactory))
             {
                 // Arrange
                 var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
 
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
+                    deployment.ApplicationBaseUri,
+                    loggerFactory.CreateLogger(Fixture.ApplicationName));
+
                 // Assert
-                var expected = Path.Combine(deployment.ContentRoot, $"{Fixture.ApplicationName}.PrecompiledViews.dll");
-                Assert.True(File.Exists(expected), $"File {expected} does not exist.");
+                TestEmbeddedResource.AssertContent("SimpleAppTest.Home.Index.txt", response);
             }
         }
 
-        public class TestFixture : DesktopApplicationTestFixture<SimpleApp.Startup>
+        public class SimpleAppTestWithPlatformx86_DesktopFixture : DesktopApplicationTestFixture<SimpleApp.Startup>
         {
-            public TestFixture()
-            {
-                PublishOnly = true;
-            }
-
             protected override DeploymentParameters GetDeploymentParameters()
             {
-                var deploymentParameters = base.GetDeploymentParameters();
-                deploymentParameters.Configuration = "Debug";
+                var parameters = base.GetDeploymentParameters();
+                parameters.AdditionalPublishParameters = "/p:Platform=x86";
 
-                return deploymentParameters;
+                return parameters;
             }
         }
     }
