@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace E2ETests
 {
@@ -19,9 +18,7 @@ namespace E2ETests
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
                 .WithAllApplicationTypes()
-                .WithAllArchitectures()
-                .Skip("https://github.com/aspnet/Hosting/issues/601",
-                    v => v.Tfm != Tfm.Net461 && v.Architecture == RuntimeArchitecture.x86);
+                .WithAllArchitectures();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
@@ -70,6 +67,9 @@ namespace E2ETests
 
                     logger.LogInformation("Verifying home page");
                     await validator.VerifyHomePage(response);
+
+                    logger.LogInformation("Verifying architecture");
+                    validator.VerifyArchitecture(response, deploymentResult.DeploymentParameters.RuntimeArchitecture);
 
                     logger.LogInformation("Verifying static files are served from static file middleware");
                     await validator.VerifyStaticContentServed();

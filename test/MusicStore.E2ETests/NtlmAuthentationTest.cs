@@ -18,7 +18,8 @@ namespace E2ETests
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
-                .WithAllApplicationTypes();
+                .WithAllApplicationTypes()
+                .WithAllArchitectures();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
@@ -69,6 +70,9 @@ namespace E2ETests
 
                     logger.LogInformation("Verifying home page");
                     await validator.VerifyNtlmHomePage(response);
+
+                    logger.LogInformation("Verifying architecture");
+                    validator.VerifyArchitecture(response, deploymentResult.DeploymentParameters.RuntimeArchitecture);
 
                     logger.LogInformation("Verifying access to store with permissions");
                     await validator.AccessStoreWithPermissions();
