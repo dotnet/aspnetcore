@@ -3,11 +3,13 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using BasicTestApp;
 using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -81,6 +83,54 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             app.FindElement(By.LinkText("Other")).Click();
             Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+        }
+
+        [Fact]
+        public void CanFollowLinkToOtherPageWithCtrlClick()
+        {
+            var key = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? Keys.Command : Keys.Control;
+            try
+            {
+                SetUrlViaPushState($"{ServerPathBase}/RouterTest/");
+
+                var app = MountTestComponent<TestRouter>();
+                var button = app.FindElement(By.LinkText("Other"));
+                //on mac os build we need to hold the meta button not the control for openning a popup
+              
+                new Actions(Browser)
+                    .KeyDown(Keys.Control)
+                    .Click(button)
+                    .Build()
+                    .Perform();
+
+                Assert.Equal(2, Browser.WindowHandles.Count);
+
+                //closing newly opened windows if a new one was opened
+
+                Browser.SwitchTo().Window(Browser.WindowHandles.Last());
+                Browser.Close();
+                Browser.SwitchTo().Window(Browser.WindowHandles.First());
+            }
+            finally
+            {
+                // leaving the ctrl key up 
+                new Actions(Browser)
+                    .KeyUp(key)
+                    .Build()
+                    .Perform();
+            }
+        }
+
+        [Fact]
+        public void CanFollowLinkToOtherPageDoesNotOpenNewWindow()
+        {
+            SetUrlViaPushState($"{ServerPathBase}/RouterTest/");
+
+            var app = MountTestComponent<TestRouter>();
+            
+            app.FindElement(By.LinkText("Other")).Click();
+            
+            Assert.Single(Browser.WindowHandles);
         }
 
         [Fact]
