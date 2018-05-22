@@ -155,10 +155,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 if (bindingSource == null)
                 {
                     bindingSource = InferBindingSourceForParameter(parameter);
-                    parameter.BindingInfo = new BindingInfo
-                    {
-                        BindingSource = bindingSource,
-                    };
+
+                    parameter.BindingInfo = parameter.BindingInfo ?? new BindingInfo();
+                    parameter.BindingInfo.BindingSource = bindingSource;
                 }
             }
 

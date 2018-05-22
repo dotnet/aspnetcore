@@ -173,5 +173,35 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Null(result.Name);
             Assert.Null(result.Email);
         }
+
+        [Fact]
+        public async Task ActionsWithApiBehavior_InferModelBinderType()
+        {
+            // Arrange
+            var expected = "From TestModelBinder: Hello!";
+
+            // Act
+            var response = await Client.GetAsync("/contact/ActionWithInferredModelBinderType?foo=Hello!");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task ActionsWithApiBehavior_InferModelBinderTypeWithExplicitModelName()
+        {
+            // Arrange
+            var expected = "From TestModelBinder: Hello!";
+
+            // Act
+            var response = await Client.GetAsync("/contact/ActionWithInferredModelBinderTypeWithExplicitModelName?bar=Hello!");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expected, result);
+        }
     }
 }
