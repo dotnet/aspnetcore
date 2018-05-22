@@ -7,12 +7,66 @@ using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     public class TagHelperDescriptorSerializationTest
     {
+        [Fact]
+        public void TagHelperDescriptor_CanReadCamelCasedData()
+        {
+            // Arrange
+            var expectedDescriptor = CreateTagHelperDescriptor(
+                kind: TagHelperConventions.DefaultKind,
+                tagName: "tag-name",
+                typeName: "type name",
+                assemblyName: "assembly name",
+                attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                {
+                    builder => builder
+                        .Name("test-attribute")
+                        .PropertyName("TestAttribute")
+                        .TypeName("string"),
+                },
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
+                {
+                    builder => builder
+                        .RequireAttributeDescriptor(attribute => attribute
+                            .Name("required-attribute-one")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
+                        .RequireAttributeDescriptor(attribute => attribute
+                            .Name("required-attribute-two")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("something")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch))
+                        .RequireParentTag("parent-name")
+                        .RequireTagStructure(TagStructure.WithoutEndTag),
+                },
+                configureAction: builder =>
+                {
+                    builder.AllowChildTag("allowed-child-one");
+                    builder.AddMetadata("foo", "bar");
+                });
+            var serializerSettings = new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Converters = new List<JsonConverter>
+                {
+                    TagHelperDescriptorJsonConverter.Instance,
+                    RazorDiagnosticJsonConverter.Instance,
+                }
+            };
+            var serializedDescriptor = JsonConvert.SerializeObject(expectedDescriptor, serializerSettings);
+
+            // Act
+            var descriptor = JsonConvert.DeserializeObject<TagHelperDescriptor>(serializedDescriptor, TagHelperDescriptorJsonConverter.Instance, RazorDiagnosticJsonConverter.Instance);
+
+            // Assert
+            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.Default);
+        }
+
         [Fact]
         public void TagHelperDescriptor_RoundTripsProperly()
         {
