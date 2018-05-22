@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace BasicWebSite
 {
@@ -71,6 +72,35 @@ namespace BasicWebSite
         public ActionResult<Contact> ActionWithInferredEmptyPrefix([FromQuery] Contact contact)
         {
             return contact;
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult<string> ActionWithInferredModelBinderType(
+            [ModelBinder(typeof(TestModelBinder))] string foo)
+        {
+            return foo;
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult<string> ActionWithInferredModelBinderTypeWithExplicitModelName(
+            [ModelBinder(typeof(TestModelBinder), Name = "bar")] string foo)
+        {
+            return foo;
+        }
+
+        private class TestModelBinder : IModelBinder
+        {
+            public Task BindModelAsync(ModelBindingContext bindingContext)
+            {
+                var val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
+                if (val == null)
+                {
+                    return Task.CompletedTask;
+                }
+
+                bindingContext.Result = ModelBindingResult.Success("From TestModelBinder: " + val);
+                return Task.CompletedTask;
+            }
         }
     }
 }

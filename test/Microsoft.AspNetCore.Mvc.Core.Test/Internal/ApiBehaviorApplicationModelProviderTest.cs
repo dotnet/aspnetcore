@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -457,12 +458,13 @@ Environment.NewLine + "int b";
             Assert.Equal(expected, ex.Message);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/7609")]
-        public void OnProvidersExecuting_PreservesBindingInfo_WhenInferringBindingSource()
+        [Fact]
+        public void OnProvidersExecuting_PreservesBindingInfo_WhenInferringFor_ParameterWithModelBinder_AndExplicitName()
         {
             // Arrange
-            var actionName = nameof(ParameterBindingController.ModelBinderAttribute);
-            var context = GetContext(typeof(ParameterBindingController));
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ModelBinderOnParameterController.ModelBinderAttributeWithExplicitModelName);
+            var context = GetContext(typeof(ModelBinderOnParameterController), modelMetadataProvider);
             var provider = GetProvider();
 
             // Act
@@ -477,6 +479,263 @@ Environment.NewLine + "int b";
             Assert.NotNull(bindingInfo);
             Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
             Assert.Equal("top", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_PreservesBindingInfo_WhenInferringFor_ParameterWithModelBinderType()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ModelBinderOnParameterController.ModelBinderType);
+            var context = GetContext(typeof(ModelBinderOnParameterController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
+            Assert.Null(bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_PreservesBindingInfo_WhenInferringFor_ParameterWithModelBinderType_AndExplicitModelName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ModelBinderOnParameterController.ModelBinderTypeWithExplicitModelName);
+            var context = GetContext(typeof(ModelBinderOnParameterController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
+            Assert.Equal("foo", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromQueryParameter_WithDefaultName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromQuery);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Null(bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromQueryParameter_WithCustomName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromQueryWithCustomName);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Equal("top", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromQueryParameterOnComplexType_WithDefaultName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromQueryOnComplexType);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Equal(string.Empty, bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromQueryParameterOnComplexType_WithCustomName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromQueryOnComplexTypeWithCustomName);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Equal("gps", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromRouteParameter_WithDefaultName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromRoute);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Path, bindingInfo.BindingSource);
+            Assert.Null(bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromRouteParameter_WithCustomName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromRouteWithCustomName);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Path, bindingInfo.BindingSource);
+            Assert.Equal("top", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromRouteParameterOnComplexType_WithDefaultName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromRouteOnComplexType);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Path, bindingInfo.BindingSource);
+            Assert.Equal(string.Empty, bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromRouteParameterOnComplexType_WithCustomName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromRouteOnComplexTypeWithCustomName);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Path, bindingInfo.BindingSource);
+            Assert.Equal("gps", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForParameterWithRequestPredicateAndPropertyFilterProvider()
+        {
+            // Arrange
+            var expectedPredicate = CustomRequestPredicateAndPropertyFilterProviderAttribute.RequestPredicateStatic;
+            var expectedPropertyFilter = CustomRequestPredicateAndPropertyFilterProviderAttribute.PropertyFilterStatic;
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.ParameterWithRequestPredicateProvider);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Same(expectedPredicate, bindingInfo.RequestPredicate);
+            Assert.Same(expectedPropertyFilter, bindingInfo.PropertyFilterProvider.PropertyFilter);
+            Assert.Null(bindingInfo.BinderModelName);
         }
 
         [Fact]
@@ -749,6 +1008,57 @@ Environment.NewLine + "int b";
 
             [HttpGet("parameter-with-model-binder-attribute")]
             public IActionResult ModelBinderAttribute([ModelBinder(Name = "top")] int value) => null;
+            
+            [HttpGet("parameter-with-fromquery")]
+            public IActionResult FromQuery([FromQuery] int value) => null;
+
+            [HttpGet("parameter-with-fromquery-and-customname")]
+            public IActionResult FromQueryWithCustomName([FromQuery(Name = "top")] int value) => null;
+
+            [HttpGet("parameter-with-fromquery-on-complextype")]
+            public IActionResult FromQueryOnComplexType([FromQuery] GpsCoordinates gpsCoordinates) => null;
+
+            [HttpGet("parameter-with-fromquery-on-complextype-and-customname")]
+            public IActionResult FromQueryOnComplexTypeWithCustomName([FromQuery(Name = "gps")] GpsCoordinates gpsCoordinates) => null;
+
+            [HttpGet("parameter-with-fromroute")]
+            public IActionResult FromRoute([FromRoute] int value) => null;
+
+            [HttpGet("parameter-with-fromroute-and-customname")]
+            public IActionResult FromRouteWithCustomName([FromRoute(Name = "top")] int value) => null;
+
+            [HttpGet("parameter-with-fromroute-on-complextype")]
+            public IActionResult FromRouteOnComplexType([FromRoute] GpsCoordinates gpsCoordinates) => null;
+
+            [HttpGet("parameter-with-fromroute-on-complextype-and-customname")]
+            public IActionResult FromRouteOnComplexTypeWithCustomName([FromRoute(Name = "gps")] GpsCoordinates gpsCoordinates) => null;
+
+            [HttpGet]
+            public IActionResult ParameterWithRequestPredicateProvider([CustomRequestPredicateAndPropertyFilterProvider] int value) => null;
+        }
+
+        private class CustomRequestPredicateAndPropertyFilterProviderAttribute : Attribute, IRequestPredicateProvider, IPropertyFilterProvider
+        {
+            public static Func<ActionContext, bool> RequestPredicateStatic => (c) => true;
+            public static Func<ModelMetadata, bool> PropertyFilterStatic => (c) => true;
+
+            public Func<ActionContext, bool> RequestPredicate => RequestPredicateStatic;
+
+            public Func<ModelMetadata, bool> PropertyFilter => PropertyFilterStatic;
+        }
+
+        [ApiController]
+        [Route("[controller]/[action]")]
+        private class ModelBinderOnParameterController
+        {
+            [HttpGet]
+            public IActionResult ModelBinderAttributeWithExplicitModelName([ModelBinder(Name = "top")] int value) => null;
+
+            [HttpGet]
+            public IActionResult ModelBinderType([ModelBinder(typeof(TestModelBinder))] string name) => null;
+
+            [HttpGet]
+            public IActionResult ModelBinderTypeWithExplicitModelName([ModelBinder(typeof(TestModelBinder), Name = "foo")] string name) => null;
         }
 
         [ApiController]
@@ -836,6 +1146,20 @@ Environment.NewLine + "int b";
         {
             [HttpGet("test")]
             public IActionResult Action([ModelBinder(typeof(object))] Car car) => null;
+        }
+
+        private class GpsCoordinates
+        {
+            public long Latitude { get; set; }
+            public long Longitude { get; set; }
+        }
+
+        private class TestModelBinder : IModelBinder
+        {
+            public Task BindModelAsync(ModelBindingContext bindingContext)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
