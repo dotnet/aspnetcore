@@ -4,7 +4,7 @@
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnection, HubConnectionBuilder, IHttpConnectionOptions, IStreamSubscriber, JsonHubProtocol, LogLevel } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
-import { eachTransport, eachTransportAndProtocol } from "./Common";
+import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
 
 const TESTHUBENDPOINT_URL = "/testhub";
@@ -345,7 +345,7 @@ describe("hubConnection", () => {
             });
 
             it("closed with error if hub cannot be created", (done) => {
-                const hubConnection = getConnectionBuilder(transportType, "http://" + document.location.host + "/uncreatable")
+                const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable")
                     .withHubProtocol(protocol)
                     .build();
 
@@ -496,7 +496,7 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 try {
-                    const jwtToken = await getJwtToken("http://" + document.location.host + "/generateJwtToken");
+                    const jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken");
 
                     const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
                         accessTokenFactory: () => jwtToken,
@@ -525,7 +525,7 @@ describe("hubConnection", () => {
 
                 try {
                     const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
-                        accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
+                        accessTokenFactory: () => getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken"),
                     }).build();
 
                     hubConnection.onclose((error) => {
@@ -573,6 +573,8 @@ describe("hubConnection", () => {
 
                 // Check what transport was used by asking the server to tell us.
                 expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("ServerSentEvents");
+
+                await hubConnection.stop();
                 done();
             } catch (e) {
                 fail(e);
@@ -590,6 +592,8 @@ describe("hubConnection", () => {
 
             // Check what transport was used by asking the server to tell us.
             expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
+
+            await hubConnection.stop();
             done();
         } catch (e) {
             fail(e);
@@ -614,6 +618,7 @@ describe("hubConnection", () => {
             // Make sure that we connect with SSE or LongPolling after Websockets fail
             const transportName = await hubConnection.invoke("GetActiveTransportName");
             expect(transportName === "ServerSentEvents" || transportName === "LongPolling").toBe(true);
+            await hubConnection.stop();
         } catch (e) {
             fail(e);
         } finally {
@@ -681,6 +686,8 @@ describe("hubConnection", () => {
             expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
             // Check to see that the Content-Type header is set the expected value
             expect(await hubConnection.invoke("GetContentTypeHeader")).toEqual("text/plain;charset=UTF-8");
+
+            await hubConnection.stop();
             done();
         } catch (e) {
             fail(e);

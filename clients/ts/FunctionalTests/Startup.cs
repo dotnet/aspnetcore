@@ -3,6 +3,8 @@
 
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace FunctionalTests
@@ -102,6 +106,36 @@ namespace FunctionalTests
                 {
                     await context.Response.WriteAsync(GenerateJwtToken());
                     return;
+                }
+
+                if (context.Request.Path.StartsWithSegments("/deployment"))
+                {
+                    var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
+
+                    context.Response.ContentType = "application/json";
+                    using (var textWriter = new StreamWriter(context.Response.Body))
+                    using (var writer = new JsonTextWriter(textWriter))
+                    {
+                        var json = new JObject();
+                        var commitHash = string.Empty;
+
+                        foreach (var attribute in attributes)
+                        {
+                            json.Add(attribute.Key, attribute.Value);
+
+                            if (string.Equals(attribute.Key, "CommitHash"))
+                            {
+                                commitHash = attribute.Value;
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(commitHash))
+                        {
+                            json.Add("GitHubUrl", $"https://github.com/aspnet/SignalR/commit/{commitHash}");
+                        }
+
+                        json.WriteTo(writer);
+                    }
                 }
             });
         }
