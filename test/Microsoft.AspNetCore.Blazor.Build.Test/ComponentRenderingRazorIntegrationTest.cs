@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -441,6 +441,35 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.SurveyPrompt", 2, 0),
                 frame => AssertFrame.Attribute(frame, "Title", "<div>Test!</div>", 1));
+        }
+
+
+        [Fact]
+        public void Regression_784()
+        {
+            // Arrange
+
+            // Act
+            var component = CompileToComponent(@"
+<p onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
+@functions {
+    public string ParentBgColor { get; set; } = ""#FFFFFF"";
+
+    public void OnComponentHover(UIMouseEventArgs e)
+    {
+    }
+}
+");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "p", 3, 0),
+                frame => AssertFrame.Attribute(frame, "onmouseover", 1),
+                frame => AssertFrame.Attribute(frame, "style", "background: #FFFFFF;", 2));
         }
     }
 }

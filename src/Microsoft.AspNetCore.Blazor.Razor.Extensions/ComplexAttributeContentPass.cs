@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 if (node.Children[i] is TagHelperPropertyIntermediateNode propertyNode)
                 {
-                    if (HasComplexChildContent(propertyNode))
+                    if (TrySimplifyContent(propertyNode) && node.TagHelpers.Any(t => t.IsComponentTagHelper()))
                     {
                         node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
                             propertyNode,
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
                 else if (node.Children[i] is TagHelperHtmlAttributeIntermediateNode htmlNode)
                 {
-                    if (HasComplexChildContent(htmlNode))
+                    if (TrySimplifyContent(htmlNode) && node.TagHelpers.Any(t => t.IsComponentTagHelper()))
                     {
                         node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
                             htmlNode,
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
-        private static bool HasComplexChildContent(IntermediateNode node)
+        private static bool TrySimplifyContent(IntermediateNode node)
         {
             if (node.Children.Count == 1 &&
                 node.Children[0] is HtmlAttributeIntermediateNode htmlNode &&

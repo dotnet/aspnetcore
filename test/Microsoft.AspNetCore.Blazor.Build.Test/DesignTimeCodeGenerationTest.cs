@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -433,6 +433,29 @@ namespace Test
 Welcome to your new app.
 
 <SurveyPrompt Title=""<div>Test!</div>"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Regression_784()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<p onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
+@functions {
+    public string ParentBgColor { get; set; } = ""#FFFFFF"";
+
+    public void OnComponentHover(UIMouseEventArgs e)
+    {
+    }
+}
 ");
 
             // Assert
