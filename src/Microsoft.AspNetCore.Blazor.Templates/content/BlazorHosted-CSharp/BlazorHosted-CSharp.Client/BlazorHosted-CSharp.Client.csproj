@@ -9,9 +9,6 @@
       https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
     </RestoreSources>
     <LangVersion>7.3</LangVersion>
-
-    <!-- Temporary workaround for a VS build issue -->
-    <BlazorRebuildOnFileChange>false</BlazorRebuildOnFileChange>
   </PropertyGroup>
 
   <ItemGroup>

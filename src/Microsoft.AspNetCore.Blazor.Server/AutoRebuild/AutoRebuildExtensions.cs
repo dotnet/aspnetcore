@@ -3,7 +3,10 @@
 
 using Microsoft.AspNetCore.Blazor.Server;
 using Microsoft.AspNetCore.Blazor.Server.AutoRebuild;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +22,48 @@ namespace Microsoft.AspNetCore.Builder
         private static string[] _includedSuffixes = new[] { ".cs", ".cshtml", "index.html" };
         private static string[] _excludedDirectories = new[] { "obj", "bin" };
 
-        public static void UseAutoRebuild(this IApplicationBuilder appBuilder, BlazorConfig config)
+        // To ensure the FileSystemWatchers aren't collected, reference them
+        // in this static list. They never need to be removed because there's no
+        // way to remove middleware once it's registered.
+        private static List<object> _uncollectableWatchers = new List<object>();
+
+        public static void UseHostedAutoRebuild(this IApplicationBuilder appBuilder, BlazorConfig config, string hostAppContentRootPath)
+        {
+            var isFirstFileWrite = true;
+            WatchFileSystem(config, () =>
+            {
+                if (isFirstFileWrite)
+                {
+                    try
+                    {
+                        // Touch any .cs file to force the host project to rebuild
+                        // (which in turn rebuilds the client, since it's referenced)
+                        var fileToTouch = Directory.EnumerateFiles(
+                            hostAppContentRootPath,
+                            "*.cs",
+                            SearchOption.AllDirectories).FirstOrDefault();
+
+                        if (!string.IsNullOrEmpty(fileToTouch))
+                        {
+                            File.SetLastWriteTime(fileToTouch, DateTime.Now);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // If we don't have permission to write these files, autorebuild will not be enabled
+                        var loggerFactory = appBuilder.ApplicationServices.GetRequiredService<ILoggerFactory>();
+                        var logger = loggerFactory.CreateLogger(typeof (AutoRebuildExtensions));
+                        logger?.LogWarning(ex,
+                            "Cannot autorebuild because there was an error when writing to a file in '{0}'.",
+                            hostAppContentRootPath);
+                    }
+
+                    isFirstFileWrite = false;
+                }
+            });
+        }
+
+        public static void UseDevServerAutoRebuild(this IApplicationBuilder appBuilder, BlazorConfig config)
         {
             // Currently this only supports VS for Windows. Later on we can add
             // an IRebuildService implementation for VS for Mac, etc.
@@ -90,6 +134,12 @@ namespace Microsoft.AspNetCore.Builder
             fsw.Renamed += OnEvent;
             fsw.IncludeSubdirectories = true;
             fsw.EnableRaisingEvents = true;
+
+            // Ensure the watcher is not GCed for as long as the app lives
+            lock (_uncollectableWatchers)
+            {
+                _uncollectableWatchers.Add(fsw);
+            }
 
             void OnEvent(object sender, FileSystemEventArgs eventArgs)
             {
