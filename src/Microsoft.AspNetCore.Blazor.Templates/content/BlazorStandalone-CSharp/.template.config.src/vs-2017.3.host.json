@@ -15,11 +15,5 @@
   "learnMoreLink": "https://github.com/aspnet/blazor",
   "uiFilters": [
     "oneaspnet"
-  ],
-  "ports": [
-    {
-      "name": "HttpPort",
-      "useHttps": false
-    }
   ]
 }
