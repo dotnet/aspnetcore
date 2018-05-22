@@ -105,15 +105,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 await ProcessReceives();
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+            catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
-                error = new ConnectionResetException(ex.Message, ex);
-                _trace.ConnectionReset(ConnectionId);
+                // A connection reset can be reported as SocketError.ConnectionAborted on Windows
+                if (!_aborted)
+                {
+                    error = new ConnectionResetException(ex.Message, ex);
+                    _trace.ConnectionReset(ConnectionId);
+                }
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted ||
-                                             ex.SocketErrorCode == SocketError.ConnectionAborted ||
-                                             ex.SocketErrorCode == SocketError.Interrupted ||
-                                             ex.SocketErrorCode == SocketError.InvalidArgument)
+            catch (SocketException ex) when (IsConnectionAbortError(ex.SocketErrorCode))
             {
                 if (!_aborted)
                 {
@@ -197,7 +198,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 await ProcessSends();
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
+            catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
+            {
+                // A connection reset can be reported as SocketError.ConnectionAborted on Windows
+                error = null;
+                _trace.ConnectionReset(ConnectionId);
+            }
+            catch (SocketException ex) when (IsConnectionAbortError(ex.SocketErrorCode))
             {
                 error = null;
             }
@@ -292,6 +299,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(CancelConnectionClosedToken)}.");
             }
+        }
+
+        private static bool IsConnectionResetError(SocketError errorCode)
+        {
+            return errorCode == SocketError.ConnectionReset ||
+                   errorCode == SocketError.ConnectionAborted ||
+                   errorCode == SocketError.Shutdown;
+        }
+
+        private static bool IsConnectionAbortError(SocketError errorCode)
+        {
+            return errorCode == SocketError.OperationAborted ||
+                   errorCode == SocketError.Interrupted ||
+                   errorCode == SocketError.InvalidArgument;
         }
     }
 }

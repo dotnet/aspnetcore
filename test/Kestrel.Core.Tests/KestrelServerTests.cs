@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             unbind.Release();
             stop.Release();
 
-            await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).TimeoutAfter(TestConstants.DefaultTimeout);
+            await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).DefaultTimeout();
 
             mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
             mockTransport.Verify(transport => transport.StopAsync(), Times.Once);
@@ -377,9 +377,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             unbindTcs.SetResult(null);
 
             // If stopTask2 is completed inline by the first call to StopAsync, stopTask1 will never complete.
-            await stopTask1.TimeoutAfter(TestConstants.DefaultTimeout);
-            await stopTask2.TimeoutAfter(TestConstants.DefaultTimeout);
-            await continuationTask.TimeoutAfter(TestConstants.DefaultTimeout);
+            await stopTask1.DefaultTimeout();
+            await stopTask2.DefaultTimeout();
+            await continuationTask.DefaultTimeout();
 
             mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
         }

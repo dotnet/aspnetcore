@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
@@ -44,7 +45,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             try
             {
-                var connection = new LibuvConnection(socket, TransportContext.Log, Thread);
+                IPEndPoint remoteEndPoint = null;
+                IPEndPoint localEndPoint = null;
+
+                if (socket is UvTcpHandle tcpHandle)
+                {
+                    try
+                    {
+                        remoteEndPoint = tcpHandle.GetPeerIPEndPoint();
+                        localEndPoint = tcpHandle.GetSockIPEndPoint();
+                    }
+                    catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
+                    {
+                        TransportContext.Log.ConnectionReset("(null)");
+                        socket.Dispose();
+                        return;
+                    }
+                }
+
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint);
                 var middlewareTask = TransportContext.ConnectionDispatcher.OnConnection(connection);
                 var transportTask = connection.Start();
 

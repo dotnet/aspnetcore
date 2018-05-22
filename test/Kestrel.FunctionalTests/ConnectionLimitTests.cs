@@ -39,11 +39,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 await connection.SendEmptyGetAsKeepAlive(); ;
                 await connection.Receive("HTTP/1.1 200 OK");
-                Assert.True(await lockedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout));
+                Assert.True(await lockedTcs.Task.DefaultTimeout());
                 requestTcs.TrySetResult(null);
             }
 
-            await releasedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+            await releasedTcs.Task.DefaultTimeout();
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     catch { }
 
                     // connection should close without sending any data
-                    await rejected.WaitForConnectionClose().TimeoutAfter(TestConstants.DefaultTimeout);
+                    await rejected.WaitForConnectionClose().DefaultTimeout();
                 }
             }
         }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         catch { }
 
                         // connection should close without sending any data
-                        await connection.WaitForConnectionClose().TimeoutAfter(TestConstants.DefaultTimeout);
+                        await connection.WaitForConnectionClose().DefaultTimeout();
                     }
                 }
 

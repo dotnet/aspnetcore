@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread, null, null);
                     listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread, null, null);
                     listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Now complete the output writer so that the connection closes
                 mockConnectionDispatcher.Output.Writer.Complete();
 
-                await connectionTask.TimeoutAfter(TestConstants.DefaultTimeout);
+                await connectionTask.DefaultTimeout();
 
                 // Assert that we don't try to start reading
                 Assert.Null(mockLibuv.AllocCallback);
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread, null, null);
                     listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Now complete the output writer and wait for the connection to close
                 mockConnectionDispatcher.Output.Writer.Complete();
 
-                await connectionTask.TimeoutAfter(TestConstants.DefaultTimeout);
+                await connectionTask.DefaultTimeout();
 
                 // Assert that we don't try to start reading
                 Assert.Null(mockLibuv.AllocCallback);
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         Thread = thread
                     };
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread);
+                    var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread, null, null);
                     listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 

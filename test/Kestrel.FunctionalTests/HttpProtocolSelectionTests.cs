@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var connection = new TestConnection(host.GetPort()))
                 {
-                    await connection.WaitForConnectionClose().TimeoutAfter(TestConstants.DefaultTimeout);
+                    await connection.WaitForConnectionClose().DefaultTimeout();
                 }
             }
 

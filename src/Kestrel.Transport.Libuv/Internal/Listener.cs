@@ -172,6 +172,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 listenSocket.Accept(acceptSocket);
                 DispatchConnection(acceptSocket);
             }
+            catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
+            {
+                Log.ConnectionReset("(null)");
+                acceptSocket?.Dispose();
+            }
             catch (UvException ex)
             {
                 Log.LogError(0, ex, "Listener.OnConnection");

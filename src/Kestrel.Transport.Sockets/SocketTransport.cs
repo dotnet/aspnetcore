@@ -159,17 +159,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                             var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
 
                             // REVIEW: This task should be tracked by the server for graceful shutdown
-                            // Today it's handled specifically for http but not for aribitrary middleware
+                            // Today it's handled specifically for http but not for arbitrary middleware
                             _ = HandleConnectionAsync(connection);
                         }
-                        catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+                        catch (SocketException) when (!_unbinding)
                         {
-                            // REVIEW: Should there be a separate log message for a connection reset this early?
                             _trace.ConnectionReset(connectionId: "(null)");
-                        }
-                        catch (SocketException ex) when (!_unbinding)
-                        {
-                            _trace.ConnectionError(connectionId: "(null)", ex);
                         }
                     }
                 }

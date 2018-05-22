@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         public static async Task<Socket> ConnectToHost(string hostName, int port)
         {
-            var tcs = new TaskCompletionSource<Socket>();
+            var tcs = new TaskCompletionSource<Socket>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var socketArgs = new SocketAsyncEventArgs();
             socketArgs.RemoteEndPoint = new DnsEndPoint(hostName, port);

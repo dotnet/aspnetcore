@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "");
 
                     await connection.Receive("New protocol data");
-                    await upgrade.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await upgrade.Task.DefaultTimeout();
                 }
             }
         }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var stream = await feature.UpgradeAsync();
 
                     var buffer = new byte[128];
-                    var read = await context.Request.Body.ReadAsync(buffer, 0, 128).TimeoutAfter(TestConstants.DefaultTimeout);
+                    var read = await context.Request.Body.ReadAsync(buffer, 0, 128).DefaultTimeout();
                     Assert.Equal(0, read);
 
                     using (var reader = new StreamReader(stream))
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.Send(send + "\r\n");
                     await connection.Receive(recv);
 
-                    await upgrade.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                    await upgrade.Task.DefaultTimeout();
                 }
             }
         }
@@ -138,10 +138,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     $"Date: {server.Context.DateHeaderValue}",
                     "",
                     "");
-                await connection.WaitForConnectionClose().TimeoutAfter(TestConstants.DefaultTimeout);
+                await connection.WaitForConnectionClose().DefaultTimeout();
             }
 
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.DefaultTimeout());
             Assert.Equal(CoreStrings.UpgradeCannotBeCalledMultipleTimes, ex.Message);
         }
 
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task).TimeoutAfter(TestConstants.DefaultTimeout);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task).DefaultTimeout();
             Assert.Equal(CoreStrings.CannotUpgradeNonUpgradableRequest, ex.Message);
         }
 
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "");
                 }
 
-                await appCompletedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
+                await appCompletedTcs.Task.DefaultTimeout();
             }
         }
     }

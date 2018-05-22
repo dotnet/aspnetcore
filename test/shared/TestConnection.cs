@@ -47,8 +47,6 @@ namespace Microsoft.AspNetCore.Testing
             _reader = new StreamReader(_stream, Encoding.ASCII);
         }
 
-        public Socket Socket => _socket;
-
         public Stream Stream => _stream;
 
         public StreamReader Reader => _reader;
@@ -215,9 +213,15 @@ namespace Microsoft.AspNetCore.Testing
             _socket.Shutdown(how);
         }
 
+        public void Reset()
+        {
+            _socket.LingerState = new LingerOption(true, 0);
+            _socket.Dispose();
+        }
+
         public Task WaitForConnectionClose()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var eventArgs = new SocketAsyncEventArgs();
             eventArgs.SetBuffer(new byte[128], 0, 128);
             eventArgs.Completed += ReceiveAsyncCompleted;

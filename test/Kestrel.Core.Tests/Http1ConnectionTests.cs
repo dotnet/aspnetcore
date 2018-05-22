@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.StopProcessingNextRequest();
             Assert.IsNotType<Task<Task>>(requestProcessingTask);
 
-            await requestProcessingTask.TimeoutAfter(TestConstants.DefaultTimeout);
+            await requestProcessingTask.DefaultTimeout();
             _application.Output.Complete();
         }
 
@@ -732,7 +732,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(header0Count + header1Count, _http1Connection.RequestHeaders.Count);
 
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
-            await requestProcessingTask.TimeoutAfter(TestConstants.DefaultTimeout);
+            await requestProcessingTask.DefaultTimeout();
         }
 
         [Theory]
@@ -809,7 +809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var data = Encoding.ASCII.GetBytes("POST / HTTP/1.1\r\nHost:\r\nConnection: close\r\ncontent-length: 1\r\n\r\n");
             await _application.Output.WriteAsync(data);
-            await requestProcessingTask.TimeoutAfter(TestConstants.DefaultTimeout);
+            await requestProcessingTask.DefaultTimeout();
 
             mockMessageBody.Verify(body => body.ConsumeAsync(), Times.Once);
         }

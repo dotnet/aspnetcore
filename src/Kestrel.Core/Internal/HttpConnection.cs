@@ -105,6 +105,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             try
             {
+                // TODO: When we start tracking all connection middleware for shutdown, go back
+                // to logging connections tart and stop in ConnectionDispatcher so we get these
+                // logs for all connection middleware.
+                Log.ConnectionStart(ConnectionId);
                 KestrelEventSource.Log.ConnectionStart(this);
 
                 AdaptedPipeline adaptedPipeline = null;
@@ -196,6 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
                 }
 
+                Log.ConnectionStop(ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(this);
             }
         }
