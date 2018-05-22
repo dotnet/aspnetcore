@@ -212,6 +212,52 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_InfersFormFileSourceForTypesAssignableFromIEnumerableOfFormFiles()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider(
+                new MvcOptions { AllowValidatingTopLevelNodes = true },
+                TestModelMetadataProvider.CreateDefaultProvider());
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            builder.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionMethod.Name == nameof(ModelBinderController.FormFilesSequences));
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("formFileEnumerable", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileCollection", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileIList", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileList", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileArray", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                });
+        }
+
+        [Fact]
         public void OnProvidersExecuting_AddsBindingSources_ForActionParameters_ReadFromModelMetadata()
         {
             // Arrange
@@ -1624,6 +1670,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public IFormFile FormFile { get; set; }
 
             public IActionResult PostAction([FromQuery] string fromQuery, IFormFileCollection formFileCollection, string unbound) => null;
+
+            public IActionResult FormFilesSequences(
+                IEnumerable<IFormFile> formFileEnumerable,
+                ICollection<IFormFile> formFileCollection,
+                IList<IFormFile> formFileIList,
+                List<IFormFile> formFileList,
+                IFormFile[] formFileArray) => null;
 
             public IActionResult PostAction1(Guid guid) => null;
 

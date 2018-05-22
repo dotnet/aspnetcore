@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormFile), BindingSource.FormFile));
             modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormCollection), BindingSource.FormFile));
             modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormFileCollection), BindingSource.FormFile));
+            modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IEnumerable<IFormFile>), BindingSource.FormFile));
 
             // Add types to be excluded from Validation
             modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Type)));

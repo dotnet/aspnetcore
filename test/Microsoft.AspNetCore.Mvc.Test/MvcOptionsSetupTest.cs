@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -186,6 +187,12 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     var formFileParameter = Assert.IsType<BindingSourceMetadataProvider>(provider);
                     Assert.Equal(typeof(IFormFileCollection), formFileParameter.Type);
+                    Assert.Equal(BindingSource.FormFile, formFileParameter.BindingSource);
+                },
+                provider =>
+                {
+                    var formFileParameter = Assert.IsType<BindingSourceMetadataProvider>(provider);
+                    Assert.Equal(typeof(IEnumerable<IFormFile>), formFileParameter.Type);
                     Assert.Equal(BindingSource.FormFile, formFileParameter.BindingSource);
                 },
                 provider =>
