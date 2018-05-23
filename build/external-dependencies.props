@@ -197,6 +197,161 @@ not building again in this patch.
 
   <!-- Shipped dependencies from previous builds -->
 
+  <!-- 2.0.8 -->
+  <ItemGroup>
+    <ExternalDependency Include="Microsoft.AspNetCore.Antiforgery" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Core" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Facebook" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Google" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Twitter" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.WsFederation" Version="2.0.4" Metapackage="false" RuntimeStore="false" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authentication" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authorization.Policy" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Authorization" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Buffering" Version="2.0.3-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.CertificateGeneration.Task" Version="2.0.2-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Certificates.Configuration.Sources" Version="2.0.3-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="2.0.4-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.CookiePolicy" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Cors" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Cryptography.Internal" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Redis" Version="0.3.3" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.0.3" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.0.3" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Hosting" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Http.Features" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Http" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.HttpOverrides" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Localization.Routing" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Localization" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Core" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Cors" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Localization" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.0.4-alpha1-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Mvc" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.NodeServices.Sockets" Version="2.0.4-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.NodeServices" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Owin" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Proxy" Version="0.3.3-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.RangeHelper.Sources" Version="2.0.3-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Language" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Runtime" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Version="2.0.3-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Razor" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCompression" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Rewrite" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Version="2.0.3-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Routing" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Server.HttpSys" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="0.4.3-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Session" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.SpaServices" Version="2.0.4" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.TestHost" Version="2.0.3" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="2.0.2-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.WebSockets" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="2.0.3" Category="shipoob" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Razor" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor" Version="2.0.3" Category="shipoob" />
+    <ExternalDependency Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.2" LZMATools="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational.Design.Specification.Tests" Version="2.0.3" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="2.0.3" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="2.0.3" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.3" LZMATools="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlConfig.Tools" Version="2.0.2" LZMATools="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Ini" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Json" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Xml" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Localization" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.EventLog" Version="2.0.2" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.EventSource" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="2.0.2-rtm-10026" Category="noship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.TraceSource" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.Options" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.2" LZMATools="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="2.0.2" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Net.Http.Headers" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Owin.Security.Interop" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor" Version="2.0.3" Category="shipoob" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.3" Metapackage="true" RuntimeStore="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.4" LZMA="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" LZMATools="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Version="2.0.4" Category="ship" />
+    <ExternalDependency Include="RazorPageGenerator" Version="2.0.3-rtm-10026" Category="noship" />
+  </ItemGroup>
+
   <!-- 2.0.6 -->
   <ItemGroup>
     <ExternalDependency Include="Microsoft.Data.Sqlite.Core" Metapackage="true" RuntimeStore="true" Version="2.0.1" />
