@@ -267,7 +267,7 @@ describe("HttpConnection", () => {
             });
         }
 
-        it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async() => {
+        it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async () => {
             const negotiateResponse = {
                 availableTransports: [
                     { transport: "WebSockets", transferFormats: [ "Text", "Binary" ] },

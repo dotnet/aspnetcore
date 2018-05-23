@@ -9,6 +9,7 @@
     <Compile Include="..\Common\AwaitableThreadPool.cs" Link="AwaitableThreadPool.cs" />
     <Compile Include="..\Common\MemoryBufferWriter.cs" Link="MemoryBufferWriter.cs" />
     <Compile Include="..\Common\PipeWriterStream.cs" Link="PipeWriterStream.cs" />
+    <Compile Include="..\Common\TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
     <Compile Include="..\Common\WebSocketExtensions.cs" Link="WebSocketExtensions.cs" />
     <Compile Include="..\Common\StreamExtensions.cs" Link="StreamExtensions.cs" />
     <Compile Include="..\Common\DuplexPipe.cs" Link="DuplexPipe.cs" />

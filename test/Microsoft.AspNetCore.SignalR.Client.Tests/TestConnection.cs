@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private readonly TaskCompletionSource<object> _disposed = new TaskCompletionSource<object>();
 
         private int _disposeCount = 0;
-
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;
 
@@ -117,7 +116,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             return Application.Output.WriteAsync(bytes).AsTask();
         }
-
         public async Task<string> ReadSentTextMessageAsync()
         {
             // Read a single text message from the Application Input pipe
@@ -136,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     else if (result.IsCompleted)
                     {
-                        throw new InvalidOperationException("Out of data!");
+                        return null;
                     }
                 }
                 finally
@@ -144,6 +142,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Application.Input.AdvanceTo(consumed);
                 }
             }
+        }
+
+        public async Task<IList<string>> ReadAllSentMessagesAsync()
+        {
+            if (!Disposed.IsCompleted)
+            {
+                throw new InvalidOperationException("The connection must be stopped before this method can be used.");
+            }
+
+            var results = new List<string>();
+
+            while (true)
+            {
+                var message = await ReadSentTextMessageAsync();
+                if (message == null)
+                {
+                    break;
+                }
+                results.Add(message);
+            }
+
+            return results;
         }
 
         public void CompleteFromTransport(Exception ex = null)

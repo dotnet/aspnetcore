@@ -10,6 +10,10 @@ import { BinaryMessageFormat } from "./BinaryMessageFormat";
 
 // TypeDoc's @inheritDoc and @link don't work across modules :(
 
+// constant encoding of the ping message
+// see: https://github.com/aspnet/SignalR/blob/dev/specs/HubProtocol.md#ping-message-encoding-1
+const SERIALIZED_PING_MESSAGE: ArrayBuffer = Uint8Array.from([0x91, MessageType.Ping]).buffer;
+
 /** Implements the MessagePack Hub Protocol */
 export class MessagePackHubProtocol implements IHubProtocol {
     /** The name of the protocol. This is used by SignalR to resolve the protocol between the client and server. */
@@ -50,6 +54,8 @@ export class MessagePackHubProtocol implements IHubProtocol {
             case MessageType.StreamItem:
             case MessageType.Completion:
                 throw new Error(`Writing messages of type '${message.type}' is not supported.`);
+            case MessageType.Ping:
+                return SERIALIZED_PING_MESSAGE;
             default:
                 throw new Error("Invalid message type.");
         }

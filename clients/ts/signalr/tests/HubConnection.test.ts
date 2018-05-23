@@ -48,6 +48,25 @@ describe("HubConnection", () => {
         });
     });
 
+    describe("ping", () => {
+        it("automatically sends multiple pings", async () => {
+            const connection = new TestConnection();
+            const hubConnection = createHubConnection(connection);
+
+            hubConnection.pingIntervalInMilliseconds = 5;
+
+            try {
+                await hubConnection.start();
+                await delay(32);
+
+                const numPings = connection.sentData.filter((s) => JSON.parse(s).type === MessageType.Ping).length;
+                expect(numPings).toBeGreaterThanOrEqual(2);
+            } finally {
+                await hubConnection.stop();
+            }
+        });
+    });
+
     describe("stop", () => {
         it("state disconnected", async () => {
             const connection = new TestConnection();
@@ -870,7 +889,7 @@ describe("HubConnection", () => {
                 hubConnection.onclose((e) => state = hubConnection.state);
                 // Typically this would be called by the transport
                 connection.onclose();
-                
+
                 expect(state).toBe(HubConnectionState.Disconnected);
             } finally {
                 hubConnection.stop();

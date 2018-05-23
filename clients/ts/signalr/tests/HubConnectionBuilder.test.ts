@@ -201,7 +201,8 @@ class TestProtocol implements IHubProtocol {
         throw new Error("Method not implemented.");
     }
     public writeMessage(message: HubMessage): string | ArrayBuffer {
-        throw new Error("Method not implemented.");
+        // builds ping message in the `hubConnection` constructor
+        return "";
     }
 }
 

@@ -33,6 +33,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
+        public static readonly TimeSpan DefaultPingInterval = TimeSpan.FromSeconds(15);
+        public static readonly TimeSpan DefaultTickRate = TimeSpan.FromSeconds(1);
 
         // This lock protects the connection state.
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
@@ -44,6 +46,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
+        private long _nextActivationServerTimeout;
+        private long _nextActivationSendPing;
         private bool _disposed;
 
         // Transient state to a connection
@@ -51,11 +55,28 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public event Func<Exception, Task> Closed;
 
+        // internal for testing purposes
+        internal TimeSpan TickRate { get; set; } = DefaultTickRate;
+
         /// <summary>
-        /// Gets or sets the server timeout interval for the connection. Changes to this value
-        /// will not be applied until the Keep Alive timer is next reset.
+        /// Gets or sets the server timeout interval for the connection. 
         /// </summary>
+        /// <remarks>
+        /// The client times out if it hasn't heard from the server for `this` long.
+        /// </remarks>
         public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
+
+        /// <summary>
+        /// Gets or sets the interval at which the client sends ping messages.
+        /// </summary>
+        /// <remarks>
+        /// Sending any message resets the timer to the start of the interval.
+        /// </remarks>
+        public TimeSpan PingInterval { get; set; } = DefaultPingInterval;
+        
+        /// <summary>
+        /// Gets or sets the timeout for the initial handshake.
+        /// </summary>
         public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
 
         /// <summary>
@@ -163,7 +184,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             // It's OK to be disposed while registering a callback, we'll just never call the callback anyway (as with all the callbacks registered before disposal).
             var invocationHandler = new InvocationHandler(parameterTypes, handler, state);
-            var invocationList = _handlers.AddOrUpdate(methodName, _ => new InvocationHandlerList(invocationHandler) ,
+            var invocationList = _handlers.AddOrUpdate(methodName, _ => new InvocationHandlerList(invocationHandler),
                 (_, invocations) =>
                 {
                     lock (invocations)
@@ -175,6 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return new Subscription(invocationHandler, invocationList);
         }
+
         /// <summary>
         /// Removes all handlers associated with the method with the specified method name.
         /// </summary>
@@ -274,6 +296,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // Set this at the end to avoid setting internal state until the connection is real
                 _connectionState = startingConnectionState;
                 _connectionState.ReceiveTask = ReceiveLoop(_connectionState);
+
                 Log.Started(_logger);
             }
             finally
@@ -465,7 +488,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task SendHubMessage(HubInvocationMessage hubMessage, CancellationToken cancellationToken = default)
+        private async Task SendHubMessage(HubMessage hubMessage, CancellationToken cancellationToken = default)
         {
             AssertConnectionValid();
 
@@ -475,6 +498,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             // REVIEW: If a token is passed in and is canceled during FlushAsync it seems to break .Complete()...
             await _connectionState.Connection.Transport.Output.FlushAsync();
+
+            // We've sent a message, so don't ping for a while
+            ResetSendPing();
 
             Log.MessageSent(_logger, hubMessage);
         }
@@ -703,7 +729,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             Log.ReceiveLoopStarting(_logger);
 
-            var timeoutTimer = StartTimeoutTimer(connectionState);
+            // Performs periodic tasks -- here sending pings and checking timeout
+            // Disposed with `timer.Stop()` in the finally block below
+            var timer = new TimerAwaitable(TickRate, TickRate);
+            _ = TimerLoop(timer);
 
             try
             {
@@ -721,7 +750,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         }
                         else if (!buffer.IsEmpty)
                         {
-                            ResetTimeoutTimer(timeoutTimer);
+                            Log.ResettingKeepAliveTimer(_logger);
+                            ResetTimeout();
 
                             Log.ProcessingMessage(_logger, buffer.Length);
 
@@ -771,6 +801,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 Log.ServerDisconnectedWithError(_logger, ex);
                 connectionState.CloseException = ex;
             }
+            finally
+            {
+                timer.Stop();
+            }
 
             // Clear the connectionState field
             await WaitConnectionLockAsync();
@@ -784,9 +818,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 ReleaseConnectionLock();
             }
-
-            // Stop the timeout timer.
-            timeoutTimer?.Dispose();
 
             // Dispose the connection
             await CloseAsync(connectionState.Connection);
@@ -814,6 +845,77 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
+        public void ResetSendPing()
+        {
+            Volatile.Write(ref _nextActivationSendPing, (DateTime.UtcNow + PingInterval).Ticks);
+        }
+
+        public void ResetTimeout()
+        {
+            Volatile.Write(ref _nextActivationServerTimeout, (DateTime.UtcNow + ServerTimeout).Ticks);
+        }
+
+        private async Task TimerLoop(TimerAwaitable timer)
+        {
+            // initialize the timers
+            timer.Start();
+            ResetSendPing();
+            ResetTimeout();
+            
+            using (timer)
+            {
+                // await returns True until `timer.Stop()` is called in the `finally` block of `ReceiveLoop`
+                while (await timer)
+                {
+                    if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
+                    {
+                        OnServerTimeout();
+                    }
+
+                    if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationSendPing))
+                    {
+                        await PingServer();
+                    }
+                }
+            }
+        }
+
+        private void OnServerTimeout()
+        {
+            if (Debugger.IsAttached)
+            {
+                return;
+            }
+
+            _connectionState.CloseException = new TimeoutException(
+                $"Server timeout ({ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.");
+            _connectionState.Connection.Transport.Input.CancelPendingRead();
+        }
+
+        private async Task PingServer()
+        {
+            if (_disposed || !_connectionLock.Wait(0))
+            {
+                Log.UnableToAcquireConnectionLockForPing(_logger);
+                return;
+            }
+
+            Log.AcquiredConnectionLockForPing(_logger);
+
+            try
+            {
+                if (_disposed || _connectionState == null || _connectionState.Stopping)
+                {
+                    return;
+                }
+                await SendHubMessage(PingMessage.Instance);
+            }
+            finally
+            {
+                ReleaseConnectionLock();
+            }
+        }
+
         private async Task RunClosedEvent(Func<Exception, Task> closed, Exception closeException)
         {
             // Dispatch to the thread pool before we invoke the user callback
@@ -827,48 +929,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             catch (Exception ex)
             {
                 Log.ErrorDuringClosedEvent(_logger, ex);
-            }
-        }
-
-        private void ResetTimeoutTimer(Timer timeoutTimer)
-        {
-            if (timeoutTimer != null)
-            {
-                Log.ResettingKeepAliveTimer(_logger);
-                timeoutTimer.Change(ServerTimeout, Timeout.InfiniteTimeSpan);
-            }
-        }
-
-        private Timer StartTimeoutTimer(ConnectionState connectionState)
-        {
-            // Check if we need keep-alive
-            Timer timeoutTimer = null;
-
-            // We use '!== true' because it could be null, which we treat as false.
-            if (connectionState.Connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive != true)
-            {
-                Log.StartingServerTimeoutTimer(_logger, ServerTimeout);
-                timeoutTimer = new Timer(
-                    state => OnTimeout((ConnectionState)state),
-                    connectionState,
-                    dueTime: ServerTimeout,
-                    period: Timeout.InfiniteTimeSpan);
-            }
-            else
-            {
-                Log.NotUsingServerTimeout(_logger);
-            }
-
-            return timeoutTimer;
-        }
-
-        private void OnTimeout(ConnectionState connectionState)
-        {
-            if (!Debugger.IsAttached)
-            {
-                connectionState.CloseException = new TimeoutException(
-                    $"Server timeout ({ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.");
-                connectionState.Connection.Transport.Input.CancelPendingRead();
             }
         }
 
