@@ -44,8 +44,8 @@
 	branch = release/2.0
 [submodule "modules/Identity"]
 	path = modules/Identity
-	url = https://github.com/aspnet/Identity.git
-	branch = release/2.0
+	url = https://github.com/aspnet/Identity-Private.git
+	branch = release/2.0-msrc
 [submodule "modules/IISIntegration"]
 	path = modules/IISIntegration
 	url = https://github.com/aspnet/IISIntegration.git
