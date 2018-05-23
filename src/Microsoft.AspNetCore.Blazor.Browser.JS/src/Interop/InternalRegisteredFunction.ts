@@ -1,4 +1,5 @@
-﻿import { invokeWithJsonMarshalling } from './InvokeWithJsonMarshalling';
+import { invokeWithJsonMarshalling, invokeWithJsonMarshallingAsync } from './InvokeJavaScriptFunctionWithJsonMarshalling';
+import { invokePromiseCallback } from './InvokeDotNetMethodWithJsonMarshalling';
 import { attachRootComponentToElement, renderBatch } from '../Rendering/Renderer';
 
 /**
@@ -8,5 +9,7 @@ import { attachRootComponentToElement, renderBatch } from '../Rendering/Renderer
 export const internalRegisteredFunctions = {
   attachRootComponentToElement,
   invokeWithJsonMarshalling,
+  invokeWithJsonMarshallingAsync,
+  invokePromiseCallback,
   renderBatch,
 };

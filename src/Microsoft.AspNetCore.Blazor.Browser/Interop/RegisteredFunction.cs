@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
+using System;
+using System.Threading.Tasks;
 using WebAssembly;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Interop
@@ -23,10 +24,74 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Interop
         {
             // This is a low-perf convenience method that bypasses the need to deal with
             // .NET memory and data structures on the JS side
-            var argsJson = args.Select(JsonUtil.Serialize);
-            var resultJson = InvokeUnmarshalled<string>("invokeWithJsonMarshalling",
-                argsJson.Prepend(identifier).ToArray());
-            return JsonUtil.Deserialize<TRes>(resultJson);
+            var argsJson = new string[args.Length + 1];
+
+            argsJson[0] = identifier;
+            for (int i = 0; i < args.Length; i++)
+            {
+                argsJson[i + 1] = JsonUtil.Serialize(args[i]);
+            }
+
+            var resultJson = InvokeUnmarshalled<string>("invokeWithJsonMarshalling", argsJson);
+
+            var result = JsonUtil.Deserialize<InvocationResult<TRes>>(resultJson);
+            if (result.Succeeded)
+            {
+                return result.Result;
+            }
+            else
+            {
+                throw new JavaScriptException(result.Message);
+            }
+        }
+
+        /// <summary>
+        /// Invokes the JavaScript function registered with the specified identifier.
+        /// Arguments and return values are marshalled via JSON serialization.
+        /// </summary>
+        /// <typeparam name="TRes">The .NET type corresponding to the function's return value type. This type must be JSON deserializable.</typeparam>
+        /// <param name="identifier">The identifier used when registering the target function.</param>
+        /// <param name="args">The arguments to pass, each of which must be JSON serializable.</param>
+        /// <returns>The result of the function invocation.</returns>
+        public static Task<TRes> InvokeAsync<TRes>(string identifier, params object[] args)
+        {
+            var tcs = new TaskCompletionSource<TRes>();
+            var callbackId = Guid.NewGuid().ToString();
+            var argsJson = new string[args.Length + 2];
+
+            argsJson[0] = identifier;
+            argsJson[1] = callbackId;
+            for (int i = 0; i < args.Length; i++)
+            {
+                argsJson[i + 2] = JsonUtil.Serialize(args[i]);
+            }
+
+            TaskCallbacks.Track(callbackId, new Action<string>(r =>
+            {
+                var res = JsonUtil.Deserialize<InvocationResult<TRes>>(r);
+                TaskCallbacks.Untrack(callbackId);
+                if (res.Succeeded)
+                {
+                    tcs.SetResult(res.Result);
+                }
+                else
+                {
+                    tcs.SetException(new JavaScriptException(res.Message));
+                }
+            }));
+
+            try
+            {
+                var result = Invoke<object>("invokeWithJsonMarshallingAsync", argsJson);
+
+            }
+            catch
+            {
+                TaskCallbacks.Untrack(callbackId);
+                throw;
+            }
+
+            return tcs.Task;
         }
 
         /// <summary>
@@ -100,6 +165,15 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Interop
             return exception != null
                 ? throw new JavaScriptException(exception)
                 : result;
+        }
+    }
+
+    internal class TaskCallback
+    {
+        public static void InvokeTaskCallback(string id, string result)
+        {
+            var callback = TaskCallbacks.Get(id);
+            callback(result);
         }
     }
 }

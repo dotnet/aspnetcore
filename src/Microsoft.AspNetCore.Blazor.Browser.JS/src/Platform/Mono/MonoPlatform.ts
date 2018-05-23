@@ -1,4 +1,4 @@
-﻿import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
+import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getAssemblyNameFromUrl } from '../DotNet';
 import { getRegisteredFunction } from '../../Interop/RegisteredFunction';
 

@@ -1,4 +1,4 @@
-﻿import { platform } from './Environment';
+import { platform } from './Environment';
 import { getAssemblyNameFromUrl } from './Platform/DotNet';
 import './Rendering/Renderer';
 import './Services/Http';

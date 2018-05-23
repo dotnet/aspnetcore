@@ -10,6 +10,7 @@
     Select test:
     <select onchange="mountTestComponent(event.target.value)">
       <option value="">Choose...</option>
+      <option value="BasicTestApp.InteropComponent">Interop component</option>
       <option value="BasicTestApp.AsyncEventHandlerComponent">Async event handlers</option>
       <option value="BasicTestApp.AddRemoveChildComponents">Add/remove child components</option>
       <option value="BasicTestApp.CounterComponent">Counter</option>
@@ -47,6 +48,8 @@
   <app>Loading...</app>
 
   <script type="blazor-boot"></script>
+  <!-- Used for testing interop scenarios between JS and .NET -->
+  <script type="text/javascript" src="js/jsinteroptests.js"></script>
   <script>
     // The client-side .NET code calls this when it is ready to be called from test code
     // The Xunit test code polls until it sees the flag is set

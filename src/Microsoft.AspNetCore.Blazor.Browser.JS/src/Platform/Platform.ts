@@ -1,4 +1,4 @@
-﻿export interface Platform {
+export interface Platform {
   start(loadAssemblyUrls: string[]): Promise<void>;
 
   callEntryPoint(assemblyName: string, entrypointMethod: string, args: (System_Object | null)[]);
