@@ -2,11 +2,11 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
 
-    <ExperimentalVersionPrefix>0.1.0</ExperimentalVersionPrefix>
+    <ExperimentalVersionPrefix>0.1.1</ExperimentalVersionPrefix>
     <ExperimentalVersionSuffix>rtm</ExperimentalVersionSuffix>
 
     <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(PrereleaseVersionLabel)' != '' ">$(PrereleaseVersionLabel)</PackageVersionSuffix>
