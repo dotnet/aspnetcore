@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestRemoteIPAddress("127.0.0.1", "127.0.0.1", "127.0.0.1");
         }
 
-        [ConditionalFact(Skip="https://github.com/aspnet/KestrelHttpServer/issues/2406")]
+        [ConditionalFact]
         [IPv6SupportedCondition]
         public Task RemoteIPv6Address()
         {
