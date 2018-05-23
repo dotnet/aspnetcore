@@ -49,38 +49,39 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
                 _pendingRequests.Add(id, tcs);
             }
 
-            request.Properties.TryGetValue(FetchArgs, out var fetchArgs);
+            var options = new FetchOptions();
+            if (request.Properties.TryGetValue(FetchArgs, out var fetchArgs))
+            {
+                options.RequestInitOverrides = fetchArgs;
+            }
 
-            RegisteredFunction.Invoke<object>(
+            options.RequestInit = new RequestInit
+            {
+                Credentials = GetDefaultCredentialsString(),
+                Headers = GetHeadersAsStringArray(request),
+                Method = request.Method.Method
+            };
+
+            options.RequestUri = request.RequestUri.ToString();
+
+            RegisteredFunction.InvokeUnmarshalled<int, byte[], string, object>(
                 $"{typeof(BrowserHttpMessageHandler).FullName}.Send",
                 id,
-                request.Method.Method,
-                request.RequestUri,
-                request.Content == null ? null : await GetContentAsString(request.Content),
-                SerializeHeadersAsJson(request),
-                fetchArgs ?? CreateDefaultFetchArgs());
+                request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
+                JsonUtil.Serialize(options));
 
             return await tcs.Task;
         }
 
-        private string SerializeHeadersAsJson(HttpRequestMessage request)
-            => JsonUtil.Serialize(
-                (from header in request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>())
-                 from headerValue in header.Value // There can be more than one value for each name
-                 select new[] { header.Key, headerValue }).ToList()
-            );
-
-        private static async Task<string> GetContentAsString(HttpContent content)
-            => content is StringContent stringContent
-                ? await stringContent.ReadAsStringAsync()
-                : throw new InvalidOperationException($"Currently, {typeof(HttpClient).FullName} " +
-                    $"only supports contents of type {nameof(StringContent)}, but you supplied " +
-                    $"{content.GetType().FullName}.");
+        private string[][] GetHeadersAsStringArray(HttpRequestMessage request)
+            => (from header in request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>())
+                from headerValue in header.Value // There can be more than one value for each name
+                select new[] { header.Key, headerValue }).ToArray();
 
         private static void ReceiveResponse(
             string id,
             string responseDescriptorJson,
-            string responseBodyText,
+            byte[] responseBodyData,
             string errorText)
         {
             TaskCompletionSource<HttpResponseMessage> tcs;
@@ -98,16 +99,18 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
             else
             {
                 var responseDescriptor = JsonUtil.Deserialize<ResponseDescriptor>(responseDescriptorJson);
-                var responseContent = responseBodyText == null ? null : new StringContent(responseBodyText);
+                var responseContent = responseBodyData == null ? null : new ByteArrayContent(responseBodyData);
                 var responseMessage = responseDescriptor.ToResponseMessage(responseContent);
                 tcs.SetResult(responseMessage);
             }
         }
 
-        private static object CreateDefaultFetchArgs()
-            => new { credentials = GetDefaultCredentialsString() };
+        private static byte[] AllocateArray(string length)
+        {
+            return new byte[int.Parse(length)];
+        }
 
-        private static object GetDefaultCredentialsString()
+        private static string GetDefaultCredentialsString()
         {
             // See https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials for
             // standard values and meanings
@@ -124,17 +127,33 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
             }
         }
 
-        // Keep in sync with TypeScript class in Http.ts
+        // Keep these in sync with TypeScript class in Http.ts
+        private class FetchOptions
+        {
+            public string RequestUri { get; set; }
+            public RequestInit RequestInit { get; set; }
+            public object RequestInitOverrides { get; set; }
+        }
+
+        private class RequestInit
+        {
+            public string Credentials { get; set; }
+            public string[][] Headers { get; set; }
+            public string Method { get; set; }
+        }
+
         private class ResponseDescriptor
         {
             #pragma warning disable 0649
             public int StatusCode { get; set; }
+            public string StatusText { get; set; }
             public string[][] Headers { get; set; }
             #pragma warning restore 0649
 
             public HttpResponseMessage ToResponseMessage(HttpContent content)
             {
                 var result = new HttpResponseMessage((HttpStatusCode)StatusCode);
+                result.ReasonPhrase = StatusText;
                 result.Content = content;
                 var headers = result.Headers;
                 var contentHeaders = result.Content?.Headers;

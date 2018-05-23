@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             AddRequestHeader("Content-Type", "application/json");
             IssueRequest("PUT", "/api/person", "{\"Name\": \"Bert\", \"Id\": 123}");
             Assert.Equal("OK", _responseStatus.Text);
-            Assert.Contains("Content-Type: application/json", _responseHeaders.Text);
+            Assert.Contains("Content-Type: application/json", _responseHeaders.Text, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("{\"id\":123,\"name\":\"Bert\"}", _responseBody.Text);
         }
 

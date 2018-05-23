@@ -91,6 +91,12 @@ export const monoPlatform: Platform = {
     return mono_string(jsString);
   },
 
+  toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
+    const dataPtr = getArrayDataPointer(array);
+    const length = Module.getValue(dataPtr, 'i32');
+    return new Uint8Array(Module.HEAPU8.buffer, dataPtr + 4, length);
+  },
+
   getArrayLength: function getArrayLength(array: System_Array<any>): number {
     return Module.getValue(getArrayDataPointer(array), 'i32');
   },
