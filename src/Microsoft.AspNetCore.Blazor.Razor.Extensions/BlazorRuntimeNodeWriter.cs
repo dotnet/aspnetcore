@@ -160,6 +160,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 throw new ArgumentNullException(nameof(node));
             }
 
+            _scopeStack.IncrementCurrentScopeChildCount(context);
+
             context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
                 .Write((_sourceSequence++).ToString())
