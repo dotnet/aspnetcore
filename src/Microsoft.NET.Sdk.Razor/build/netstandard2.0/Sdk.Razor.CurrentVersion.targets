@@ -457,7 +457,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="_RazorGetCopyToPublishDirectoryItems"
     BeforeTargets="GetCopyToPublishDirectoryItems"
-    DependsOnTargets="RazorCompile"
+    DependsOnTargets="ResolveRazorGenerateInputs"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true'">
 
     <!-- 
