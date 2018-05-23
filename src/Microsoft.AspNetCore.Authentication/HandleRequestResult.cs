@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 throw new ArgumentNullException(nameof(ticket));
             }
-            return new HandleRequestResult() { Ticket = ticket };
+            return new HandleRequestResult() { Ticket = ticket, Properties = ticket.Properties };
         }
 
         /// <summary>
