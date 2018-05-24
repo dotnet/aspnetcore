@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
 
         RenderHandle _renderHandle;
-        string _baseUriPrefix;
+        string _baseUri;
         string _locationAbsolute;
 
         [Inject] private IUriHelper UriHelper { get; set; }
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
         public void Init(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
-            _baseUriPrefix = UriHelper.GetBaseUriPrefix();
+            _baseUri = UriHelper.GetBaseUri();
             _locationAbsolute = UriHelper.GetAbsoluteUri();
             UriHelper.OnLocationChanged += OnLocationChanged;
         }
@@ -76,13 +76,13 @@ namespace Microsoft.AspNetCore.Blazor.Routing
 
         private void Refresh()
         {
-            var locationPath = UriHelper.ToBaseRelativePath(_baseUriPrefix, _locationAbsolute);
+            var locationPath = UriHelper.ToBaseRelativePath(_baseUri, _locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
             Routes.Route(context);
             if (context.Handler == null)
             {
-                throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with a route for '{locationPath}'.");
+                throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with a route for '/{locationPath}'.");
             }
 
             if (!typeof(IComponent).IsAssignableFrom(context.Handler))

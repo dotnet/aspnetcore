@@ -1,18 +1,18 @@
-@page "/Links"
 @using Microsoft.AspNetCore.Blazor.Routing
 @inject Microsoft.AspNetCore.Blazor.Services.IUriHelper uriHelper
 <style type="text/css">a.active { background-color: yellow; font-weight: bold; }</style>
 <ul>
-    <li><NavLink href="/subdir/RouterTest/" Match=NavLinkMatch.All>Default (matches all)</NavLink></li>
-    <li><NavLink href="/subdir/RouterTest/?abc=123">Default with query</NavLink></li>
-    <li><NavLink href="/subdir/RouterTest/#blah">Default with hash</NavLink></li>
-    <li><NavLink href="/subdir/RouterTest/Other">Other</NavLink></li>
-    <li><NavLink href="RouterTest/Other" Match=NavLinkMatch.All>Other with base-relative URL (matches all)</NavLink></li>
-    <li><NavLink href="/subdir/RouterTest/Other?abc=123">Other with query</NavLink></li>
-    <li><NavLink href="/subdir/RouterTest/Other#blah">Other with hash</NavLink></li>
-    <li><NavLink href="/subdir/RouterTest/WithParameters/Name/Steve/LastName/Sanderson">With parameters</NavLink></li>
+    <li><NavLink href="/subdir/" Match=NavLinkMatch.All>Default (matches all)</NavLink></li>
+    <li><NavLink href="" Match=NavLinkMatch.All>Default with base-relative URL (matches all)</NavLink></li>
+    <li><NavLink href="/subdir/?abc=123">Default with query</NavLink></li>
+    <li><NavLink href="/subdir/#blah">Default with hash</NavLink></li>
+    <li><NavLink href="/subdir/Other">Other</NavLink></li>
+    <li><NavLink href="Other" Match=NavLinkMatch.All>Other with base-relative URL (matches all)</NavLink></li>
+    <li><NavLink href="/subdir/Other?abc=123">Other with query</NavLink></li>
+    <li><NavLink href="/subdir/Other#blah">Other with hash</NavLink></li>
+    <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With parameters</NavLink></li>
 </ul>
 
-<button onclick=@(x => uriHelper.NavigateTo("RouterTest/Other"))>
+<button onclick=@(x => uriHelper.NavigateTo("Other"))>
     Programmatic navigation
 </button>

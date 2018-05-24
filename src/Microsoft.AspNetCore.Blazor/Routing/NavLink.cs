@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Components;
@@ -96,18 +96,45 @@ namespace Microsoft.AspNetCore.Blazor.Routing
 
         private bool ShouldMatch(string currentUriAbsolute)
         {
-            if (Match == NavLinkMatch.Prefix)
+            if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsolute))
             {
-                return StartsWithAndHasSeparator(currentUriAbsolute, _hrefAbsolute);
+                return true;
             }
-            else if (Match == NavLinkMatch.All)
+
+            if (Match == NavLinkMatch.Prefix
+                && IsStrictlyPrefixWithSeparator(currentUriAbsolute, _hrefAbsolute))
             {
-                return string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.Ordinal);
+                return true;
             }
-            else
+
+            return false;
+        }
+
+        private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
+        {
+            if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException($"Unsupported {nameof(NavLinkMatch)} value: {Match}");
+                return true;
             }
+
+            if (currentUriAbsolute.Length == _hrefAbsolute.Length - 1)
+            {
+                // Special case: highlight links to http://host/path/ even if you're
+                // at http://host/path (with no trailing slash)
+                //
+                // This is because the router accepts an absolute URI value of "same
+                // as base URI but without trailing slash" as equivalent to "base URI",
+                // which in turn is because it's common for servers to return the same page
+                // for http://host/vdir as they do for host://host/vdir/ as it's no
+                // good to display a blank page in that case.
+                if (_hrefAbsolute[_hrefAbsolute.Length - 1] == '/'
+                    && _hrefAbsolute.StartsWith(currentUriAbsolute, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void Render(RenderTreeBuilder builder)
@@ -134,15 +161,10 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             => str1 == null ? str2
             : (str2 == null ? str1 : $"{str1} {str2}");
 
-        private static bool StartsWithAndHasSeparator(string value, string prefix)
+        private static bool IsStrictlyPrefixWithSeparator(string value, string prefix)
         {
-            var valueLength = value.Length;
             var prefixLength = prefix.Length;
-            if (prefixLength == valueLength)
-            {
-                return string.Equals(value, prefix, StringComparison.Ordinal);
-            }
-            else if (valueLength > prefixLength)
+            if (value.Length > prefixLength)
             {
                 return value.StartsWith(prefix, StringComparison.Ordinal)
                     && (

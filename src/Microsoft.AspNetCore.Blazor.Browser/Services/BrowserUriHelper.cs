@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Browser.Interop;
@@ -22,8 +22,11 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         static bool _hasEnabledNavigationInterception;
         static string _cachedAbsoluteUri;
         static EventHandler<string> _onLocationChanged;
-        static string _baseUriStringNoTrailingSlash; // No trailing slash so we can just prepend it to suffixes
-        static Uri _baseUriWithTrailingSlash; // With trailing slash so it can be used in new Uri(base, relative)
+
+        // These two are always kept in sync. We store both representations to
+        // avoid having to convert between them on demand.
+        static Uri _baseUriWithTrailingSlash;
+        static string _baseUriStringWithTrailingSlash;
 
         /// <inheritdoc />
         public event EventHandler<string> OnLocationChanged
@@ -44,10 +47,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         }
 
         /// <inheritdoc />
-        public string GetBaseUriPrefix()
+        public string GetBaseUri()
         {
             EnsureBaseUriPopulated();
-            return _baseUriStringNoTrailingSlash;
+            return _baseUriStringWithTrailingSlash;
         }
 
         /// <inheritdoc />
@@ -81,27 +84,25 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         }
 
         /// <inheritdoc />
-        public string ToBaseRelativePath(string baseUriPrefix, string absoluteUri)
+        public string ToBaseRelativePath(string baseUri, string absoluteUri)
         {
-            if (absoluteUri.Equals(baseUriPrefix, StringComparison.Ordinal))
+            if (absoluteUri.StartsWith(baseUri, StringComparison.Ordinal))
             {
-                // Special case: if you're exactly at the base URI, treat it as if you
-                // were at "{baseUriPrefix}/" (i.e., with a following slash). It's a bit
-                // ambiguous because we don't know whether the server would return the
-                // same page whether or not the slash is present, but ASP.NET Core at
-                // least does by default when using PathBase.
-                return "/";
-            }
-            else if (absoluteUri.StartsWith(baseUriPrefix, StringComparison.Ordinal)
-                && absoluteUri.Length > baseUriPrefix.Length
-                && absoluteUri[baseUriPrefix.Length] == '/')
+                // The absolute URI must be of the form "{baseUri}something" (where
+                // baseUri ends with a slash), and from that we return "something"
+                return absoluteUri.Substring(baseUri.Length);
+            } else if ($"{absoluteUri}/".Equals(baseUri, StringComparison.Ordinal))
             {
-                // The absolute URI must be of the form "{baseUriPrefix}/something",
-                // and from that we return "/something"
-                return absoluteUri.Substring(baseUriPrefix.Length);
+                // Special case: for the base URI "/something/", if you're at
+                // "/something" then treat it as if you were at "/something/" (i.e.,
+                // with the trailing slash). It's a bit ambiguous because we don't know
+                // whether the server would return the same page whether or not the
+                // slash is present, but ASP.NET Core at least does by default when
+                // using PathBase.
+                return string.Empty;
             }
 
-            throw new ArgumentException($"The URI '{absoluteUri}' is not contained by the base URI '{baseUriPrefix}'.");
+            throw new ArgumentException($"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.");
         }
 
         /// <inheritdoc />
@@ -118,12 +119,12 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         private static void EnsureBaseUriPopulated()
         {
             // The <base href> is fixed for the lifetime of the page, so just cache it
-            if (_baseUriStringNoTrailingSlash == null)
+            if (_baseUriStringWithTrailingSlash == null)
             {
-                var baseUri = RegisteredFunction.InvokeUnmarshalled<string>(
+                var baseUriAbsolute = RegisteredFunction.InvokeUnmarshalled<string>(
                     $"{_functionPrefix}.getBaseURI");
-                _baseUriStringNoTrailingSlash = ToBaseUriPrefix(baseUri);
-                _baseUriWithTrailingSlash = new Uri(_baseUriStringNoTrailingSlash + "/");
+                _baseUriStringWithTrailingSlash = ToBaseUri(baseUriAbsolute);
+                _baseUriWithTrailingSlash = new Uri(_baseUriStringWithTrailingSlash);
             }
         }
 
@@ -147,25 +148,25 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         }
 
         /// <summary>
-        /// Given the document's document.baseURI value, returns the URI prefix
-        /// that can be prepended to URI paths to produce an absolute URI.
-        /// This is computed by removing the final slash and any following characters.
+        /// Given the document's document.baseURI value, returns the URI
+        /// that can be prepended to relative URI paths to produce an absolute URI.
+        /// This is computed by removing anything after the final slash.
         /// Internal for tests.
         /// </summary>
-        /// <param name="baseUri">The page's document.baseURI value.</param>
+        /// <param name="absoluteBaseUri">The page's document.baseURI value.</param>
         /// <returns>The URI prefix</returns>
-        internal static string ToBaseUriPrefix(string baseUri)
+        internal static string ToBaseUri(string absoluteBaseUri)
         {
-            if (baseUri != null)
+            if (absoluteBaseUri != null)
             {
-                var lastSlashIndex = baseUri.LastIndexOf('/');
+                var lastSlashIndex = absoluteBaseUri.LastIndexOf('/');
                 if (lastSlashIndex >= 0)
                 {
-                    return baseUri.Substring(0, lastSlashIndex);
+                    return absoluteBaseUri.Substring(0, lastSlashIndex + 1);
                 }
             }
 
-            return string.Empty;
+            return "/";
         }
     }
 }
