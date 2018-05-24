@@ -25,7 +25,7 @@ namespace TriageBuildFailures.Email
 
         public async Task SendEmail(string to, string subject, string body)
         {
-            if (true)
+            if (Constants.BeQuite)
             {
                 var tempMsg = $"We tried to send an email to {to} about {subject} with {body}";
 

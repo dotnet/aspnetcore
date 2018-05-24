@@ -109,15 +109,8 @@ namespace TriageBuildFailures.TeamCity
 
         public void SetTag(TeamCityBuild build, string tag)
         {
-            if(Constants.BeQuite)
-            {
-                _reporter.Output($"Tried to set tag {tag} on {build.WebURL}");
-            }
-            else
-            {
-                var url = $"app/rest/builds/{build.Id}/tags/";
-                MakeTeamCityRequest(HttpMethod.Post, url, tag).Dispose();
-            }
+            var url = $"app/rest/builds/{build.Id}/tags/";
+            MakeTeamCityRequest(HttpMethod.Post, url, tag).Dispose();
         }
 
         public IList<TeamCityBuild> GetFailedBuilds(DateTime startDate)

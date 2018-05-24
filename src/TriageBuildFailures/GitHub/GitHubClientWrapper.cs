@@ -5,8 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.IO;
-using Common;
 using McMaster.Extensions.CommandLineUtils;
 using Octokit;
 
@@ -16,8 +14,6 @@ namespace TriageBuildFailures.GitHub
     {
         public GitHubConfig Config { get; private set; }
         public GitHubClient Client { get; private set; }
-        public ProjectColumnsClient ColumnsClient { get; private set; }
-        public ProjectCardsClient CardClient { get; private set; }
         private IReporter _reporter;
         private static Random _random = new Random();
         private const string _tempFolder = "temp";
@@ -54,8 +50,6 @@ namespace TriageBuildFailures.GitHub
             {
                 Credentials = new Credentials(Config.AccessToken)
             };
-            ColumnsClient = new ProjectColumnsClient(apiConnection);
-            CardClient = new ProjectCardsClient(apiConnection);
         }
 
         /// <summary>
@@ -108,21 +102,8 @@ namespace TriageBuildFailures.GitHub
 
         public async Task AddIssueToProject(GithubIssue issue, int columnId)
         {
-            if (Constants.BeQuite)
-            {
-                var folder = Path.Combine("temp", "Project");
-                Directory.CreateDirectory(folder);
-
-                using (var fileStream = File.CreateText(Path.Combine(folder, $"{issue.Number}.txt")))
-                {
-                    fileStream.Write(issue.Id);
-                }
-            }
-            else
-            {
-                var newCard = new NewProjectCard($"{issue.RepositoryOwner}/{issue.RepositoryName}#{issue.Number}");
-                await CardClient.Create(columnId, newCard);
-            }
+            var newCard = new NewProjectCard($"{issue.RepositoryOwner}/{issue.RepositoryName}#{issue.Number}");
+            await Client.Repository.Project.Card.Create(columnId, newCard);
         }
 
         public async Task<IEnumerable<IssueComment>> GetIssueComments(GithubIssue issue)
@@ -132,63 +113,22 @@ namespace TriageBuildFailures.GitHub
 
         public async Task CreateComment(GithubIssue issue, string comment)
         {
-            if (Constants.BeQuite)
-            {
-                var tempComments = Path.Combine(_tempFolder, issue.RepositoryOwner, issue.RepositoryName, issue.Number.ToString());
-                Directory.CreateDirectory(tempComments);
-
-                using (var fileStream = File.CreateText(Path.Combine(tempComments, $"{Path.GetRandomFileName()}.txt")))
-                {
-                    fileStream.Write(comment);
-                }
-            }
-            else
-            {
-                await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
-            }
+            await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
         }
 
         public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IEnumerable<string> labels)
         {
-            if (Constants.BeQuite)
+            var newIssue = new NewIssue(subject)
             {
-                var tempMsg = $@"Tried to create a github issue:
-                    Repo: {repo}
-                    Subject: {subject}
-                    Body: {body}
-                    Labels: {string.Join(",", labels)}";
+                Body = body,
+            };
 
-                _reporter.Output(tempMsg);
-
-                var repoFolder = Path.Combine(_tempFolder, owner, repo);
-                Directory.CreateDirectory(repoFolder);
-
-                using (var fileStream = File.CreateText(Path.Combine(repoFolder, $"{Path.GetRandomFileName()}.txt")))
-                {
-                    fileStream.Write(tempMsg);
-                }
-
-                var repository = await Client.Repository.Get(owner, repo);
-
-                var issue = new Issue(url: null, htmlUrl: null, commentsUrl: null, eventsUrl: null, number: _random.Next(),
-                    ItemState.Open, subject, body, null, null, null, null, null, null, 0, null, null, DateTimeOffset.Now,
-                    DateTimeOffset.Now, _random.Next(), false, repository);
-                return new GithubIssue(issue);
-            }
-            else
+            foreach (var label in labels)
             {
-                var newIssue = new NewIssue(subject)
-                {
-                    Body = body,
-                };
-
-                foreach (var label in labels)
-                {
-                    newIssue.Labels.Add(label);
-                }
-
-                return new GithubIssue(await Client.Issue.Create(owner, repo, newIssue));
+                newIssue.Labels.Add(label);
             }
+
+            return new GithubIssue(await Client.Issue.Create(owner, repo, newIssue));
         }
     }
 

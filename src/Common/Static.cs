@@ -28,7 +28,7 @@ namespace Common
         /// <remarks>We don't have a good way to know what repo a test came out of, so we have this hidious method which attempts to figure it out based on the namespace of the test.</remarks>
         public static string FindRepo(string testName, IReporter reporter)
         {
-            if (true)
+            if (Constants.BeQuite)
             {
                 return "TriageTest";
             }
@@ -103,7 +103,7 @@ namespace Common
 
         public static string FindOwner(string name, IReporter reporter)
         {
-            if(true)
+            if(Constants.BeQuite)
             {
                 return "ryanbrandenburg";
             }
