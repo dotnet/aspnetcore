@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="0.9.9.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.8.0-beta3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
@@ -40,9 +41,7 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj" />
-    <Reference Include="Microsoft.AspNetCore.Blazor.AngleSharp" HintPath="..\..\src\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll" />
   </ItemGroup>
 
 </Project>

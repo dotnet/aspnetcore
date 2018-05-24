@@ -1,16 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using AngleSharp;
+using AngleSharp.Extensions;
+using AngleSharp.Html;
+using AngleSharp.Parser.Html;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using AngleSharp;
-using AngleSharp.Html;
-using AngleSharp.Parser.Html;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     RewriteChildren(_source, node);
                 }
             }
-            
+
             public override void VisitHtmlAttribute(HtmlAttributeIntermediateNode node)
             {
                 // Don't rewrite inside of attributes
@@ -123,19 +124,23 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // the attributes from the parsed HTML and the CSharpAttribute value.
                 var parser = new HtmlParser(source);
                 var attributes = new List<HtmlAttributeIntermediateNode>();
-                
+
                 for (var i = 0; i < children.Length; i++)
                 {
                     if (children[i] is HtmlContentIntermediateNode htmlNode)
                     {
                         parser.Push(htmlNode);
-
-                        while (true)
+                        var tokens = parser.Get();
+                        foreach (var token in tokens)
                         {
                             // We have to call this before get. Anglesharp doesn't return the start position
                             // of tokens.
                             var start = parser.GetCurrentLocation();
-                            var token = parser.Get();
+
+                            // We have to set the Location explicitly otherwise we would need to include
+                            // the token in every call to the parser.
+                            parser.SetLocation(token);
+
                             var end = parser.GetCurrentLocation();
 
                             if (token.Type == HtmlTokenType.EndOfFile)
@@ -349,7 +354,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // Tracks the offsets between the start of _content and then original source document.
             private List<(int offset, int sourceOffset)> _offsets;
-            private HtmlTokenizer _tokenizer;
+            private TextSource _textSource;
             private int _position;
             private string _content;
 
@@ -382,7 +387,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                 _content = builder.ToString();
                 _offsets = offsets;
-                _tokenizer = new HtmlTokenizer(new TextSource(_content), HtmlEntityService.Resolver);
+                _textSource = new TextSource(_content);
                 _position = 0;
             }
 
@@ -391,23 +396,25 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 return _position >= _content.Length ? string.Empty : _content.Substring(_position);
             }
 
-            public HtmlToken Get()
+            public IEnumerable<HtmlToken> Get()
             {
-                if (_tokenizer == null)
+                if (_textSource == null)
                 {
                     throw new InvalidOperationException("You need to call Push first.");
                 }
 
-                var token = _tokenizer.Get();
+                var tokens = _textSource.Tokenize(HtmlEntityService.Resolver);
+                return tokens;
+            }
 
+            public void SetLocation(HtmlToken token)
+            {
                 // The tokenizer will advance to the end when you have an unclosed tag.
                 // We don't want this, we want to resume before the unclosed tag.
                 if (token.Type != HtmlTokenType.EndOfFile)
                 {
-                    _position = _tokenizer.Position;
+                    _position = _textSource.Index;
                 }
-
-                return token;
             }
 
             public SourceLocation GetCurrentLocation(int offset = 0)

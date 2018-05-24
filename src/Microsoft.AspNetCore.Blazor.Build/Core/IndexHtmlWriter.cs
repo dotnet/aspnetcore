@@ -1,15 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using AngleSharp;
+using AngleSharp.Extensions;
+using AngleSharp.Html;
+using AngleSharp.Parser.Html;
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using AngleSharp;
-using AngleSharp.Html;
-using AngleSharp.Parser.Html;
-using Mono.Cecil;
 
 namespace Microsoft.AspNetCore.Blazor.Build
 {
@@ -109,15 +110,14 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             // Search for a tag of the form <script type="boot-blazor"></script>, and replace
             // it with a fully-configured Blazor boot script tag
-            var tokenizer = new HtmlTokenizer(
-                new TextSource(htmlTemplate),
-                HtmlEntityService.Resolver);
+            var textSource = new TextSource(htmlTemplate);
             var currentRangeStartPos = 0;
             var isInBlazorBootTag = false;
             var resumeOnNextToken = false;
-            while (true)
+            var result = string.Empty;
+
+            foreach (var token in textSource.Tokenize(HtmlEntityService.Resolver))
             {
-                var token = tokenizer.Get();
                 var tokenCharIndex = token.Position.Position - 1;
                 if (resumeOnNextToken)
                 {
@@ -181,9 +181,13 @@ namespace Microsoft.AspNetCore.Blazor.Build
                         {
                             resultBuilder.Append(htmlTemplate, currentRangeStartPos, remainingLength);
                         }
-                        return resultBuilder.ToString();
+                        result = resultBuilder.ToString();
+                        break;
                 }
             }
+
+
+            return result;
         }
 
         private static void AppendReferenceTags(StringBuilder resultBuilder, IEnumerable<string> urls, string format)

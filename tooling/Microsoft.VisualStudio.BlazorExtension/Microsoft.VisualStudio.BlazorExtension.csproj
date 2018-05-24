@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
@@ -156,8 +156,8 @@
       This is built as a P2P by Microsoft.VisualStudio.LanguageServices.Blazor. This is required, adding the P2P	
       to this project will cause a NU1201 error that doesn't have a workaround.	
     -->
-    <Content Include="..\..\src\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll">
-      <Link>Microsoft.AspNetCore.Blazor.AngleSharp.dll</Link>
+    <Content Include="bin\$(Configuration)\AngleSharp.dll">
+      <Link>AngleSharp.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>

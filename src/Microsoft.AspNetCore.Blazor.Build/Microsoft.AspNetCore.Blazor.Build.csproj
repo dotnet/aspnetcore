@@ -45,7 +45,7 @@
         <RepositoryUrl>$(RepositoryUrl)</RepositoryUrl>
         <Category>$(PackageArtifactCategory)</Category>
         <Certificate>$(PackageSigningCertName)</Certificate>
-        <ShouldBeSigned Condition="'$(PackageSigningCertName)' != '' OR @(SignedPackageFile->Count()) != 0 ">true</ShouldBeSigned>
+        <ShouldBeSigned Condition="'$(PackageSigningCertName)' != '' OR @(SignedPackageFile-&gt;Count()) != 0 ">true</ShouldBeSigned>
         <ShouldBeSigned Condition=" '$(DisableCodeSigning)' == 'true' ">false</ShouldBeSigned>
         <IsContainer>true</IsContainer>
       </ArtifactInfo>
@@ -67,6 +67,7 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Browser.JS\Microsoft.AspNetCore.Blazor.Browser.JS.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj" />
+    <PackageReference Include="AngleSharp" Version="0.9.9.2" />
 
     <!-- Intentionally include Razor.Design's MSBuild assets for everyone who reference Blazor.Build -->
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)" PrivateAssets="None" />
@@ -76,9 +77,5 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.0" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
     <PackageReference Include="System.CodeDom" Version="4.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="..\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll" />
   </ItemGroup>
 </Project>

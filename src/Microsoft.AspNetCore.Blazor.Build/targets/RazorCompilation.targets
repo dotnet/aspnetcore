@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <!-- Require rebuild if the targets change -->
   <PropertyGroup>
@@ -18,7 +18,7 @@
 
   <PropertyGroup>
     <!-- Passed to Razor tasks and loaded as a plugin -->
-    <_BlazorAngleSharpAssemblyPath>$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.AngleSharp.dll</_BlazorAngleSharpAssemblyPath>
+      <_AngleSharpAssemblyPath>$(MSBuildThisFileDirectory)../tools/AngleSharp.dll</_AngleSharpAssemblyPath>
     <_BlazorExtensionAssemblyPath>$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
 
     <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
@@ -55,8 +55,8 @@
     </RazorConfiguration>
 
     <RazorExtension Include="Blazor.AngleSharp-$(BlazorLanguageVersion)">
-      <AssemblyName>Microsoft.AspNetCore.Blazor.AngleSharp</AssemblyName>
-      <AssemblyFilePath>$(_BlazorAngleSharpAssemblyPath)</AssemblyFilePath>
+      <AssemblyName>AngleSharp</AssemblyName>
+      <AssemblyFilePath>$(_AngleSharpAssemblyPath)</AssemblyFilePath>
     </RazorExtension>
     <RazorExtension Include="Blazor-$(BlazorLanguageVersion)">
       <AssemblyName>Microsoft.AspNetCore.Blazor.Razor.Extensions</AssemblyName>
