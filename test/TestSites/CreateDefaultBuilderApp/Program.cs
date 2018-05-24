@@ -35,9 +35,10 @@ namespace CreateDefaultBuilderApp
         private static string GetResponseMessage(WebHostBuilderContext context, IServiceCollection services)
         {
             // Verify ContentRootPath set
-            if (!string.Equals(Directory.GetCurrentDirectory(), context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))
+            var contentRoot = Environment.GetEnvironmentVariable("ASPNETCORE_CONTENTROOT");
+            if (!string.Equals(contentRoot, context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))
             {
-                return $"Current directory incorrect. Expected: {Directory.GetCurrentDirectory()} Actual: {context.HostingEnvironment.ContentRootPath}";
+                return $"ContentRootPath incorrect. Expected: {contentRoot} Actual: {context.HostingEnvironment.ContentRootPath}";
             }
 
             // Verify appsettings.json loaded

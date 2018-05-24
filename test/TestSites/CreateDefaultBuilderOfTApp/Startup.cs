@@ -26,9 +26,10 @@ namespace CreateDefaultBuilderOfTApp
         private static string GetResponseMessage(WebHostBuilderContext context, IOptions<HostFilteringOptions> hostFilteringOptions)
         {
             // Verify ContentRootPath set
-            if (!string.Equals(Directory.GetCurrentDirectory(), context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))
+            var contentRoot = Environment.GetEnvironmentVariable("ASPNETCORE_CONTENTROOT");
+            if (!string.Equals(contentRoot, context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))
             {
-                return $"Current directory incorrect. Expected: {Directory.GetCurrentDirectory()} Actual: {context.HostingEnvironment.ContentRootPath}";
+                return $"ContentRootPath incorrect. Expected: {contentRoot} Actual: {context.HostingEnvironment.ContentRootPath}";
             }
 
             // Verify appsettings.json loaded

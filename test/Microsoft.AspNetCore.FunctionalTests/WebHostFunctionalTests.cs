@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken, retryCount: 5);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderOfTApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken, retryCount: 5);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try

@@ -149,12 +149,21 @@ namespace Microsoft.AspNetCore
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder CreateDefaultBuilder(string[] args)
         {
-            var builder = new WebHostBuilder()
-                .UseKestrel((builderContext, options) =>
+            var builder = new WebHostBuilder();
+
+            if (string.IsNullOrEmpty(builder.GetSetting(WebHostDefaults.ContentRootKey)))
+            {
+                builder.UseContentRoot(Directory.GetCurrentDirectory());
+            }
+            if (args != null)
+            {
+                builder.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build());
+            }
+
+            builder.UseKestrel((builderContext, options) =>
                 {
                     options.Configure(builderContext.Configuration.GetSection("Kestrel"));
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     var env = hostingContext.HostingEnvironment;
@@ -208,11 +217,6 @@ namespace Microsoft.AspNetCore
                 {
                     options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
                 });
-
-            if (args != null)
-            {
-                builder.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build());
-            }
 
             return builder;
         }
