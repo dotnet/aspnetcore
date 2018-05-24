@@ -13,6 +13,7 @@
 #include <vector>
 #include <shellapi.h>
 #include <sstream>
+#include <memory>
 #include "Shlwapi.h"
 #include "hashtable.h"
 #include "stringu.h"
