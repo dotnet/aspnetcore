@@ -10,6 +10,9 @@
     <StandardTestAppTfms>$(DeveloperBuildTestAppTfms)</StandardTestAppTfms>
     <StandardTestAppTfms Condition=" '$(DeveloperBuild)' != 'true' ">netcoreapp2.2;netcoreapp2.0</StandardTestAppTfms>
     <StandardTestAppTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestAppTfms);net461</StandardTestAppTfms>
+
+    <!-- Bug in SelfHostDeployer prevents desktop applications from being published without a rid. -->
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>

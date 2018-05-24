@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,6 +72,7 @@ namespace FunctionalTests
                 RuntimeArchitecture.x64)
             {
                 ApplicationName = applicationName,
+                ApplicationType = flavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable,
                 PublishApplicationBeforeDeployment = true,
                 Configuration = projectConfiguration,
                 EnvironmentVariables =
