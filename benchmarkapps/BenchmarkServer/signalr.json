@@ -9,7 +9,10 @@
     "Connections": 10,
     "Duration": 20,
     "Warmup": 2,
-    "Path": "/echo"
+    "Path": "/echo",
+    "ClientProperties": {
+      "CollectLatency": "true"
+    }
   },
   "SignalRBroadcast": {
     "ClientProperties": { "Scenario": "broadcast" }
@@ -22,6 +25,9 @@
     "Warmup": 0
   },
   "SignalREchoIdle": {
-    "ClientProperties": { "Scenario": "echoIdle" }
+    "ClientProperties": {
+      "Scenario": "echoIdle",
+      "CollectLatency": "false"
+    }
   }
 }
