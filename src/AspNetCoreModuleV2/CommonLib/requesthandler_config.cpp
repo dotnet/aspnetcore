@@ -25,16 +25,12 @@ HRESULT
 REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
     _In_  IHttpServer             *pHttpServer,
     _In_  IHttpApplication        *pHttpApplication,
-    _In_  PCWSTR                   pwzExeLocation,
-    _In_  HANDLE                   hEventLog,
     _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
 )
 {
     HRESULT                 hr = S_OK;
     REQUESTHANDLER_CONFIG  *pRequestHandlerConfig = NULL;
     STRU                    struHostFxrDllLocation;
-    BSTR*                   pwzArgv;
-    DWORD                   dwArgCount;
     STRU                    struExeLocation;
 
     if (ppAspNetCoreConfig == NULL)
@@ -56,60 +52,6 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
     if (FAILED(hr))
     {
         goto Finished;
-    }
-
-    // Modify config for inprocess.
-    if (pRequestHandlerConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
-    {
-        if (FAILED(struExeLocation.Copy(pwzExeLocation)))
-        {
-            goto Finished;
-        }
-        // If the exe was not provided by the shim, reobtain the hostfxr parameters (which finds dotnet).
-        if (struExeLocation.IsEmpty())
-        {
-            if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
-                hEventLog,
-                pRequestHandlerConfig->QueryProcessPath()->QueryStr(),
-                pRequestHandlerConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                pRequestHandlerConfig->QueryArguments()->QueryStr(),
-                &struHostFxrDllLocation,
-                &struExeLocation,
-                &dwArgCount,
-                &pwzArgv)))
-            {
-                goto Finished;
-            }
-        }
-        else if (HOSTFXR_UTILITY::IsDotnetExecutable(&struExeLocation))
-        {
-            if (FAILED(hr = HOSTFXR_UTILITY::ParseHostfxrArguments(
-                pRequestHandlerConfig->QueryArguments()->QueryStr(),
-                pwzExeLocation,
-                pRequestHandlerConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                hEventLog,
-                &dwArgCount,
-                &pwzArgv)))
-            {
-                goto Finished;
-            }
-        }
-        else
-        {
-            if (FAILED(hr = HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
-                pwzExeLocation,
-                pRequestHandlerConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                pRequestHandlerConfig->QueryArguments()->QueryStr(),
-                hEventLog,
-                &struHostFxrDllLocation,
-                &dwArgCount,
-                &pwzArgv)))
-            {
-                goto Finished;
-            }
-        }
-
-        pRequestHandlerConfig->SetHostFxrArguments(dwArgCount, pwzArgv);
     }
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,

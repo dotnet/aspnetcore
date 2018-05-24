@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "precomp.hxx"
+#include "hostfxroptions.h"
 
 __override
 HRESULT
@@ -81,7 +82,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     IAPPLICATION* pApplication = NULL;
-    STRU struExeLocation;
     STACK_STRU(struFileName, 256);
 
     if (g_fInShutdown)
@@ -90,7 +90,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         goto Finished;
     }
 
-    hr = ASPNETCORE_SHIM_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext->GetApplication(), g_hEventLog, &struExeLocation, &pConfig);
+    hr = ASPNETCORE_SHIM_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext->GetApplication(), &pConfig);
     if (FAILED(hr))
     {
         goto Finished;
@@ -144,7 +144,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
 
     // make sure assmebly is loaded and application is created
-    hr = m_pApplicationInfo->EnsureApplicationCreated(pHttpContext, &struExeLocation);
+    hr = m_pApplicationInfo->EnsureApplicationCreated(pHttpContext);
     if (FAILED(hr))
     {
         goto Finished;

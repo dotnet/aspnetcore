@@ -119,7 +119,7 @@ inline bool IsSpace(char ch)
 #include "globalmodule.h"
 #include "proxymodule.h"
 #include "applicationinfo.h"
-
+#include "hostfxroptions.h"
 
 FORCEINLINE
 DWORD

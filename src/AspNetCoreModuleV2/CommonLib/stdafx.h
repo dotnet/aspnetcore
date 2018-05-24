@@ -32,4 +32,4 @@
 #include "aspnetcore_msg.h"
 #include "fx_ver.h"
 #include "hostfxr_utility.h"
-
+#include "hostfxroptions.h"

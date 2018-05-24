@@ -442,4 +442,11 @@ http_stop_incoming_requests()
     IN_PROCESS_APPLICATION::GetInstance()->StopIncomingRequests();
 }
 
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+VOID
+set_main_handler(_In_ hostfxr_main_fn main)
+{
+    IN_PROCESS_APPLICATION::SetMainCallback(main);
+}
+
 // End of export

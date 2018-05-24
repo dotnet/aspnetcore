@@ -26,8 +26,6 @@ public:
         _In_  IHttpServer             *pHttpServer,
         _In_  HTTP_MODULE_ID           pModuleId,
         _In_  IHttpApplication        *pHttpApplication,
-        _In_  HANDLE                   hEventLog,
-        _Out_ STRU                    *pcwzExePath,
         _Out_ ASPNETCORE_SHIM_CONFIG **ppAspNetCoreConfig
     );
 
@@ -72,24 +70,6 @@ public:
         return &m_struApplication;
     }
 
-    CONST
-    PCWSTR*
-    QueryHostFxrArguments(
-        VOID
-    )
-    {
-        return m_ppStrArguments;
-    }
-
-    CONST
-    DWORD
-    QueryHostFxrArgCount(
-        VOID
-    )
-    {
-        return m_dwArgc;
-    }
-
     STRU*
     QueryConfigPath(
         VOID
@@ -114,14 +94,6 @@ public:
         return &m_struArguments;
     }
 
-    HRESULT
-    SetHostFxrFullPath(
-        PCWSTR pStrHostFxrFullPath
-    )
-    {
-        return m_struHostFxrLocation.Copy(pStrHostFxrFullPath);
-    }
-
     APP_HOSTING_MODEL
     QueryHostingModel(
         VOID
@@ -130,35 +102,10 @@ public:
         return m_hostingModel;
     }
 
-    CONST
-    PCWSTR
-    QueryHostFxrFullPath(
-        VOID
-    )
-    {
-        return m_struHostFxrLocation.QueryStr();
-    }
-
-    VOID
-    SetHostFxrArguments(
-        DWORD dwArgc,
-        PWSTR* ppStrArguments
-    )
-    {
-        if (m_ppStrArguments != NULL)
-        {
-	        delete[] m_ppStrArguments;
-        }
-
-        m_dwArgc = dwArgc;
-        m_ppStrArguments = ppStrArguments;
-    }
-
 private:
     ASPNETCORE_SHIM_CONFIG() :
         m_cRefs(1),
-        m_hostingModel(HOSTING_UNKNOWN),
-        m_ppStrArguments(NULL)
+        m_hostingModel(HOSTING_UNKNOWN)
     {
     }
 
@@ -170,7 +117,5 @@ private:
     STRU                   m_struConfigPath;
     APP_HOSTING_MODEL      m_hostingModel;
     STRU                   m_struHostFxrLocation;
-    PWSTR*                 m_ppStrArguments;
-    DWORD                  m_dwArgc;
 };
 

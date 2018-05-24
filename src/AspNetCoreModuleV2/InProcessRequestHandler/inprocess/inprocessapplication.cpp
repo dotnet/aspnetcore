@@ -1,10 +1,13 @@
 #include "..\precomp.hxx"
+#include "hostfxroptions.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
+hostfxr_main_fn IN_PROCESS_APPLICATION::s_fMainCallback = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
-    IHttpServer*        pHttpServer,
-    REQUESTHANDLER_CONFIG *pConfig) :
+    IHttpServer *pHttpServer,
+    REQUESTHANDLER_CONFIG *pConfig,
+    PCWSTR pDotnetExeLocation) :
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
@@ -16,7 +19,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_fInitialized(FALSE),
     m_fShutdownCalledFromNative(FALSE),
     m_fShutdownCalledFromManaged(FALSE),
-    m_srwLock()
+    m_srwLock(),
+    m_pstrDotnetExeLocation(pDotnetExeLocation)
 {
     // is it guaranteed that we have already checked app offline at this point?
     // If so, I don't think there is much to do here.
@@ -116,7 +120,7 @@ Finished:
         // Managed layer may block the shutdown and lead to shutdown timeout
         // Assumption: only one inprocess application is hosted.
         // Call process exit to force shutdown
-        // 
+        //
         exit(hr);
     }
 }
@@ -262,7 +266,6 @@ IN_PROCESS_APPLICATION::Recycle(
         // IISExpress scenario
         // Shutdown the managed application and call exit to terminate current process
         ShutDown();
-        exit(0);
     }
 }
 
@@ -808,33 +811,55 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
 )
 {
     HRESULT             hr = S_OK;
-    HMODULE             hModule;
+    HMODULE             hModule = nullptr;
+    DWORD               hostfxrArgc = 0;
+    BSTR               *hostfxrArgv = NULL;
     hostfxr_main_fn     pProc;
+    std::unique_ptr<HOSTFXR_OPTIONS>    hostFxrOptions = NULL;
 
     DBG_ASSERT(m_status == APPLICATION_STATUS::STARTING);
 
-    // hostfxr should already be loaded by the shim. If not, then we will need
-    // to load it ourselves by finding hostfxr again.
-    hModule = LoadLibraryW(L"hostfxr.dll");
-
-    if (hModule == NULL)
+    pProc = s_fMainCallback;
+    if (pProc == nullptr)
     {
-        // .NET Core not installed (we can log a more detailed error message here)
-        hr = ERROR_BAD_ENVIRONMENT;
-        goto Finished;
-    }
+        // hostfxr should already be loaded by the shim. If not, then we will need
+        // to load it ourselves by finding hostfxr again.
+        hModule = LoadLibraryW(L"hostfxr.dll");
 
-    // Get the entry point for main
-    pProc = (hostfxr_main_fn)GetProcAddress(hModule, "hostfxr_main");
-    if (pProc == NULL)
-    {
-        hr = ERROR_BAD_ENVIRONMENT;
-        goto Finished;
-    }
+        if (hModule == NULL)
+        {
+            // .NET Core not installed (we can log a more detailed error message here)
+            hr = ERROR_BAD_ENVIRONMENT;
+            goto Finished;
+        }
 
-    if (FAILED(hr = SetEnvironementVariablesOnWorkerProcess()))
-    {
-        goto Finished;
+        // Get the entry point for main
+        pProc = (hostfxr_main_fn)GetProcAddress(hModule, "hostfxr_main");
+        if (pProc == NULL)
+        {
+            hr = ERROR_BAD_ENVIRONMENT;
+            goto Finished;
+        }
+
+        if (FAILED(hr = HOSTFXR_OPTIONS::Create(
+            m_pstrDotnetExeLocation,
+            m_pConfig->QueryProcessPath()->QueryStr(),
+            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            m_pConfig->QueryArguments()->QueryStr(),
+            g_hEventLog,
+            hostFxrOptions
+            )))
+        {
+            goto Finished;
+        }
+
+        hostfxrArgc = hostFxrOptions->GetArgc();
+        hostfxrArgv = hostFxrOptions->GetArgv();
+
+        if (FAILED(hr = SetEnvironementVariablesOnWorkerProcess()))
+        {
+            goto Finished;
+        }
     }
 
     // There can only ever be a single instance of .NET Core
@@ -845,7 +870,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     // set the callbacks
     s_Application = this;
 
-    hr = RunDotnetApplication(m_pConfig->QueryHostFxrArgCount(), m_pConfig->QueryHostFxrArguments(), pProc);
+    hr = RunDotnetApplication(hostfxrArgc, hostfxrArgv, pProc);
 
 Finished:
 

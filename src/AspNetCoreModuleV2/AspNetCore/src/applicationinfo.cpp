@@ -106,22 +106,16 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
 
     ReferenceApplicationInfo();
 
-    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()) &&
-        GetLastError() == ERROR_FILE_NOT_FOUND)
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()))
     {
         // Check if app offline was originally present.
         // if it was, log that app_offline has been dropped.
         if (m_fAppOfflineFound)
         {
-            STACK_STRU(strEventMsg, 256);
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED_MSG)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_INFORMATION_TYPE,
-                    ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED,
-                    strEventMsg.QueryStr());
-            }
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED,
+                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED_MSG);
         }
 
         m_fAppOfflineFound = FALSE;
@@ -178,13 +172,13 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
 
 HRESULT
 APPLICATION_INFO::EnsureApplicationCreated(
-    IHttpContext *pHttpContext,
-    STRU* struExeLocation
+    IHttpContext *pHttpContext
 )
 {
     HRESULT             hr = S_OK;
     BOOL                fLocked = FALSE;
     IAPPLICATION       *pApplication = NULL;
+    STRU                struExeLocation;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
     STRU                struHostFxrDllLocation;
 
@@ -213,7 +207,7 @@ APPLICATION_INFO::EnsureApplicationCreated(
             // FindRequestHandlerAssembly obtains a global lock, but after releasing the lock,
             // there is a period where we could call
 
-            hr = FindRequestHandlerAssembly();
+            hr = FindRequestHandlerAssembly(struExeLocation);
             if (FAILED(hr))
             {
                 goto Finished;
@@ -225,13 +219,14 @@ APPLICATION_INFO::EnsureApplicationCreated(
                 goto Finished;
             }
 
-            hr = m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext, struExeLocation->QueryStr(), &pApplication);
+            hr = m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext, struExeLocation.QueryStr(), &pApplication);
 
             m_pApplication = pApplication;
         }
     }
 
 Finished:
+
     if (fLocked)
     {
         ReleaseSRWLockExclusive(&m_srwLock);
@@ -240,10 +235,11 @@ Finished:
 }
 
 HRESULT
-APPLICATION_INFO::FindRequestHandlerAssembly()
+APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
 {
     HRESULT             hr = S_OK;
     BOOL                fLocked = FALSE;
+    PCWSTR              pstrHandlerDllName;
     STACK_STRU(struFileName, 256);
 
     if (g_fAspnetcoreRHLoadedError)
@@ -267,44 +263,65 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
 
         if (m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
-            if (FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
-            {
-                STACK_STRU(strEventMsg, 256);
-                if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                    ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG)))
-                {
-                    UTILITY::LogEvent(g_hEventLog,
-                        EVENTLOG_INFORMATION_TYPE,
-                        ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
-                        strEventMsg.QueryStr());
-                }
-
-                goto Finished;
-            }
+            pstrHandlerDllName = g_pwzAspnetcoreInProcessRequestHandlerName;
         }
         else
         {
-            if (FAILED(hr = FindNativeAssemblyFromGlobalLocation(&struFileName)))
+            pstrHandlerDllName = g_pwzAspnetcoreOutOfProcessRequestHandlerName;
+        }
+
+        // Try to see if RH is already loaded
+        g_hAspnetCoreRH = GetModuleHandle(pstrHandlerDllName);
+
+        if (g_hAspnetCoreRH == NULL)
+        {
+            if (m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
             {
-                STACK_STRU(strEventMsg, 256);
-                if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                    ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG)))
+                std:: unique_ptr<HOSTFXR_OPTIONS> options;
+
+                if (FAILED(hr = HOSTFXR_OPTIONS::Create(
+                    NULL,
+                    m_pConfiguration->QueryProcessPath()->QueryStr(),
+                    m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
+                    m_pConfiguration->QueryArguments()->QueryStr(),
+                    g_hEventLog,
+                    options)))
+                {
+                    goto Finished;
+                }
+
+                location.Copy(options->GetExeLocation());
+
+                if (FAILED(hr = FindNativeAssemblyFromHostfxr(options.get(), pstrHandlerDllName, &struFileName)))
+                {
+                    UTILITY::LogEvent(g_hEventLog,
+                            EVENTLOG_INFORMATION_TYPE,
+                            ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
+                            ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG);
+
+                    goto Finished;
+                }
+            }
+            else
+            {
+                if (FAILED(hr = FindNativeAssemblyFromGlobalLocation(pstrHandlerDllName, &struFileName)))
                 {
                     UTILITY::LogEvent(g_hEventLog,
                         EVENTLOG_INFORMATION_TYPE,
                         ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
-                        strEventMsg.QueryStr());
-                }
+                        ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG);
 
+                    goto Finished;
+                }
+            }
+
+            g_hAspnetCoreRH = LoadLibraryW(struFileName.QueryStr());
+
+            if (g_hAspnetCoreRH == NULL)
+            {
+                hr = HRESULT_FROM_WIN32(GetLastError());
                 goto Finished;
             }
-        }
-
-        g_hAspnetCoreRH = LoadLibraryW(struFileName.QueryStr());
-        if (g_hAspnetCoreRH == NULL)
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
         }
 
         g_pfnAspNetCoreCreateApplication = (PFN_ASPNETCORE_CREATE_APPLICATION)
@@ -338,7 +355,9 @@ Finished:
 }
 
 HRESULT
-APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
+APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(
+    PCWSTR libraryName,
+    STRU* struFilename)
 {
     HRESULT hr = S_OK;
     DWORD dwSize = MAX_PATH;
@@ -385,7 +404,7 @@ APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
 
     if (FAILED(hr = struFilename->SyncWithBuffer()) ||
         FAILED(hr = struFilename->Append(L"\\")) ||
-        FAILED(hr = struFilename->Append(g_pwzAspnetcoreOutOfProcessRequestHandlerName)))
+        FAILED(hr = struFilename->Append(libraryName)))
     {
         goto Finished;
     }
@@ -401,6 +420,8 @@ Finished:
 //
 HRESULT
 APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
+    HOSTFXR_OPTIONS* hostfxrOptions,
+    PCWSTR libraryName,
     STRU* struFilename
 )
 {
@@ -418,7 +439,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
 
     DBG_ASSERT(struFileName != NULL);
 
-    hmHostFxrDll = LoadLibraryW(m_pConfiguration->QueryHostFxrFullPath());
+    hmHostFxrDll = LoadLibraryW(hostfxrOptions->GetHostFxrLocation());
 
     if (hmHostFxrDll == NULL)
     {
@@ -446,8 +467,8 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     while (TRUE)
     {
         intHostFxrExitCode = pFnHostFxrSearchDirectories(
-            m_pConfiguration->QueryHostFxrArgCount(),
-            m_pConfiguration->QueryHostFxrArguments(),
+            hostfxrOptions->GetArgc(),
+            hostfxrOptions->GetArgv(),
             struNativeSearchPaths.QueryStr(),
             dwBufferSize,
             &dwRequiredBufferSize
@@ -498,7 +519,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
             }
         }
 
-        if (FAILED(hr = struNativeDllLocation.Append(g_pwzAspnetcoreInProcessRequestHandlerName)))
+        if (FAILED(hr = struNativeDllLocation.Append(libraryName)))
         {
             goto Finished;
         }

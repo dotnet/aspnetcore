@@ -98,9 +98,10 @@ public:
             dwResult = GetEnvironmentVariable(struNameBuffer.QueryStr(),
                 struValueBuffer.QueryStr(),
                 struValueBuffer.QuerySizeCCH());
-            if (struValueBuffer.IsEmpty())
+
+            if (dwResult <= 0)
             {
-                hr = E_UNEXPECTED;
+                hr = HRESULT_FROM_WIN32(GetLastError());
                 goto Finished;
             }
             fFound = TRUE;
@@ -304,7 +305,7 @@ public:
             dwResult = GetEnvironmentVariable(HOSTING_STARTUP_ASSEMBLIES_ENV_STR,
                 strStartupAssemblyEnv.QueryStr(),
                 strStartupAssemblyEnv.QuerySizeCCH());
-            if (strStartupAssemblyEnv.IsEmpty())
+            if (dwResult <= 0)
             {
                 hr = E_UNEXPECTED;
                 goto Finished;
@@ -317,11 +318,14 @@ public:
         }
 
         strStartupAssemblyEnv.SyncWithBuffer();
+        if (strStartupAssemblyEnv.IndexOf(HOSTING_STARTUP_ASSEMBLIES_VALUE) == -1)
+        {
         if (fFound)
         {
             strStartupAssemblyEnv.Append(L";");
         }
         strStartupAssemblyEnv.Append(HOSTING_STARTUP_ASSEMBLIES_VALUE);
+        }
 
         // the environment variable was not defined, create it and add to hashtable
         pHostingEntry = new ENVIRONMENT_VAR_ENTRY();

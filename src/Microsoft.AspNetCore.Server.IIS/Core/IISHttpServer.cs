@@ -136,6 +136,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
 
             _memoryPool.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)

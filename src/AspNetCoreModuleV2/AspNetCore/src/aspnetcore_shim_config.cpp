@@ -5,11 +5,6 @@
 
 ASPNETCORE_SHIM_CONFIG::~ASPNETCORE_SHIM_CONFIG()
 {
-    if (m_ppStrArguments != NULL)
-    {
-        delete[] m_ppStrArguments;
-        m_ppStrArguments = NULL;
-    }
 }
 
 VOID
@@ -38,8 +33,6 @@ ASPNETCORE_SHIM_CONFIG::GetConfig(
     _In_  IHttpServer             *pHttpServer,
     _In_  HTTP_MODULE_ID           pModuleId,
     _In_  IHttpApplication        *pHttpApplication,
-    _In_  HANDLE                   hEventLog,
-    _Out_ STRU                    *struExeLocation,
     _Out_ ASPNETCORE_SHIM_CONFIG **ppAspNetCoreShimConfig
 )
 {
@@ -47,8 +40,7 @@ ASPNETCORE_SHIM_CONFIG::GetConfig(
     ASPNETCORE_SHIM_CONFIG *pAspNetCoreShimConfig = NULL;
     STRU                    struHostFxrDllLocation;
     STRU                    struExeAbsolutePath;
-    BSTR*                   pwzArgv;
-    DWORD                   dwArgCount;
+
     if (ppAspNetCoreShimConfig == NULL)
     {
         hr = E_INVALIDARG;
@@ -79,32 +71,6 @@ ASPNETCORE_SHIM_CONFIG::GetConfig(
     if (FAILED(hr))
     {
         goto Finished;
-    }
-
-    // Modify Inprocess specific configuration here. 
-    if (pAspNetCoreShimConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
-    {
-        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
-            hEventLog,
-            pAspNetCoreShimConfig->QueryProcessPath()->QueryStr(),
-            pAspNetCoreShimConfig->QueryApplicationPhysicalPath()->QueryStr(),
-            pAspNetCoreShimConfig->QueryArguments()->QueryStr(),
-            &struHostFxrDllLocation,
-            &struExeAbsolutePath,
-            &dwArgCount,
-            &pwzArgv)))
-        {
-            goto Finished;
-        }
-
-        if (FAILED(hr = pAspNetCoreShimConfig->SetHostFxrFullPath(struHostFxrDllLocation.QueryStr())))
-        {
-            goto Finished;
-        }
-
-        pAspNetCoreShimConfig->SetHostFxrArguments(dwArgCount, pwzArgv);
-
-        struExeLocation->Copy(struExeAbsolutePath);
     }
 
     hr = pHttpApplication->GetModuleContextContainer()->

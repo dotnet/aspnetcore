@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+
 #define API_BUFFER_TOO_SMALL 0x80008098
 
 extern BOOL     g_fRecycleProcessCalled;
@@ -147,14 +148,13 @@ public:
 
     HRESULT
     EnsureApplicationCreated(
-        IHttpContext *pHttpContext,
-        STRU*    exeLocation
+        IHttpContext *pHttpContext
     );
 
 private:
-    HRESULT FindRequestHandlerAssembly();
-    HRESULT FindNativeAssemblyFromGlobalLocation(STRU* struFilename);
-    HRESULT FindNativeAssemblyFromHostfxr(STRU* struFilename);
+    HRESULT FindRequestHandlerAssembly(STRU& location);
+    HRESULT FindNativeAssemblyFromGlobalLocation(PCWSTR libraryName, STRU* location);
+    HRESULT FindNativeAssemblyFromHostfxr(HOSTFXR_OPTIONS* hostfxrOptions, PCWSTR libraryName, STRU* location);
 
     static VOID DoRecycleApplication(LPVOID lpParam);
 

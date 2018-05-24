@@ -285,10 +285,12 @@ CreateApplication(
     HRESULT      hr = S_OK;
     IAPPLICATION *pApplication = NULL;
     REQUESTHANDLER_CONFIG *pConfig = NULL;
+    UNREFERENCED_PARAMETER(pwzExeLocation);
+
     // Initialze some global variables here
     InitializeGlobalConfiguration(pServer);
 
-    hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), pwzExeLocation, g_hEventLog, &pConfig);
+    hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), &pConfig);
     if (FAILED(hr))
     {
         return hr;

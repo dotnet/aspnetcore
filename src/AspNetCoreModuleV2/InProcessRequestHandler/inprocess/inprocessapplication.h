@@ -11,7 +11,10 @@ typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_MANAGED_CONTEXT_HANDLER)(void *
 class IN_PROCESS_APPLICATION : public APPLICATION
 {
 public:
-    IN_PROCESS_APPLICATION(IHttpServer* pHttpServer, REQUESTHANDLER_CONFIG *pConfig);
+    IN_PROCESS_APPLICATION(
+        IHttpServer* pHttpServer,
+        REQUESTHANDLER_CONFIG *pConfig,
+        PCWSTR pDotnetExeLocation);
 
     ~IN_PROCESS_APPLICATION();
 
@@ -103,6 +106,12 @@ public:
     }
 
     static
+    VOID SetMainCallback(hostfxr_main_fn mainCallback)
+    {
+        s_fMainCallback = mainCallback;
+    }
+
+    static
     IN_PROCESS_APPLICATION*
     GetInstance(
         VOID
@@ -176,9 +185,14 @@ private:
     HANDLE                          m_hErrThread;
     CHAR                            m_pzFileContents[4096] = { 0 };
     DWORD                           m_dwStdErrReadTotal;
+    PCWSTR                          m_pstrDotnetExeLocation;
     static IN_PROCESS_APPLICATION*  s_Application;
 
     REQUESTHANDLER_CONFIG*          m_pConfig;
+
+    // Allows to override call to hostfxr_main with custome callback
+    // used in testing
+    static hostfxr_main_fn          s_fMainCallback;
 
     VOID
     SetStdOut(

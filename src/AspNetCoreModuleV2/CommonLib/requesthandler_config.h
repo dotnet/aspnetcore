@@ -62,8 +62,6 @@ public:
     CreateRequestHandlerConfig(
         _In_  IHttpServer             *pHttpServer,
         _In_  IHttpApplication        *pHttpApplication,
-        _In_  PCWSTR  				   pwzExeLocation,
-        _In_  HANDLE                   hEventLog,
         _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
     );
 
@@ -211,45 +209,11 @@ public:
         return &m_struConfigPath;
     }
 
-    CONST
-    PCWSTR*
-    QueryHostFxrArguments(
-        VOID
-    )
-    {
-        return m_ppStrArguments;
-    }
-
-    CONST
-    DWORD
-    QueryHostFxrArgCount(
-        VOID
-    )
-    {
-        return m_dwArgc;
-    }
-
-    CONST
-    VOID
-    SetHostFxrArguments(
-        DWORD dwArgc,
-        PWSTR* ppStrArguments
-    )
-    {
-        if (m_ppStrArguments != NULL)
-        {
-            delete[] m_ppStrArguments;
-        }
-
-        m_dwArgc = dwArgc;
-        m_ppStrArguments = ppStrArguments;
-    }
-
 private:
 
     //
     // private constructor
-    //    
+    //
     REQUESTHANDLER_CONFIG() :
         m_fStdoutLogEnabled(FALSE),
         m_pEnvironmentVariables(NULL),

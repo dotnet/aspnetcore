@@ -113,13 +113,13 @@ CreateApplication(
     // Initialze some global variables here
     InitializeGlobalConfiguration(pServer);
 
-    hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), pwzExeLocation, g_hEventLog, &pConfig);
+    hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), &pConfig);
     if (FAILED(hr))
     {
         return hr;
     }
 
-    pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig);
+    pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig, pwzExeLocation);
     if (pApplication == NULL)
     {
         hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
