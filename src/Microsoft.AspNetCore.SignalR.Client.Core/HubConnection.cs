@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan DefaultPingInterval = TimeSpan.FromSeconds(15);
-        public static readonly TimeSpan DefaultTickRate = TimeSpan.FromSeconds(1);
 
         // This lock protects the connection state.
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public event Func<Exception, Task> Closed;
 
         // internal for testing purposes
-        internal TimeSpan TickRate { get; set; } = DefaultTickRate;
+        internal TimeSpan TickRate { get; set; } = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Gets or sets the server timeout interval for the connection. 
