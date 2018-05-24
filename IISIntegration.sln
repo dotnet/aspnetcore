@@ -76,7 +76,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OverriddenServerWebSite", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonLibTests", "test\CommonLibTests\CommonLibTests.vcxproj", "{1EAC8125-1765-4E2D-8CBE-56DC98A1C8C1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "test\gtest-1.8.0\msvc\gtest.vcxproj", "{2AF210A9-5BDC-45E8-95DD-07B5A2616493}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "test\gtest-1.8.0\msvc\2010\gtest.vcxproj", "{2AF210A9-5BDC-45E8-95DD-07B5A2616493}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AspNetCoreModuleV1", "AspNetCoreModuleV1", "{16E521CE-77F1-4B1C-A183-520A41C4F372}"
 EndProject

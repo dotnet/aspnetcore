@@ -29,7 +29,7 @@
 //
 // Authors: vladl@google.com (Vlad Losev)
 //
-// The Google C++ Testing Framework (Google Test)
+// The Google C++ Testing and Mocking Framework (Google Test)
 //
 // This header file provides classes and functions used internally
 // for testing Google Test itself.
@@ -38,8 +38,6 @@
 #define GTEST_TEST_GTEST_PARAM_TEST_TEST_H_
 
 #include "gtest/gtest.h"
-
-#if GTEST_HAS_PARAM_TEST
 
 // Test fixture for testing definition and instantiation of a test
 // in separate translation units.
@@ -51,7 +49,5 @@ class ExternalInstantiationTest : public ::testing::TestWithParam<int> {
 class InstantiationInMultipleTranslaionUnitsTest
     : public ::testing::TestWithParam<int> {
 };
-
-#endif  // GTEST_HAS_PARAM_TEST
 
 #endif  // GTEST_TEST_GTEST_PARAM_TEST_TEST_H_

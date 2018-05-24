@@ -29,7 +29,7 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 
-// Google Test - The Google C++ Testing Framework
+// Google Test - The Google C++ Testing and Mocking Framework
 //
 // This file tests the universal value printer.
 
@@ -50,13 +50,13 @@
 
 #include "gtest/gtest.h"
 
-// hash_map and hash_set are available under Visual C++, or on Linux.
-#if GTEST_HAS_HASH_MAP_
-# include <hash_map>            // NOLINT
-#endif  // GTEST_HAS_HASH_MAP_
-#if GTEST_HAS_HASH_SET_
-# include <hash_set>            // NOLINT
-#endif  // GTEST_HAS_HASH_SET_
+#if GTEST_HAS_UNORDERED_MAP_
+# include <unordered_map>  // NOLINT
+#endif  // GTEST_HAS_UNORDERED_MAP_
+
+#if GTEST_HAS_UNORDERED_SET_
+# include <unordered_set>  // NOLINT
+#endif  // GTEST_HAS_UNORDERED_SET_
 
 #if GTEST_HAS_STD_FORWARD_LIST_
 # include <forward_list> // NOLINT
@@ -187,6 +187,25 @@ inline ::std::ostream& operator<<(::std::ostream& os,
   return os << "StreamableTemplateInFoo: " << x.value();
 }
 
+// A user-defined streamable but recursivly-defined container type in
+// a user namespace, it mimics therefore std::filesystem::path or
+// boost::filesystem::path.
+class PathLike {
+ public:
+  struct iterator {
+    typedef PathLike value_type;
+  };
+
+  PathLike() {}
+
+  iterator begin() const { return iterator(); }
+  iterator end() const { return iterator(); }
+
+  friend ::std::ostream& operator<<(::std::ostream& os, const PathLike&) {
+    return os << "Streamable-PathLike";
+  }
+};
+
 }  // namespace foo
 
 namespace testing {
@@ -211,28 +230,14 @@ using ::testing::internal::Strings;
 using ::testing::internal::UniversalPrint;
 using ::testing::internal::UniversalPrinter;
 using ::testing::internal::UniversalTersePrint;
+#if GTEST_HAS_TR1_TUPLE || GTEST_HAS_STD_TUPLE_
 using ::testing::internal::UniversalTersePrintTupleFieldsToStrings;
-using ::testing::internal::string;
-
-// The hash_* classes are not part of the C++ standard.  STLport
-// defines them in namespace std.  MSVC defines them in ::stdext.  GCC
-// defines them in ::.
-#ifdef _STLP_HASH_MAP  // We got <hash_map> from STLport.
-using ::std::hash_map;
-using ::std::hash_set;
-using ::std::hash_multimap;
-using ::std::hash_multiset;
-#elif _MSC_VER
-using ::stdext::hash_map;
-using ::stdext::hash_set;
-using ::stdext::hash_multimap;
-using ::stdext::hash_multiset;
 #endif
 
 // Prints a value to a string using the universal value printer.  This
 // is a helper for testing UniversalPrinter<T>::Print() for various types.
 template <typename T>
-string Print(const T& value) {
+std::string Print(const T& value) {
   ::std::stringstream ss;
   UniversalPrinter<T>::Print(value, &ss);
   return ss.str();
@@ -242,7 +247,7 @@ string Print(const T& value) {
 // value printer.  This is a helper for testing
 // UniversalPrinter<T&>::Print() for various types.
 template <typename T>
-string PrintByRef(const T& value) {
+std::string PrintByRef(const T& value) {
   ::std::stringstream ss;
   UniversalPrinter<T&>::Print(value, &ss);
   return ss.str();
@@ -379,7 +384,7 @@ TEST(PrintBuiltInTypeTest, FloatingPoints) {
 // Since ::std::stringstream::operator<<(const void *) formats the pointer
 // output differently with different compilers, we have to create the expected
 // output first and use it as our expectation.
-static string PrintPointer(const void *p) {
+static std::string PrintPointer(const void* p) {
   ::std::stringstream expected_result_stream;
   expected_result_stream << p;
   return expected_result_stream.str();
@@ -592,7 +597,7 @@ TEST(PrintPointerTest, MemberFunctionPointer) {
 // The difference between this and Print() is that it ensures that the
 // argument is a reference to an array.
 template <typename T, size_t N>
-string PrintArrayHelper(T (&a)[N]) {
+std::string PrintArrayHelper(T (&a)[N]) {
   return Print(a);
 }
 
@@ -645,7 +650,7 @@ TEST(PrintArrayTest, WConstCharArrayWithTerminatingNul) {
 
 // Array of objects.
 TEST(PrintArrayTest, ObjectArray) {
-  string a[3] = { "Hi", "Hello", "Ni hao" };
+  std::string a[3] = {"Hi", "Hello", "Ni hao"};
   EXPECT_EQ("{ \"Hi\", \"Hello\", \"Ni hao\" }", PrintArrayHelper(a));
 }
 
@@ -782,22 +787,22 @@ TEST(PrintTypeWithGenericStreamingTest, TypeImplicitlyConvertible) {
   EXPECT_EQ("AllowsGenericStreamingAndImplicitConversionTemplate", Print(a));
 }
 
-#if GTEST_HAS_STRING_PIECE_
+#if GTEST_HAS_ABSL
 
-// Tests printing StringPiece.
+// Tests printing ::absl::string_view.
 
-TEST(PrintStringPieceTest, SimpleStringPiece) {
-  const StringPiece sp = "Hello";
+TEST(PrintStringViewTest, SimpleStringView) {
+  const ::absl::string_view sp = "Hello";
   EXPECT_EQ("\"Hello\"", Print(sp));
 }
 
-TEST(PrintStringPieceTest, UnprintableCharacters) {
+TEST(PrintStringViewTest, UnprintableCharacters) {
   const char str[] = "NUL (\0) and \r\t";
-  const StringPiece sp(str, sizeof(str) - 1);
+  const ::absl::string_view sp(str, sizeof(str) - 1);
   EXPECT_EQ("\"NUL (\\0) and \\r\\t\"", Print(sp));
 }
 
-#endif  // GTEST_HAS_STRING_PIECE_
+#endif  // GTEST_HAS_ABSL
 
 // Tests printing STL containers.
 
@@ -813,44 +818,44 @@ TEST(PrintStlContainerTest, NonEmptyDeque) {
   EXPECT_EQ("{ 1, 3 }", Print(non_empty));
 }
 
-#if GTEST_HAS_HASH_MAP_
+#if GTEST_HAS_UNORDERED_MAP_
 
 TEST(PrintStlContainerTest, OneElementHashMap) {
-  hash_map<int, char> map1;
+  ::std::unordered_map<int, char> map1;
   map1[1] = 'a';
   EXPECT_EQ("{ (1, 'a' (97, 0x61)) }", Print(map1));
 }
 
 TEST(PrintStlContainerTest, HashMultiMap) {
-  hash_multimap<int, bool> map1;
+  ::std::unordered_multimap<int, bool> map1;
   map1.insert(make_pair(5, true));
   map1.insert(make_pair(5, false));
 
   // Elements of hash_multimap can be printed in any order.
-  const string result = Print(map1);
+  const std::string result = Print(map1);
   EXPECT_TRUE(result == "{ (5, true), (5, false) }" ||
               result == "{ (5, false), (5, true) }")
                   << " where Print(map1) returns \"" << result << "\".";
 }
 
-#endif  // GTEST_HAS_HASH_MAP_
+#endif  // GTEST_HAS_UNORDERED_MAP_
 
-#if GTEST_HAS_HASH_SET_
+#if GTEST_HAS_UNORDERED_SET_
 
 TEST(PrintStlContainerTest, HashSet) {
-  hash_set<string> set1;
-  set1.insert("hello");
-  EXPECT_EQ("{ \"hello\" }", Print(set1));
+  ::std::unordered_set<int> set1;
+  set1.insert(1);
+  EXPECT_EQ("{ 1 }", Print(set1));
 }
 
 TEST(PrintStlContainerTest, HashMultiSet) {
   const int kSize = 5;
   int a[kSize] = { 1, 1, 2, 5, 1 };
-  hash_multiset<int> set1(a, a + kSize);
+  ::std::unordered_multiset<int> set1(a, a + kSize);
 
   // Elements of hash_multiset can be printed in any order.
-  const string result = Print(set1);
-  const string expected_pattern = "{ d, d, d, d, d }";  // d means a digit.
+  const std::string result = Print(set1);
+  const std::string expected_pattern = "{ d, d, d, d, d }";  // d means a digit.
 
   // Verifies the result matches the expected pattern; also extracts
   // the numbers in the result.
@@ -872,14 +877,11 @@ TEST(PrintStlContainerTest, HashMultiSet) {
   EXPECT_TRUE(std::equal(a, a + kSize, numbers.begin()));
 }
 
-#endif  // GTEST_HAS_HASH_SET_
+#endif  //  GTEST_HAS_UNORDERED_SET_
 
 TEST(PrintStlContainerTest, List) {
-  const string a[] = {
-    "hello",
-    "world"
-  };
-  const list<string> strings(a, a + 2);
+  const std::string a[] = {"hello", "world"};
+  const list<std::string> strings(a, a + 2);
   EXPECT_EQ("{ \"hello\", \"world\" }", Print(strings));
 }
 
@@ -1035,8 +1037,9 @@ TEST(PrintTr1TupleTest, VariousSizes) {
   // VC++ 2010's implementation of tuple of C++0x is deficient, requiring
   // an explicit type cast of NULL to be used.
   ::std::tr1::tuple<bool, char, short, testing::internal::Int32,  // NOLINT
-      testing::internal::Int64, float, double, const char*, void*, string>
-      t10(false, 'a', 3, 4, 5, 1.5F, -2.5, str,
+                    testing::internal::Int64, float, double, const char*, void*,
+                    std::string>
+      t10(false, 'a', static_cast<short>(3), 4, 5, 1.5F, -2.5, str,  // NOLINT
           ImplicitCast_<void*>(NULL), "10");
   EXPECT_EQ("(false, 'a' (97, 0x61), 3, 4, 5, 1.5, -2.5, " + PrintPointer(str) +
             " pointing to \"8\", NULL, \"10\")",
@@ -1094,8 +1097,9 @@ TEST(PrintStdTupleTest, VariousSizes) {
   // VC++ 2010's implementation of tuple of C++0x is deficient, requiring
   // an explicit type cast of NULL to be used.
   ::std::tuple<bool, char, short, testing::internal::Int32,  // NOLINT
-      testing::internal::Int64, float, double, const char*, void*, string>
-      t10(false, 'a', 3, 4, 5, 1.5F, -2.5, str,
+               testing::internal::Int64, float, double, const char*, void*,
+               std::string>
+      t10(false, 'a', static_cast<short>(3), 4, 5, 1.5F, -2.5, str,  // NOLINT
           ImplicitCast_<void*>(NULL), "10");
   EXPECT_EQ("(false, 'a' (97, 0x61), 3, 4, 5, 1.5, -2.5, " + PrintPointer(str) +
             " pointing to \"8\", NULL, \"10\")",
@@ -1158,6 +1162,15 @@ TEST(PrintStreamableTypeTest, TemplateTypeInUserNamespace) {
             Print(::foo::StreamableTemplateInFoo<int>()));
 }
 
+// Tests printing a user-defined recursive container type that has a <<
+// operator.
+TEST(PrintStreamableTypeTest, PathLikeInUserNamespace) {
+  ::foo::PathLike x;
+  EXPECT_EQ("Streamable-PathLike", Print(x));
+  const ::foo::PathLike cx;
+  EXPECT_EQ("Streamable-PathLike", Print(cx));
+}
+
 // Tests printing user-defined types that have a PrintTo() function.
 TEST(PrintPrintableTypeTest, InUserNamespace) {
   EXPECT_EQ("PrintableViaPrintTo: 0",
@@ -1200,13 +1213,13 @@ TEST(PrintReferenceTest, PrintsAddressAndValue) {
 // reference.
 TEST(PrintReferenceTest, HandlesFunctionPointer) {
   void (*fp)(int n) = &MyFunction;
-  const string fp_pointer_string =
+  const std::string fp_pointer_string =
       PrintPointer(reinterpret_cast<const void*>(&fp));
   // We cannot directly cast &MyFunction to const void* because the
   // standard disallows casting between pointers to functions and
   // pointers to objects, and some compilers (e.g. GCC 3.4) enforce
   // this limitation.
-  const string fp_string = PrintPointer(reinterpret_cast<const void*>(
+  const std::string fp_string = PrintPointer(reinterpret_cast<const void*>(
       reinterpret_cast<internal::BiggestInt>(fp)));
   EXPECT_EQ("@" + fp_pointer_string + " " + fp_string,
             PrintByRef(fp));
@@ -1264,7 +1277,7 @@ TEST(FormatForComparisonFailureMessageTest, FormatsNonCharArrayAsPointer) {
 }
 
 // Tests formatting a char pointer when it's compared with another pointer.
-// In this case we want to print it as a raw pointer, as the comparision is by
+// In this case we want to print it as a raw pointer, as the comparison is by
 // pointer.
 
 // char pointer vs pointer
@@ -1489,6 +1502,78 @@ TEST(PrintToStringTest, WorksForCharArrayWithEmbeddedNul) {
   EXPECT_PRINT_TO_STRING_(mutable_str_with_nul, "\"hello\\0 world\"");
 }
 
+  TEST(PrintToStringTest, ContainsNonLatin) {
+  // Sanity test with valid UTF-8. Prints both in hex and as text.
+  std::string non_ascii_str = ::std::string("오전 4:30");
+  EXPECT_PRINT_TO_STRING_(non_ascii_str,
+                          "\"\\xEC\\x98\\xA4\\xEC\\xA0\\x84 4:30\"\n"
+                          "    As Text: \"오전 4:30\"");
+  non_ascii_str = ::std::string("From ä — ẑ");
+  EXPECT_PRINT_TO_STRING_(non_ascii_str,
+                          "\"From \\xC3\\xA4 \\xE2\\x80\\x94 \\xE1\\xBA\\x91\""
+                          "\n    As Text: \"From ä — ẑ\"");
+}
+
+TEST(IsValidUTF8Test, IllFormedUTF8) {
+  // The following test strings are ill-formed UTF-8 and are printed
+  // as hex only (or ASCII, in case of ASCII bytes) because IsValidUTF8() is
+  // expected to fail, thus output does not contain "As Text:".
+
+  static const char *const kTestdata[][2] = {
+    // 2-byte lead byte followed by a single-byte character.
+    {"\xC3\x74", "\"\\xC3t\""},
+    // Valid 2-byte character followed by an orphan trail byte.
+    {"\xC3\x84\xA4", "\"\\xC3\\x84\\xA4\""},
+    // Lead byte without trail byte.
+    {"abc\xC3", "\"abc\\xC3\""},
+    // 3-byte lead byte, single-byte character, orphan trail byte.
+    {"x\xE2\x70\x94", "\"x\\xE2p\\x94\""},
+    // Truncated 3-byte character.
+    {"\xE2\x80", "\"\\xE2\\x80\""},
+    // Truncated 3-byte character followed by valid 2-byte char.
+    {"\xE2\x80\xC3\x84", "\"\\xE2\\x80\\xC3\\x84\""},
+    // Truncated 3-byte character followed by a single-byte character.
+    {"\xE2\x80\x7A", "\"\\xE2\\x80z\""},
+    // 3-byte lead byte followed by valid 3-byte character.
+    {"\xE2\xE2\x80\x94", "\"\\xE2\\xE2\\x80\\x94\""},
+    // 4-byte lead byte followed by valid 3-byte character.
+    {"\xF0\xE2\x80\x94", "\"\\xF0\\xE2\\x80\\x94\""},
+    // Truncated 4-byte character.
+    {"\xF0\xE2\x80", "\"\\xF0\\xE2\\x80\""},
+     // Invalid UTF-8 byte sequences embedded in other chars.
+    {"abc\xE2\x80\x94\xC3\x74xyc", "\"abc\\xE2\\x80\\x94\\xC3txyc\""},
+    {"abc\xC3\x84\xE2\x80\xC3\x84xyz",
+     "\"abc\\xC3\\x84\\xE2\\x80\\xC3\\x84xyz\""},
+    // Non-shortest UTF-8 byte sequences are also ill-formed.
+    // The classics: xC0, xC1 lead byte.
+    {"\xC0\x80", "\"\\xC0\\x80\""},
+    {"\xC1\x81", "\"\\xC1\\x81\""},
+    // Non-shortest sequences.
+    {"\xE0\x80\x80", "\"\\xE0\\x80\\x80\""},
+    {"\xf0\x80\x80\x80", "\"\\xF0\\x80\\x80\\x80\""},
+    // Last valid code point before surrogate range, should be printed as text,
+    // too.
+    {"\xED\x9F\xBF", "\"\\xED\\x9F\\xBF\"\n    As Text: \"퟿\""},
+    // Start of surrogate lead. Surrogates are not printed as text.
+    {"\xED\xA0\x80", "\"\\xED\\xA0\\x80\""},
+    // Last non-private surrogate lead.
+    {"\xED\xAD\xBF", "\"\\xED\\xAD\\xBF\""},
+    // First private-use surrogate lead.
+    {"\xED\xAE\x80", "\"\\xED\\xAE\\x80\""},
+    // Last private-use surrogate lead.
+    {"\xED\xAF\xBF", "\"\\xED\\xAF\\xBF\""},
+    // Mid-point of surrogate trail.
+    {"\xED\xB3\xBF", "\"\\xED\\xB3\\xBF\""},
+    // First valid code point after surrogate range, should be printed as text,
+    // too.
+    {"\xEE\x80\x80", "\"\\xEE\\x80\\x80\"\n    As Text: \"\""}
+  };
+
+  for (int i = 0; i < int(sizeof(kTestdata)/sizeof(kTestdata[0])); ++i) {
+    EXPECT_PRINT_TO_STRING_(kTestdata[i][0], kTestdata[i][1]);
+  }
+}
+
 #undef EXPECT_PRINT_TO_STRING_
 
 TEST(UniversalTersePrintTest, WorksForNonReference) {
@@ -1538,12 +1623,12 @@ TEST(UniversalPrintTest, WorksForCString) {
   const char* s1 = "abc";
   ::std::stringstream ss1;
   UniversalPrint(s1, &ss1);
-  EXPECT_EQ(PrintPointer(s1) + " pointing to \"abc\"", string(ss1.str()));
+  EXPECT_EQ(PrintPointer(s1) + " pointing to \"abc\"", std::string(ss1.str()));
 
   char* s2 = const_cast<char*>(s1);
   ::std::stringstream ss2;
   UniversalPrint(s2, &ss2);
-  EXPECT_EQ(PrintPointer(s2) + " pointing to \"abc\"", string(ss2.str()));
+  EXPECT_EQ(PrintPointer(s2) + " pointing to \"abc\"", std::string(ss2.str()));
 
   const char* s3 = NULL;
   ::std::stringstream ss3;
@@ -1630,6 +1715,17 @@ TEST(UniversalTersePrintTupleFieldsToStringsTestWithStd, PrintsTersely) {
 
 #endif  // GTEST_HAS_STD_TUPLE_
 
+#if GTEST_HAS_ABSL
+
+TEST(PrintOptionalTest, Basic) {
+  absl::optional<int> value;
+  EXPECT_EQ("(nullopt)", PrintToString(value));
+  value = {7};
+  EXPECT_EQ("(7)", PrintToString(value));
+  EXPECT_EQ("(1.1)", PrintToString(absl::optional<double>{1.1}));
+  EXPECT_EQ("(\"A\")", PrintToString(absl::optional<std::string>{"A"}));
+}
+#endif  // GTEST_HAS_ABSL
+
 }  // namespace gtest_printers_test
 }  // namespace testing
-

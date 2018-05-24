@@ -27,7 +27,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Authors: keith.ray@gmail.com (Keith Ray)
 //
 // Google Test UnitTestOptions tests
 //
@@ -46,14 +45,7 @@
 # include <direct.h>
 #endif  // GTEST_OS_WINDOWS_MOBILE
 
-// Indicates that this translation unit is part of Google Test's
-// implementation.  It must come before gtest-internal-inl.h is
-// included, or there will be a compiler error.  This trick is to
-// prevent a user from accidentally including gtest-internal-inl.h in
-// his code.
-#define GTEST_IMPLEMENTATION_ 1
 #include "src/gtest-internal-inl.h"
-#undef GTEST_IMPLEMENTATION_
 
 namespace testing {
 namespace internal {
@@ -111,6 +103,8 @@ TEST(OutputFileHelpersTest, GetCurrentExecutableName) {
       _strcmpi("gtest-options-ex_test", exe_str.c_str()) == 0 ||
       _strcmpi("gtest_all_test", exe_str.c_str()) == 0 ||
       _strcmpi("gtest_dll_test", exe_str.c_str()) == 0;
+#elif GTEST_OS_FUCHSIA
+  const bool success = exe_str == "app";
 #else
   // TODO(wan@google.com): remove the hard-coded "lt-" prefix when
   //   Chandler Carruth's libtool replacement is ready.
@@ -123,6 +117,8 @@ TEST(OutputFileHelpersTest, GetCurrentExecutableName) {
   if (!success)
     FAIL() << "GetCurrentExecutableName() returns " << exe_str;
 }
+
+#if !GTEST_OS_FUCHSIA
 
 class XmlOutputChangeDirTest : public Test {
  protected:
@@ -209,6 +205,8 @@ TEST_F(XmlOutputChangeDirTest, PreserveOriginalWorkingDirWithAbsolutePath) {
   EXPECT_EQ(expected_output_file, output_file.c_str());
 #endif
 }
+
+#endif  // !GTEST_OS_FUCHSIA
 
 }  // namespace
 }  // namespace internal

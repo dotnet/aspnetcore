@@ -45,15 +45,7 @@
 
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
-
-// Indicates that this translation unit is part of Google Test's
-// implementation.  It must come before gtest-internal-inl.h is
-// included, or there will be a compiler error.  This trick is to
-// prevent a user from accidentally including gtest-internal-inl.h in
-// his code.
-#define GTEST_IMPLEMENTATION_ 1
 #include "src/gtest-internal-inl.h"
-#undef GTEST_IMPLEMENTATION_
 
 using std::make_pair;
 using std::pair;
@@ -75,7 +67,7 @@ TEST(IsXDigitTest, WorksForNarrowAscii) {
 }
 
 TEST(IsXDigitTest, ReturnsFalseForNarrowNonAscii) {
-  EXPECT_FALSE(IsXDigit('\x80'));
+  EXPECT_FALSE(IsXDigit(static_cast<char>('\x80')));
   EXPECT_FALSE(IsXDigit(static_cast<char>('0' | '\x80')));
 }
 
@@ -304,7 +296,7 @@ TEST(FormatCompilerIndependentFileLocationTest, FormatsUknownFileAndLine) {
   EXPECT_EQ("unknown file", FormatCompilerIndependentFileLocation(NULL, -1));
 }
 
-#if GTEST_OS_LINUX || GTEST_OS_MAC || GTEST_OS_QNX
+#if GTEST_OS_LINUX || GTEST_OS_MAC || GTEST_OS_QNX || GTEST_OS_FUCHSIA
 void* ThreadFunc(void* data) {
   internal::Mutex* mutex = static_cast<internal::Mutex*>(data);
   mutex->Lock();
@@ -348,7 +340,7 @@ TEST(GetThreadCountTest, ReturnsCorrectValue) {
 TEST(GetThreadCountTest, ReturnsZeroWhenUnableToCountThreads) {
   EXPECT_EQ(0U, GetThreadCount());
 }
-#endif  // GTEST_OS_LINUX || GTEST_OS_MAC || GTEST_OS_QNX
+#endif  // GTEST_OS_LINUX || GTEST_OS_MAC || GTEST_OS_QNX || GTEST_OS_FUCHSIA
 
 TEST(GtestCheckDeathTest, DiesWithCorrectOutputOnFailure) {
   const bool a_false_condition = false;
@@ -1209,7 +1201,7 @@ class DestructorTracker {
       : index_(GetNewIndex()) {}
   ~DestructorTracker() {
     // We never access DestructorCall::List() concurrently, so we don't need
-    // to protect this acccess with a mutex.
+    // to protect this access with a mutex.
     DestructorCall::List()[index_]->ReportDestroyed();
   }
 
@@ -1295,9 +1287,16 @@ TEST(WindowsTypesTest, HANDLEIsVoidStar) {
   StaticAssertTypeEq<HANDLE, void*>();
 }
 
+#if GTEST_OS_WINDOWS_MINGW && !defined(__MINGW64_VERSION_MAJOR)
+TEST(WindowsTypesTest, _CRITICAL_SECTIONIs_CRITICAL_SECTION) {
+  StaticAssertTypeEq<CRITICAL_SECTION, _CRITICAL_SECTION>();
+}
+#else
 TEST(WindowsTypesTest, CRITICAL_SECTIONIs_RTL_CRITICAL_SECTION) {
   StaticAssertTypeEq<CRITICAL_SECTION, _RTL_CRITICAL_SECTION>();
 }
+#endif
+
 #endif  // GTEST_OS_WINDOWS
 
 }  // namespace internal

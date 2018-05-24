@@ -56,7 +56,7 @@
     <ProjectReference Include="..\..\src\AspNetCoreModuleV2\IISLib\IISLib.vcxproj">
       <Project>{09d9d1d6-2951-4e14-bc35-76a23cf9391a}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\gtest-1.8.0\msvc\gtest.vcxproj">
+    <ProjectReference Include="..\gtest-1.8.0\msvc\2010\gtest.vcxproj">
       <Project>{2af210a9-5bdc-45e8-95dd-07b5a2616493}</Project>
     </ProjectReference>
   </ItemGroup>

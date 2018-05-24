@@ -56,15 +56,7 @@ using testing::internal::AlwaysTrue;
 # endif  // GTEST_OS_LINUX
 
 # include "gtest/gtest-spi.h"
-
-// Indicates that this translation unit is part of Google Test's
-// implementation.  It must come before gtest-internal-inl.h is
-// included, or there will be a compiler error.  This trick is to
-// prevent a user from accidentally including gtest-internal-inl.h in
-// his code.
-# define GTEST_IMPLEMENTATION_ 1
 # include "src/gtest-internal-inl.h"
-# undef GTEST_IMPLEMENTATION_
 
 namespace posix = ::testing::internal::posix;
 
@@ -208,7 +200,7 @@ int DieInDebugElse12(int* sideeffect) {
   return 12;
 }
 
-# if GTEST_OS_WINDOWS
+# if GTEST_OS_WINDOWS || GTEST_OS_FUCHSIA
 
 // Tests the ExitedWithCode predicate.
 TEST(ExitStatusPredicateTest, ExitedWithCode) {
@@ -280,7 +272,7 @@ TEST(ExitStatusPredicateTest, KilledBySignal) {
   EXPECT_FALSE(pred_kill(status_segv));
 }
 
-# endif  // GTEST_OS_WINDOWS
+# endif  // GTEST_OS_WINDOWS || GTEST_OS_FUCHSIA
 
 // Tests that the death test macros expand to code which may or may not
 // be followed by operator<<, and that in either case the complete text
@@ -313,14 +305,14 @@ void DieWithEmbeddedNul() {
 }
 
 # if GTEST_USES_PCRE
+
 // Tests that EXPECT_DEATH and ASSERT_DEATH work when the error
 // message has a NUL character in it.
 TEST_F(TestForDeathTest, EmbeddedNulInMessage) {
-  // TODO(wan@google.com): <regex.h> doesn't support matching strings
-  // with embedded NUL characters - find a way to workaround it.
   EXPECT_DEATH(DieWithEmbeddedNul(), "my null world");
   ASSERT_DEATH(DieWithEmbeddedNul(), "my null world");
 }
+
 # endif  // GTEST_USES_PCRE
 
 // Tests that death test macros expand to code which interacts well with switch
@@ -505,7 +497,7 @@ TEST_F(TestForDeathTest, AcceptsAnythingConvertibleToRE) {
 
 # if GTEST_HAS_GLOBAL_STRING
 
-  const string regex_str(regex_c_str);
+  const ::string regex_str(regex_c_str);
   EXPECT_DEATH(GlobalFunction(), regex_str);
 
 # endif  // GTEST_HAS_GLOBAL_STRING
@@ -625,7 +617,11 @@ TEST_F(TestForDeathTest, ReturnIsFailure) {
 TEST_F(TestForDeathTest, TestExpectDebugDeath) {
   int sideeffect = 0;
 
-  EXPECT_DEBUG_DEATH(DieInDebugElse12(&sideeffect), "death.*DieInDebugElse12")
+  // Put the regex in a local variable to make sure we don't get an "unused"
+  // warning in opt mode.
+  const char* regex = "death.*DieInDebugElse12";
+
+  EXPECT_DEBUG_DEATH(DieInDebugElse12(&sideeffect), regex)
       << "Must accept a streamed message";
 
 # ifdef NDEBUG
@@ -791,8 +787,9 @@ static void TestExitMacros() {
   // See http://msdn.microsoft.com/en-us/library/dwwzkt4c(VS.71).aspx.
   EXPECT_EXIT(raise(SIGABRT), testing::ExitedWithCode(3), "") << "b_ar";
 
-# else
+# elif !GTEST_OS_FUCHSIA
 
+  // Fuchsia has no unix signals.
   EXPECT_EXIT(raise(SIGKILL), testing::KilledBySignal(SIGKILL), "") << "foo";
   ASSERT_EXIT(raise(SIGUSR2), testing::KilledBySignal(SIGUSR2), "") << "bar";
 
