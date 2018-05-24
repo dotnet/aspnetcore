@@ -3,5 +3,7 @@
 
   <PropertyGroup>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreApp22PackageVersion)</RuntimeFrameworkVersion>
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 </Project>
