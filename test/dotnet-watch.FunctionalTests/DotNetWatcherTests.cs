@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,6 +30,23 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
             var envValue = message.Substring(messagePrefix.Length);
             Assert.Equal("1", envValue);
+        }
+
+        [Fact]
+        public async Task RunsWithIterationEnvVariable()
+        {
+            await _app.StartWatcherAsync();
+            var source = Path.Combine(_app.SourceDirectory, "Program.cs");
+            const string messagePrefix = "DOTNET_WATCH_ITERATION = ";
+            for (var i = 1; i <= 4; i++)
+            {
+                var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
+                var count = int.Parse(message.Substring(messagePrefix.Length), CultureInfo.InvariantCulture);
+                Assert.Equal(i, count);
+
+                File.SetLastWriteTime(source, DateTime.Now);
+                await _app.HasRestarted();
+            }
         }
 
         public void Dispose()

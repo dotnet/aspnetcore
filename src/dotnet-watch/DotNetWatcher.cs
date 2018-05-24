@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
@@ -32,8 +33,13 @@ namespace Microsoft.DotNet.Watcher
             cancellationToken.Register(state => ((TaskCompletionSource<object>) state).TrySetResult(null),
                 cancelledTaskSource);
 
+            var iteration = 1;
+
             while (true)
             {
+                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = iteration.ToString(CultureInfo.InvariantCulture);
+                iteration++;
+
                 var fileSet = await fileSetFactory.CreateAsync(cancellationToken);
 
                 if (fileSet == null)

@@ -13,6 +13,7 @@ namespace KitchenSink
             Console.WriteLine("Started");
             Console.WriteLine("PID = " + Process.GetCurrentProcess().Id);
             Console.WriteLine("DOTNET_WATCH = " + Environment.GetEnvironmentVariable("DOTNET_WATCH"));
+            Console.WriteLine("DOTNET_WATCH_ITERATION = " + Environment.GetEnvironmentVariable("DOTNET_WATCH_ITERATION"));
         }
     }
 }
