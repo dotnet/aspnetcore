@@ -221,8 +221,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 Log.SendingDeleteRequest(_logger, url);
                 var response = await _httpClient.DeleteAsync(url);
-                response.EnsureSuccessStatusCode();
-                Log.DeleteRequestAccepted(_logger, url);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Log.ConnectionAlreadyClosedSendingDeleteRequest(_logger, url);
+                }
+                else
+                {
+                    // Check for non-404 errors
+                    response.EnsureSuccessStatusCode();
+                    Log.DeleteRequestAccepted(_logger, url);
+                }
             }
             catch (Exception ex)
             {
