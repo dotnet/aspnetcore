@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Interop
         /// <returns>The result of the function invocation.</returns>
         public static TRes InvokeUnmarshalled<TRes>(string identifier, params object[] args)
         {
-            var result = Runtime.InvokeJSArray<TRes>(out var exception, identifier, args);
+            var result = Runtime.BlazorInvokeJSArray<TRes>(out var exception, identifier, args);
             return exception != null
                 ? throw new JavaScriptException(exception)
                 : result;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Interop
         /// <returns>The result of the function invocation.</returns>
         public static TRes InvokeUnmarshalled<T0, T1, T2, TRes>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         {
-            var result = Runtime.InvokeJS<T0, T1, T2, TRes>(out var exception, identifier, arg0, arg1, arg2);
+            var result = Runtime.BlazorInvokeJS<T0, T1, T2, TRes>(out var exception, identifier, arg0, arg1, arg2);
             return exception != null
                 ? throw new JavaScriptException(exception)
                 : result;
