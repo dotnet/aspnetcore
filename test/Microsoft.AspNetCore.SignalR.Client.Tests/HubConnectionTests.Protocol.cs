@@ -574,7 +574,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var hubConnection = CreateHubConnection(connection);
 
                 hubConnection.TickRate = TimeSpan.FromMilliseconds(30);
-                hubConnection.PingInterval = TimeSpan.FromMilliseconds(80);
+                hubConnection.KeepAliveInterval = TimeSpan.FromMilliseconds(80);
 
                 try
                 {

@@ -48,7 +48,7 @@ export class HubConnection {
      * The default value is 15,000 milliseconds (15 seconds).
      * Allows the server to detect hard disconnects (like when a client unplugs their computer).
      */
-    public pingIntervalInMilliseconds: number;
+    public keepAliveIntervalInMilliseconds: number;
 
     /** @internal */
     // Using a public static factory method means we can have a private constructor and an _internal_
@@ -65,7 +65,7 @@ export class HubConnection {
         Arg.isRequired(protocol, "protocol");
 
         this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
-        this.pingIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
+        this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
 
         this.logger = logger;
         this.protocol = protocol;
@@ -114,7 +114,7 @@ export class HubConnection {
         // defensively cleanup timeout in case we receive a message from the server before we finish start
         this.cleanupTimeout();
         this.resetTimeoutPeriod();
-        this.resetPingInterval();
+        this.resetKeepAliveInterval();
 
         this.connectionState = HubConnectionState.Connected;
     }
@@ -179,7 +179,7 @@ export class HubConnection {
     }
 
     private sendMessage(message: any) {
-        this.resetPingInterval();
+        this.resetKeepAliveInterval();
         return this.connection.send(message);
     }
 
@@ -386,9 +386,9 @@ export class HubConnection {
         return remainingData;
     }
 
-    private resetPingInterval() {
+    private resetKeepAliveInterval() {
         this.cleanupPingTimer();
-        this.pingServerHandle = setTimeout(() => this.sendMessage(this.cachedPingMessage), this.pingIntervalInMilliseconds);
+        this.pingServerHandle = setTimeout(() => this.sendMessage(this.cachedPingMessage), this.keepAliveIntervalInMilliseconds);
     }
 
     private resetTimeoutPeriod() {

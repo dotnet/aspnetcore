@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
-        public static readonly TimeSpan DefaultPingInterval = TimeSpan.FromSeconds(15);
+        public static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(15);
 
         // This lock protects the connection state.
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// Sending any message resets the timer to the start of the interval.
         /// </remarks>
-        public TimeSpan PingInterval { get; set; } = DefaultPingInterval;
+        public TimeSpan KeepAliveInterval { get; set; } = DefaultKeepAliveInterval;
         
         /// <summary>
         /// Gets or sets the timeout for the initial handshake.
@@ -846,7 +846,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public void ResetSendPing()
         {
-            Volatile.Write(ref _nextActivationSendPing, (DateTime.UtcNow + PingInterval).Ticks);
+            Volatile.Write(ref _nextActivationSendPing, (DateTime.UtcNow + KeepAliveInterval).Ticks);
         }
 
         public void ResetTimeout()
