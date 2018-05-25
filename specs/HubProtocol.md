@@ -131,7 +131,7 @@ Keep alive behavior is achieved via the `Ping` message type. **Either endpoint**
 
 Ping messages do not have any payload, they are completely empty messages (aside from the encoding necessary to identify the message as a `Ping` message).
 
-It is up to the server implementation to decide how frequently (if at all) `Ping` frames are sent. The ASP.NET Core implementation sends `Ping` frames only when using the Server Sent Events and WebSockets transports, at a default interval of 15 seconds (configurable). However, a `Ping` frame is only sent if 15 seconds elapses since the last message was sent. Clients may choose to use the "Ping rate" to provide a timeout for the server connection. Since the Client can expect the server to send `Ping` frames at regular intervals, even when the connection is idle, it can use that to determine if the server has left without closing the connection. The ASP.NET Core implementation (both JavaScript and C#) use a default timeout window of 30 seconds, which is twice the server ping rate interval.
+The default ASP.NET Core implementation automatically pings both directions on active connections. These pings are at regular intervals, and allow detection of unexpected disconnects (for example, unplugging a server). If the client detects that the server has stopped pinging, the client will close the connection, and vice versa. If there's other traffic through the connection, keep-alive pings aren't needed. A `Ping` is only sent if the interval has elapsed without a message being sent.
 
 ## Example
 
