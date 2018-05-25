@@ -25,6 +25,7 @@
       <TemplateProperties>
         MSBuildLocation=$(VisualStudioMSBuildx86Path);
         MicrosoftNETCoreAppVersion=$(MicrosoftNETCoreApp22PackageVersion);
+        MicrosoftNETCoreApp22PackageVersion=$(MicrosoftNETCoreApp22PackageVersion);
         NETStandardLibraryVersion=$(NETStandardLibrary20PackageVersion)
       </TemplateProperties>
     </PropertyGroup>
