@@ -9,7 +9,7 @@ namespace ServerComparison.FunctionalTests
 {
     public class Helpers
     {
-        public static string GetApplicationPath(ApplicationType applicationType)
+        public static string GetApplicationPath()
         {
             var applicationBasePath = AppContext.BaseDirectory;
 
@@ -39,6 +39,19 @@ namespace ServerComparison.FunctionalTests
                 content = File.ReadAllText(Path.Combine(applicationBasePath, iisConfig));
             }
             else if (serverType == ServerType.Nginx)
+            {
+                content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
+            }
+
+            return content;
+        }
+
+        public static string GetNginxConfigContent(ServerType serverType,  string nginxConfig)
+        {
+            var applicationBasePath = AppContext.BaseDirectory;
+
+            string content = null;
+            if (serverType == ServerType.Nginx)
             {
                 content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
             }

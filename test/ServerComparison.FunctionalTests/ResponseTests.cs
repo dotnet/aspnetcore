@@ -86,10 +86,9 @@ namespace ServerComparison.FunctionalTests
 
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
-                    ApplicationPath = Helpers.GetApplicationPath(variant.ApplicationType),
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "Responses",
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "Http.config", "nginx.conf"),
-                    SiteName = "HttpTestSite", // This is configured in the Http.config
+                    ServerConfigTemplateContent = Helpers.GetNginxConfigContent(variant.Server, "nginx.conf"),
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

@@ -93,13 +93,17 @@ namespace ServerComparison.FunctionalTests
 
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
-                    ApplicationPath = Helpers.GetApplicationPath(variant.ApplicationType),
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "ResponseCompression",
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server,
-                        hostCompression ? "http.config" : "NoCompression.config",
-                        hostCompression ? "nginx.conf" : "NoCompression.conf"),
-                    SiteName = "HttpTestSite", // This is configured in the Http.config
                 };
+                if (hostCompression)
+                {
+                    deploymentParameters.ServerConfigTemplateContent = Helpers.GetNginxConfigContent(variant.Server, "nginx.conf");
+                }
+                else
+                {
+                    deploymentParameters.ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "NoCompression.config", "NoCompression.conf");
+                }
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
