@@ -30,6 +30,19 @@ namespace TriageBuildFailures.Handlers
             return string.IsNullOrEmpty(errors) ? NoStackTraceAvailable : ErrorParsing.GetExceptionMessage(errors);
         }
 
+        private string TrimTestFailureText(string text)
+        {
+            var result = text;
+
+            if(result.Length > 6000)
+            {
+                result = text.Substring(0, 6000);
+                result += $"{Environment.NewLine}...";
+            }
+
+            return result;
+        }
+
         public override async Task HandleFailure(TeamCityBuild build)
         {
             var tests = TCClient.GetTests(build);
@@ -53,7 +66,7 @@ namespace TriageBuildFailures.Handlers
                     // TODO: CC area experts
                     var body = $@"This test [fails]({build.WebURL}) occasionally with the following error:
 ```
-{errors}
+{TrimTestFailureText(errors)}
 ```
 ";
                     //TODO: We'd like to link the test history here but TC api doens't make it easy

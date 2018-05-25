@@ -15,7 +15,6 @@
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
       <PackageReference Include="Octokit" Version="0.29.0" />
-      <PackageReference Include="TeamCity.Dotnet.Integration" Version="1.0.1-beta70" />
     </ItemGroup>
 
     <ItemGroup>

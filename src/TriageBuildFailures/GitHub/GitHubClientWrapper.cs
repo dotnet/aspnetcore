@@ -118,6 +118,11 @@ namespace TriageBuildFailures.GitHub
 
         public async Task<GithubIssue> CreateIssue(string owner, string repo, string subject, string body, IEnumerable<string> labels)
         {
+            if(body.Length > 64000 )
+            {
+                throw new ArgumentOutOfRangeException("Body must be less than 64000 characters long.");
+            }
+
             var newIssue = new NewIssue(subject)
             {
                 Body = body,
