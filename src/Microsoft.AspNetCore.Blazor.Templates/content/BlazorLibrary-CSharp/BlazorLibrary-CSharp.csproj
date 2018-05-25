@@ -5,11 +5,9 @@
     <OutputType>Library</OutputType>
     <IsPackable>true</IsPackable>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
-    <RestoreSources Condition="'$(IncludeCustomRestoreSourcesSymbol)'=='true'">
-      $(RestoreSources);
-      https://api.nuget.org/v3/index.json;
+    <RestoreAdditionalProjectSources Condition="'$(IncludeCustomRestoreSourcesSymbol)'=='true'">
       https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
-    </RestoreSources>
+    </RestoreAdditionalProjectSources>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 

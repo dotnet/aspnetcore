@@ -84,12 +84,10 @@ To use a nightly or developer CI build of the Blazor package, ensure that you ha
 
 Update your projects to include the Blazor developer feed (`https://dotnet.myget.org/f/blazor-dev/api/v3/index.json`) and ASP.NET Core developer feed (`https://dotnet.myget.org/F/dotnet-core/api/v3/index.json`). You can do this in a project file with MSBuild:
 ```xml
-<RestoreSources>
-    $(RestoreSources);
-    https://api.nuget.org/v3/index.json;
+<RestoreAdditionalProjectSources>
     https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
     https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
-</RestoreSources>
+</RestoreAdditionalProjectSources>
 ```
 
 Or in a NuGet.config in the same directory as the solution file:
