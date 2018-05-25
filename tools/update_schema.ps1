@@ -49,12 +49,20 @@ for ($i=0; $i -lt $ancmSchemaFiles.Length; $i++)
     $schemaSource = $ancmSchemaFileLocations[$i]
 
     $destinations = @(
-        "${env:ProgramFiles(x86)}\IIS Express\config\schema\${schemaFile}",
-        "${env:ProgramFiles}\IIS Express\config\schema\${schemaFile}",
-        "${env:windir}\system32\inetsrv\config\schema\${schemaFile}"
+        "${env:ProgramFiles(x86)}\IIS Express\config\schema\",
+        "${env:ProgramFiles}\IIS Express\config\schema\",
+        "${env:windir}\system32\inetsrv\config\schema\"
     )
 
-    foreach ($dest in $destinations) {
+    foreach ($destPath in $destinations) {
+        $dest = "$destPath\${schemaFile}";
+
+        if (!(Test-Path $destPath))
+        {
+            Write-Host "$destPath doesn't exist"
+            continue;
+        }
+
         if ($PSCmdlet.ShouldProcess($dest, "Replace file")) {
             Write-Host "Updated $dest"
             Move-Item $dest "${dest}.bak" -ErrorAction Ignore
