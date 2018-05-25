@@ -179,8 +179,9 @@ if (Test-Path $ConfigFile) {
         }
     }
     catch {
-        Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
-        Write-Warning $Error[0]
+        Write-Host -ForegroundColor Red $Error[0]
+        Write-Error "$ConfigFile contains invalid JSON."
+        exit 1
     }
 }
 
