@@ -182,12 +182,6 @@ HRESULT
     //
     pFactory = new ASPNET_CORE_PROXY_MODULE_FACTORY;
 
-    if (pFactory == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
-
     hr = pModuleInfo->SetRequestNotifications(
                                   pFactory,
                                   RQ_EXECUTE_REQUEST_HANDLER,
@@ -199,11 +193,6 @@ HRESULT
 
     pFactory = NULL;
     pApplicationManager = APPLICATION_MANAGER::GetInstance();
-    if(pApplicationManager == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     hr = pApplicationManager->Initialize();
     if(FAILED(hr))
@@ -213,11 +202,6 @@ HRESULT
     pGlobalModule = NULL;
 
     pGlobalModule = new ASPNET_CORE_GLOBAL_MODULE(pApplicationManager);
-    if (pGlobalModule == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     hr = pModuleInfo->SetGlobalNotifications(
                               pGlobalModule,

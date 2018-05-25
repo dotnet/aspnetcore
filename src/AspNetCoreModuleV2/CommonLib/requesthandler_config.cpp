@@ -42,11 +42,6 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
     *ppAspNetCoreConfig = NULL;
 
     pRequestHandlerConfig = new REQUESTHANDLER_CONFIG;
-    if (pRequestHandlerConfig == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     hr = pRequestHandlerConfig->Populate(pHttpServer, pHttpApplication);
     if (FAILED(hr))
@@ -110,11 +105,6 @@ REQUESTHANDLER_CONFIG::Populate(
     BSTR                            bstrAspNetCoreSection = NULL;
 
     m_pEnvironmentVariables = new ENVIRONMENT_VAR_HASH();
-    if (m_pEnvironmentVariables == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
     if (FAILED(hr = m_pEnvironmentVariables->Initialize(37 /*prime*/)))
     {
         delete m_pEnvironmentVariables;
@@ -168,7 +158,6 @@ REQUESTHANDLER_CONFIG::Populate(
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
-
     hr = pAdminManager->GetAdminSection(bstrWindowAuthSection,
         m_struConfigPath.QueryStr(),
         &pWindowsAuthenticationElement);
@@ -196,6 +185,7 @@ REQUESTHANDLER_CONFIG::Populate(
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
+
     hr = pAdminManager->GetAdminSection(bstrBasicAuthSection,
         m_struConfigPath.QueryStr(),
         &pBasicAuthenticationElement);
@@ -213,12 +203,14 @@ REQUESTHANDLER_CONFIG::Populate(
             goto Finished;
         }
     }
+
     bstrAnonymousAuthSection = SysAllocString(CS_ANONYMOUS_AUTHENTICATION_SECTION);
     if (bstrAnonymousAuthSection == NULL)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
+
     hr = pAdminManager->GetAdminSection(bstrAnonymousAuthSection,
         m_struConfigPath.QueryStr(),
         &pAnonymousAuthenticationElement);
@@ -419,11 +411,6 @@ REQUESTHANDLER_CONFIG::Populate(
         }
 
         pEntry = new ENVIRONMENT_VAR_ENTRY();
-        if (pEntry == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
 
         if (FAILED(hr = pEntry->Initialize(strEnvName.QueryStr(), strExpandedEnvValue.QueryStr())) ||
             FAILED(hr = m_pEnvironmentVariables->InsertRecord(pEntry)))

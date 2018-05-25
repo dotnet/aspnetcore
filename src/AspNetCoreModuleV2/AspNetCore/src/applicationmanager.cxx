@@ -76,11 +76,6 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
             goto Finished;
         }
         pApplicationInfo = new APPLICATION_INFO(pServer);
-        if (pApplicationInfo == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
 
         AcquireSRWLockExclusive(&m_srwLock);
         fExclusiveLock = TRUE;
@@ -285,12 +280,6 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
     // Make a shallow copy of existing hashtable as we may need to remove nodes
     // This will be used for finding differences in which applications are affected by a config change.
     table = new APPLICATION_INFO_HASH();
-
-    if (table == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     // few application expected, small bucket size for hash table
     if (FAILED(hr = table->Initialize(17 /*prime*/)))

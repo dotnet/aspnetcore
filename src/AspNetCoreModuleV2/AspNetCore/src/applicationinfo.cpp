@@ -66,11 +66,6 @@ APPLICATION_INFO::Initialize(
     if (m_pFileWatcherEntry == NULL)
     {
         m_pFileWatcherEntry = new FILE_WATCHER_ENTRY(pFileWatcher);
-        if (m_pFileWatcherEntry == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
     }
 
     UpdateAppOfflineFileHandle();

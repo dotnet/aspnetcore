@@ -16,7 +16,6 @@ ASPNET_CORE_PROXY_MODULE_FACTORY::GetHttpModule(
     {
         return E_OUTOFMEMORY;
     }
-
     *ppModule = pModule;
     return S_OK;
 }
@@ -97,11 +96,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
 
     pApplicationManager = APPLICATION_MANAGER::GetInstance();
-    if (pApplicationManager == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     hr = pApplicationManager->GetOrCreateApplicationInfo(
         g_pHttpServer,

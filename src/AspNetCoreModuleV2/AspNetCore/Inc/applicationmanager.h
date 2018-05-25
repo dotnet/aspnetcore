@@ -106,11 +106,6 @@ public:
         if(m_pApplicationInfoHash == NULL)
         {
             m_pApplicationInfoHash = new APPLICATION_INFO_HASH();
-            if(m_pApplicationInfoHash == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
 
             hr = m_pApplicationInfoHash->Initialize(DEFAULT_HASH_BUCKETS);
             if(FAILED(hr))

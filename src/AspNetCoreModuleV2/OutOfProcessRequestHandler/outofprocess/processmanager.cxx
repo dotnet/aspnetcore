@@ -123,11 +123,6 @@ PROCESS_MANAGER::GetProcess(
         {
             m_dwProcessesPerApplication = pConfig->QueryProcessesPerApplication();
             m_ppServerProcessList = new SERVER_PROCESS*[m_dwProcessesPerApplication];
-            if (m_ppServerProcessList == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
 
             for (DWORD i = 0; i < m_dwProcessesPerApplication; ++i)
             {
@@ -203,12 +198,6 @@ PROCESS_MANAGER::GetProcess(
         {
 
             pSelectedServerProcess = new SERVER_PROCESS();
-            if (pSelectedServerProcess == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
-
 
             hr = pSelectedServerProcess->Initialize(
                     this,                                   //ProcessManager

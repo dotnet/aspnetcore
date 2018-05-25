@@ -409,11 +409,6 @@ UTILITY::ConvertPathToFullPath(
     }
 
     pszFullPath = new WCHAR[ strFileFullPath.QueryCCH() + 1];
-    if ( pszFullPath == NULL )
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     if(_wfullpath( pszFullPath,
                    strFileFullPath.QueryStr(),

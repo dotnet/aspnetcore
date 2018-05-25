@@ -53,6 +53,9 @@ http_get_server_variable(
 {
     PCWSTR pszVariableValue;
     DWORD cbLength;
+
+    DBG_ASSERT(pszVariableValue != NULL);
+
     HRESULT hr = pInProcessHandler
         ->QueryHttpContext()
         ->GetServerVariable(pszVariableName, &pszVariableValue, &cbLength);
@@ -69,7 +72,6 @@ http_get_server_variable(
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
-
 Finished:
     return hr;
 }

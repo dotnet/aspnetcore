@@ -206,11 +206,6 @@ public:
         ENVIRONMENT_VAR_HASH* pEnvironmentVarTable = NULL;
 
         pEnvironmentVarTable = new ENVIRONMENT_VAR_HASH();
-        if (pEnvironmentVarTable == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
 
         //
         // few environment variables expected, small bucket size for hash table
@@ -258,11 +253,7 @@ public:
         }
 
         pIISAuthEntry = new ENVIRONMENT_VAR_ENTRY();
-        if (pIISAuthEntry == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
+
         if (FAILED(hr = pIISAuthEntry->Initialize(ASPNETCORE_IIS_AUTH_ENV_STR, strIisAuthEnvValue.QueryStr())) ||
             FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISAuthEntry)))
         {
@@ -329,11 +320,7 @@ public:
 
         // the environment variable was not defined, create it and add to hashtable
         pHostingEntry = new ENVIRONMENT_VAR_ENTRY();
-        if (pHostingEntry == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
+
         if (FAILED(hr = pHostingEntry->Initialize(HOSTING_STARTUP_ASSEMBLIES_NAME, strStartupAssemblyEnv.QueryStr())) ||
             FAILED(hr = pEnvironmentVarTable->InsertRecord(pHostingEntry)))
         {
@@ -403,11 +390,7 @@ public:
         }
 
         pIISWebsocketEntry = new ENVIRONMENT_VAR_ENTRY();
-        if (pIISWebsocketEntry == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
+
         if (FAILED(hr = pIISWebsocketEntry->Initialize(ASPNETCORE_IIS_WEBSOCKETS_SUPPORTED_ENV_STR, strIISWebsocketEnvValue.QueryStr())) ||
             FAILED(hr = pInEnvironmentVarTable->InsertRecord(pIISWebsocketEntry)))
         {

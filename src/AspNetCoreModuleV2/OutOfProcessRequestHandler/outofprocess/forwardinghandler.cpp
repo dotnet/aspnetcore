@@ -208,11 +208,6 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     if (m_pDisconnect == NULL)
     {
         m_pDisconnect = new ASYNC_DISCONNECT_CONTEXT();
-        if (m_pDisconnect == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Failure;
-        }
 
         hr = pClientConnection->GetModuleContextContainer()->
             SetConnectionModuleContext(m_pDisconnect,
@@ -459,11 +454,6 @@ REQUEST_NOTIFICATION_STATUS
         // This should be the write completion of the 101 response.
         //
         m_pWebSocket = new WEBSOCKET_HANDLER();
-        if (m_pWebSocket == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Failure;
-        }
 
         hr = m_pWebSocket->ProcessRequest(this, m_pW3Context, m_hRequest, &fWebSocketUpgraded);
         if (fWebSocketUpgraded)
@@ -718,11 +708,6 @@ HRESULT
     HRESULT                         hr = S_OK;
 
     sm_pAlloc = new ALLOC_CACHE_HANDLER;
-    if (sm_pAlloc == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     hr = sm_pAlloc->Initialize(sizeof(FORWARDING_HANDLER),
         64); // nThreshold
@@ -732,11 +717,6 @@ HRESULT
     }
 
     sm_pResponseHeaderHash = new RESPONSE_HEADER_HASH;
-    if (sm_pResponseHeaderHash == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     hr = sm_pResponseHeaderHash->Initialize();
     if (FAILED(hr))

@@ -226,7 +226,8 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             goto Finished;
         }
 
-        if (FAILED(hr = pStruExeAbsolutePath->Copy(struAbsolutePathToDotnet))) {
+        if (FAILED(hr = pStruExeAbsolutePath->Copy(struAbsolutePathToDotnet)))
+        {
             goto Finished;
         }
     }
@@ -252,7 +253,8 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
                 goto Finished;
             }
 
-            if (FAILED(hr = pStruExeAbsolutePath->Copy(struAbsolutePathToDotnet))) {
+            if (FAILED(hr = pStruExeAbsolutePath->Copy(struAbsolutePathToDotnet)))
+            {
                 goto Finished;
             }
         }
@@ -299,6 +301,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
 
     DBG_ASSERT(dwArgCount != NULL);
     DBG_ASSERT(pwzArgv != NULL);
+    DBG_ASSERT(pwzExePath != NULL);
 
     HRESULT     hr = S_OK;
     INT         argc = 0;
@@ -324,24 +327,18 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
     }
 
     argv = new BSTR[argc + 1];
-    if (argv == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Failure;
-    }
 
     argv[0] = SysAllocString(pwzExePath);
-
     if (argv[0] == NULL)
     {
         hr = E_OUTOFMEMORY;
         goto Failure;
     }
-
     // Try to convert the application dll from a relative to an absolute path
     // Don't record this failure as pwzArgs[0] may already be an absolute path to the dll.
     for (intArgsProcessed = 0; intArgsProcessed < argc; intArgsProcessed++)
     {
+        DBG_ASSERT(pwzArgs[intArgsProcessed] != NULL);
         struTempPath.Copy(pwzArgs[intArgsProcessed]);
         if (struTempPath.EndsWith(L".dll"))
         {

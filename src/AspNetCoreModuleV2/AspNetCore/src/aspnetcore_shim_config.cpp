@@ -61,11 +61,6 @@ ASPNETCORE_SHIM_CONFIG::GetConfig(
     }
 
     pAspNetCoreShimConfig = new ASPNETCORE_SHIM_CONFIG;
-    if (pAspNetCoreShimConfig == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
 
     hr = pAspNetCoreShimConfig->Populate(pHttpServer, pHttpApplication);
     if (FAILED(hr))
