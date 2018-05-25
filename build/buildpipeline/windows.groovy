@@ -8,7 +8,7 @@ simpleNode('Windows.10.Enterprise.RS3.ASPNET') {
     }
     stage ('Build') {
         def logFolder = getLogFolder()
-        def environment = "set ASPNETCORE_TEST_LOG_DIR=${WORKSPACE}\\${logFolder}"
-        bat "${environment}&.\\run.cmd -CI default-build /p:Configuration=${params.Configuration}"
+        def environment = "\$env:ASPNETCORE_TEST_LOG_DIR=\"${WORKSPACE}\\${logFolder}\""
+        batchFile ("powershell -Command \"&.\\tools\\update_schema.ps1;${environment};&.\\run.ps1 -CI default-build /p:Configuration=${params.Configuration}\"")
     }
 }
