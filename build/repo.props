@@ -11,6 +11,11 @@
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
 
+    <!-- Install the 2.1.0 RTM runtime -->
+    <AspNetCoreRuntime Include="2.1.0">
+      <Feed>https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/assets</Feed>
+    </AspNetCoreRuntime>
+
     <!-- SkipAspNetCoreRuntimeInstall must be set when building templates before the shared framework is available -->
     <AspNetCoreRuntime Include="$(MicrosoftAspNetCoreAllPackageVersion)"
       Condition=" '$(SkipAspNetCoreRuntimeInstall)' != 'true' " />
