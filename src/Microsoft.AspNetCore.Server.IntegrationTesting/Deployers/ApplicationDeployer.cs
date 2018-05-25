@@ -161,6 +161,22 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
+        protected string GetDotNetExeForArchitecture()
+        {
+            var executableName = DotnetCommandName;
+            // We expect x64 dotnet.exe to be on the path but we have to go searching for the x86 version.
+            if (DotNetCommands.IsRunningX86OnX64(DeploymentParameters.RuntimeArchitecture))
+            {
+                executableName = DotNetCommands.GetDotNetExecutable(DeploymentParameters.RuntimeArchitecture);
+                if (!File.Exists(executableName))
+                {
+                    throw new Exception($"Unable to find '{executableName}'.'");
+                }
+            }
+
+            return executableName;
+        }
+
         protected void ShutDownIfAnyHostProcess(Process hostProcess)
         {
             if (hostProcess != null && !hostProcess.HasExited)

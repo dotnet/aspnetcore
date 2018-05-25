@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public string ServerConfigLocation { get; set; }
 
-        public string SiteName { get; set; }
+        public string SiteName { get; set; } = "HttpTestSite";
 
         public string ApplicationPath { get; set; }
 

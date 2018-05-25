@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 if (hostingModel == HostingModel.InProcess)
                 {
                     // Not supported
-                    if (Tfm.Matches(Tfm.Net461, tfm) || version == AncmVersion.AspNetCoreModule)
+                    if (Tfm.Matches(Tfm.Net461, tfm) || Tfm.Matches(Tfm.NetCoreApp20, tfm) || version == AncmVersion.AspNetCoreModule)
                     {
                         continue;
                     }

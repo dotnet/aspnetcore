@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     internal static class DotNetCommands
     {
