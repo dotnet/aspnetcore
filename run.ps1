@@ -113,9 +113,9 @@ function Get-KoreBuild {
         try {
             $tmpfile = Join-Path ([IO.Path]::GetTempPath()) "KoreBuild-$([guid]::NewGuid()).zip"
             Get-RemoteFile $remotePath $tmpfile $ToolsSourceSuffix
-            if (Get-Command -Name 'Expand-Archive' -ErrorAction Ignore) {
+            if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
                 # Use built-in commands where possible as they are cross-plat compatible
-                Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
+                Microsoft.PowerShell.Archive\Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
             }
             else {
                 # Fallback to old approach for old installations of PowerShell
@@ -179,8 +179,9 @@ if (Test-Path $ConfigFile) {
         }
     }
     catch {
-        Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
-        Write-Warning $Error[0]
+        Write-Host -ForegroundColor Red $Error[0]
+        Write-Error "$ConfigFile contains invalid JSON."
+        exit 1
     }
 }
 
