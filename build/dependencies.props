@@ -2,10 +2,10 @@
   <!-- These package version may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <MicrosoftCSharpPackageVersion>4.6.0-preview1-26525-01</MicrosoftCSharpPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.2.0-preview1-26525-04</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.2.0-preview1-26526-03</MicrosoftExtensionsDependencyModelPackageVersion>
     <!-- MicrosoftNETCoreApp22PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>2.2.0-preview1-26525-04</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.0-preview1-26525-04</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.2.0-preview1-26526-03</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.0-preview1-26526-03</MicrosoftNETCoreDotNetAppHostPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26525-01</MicrosoftWin32RegistryPackageVersion>
     <NuGetFrameworksPackageVersion>4.8.0-preview1.5116</NuGetFrameworksPackageVersion>
     <SystemBuffersPackageVersion>4.6.0-preview1-26525-01</SystemBuffersPackageVersion>
