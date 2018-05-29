@@ -48,6 +48,8 @@
         id=$(PackageId);
         version=$(PackageVersion);
         authors=$(Authors);
+        MicrosoftAspNetCoreHostingPackageVersion=$(MicrosoftAspNetCoreHostingPackageVersion);
+        MicrosoftAspNetCoreMvcRazorPagesPackageVersion=$(MicrosoftAspNetCoreMvcRazorPagesPackageVersion);
         description=$(Description);
         tags=$(PackageTags.Replace(';', ' '));
         licenseUrl=$(PackageLicenseUrl);
