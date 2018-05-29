@@ -153,6 +153,29 @@ namespace Microsoft.AspNetCore.Internal
             return true;
         }
 
+        public static bool ReadForType(JsonTextReader reader, Type type)
+        {
+            // Explicity read values as dates from JSON with reader.
+            // We do this because otherwise dates are read as strings
+            // and the JsonSerializer will use a conversion method that won't
+            // preserve UTC in DateTime.Kind for UTC ISO8601 dates
+            if (type == typeof(DateTime) || type == typeof(DateTime?))
+            {
+                reader.ReadAsDateTime();
+            }
+            else if (type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?))
+            {
+                reader.ReadAsDateTimeOffset();
+            }
+            else
+            {
+                reader.Read();
+            }
+
+            // TokenType will be None if there is no more content
+            return reader.TokenType != JsonToken.None;
+        }
+
         private class JsonArrayPool<T> : IArrayPool<T>
         {
             private readonly ArrayPool<T> _inner;

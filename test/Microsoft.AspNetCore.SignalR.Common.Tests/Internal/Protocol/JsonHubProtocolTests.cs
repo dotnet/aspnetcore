@@ -260,6 +260,37 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(expectedMessage, bindingFailure.BindingFailure.SourceException.Message);
         }
 
+        [Theory]
+        [InlineData("{'type':1,'invocationId':'42','target':'foo','arguments':['2007-03-01T13:00:00Z']}")]
+        [InlineData("{'type':1,'invocationId':'42','arguments':['2007-03-01T13:00:00Z'],'target':'foo'}")]
+        public void DateTimeArgumentPreservesUtcKind(string input)
+        {
+            var binder = new TestBinder(new[] { typeof(DateTime) });
+            var protocol = new JsonHubProtocol();
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame(input)));
+            protocol.TryParseMessage(ref data, binder, out var message);
+            var invocationMessage = Assert.IsType<InvocationMessage>(message);
+
+            Assert.Single(invocationMessage.Arguments);
+            var dt = Assert.IsType<DateTime>(invocationMessage.Arguments[0]);
+            Assert.Equal(DateTimeKind.Utc, dt.Kind);
+        }
+
+        [Theory]
+        [InlineData("{'type':3,'invocationId':'42','target':'foo','arguments':[],'result':'2007-03-01T13:00:00Z'}")]
+        [InlineData("{'type':3,'target':'foo','arguments':[],'result':'2007-03-01T13:00:00Z','invocationId':'42'}")]
+        public void DateTimeReturnValuePreservesUtcKind(string input)
+        {
+            var binder = new TestBinder(typeof(DateTime));
+            var protocol = new JsonHubProtocol();
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame(input)));
+            protocol.TryParseMessage(ref data, binder, out var message);
+            var invocationMessage = Assert.IsType<CompletionMessage>(message);
+
+            var dt = Assert.IsType<DateTime>(invocationMessage.Result);
+            Assert.Equal(DateTimeKind.Utc, dt.Kind);
+        }
+
         private static string Frame(string input)
         {
             var data = Encoding.UTF8.GetBytes(input);
