@@ -1266,7 +1266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            var scratchBuffer = new byte[maxRequestBufferSize * 2 + 1];
+            var scratchBuffer = new byte[maxRequestBufferSize * 8];
 
             using (var server = new TestServer(async context =>
             {
