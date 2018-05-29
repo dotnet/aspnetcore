@@ -82,10 +82,10 @@ The Blazor Visual Studio tooling will build as part of the command line build wh
 
 To use a nightly or developer CI build of the Blazor package, ensure that you have the Blazor package feed configured, and update your package version numbers. You should use developer builds only with the expectation that things will break and change without any sort of announcement.
 
-Update your projects to include the Blazor developer feed (`https://dotnet.myget.org/f/blazor-dev/api/v3/index.json`) and ASP.NET Core developer feed (`https://dotnet.myget.org/F/dotnet-core/api/v3/index.json`). You can do this in a project file with MSBuild:
+Update your projects to include the Blazor development feed (`https://dotnet.myget.org/f/blazor-dev/api/v3/index.json`). You can do this in a project file with MSBuild:
+
 ```xml
 <RestoreAdditionalProjectSources>
-    https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
     https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;
 </RestoreAdditionalProjectSources>
 ```
@@ -98,7 +98,6 @@ Or in a NuGet.config in the same directory as the solution file:
  <packageSources>
     <clear />
     <add key="blazor" value="https://dotnet.myget.org/f/blazor-dev/api/v3/index.json" />
-    <add key="aspnet" value="https://dotnet.myget.org/f/dotnet-core/api/v3/index.json" />
     <add key="nuget" value="https://api.nuget.org/v3/index.json" />
  </packageSources>
 </configuration>
