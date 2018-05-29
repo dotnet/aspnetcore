@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+
+#include "precomp.hxx"
+
 class APP_OFFLINE_HTM
 {
 public:

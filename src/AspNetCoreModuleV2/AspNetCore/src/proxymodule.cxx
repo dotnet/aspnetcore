@@ -1,8 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "precomp.hxx"
+#include "proxymodule.h"
+
+#include "applicationmanager.h"
+#include "applicationinfo.h"
+#include "acache.h"
 #include "hostfxroptions.h"
+
 
 __override
 HRESULT
@@ -41,7 +46,7 @@ Return value:
 
 --*/
 {
-   /* FORWARDING_HANDLER::StaticTerminate();
+    /* FORWARDING_HANDLER::StaticTerminate();
 
     WEBSOCKET_HANDLER::StaticTerminate();*/
 
@@ -81,7 +86,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     IAPPLICATION* pApplication = NULL;
-    STACK_STRU(struFileName, 256);
+    STRU struExeLocation;
 
     if (g_fInShutdown)
     {
@@ -123,9 +128,9 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         // Set fTrySkipCustomErrors to true as we want client see the offline content
         pResponse->SetStatus(503, "Service Unavailable", 0, hr, NULL, TRUE);
         pResponse->SetHeader("Content-Type",
-            "text/html",
-            (USHORT)strlen("text/html"),
-            FALSE
+                             "text/html",
+                             (USHORT)strlen("text/html"),
+                             FALSE
         );
 
         DataChunk.DataChunkType = HttpDataChunkFromMemory;
@@ -158,7 +163,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
     // Create RequestHandler and process the request
     hr = pApplication->CreateHandler(pHttpContext,
-                    &m_pHandler);
+                                     &m_pHandler);
 
     if (FAILED(hr))
     {

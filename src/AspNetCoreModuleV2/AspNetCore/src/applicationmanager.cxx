@@ -1,7 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "precomp.hxx"
+#include "applicationmanager.h"
+
+#include "proxymodule.h"
+#include "utility.h"
+#include <memory>
 
 // The application manager is a singleton across ANCM.
 APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
@@ -32,9 +36,9 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
     *ppApplicationInfo = NULL;
 
-    // The configuration path is unique for each application and is used for the 
+    // The configuration path is unique for each application and is used for the
     // key in the applicationInfoHash.
-    pszApplicationId = pConfig->QueryConfigPath()->QueryStr(); 
+    pszApplicationId = pConfig->QueryConfigPath()->QueryStr();
     hr = key.Initialize(pszApplicationId);
     if (FAILED(hr))
     {
@@ -55,7 +59,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
     if (*ppApplicationInfo == NULL)
     {
-        // Check which hosting model we want to support 
+        // Check which hosting model we want to support
         switch (pConfig->QueryHostingModel())
         {
         case HOSTING_IN_PROCESS:
@@ -210,7 +214,7 @@ APPLICATION_MANAGER::FindConfigChangedApplication(
     DBG_ASSERT(pvContext);
 
     // Config Change context contains the original config path that changed
-    // and a multiStr containing 
+    // and a multiStr containing
     CONFIG_CHANGE_CONTEXT* pContext = static_cast<CONFIG_CHANGE_CONTEXT*>(pvContext);
     STRU* pstruConfigPath = pEntry->QueryConfig()->QueryConfigPath();
 
@@ -245,7 +249,7 @@ APPLICATION_MANAGER::FindConfigChangedApplication(
 //             This will cause a shutdown event to occur through the global stop listening event.
 // OutOfProcess: Removes all applications in the application manager and calls Recycle, which will call Shutdown,
 //             on each application.
-// 
+//
 HRESULT
 APPLICATION_MANAGER::RecycleApplicationFromManager(
     _In_ LPCWSTR pszApplicationId
@@ -296,7 +300,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
     // Don't call application shutdown inside the lock
     m_pApplicationInfoHash->Apply(APPLICATION_INFO_HASH::ReferenceCopyToTable, static_cast<PVOID>(table));
     DBG_ASSERT(dwPreviousCounter == table->Count());
-    
+
     // Removed the applications which are impacted by the configurtion change
     m_pApplicationInfoHash->DeleteIf(FindConfigChangedApplication, (PVOID)&context);
 
@@ -358,7 +362,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             table->FindKey(&key, &pRecord);
             DBG_ASSERT(pRecord != NULL);
 
-            // RecycleApplication is called on a separate thread. 
+            // RecycleApplication is called on a separate thread.
             pRecord->RecycleApplication();
             pRecord->DereferenceApplicationInfo();
             path = context.MultiSz.Next(path);
@@ -399,7 +403,7 @@ Finished:
 //
 // Shutsdown all applications in the application hashtable
 // Only called by OnGlobalStopListening.
-// 
+//
 VOID
 APPLICATION_MANAGER::ShutDown()
 {
@@ -416,7 +420,7 @@ APPLICATION_MANAGER::ShutDown()
         }
 
         DBG_ASSERT(m_pApplicationInfoHash);
-        // During shutdown we lock until we delete the application 
+        // During shutdown we lock until we delete the application
         AcquireSRWLockExclusive(&m_srwLock);
 
         // Call shutdown on each application in the application manager

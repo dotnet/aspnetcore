@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "precomp.hxx"
+#include "filewatcher.h"
+
+#include "ntassert.h"
+#include "applicationinfo.h"
 
 FILE_WATCHER::FILE_WATCHER() :
     m_hCompletionPort(NULL),
@@ -272,11 +275,11 @@ HRESULT
         goto Finished;
     }
 
-    // When directory handle is closed then HandleChangeCompletion  
-    // happens with cbCompletion = 0 and dwCompletionStatus = 0  
-    // From documentation it is not clear if that combination  
-    // of return values is specific to closing handles or whether  
-    // it could also mean an error condition. Hence we will maintain  
+    // When directory handle is closed then HandleChangeCompletion
+    // happens with cbCompletion = 0 and dwCompletionStatus = 0
+    // From documentation it is not clear if that combination
+    // of return values is specific to closing handles or whether
+    // it could also mean an error condition. Hence we will maintain
     // explicit flag that will help us determine if entry
     // is being shutdown (StopMonitor() called)
     //
@@ -287,8 +290,8 @@ HRESULT
 
     //
     // There could be a FCN overflow
-    // Let assume the file got changed instead of checking files 
-    // Othersie we have to cache the file info 
+    // Let assume the file got changed instead of checking files
+    // Othersie we have to cache the file info
     //
     if (cbCompletion == 0)
     {

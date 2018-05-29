@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "precomp.hxx"
+
 #define FILE_WATCHER_SHUTDOWN_KEY           (ULONG_PTR)(-1)
 #define FILE_WATCHER_ENTRY_BUFFER_SIZE      4096
 #ifndef CONTAINING_RECORD

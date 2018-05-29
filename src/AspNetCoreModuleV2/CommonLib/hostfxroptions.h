@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <memory>
+
 class HOSTFXR_OPTIONS
 {
 public:

@@ -3,6 +3,12 @@
 
 #pragma once
 
+#include "precomp.hxx"
+
+#include "applicationinfo.h"
+#include "multisz.h"
+#include "filewatcher.h"
+
 #define DEFAULT_HASH_BUCKETS 17
 
 //
@@ -133,8 +139,8 @@ public:
 private:
     //
     // we currently limit the size of m_pstrErrorInfo to 5000, be careful if you want to change its payload
-    // 
-    APPLICATION_MANAGER() : m_pApplicationInfoHash(NULL), 
+    //
+    APPLICATION_MANAGER() : m_pApplicationInfoHash(NULL),
         m_pFileWatcher(NULL),
         m_hostingModel(HOSTING_UNKNOWN)
     {

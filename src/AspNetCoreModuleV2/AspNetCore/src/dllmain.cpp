@@ -2,7 +2,13 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "precomp.hxx"
-#include <IPHlpApi.h>
+
+#include "applicationinfo.h"
+#include "applicationmanager.h"
+#include "proxymodule.h"
+#include "globalmodule.h"
+#include "acache.h"
+#include "utility.h"
 
 HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
@@ -19,8 +25,6 @@ DWORD               g_dwActiveServerProcesses = 0;
 SRWLOCK             g_srwLock;
 DWORD               g_dwDebugFlags = 0;
 PCSTR               g_szDebugLabel = "ASPNET_CORE_MODULE";
-PCWSTR              g_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
-PCWSTR              g_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
 PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 
 VOID

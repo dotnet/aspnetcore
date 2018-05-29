@@ -3,9 +3,17 @@
 
 #pragma once
 
-#define API_BUFFER_TOO_SMALL 0x80008098
+#include "precomp.hxx"
 
-extern BOOL     g_fRecycleProcessCalled;
+#include "hostfxroptions.h"
+#include "appoffline.h"
+#include "filewatcher.h"
+#include "hashtable.h"
+#include "hashfn.h"
+#include "aspnetcore_shim_config.h"
+#include "iapplication.h"
+
+#define API_BUFFER_TOO_SMALL 0x80008098
 
 typedef
 HRESULT
@@ -15,6 +23,9 @@ HRESULT
     _In_  PCWSTR          pwzExeLocation, // TODO remove both pwzExeLocation and pHttpContext from this api
     _Out_ IAPPLICATION  **pApplication
     );
+
+extern BOOL     g_fRecycleProcessCalled;
+extern PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 
 //
 // The key used for hash-table lookups, consists of the port on which the http process is created.
@@ -168,6 +179,9 @@ private:
     SRWLOCK                 m_srwLock;
     IHttpServer            *m_pServer;
     PFN_ASPNETCORE_CREATE_APPLICATION      m_pfnAspNetCoreCreateApplication;
+
+    static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
+    static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;
 };
 
 class APPLICATION_INFO_HASH :

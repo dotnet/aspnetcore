@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+
+#include "precomp.hxx"
+
 #define CS_ASPNETCORE_SECTION                            L"system.webServer/aspNetCore"
 #define CS_ASPNETCORE_PROCESS_EXE_PATH                   L"processPath"
 #define CS_ASPNETCORE_PROCESS_ARGUMENTS                  L"arguments"
