@@ -731,7 +731,7 @@ TEST(connection_impl_stop, stopping_disconnected_connection_is_no_op)
     ASSERT_EQ(connection_state::disconnected, connection->get_connection_state());
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(2, log_entries.size());
+    ASSERT_EQ(2U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[info        ] stopping connection\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[info        ] acquired lock in shutdown()\n"), remove_date_from_log_entry(log_entries[1]));
 }
@@ -772,7 +772,7 @@ TEST(connection_impl_stop, stopping_disconnecting_connection_returns_cancelled_t
     ASSERT_EQ(connection_state::disconnected, connection->get_connection_state());
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(4, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -794,7 +794,7 @@ TEST(connection_impl_stop, can_start_and_stop_connection)
         }).get();
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(4, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -832,7 +832,7 @@ TEST(connection_impl_stop, can_start_and_stop_connection_multiple_times)
     }
 
     auto log_entries = memory_writer->get_log_entries();
-    ASSERT_EQ(8, log_entries.size());
+    ASSERT_EQ(8U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -870,7 +870,7 @@ TEST(connection_impl_stop, dtor_stops_the_connection)
     }
 
     auto log_entries = memory_writer->get_log_entries();
-    ASSERT_EQ(4, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -909,7 +909,7 @@ TEST(connection_impl_stop, stop_cancels_ongoing_start_request)
     ASSERT_EQ(connection_state::disconnected, connection->get_connection_state());
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(5, log_entries.size());
+    ASSERT_EQ(5U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[info        ] stopping connection\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[info        ] acquired lock in shutdown()\n"), remove_date_from_log_entry(log_entries[2]));
@@ -955,7 +955,7 @@ TEST(connection_impl_stop, ongoing_start_request_cancelled_if_connection_stopped
     }).get();
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(5, log_entries.size()) << dump_vector(log_entries);
+    ASSERT_EQ(5U, log_entries.size()) << dump_vector(log_entries);
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[info        ] stopping connection\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[info        ] acquired lock in shutdown()\n"), remove_date_from_log_entry(log_entries[2]));
@@ -999,7 +999,7 @@ TEST(connection_impl_stop, stop_ignores_exceptions_from_abort_requests)
     ASSERT_EQ(connection_state::disconnected, connection->get_connection_state());
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(4, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -1041,7 +1041,7 @@ TEST(connection_impl_stop, std_exception_for_disconnected_callback_caught_and_lo
         }).get();
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(1, log_entries.size());
+    ASSERT_EQ(1U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[error       ] disconnected callback threw an exception: exception from disconnected\n"), remove_date_from_log_entry(log_entries[0]));
 }
 
@@ -1062,7 +1062,7 @@ TEST(connection_impl_stop, exception_for_disconnected_callback_caught_and_logged
         }).get();
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(1, log_entries.size());
+    ASSERT_EQ(1U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[error       ] disconnected callback threw an unknown exception\n"), remove_date_from_log_entry(log_entries[0]));
 }
 
@@ -1202,7 +1202,7 @@ TEST(connection_impl_reconnect, successful_reconnect_state_changes)
     ASSERT_FALSE(reconnected_event->wait(5000));
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(4, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> reconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -1271,7 +1271,7 @@ TEST(connection_impl_reconnect, connection_stopped_if_reconnecting_failed)
     ASSERT_GE(reconnect_invocations, 2);
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(5, log_entries.size());
+    ASSERT_EQ(5U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> reconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -1316,7 +1316,7 @@ TEST(connection_impl_reconnect, reconnect_works_if_connection_dropped_during_aft
     ASSERT_FALSE(reconnected_event->wait(5000));
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(4, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> reconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -1396,15 +1396,15 @@ TEST(connection_impl_reconnect, reconnect_cancelled_if_connection_dropped_during
     }
 
     auto log_entries = memory_writer->get_log_entries();
-    ASSERT_EQ(6, log_entries.size()) << dump_vector(log_entries);
+    ASSERT_EQ(6U, log_entries.size()) << dump_vector(log_entries);
 
     auto state_changes = filter_vector(log_entries, _XPLATSTR("[state change]"));
-    ASSERT_EQ(2, state_changes.size()) << dump_vector(log_entries);
+    ASSERT_EQ(2U, state_changes.size()) << dump_vector(log_entries);
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(state_changes[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> disconnected\n"), remove_date_from_log_entry(state_changes[1]));
 
     auto info_entries = filter_vector(log_entries, _XPLATSTR("[info        ]"));
-    ASSERT_EQ(4, info_entries.size()) << dump_vector(log_entries);
+    ASSERT_EQ(4U, info_entries.size()) << dump_vector(log_entries);
     ASSERT_EQ(_XPLATSTR("[info        ] [websocket transport] connecting to: ws://reconnect_cancelled_if_connection_dropped_during_start_and_start_failed/connect?transport=webSockets&clientProtocol=1.4&connectionToken=A%3D%3D\n"), remove_date_from_log_entry(info_entries[0]));
     ASSERT_EQ(_XPLATSTR("[info        ] connection lost - trying to re-establish connection\n"), remove_date_from_log_entry(info_entries[1]));
     ASSERT_EQ(_XPLATSTR("[info        ] acquired lock before invoking reconnecting callback\n"), remove_date_from_log_entry(info_entries[2]));
@@ -1455,7 +1455,7 @@ TEST(connection_impl_reconnect, reconnect_cancelled_when_connection_being_stoppe
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
     auto state_changes = filter_vector(log_entries, _XPLATSTR("[state change]"));
-    ASSERT_EQ(state_changes.size(), 5);
+    ASSERT_EQ(state_changes.size(), 5U);
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(state_changes[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(state_changes[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> reconnecting\n"), remove_date_from_log_entry(state_changes[2]));
@@ -1476,7 +1476,7 @@ TEST(connection_impl_reconnect, reconnect_cancelled_when_connection_being_stoppe
         std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
     }
 
-    ASSERT_EQ(1,
+    ASSERT_EQ(1U,
         filter_vector(log_entries, _XPLATSTR("[info        ] reconnecting cancelled - connection is being stopped. line")).size() +
         filter_vector(log_entries, _XPLATSTR("[info        ] reconnecting cancelled - connection was stopped and restarted after reconnecting started")).size())
             << dump_vector(log_entries);
@@ -1544,7 +1544,7 @@ TEST(connection_impl_reconnect, reconnect_cancelled_if_connection_goes_out_of_sc
     auto log_entries = memory_writer->get_log_entries();
     auto state_changes = filter_vector(log_entries, _XPLATSTR("[state change]"));
 
-    ASSERT_EQ(5, state_changes.size()) << dump_vector(log_entries);
+    ASSERT_EQ(5U, state_changes.size()) << dump_vector(log_entries);
 
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(state_changes[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(state_changes[1]));
@@ -1643,7 +1643,7 @@ TEST(connection_impl_reconnect, exception_for_reconnected_reconnecting_callback_
     }
 
     auto log_entries = memory_writer->get_log_entries();
-    ASSERT_EQ(3, log_entries.size());
+    ASSERT_EQ(3U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[error       ] reconnecting callback threw an unknown exception\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[error       ] reconnected callback threw an unknown exception\n"), remove_date_from_log_entry(log_entries[2]));
 }
@@ -1711,7 +1711,7 @@ TEST(connection_impl_reconnect, can_stop_connection_from_reconnecting_event)
     ASSERT_EQ(connection_state::disconnected, connection->get_connection_state());
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-    ASSERT_EQ(5, log_entries.size());
+    ASSERT_EQ(5U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> reconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -1812,12 +1812,12 @@ TEST(connection_impl_reconnect, current_reconnect_cancelled_if_another_reconnect
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
-    ASSERT_EQ(1,
+    ASSERT_EQ(1U,
         filter_vector(log_entries, _XPLATSTR("[info        ] reconnecting cancelled - connection was stopped and restarted after reconnecting started")).size())
             << dump_vector(log_entries);
 
     auto state_changes = filter_vector(log_entries, _XPLATSTR("[state change]"));
-    ASSERT_EQ(9, state_changes.size()) << dump_vector(log_entries);
+    ASSERT_EQ(9U, state_changes.size()) << dump_vector(log_entries);
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(state_changes[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(state_changes[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> reconnecting\n"), remove_date_from_log_entry(state_changes[2]));
