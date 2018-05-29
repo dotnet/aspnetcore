@@ -3122,7 +3122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var chunkData = new byte[chunkSize];
 
             var requestAborted = false;
-            var appFuncCompleted = new TaskCompletionSource<object>();
+            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockKestrelTrace = new Mock<IKestrelTrace>();
 
             var testContext = new TestServiceContext

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -235,15 +236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
                     await sslStream.WriteAsync(request, 0, request.Length);
 
-                    // Temporary workaround for a deadlock when reading from an aborted client SslStream on Mac and Linux.
-                    if (TestPlatformHelper.IsWindows)
-                    {
-                        await sslStream.ReadAsync(new byte[32], 0, 32);
-                    }
-                    else
-                    {
-                        await stream.ReadAsync(new byte[32], 0, 32);
-                    }
+                    await sslStream.ReadAsync(new byte[32], 0, 32);
                 }
             }
 
@@ -295,15 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
                     await sslStream.WriteAsync(request, 0, request.Length);
 
-                    // Temporary workaround for a deadlock when reading from an aborted client SslStream on Mac and Linux.
-                    if (TestPlatformHelper.IsWindows)
-                    {
-                        await sslStream.ReadAsync(new byte[32], 0, 32);
-                    }
-                    else
-                    {
-                        await stream.ReadAsync(new byte[32], 0, 32);
-                    }
+                    await sslStream.ReadAsync(new byte[32], 0, 32);
                 }
             }
 
@@ -412,6 +397,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
             Assert.Equal(2, loggerProvider.FilterLogger.LastEventId);
+            Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
+        }
+
+        [Fact]
+        public async Task ClientAttemptingToUseUnsupportedProtocolIsLoggedAsDebug()
+        {
+            var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    });
+                })
+                .ConfigureServices(AddTestLogging)
+                .Configure(app => app.Run(httpContext => Task.CompletedTask));
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var socket = await HttpClientSlim.GetSocket(new Uri($"https://127.0.0.1:{host.GetPort()}/")))
+                using (var stream = new NetworkStream(socket, ownsSocket: false))
+                using (var sslStream = new SslStream(stream, true, (sender, certificate, chain, errors) => true))
+                {
+                    // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
+                    await Assert.ThrowsAsync<IOException>(() =>
+                        sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
+                            enabledSslProtocols: SslProtocols.Tls,
+                            checkCertificateRevocation: false));
+                }
+            }
+
+            await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
+            Assert.Equal(1, loggerProvider.FilterLogger.LastEventId);
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
