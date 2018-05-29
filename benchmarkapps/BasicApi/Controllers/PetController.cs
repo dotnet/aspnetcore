@@ -1,0 +1,139 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using BasicApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace BasicApi.Controllers
+{
+    [ApiController]
+    [Authorize("pet-store-reader")]
+    [Route("/pet")]
+    public class PetController : ControllerBase
+    {
+        public PetController(BasicApiContext dbContext)
+        {
+            DbContext = dbContext;
+        }
+
+        public BasicApiContext DbContext { get; }
+
+        [HttpGet("{id}", Name = "FindPetById")]
+        public async Task<ActionResult<Pet>> FindById(int id)
+        {
+            var pet = await DbContext.Pets
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            if (pet == null)
+            {
+                return new NotFoundResult();
+            }
+
+            return pet;
+        }
+
+        [AllowAnonymous]
+        [HttpGet("anonymous/{id}")]
+        public async Task<ActionResult<Pet>> FindByIdWithoutToken(int id)
+        {
+            var pet = await DbContext.Pets
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            if (pet == null)
+            {
+                return new NotFoundResult();
+            }
+
+            return pet;
+        }
+
+        [HttpGet("findByCategory/{categoryId}")]
+        public async Task<ActionResult<Pet>> FindByCategory(int categoryId)
+        {
+            var pet = await DbContext.Pets
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.Category != null && p.Category.Id == categoryId);
+            if (pet == null)
+            {
+                return new NotFoundResult();
+            }
+
+            return pet;
+        }
+
+        [HttpGet("findByStatus")]
+        public async Task<ActionResult<Pet>> FindByStatus(string status)
+        {
+            var pet = await DbContext.Pets
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.Status == status);
+            if (pet == null)
+            {
+                return new NotFoundResult();
+            }
+
+            return pet;
+        }
+
+        [HttpGet("findByTags")]
+        public async Task<ActionResult<Pet>> FindByTags(string[] tags)
+        {
+            var pet = await DbContext.Pets
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.Tags.Any(t => tags.Contains(t.Name)));
+            if (pet == null)
+            {
+                return new NotFoundResult();
+            }
+
+            return pet;
+        }
+
+        [Authorize("pet-store-writer")]
+        [HttpPost]
+        public async Task<IActionResult> AddPet([FromBody] Pet pet)
+        {
+            DbContext.Pets.Add(pet);
+            await DbContext.SaveChangesAsync();
+
+            return new CreatedAtRouteResult("FindPetById", new { id = pet.Id }, pet);
+        }
+
+        [Authorize("pet-store-writer")]
+        [HttpPut]
+        public IActionResult EditPet(Pet pet)
+        {
+            throw new NotImplementedException();
+        }
+
+        [Authorize("pet-store-writer")]
+        [HttpPost("{id}/uploadImage")]
+        public IActionResult UploadImage(int id, IFormFile file)
+        {
+            throw new NotImplementedException();
+        }
+
+        [Authorize("pet-store-writer")]
+        [HttpDelete("{id}")]
+        public IActionResult DeletePet(int id)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

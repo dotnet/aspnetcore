@@ -5,12 +5,27 @@
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
+
+    <!--
+      BenchmarksOnly* package versions come from NuGet.org and are intended only for use in benchmarks apps where EF
+      is not otherwise referenced. They avoid unnecessary changes to the Universe build graph or to product
+      dependencies. Do not use these properties elsewhere.
+    -->
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.0</BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>2.1.0</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <BenchmarksOnlyMySqlConnectorPackageVersion>0.42.1</BenchmarksOnlyMySqlConnectorPackageVersion>
+    <BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>2.1.0</BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>
+    <BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>2.1.0-rc1-final</BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>
+
     <InternalAspNetCoreAnalyzersPackageVersion>2.2.0-preview1-34492</InternalAspNetCoreAnalyzersPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17090</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftAspNetCoreAntiforgeryPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAntiforgeryPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreAuthenticationPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAuthenticationPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview1-34492</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
@@ -51,6 +66,7 @@
     <MicrosoftDiaSymReaderNativePackageVersion>1.7.0</MicrosoftDiaSymReaderNativePackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.2.0-preview1-34492</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.2.0-preview1-34492</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34492</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34492</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsConfigurationPackageVersion>2.2.0-preview1-34492</MicrosoftExtensionsConfigurationPackageVersion>
     <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-preview1-34492</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>

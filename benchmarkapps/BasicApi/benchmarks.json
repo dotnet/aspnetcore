@@ -1,0 +1,48 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "Headers": {
+      "Cache-Control": "no-cache"
+    },
+    "PresetHeaders": "Json",
+    "ReadyStateText": "Application started.",
+    "Source": {
+      "BranchOrCommit": "dev",
+      "Project": "benchmarkapps/BasicApi/BasicApi.csproj",
+      "Repository": "https://github.com/aspnet/mvc.git"
+    }
+  },
+  "BasicApi.GetToken": {
+    "Path": "/token",
+    "PresetHeaders": "Plaintext",
+    "Query": "?username=reader@example.com"
+  },
+  "BasicApi.GetUsingQueryString": {
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/getWithToken.lua"
+    },
+    "Path": "/pet/findByStatus",
+    "Query": "?status=available"
+  },
+  "BasicApi.GetUsingRouteValue": {
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/getWithToken.lua"
+    },
+    "Path": "/pet/-1"
+  },
+  "BasicApi.GetUsingRouteValueWithoutAuthorization": {
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/getWithToken.lua"
+    },
+    "Path": "/pet/anonymous/-1"
+  },
+  "BasicApi.GetUsingRouteValueWithoutToken": {
+    "Path": "/pet/anonymous/-1"
+  },
+  "BasicApi.Post": {
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/postJsonWithToken.lua"
+    },
+    "Path": "/pet"
+  }
+}

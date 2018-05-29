@@ -1,0 +1,39 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "Headers": {
+      "Cache-Control": "no-cache"
+    },
+    "PresetHeaders": "Html",
+    "ReadyStateText": "Application started.",
+    "Source": {
+      "BranchOrCommit": "dev",
+      "Project": "benchmarkapps/BasicViews/BasicViews.csproj",
+      "Repository": "https://github.com/aspnet/mvc.git"
+    }
+  },
+  "BasicViews.GetHtmlHelpers": {
+    "Path": "/Home/HtmlHelpers"
+  },
+  "BasicViews.GetTagHelpers": {
+    "Path": "/Home/Index"
+  },
+  "BasicViews.Post": {
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicViews/postWithToken.lua"
+    },
+    "Path": "/Home/Index"
+  },
+  "BasicViews.PostIgnoringToken": {
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicViews/postWithToken.lua"
+    },
+    "Path": "/Home/IndexWithoutToken"
+  },
+  "BasicViews.PostWithoutToken": {
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicViews/post.lua"
+    },
+    "Path": "/Home/IndexWithoutToken"
+  }
+}
