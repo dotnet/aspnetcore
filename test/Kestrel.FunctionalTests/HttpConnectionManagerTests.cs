@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(context =>
                 {
                     appStartedWh.Release();
-                    var tcs = new TaskCompletionSource<object>();
+                    var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                     return tcs.Task;
                 },
                 new TestServiceContext(new LoggerFactory(), mockTrace.Object)))

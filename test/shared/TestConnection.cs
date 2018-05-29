@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public Task WaitForConnectionClose()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var eventArgs = new SocketAsyncEventArgs();
             eventArgs.SetBuffer(new byte[128], 0, 128);
             eventArgs.Completed += ReceiveAsyncCompleted;

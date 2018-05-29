@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             // Initialize data with random bytes
             (new Random()).NextBytes(data);
 
-            var startReadingRequestBody = new TaskCompletionSource<object>();
-            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
+            var startReadingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
             using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody))
@@ -181,8 +181,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            var startReadingRequestBody = new TaskCompletionSource<object>();
-            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
+            var startReadingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
             using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody))

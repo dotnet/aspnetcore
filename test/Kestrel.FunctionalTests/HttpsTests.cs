@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var loggerProvider = new HandshakeErrorLoggerProvider();
             LoggerFactory.AddProvider(loggerProvider);
             var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -441,13 +441,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             public LogLevel LastLogLevel { get; set; }
             public EventId LastEventId { get; set; }
-            public TaskCompletionSource<object> LogTcs { get; } = new TaskCompletionSource<object>();
+            public TaskCompletionSource<object> LogTcs { get; } = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
                 LastLogLevel = logLevel;
                 LastEventId = eventId;
-                Task.Run(() => LogTcs.SetResult(null));
+                LogTcs.SetResult(null);
             }
 
             public bool IsEnabled(LogLevel logLevel)
