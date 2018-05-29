@@ -10,6 +10,7 @@
     <Repository Include="KestrelHttpServer" />
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
+    <Repository Include="Razor" />
     <Repository Include="Scaffolding" />
     <Repository Include="Security" />
     <Repository Include="SignalR" />
@@ -48,7 +49,6 @@
     <ShippedRepository Include="MusicStore" />
     <ShippedRepository Include="Options" />
     <ShippedRepository Include="Proxy" />
-    <ShippedRepository Include="Razor" />
     <ShippedRepository Include="ResponseCaching" />
     <ShippedRepository Include="Routing" />
     <ShippedRepository Include="ServerTests" />

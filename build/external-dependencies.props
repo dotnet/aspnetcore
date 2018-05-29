@@ -224,18 +224,11 @@
     <ExternalDependency Include="Microsoft.AspNetCore.Localization.Routing" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Localization" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="2.1.0" Category="shipoob" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.NodeServices.Sockets" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.NodeServices" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Owin" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Proxy" Version="0.3.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.RangeHelper.Sources" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Language" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Runtime" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.ResponseCompression" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -270,9 +263,6 @@
     <ExternalDependency Include="Microsoft.AspNetCore.WebSockets" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="2.1.0" Category="shipoob" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Razor" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor" Version="2.1.0" Category="shipoob" />
     <ExternalDependency Include="Microsoft.Data.Sqlite.Core" Version="2.1.0" AllMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Data.Sqlite" Version="2.1.0" AllMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="2.1.0" Category="noship" />
@@ -346,13 +336,8 @@
     <ExternalDependency Include="Microsoft.Extensions.WebEncoders.Sources" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Net.Http.Headers" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.NET.Sdk.Razor" Version="2.1.0" Category="ship" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Editor.Razor" Version="2.1.0" Category="shipoob" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor" Version="2.1.0" Category="shipoob" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Mac.LanguageServices.Razor" Version="2.1.0" Category="shipoob" />
     <ExternalDependency Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.0" AllMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Web.Xdt.Extensions" Version="2.1.0" Category="shipoob" />
-    <ExternalDependency Include="RazorPageGenerator" Version="2.1.0" Category="noship" />
   </ItemGroup>
 
 </Project>
