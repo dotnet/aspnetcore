@@ -14,12 +14,12 @@
     <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
     <dependencies>
       <group targetFramework=".NETFramework4.6.1">
-        <dependency id="Microsoft.AspNetCore.Hosting" version="$version$" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.AspNetCore.Mvc.RazorPages" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Hosting" version="$MicrosoftAspNetCoreHostingPackageVersion$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Mvc.RazorPages" version="$MicrosoftAspNetCoreMvcRazorPagesPackageVersion$" exclude="Build,Analyzers" />
       </group>
       <group targetFramework=".NETCoreApp2.0">
-        <dependency id="Microsoft.AspNetCore.Hosting" version="$version$" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.AspNetCore.Mvc.RazorPages" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Hosting" version="$MicrosoftAspNetCoreHostingPackageVersion$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Mvc.RazorPages" version="$MicrosoftAspNetCoreMvcRazorPagesPackageVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
