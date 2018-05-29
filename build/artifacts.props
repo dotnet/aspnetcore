@@ -181,6 +181,7 @@
     <!-- WebHooks packages are not currently shipping, alone or in a meta-package. -->
     <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureAlert" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureContainerRegistry" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.BitBucket" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Dropbox" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.DynamicsCRM" Category="noship" />
