@@ -18,12 +18,10 @@
     <Repository Include="MusicStore" />
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
-    <Repository Include="Proxy" />
     <Repository Include="Razor" />
     <Repository Include="Scaffolding" />
     <Repository Include="Security" />
     <Repository Include="SignalR" />
-    <Repository Include="WebHooks" />
     <Repository Include="WebSockets" />
     <Repository Include="StaticFiles" />
   </ItemGroup>

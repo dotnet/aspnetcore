@@ -91,7 +91,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Proxy" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.RangeHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Design" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Language" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -115,20 +114,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureAlert" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.BitBucket" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Dropbox" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.DynamicsCRM" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.GitHub" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Kudu" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.MailChimp" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Pusher" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Salesforce" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Slack" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Stripe" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Trello" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.WordPress" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
