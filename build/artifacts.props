@@ -23,9 +23,11 @@
     <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="ship" />
     <PackageArtifact Include="dotnet-ef" Category="ship" />
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" PackageType="Lineup" />
+    <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" LZMA="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" LZMA="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" LZMA="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -40,12 +42,33 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" AllMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.AzureKeyVault" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Mvc" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Specification.Tests" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Specification.Tests" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.UI" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers.Experimental" Analyzer="true" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Analyzer="true" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -66,6 +89,10 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ViewFeatures" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Proxy" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.RangeHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Design" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Language" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Runtime" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -85,6 +112,25 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureAlert" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.BitBucket" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Dropbox" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.DynamicsCRM" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.GitHub" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Kudu" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.MailChimp" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Pusher" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Salesforce" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Slack" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Stripe" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.Trello" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers.WordPress" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebHooks.Receivers" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
@@ -106,6 +152,11 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Identity.Core" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
     <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Editor.Razor" Category="shipoob" />
@@ -119,6 +170,7 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" LZMA="true" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" LZMA="true" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" LZMA="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
   </ItemGroup>
 </Project>

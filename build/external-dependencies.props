@@ -164,16 +164,11 @@
     <ExternalDependency Include="dotnet-sql-cache" Version="2.1.0" Category="ship" />
     <ExternalDependency Include="dotnet-user-secrets" Version="2.1.0" Category="ship" />
     <ExternalDependency Include="dotnet-watch" Version="2.1.0" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Version="0.4.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Analyzers" Version="0.1.0" Category="shipoob" />
     <ExternalDependency Include="Microsoft.AspNetCore.Antiforgery" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.1.0" AllMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Core" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.1.0" AllMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="2.1.0" AllMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Buffering" Version="0.4.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Version="2.1.0" Category="noship" />
@@ -188,12 +183,6 @@
     <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.1.0" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.DataProtection" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="2.1.0" Category="shipoob" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.Elm" Version="0.4.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.HostFiltering" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -208,27 +197,10 @@
     <ExternalDependency Include="Microsoft.AspNetCore.HttpOverrides" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.HttpSys.Sources" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service.Abstractions" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service.AzureKeyVault" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service.Core" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service.Mvc" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service.Specification.Tests" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Service" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Specification.Tests" Version="2.1.0" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.UI" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.JsonPatch" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Localization.Routing" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Localization" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.NodeServices.Sockets" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.NodeServices" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Owin" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Proxy" Version="0.3.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.RangeHelper.Sources" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.ResponseCompression" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -241,32 +213,12 @@
     <ExternalDependency Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="0.5.0" Category="noship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Session" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.SpaServices" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.TestHost" Version="2.1.0" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.AzureAlert" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.BitBucket" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.Dropbox" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.DynamicsCRM" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.GitHub" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.Kudu" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.MailChimp" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.Pusher" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.Salesforce" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.Slack" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.Stripe" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.Trello" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers.WordPress" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebHooks.Receivers" Version="1.0.0-preview3-final" Category="noship" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebSockets" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.AspNetCore" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Data.Sqlite.Core" Version="2.1.0" AllMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Data.Sqlite" Version="2.1.0" AllMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.Extensions.ApplicationModelDetection" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.Extensions.Buffers.Sources" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="2.1.0" Category="noship" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -292,9 +244,7 @@
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="2.1.0" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="2.1.0" Category="noship" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -304,8 +254,6 @@
     <ExternalDependency Include="Microsoft.Extensions.Hosting" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.Http.Polly" Version="2.1.0" AllMetapackage="false" AppMetapackage="false" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.Http" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.Extensions.Identity.Core" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.Extensions.Identity.Stores" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.Localization" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -337,7 +285,6 @@
     <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Net.Http.Headers" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.0" AllMetapackage="true" Category="ship" />
-    <ExternalDependency Include="Microsoft.Web.Xdt.Extensions" Version="2.1.0" Category="shipoob" />
   </ItemGroup>
 
 </Project>

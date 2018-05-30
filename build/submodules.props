@@ -6,21 +6,30 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <Repository Include="AADIntegration" />
+    <Repository Include="AuthSamples" />
+    <Repository Include="AzureIntegration" />
+    <Repository Include="Diagnostics" />
     <Repository Include="EntityFrameworkCore" />
+    <Repository Include="Identity" />
+    <Repository Include="JavaScriptServices" />
     <Repository Include="KestrelHttpServer" />
+    <Repository Include="MetaPackages" />
+    <Repository Include="MusicStore" />
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
+    <Repository Include="Proxy" />
     <Repository Include="Razor" />
     <Repository Include="Scaffolding" />
     <Repository Include="Security" />
     <Repository Include="SignalR" />
+    <Repository Include="WebHooks" />
+    <Repository Include="WebSockets" />
+    <Repository Include="StaticFiles" />
   </ItemGroup>
 
   <ItemGroup>
-    <ShippedRepository Include="AADIntegration" />
     <ShippedRepository Include="Antiforgery" />
-    <ShippedRepository Include="AuthSamples" />
-    <ShippedRepository Include="AzureIntegration" />
     <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="Caching" />
@@ -29,7 +38,6 @@
     <ShippedRepository Include="CORS" />
     <ShippedRepository Include="DataProtection" />
     <ShippedRepository Include="DependencyInjection" />
-    <ShippedRepository Include="Diagnostics" />
     <ShippedRepository Include="DotNetTools" />
     <ShippedRepository Include="EventNotification" />
     <ShippedRepository Include="FileSystem" />
@@ -38,24 +46,16 @@
     <ShippedRepository Include="HttpAbstractions" />
     <ShippedRepository Include="HttpClientFactory" />
     <ShippedRepository Include="HttpSysServer" />
-    <ShippedRepository Include="Identity" />
     <ShippedRepository Include="IISIntegration" />
-    <ShippedRepository Include="JavaScriptServices" />
     <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Logging" />
-    <ShippedRepository Include="MetaPackages" />
     <ShippedRepository Include="Microsoft.Data.Sqlite" />
-    <ShippedRepository Include="MusicStore" />
     <ShippedRepository Include="Options" />
-    <ShippedRepository Include="Proxy" />
     <ShippedRepository Include="ResponseCaching" />
     <ShippedRepository Include="Routing" />
     <ShippedRepository Include="ServerTests" />
     <ShippedRepository Include="Session" />
-    <ShippedRepository Include="StaticFiles" />
     <ShippedRepository Include="Testing" />
-    <ShippedRepository Include="WebHooks" />
-    <ShippedRepository Include="WebSockets" />
   </ItemGroup>
 </Project>
