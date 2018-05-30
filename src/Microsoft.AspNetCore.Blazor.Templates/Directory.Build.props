@@ -1,7 +1,8 @@
 <Project>
+  <Import Project="..\Directory.Build.props" />
+
   <PropertyGroup>
-    <TemplateBlazorPackageVersion>0.4.0-preview1-10275</TemplateBlazorPackageVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <Import Project="..\..\Directory.Build.props" />
 </Project>
