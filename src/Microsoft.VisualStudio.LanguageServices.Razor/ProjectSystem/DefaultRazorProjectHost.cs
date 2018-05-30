@@ -302,7 +302,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return true;
         }
 
-
         private HostDocument[] GetCurrentDocuments(IProjectSubscriptionUpdate update)
         {
             if (!update.CurrentState.TryGetValue(Rules.RazorGenerateWithTargetPath.SchemaName, out var rule))

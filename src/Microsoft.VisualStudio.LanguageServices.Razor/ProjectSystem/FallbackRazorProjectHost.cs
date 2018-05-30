@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Threading;
@@ -11,6 +14,9 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.ProjectSystem;
+using ContentItem = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.ContentItem;
+using ItemReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.ItemReference;
+using NoneItem = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.NoneItem;
 using ResolvedCompilationReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.ResolvedCompilationReference;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -58,7 +64,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 receiver,
                 initialDataAsNew: true,
                 suppressVersionOnlyUpdates: true,
-                ruleNames: new string[] { ResolvedCompilationReference.SchemaName },
+                ruleNames: new string[]
+                {
+                    ResolvedCompilationReference.SchemaName,
+                    ContentItem.SchemaName,
+                    NoneItem.SchemaName,
+                },
                 linkOptions: new DataflowLinkOptions() { PropagateCompletion = true });
         }
 
@@ -115,9 +126,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                     var configuration = FallbackRazorConfiguration.SelectConfiguration(version);
                     var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
+
+                    // We need to deal with the case where the project was uninitialized, but now
+                    // is valid for Razor. In that case we might have previously seen all of the documents
+                    // but ignored them because the project wasn't active.
+                    //
+                    // So what we do to deal with this, is that we 'remove' all changed and removed items
+                    // and then we 'add' all current items. This allows minimal churn to the PSM, but still
+                    // makes us up-to-date.
+                    var documents = GetCurrentDocuments(update.Value);
+                    var changedDocuments = GetChangedAndRemovedDocuments(update.Value);
+
                     await UpdateAsync(() =>
                     {
                         UpdateProjectUnsafe(hostProject);
+
+                        for (var i = 0; i < changedDocuments.Length; i++)
+                        {
+                            RemoveDocumentUnsafe(changedDocuments[i]);
+                        }
+
+                        for (var i = 0; i < documents.Length; i++)
+                        {
+                            AddDocumentUnsafe(documents[i]);
+                        }
                     }).ConfigureAwait(false);
                 });
             }, registerFaultHandler: true);
@@ -127,6 +159,97 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         protected virtual Version GetAssemblyVersion(string filePath)
         {
             return ReadAssemblyVersion(filePath);
+        }
+
+        // Internal for testing
+        internal HostDocument[] GetCurrentDocuments(IProjectSubscriptionUpdate update)
+        {
+            var documents = new List<HostDocument>();
+
+            // Content Razor files
+            if (update.CurrentState.TryGetValue(ContentItem.SchemaName, out var rule))
+            {
+                foreach (var kvp in rule.Items)
+                {
+                    if (TryGetRazorDocument(kvp.Value, out var document))
+                    {
+                        documents.Add(document);
+                    }
+                }
+            }
+
+            // None Razor files, these are typically included when a user links a file in Visual Studio.
+            if (update.CurrentState.TryGetValue(NoneItem.SchemaName, out var nonRule))
+            {
+                foreach (var kvp in nonRule.Items)
+                {
+                    if (TryGetRazorDocument(kvp.Value, out var document))
+                    {
+                        documents.Add(document);
+                    }
+                }
+            }
+
+            return documents.ToArray();
+        }
+
+        // Internal for testing
+        internal HostDocument[] GetChangedAndRemovedDocuments(IProjectSubscriptionUpdate update)
+        {
+            var documents = new List<HostDocument>();
+
+            // Content Razor files
+            if (update.ProjectChanges.TryGetValue(ContentItem.SchemaName, out var rule))
+            {
+                foreach (var key in rule.Difference.RemovedItems.Concat(rule.Difference.ChangedItems))
+                {
+                    if (rule.Before.Items.TryGetValue(key, out var value) &&
+                        TryGetRazorDocument(value, out var document))
+                    {
+                        documents.Add(document);
+                    }
+                }
+            }
+
+            // None Razor files, these are typically included when a user links a file in Visual Studio.
+            if (update.ProjectChanges.TryGetValue(NoneItem.SchemaName, out var nonRule))
+            {
+                foreach (var key in nonRule.Difference.RemovedItems.Concat(nonRule.Difference.ChangedItems))
+                {
+                    if (nonRule.Before.Items.TryGetValue(key, out var value) &&
+                        TryGetRazorDocument(value, out var document))
+                    {
+                        documents.Add(document);
+                    }
+                }
+            }
+
+            return documents.ToArray();
+        }
+
+        // Internal for testing
+        internal bool TryGetRazorDocument(IImmutableDictionary<string, string> itemState, out HostDocument razorDocument)
+        {
+            if (itemState.TryGetValue(ItemReference.FullPathPropertyName, out var filePath))
+            {
+                // If there's no target path then we normalize the target path to the file path. In the end, all we care about
+                // is that the file being included in the primary project ends in .cshtml.
+                itemState.TryGetValue(ItemReference.LinkPropertyName, out var targetPath);
+                if (string.IsNullOrEmpty(targetPath))
+                {
+                    targetPath = filePath;
+                }
+
+                if (targetPath.EndsWith(".cshtml"))
+                {
+                    targetPath = CommonServices.UnconfiguredProject.MakeRooted(targetPath);
+                    razorDocument = new HostDocument(filePath, targetPath);
+                    return true;
+                }
+            }
+
+            razorDocument = null;
+            return false;
         }
 
         private static Version ReadAssemblyVersion(string filePath)

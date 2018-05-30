@@ -12,5 +12,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public static readonly string ItemName = "ResolvedCompilationReference";
         }
+
+        public static class ContentItem
+        {
+            public static readonly string SchemaName = "Content";
+
+            public static readonly string ItemName = "Content";
+        }
+
+        public static class NoneItem
+        {
+            public static readonly string SchemaName = "None";
+
+            public static readonly string ItemName = "None";
+        }
+
+        public static class ItemReference
+        {
+            public static readonly string FullPathPropertyName = "FullPath";
+
+            public static readonly string LinkPropertyName = "Link";
+        }
     }
 }
