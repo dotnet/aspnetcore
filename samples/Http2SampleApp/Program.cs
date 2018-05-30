@@ -29,7 +29,6 @@ namespace Http2SampleApp
 
                     options.Listen(IPAddress.Any, basePort, listenOptions =>
                     {
-                        // This only works becuase InternalsVisibleTo is enabled for this sample.
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                         listenOptions.UseHttps("testCert.pfx", "testPassword");
                         listenOptions.UseConnectionLogging();
