@@ -39,7 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Default patch version of .All Framework -->
       <PropertyGroup Condition="'$(DefaultAspNetCoreAllPatchVersion)' == ''">
-        <DefaultAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">2.1.0</DefaultAspNetCoreAllPatchVersion>
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">2.1.1</DefaultAspNetCoreAllPatchVersion>
 
         <!-- If targeting the same pre-release that is bundled with the .NET Core SDK, use the bundled package version
             provided by Microsoft.NETCoreSdk.BundledVersions.props -->
@@ -50,7 +50,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Default patch version of .App Framework -->
       <PropertyGroup Condition="'$(DefaultAspNetCoreAppPatchVersion)' == ''">
-        <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">2.1.0</DefaultAspNetCoreAppPatchVersion>
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">2.1.1</DefaultAspNetCoreAppPatchVersion>
 
         <!-- If targeting the same pre-release that is bundled with the .NET Core SDK, use the bundled package version
             provided by Microsoft.NETCoreSdk.BundledVersions.props -->
