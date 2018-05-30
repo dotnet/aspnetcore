@@ -202,6 +202,10 @@
   </Target>
 
   <Target Name="VerifyExternalDependencyConfig">
+    <RepoTasks.CheckVersionOverrides DotNetPackageVersionPropsPath="$(DotNetPackageVersionPropsPath)"
+      DependenciesFile="$(MSBuildThisFileDirectory)dependencies.props"
+      Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+
     <Error Text="Missing Version metadata for the following external dependencies: %0A - @(ExternalDependency->WithMetadataValue('Version', ''), '%0A - '). "
            Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
   </Target>

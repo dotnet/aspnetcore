@@ -244,7 +244,7 @@
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="2.1.0" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="2.1.0" AllMetapackage="true" AppMetapackage="true" Category="ship" />
