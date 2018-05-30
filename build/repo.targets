@@ -212,7 +212,7 @@
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
       <ShippingPackageFiles Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
-      <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(Version)" />
+      <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(ShippedArtifactInfo.Version)" Condition="'%(ShippedArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
     </ItemGroup>
 
     <RepoTasks.VerifyCoherentVersions
