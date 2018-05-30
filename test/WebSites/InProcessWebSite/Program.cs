@@ -17,7 +17,7 @@ namespace IISTestSite
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
                 .UseIIS()
-                .UseStartup(typeof(Program).Assembly.FullName)
+                .UseStartup<Startup>()
                 .Build();
 
             host.Run();

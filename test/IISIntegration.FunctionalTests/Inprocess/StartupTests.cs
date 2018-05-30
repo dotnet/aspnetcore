@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentParameters = new DeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetInProcessTestSitesPath(),
+                PublishApplicationBeforeDeployment = true,
             };
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -93,13 +94,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("Application is running inside IIS process but is not configured to use IIS server"));
         }
 
-        private DeploymentParameters GetBaseDeploymentParameters(string site = null)
+        private DeploymentParameters GetBaseDeploymentParameters(string site = "InProcessWebSite")
         {
-            return new DeploymentParameters(Helpers.GetTestWebSitePath(site ?? "InProcessWebSite"), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            return new DeploymentParameters(Helpers.GetTestWebSitePath(site), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2
+                AncmVersion = AncmVersion.AspNetCoreModuleV2,
+                HostingModel = HostingModel.InProcess,
+                PublishApplicationBeforeDeployment = site == "InProcessWebSite",
             };
         }
 

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: true,
                 Helpers.GetInProcessTestSitesPath(),
-                "Disabled");
+                "Disabled", HostingModel.InProcess);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: false,
                 Helpers.GetInProcessTestSitesPath(),
-                _isWebsocketsSupported);
+                _isWebsocketsSupported, HostingModel.InProcess);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: true,
                 Helpers.GetOutOfProcessTestSitesPath(),
-                "Disabled");
+                "Disabled", HostingModel.OutOfProcess);
         }
 
         [Fact]
@@ -53,16 +53,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: false,
                 Helpers.GetOutOfProcessTestSitesPath(),
-                _isWebsocketsSupported);
+                _isWebsocketsSupported, HostingModel.OutOfProcess);
         }
 
-        private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string sitePath, string expected)
+        private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string sitePath, string expected, HostingModel hostingModel)
         {
             var deploymentParameters = new DeploymentParameters(sitePath, ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = Tfm.NetCoreApp22,
                 ApplicationType = ApplicationType.Portable,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2
+                AncmVersion = AncmVersion.AspNetCoreModuleV2,
+                HostingModel = hostingModel,
+                PublishApplicationBeforeDeployment = hostingModel == HostingModel.InProcess,
             };
 
             if (disableWebSocket)

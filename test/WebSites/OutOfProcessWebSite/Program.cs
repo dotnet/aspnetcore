@@ -17,7 +17,7 @@ namespace TestSites
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
                 .UseIISIntegration()
-                .UseStartup(typeof(Program).Assembly.FullName)
+                .UseStartup<Startup>()
                 .UseKestrel()
                 .Build();
 

@@ -16,19 +16,6 @@ namespace IISIntegration.FunctionalTests.Utilities
         {
         }
 
-        protected override Task<IISDeploymentResult> DeployAsync(DeploymentParameters parameters)
-        {
-            if (parameters.SiteName == null)
-            {
-                parameters.SiteName = "HttpTestSite";
-            }
-            if (parameters.ServerConfigTemplateContent == null)
-            {
-                parameters.ServerConfigTemplateContent = GetServerConfig(null);
-            }
-            return base.DeployAsync(parameters);
-        }
-
         protected string GetServerConfig(Action<XElement> transform)
         {
             var doc = XDocument.Load("AppHostConfig/Http.config");

@@ -24,12 +24,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64)
             {
-                ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Http.config"),
-                SiteName = "HttpTestSite",
                 TargetFramework = Tfm.NetCoreApp22,
-                ApplicationType = ApplicationType.Portable,
                 AncmVersion = AncmVersion.AspNetCoreModuleV2,
                 HostingModel = HostingModel.InProcess,
+                PublishApplicationBeforeDeployment = true,
             };
 
             _deployer = ApplicationDeployerFactory.Create(deploymentParameters, logging.CreateLoggerFactory(null, nameof(IISTestSiteFixture)));
