@@ -291,6 +291,18 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(DateTimeKind.Utc, dt.Kind);
         }
 
+        [Fact]
+        public void ReadToEndOfArgumentArrayOnError()
+        {
+            var binder = new TestBinder(new[] { typeof(string) });
+            var protocol = new JsonHubProtocol();
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame("{'type':1,'invocationId':'42','target':'foo','arguments':[[],{'target':'foo2'}]}")));
+            protocol.TryParseMessage(ref data, binder, out var message);
+            var bindingFailure = Assert.IsType<InvocationBindingFailureMessage>(message);
+
+            Assert.Equal("foo", bindingFailure.Target);
+        }
+
         private static string Frame(string input)
         {
             var data = Encoding.UTF8.GetBytes(input);
