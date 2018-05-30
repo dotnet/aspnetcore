@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>NU1605</NoWarn>
     <RestoreSources>${RestoreSources}</RestoreSources>
     <RuntimeFrameworkVersion>${RuntimeFrameworkVersion}</RuntimeFrameworkVersion>
     <MicrosoftNETSdkRazorPackageVersion>${MicrosoftNETSdkRazorPackageVersion}</MicrosoftNETSdkRazorPackageVersion>
