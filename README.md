@@ -75,6 +75,7 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 
 Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.1 <br> ![][badge-rel-21]
 :---------------------|:----------------------------------------------------------------|:-------------------------------------------------------------------------
+Channel name<sup>1</sup> | `master` | `release/2.1`
 Windows (x64)         | [Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]   | [Installer (exe)][win-x64-exe-rel-21]<br>[Archive (zip)][win-x64-zip-rel-21]
 Windows (x86)         | [Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]   | [Installer (exe)][win-x86-exe-rel-21]<br>[Archive (zip)][win-x86-zip-rel-21]
 macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                                  | [Archive (tar.gz)][osx-x64-tar-rel-21]
@@ -83,6 +84,8 @@ Linux (x64 - musl)<br>_(for musl based OS, such as Alpine Linux)_ | [Archive (ta
 Linux (arm32)         | [Archive (tar.gz)][linux-arm-tar]                                | [Archive (tar.gz)][linux-arm-tar-rel-21]
 Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-21]
 RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-21]
+
+> <sup>1</sup> For use with the `-Channel` argument in [dotnet-install.ps1/sh](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script).
 
 ## Building from source
 
