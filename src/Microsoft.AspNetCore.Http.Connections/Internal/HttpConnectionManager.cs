@@ -131,11 +131,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public async Task ScanAsync()
         {
-            // Time the scan so we know if it gets slower than 1sec
-            var timer = ValueStopwatch.StartNew();
-            HttpConnectionsEventSource.Log.ScanningConnections();
-            Log.ScanningConnections(_logger);
-
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
@@ -175,10 +170,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     connection.TickHeartbeat();
                 }
             }
-
-            var elapsed = timer.GetElapsedTime();
-            HttpConnectionsEventSource.Log.ScannedConnections(elapsed);
-            Log.ScannedConnections(_logger, elapsed);
         }
 
         public void CloseConnections()
