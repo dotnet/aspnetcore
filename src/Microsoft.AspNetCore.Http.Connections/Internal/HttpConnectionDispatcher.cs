@@ -479,12 +479,40 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     return;
                 }
 
-                await context.Request.Body.CopyToAsync(connection.ApplicationStream, bufferSize);
+                try
+                {
+                    try
+                    {
+                        await context.Request.Body.CopyToAsync(connection.ApplicationStream, bufferSize);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        // PipeWriter will throw an error if it is written to while dispose is in progress and the writer has been completed
+                        // Dispose isn't taking WriteLock because it could be held because of backpressure, and calling CancelPendingFlush
+                        // then taking the lock introduces a race condition that could lead to a deadlock
+                        Log.ConnectionDisposedWhileWriteInProgress(_logger, connection.ConnectionId, ex);
 
-                Log.ReceivedBytes(_logger, connection.ApplicationStream.Length);
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        context.Response.ContentType = "text/plain";
+                        return;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // CancelPendingFlush has canceled pending writes caused by backpresure
+                        Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
-                // Clear the amount of read bytes so logging is accurate
-                connection.ApplicationStream.Reset();
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        context.Response.ContentType = "text/plain";
+                        return;
+                    }
+
+                    Log.ReceivedBytes(_logger, connection.ApplicationStream.Length);
+                }
+                finally
+                {
+                    // Clear the amount of read bytes so logging is accurate
+                    connection.ApplicationStream.Reset();
+                }
             }
             finally
             {

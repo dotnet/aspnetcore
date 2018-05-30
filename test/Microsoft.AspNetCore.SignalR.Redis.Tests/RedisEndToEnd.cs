@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveMessages(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifableLog(out var loggerFactory, testName:
+            using (StartVerifiableLog(out var loggerFactory, testName:
                 $"{nameof(HubConnectionCanSendAndReceiveMessages)}_{transportType.ToString()}_{protocolName}"))
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveGroupMessages(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifableLog(out var loggerFactory, testName:
+            using (StartVerifiableLog(out var loggerFactory, testName:
                 $"{nameof(HubConnectionCanSendAndReceiveGroupMessages)}_{transportType.ToString()}_{protocolName}"))
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifableLog(out var loggerFactory, testName:
+            using (StartVerifiableLog(out var loggerFactory, testName:
                 $"{nameof(CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser)}_{transportType.ToString()}_{protocolName}"))
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             // Regression test:
             // When multiple connections from the same user were connected and one left, it used to unsubscribe from the user channel
             // Now we keep track of users connections and only unsubscribe when no users are listening
-            using (StartVerifableLog(out var loggerFactory, testName:
+            using (StartVerifiableLog(out var loggerFactory, testName:
                 $"{nameof(CanSendAndReceiveUserMessagesWhenOneConnectionWithUserDisconnects)}_{transportType.ToString()}_{protocolName}"))
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);

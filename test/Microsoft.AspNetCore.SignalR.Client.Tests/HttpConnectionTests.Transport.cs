@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [InlineData(HttpTransportType.ServerSentEvents, false)]
             public async Task HttpConnectionSetsInherentKeepAliveFeature(HttpTransportType transportType, bool expectedValue)
             {
-                using (StartVerifableLog(out var loggerFactory, testName: $"HttpConnectionSetsInherentKeepAliveFeature_{transportType}_{expectedValue}"))
+                using (StartVerifiableLog(out var loggerFactory, testName: $"HttpConnectionSetsInherentKeepAliveFeature_{transportType}_{expectedValue}"))
                 {
                     var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
 

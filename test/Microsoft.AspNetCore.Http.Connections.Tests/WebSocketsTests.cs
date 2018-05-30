@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(nameof(WebSocketMessageType.Binary))]
         public async Task ReceivedFramesAreWrittenToChannel(string webSocketMessageType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(TransferFormat.Binary, nameof(WebSocketMessageType.Binary))]
         public async Task WebSocketTransportSetsMessageTypeBasedOnTransferFormatFeature(TransferFormat transferFormat, string expectedMessageType)
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task TransportCommunicatesErrorToApplicationWhenClientDisconnectsAbnormally()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task ClientReceivesInternalServerErrorWhenTheApplicationFails()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task TransportClosesOnCloseTimeoutIfClientDoesNotSendCloseFrame()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task TransportFailsOnTimeoutWithErrorWhenApplicationFailsAndClientDoesNotSendCloseFrame()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task ServerGracefullyClosesWhenApplicationEndsThenClientSendsCloseFrame()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task ServerGracefullyClosesWhenClientSendsCloseFrameThenApplicationEnds()
         {
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             const string ExpectedSubProtocol = "expected";
             var providedSubProtocols = new[] {"provided1", "provided2"};
 
-            using (StartVerifableLog(out var loggerFactory, LogLevel.Debug))
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);

@@ -83,7 +83,16 @@ namespace System.IO.Pipelines
 
             return default;
 
-            async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask) => await flushTask;
+            async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask)
+            {
+                var flushResult = await flushTask;
+
+                // Cancellation can be triggered by PipeWriter.CancelPendingFlush
+                if (flushResult.IsCanceled)
+                {
+                    throw new OperationCanceledException();
+                }
+            }
         }
 
         public void Reset()

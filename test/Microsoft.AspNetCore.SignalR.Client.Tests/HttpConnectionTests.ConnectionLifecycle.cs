@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanStartStartedConnection()
             {
-                using (StartVerifableLog(out var loggerFactory))
+                using (StartVerifiableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(CreateConnection(loggerFactory: loggerFactory), async (connection) =>
                     {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanStartStartingConnection()
             {
-                using (StartVerifableLog(out var loggerFactory))
+                using (StartVerifiableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory, transport: new TestTransport(onTransportStart: SyncPoint.Create(out var syncPoint))),
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CannotStartConnectionOnceDisposed()
             {
-                using (StartVerifableLog(out var loggerFactory))
+                using (StartVerifiableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory),
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorStartingTransport";
                 }
 
-                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var startCounter = 0;
                     var expected = new Exception("Transport failed to start");
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorStartingTransport";
                 }
 
-                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var startCounter = 0;
                     var availableTransports = 3;
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeUnstartedConnection()
             {
-                using (StartVerifableLog(out var loggerFactory))
+                using (StartVerifiableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(loggerFactory: loggerFactory),
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeStartingConnection()
             {
-                using (StartVerifableLog(out var loggerFactory))
+                using (StartVerifiableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeDisposingConnection()
             {
-                using (StartVerifableLog(out var loggerFactory))
+                using (StartVerifiableLog(out var loggerFactory))
                 {
                     await WithConnectionAsync(
                         CreateConnection(
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorSending";
                 }
 
-                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorStartingTransport";
                 }
 
-                using (StartVerifableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task SSEWaitsForResponseToStart()
             {
-                using (StartVerifableLog(out var loggerFactory))
+                using (StartVerifiableLog(out var loggerFactory))
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
