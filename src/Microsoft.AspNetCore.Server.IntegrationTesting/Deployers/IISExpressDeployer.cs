@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var port = uri.Port;
                 if (port == 0)
                 {
-                    port = TestUriHelper.GetNextPort();
+                    port = (uri.Scheme == "https") ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort();
                 }
 
                 for (var attempt = 0; attempt < MaximumAttempts; attempt++)
