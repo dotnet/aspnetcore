@@ -36,9 +36,6 @@
     <NativeInstaller Include="x64" FileExt=".deb" />
     <NativeInstaller Include="x64" FileExt=".rpm" />
     <NativeInstaller Include="rh.rhel.7-x64" FileExt=".rpm" />
-    <NativeInstaller Include="x64-upgrade" FileExt=".deb" />
-    <NativeInstaller Include="x64-upgrade" FileExt=".rpm" />
-    <NativeInstaller Include="rh.rhel.7-x64-upgrade" FileExt=".rpm" />
 
     <SharedFrameworkName Include="Microsoft.AspNetCore.All" />
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
