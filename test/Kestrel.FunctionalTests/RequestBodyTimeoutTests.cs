@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 33 && w.LogLevel == LogLevel.Information);
         }
 
-        [Fact(Skip="https://github.com/aspnet/KestrelHttpServer/issues/2464")]
+        [Fact]
         public async Task ConnectionClosedEvenIfAppSwallowsException()
         {
             var gracePeriod = TimeSpan.FromSeconds(5);
@@ -149,23 +149,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 DateHeaderValueManager = new DateHeaderValueManager(systemClock)
             };
 
-            var appRunningEvent = new ManualResetEventSlim();
-            var exceptionSwallowedEvent = new ManualResetEventSlim();
+            var appRunningTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var exceptionSwallowedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async context =>
             {
                 context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
                     new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
 
-                appRunningEvent.Set();
+                // See comment in RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate for
+                // why we call ReadAsync before setting the appRunningEvent.
+                var readTask = context.Request.Body.ReadAsync(new byte[1], 0, 1);
+                appRunningTcs.SetResult(null);
 
                 try
                 {
-                    await context.Request.Body.ReadAsync(new byte[1], 0, 1);
+                    await readTask;
                 }
                 catch (BadHttpRequestException ex) when (ex.StatusCode == 408)
                 {
-                    exceptionSwallowedEvent.Set();
+                    exceptionSwallowedTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    exceptionSwallowedTcs.SetException(ex);
                 }
 
                 var response = "hello, world";
@@ -182,9 +189,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    Assert.True(appRunningEvent.Wait(TestConstants.DefaultTimeout), "AppRunningEvent timed out.");
+                    await appRunningTcs.Task.DefaultTimeout();
                     systemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
-                    Assert.True(exceptionSwallowedEvent.Wait(TestConstants.DefaultTimeout), "ExceptionSwallowedEvent timed out.");
+                    await exceptionSwallowedTcs.Task.DefaultTimeout();
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
