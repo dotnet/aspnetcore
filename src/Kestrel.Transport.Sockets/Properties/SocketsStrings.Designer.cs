@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             = new ResourceManager("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketsStrings", typeof(SocketsStrings).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Only ListenType.IPEndPoint is supported.
+        /// Only ListenType.IPEndPoint is supported by the Socket Transport. https://go.microsoft.com/fwlink/?linkid=874850
         /// </summary>
         internal static string OnlyIPEndPointsSupported
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         }
 
         /// <summary>
-        /// Only ListenType.IPEndPoint is supported.
+        /// Only ListenType.IPEndPoint is supported by the Socket Transport. https://go.microsoft.com/fwlink/?linkid=874850
         /// </summary>
         internal static string FormatOnlyIPEndPointsSupported()
             => GetString("OnlyIPEndPointsSupported");
