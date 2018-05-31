@@ -7,6 +7,8 @@
   <UsingTask TaskName="RepoTasks.AddMetapackageReferences" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.AnalyzeBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CheckExpectedPackagesExist" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.CheckRepoGraph" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.CheckVersionOverrides" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CreateLzma" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.GenerateRestoreSourcesPropsFile" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.GenerateSubmoduleGraph" AssemblyFile="$(_RepoTaskAssembly)" />

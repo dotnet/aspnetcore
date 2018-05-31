@@ -165,6 +165,12 @@
     <Error Text="Undeclared package artifacts. Add these to artifacts.props:%0A  - @(_UndeclaredPackageArtifact, '%0A  - ')"
       Condition=" @(_UndeclaredPackageArtifact->Count()) != 0 " />
 
+    <RepoTasks.CheckRepoGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
+      Solutions="@(Solution)"
+      Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
+      Repositories="@(Repository);@(ShippedRepository)"
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)" />
+
     <!-- Skipped to workaround #1014. The order is hardcoded in buildorder.props -->
     <RepoTasks.AnalyzeBuildGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
       Solutions="@(Solution)"
@@ -197,6 +203,10 @@
   </Target>
 
   <Target Name="VerifyExternalDependencyConfig">
+    <RepoTasks.CheckVersionOverrides DotNetPackageVersionPropsPath="$(DotNetPackageVersionPropsPath)"
+      DependenciesFile="$(MSBuildThisFileDirectory)dependencies.props"
+      Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+
     <Error Text="Missing Version metadata for the following external dependencies: %0A - @(ExternalDependency->WithMetadataValue('Version', ''), '%0A - '). "
            Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
   </Target>
@@ -207,7 +217,7 @@
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
       <ShippingPackageFiles Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
-      <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(Version)" />
+      <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(ShippedArtifactInfo.Version)" Condition="'%(ShippedArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
     </ItemGroup>
 
     <RepoTasks.VerifyCoherentVersions
