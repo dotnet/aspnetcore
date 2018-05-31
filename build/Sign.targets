@@ -149,7 +149,7 @@
     <MakeDir Directories="$(SignedMPacksOutputPath)" />
 
     <ItemGroup>
-      <MPackDirectories Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedMPacksPath)&quot;))" />
+      <MPackDirectories Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedMPacksPath)&quot;))" Condition="Exists($(UnsignedMPacksPath))" />
     </ItemGroup>
 
     <MSBuild Condition=" '@(MPackDirectories)' != '' "
@@ -258,10 +258,10 @@
     <MakeDir Directories="$(SharedFxOutputPath)" />
 
     <ItemGroup>
-      <SharedFxFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedSharedFxPath)&quot;))" />
+      <SharedFxFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedSharedFxPath)&quot;))" Condition="Exists($(UnsignedSharedFxPath))" />
     </ItemGroup>
 
-    <MSBuild
+    <MSBuild Condition="'@(SharedFxFiles)' != ''"
       Projects="$(MSBuildProjectFullPath)"
       Properties="SharedFxFile=%(SharedFxFiles.Identity);OutDir=$(SharedFxOutputPath)"
       Targets="RebuildSharedFx"/>
