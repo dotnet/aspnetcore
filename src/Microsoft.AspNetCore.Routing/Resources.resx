@@ -201,4 +201,7 @@
   <data name="TemplateRoute_Exception" xml:space="preserve">
     <value>An error occurred while creating the route with name '{0}' and template '{1}'.</value>
   </data>
+  <data name="AmbiguousEndpoints" xml:space="preserve">
+    <value>The request matched multiple endpoints. Matches: {0}{0}{1}</value>
+  </data>
 </root>

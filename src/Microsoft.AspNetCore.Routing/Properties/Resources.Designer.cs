@@ -402,6 +402,20 @@ namespace Microsoft.AspNetCore.Routing
         internal static string FormatTemplateRoute_Exception(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_Exception"), p0, p1);
 
+        /// <summary>
+        /// The request matched multiple endpoints. Matches: {0}{0}{1}
+        /// </summary>
+        internal static string AmbiguousEndpoints
+        {
+            get => GetString("AmbiguousEndpoints");
+        }
+
+        /// <summary>
+        /// The request matched multiple endpoints. Matches: {0}{0}{1}
+        /// </summary>
+        internal static string FormatAmbiguousEndpoints(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousEndpoints"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

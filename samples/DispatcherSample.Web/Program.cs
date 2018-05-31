@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace RoutingSample.Web
+namespace DispatcherSample.Web
 {
     public class Program
     {

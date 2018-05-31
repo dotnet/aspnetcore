@@ -43,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{6DC6B416
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Performance", "benchmarks\Microsoft.AspNetCore.Routing.Performance\Microsoft.AspNetCore.Routing.Performance.csproj", "{F3D86714-4E64-41A6-9B36-A47B3683CF5D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DispatcherSample.Web", "samples\DispatcherSample.Web\DispatcherSample.Web.csproj", "{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{D5F39F59-5725-4127-82E7-67028D006185}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarkapps", "benchmarkapps", "{7F5914E2-C63F-4759-898E-462804357C90}"
@@ -161,6 +163,18 @@ Global
 		{91F47A60-9A78-4968-B10D-157D9BFAC37F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{91F47A60-9A78-4968-B10D-157D9BFAC37F}.Release|x86.ActiveCfg = Release|Any CPU
 		{91F47A60-9A78-4968-B10D-157D9BFAC37F}.Release|x86.Build.0 = Release|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Debug|x86.Build.0 = Debug|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Release|x86.ActiveCfg = Release|Any CPU
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -175,6 +189,7 @@ Global
 		{5C73140B-41F3-466F-A07B-3614E4D80DF9} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
 		{F3D86714-4E64-41A6-9B36-A47B3683CF5D} = {D5F39F59-5725-4127-82E7-67028D006185}
 		{91F47A60-9A78-4968-B10D-157D9BFAC37F} = {7F5914E2-C63F-4759-898E-462804357C90}
+		{4EBE7A6F-3183-4A7D-B3D7-A6A9EC3867A5} = {C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36C8D815-B7F1-479D-894B-E606FB8DECDA}
