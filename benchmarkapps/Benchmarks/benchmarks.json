@@ -13,7 +13,7 @@
     },
     "Port": 8080
   },
-  "Plaintext": {
+  "PlaintextRouting": {
     "Path": "/plaintext"
   }
 }
