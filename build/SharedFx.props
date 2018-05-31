@@ -41,7 +41,7 @@
     <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21PackageVersion)</DotnetRuntimeInstallerPrefix>
     <MicrosoftNETCoreApp21IdVersion>2.1</MicrosoftNETCoreApp21IdVersion>
     <MicrosoftNETCoreApp21InstallerVersion>$(MicrosoftNETCoreApp21PackageVersion.Split('-')[0])</MicrosoftNETCoreApp21InstallerVersion>
-    <DotnetRuntimeUpgradeableInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21IdVersion)</DotnetRuntimeUpgradeableInstallerPrefix>
+    <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21IdVersion)</DotnetRuntimeInstallerPrefix>
     <RuntimeArchiveLinkPrefix>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerPrefix)</RuntimeArchiveLinkPrefix>
 
     <SharedFxIntermediateArchiveFilePrefix>$(_SharedFxSourceDir)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)</SharedFxIntermediateArchiveFilePrefix>
