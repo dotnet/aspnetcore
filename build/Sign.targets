@@ -295,10 +295,10 @@
     <MakeDir Directories="$(SignedOobArchivePath)" />
 
     <ItemGroup>
-      <OobArchiveFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedOobArchivePath)&quot;))" />
+      <OobArchiveFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedOobArchivePath)&quot;))" Condition="Exists('$(UnsignedOobArchivePath)')" />
     </ItemGroup>
 
-    <MSBuild
+    <MSBuild Condition="'@(OobArchiveFiles)' != ''"
         Projects="$(MSBuildProjectFullPath)"
         Targets="ZipFile"
         Properties="ZipRoot=$([MSBuild]::NormalizeDirectory(%(OobArchiveFiles.FullPath)));OutputDir=$(SignedOobArchivePath);Extension=.zip" />
