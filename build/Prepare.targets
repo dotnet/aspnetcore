@@ -8,7 +8,8 @@
       <UnsignedPackages Include="$(UnsignedPackagesDir)*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)build\*.vsix" />
       <UnsignedSharedFx Include="$(DepsDirectory)assets\Runtime\*\*.zip" />
-      <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip;$(DepsDirectory)build\runtime-site-extension-*.zip" />
+      <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip" Condition="Exists('$(DepsDirectory)build\AspNetCoreModule.zip')" />
+      <UnsignedOobArchive Include="$(DepsDirectory)build\runtime-site-extension-*.zip" />
       <PoliCheckPackages Include="@(UnsignedPackages)" />
       <UnsignedMPacks Include="$(DepsDirectory)build\**\*.mpack" />
 
@@ -26,8 +27,9 @@
       </_UnzipProject>
     </ItemGroup>
 
-    <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
+    <Warning Text="No archives for signing." Condition="'@(UnsignedOobArchive)'==''" />
     <Warning Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
+    <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
     <Error Text="No aspnetcore shared framework found for signing." Condition="'@(UnsignedSharedFx)'==''" />
     <Error Text="No MPacks found for signing." Condition="'@(UnsignedMPacks)'==''" />
 
