@@ -74,7 +74,7 @@
         @(MPackBinaries);
         @(SharedFxBinaries);" />
 
-      <_SignProject Include="$(MSBuildProjectFullPath)">
+      <_SignProject Include="$(MSBuildProjectFullPath)" Condition ="'@(AspNetCoreBinaries)' != ''">
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(BinaryCodeSignCertificate);
@@ -122,7 +122,7 @@
       <_UnsignedNupkgs Include="$(UnsignedPackagesWithSignedBinariesPath)**\*.nupkg" />
     </ItemGroup>
 
-    <Microsoft.Build.OOB.ESRP.CreateSignManifests
+    <Microsoft.Build.OOB.ESRP.CreateSignManifests Condition="'@(_UnsignedNupkgs)'!=''"
        ApplicationId="$(ESRPApplicationId)"
        DestinationRootDirectory="$(PackagesOutputPath)"
        Files="@(_UnsignedNupkgs)"
@@ -152,7 +152,7 @@
       <MPackDirectories Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedMPacksPath)&quot;))" />
     </ItemGroup>
 
-    <MSBuild
+    <MSBuild Condition=" '@(MPackDirectories)' != '' "
       Projects="$(MSBuildProjectFullPath)"
       Properties="MPackDirectory=%(MPackDirectories.Identity);"
       Targets="_RepackMPack"/>
@@ -168,7 +168,7 @@
       <Files Include="$(MPackDirectory)\*" />
     </ItemGroup>
 
-    <ZipArchive
+    <ZipArchive Condition="'@(Files)' != ''"
       File="$(OutputFile)"
       SourceFiles="@(Files)"
       WorkingDirectory="$(MPackDirectory)" />
@@ -194,7 +194,7 @@
       </VSIXManifest>
     </ItemGroup>
 
-    <MSBuild
+    <MSBuild Condition="'@(VSIXManifest)' != ''"
         Projects="$(MSBuildProjectFullPath)"
         Targets="ZipFile"
         Properties="ZipRoot=%(VSIXManifest.VSIXDir);OutputDir=$(UnsignedVSIXWithSignedBinariesPath);Extension=.vsix" />
@@ -202,7 +202,7 @@
     <ItemGroup>
       <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
 
-      <_SignProject Project="$(MSBuildProjectFullPath)">
+      <_SignProject Project="$(MSBuildProjectFullPath)" Condition="'@(VSIXToSign)' != ''">
         <AdditionalProperties>
           Certificate=$(VSIXCodeSignCertificate);
           JobName=AspNetCoreVSIX;
@@ -213,11 +213,11 @@
       </_SignProject>
     </ItemGroup>
 
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" Condition="'@(_SignProject)' != ''" />
 
     <MakeDir Directories="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
 
-    <Copy
+    <Copy Condition="'@(VSIXToSign)' != ''"
       SourceFiles="%(VSIXToSign.FullPath);$(DepsDirectory)build\%(VSIXToSign.FileName).json"
       DestinationFolder="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
   </Target>
