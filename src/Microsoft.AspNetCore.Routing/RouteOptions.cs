@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Routing
         public bool LowercaseUrls { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether all generated QUERY STRINGS are lower-case.
+        /// Gets or sets a value indicating whether all generated QUERY STRINGS are lower-case. property will when LowercaseUrls true.
         /// </summary>
         public bool LowercaseQueryStrings { get; set; }
 
