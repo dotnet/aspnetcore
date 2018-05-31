@@ -350,7 +350,7 @@ describe("hubConnection", () => {
                     .build();
 
                 hubConnection.onclose((error) => {
-                    expect(error.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
+                    expect(error!.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
                     done();
                 });
                 hubConnection.start();
@@ -632,7 +632,12 @@ describe("hubConnection", () => {
         const defaultClient = new DefaultHttpClient(TestLogger.instance);
 
         class TestClient extends HttpClient {
-            public pollPromise: Promise<HttpResponse>;
+            public pollPromise: Promise<HttpResponse> | null;
+
+            constructor() {
+                super();
+                this.pollPromise = null;
+            }
 
             public send(request: HttpRequest): Promise<HttpResponse> {
                 if (request.method === "GET") {

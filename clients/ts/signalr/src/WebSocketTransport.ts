@@ -7,14 +7,20 @@ import { Arg, getDataDetail } from "./Utils";
 
 export class WebSocketTransport implements ITransport {
     private readonly logger: ILogger;
-    private readonly accessTokenFactory: () => string | Promise<string>;
+    private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly logMessageContent: boolean;
-    private webSocket: WebSocket;
+    private webSocket?: WebSocket;
 
-    constructor(accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean) {
+    public onreceive: ((data: string | ArrayBuffer) => void) | null;
+    public onclose: ((error?: Error) => void) | null;
+
+    constructor(accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, logMessageContent: boolean) {
         this.logger = logger;
-        this.accessTokenFactory = accessTokenFactory || (() => null);
+        this.accessTokenFactory = accessTokenFactory;
         this.logMessageContent = logMessageContent;
+
+        this.onreceive = null;
+        this.onclose = null;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -28,9 +34,11 @@ export class WebSocketTransport implements ITransport {
 
         this.logger.log(LogLevel.Trace, "(WebSockets transport) Connecting");
 
-        const token = await this.accessTokenFactory();
-        if (token) {
-            url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
+        if (this.accessTokenFactory) {
+            const token = await this.accessTokenFactory();
+            if (token) {
+                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
+            }
         }
 
         return new Promise<void>((resolve, reject) => {
@@ -46,8 +54,9 @@ export class WebSocketTransport implements ITransport {
                 resolve();
             };
 
-            webSocket.onerror = (event: ErrorEvent) => {
-                reject(event.error);
+            webSocket.onerror = (event: Event) => {
+                const error = (event instanceof ErrorEvent) ? event.error : null;
+                reject(error);
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
@@ -84,11 +93,8 @@ export class WebSocketTransport implements ITransport {
     public stop(): Promise<void> {
         if (this.webSocket) {
             this.webSocket.close();
-            this.webSocket = null;
+            this.webSocket = undefined;
         }
         return Promise.resolve();
     }
-
-    public onreceive: (data: string | ArrayBuffer) => void;
-    public onclose: (error?: Error) => void;
 }

@@ -37,7 +37,19 @@ export class MessagePackHubProtocol implements IHubProtocol {
         if (logger === null) {
             logger = NullLogger.instance;
         }
-        return BinaryMessageFormat.parse(input).map((m) => this.parseMessage(m, logger));
+
+        const messages = BinaryMessageFormat.parse(input);
+
+        const hubMessages = [];
+        for (const message of messages) {
+            const parsedMessage = this.parseMessage(message, logger);
+            // Can be null for an unknown message. Unknown message is logged in parseMessage
+            if (parsedMessage) {
+                hubMessages.push(parsedMessage);
+            }
+        }
+
+        return hubMessages;
     }
 
     /** Writes the specified HubMessage to an ArrayBuffer and returns it.
@@ -61,7 +73,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
         }
     }
 
-    private parseMessage(input: Uint8Array, logger: ILogger): HubMessage {
+    private parseMessage(input: Uint8Array, logger: ILogger): HubMessage | null {
         if (input.length === 0) {
             throw new Error("Invalid payload.");
         }
@@ -173,24 +185,27 @@ export class MessagePackHubProtocol implements IHubProtocol {
             throw new Error("Invalid payload for Completion message.");
         }
 
-        const completionMessage = {
-            error: null as string,
-            headers,
-            invocationId: properties[2],
-            result: null as any,
-            type: MessageType.Completion,
-        };
+        let error: string | undefined;
+        let result: any;
 
         switch (resultKind) {
             case errorResult:
-                completionMessage.error = properties[4];
+                error = properties[4];
                 break;
             case nonVoidResult:
-                completionMessage.result = properties[4];
+                result = properties[4];
                 break;
         }
 
-        return completionMessage as CompletionMessage;
+        const completionMessage: CompletionMessage = {
+            error,
+            headers,
+            invocationId: properties[2],
+            result,
+            type: MessageType.Completion,
+        };
+
+        return completionMessage;
     }
 
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {

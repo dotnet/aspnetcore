@@ -7,9 +7,10 @@ import { TestHttpClient } from "./TestHttpClient";
 describe("HttpClient", () => {
     describe("get", () => {
         it("sets the method and URL appropriately", async () => {
-            let request: HttpRequest;
+            let request!: HttpRequest;
             const testClient = new TestHttpClient().on((r) => {
-                request = r; return "";
+                request = r;
+                return "";
             });
 
             await testClient.get("http://localhost");
@@ -18,9 +19,10 @@ describe("HttpClient", () => {
         });
 
         it("overrides method and url in options", async () => {
-            let request: HttpRequest;
+            let request!: HttpRequest;
             const testClient = new TestHttpClient().on((r) => {
-                request = r; return "";
+                request = r;
+                return "";
             });
 
             await testClient.get("http://localhost", {
@@ -32,9 +34,10 @@ describe("HttpClient", () => {
         });
 
         it("copies other options", async () => {
-            let request: HttpRequest;
+            let request!: HttpRequest;
             const testClient = new TestHttpClient().on((r) => {
-                request = r; return "";
+                request = r;
+                return "";
             });
 
             await testClient.get("http://localhost", {
@@ -46,9 +49,10 @@ describe("HttpClient", () => {
 
     describe("post", () => {
         it("sets the method and URL appropriately", async () => {
-            let request: HttpRequest;
+            let request!: HttpRequest;
             const testClient = new TestHttpClient().on((r) => {
-                request = r; return "";
+                request = r;
+                return "";
             });
 
             await testClient.post("http://localhost");
@@ -57,9 +61,10 @@ describe("HttpClient", () => {
         });
 
         it("overrides method and url in options", async () => {
-            let request: HttpRequest;
+            let request!: HttpRequest;
             const testClient = new TestHttpClient().on((r) => {
-                request = r; return "";
+                request = r;
+                return "";
             });
 
             await testClient.post("http://localhost", {
@@ -71,9 +76,10 @@ describe("HttpClient", () => {
         });
 
         it("copies other options", async () => {
-            let request: HttpRequest;
+            let request!: HttpRequest;
             const testClient = new TestHttpClient().on((r) => {
-                request = r; return "";
+                request = r;
+                return "";
             });
 
             await testClient.post("http://localhost", {

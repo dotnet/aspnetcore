@@ -14,13 +14,13 @@ import { Arg, ConsoleLogger } from "./Utils";
 /** A builder for configuring {@link HubConnection} instances. */
 export class HubConnectionBuilder {
     /** @internal */
-    public protocol: IHubProtocol;
+    public protocol?: IHubProtocol;
     /** @internal */
-    public httpConnectionOptions: IHttpConnectionOptions;
+    public httpConnectionOptions?: IHttpConnectionOptions;
     /** @internal */
-    public url: string;
+    public url?: string;
     /** @internal */
-    public logger: ILogger;
+    public logger?: ILogger;
 
     /** Configures console logging for the {@link HubConnection}.
      *

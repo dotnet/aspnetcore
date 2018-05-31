@@ -56,7 +56,7 @@ class WebDriverReporter implements jasmine.CustomReporter {
 
             // Just report the first failure
             this.taplog("  ---");
-            if (result.failedExpectations.length > 0) {
+            if (result.failedExpectations && result.failedExpectations.length > 0) {
                 this.taplog("    - messages:");
                 for (const expectation of result.failedExpectations) {
                     // Include YAML block with failed expectations

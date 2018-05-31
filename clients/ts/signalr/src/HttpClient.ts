@@ -166,15 +166,27 @@ export class DefaultHttpClient extends HttpClient {
 
             const xhr = new XMLHttpRequest();
 
+            if (!request.method) {
+                reject(new Error("No method defined."));
+                return;
+            }
+            if (!request.url) {
+                reject(new Error("No url defined."));
+                return;
+            }
+
             xhr.open(request.method, request.url, true);
             xhr.withCredentials = true;
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
             // Explicitly setting the Content-Type header for React Native on Android platform.
             xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
 
-            if (request.headers) {
-                Object.keys(request.headers)
-                    .forEach((header) => xhr.setRequestHeader(header, request.headers[header]));
+            const headers = request.headers;
+            if (headers) {
+                Object.keys(headers)
+                    .forEach((header) => {
+                        xhr.setRequestHeader(header, headers[header]);
+                    });
             }
 
             if (request.responseType) {

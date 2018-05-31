@@ -37,17 +37,17 @@ describe("HubConnectionBuilder", () => {
     eachMissingValue((val, name) => {
         it(`configureLogging throws if logger is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.configureLogging(val)).toThrow("The 'logging' argument is required.");
+            expect(() => builder.configureLogging(val!)).toThrow("The 'logging' argument is required.");
         });
 
         it(`withUrl throws if url is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withUrl(val)).toThrow("The 'url' argument is required.");
+            expect(() => builder.withUrl(val!)).toThrow("The 'url' argument is required.");
         });
 
         it(`withHubProtocol throws if protocol is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withHubProtocol(val)).toThrow("The 'protocol' argument is required.");
+            expect(() => builder.withHubProtocol(val!)).toThrow("The 'protocol' argument is required.");
         });
     });
 
@@ -88,7 +88,7 @@ describe("HubConnectionBuilder", () => {
         const builder = createConnectionBuilder()
             .withUrl("http://example.com", HttpTransportType.WebSockets)
             .withHubProtocol(protocol);
-        expect(builder.httpConnectionOptions.transport).toBe(HttpTransportType.WebSockets);
+        expect(builder.httpConnectionOptions!.transport).toBe(HttpTransportType.WebSockets);
     });
 
     it("can configure hub protocol", async () => {

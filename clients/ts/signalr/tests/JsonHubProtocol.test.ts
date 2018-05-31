@@ -71,33 +71,29 @@ describe("JsonHubProtocol", () => {
             result: null,
             type: MessageType.Completion,
         } as CompletionMessage],
-        [`{"type":3, "invocationId": "abc", "result": "OK", "error": null, "headers": {}}${TextMessageFormat.RecordSeparator}`,
+        [`{"type":3, "invocationId": "abc", "result": "OK", "headers": {}}${TextMessageFormat.RecordSeparator}`,
         {
-            error: null,
             headers: {},
             invocationId: "abc",
             result: "OK",
             type: MessageType.Completion,
         } as CompletionMessage],
-        [`{"type":3, "invocationId": "abc", "error": null, "result": null, "headers": {}}${TextMessageFormat.RecordSeparator}`,
+        [`{"type":3, "invocationId": "abc", "result": null, "headers": {}}${TextMessageFormat.RecordSeparator}`,
         {
-            error: null,
             headers: {},
             invocationId: "abc",
             result: null,
             type: MessageType.Completion,
         } as CompletionMessage],
-        [`{"type":3, "invocationId": "abc", "result": 1514805840000, "error": null, "headers": {}}${TextMessageFormat.RecordSeparator}`,
+        [`{"type":3, "invocationId": "abc", "result": 1514805840000, "headers": {}}${TextMessageFormat.RecordSeparator}`,
         {
-            error: null,
             headers: {},
             invocationId: "abc",
             result: Date.UTC(2018, 0, 1, 11, 24, 0),
             type: MessageType.Completion,
         } as CompletionMessage],
-        [`{"type":3, "invocationId": "abc", "error": null, "result": null, "headers": {}, "extraParameter":"value"}${TextMessageFormat.RecordSeparator}`,
+        [`{"type":3, "invocationId": "abc", "result": null, "headers": {}, "extraParameter":"value"}${TextMessageFormat.RecordSeparator}`,
         {
-            error: null,
             extraParameter: "value",
             headers: {},
             invocationId: "abc",
@@ -165,7 +161,7 @@ describe("JsonHubProtocol", () => {
         }));
 
     it("can read multiple messages", () => {
-        const payload = `{"type":2, "invocationId": "abc", "headers": {}, "item": 8}${TextMessageFormat.RecordSeparator}{"type":3, "invocationId": "abc", "headers": {}, "result": "OK", "error": null}${TextMessageFormat.RecordSeparator}`;
+        const payload = `{"type":2, "invocationId": "abc", "headers": {}, "item": 8}${TextMessageFormat.RecordSeparator}{"type":3, "invocationId": "abc", "headers": {}, "result": "OK"}${TextMessageFormat.RecordSeparator}`;
         const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
         expect(messages).toEqual([
             {
@@ -175,7 +171,6 @@ describe("JsonHubProtocol", () => {
                 type: MessageType.StreamItem,
             } as StreamItemMessage,
             {
-                error: null,
                 headers: {},
                 invocationId: "abc",
                 result: "OK",

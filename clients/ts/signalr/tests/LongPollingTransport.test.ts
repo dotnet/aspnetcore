@@ -20,7 +20,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(200);
                 } else {
                     // Turn 'onabort' into a promise.
-                    const abort = new Promise((resolve, reject) => r.abortSignal.onabort = resolve);
+                    const abort = new Promise((resolve, reject) => r.abortSignal!.onabort = resolve);
                     await abort;
 
                     // Signal that the poll has completed.
@@ -30,7 +30,7 @@ describe("LongPollingTransport", () => {
                 }
             })
             .on("DELETE", (r) => new HttpResponse(202));
-        const transport = new LongPollingTransport(client, null, NullLogger.instance, false);
+        const transport = new LongPollingTransport(client, undefined, NullLogger.instance, false);
 
         await transport.connect("http://example.com", TransferFormat.Text);
         const stopPromise = transport.stop();
@@ -53,7 +53,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(204);
                 }
             });
-        const transport = new LongPollingTransport(client, null, NullLogger.instance, false);
+        const transport = new LongPollingTransport(client, undefined, NullLogger.instance, false);
 
         const stopPromise = makeClosedPromise(transport);
 
@@ -84,7 +84,7 @@ describe("LongPollingTransport", () => {
                 return new HttpResponse(202);
             });
     
-        const transport = new LongPollingTransport(httpClient, null, NullLogger.instance, false);
+        const transport = new LongPollingTransport(httpClient, undefined, NullLogger.instance, false);
 
         await transport.connect("http://tempuri.org", TransferFormat.Text);
 

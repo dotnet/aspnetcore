@@ -11,28 +11,36 @@ import { Arg, getDataDetail, sendMessage } from "./Utils";
 // Not exported from 'index', this type is internal.
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: HttpClient;
-    private readonly accessTokenFactory: () => string | Promise<string>;
+    private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly logger: ILogger;
     private readonly logMessageContent: boolean;
+    private readonly pollAbort: AbortController;
 
-    private url: string;
-    private pollXhr: XMLHttpRequest;
-    private pollAbort: AbortController;
+    private url?: string;
+    private pollXhr?: XMLHttpRequest;
     private running: boolean;
-    private receiving: Promise<void>;
-    private closeError: Error;
+    private receiving?: Promise<void>;
+    private closeError?: Error;
+
+    public onreceive: ((data: string | ArrayBuffer) => void) | null;
+    public onclose: ((error?: Error) => void) | null;
 
     // This is an internal type, not exported from 'index' so this is really just internal.
     public get pollAborted() {
         return this.pollAbort.aborted;
     }
 
-    constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean) {
+    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, logMessageContent: boolean) {
         this.httpClient = httpClient;
-        this.accessTokenFactory = accessTokenFactory || (() => null);
+        this.accessTokenFactory = accessTokenFactory;
         this.logger = logger;
         this.pollAbort = new AbortController();
         this.logMessageContent = logMessageContent;
+
+        this.running = false;
+
+        this.onreceive = null;
+        this.onclose = null;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -59,7 +67,7 @@ export class LongPollingTransport implements ITransport {
             pollOptions.responseType = "arraybuffer";
         }
 
-        const token = await this.accessTokenFactory();
+        const token = await this.getAccessToken();
         this.updateHeaderToken(pollOptions, token);
 
         // Make initial long polling request
@@ -71,7 +79,7 @@ export class LongPollingTransport implements ITransport {
             this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
 
             // Mark running as false so that the poll immediately ends and runs the close logic
-            this.closeError = new HttpError(response.statusText, response.statusCode);
+            this.closeError = new HttpError(response.statusText || "", response.statusCode);
             this.running = false;
         } else {
             this.running = true;
@@ -80,7 +88,18 @@ export class LongPollingTransport implements ITransport {
         this.receiving = this.poll(this.url, pollOptions);
     }
 
-    private updateHeaderToken(request: HttpRequest, token: string) {
+    private async getAccessToken(): Promise<string | null> {
+        if (this.accessTokenFactory) {
+            return await this.accessTokenFactory();
+        }
+
+        return null;
+    }
+
+    private updateHeaderToken(request: HttpRequest, token: string | null) {
+        if (!request.headers) {
+            request.headers = {};
+        }
         if (token) {
             // tslint:disable-next-line:no-string-literal
             request.headers["Authorization"] = `Bearer ${token}`;
@@ -97,7 +116,7 @@ export class LongPollingTransport implements ITransport {
         try {
             while (this.running) {
                 // We have to get the access token on each poll, in case it changes
-                const token = await this.accessTokenFactory();
+                const token = await this.getAccessToken();
                 this.updateHeaderToken(pollOptions, token);
 
                 try {
@@ -113,7 +132,7 @@ export class LongPollingTransport implements ITransport {
                         this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
 
                         // Unexpected status code
-                        this.closeError = new HttpError(response.statusText, response.statusCode);
+                        this.closeError = new HttpError(response.statusText || "", response.statusCode);
                         this.running = false;
                     } else {
                         // Process the response
@@ -158,7 +177,7 @@ export class LongPollingTransport implements ITransport {
         if (!this.running) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "LongPolling", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(this.logger, "LongPolling", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public async stop(): Promise<void> {
@@ -177,9 +196,9 @@ export class LongPollingTransport implements ITransport {
             const deleteOptions: HttpRequest = {
                 headers: {},
             };
-            const token = await this.accessTokenFactory();
+            const token = await this.getAccessToken();
             this.updateHeaderToken(deleteOptions, token);
-            await this.httpClient.delete(this.url, deleteOptions);
+            await this.httpClient.delete(this.url!, deleteOptions);
 
             this.logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request sent.");
         } finally {
@@ -201,7 +220,4 @@ export class LongPollingTransport implements ITransport {
             this.onclose(this.closeError);
         }
     }
-
-    public onreceive: (data: string | ArrayBuffer) => void;
-    public onclose: (error?: Error) => void;
 }

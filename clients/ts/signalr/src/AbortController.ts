@@ -8,7 +8,7 @@
 // Not exported from index.
 export class AbortController implements AbortSignal {
     private isAborted: boolean = false;
-    public onabort: () => void;
+    public onabort: (() => void) | null = null;
 
     public abort() {
         if (!this.isAborted) {
@@ -33,5 +33,5 @@ export interface AbortSignal {
     /** Indicates if the request has been aborted. */
     aborted: boolean;
     /** Set this to a handler that will be invoked when the request is aborted. */
-    onabort: () => void;
+    onabort: (() => void) | null;
 }

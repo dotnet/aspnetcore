@@ -8,17 +8,23 @@ import { Arg, getDataDetail, sendMessage } from "./Utils";
 
 export class ServerSentEventsTransport implements ITransport {
     private readonly httpClient: HttpClient;
-    private readonly accessTokenFactory: () => string | Promise<string>;
+    private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly logger: ILogger;
     private readonly logMessageContent: boolean;
-    private eventSource: EventSource;
-    private url: string;
+    private eventSource?: EventSource;
+    private url?: string;
 
-    constructor(httpClient: HttpClient, accessTokenFactory: () => string | Promise<string>, logger: ILogger, logMessageContent: boolean) {
+    public onreceive: ((data: string | ArrayBuffer) => void) | null;
+    public onclose: ((error?: Error) => void) | null;
+
+    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, logMessageContent: boolean) {
         this.httpClient = httpClient;
-        this.accessTokenFactory = accessTokenFactory || (() => null);
+        this.accessTokenFactory = accessTokenFactory;
         this.logger = logger;
         this.logMessageContent = logMessageContent;
+
+        this.onreceive = null;
+        this.onclose = null;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -32,9 +38,11 @@ export class ServerSentEventsTransport implements ITransport {
 
         this.logger.log(LogLevel.Trace, "(SSE transport) Connecting");
 
-        const token = await this.accessTokenFactory();
-        if (token) {
-            url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
+        if (this.accessTokenFactory) {
+            const token = await this.accessTokenFactory();
+            if (token) {
+                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
+            }
         }
 
         this.url = url;
@@ -86,7 +94,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this.eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "SSE", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public stop(): Promise<void> {
@@ -97,14 +105,11 @@ export class ServerSentEventsTransport implements ITransport {
     private close(e?: Error) {
         if (this.eventSource) {
             this.eventSource.close();
-            this.eventSource = null;
+            this.eventSource = undefined;
 
             if (this.onclose) {
                 this.onclose(e);
             }
         }
     }
-
-    public onreceive: (data: string | ArrayBuffer) => void;
-    public onclose: (error?: Error) => void;
 }

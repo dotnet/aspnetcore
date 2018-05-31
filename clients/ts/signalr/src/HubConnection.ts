@@ -27,12 +27,12 @@ export class HubConnection {
     private readonly logger: ILogger;
     private protocol: IHubProtocol;
     private handshakeProtocol: HandshakeProtocol;
-    private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => void };
+    private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
     private methods: { [name: string]: Array<(...args: any[]) => void> };
     private id: number;
     private closedCallbacks: Array<(error?: Error) => void>;
-    private timeoutHandle: NodeJS.Timer;
-    private pingServerHandle: NodeJS.Timer;
+    private timeoutHandle?: NodeJS.Timer;
+    private pingServerHandle?: NodeJS.Timer;
     private receivedHandshakeResponse: boolean;
     private connectionState: HubConnectionState;
 
@@ -79,6 +79,7 @@ export class HubConnection {
         this.methods = {};
         this.closedCallbacks = [];
         this.id = 0;
+        this.receivedHandshakeResponse = false;
         this.connectionState = HubConnectionState.Disconnected;
 
         this.cachedPingMessage = this.protocol.writeMessage({ type: MessageType.Ping });
@@ -150,20 +151,21 @@ export class HubConnection {
             return this.sendMessage(cancelMessage);
         });
 
-        this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage, error?: Error) => {
+        this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage | null, error?: Error) => {
             if (error) {
                 subject.error(error);
                 return;
-            }
-
-            if (invocationEvent.type === MessageType.Completion) {
-                if (invocationEvent.error) {
-                    subject.error(new Error(invocationEvent.error));
+            } else if (invocationEvent) {
+                // invocationEvent will not be null when an error is not passed to the callback
+                if (invocationEvent.type === MessageType.Completion) {
+                    if (invocationEvent.error) {
+                        subject.error(new Error(invocationEvent.error));
+                    } else {
+                        subject.complete();
+                    }
                 } else {
-                    subject.complete();
+                    subject.next((invocationEvent.item) as T);
                 }
-            } else {
-                subject.next((invocationEvent.item) as T);
             }
         };
 
@@ -215,20 +217,22 @@ export class HubConnection {
         const invocationDescriptor = this.createInvocation(methodName, args, false);
 
         const p = new Promise<any>((resolve, reject) => {
-            this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => {
+            // invocationId will always have a value for a non-blocking invocation
+            this.callbacks[invocationDescriptor.invocationId!] = (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => {
                 if (error) {
                     reject(error);
                     return;
-                }
-                if (invocationEvent.type === MessageType.Completion) {
-                    const completionMessage = invocationEvent as CompletionMessage;
-                    if (completionMessage.error) {
-                        reject(new Error(completionMessage.error));
+                } else if (invocationEvent) {
+                    // invocationEvent will not be null when an error is not passed to the callback
+                    if (invocationEvent.type === MessageType.Completion) {
+                        if (invocationEvent.error) {
+                            reject(new Error(invocationEvent.error));
+                        } else {
+                            resolve(invocationEvent.result);
+                        }
                     } else {
-                        resolve(completionMessage.result);
+                        reject(new Error(`Unexpected message type: ${invocationEvent.type}`));
                     }
-                } else {
-                    reject(new Error(`Unexpected message type: ${invocationEvent.type}`));
                 }
             };
 
@@ -237,7 +241,8 @@ export class HubConnection {
             this.sendMessage(message)
                 .catch((e) => {
                     reject(e);
-                    delete this.callbacks[invocationDescriptor.invocationId];
+                    // invocationId will always have a value for a non-blocking invocation
+                    delete this.callbacks[invocationDescriptor.invocationId!];
                 });
         });
 
@@ -349,7 +354,7 @@ export class HubConnection {
                         break;
                     case MessageType.Close:
                         this.logger.log(LogLevel.Information, "Close message received from server.");
-                        this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : null);
+                        this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : undefined);
                         break;
                     default:
                         this.logger.log(LogLevel.Warning, "Invalid message type: " + message.type);
@@ -428,7 +433,7 @@ export class HubConnection {
         Object.keys(callbacks)
             .forEach((key) => {
                 const callback = callbacks[key];
-                callback(undefined, error ? error : new Error("Invocation canceled due to connection being closed."));
+                callback(null, error ? error : new Error("Invocation canceled due to connection being closed."));
             });
 
         this.cleanupTimeout();

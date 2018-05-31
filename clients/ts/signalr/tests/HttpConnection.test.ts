@@ -13,7 +13,6 @@ import { TestHttpClient } from "./TestHttpClient";
 import { PromiseSource } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
-    logger: null,
 };
 
 const defaultConnectionId = "abc123";
@@ -165,8 +164,8 @@ describe("HttpConnection", () => {
             stop(): Promise<void> {
                 return Promise.resolve();
             },
-            onclose: undefined,
-            onreceive: undefined,
+            onclose: null,
+            onreceive: null,
         };
 
         const options: IHttpConnectionOptions = {
@@ -224,7 +223,7 @@ describe("HttpConnection", () => {
             const negotiateResponse = { ...defaultNegotiateResponse };
 
             // Remove the requested transport from the response
-            negotiateResponse.availableTransports = negotiateResponse.availableTransports
+            negotiateResponse.availableTransports = negotiateResponse.availableTransports!
                 .filter((f) => f.transport !== HttpTransportType[requestedTransport]);
 
             const options: IHttpConnectionOptions = {
@@ -483,7 +482,7 @@ describe("HttpConnection", () => {
                 .on("GET", (r) => {
                     httpClientGetCount++;
                     // tslint:disable-next-line:no-string-literal
-                    const authorizationValue = r.headers["Authorization"];
+                    const authorizationValue = r.headers!["Authorization"];
                     if (httpClientGetCount === 1) {
                         if (authorizationValue) {
                             fail("First long poll request should have a authorization header.");

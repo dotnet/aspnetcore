@@ -12,8 +12,8 @@ export function delay(durationInMilliseconds: number): Promise<void> {
 export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
-    private resolver: (value?: T | PromiseLike<T>) => void;
-    private rejecter: (reason?: any) => void;
+    private resolver!: (value?: T | PromiseLike<T>) => void;
+    private rejecter!: (reason?: any) => void;
 
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {

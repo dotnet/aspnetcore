@@ -22,19 +22,19 @@ export class Arg {
 }
 
 export function getDataDetail(data: any, includeContent: boolean): string {
-    let length: string = null;
+    let detail = "";
     if (data instanceof ArrayBuffer) {
-        length = `Binary data of length ${data.byteLength}`;
+        detail = `Binary data of length ${data.byteLength}`;
         if (includeContent) {
-            length += `. Content: '${formatArrayBuffer(data)}'`;
+            detail += `. Content: '${formatArrayBuffer(data)}'`;
         }
     } else if (typeof data === "string") {
-        length = `String data of length ${data.length}`;
+        detail = `String data of length ${data.length}`;
         if (includeContent) {
-            length += `. Content: '${data}'.`;
+            detail += `. Content: '${data}'.`;
         }
     }
-    return length;
+    return detail;
 }
 
 export function formatArrayBuffer(data: ArrayBuffer): string {
@@ -51,13 +51,15 @@ export function formatArrayBuffer(data: ArrayBuffer): string {
     return str.substr(0, str.length - 1);
 }
 
-export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: () => string | Promise<string>, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
+export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
     let headers;
-    const token = await accessTokenFactory();
-    if (token) {
-        headers = {
-            ["Authorization"]: `Bearer ${token}`,
-        };
+    if (accessTokenFactory) {
+        const token = await accessTokenFactory();
+        if (token) {
+            headers = {
+                ["Authorization"]: `Bearer ${token}`,
+            };
+        }
     }
 
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
