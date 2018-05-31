@@ -3,7 +3,7 @@
   <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
 
   <PropertyGroup>
-    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)' == ''">https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/assets</DotNetAssetRootUrl>
+    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)' == ''">https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/assets/</DotNetAssetRootUrl>
 
     <RestoreSources>
       $(DotNetAdditionalRestoreSources);
