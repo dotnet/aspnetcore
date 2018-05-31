@@ -34,10 +34,9 @@ namespace E2ETests
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
                     ApplicationPath = Helpers.GetApplicationPath(),
-                    PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = (variant.Server == ServerType.IISExpress) ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "NtlmAuthentation.config")) : null,
+                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "NtlmAuthentation.config"),
                     SiteName = "MusicStoreNtlmAuthentication", //This is configured in the NtlmAuthentication.config
                     UserAdditionalCleanup = parameters =>
                     {

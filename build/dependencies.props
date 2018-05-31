@@ -5,6 +5,7 @@
   <PropertyGroup Label="Package Versions">
     <MicrosoftAspNetCoreAllPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
@@ -19,7 +20,8 @@
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
     <MicrosoftAspNetCorePackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreServerHttpSysPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34326</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIISPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreServerIISPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-a-preview1-tratcher-exp-17051</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreSessionPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreSessionPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreWebUtilitiesPackageVersion>

@@ -30,10 +30,7 @@ namespace E2ETests
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
                     ApplicationPath = Helpers.GetApplicationPath(),
-                    PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "Http.config"),
-                    SiteName = "MusicStoreTestSite",
                     EnvironmentName = "OpenIdConnectTesting",
                     UserAdditionalCleanup = parameters =>
                     {

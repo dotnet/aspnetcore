@@ -32,11 +32,9 @@ namespace E2ETests
                     Helpers.GetApplicationPath(), serverType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "SocialTesting",
-                    SiteName = "MusicStoreTestSiteUsingStore",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     TargetFramework = Tfm.NetCoreApp20, // There's only a Store on 2.0
-                    ApplicationType = ApplicationType.Portable,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);

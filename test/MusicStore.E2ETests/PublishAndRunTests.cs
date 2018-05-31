@@ -18,6 +18,8 @@ namespace E2ETests
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
                 .WithAllApplicationTypes()
+                .WithAllAncmVersions()
+                .WithAllHostingModels()
                 .WithAllArchitectures();
 
         [ConditionalTheory]
@@ -35,8 +37,6 @@ namespace E2ETests
                     ApplicationPath = Helpers.GetApplicationPath(),
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "Http.config"),
-                    SiteName = "MusicStoreTestSite",
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);

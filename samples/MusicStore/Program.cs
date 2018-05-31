@@ -50,6 +50,9 @@ namespace MusicStore
                 builder.UseKestrel();
             }
 
+            // In Proc
+            builder.UseIIS();
+
             builder.ConfigureLogging(factory =>
             {
                 factory.AddConsole();

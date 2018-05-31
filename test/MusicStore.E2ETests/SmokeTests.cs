@@ -18,7 +18,9 @@ namespace E2ETests
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp22, Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
-                .WithAllApplicationTypes();
+                .WithAllApplicationTypes()
+                .WithAllAncmVersions()
+                .WithAllHostingModels();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
@@ -34,9 +36,6 @@ namespace E2ETests
                 {
                     ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "SocialTesting",
-                    ServerConfigTemplateContent = Helpers.GetConfigContent(variant.Server, "Http.config"),
-                    SiteName = "MusicStoreTestSite",
-                    PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     UserAdditionalCleanup = parameters =>
                     {
