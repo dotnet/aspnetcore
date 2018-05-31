@@ -70,7 +70,7 @@
     <RepoTasks.AddMetapackageReferences
       ReferencePackagePath="$(MetapackageWorkDirectory)$(MetapackageName).csproj"
       MetapackageReferenceType="$(MetapackageReferenceType)"
-      LockToExactVersions="$(LockToExactVersions)"
+      DependencyVersionRangeType="$(MetapackageDependencyVersionRangeType)"
       BuildArtifacts="@(ArtifactInfo)"
       PackageArtifacts="@(PackageArtifact)"
       ExternalDependencies="@(ExternalDependency)" />
@@ -87,7 +87,7 @@
         <AdditionalProperties>
           MetapackageName=Microsoft.AspNetCore.App;
           MetapackageReferenceType=AppMetapackage;
-          LockToExactVersions=true
+          MetapackageDependencyVersionRangeType=MajorMinor
         </AdditionalProperties>
       </_MetapackageBuilderProject>
 
@@ -95,7 +95,7 @@
         <AdditionalProperties>
           MetapackageName=Microsoft.AspNetCore.All;
           MetapackageReferenceType=AllMetapackage;
-          LockToExactVersions=false
+          MetapackageDependencyVersionRangeType=Minimum
         </AdditionalProperties>
       </_MetapackageBuilderProject>
 
@@ -103,7 +103,7 @@
         <AdditionalProperties>
           MetapackageName=Microsoft.AspNetCore.Analyzers;
           MetapackageReferenceType=Analyzer;
-          LockToExactVersions=true
+          MetapackageDependencyVersionRangeType=Minimum
         </AdditionalProperties>
       </_MetapackageBuilderProject>
     </ItemGroup>
