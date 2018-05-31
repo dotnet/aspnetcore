@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     internal sealed class SocketConnection : TransportConnection, IDisposable
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
+        private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly Socket _socket;
         private readonly PipeScheduler _scheduler;
@@ -54,8 +55,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
 
-            _receiver = new SocketReceiver(_socket, _scheduler);
-            _sender = new SocketSender(_socket, _scheduler);
+            // On *nix platforms, Sockets already dispatches to the ThreadPool.
+            // Yes, the IOQueues are still used for the PipeSchedulers. This is intentional.
+            // https://github.com/aspnet/KestrelHttpServer/issues/2573
+            var awaiterScheduler = IsWindows ? _scheduler : PipeScheduler.Inline;
+
+            _receiver = new SocketReceiver(_socket, awaiterScheduler);
+            _sender = new SocketSender(_socket, awaiterScheduler);
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
