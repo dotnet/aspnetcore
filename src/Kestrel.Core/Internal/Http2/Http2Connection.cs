@@ -117,14 +117,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     try
                     {
-                        if (!readableBuffer.IsEmpty)
+                        if (!readableBuffer.IsEmpty && ParsePreface(readableBuffer, out consumed, out examined))
                         {
-                            if (ParsePreface(readableBuffer, out consumed, out examined))
-                            {
-                                break;
-                            }
+                            break;
                         }
-                        else if (result.IsCompleted)
+
+                        if (result.IsCompleted)
                         {
                             return;
                         }
@@ -149,13 +147,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     try
                     {
-                        if (!readableBuffer.IsEmpty)
+                        if (!readableBuffer.IsEmpty && Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, out consumed, out examined))
                         {
-                            if (Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, out consumed, out examined))
-                            {
-                                Log.LogTrace($"Connection id {ConnectionId} received {_incomingFrame.Type} frame with flags 0x{_incomingFrame.Flags:x} and length {_incomingFrame.Length} for stream ID {_incomingFrame.StreamId}");
-                                await ProcessFrameAsync<TContext>(application);
-                            }
+                            Log.LogTrace($"Connection id {ConnectionId} received {_incomingFrame.Type} frame with flags 0x{_incomingFrame.Flags:x} and length {_incomingFrame.Length} for stream ID {_incomingFrame.StreamId}");
+                            await ProcessFrameAsync<TContext>(application);
                         }
                         else if (result.IsCompleted)
                         {

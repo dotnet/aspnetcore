@@ -107,10 +107,6 @@ namespace PlatformBenchmarks
                         ThrowUnexpectedEndOfData();
                     }
                 }
-                else if (result.IsCompleted)
-                {
-                    break;
-                }
 
                 Reader.AdvanceTo(consumed, examined);
 
@@ -119,6 +115,10 @@ namespace PlatformBenchmarks
                     await ProcessRequestAsync();
 
                     _state = State.StartLine;
+                }
+                else if (result.IsCompleted)
+                {
+                    break;
                 }
             }
         }

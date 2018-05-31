@@ -99,7 +99,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                             writeReq = null;
                         }
                     }
-                    else if (result.IsCompleted)
+
+                    if (result.IsCompleted)
                     {
                         break;
                     }
