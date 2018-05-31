@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Versioning;
 using RepoTasks.Utilities;
 
 namespace RepoTasks
@@ -19,7 +20,14 @@ namespace RepoTasks
         public string MetapackageReferenceType { get; set; }
 
         [Required]
-        public bool LockToExactVersions { get; set; }
+        public string DependencyVersionRangeType { get; set; }
+
+        // MSBuild doesn't allow binding to enums directly.
+        private enum VersionRangeType
+        {
+            Minimum, // [1.1.1, )
+            MajorMinor, // [1.1.1, 1.2.0)
+        }
 
         [Required]
         public ITaskItem[] BuildArtifacts { get; set; }
@@ -32,6 +40,12 @@ namespace RepoTasks
 
         public override bool Execute()
         {
+            if (!Enum.TryParse<VersionRangeType>(DependencyVersionRangeType, out var dependencyVersionType))
+            {
+                Log.LogError("Unexpected value {0} for DependencyVersionRangeType", DependencyVersionRangeType);
+                return false;
+            }
+
             // Parse input
             var metapackageArtifacts = PackageArtifacts.Where(p => p.GetMetadata(MetapackageReferenceType) == "true");
             var externalArtifacts = ExternalDependencies.Where(p => p.GetMetadata(MetapackageReferenceType) == "true");
@@ -65,8 +79,13 @@ namespace RepoTasks
                     throw;
                 }
 
-                var packageVersionValue = LockToExactVersions ? $"[{packageVersion}]" : packageVersion;
+                if (string.IsNullOrEmpty(packageVersion))
+                {
+                    Log.LogError("Missing version information for package {0}", packageName);
+                    continue;
+                }
 
+                var packageVersionValue = GetDependencyVersion(dependencyVersionType, packageName, packageVersion);
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersionValue}");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
@@ -81,7 +100,14 @@ namespace RepoTasks
             {
                 var packageName = package.ItemSpec;
                 var packageVersion = package.GetMetadata("Version");
-                var packageVersionValue = LockToExactVersions ? $"[{packageVersion}]" : packageVersion;
+
+                if (string.IsNullOrEmpty(packageVersion))
+                {
+                    Log.LogError("Missing version information for package {0}", packageName);
+                    continue;
+                }
+
+                var packageVersionValue = GetDependencyVersion(dependencyVersionType, packageName, packageVersion);
 
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersionValue}");
 
@@ -99,7 +125,25 @@ namespace RepoTasks
             xmlDoc.AppendChild(projectElement);
             xmlDoc.Save(ReferencePackagePath);
 
-            return true;
+            return !Log.HasLoggedErrors;
+        }
+
+        private string GetDependencyVersion(VersionRangeType dependencyVersionType, string packageName, string packageVersion)
+        {
+            switch (dependencyVersionType)
+            {
+                case VersionRangeType.MajorMinor:
+                    if (!NuGetVersion.TryParse(packageVersion, out var nugetVersion))
+                    {
+                        Log.LogError("Invalid NuGet version '{0}' for package {1}", packageVersion, packageName);
+                        return null;
+                    }
+                    return $"[{packageVersion}, {nugetVersion.Major}.{nugetVersion.Minor + 1}.0)";
+                case VersionRangeType.Minimum:
+                    return packageVersion;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }
