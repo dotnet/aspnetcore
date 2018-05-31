@@ -29,9 +29,9 @@
 
     <Warning Text="No archives for signing." Condition="'@(UnsignedOobArchive)'==''" />
     <Warning Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
-    <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
-    <Error Text="No aspnetcore shared framework found for signing." Condition="'@(UnsignedSharedFx)'==''" />
-    <Error Text="No MPacks found for signing." Condition="'@(UnsignedMPacks)'==''" />
+    <Warning Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
+    <Warning Text="No aspnetcore shared framework found for signing." Condition="'@(UnsignedSharedFx)'==''" />
+    <Warning Text="No MPacks found for signing." Condition="'@(UnsignedMPacks)'==''" />
 
     <MSBuild Projects="@(_UnzipProject)" BuildInParallel="true" Targets="_ExtractZipFile" />
 
