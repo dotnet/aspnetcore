@@ -8,6 +8,7 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
+.vscode/
 .build/
 .testPublish/
 bower_components/
