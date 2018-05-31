@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -71,6 +70,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _loggerFactory = loggerFactory;
             }
 
+            _loggerFactory = new WrappingLoggerFactory(_loggerFactory);
+            _loggerFactory.AddProvider(_logSinkProvider);
             _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
 
             StartServer();
@@ -84,7 +85,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _host = new WebHostBuilder()
                 .ConfigureLogging(builder => builder
                     .SetMinimumLevel(LogLevel.Trace)
-                    .AddProvider(_logSinkProvider)
                     .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))
                 .UseKestrel()
@@ -162,105 +162,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 return _loggerFactory.CreateLogger(categoryName);
             }
-        }
-    }
-
-    // TestSink doesn't seem to be thread-safe :(.
-    internal class LogSinkProvider : ILoggerProvider, ISupportExternalScope
-    {
-        private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
-        internal IExternalScopeProvider _scopeProvider;
-
-        public event Action<LogRecord> RecordLogged;
-
-        public ILogger CreateLogger(string categoryName)
-        {
-            return new LogSinkLogger(categoryName, this);
-        }
-
-        public void Dispose()
-        {
-        }
-
-        public IList<LogRecord> GetLogs() => _logs.ToList();
-
-        public void Log<TState>(string categoryName, LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            var record = new LogRecord(
-                DateTime.Now,
-                new WriteContext
-                {
-                    LoggerName = categoryName,
-                    LogLevel = logLevel,
-                    EventId = eventId,
-                    State = state,
-                    Exception = exception,
-                    Formatter = (o, e) => formatter((TState)o, e),
-                });
-            _logs.Enqueue(record);
-
-            RecordLogged?.Invoke(record);
-        }
-
-        private class LogSinkLogger : ILogger
-        {
-            private readonly string _categoryName;
-            private readonly LogSinkProvider _logSinkProvider;
-
-            public LogSinkLogger(string categoryName, LogSinkProvider logSinkProvider)
-            {
-                _categoryName = categoryName;
-                _logSinkProvider = logSinkProvider;
-            }
-
-            public IDisposable BeginScope<TState>(TState state)
-            {
-                return null;
-            }
-
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return true;
-            }
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-                // Build the message outside of the formatter
-                // Serilog doesn't appear to use the formatter and just writes the state
-                var connectionId = GetConnectionId();
-
-                var sb = new StringBuilder();
-                if (connectionId != null)
-                {
-                    sb.Append(connectionId + " - ");
-                }
-                sb.Append(formatter(state, exception));
-                var message = sb.ToString();
-
-                _logSinkProvider.Log(_categoryName, logLevel, eventId, message, exception, (s, ex) => s);
-            }
-
-            private string GetConnectionId()
-            {
-                string connectionId = null;
-                _logSinkProvider._scopeProvider.ForEachScope<object>((scope, s) =>
-                {
-                    if (scope is IReadOnlyList<KeyValuePair<string, object>> logScope)
-                    {
-                        var id = logScope.FirstOrDefault(kv => kv.Key == "TransportConnectionId").Value as string;
-                        if (id != null)
-                        {
-                            connectionId = id;
-                        }
-                    }
-                }, null);
-                return connectionId;
-            }
-        }
-
-        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
-        {
-            _scopeProvider = scopeProvider;
         }
     }
 }

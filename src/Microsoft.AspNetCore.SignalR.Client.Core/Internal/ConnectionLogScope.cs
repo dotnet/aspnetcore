@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
+namespace Microsoft.AspNetCore.SignalR.Client.Internal
 {
     internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
     {

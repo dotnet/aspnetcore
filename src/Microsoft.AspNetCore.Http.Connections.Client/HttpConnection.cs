@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
         private readonly ConnectionLogScope _logScope;
-        private readonly IDisposable _scopeDisposable;
         private readonly ILoggerFactory _loggerFactory;
         private Func<Task<string>> _accessTokenProvider;
 
@@ -150,7 +149,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
             _transportFactory = new DefaultTransportFactory(httpConnectionOptions.Transports, _loggerFactory, _httpClient, httpConnectionOptions, GetAccessTokenAsync);
             _logScope = new ConnectionLogScope();
-            _scopeDisposable = _logger.BeginScope(_logScope);
 
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
         }
@@ -188,7 +186,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// </remarks>
         public async Task StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
-            await StartAsyncCore(transferFormat).ForceAsync();
+            using (_logger.BeginScope(_logScope))
+            {
+                await StartAsyncCore(transferFormat).ForceAsync();
+            }
         }
 
         private async Task StartAsyncCore(TransferFormat transferFormat)
@@ -233,7 +234,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
-        public async Task DisposeAsync() => await DisposeAsyncCore().ForceAsync();
+        public async Task DisposeAsync()
+        {
+            using (_logger.BeginScope(_logScope))
+            {
+                await DisposeAsyncCore().ForceAsync();
+            }
+        }
 
         private async Task DisposeAsyncCore()
         {
@@ -274,7 +281,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 // We want to do these things even if the WaitForWriterToComplete/WaitForReaderToComplete fails
                 if (!_disposed)
                 {
-                    _scopeDisposable.Dispose();
                     _disposed = true;
                 }
 

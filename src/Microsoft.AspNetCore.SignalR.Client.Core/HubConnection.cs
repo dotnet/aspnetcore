@@ -49,6 +49,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private long _nextActivationSendPing;
         private bool _disposed;
 
+        private readonly ConnectionLogScope _logScope;
+
         // Transient state to a connection
         private ConnectionState _connectionState;
 
@@ -125,6 +127,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HubConnection>();
+
+            _logScope = new ConnectionLogScope();
         }
 
         /// <summary>
@@ -135,7 +139,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
-            await StartAsyncCore(cancellationToken).ForceAsync();
+            using (_logger.BeginScope(_logScope))
+            {
+                await StartAsyncCore(cancellationToken).ForceAsync();
+            }
         }
 
         /// <summary>
@@ -146,7 +153,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public async Task StopAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
-            await StopAsyncCore(disposing: false).ForceAsync();
+            using (_logger.BeginScope(_logScope))
+            {
+                await StopAsyncCore(disposing: false).ForceAsync();
+            }
         }
 
         // Current plan for IAsyncDisposable is that DisposeAsync will NOT take a CancellationToken
@@ -159,7 +169,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             if (!_disposed)
             {
-                await StopAsyncCore(disposing: true).ForceAsync();
+                using (_logger.BeginScope(_logScope))
+                {
+                    await StopAsyncCore(disposing: true).ForceAsync();
+                }
             }
         }
 
@@ -221,8 +234,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a streaming hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>StreamAsChannelAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task<ChannelReader<object>> StreamAsChannelCoreAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
-            await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+        public async Task<ChannelReader<object>> StreamAsChannelCoreAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
+        {
+            using (_logger.BeginScope(_logScope))
+            {
+                return await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+            }
+        }
 
         /// <summary>
         /// Invokes a hub method on the server using the specified method name, return type and arguments.
@@ -238,8 +256,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>InvokeAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task<object> InvokeCoreAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
-            await InvokeCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+        public async Task<object> InvokeCoreAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
+        {
+            using (_logger.BeginScope(_logScope))
+            {
+                return await InvokeCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+            }
+        }
 
         /// <summary>
         /// Invokes a hub method on the server using the specified method name and arguments.
@@ -252,8 +275,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>SendAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task SendCoreAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
-            await SendCoreAsyncCore(methodName, args, cancellationToken).ForceAsync();
+        public async Task SendCoreAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            using (_logger.BeginScope(_logScope))
+            {
+                await SendCoreAsyncCore(methodName, args, cancellationToken).ForceAsync();
+            }
+        }
 
         private async Task StartAsyncCore(CancellationToken cancellationToken)
         {
@@ -1086,6 +1114,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public ConnectionState(ConnectionContext connection, HubConnection hubConnection)
             {
                 _hubConnection = hubConnection;
+                _hubConnection._logScope.ConnectionId = connection.ConnectionId;
                 Connection = connection;
             }
 
@@ -1181,6 +1210,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 await ReceiveTask;
 
                 Log.Stopped(_hubConnection._logger);
+
+                _hubConnection._logScope.ConnectionId = null;
                 _stopTcs.TrySetResult(null);
             }
 

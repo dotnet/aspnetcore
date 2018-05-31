@@ -19,14 +19,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var disposable = StartLog(out loggerFactory, testName);
 
-            return new VerifyNoErrorsScope(loggerFactory, disposable, expectedErrorsFilter);
+            return CreateScope(ref loggerFactory, disposable, expectedErrorsFilter);
         }
 
         public virtual IDisposable StartVerifiableLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null)
         {
             var disposable = StartLog(out loggerFactory, minLogLevel, testName);
 
-            return new VerifyNoErrorsScope(loggerFactory, disposable, expectedErrorsFilter);
+            return CreateScope(ref loggerFactory, disposable, expectedErrorsFilter);
+        }
+
+        private VerifyNoErrorsScope CreateScope(ref ILoggerFactory loggerFactory, IDisposable wrappedDisposable = null, Func<WriteContext, bool> expectedErrorsFilter = null)
+        {
+            loggerFactory = new WrappingLoggerFactory(loggerFactory ?? new LoggerFactory());
+            return new VerifyNoErrorsScope(loggerFactory, wrappedDisposable, expectedErrorsFilter);
         }
     }
 }
