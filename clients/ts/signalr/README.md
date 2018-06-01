@@ -20,7 +20,6 @@ The following polyfills are required to use the client in Node.js applications:
 - `XmlHttpRequest` - always
 - `WebSockets` - to use the WebSockets transport
 - `EventSource` - to use the ServerSentEvents transport
-- `btoa/atob` - to use binary protocols (e.g. MessagePack) over text transports (ServerSentEvents)
 
 ### Example (Browser)
 

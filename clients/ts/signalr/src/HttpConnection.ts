@@ -7,6 +7,7 @@ import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
+import { EventSourceConstructor, WebSocketConstructor } from "./Polyfills";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
 import { Arg, createLogger } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
@@ -54,6 +55,13 @@ export class HttpConnection implements IConnection {
 
         options = options || {};
         options.logMessageContent = options.logMessageContent || false;
+
+        if (typeof WebSocket !== "undefined" && !options.WebSocket) {
+            options.WebSocket = WebSocket;
+        }
+        if (typeof EventSource !== "undefined" && !options.EventSource) {
+            options.EventSource = EventSource;
+        }
 
         this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
         this.connectionState = ConnectionState.Disconnected;
@@ -253,9 +261,15 @@ export class HttpConnection implements IConnection {
     private constructTransport(transport: HttpTransportType) {
         switch (transport) {
             case HttpTransportType.WebSockets:
-                return new WebSocketTransport(this.accessTokenFactory, this.logger, this.options.logMessageContent || false);
+                if (!this.options.WebSocket) {
+                    throw new Error("'WebSocket' is not supported in your environment.");
+                }
+                return new WebSocketTransport(this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket);
             case HttpTransportType.ServerSentEvents:
-                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false);
+                if (!this.options.EventSource) {
+                    throw new Error("'EventSource' is not supported in your environment.");
+                }
+                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource);
             case HttpTransportType.LongPolling:
                 return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false);
             default:
@@ -271,8 +285,8 @@ export class HttpConnection implements IConnection {
             const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
             if (transportMatches(requestedTransport, transport)) {
                 if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
-                    if ((transport === HttpTransportType.WebSockets && typeof WebSocket === "undefined") ||
-                        (transport === HttpTransportType.ServerSentEvents && typeof EventSource === "undefined")) {
+                    if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
+                        (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
                         this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
                     } else {
                         this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'`);
