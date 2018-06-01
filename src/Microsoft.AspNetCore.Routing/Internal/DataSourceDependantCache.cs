@@ -33,6 +33,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             _lock = new object();
         }
 
+        // Note that we don't lock here, and think about that in the context of a 'push'. So when data gets 'pushed'
+        // we start computing a new state, but we're still able to perform operations on the old state until we've
+        // processed the update.
         public T Value => _value;
 
         public T EnsureInitialized()

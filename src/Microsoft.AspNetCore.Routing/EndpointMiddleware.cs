@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Routing
 
             public static void ExecutedEndpoint(ILogger logger, Endpoint endpoint)
             {
-                _executingEndpoint(logger, endpoint.DisplayName, null);
+                _executedEndpoint(logger, endpoint.DisplayName, null);
             }
         }
     }

@@ -137,6 +137,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private Task SelectEndpointAsync(HttpContext httpContext, IEndpointFeature feature, IReadOnlyList<MatcherEndpoint> endpoints)
         {
+            // REVIEW: Note that this code doesn't do anything significant now. This will eventually incorporate something like IActionConstraint
             switch (endpoints.Count)
             {
                 case 0:
@@ -262,7 +263,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return entry;
         }
 
-        private struct Key : IEquatable<Key>
+        private readonly struct Key : IEquatable<Key>
         {
             public readonly int Order;
             public readonly string Template;

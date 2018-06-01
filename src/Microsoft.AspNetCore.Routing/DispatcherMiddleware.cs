@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Routing
             var feature = new EndpointFeature();
             httpContext.Features.Set<IEndpointFeature>(feature);
 
-            // There's an inherit race condition between waiting for init and accessing the matcher
+            // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
             var matcher = await InitializeAsync();
 

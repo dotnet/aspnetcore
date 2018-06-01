@@ -30,10 +30,10 @@ namespace Microsoft.AspNetCore.Routing
 
         public T GetMetadata<T>() where T : class
         {
-            for (var i = _items.Length -1; i >= 0; i--)
+            for (var i = _items.Length - 1; i >= 0; i--)
             {
                 var item = _items[i] as T;
-                if (item !=null)
+                if (item != null)
                 {
                     return item;
                 }
@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public struct Enumerator : IEnumerator<object>
         {
+            // Intentionally not readonly to prevent defensive struct copies
             private object[] _items;
             private int _index;
             private object _current;

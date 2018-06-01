@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    internal sealed class MatcherEndpoint : Endpoint
+    public sealed class MatcherEndpoint : Endpoint
     {
         public MatcherEndpoint(
             Func<RequestDelegate, RequestDelegate> invoker,
@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Invoker = invoker;
             Template = template;
             Values = new RouteValueDictionary(values);
+            Order = order;
         }
 
         public int Order { get; }

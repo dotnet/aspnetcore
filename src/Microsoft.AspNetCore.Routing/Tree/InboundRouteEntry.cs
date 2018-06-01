@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// </summary>
         public RouteTemplate RouteTemplate { get; set; }
 
+        // REVIEW: temporary change to enable reusing the tree router
         public object Tag { get; set; }
     }
 }
