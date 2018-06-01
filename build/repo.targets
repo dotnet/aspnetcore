@@ -8,7 +8,7 @@
 
   <!-- packages required to implement the targets in this file-->
   <PropertyGroup>
-    <PrepareDependsOn>$(PrepareDependsOn);VerifyUnsignedPackages;ExtractInputs;Policheck</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);PrepareArtifactDirectories;VerifyUnsignedPackages;ExtractInputs;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);VerifySignedPackages;VerifySignedSharedFxBinaries</VerifyDependsOn>
     <PublishDependsOn>Build;RunVSDrop;$(PublishDependsOn)</PublishDependsOn>
