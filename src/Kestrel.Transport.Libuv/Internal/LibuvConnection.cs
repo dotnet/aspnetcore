@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly UvStreamHandle _socket;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
+        private volatile ConnectionAbortedException _abortReason;
+
         private MemoryHandle _bufferHandle;
 
         public LibuvConnection(UvStreamHandle socket, ILibuvTrace log, LibuvThread thread, IPEndPoint remoteEndPoint, IPEndPoint localEndPoint)
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 finally
                 {
                     // Now, complete the input so that no more reads can happen
-                    Input.Complete(inputError ?? new ConnectionAbortedException());
+                    Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException());
                     Output.Complete(outputError);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
@@ -114,8 +116,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        public override void Abort()
+        protected override void AbortCore(ConnectionAbortedException abortReason)
         {
+            _abortReason = abortReason;
+            Output.CancelPendingRead();
+            
             // This cancels any pending I/O.
             Thread.Post(s => s.Dispose(), _socket);
         }

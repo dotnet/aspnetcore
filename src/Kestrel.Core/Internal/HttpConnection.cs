@@ -10,6 +10,8 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -123,9 +125,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 if (_context.ConnectionAdapters.Count > 0)
                 {
                     adaptedPipeline = new AdaptedPipeline(_adaptedTransport,
-                                                          application,
                                                           new Pipe(AdaptedInputPipeOptions),
-                                                          new Pipe(AdaptedOutputPipeOptions));
+                                                          new Pipe(AdaptedOutputPipeOptions),
+                                                          Log);
 
                     _adaptedTransport = adaptedPipeline;
                 }
@@ -222,6 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 LocalEndPoint = LocalEndPoint,
                 RemoteEndPoint = RemoteEndPoint,
                 ServiceContext = _context.ServiceContext,
+                ConnectionContext = _context.ConnectionContext,
                 TimeoutControl = this,
                 Transport = transport,
                 Application = application
@@ -255,15 +258,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection();
-                        _protocolSelectionState = ProtocolSelectionState.Stopped;
+                        CloseUninitializedConnection(abortReason: null);
+                        _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
                         _requestProcessor.StopProcessingNextRequest();
-                        _protocolSelectionState = ProtocolSelectionState.Stopping;
                         break;
-                    case ProtocolSelectionState.Stopping:
-                    case ProtocolSelectionState.Stopped:
+                    case ProtocolSelectionState.Aborted:
                         break;
                 }
             }
@@ -271,28 +272,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return _lifetimeTask;
         }
 
-        public void Abort(Exception ex)
+        public void OnInputOrOutputCompleted()
         {
             lock (_protocolSelectionLock)
             {
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection();
+                        CloseUninitializedConnection(abortReason: null);
+                        _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
-                    case ProtocolSelectionState.Stopping:
-                        _requestProcessor.Abort(ex);
+                        _requestProcessor.OnInputOrOutputCompleted();
                         break;
-                    case ProtocolSelectionState.Stopped:
+                    case ProtocolSelectionState.Aborted:
                         break;
                 }
 
-                _protocolSelectionState = ProtocolSelectionState.Stopped;
             }
         }
 
-        public Task AbortAsync(Exception ex)
+        public void Abort(ConnectionAbortedException ex)
+        {
+            lock (_protocolSelectionLock)
+            {
+                switch (_protocolSelectionState)
+                {
+                    case ProtocolSelectionState.Initializing:
+                        CloseUninitializedConnection(ex);
+                        break;
+                    case ProtocolSelectionState.Selected:
+                        _requestProcessor.Abort(ex);
+                        break;
+                    case ProtocolSelectionState.Aborted:
+                        break;
+                }
+
+                _protocolSelectionState = ProtocolSelectionState.Aborted;
+            }
+        }
+
+        public Task AbortAsync(ConnectionAbortedException ex)
         {
             Abort(ex);
 
@@ -373,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void Tick(DateTimeOffset now)
         {
-            if (_protocolSelectionState == ProtocolSelectionState.Stopped)
+            if (_protocolSelectionState == ProtocolSelectionState.Aborted)
             {
                 // It's safe to check for timeouts on a dead connection,
                 // but try not to in order to avoid extraneous logs.
@@ -419,7 +439,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             break;
                         case TimeoutAction.AbortConnection:
                             // This is actually supported with HTTP/2!
-                            Abort(new TimeoutException());
+                            Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer));
                             break;
                     }
                 }
@@ -482,7 +502,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     RequestTimedOut = true;
                     Log.ResponseMininumDataRateNotSatisfied(_http1Connection.ConnectionIdFeature, _http1Connection.TraceIdentifier);
-                    Abort(new TimeoutException());
+                    Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied));
                 }
             }
         }
@@ -622,13 +642,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             ResetTimeout(timeSpan.Ticks, TimeoutAction.AbortConnection);
         }
 
-        private void CloseUninitializedConnection()
+        private void CloseUninitializedConnection(ConnectionAbortedException abortReason)
         {
             Debug.Assert(_adaptedTransport != null);
 
-            // CancelPendingRead signals the transport directly to close the connection
-            // without any potential interference from connection adapters.
-            _context.Application.Input.CancelPendingRead();
+            _context.ConnectionContext.Abort(abortReason);
 
             _adaptedTransport.Input.Complete();
             _adaptedTransport.Output.Complete();
@@ -638,8 +656,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             Initializing,
             Selected,
-            Stopping,
-            Stopped
+            Aborted
         }
     }
 }

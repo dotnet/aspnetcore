@@ -506,4 +506,16 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="BadRequest_RequestBodyTimeout" xml:space="preserve">
     <value>Reading the request body timed out due to data arriving too slowly. See MinRequestBodyDataRate.</value>
   </data>
+  <data name="ConnectionAbortedByApplication" xml:space="preserve">
+    <value>The connection was aborted by the application.</value>
+  </data>
+  <data name="ConnectionAbortedDuringServerShutdown" xml:space="preserve">
+    <value>The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.</value>
+  </data>
+  <data name="ConnectionTimedBecauseResponseMininumDataRateNotSatisfied" xml:space="preserve">
+    <value>The connection was timed out by the server because the response was not read by the client at the specified minimum data rate.</value>
+  </data>
+  <data name="ConnectionTimedOutByServer" xml:space="preserve">
+    <value>The connection was timed out by the server.</value>
+  </data>
 </root>

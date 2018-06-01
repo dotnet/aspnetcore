@@ -41,17 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             while (true)
             {
-                ReadResult result;
-
-                try
-                {
-                    result = await _pipe.ReadAsync();
-                }
-                catch
-                {
-                    // Handled in LibuvConnection.Abort()
-                    return;
-                }
+                var result = await _pipe.ReadAsync();
 
                 var buffer = result.Buffer;
                 var consumed = buffer.End;

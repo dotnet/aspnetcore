@@ -11,21 +11,13 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
-    public partial class TransportConnection : ConnectionContext
+    public abstract partial class TransportConnection : ConnectionContext
     {
         private IDictionary<object, object> _items;
 
         public TransportConnection()
         {
-            _currentIConnectionIdFeature = this;
-            _currentIConnectionTransportFeature = this;
-            _currentIHttpConnectionFeature = this;
-            _currentIConnectionItemsFeature = this;
-            _currentIApplicationTransportFeature = this;
-            _currentIMemoryPoolFeature = this;
-            _currentITransportSchedulerFeature = this;
-            _currentIConnectionLifetimeFeature = this;
-            _currentIBytesWrittenFeature = this;
+            FastReset();
         }
 
         public IPAddress RemoteAddress { get; set; }
@@ -63,8 +55,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public CancellationToken ConnectionClosed { get; set; }
 
-        public virtual void Abort()
+        // DO NOT remove this override to ConnectionContext.Abort(). Doing so would cause
+        // any TransportConnection that does not override Abort() or calls base.Abort()
+        // to stack overflow when IConnectionLifetimeFeature.Abort() is called.
+        public override void Abort(ConnectionAbortedException abortReason)
         {
+            AbortCore(abortReason);
         }
+
+        protected abstract void AbortCore(ConnectionAbortedException abortReason);
     }
 }

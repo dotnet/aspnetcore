@@ -3,6 +3,7 @@
 
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -203,6 +204,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                         Output.AdvanceTo(consumed, examined);
                     }
                 }
+            }
+
+            protected override void AbortCore(ConnectionAbortedException abortReason)
+            {
             }
         }
 

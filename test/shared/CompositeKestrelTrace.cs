@@ -166,6 +166,12 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.ResponseMininumDataRateNotSatisfied(connectionId, traceIdentifier);
         }
 
+        public void ApplicationAbortedConnection(string connectionId, string traceIdentifier)
+        {
+            _trace1.ApplicationAbortedConnection(connectionId, traceIdentifier);
+            _trace2.ApplicationAbortedConnection(connectionId, traceIdentifier);
+        }
+
         public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex)
         {
             _trace1.Http2ConnectionError(connectionId, ex);

@@ -6,7 +6,9 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
@@ -15,22 +17,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 
         private readonly IDuplexPipe _transport;
-        private readonly IDuplexPipe _application;
 
         public AdaptedPipeline(IDuplexPipe transport,
-                               IDuplexPipe application,
                                Pipe inputPipe,
-                               Pipe outputPipe)
+                               Pipe outputPipe,
+                               IKestrelTrace log)
         {
             _transport = transport;
-            _application = application;
             Input = inputPipe;
             Output = outputPipe;
+            Log = log;
         }
 
         public Pipe Input { get; }
 
         public Pipe Output { get; }
+
+        public IKestrelTrace Log { get; }
 
         PipeReader IDuplexPipe.Input => Input.Reader;
 
@@ -47,8 +50,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         private async Task WriteOutputAsync(Stream stream)
         {
-            Exception error = null;
-
             try
             {
                 if (stream == null)
@@ -63,13 +64,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
                     try
                     {
-                        if (result.IsCanceled)
-                        {
-                            // Forward the cancellation to the transport pipe
-                            _application.Input.CancelPendingRead();
-                            break;
-                        }
-
                         if (buffer.IsEmpty)
                         {
                             if (result.IsCompleted)
@@ -108,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             }
             catch (Exception ex)
             {
-                error = ex;
+                Log.LogError(0, ex, $"{nameof(AdaptedPipeline)}.{nameof(WriteOutputAsync)}");
             }
             finally
             {

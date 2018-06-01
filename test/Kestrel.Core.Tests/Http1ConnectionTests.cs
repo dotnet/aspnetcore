@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -58,6 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1ConnectionContext = new Http1ConnectionContext
             {
                 ServiceContext = _serviceContext,
+                ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _pipelineFactory,
                 TimeoutControl = _timeoutControl.Object,

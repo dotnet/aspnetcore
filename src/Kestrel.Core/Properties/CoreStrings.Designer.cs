@@ -1820,6 +1820,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatBadRequest_RequestBodyTimeout()
             => GetString("BadRequest_RequestBodyTimeout");
 
+        /// <summary>
+        /// The connection was aborted by the application.
+        /// </summary>
+        internal static string ConnectionAbortedByApplication
+        {
+            get => GetString("ConnectionAbortedByApplication");
+        }
+
+        /// <summary>
+        /// The connection was aborted by the application.
+        /// </summary>
+        internal static string FormatConnectionAbortedByApplication()
+            => GetString("ConnectionAbortedByApplication");
+
+        /// <summary>
+        /// The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.
+        /// </summary>
+        internal static string ConnectionAbortedDuringServerShutdown
+        {
+            get => GetString("ConnectionAbortedDuringServerShutdown");
+        }
+
+        /// <summary>
+        /// The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.
+        /// </summary>
+        internal static string FormatConnectionAbortedDuringServerShutdown()
+            => GetString("ConnectionAbortedDuringServerShutdown");
+
+        /// <summary>
+        /// The connection was timed out by the server because the response was not read by the client at the specified minimum data rate.
+        /// </summary>
+        internal static string ConnectionTimedBecauseResponseMininumDataRateNotSatisfied
+        {
+            get => GetString("ConnectionTimedBecauseResponseMininumDataRateNotSatisfied");
+        }
+
+        /// <summary>
+        /// The connection was timed out by the server because the response was not read by the client at the specified minimum data rate.
+        /// </summary>
+        internal static string FormatConnectionTimedBecauseResponseMininumDataRateNotSatisfied()
+            => GetString("ConnectionTimedBecauseResponseMininumDataRateNotSatisfied");
+
+        /// <summary>
+        /// The connection was timed out by the server.
+        /// </summary>
+        internal static string ConnectionTimedOutByServer
+        {
+            get => GetString("ConnectionTimedOutByServer");
+        }
+
+        /// <summary>
+        /// The connection was timed out by the server.
+        /// </summary>
+        internal static string FormatConnectionTimedOutByServer()
+            => GetString("ConnectionTimedOutByServer");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

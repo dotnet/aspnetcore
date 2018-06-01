@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -75,11 +77,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var processingTask = connection.StartRequestProcessing(_application);
 
             connectionContext.Transport.Input.OnWriterCompleted(
-                (error, state) => ((HttpConnection)state).Abort(error),
+                (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
                 connection);
 
             connectionContext.Transport.Output.OnReaderCompleted(
-                (error, state) => ((HttpConnection)state).Abort(error),
+                (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
                 connection);
 
             await AsTask(lifetimeFeature.ConnectionClosed);

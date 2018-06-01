@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -738,6 +739,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var http1Connection = new Http1Connection(new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
+                ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
@@ -764,12 +766,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Without ConfigureAwait(false), xunit will dispatch.
                 await consumer.WriteOutputAsync().ConfigureAwait(false);
 
-                http1Connection.Abort(error: null);
+                http1Connection.Abort(abortReason: null);
                 outputReader.Complete();
             }
             catch (UvException ex)
             {
-                http1Connection.Abort(ex);
+                http1Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
                 outputReader.Complete(ex);
             }
         }

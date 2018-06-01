@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => ConnectionClosed = value;
         }
 
-        void IConnectionLifetimeFeature.Abort() => Abort();
+        void IConnectionLifetimeFeature.Abort() => Abort(abortReason: null);
 
         long IBytesWrittenFeature.TotalBytesWritten => TotalBytesWritten;
     }

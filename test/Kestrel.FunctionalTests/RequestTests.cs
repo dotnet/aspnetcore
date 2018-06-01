@@ -1131,6 +1131,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task RequestsCanBeAbortedMidRead(ListenOptions listenOptions)
         {
+            const int applicationAbortedConnectionId = 34;
+
             var testContext = new TestServiceContext(LoggerFactory);
 
             var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1205,6 +1207,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             // The cancellation token for only the last request should be triggered.
             var abortedRequestId = await registrationTcs.Task;
             Assert.Equal(2, abortedRequestId);
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" &&
+                                                     w.EventId == applicationAbortedConnectionId));
         }
 
         [Theory]

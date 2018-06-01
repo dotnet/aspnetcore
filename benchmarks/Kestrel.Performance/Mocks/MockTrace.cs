@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void RequestBodyDrainTimedOut(string connectionId, string traceIdentifier) { }
         public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate) { }
         public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier) { }
+        public void ApplicationAbortedConnection(string connectionId, string traceIdentifier) { }
         public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex) { }
         public void Http2StreamError(string connectionId, Http2StreamErrorException ex) { }
         public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex) { }

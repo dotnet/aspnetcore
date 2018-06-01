@@ -5,12 +5,13 @@ using System;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public interface IHttpOutputProducer : IDisposable
     {
-        void Abort(Exception error);
+        void Abort(ConnectionAbortedException abortReason);
         Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state);
         Task FlushAsync(CancellationToken cancellationToken);
         Task Write100ContinueAsync(CancellationToken cancellationToken);

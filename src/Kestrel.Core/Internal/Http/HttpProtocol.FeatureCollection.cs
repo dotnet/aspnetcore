@@ -227,7 +227,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         void IHttpRequestLifetimeFeature.Abort()
         {
-            Abort(new ConnectionAbortedException());
+            Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
+            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
         }
     }
 }
