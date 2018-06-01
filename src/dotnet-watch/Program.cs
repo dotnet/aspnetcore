@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -121,8 +121,7 @@ namespace Microsoft.DotNet.Watcher
                 _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.");
             }
 
-            // Invoke the cancellation on the default thread pool to workaround https://github.com/dotnet/corefx/issues/29699
-            ThreadPool.QueueUserWorkItem(_ => _cts.Cancel());
+            _cts.Cancel();
         }
 
         private async Task<int> MainInternalAsync(

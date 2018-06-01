@@ -37,6 +37,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             await _app.StartWatcherAsync();
             var source = Path.Combine(_app.SourceDirectory, "Program.cs");
+            var contents = File.ReadAllText(source);
             const string messagePrefix = "DOTNET_WATCH_ITERATION = ";
             for (var i = 1; i <= 4; i++)
             {
@@ -44,7 +45,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 var count = int.Parse(message.Substring(messagePrefix.Length), CultureInfo.InvariantCulture);
                 Assert.Equal(i, count);
 
-                File.SetLastWriteTime(source, DateTime.Now);
+                File.Delete(source);
+                File.WriteAllText(source, contents);
                 await _app.HasRestarted();
             }
         }
