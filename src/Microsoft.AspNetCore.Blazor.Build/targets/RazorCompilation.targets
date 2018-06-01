@@ -5,20 +5,10 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <!-- Temporary workaround for using the Razor Sdk targeted at preview2 Web.Sdk in a Preview environment -->
-  <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
-    <!-- Both the preview1 Web.Sdk and preview2 Sdk include chstml files as content. Workaround this by removing and re-adding cshtml files -->
-    <Content Remove="**\*.cshtml" />
-
-    <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-  </ItemGroup>
-
 
   <PropertyGroup>
     <!-- Passed to Razor tasks and loaded as a plugin -->
-      <_AngleSharpAssemblyPath>$(MSBuildThisFileDirectory)../tools/AngleSharp.dll</_AngleSharpAssemblyPath>
+    <_AngleSharpAssemblyPath>$(MSBuildThisFileDirectory)../tools/AngleSharp.dll</_AngleSharpAssemblyPath>
     <_BlazorExtensionAssemblyPath>$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
 
     <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
@@ -37,7 +27,6 @@
 
   <!-- Something quick for input/output tracking - the assumptions here should match what the CLI does -->
   <ItemGroup>
-    <BlazorGenerate Include="**\*.cshtml" />
     <_BlazorGenerateDeclarationContent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
     <Content Update="@(_BlazorGenerateDeclarationContent)">
       <Generator>MSBuild:BlazorGenerateDeclaration</Generator>
@@ -77,6 +66,7 @@
   <PropertyGroup>
     <BlazorGenerateDeclarationDependsOn>
     _DefineBlazorPaths;
+    _ResolveBlazorInputs;
     _AssignBlazorGenerateTargetPaths;
     _HashBlazorGenerateInputs;
     </BlazorGenerateDeclarationDependsOn>
@@ -99,6 +89,12 @@
     </PropertyGroup>
   </Target>
 
+  <Target Name="_ResolveBlazorInputs">
+    <ItemGroup>
+      <BlazorGenerate Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+    </ItemGroup>
+  </Target>
+
   <!--
     Assigns each BlazorGenerate item a relative path based on where the directory structure. This accounts
     for <Link> and also for files outside of the project's folder hierarchy. So this is needed to support
@@ -106,8 +102,7 @@
 
     This step also assigns each item an output path for both stages of code generation.
   -->
-  <Target Name="_AssignBlazorGenerateTargetPaths">
-
+  <Target Name="_AssignBlazorGenerateTargetPaths"> 
     <AssignTargetPath Files="@(BlazorGenerate)" RootFolder="$(MSBuildProjectDirectory)">
       <Output TaskParameter="AssignedFiles" ItemName="BlazorGenerateWithTargetPath" />
     </AssignTargetPath>
