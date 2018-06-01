@@ -701,7 +701,8 @@ namespace Microsoft.AspNetCore.Routing
 
         private static Action<RouteOptions> GetRouteOptions(
             bool lowerCaseUrls = false,
-            bool appendTrailingSlash = false, bool lowercaseQueryStrings = false)
+            bool appendTrailingSlash = false,
+            bool lowercaseQueryStrings = false)
         {
             return (options) =>
             {
