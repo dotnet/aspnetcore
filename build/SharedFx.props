@@ -37,12 +37,8 @@
     <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
 
-    <DotnetRuntimePackageName>dotnet-runtime</DotnetRuntimePackageName>
-    <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21PackageVersion)</DotnetRuntimeInstallerPrefix>
-    <MicrosoftNETCoreApp21IdVersion>2.1</MicrosoftNETCoreApp21IdVersion>
-    <MicrosoftNETCoreApp21InstallerVersion>$(MicrosoftNETCoreApp21PackageVersion.Split('-')[0])</MicrosoftNETCoreApp21InstallerVersion>
-    <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21IdVersion)</DotnetRuntimeInstallerPrefix>
-    <RuntimeArchiveLinkPrefix>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerPrefix)</RuntimeArchiveLinkPrefix>
+    <DotnetRuntimeFileNamePrefix>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)</DotnetRuntimeFileNamePrefix>
+    <RuntimeArchiveLinkPrefix>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/$(DotnetRuntimeFileNamePrefix)</RuntimeArchiveLinkPrefix>
 
     <SharedFxIntermediateArchiveFilePrefix>$(_SharedFxSourceDir)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)</SharedFxIntermediateArchiveFilePrefix>
 
