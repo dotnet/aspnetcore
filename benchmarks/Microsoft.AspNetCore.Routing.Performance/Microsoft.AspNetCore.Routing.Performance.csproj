@@ -15,8 +15,10 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
   </ItemGroup>
 
 </Project>

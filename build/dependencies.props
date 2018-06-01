@@ -6,6 +6,7 @@
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17064</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAppPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.2.0-preview1-34326</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
