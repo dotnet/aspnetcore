@@ -17,6 +17,8 @@
 #include <wchar.h>
 #include <io.h>
 #include <stdio.h>
+#include <experimental/filesystem>
+#include <fstream>
 
 #include <hashfn.h>
 #include <hashtable.h>
@@ -48,6 +50,7 @@
 #include "requesthandler.h"
 #include "resources.h"
 #include "aspnetcore_msg.h"
+#include "Helpers.h"
 
 #undef assert // Macro redefinition in IISLib.
 #include "gtest\gtest.h"

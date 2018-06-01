@@ -217,7 +217,6 @@
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="environmentvariablehelpers.h" />
-    <ClInclude Include="sttimer.h" />
     <ClInclude Include="outofprocess\forwarderconnection.h" />
     <ClInclude Include="outofprocess\processmanager.h" />
     <ClInclude Include="outofprocess\protocolconfig.h" />

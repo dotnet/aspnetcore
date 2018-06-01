@@ -15,6 +15,7 @@
 #include <sstream>
 #include <memory>
 #include "Shlwapi.h"
+#include <io.h>
 #include "hashtable.h"
 #include "stringu.h"
 #include "stringa.h"
@@ -23,6 +24,7 @@
 #include "ahutil.h"
 #include "hashfn.h"
 #include "irequesthandler.h"
+#include "sttimer.h"
 #include "requesthandler.h"
 #include "iapplication.h"
 #include "application.h"
@@ -34,3 +36,8 @@
 #include "fx_ver.h"
 #include "hostfxr_utility.h"
 #include "hostfxroptions.h"
+#include "IOutputManager.h"
+#include "FileOutputManager.h"
+#include "PipeOutputManager.h"
+#include "NullOutputManager.h"
+#include "LoggingHelpers.h"

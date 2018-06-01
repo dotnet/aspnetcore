@@ -55,16 +55,6 @@ public:
         VOID
     );
 
-    VOID
-    ReadStdErrHandleInternal(
-        VOID
-    );
-
-    VOID
-    CloseStdErrHandles(
-        VOID
-    );
-
     HRESULT
     LoadManagedApplication(
         VOID
@@ -130,17 +120,6 @@ public:
     }
 
 private:
-    static
-    DWORD
-    DoShutDown(
-        LPVOID lpParam
-    );
-
-    VOID
-    ShutDownInternal(
-        VOID
-    );
-
     IHttpServer* const      m_pHttpServer;
 
     // Thread executing the .NET Core process
@@ -159,26 +138,18 @@ private:
     // The event that gets triggered when managed initialization is complete
     HANDLE                          m_pInitalizeEvent;
 
-    // The std log file handle
-    HANDLE                          m_hLogFileHandle;
-    HANDLE                          m_hErrReadPipe;
-    HANDLE                          m_hErrWritePipe;
-    STRU                            m_struLogFilePath;
     STRU                            m_struExeLocation;
 
     // The exit code of the .NET Core process
     INT                             m_ProcessExitCode;
 
     BOOL                            m_fIsWebSocketsConnection;
-    BOOL                            m_fDoneStdRedirect;
     volatile BOOL                   m_fBlockCallbacksIntoManaged;
     volatile BOOL                   m_fShutdownCalledFromNative;
     volatile BOOL                   m_fShutdownCalledFromManaged;
     BOOL                            m_fRecycleCalled;
     BOOL                            m_fInitialized;
 
-    FILE*                           m_pStdFile;
-    STTIMER                         m_Timer;
     SRWLOCK                         m_srwLock;
 
     // Thread for capturing startup stderr logs when logging is disabled
@@ -188,6 +159,7 @@ private:
     PCWSTR                          m_pstrDotnetExeLocation;
     static IN_PROCESS_APPLICATION*  s_Application;
 
+    IOutputManager*                 m_pLoggerProvider;
     REQUESTHANDLER_CONFIG*          m_pConfig;
 
     // Allows to override call to hostfxr_main with custome callback
@@ -205,26 +177,26 @@ private:
         _In_ LPVOID pContext
     );
 
-    static
-    VOID
-    ReadStdErrHandle
-    (
-        _In_ LPVOID pContext
-    );
-
     HRESULT
     SetEnvironementVariablesOnWorkerProcess(
         VOID
     );
-
-    static
-    INT
-    FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);
 
     HRESULT
     RunDotnetApplication(
         DWORD argc,
         CONST PCWSTR* argv,
         hostfxr_main_fn pProc
+    );
+
+    static
+    DWORD
+    DoShutDown(
+        LPVOID lpParam
+    );
+
+    VOID
+    ShutDownInternal(
+        VOID
     );
 };

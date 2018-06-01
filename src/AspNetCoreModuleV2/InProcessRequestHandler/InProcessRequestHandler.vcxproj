@@ -214,7 +214,6 @@
     <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="environmentvariablehelpers.h" />
     <ClInclude Include="precomp.hxx" />
-    <ClInclude Include="sttimer.h" />
     <ClInclude Include=".\inprocess\inprocessapplication.h" />
     <ClInclude Include=".\inprocess\inprocesshandler.h" />
   </ItemGroup>

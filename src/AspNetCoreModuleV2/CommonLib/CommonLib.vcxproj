@@ -162,11 +162,11 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\iislib;</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -181,6 +181,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="NullOutputManager.h" />
+    <ClInclude Include="FileOutputManager.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="hostfxroptions.h" />
     <ClInclude Include="hostfxr_utility.h" />
@@ -188,19 +190,26 @@
     <ClInclude Include="debugutil.h" />
     <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="environmentvariablehash.h" />
+    <ClInclude Include="IOutputManager.h" />
     <ClInclude Include="irequesthandler.h" />
+    <ClInclude Include="LoggingHelpers.h" />
+    <ClInclude Include="PipeOutputManager.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="requesthandler_config.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="SRWLockWrapper.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="sttimer.h" />
     <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileOutputManager.cpp" />
     <ClCompile Include="fx_ver.cxx" />
-    <ClCompile Include="hostfxroptions.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />
+    <ClCompile Include="hostfxroptions.cpp" />
     <ClCompile Include="requesthandler_config.cpp" />
+    <ClCompile Include="LoggingHelpers.cpp" />
+    <ClCompile Include="PipeOutputManager.cpp" />
     <ClCompile Include="SRWLockWrapper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

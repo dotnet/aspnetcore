@@ -1,0 +1,37 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": true,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5762/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "ANCM IIS Express": {
+      "commandName": "Executable",
+      "executablePath": "$(IISExpressPath)",
+      "commandLineArgs": "$(IISExpressArguments)",
+      "nativeDebugging": true,
+      "environmentVariables": {
+        "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
+        "ANCM_PATH": "$(TargetDir)$(AncmV2Path)",
+        "LAUNCHER_ARGS": "$(TargetPath)",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "LAUNCHER_PATH": "$(DotNetPath)"
+      }
+    },
+    "ANCM IIS": {
+      "commandName": "Executable",
+      "executablePath": "$(IISPath)",
+      "commandLineArgs": "$(IISArguments)",
+      "environmentVariables": {
+        "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
+        "ANCM_PATH": "$(TargetDir)$(AncmV2Path)",
+        "LAUNCHER_ARGS": "$(TargetPath)",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "LAUNCHER_PATH": "$(DotNetPath)"
+      }
+    }
+  }
+}

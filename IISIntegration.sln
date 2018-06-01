@@ -115,6 +115,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InProcessRequestHandler", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OutOfProcessRequestHandler", "src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj", "{7F87406C-A3C8-4139-A68D-E4C344294A67}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StartupExceptionWebSite", "test\WebSites\StartupExceptionWebSite\StartupExceptionWebSite.csproj", "{340C59FC-C682-4CBA-81F8-791821EC8EDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -359,6 +361,16 @@ Global
 		{7F87406C-A3C8-4139-A68D-E4C344294A67}.Release|x64.Build.0 = Release|x64
 		{7F87406C-A3C8-4139-A68D-E4C344294A67}.Release|x86.ActiveCfg = Release|Win32
 		{7F87406C-A3C8-4139-A68D-E4C344294A67}.Release|x86.Build.0 = Release|Win32
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Debug|x64.ActiveCfg = Debug|x64
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Debug|x64.Build.0 = Debug|x64
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Debug|x86.ActiveCfg = Debug|x86
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Debug|x86.Build.0 = Debug|x86
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Release|Any CPU.ActiveCfg = Release|x86
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Release|x64.ActiveCfg = Release|x64
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Release|x64.Build.0 = Release|x64
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Release|x86.ActiveCfg = Release|x86
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -388,6 +400,7 @@ Global
 		{48F46909-E76A-4788-BCE1-E543C0E140FE} = {622D35C9-627B-466E-8D15-752968CC79AF}
 		{D57EA297-6DC2-4BC0-8C91-334863327863} = {06CA2C2B-83B0-4D83-905A-E0C74790009E}
 		{7F87406C-A3C8-4139-A68D-E4C344294A67} = {06CA2C2B-83B0-4D83-905A-E0C74790009E}
+		{340C59FC-C682-4CBA-81F8-791821EC8EDE} = {744ACDC6-F6A0-4FF9-9421-F25C5F2DC520}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DB4F868D-E1AE-4FD7-9333-69FA15B268C5}

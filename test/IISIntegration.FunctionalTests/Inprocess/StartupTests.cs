@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
+            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
@@ -52,14 +52,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
+            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "processPath", "%DotnetPath%");
 
             // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
             var response = await deploymentResult.RetryingHttpClient.GetAsync("HelloWorld");
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         }
-
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress)
@@ -94,7 +93,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("Application is running inside IIS process but is not configured to use IIS server"));
         }
 
-        private DeploymentParameters GetBaseDeploymentParameters(string site = "InProcessWebSite")
+        // Defaults to inprocess specific deployment parameters
+        public static DeploymentParameters GetBaseDeploymentParameters(string site = "InProcessWebSite")
         {
             return new DeploymentParameters(Helpers.GetTestWebSitePath(site), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
@@ -104,17 +104,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 HostingModel = HostingModel.InProcess,
                 PublishApplicationBeforeDeployment = site == "InProcessWebSite",
             };
-        }
-
-        private static void ModifyAspNetCoreSectionInWebConfig(IISDeploymentResult deploymentResult, string key, string value)
-        {
-            // modify the web.config after publish
-            var root = deploymentResult.DeploymentResult.ContentRoot;
-            var webConfigFile = $"{root}/web.config";
-            var config = XDocument.Load(webConfigFile);
-            var element = config.Descendants("aspNetCore").FirstOrDefault();
-            element.SetAttributeValue(key, value);
-            config.Save(webConfigFile);
         }
     }
 }

@@ -657,7 +657,6 @@ namespace IISTestSite
         {
             app.Run(async context =>
             {
-
                 if (context.Request.Path.StartsWithSegments("/NullBuffer"))
                 {
                     await context.Response.Body.WriteAsync(null, 0, 0);
@@ -704,5 +703,27 @@ namespace IISTestSite
         {
             app.Run(async ctx => { await ctx.Response.WriteAsync(AppDomain.CurrentDomain.BaseDirectory); });
         }
+
+        private void CheckLogFile(IApplicationBuilder app)
+        {
+            app.Run(async ctx =>
+            {
+                Console.WriteLine("TEST MESSAGE");
+
+                await ctx.Response.WriteAsync("Hello World");
+            });
+        }
+
+        private void CheckErrLogFile(IApplicationBuilder app)
+        {
+            app.Run(async ctx =>
+            {
+                Console.Error.WriteLine("TEST MESSAGE");
+                Console.Error.Flush();
+
+                await ctx.Response.WriteAsync("Hello World");
+            });
+        }
+
     }
 }

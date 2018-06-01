@@ -37,6 +37,7 @@ project.lock.json
 *.tlog
 *.CppClean.log
 *msbuild.log
+gtest.log
 
 src/*/*/Debug/
 src/*/*/x64/Debug/

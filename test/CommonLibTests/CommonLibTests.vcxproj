@@ -32,12 +32,28 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
+  </PropertyGroup>
   <ItemGroup>
+    <ClInclude Include="Helpers.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileOutputManagerTests.cpp" />
+    <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="hostfxr_utility_tests.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PipeOutputManagerTests.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -141,7 +157,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest-1.8.0\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

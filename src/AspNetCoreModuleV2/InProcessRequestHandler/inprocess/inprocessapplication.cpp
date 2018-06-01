@@ -10,11 +10,6 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     PCWSTR pDotnetExeLocation) :
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
-    m_hLogFileHandle(INVALID_HANDLE_VALUE),
-    m_hErrReadPipe(INVALID_HANDLE_VALUE),
-    m_hErrWritePipe(INVALID_HANDLE_VALUE),
-    m_dwStdErrReadTotal(0),
-    m_fDoneStdRedirect(FALSE),
     m_fBlockCallbacksIntoManaged(FALSE),
     m_fInitialized(FALSE),
     m_fShutdownCalledFromNative(FALSE),
@@ -35,12 +30,6 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 {
-    if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
-    {
-        m_Timer.CancelTimer();
-        CloseHandle(m_hLogFileHandle);
-        m_hLogFileHandle = INVALID_HANDLE_VALUE;
-    }
 
     if (m_pConfig != NULL)
     {
@@ -106,6 +95,12 @@ IN_PROCESS_APPLICATION::ShutDown(
         }
     }
 
+    if (m_pLoggerProvider != NULL)
+    {
+        delete m_pLoggerProvider;
+        m_pLoggerProvider = NULL;
+    }
+
 Finished:
 
     if (FAILED(hr))
@@ -131,8 +126,6 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
 {
     DWORD    dwThreadStatus = 0;
     DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
-    HANDLE   handle = NULL;
-    WIN32_FIND_DATA fileData;
 
     if (IsDebuggerPresent())
     {
@@ -201,34 +194,6 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
     CloseHandle(m_hThread);
     m_hThread = NULL;
     s_Application = NULL;
-
-    CloseStdErrHandles();
-
-    if (m_pStdFile != NULL)
-    {
-        fflush(stdout);
-        fflush(stderr);
-        fclose(m_pStdFile);
-    }
-
-    if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
-    {
-        m_Timer.CancelTimer();
-        CloseHandle(m_hLogFileHandle);
-        m_hLogFileHandle = INVALID_HANDLE_VALUE;
-    }
-
-    // delete empty log file
-    handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
-    if (handle != INVALID_HANDLE_VALUE &&
-        fileData.nFileSizeHigh == 0 &&
-        fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
-    {
-        FindClose(handle);
-        // no need to check whether the deletion succeeds
-        // as nothing can be done
-        DeleteFile(m_struLogFilePath.QueryStr());
-    }
 }
 
 __override
@@ -371,261 +336,11 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     m_ShutdownHandlerContext = pvShutdownHandlerContext;
     m_AsyncCompletionHandler = async_completion_handler;
 
-    CloseStdErrHandles();
+    m_pLoggerProvider->NotifyStartupComplete();
     // Can't check the std err handle as it isn't a critical error
-    SetStdHandle(STD_ERROR_HANDLE, INVALID_HANDLE_VALUE);
     // Initialization complete
     SetEvent(m_pInitalizeEvent);
     m_fInitialized = TRUE;
-}
-
-VOID
-IN_PROCESS_APPLICATION::SetStdOut(
-    VOID
-)
-{
-    HRESULT                 hr = S_OK;
-    STRU                    struPath;
-    SYSTEMTIME              systemTime;
-    SECURITY_ATTRIBUTES     saAttr = { 0 };
-    HANDLE                  hStdErrReadPipe;
-    HANDLE                  hStdErrWritePipe;
-
-    if (!m_fDoneStdRedirect)
-    {
-        // Have not set stdout yet, redirect stdout to log file
-        SRWLockWrapper lock(m_srwLock);
-        if (!m_fDoneStdRedirect)
-        {
-            saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-            saAttr.bInheritHandle = TRUE;
-            saAttr.lpSecurityDescriptor = NULL;
-
-            //
-            // best effort
-            // no need to capture the error code as nothing we can do here
-            // in case mamanged layer exits abnormally, may not be able to capture the log content as it is buffered.
-            //
-            if (!GetConsoleWindow())
-            {
-                // Full IIS scenario.
-
-                //
-                // SetStdHandle works as w3wp does not have Console
-                // Current process does not have a console
-                //
-                if (m_pConfig->QueryStdoutLogEnabled())
-                {
-                    hr = UTILITY::ConvertPathToFullPath(
-                        m_pConfig->QueryStdoutLogFile()->QueryStr(),
-                        m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                        &struPath);
-                    if (FAILED(hr))
-                    {
-                        goto Finished;
-                    }
-
-                    hr = UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
-                    if (FAILED(hr))
-                    {
-                        goto Finished;
-                    }
-
-                    GetSystemTime(&systemTime);
-                    hr = m_struLogFilePath.SafeSnwprintf(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
-                        struPath.QueryStr(),
-                        systemTime.wYear,
-                        systemTime.wMonth,
-                        systemTime.wDay,
-                        systemTime.wHour,
-                        systemTime.wMinute,
-                        systemTime.wSecond,
-                        GetCurrentProcessId());
-                    if (FAILED(hr))
-                    {
-                        goto Finished;
-                    }
-
-                    m_hLogFileHandle = CreateFileW(m_struLogFilePath.QueryStr(),
-                        FILE_READ_DATA | FILE_WRITE_DATA,
-                        FILE_SHARE_READ,
-                        &saAttr,
-                        CREATE_ALWAYS,
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL);
-
-                    if (m_hLogFileHandle == INVALID_HANDLE_VALUE)
-                    {
-                        hr = HRESULT_FROM_WIN32(GetLastError());
-                        goto Finished;
-                    }
-
-                    if (!SetStdHandle(STD_OUTPUT_HANDLE, m_hLogFileHandle))
-                    {
-                        hr = HRESULT_FROM_WIN32(GetLastError());
-                        goto Finished;
-                    }
-
-                    if (!SetStdHandle(STD_ERROR_HANDLE, m_hLogFileHandle))
-                    {
-                        hr = HRESULT_FROM_WIN32(GetLastError());
-                        goto Finished;
-                    }
-
-                    // not work
-                    // AllocConsole()  does not help
-                    // *stdout = *m_pStdFile;
-                    // *stderr = *m_pStdFile;
-                    // _dup2(_fileno(m_pStdFile), _fileno(stdout));
-                    // _dup2(_fileno(m_pStdFile), _fileno(stderr));
-                    // this one cannot capture the process start failure
-                    // _wfreopen_s(&m_pStdFile, struLogFileName.QueryStr(), L"w", stdout);
-
-                    // Periodically flush the log content to file
-                    m_Timer.InitializeTimer(STTIMER::TimerCallback, &m_struLogFilePath, 3000, 3000);
-                }
-                else
-                {
-                    //
-                    // CreatePipe for outputting stderr to the windows event log.
-                    // Ignore failures
-                    //
-                    if (!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/))
-                    {
-                        goto Finished;
-                    }
-
-                    if (!SetStdHandle(STD_ERROR_HANDLE, hStdErrWritePipe))
-                    {
-                        goto Finished;
-                    }
-
-                    m_hErrReadPipe = hStdErrReadPipe;
-                    m_hErrWritePipe = hStdErrWritePipe;
-
-                    // Read the stderr handle on a separate thread until we get 4096 bytes.
-                    m_hErrThread = CreateThread(
-                        NULL,       // default security attributes
-                        0,          // default stack size
-                        (LPTHREAD_START_ROUTINE)ReadStdErrHandle,
-                        this,       // thread function arguments
-                        0,          // default creation flags
-                        NULL);      // receive thread identifier
-
-                    if (m_hErrThread == NULL)
-                    {
-                        hr = HRESULT_FROM_WIN32(GetLastError());
-                        goto Finished;
-                    }
-                }
-            }
-            else
-            {
-                // The process has console, e.g., IIS Express scenario
-
-                if (_wfopen_s(&m_pStdFile, m_struLogFilePath.QueryStr(), L"w") == 0)
-                {
-                    // known issue: error info may not be capture when process crashes during buffering
-                    // even we disabled FILE buffering
-                    setvbuf(m_pStdFile, NULL, _IONBF, 0);
-                    _dup2(_fileno(m_pStdFile), _fileno(stdout));
-                    _dup2(_fileno(m_pStdFile), _fileno(stderr));
-                }
-                // These don't work for console scenario
-                // close and AllocConsole does not help
-                //_wfreopen_s(&m_pStdFile, struLogFileName.QueryStr(), L"w", stdout);
-                // SetStdHandle(STD_ERROR_HANDLE, m_hLogFileHandle);
-                // SetStdHandle(STD_OUTPUT_HANDLE, m_hLogFileHandle);
-                //*stdout = *m_pStdFile;
-                //*stderr = *m_pStdFile;
-            }
-        }
-    }
-
-Finished:
-    m_fDoneStdRedirect = TRUE;
-    if (FAILED(hr) && m_pConfig->QueryStdoutLogEnabled())
-    {
-        UTILITY::LogEventF(g_hEventLog,
-            EVENTLOG_WARNING_TYPE,
-            ASPNETCORE_EVENT_CONFIG_ERROR,
-            ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
-            m_struLogFilePath.QueryStr(),
-            hr);
-    }
-}
-
-VOID
-IN_PROCESS_APPLICATION::ReadStdErrHandle(
-    LPVOID pContext
-)
-{
-    IN_PROCESS_APPLICATION *pApplication = (IN_PROCESS_APPLICATION*)pContext;
-    DBG_ASSERT(pApplication != NULL);
-    pApplication->ReadStdErrHandleInternal();
-}
-
-VOID
-IN_PROCESS_APPLICATION::ReadStdErrHandleInternal(
-    VOID
-)
-{
-    DWORD dwNumBytesRead = 0;
-    while (true)
-    {
-        if (ReadFile(m_hErrReadPipe, &m_pzFileContents[m_dwStdErrReadTotal], 4096 - m_dwStdErrReadTotal, &dwNumBytesRead, NULL))
-        {
-            m_dwStdErrReadTotal += dwNumBytesRead;
-            if (m_dwStdErrReadTotal >= 4096)
-            {
-                break;
-            }
-        }
-        else if (GetLastError() == ERROR_BROKEN_PIPE)
-        {
-            break;
-        }
-    }
-}
-
-VOID
-IN_PROCESS_APPLICATION::CloseStdErrHandles
-(
-    VOID
-)
-{
-    DWORD    dwThreadStatus = 0;
-    DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
-    // Close Handles for stderr as we only care about capturing startup errors
-    if (m_hErrWritePipe != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(m_hErrWritePipe);
-        m_hErrWritePipe = INVALID_HANDLE_VALUE;
-    }
-
-    if (m_hErrThread != NULL &&
-        GetExitCodeThread(m_hErrThread, &dwThreadStatus) != 0 &&
-        dwThreadStatus == STILL_ACTIVE)
-    {
-        // wait for gracefullshut down, i.e., the exit of the background thread or timeout
-        if (WaitForSingleObject(m_hErrThread, dwTimeout) != WAIT_OBJECT_0)
-        {
-            // if the thread is still running, we need kill it first before exit to avoid AV
-            if (GetExitCodeThread(m_hErrThread, &dwThreadStatus) != 0 && dwThreadStatus == STILL_ACTIVE)
-            {
-                TerminateThread(m_hErrThread, STATUS_CONTROL_C_EXIT);
-            }
-        }
-    }
-
-    CloseHandle(m_hErrThread);
-    m_hErrThread = NULL;
-
-    if (m_hErrReadPipe != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(m_hErrReadPipe);
-        m_hErrReadPipe = INVALID_HANDLE_VALUE;
-    }
 }
 
 // Will be called by the inprocesshandler
@@ -657,11 +372,27 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
         goto Finished;
     }
 
-    // Set up stdout redirect
-    SetStdOut();
-
     {
+        // Set up stdout redirect
+
         SRWLockWrapper lock(m_srwLock);
+
+        if (m_pLoggerProvider == NULL)
+        {
+            hr =  LoggingHelpers::CreateLoggingProvider(
+                m_pConfig->QueryStdoutLogEnabled(),
+                !GetConsoleWindow(),
+                m_pConfig->QueryStdoutLogFile()->QueryStr(),
+                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                &m_pLoggerProvider);
+            if (FAILED(hr))
+            {
+                goto Finished;
+            }
+
+            m_pLoggerProvider->Start();
+        }
+      
         if (m_status != APPLICATION_STATUS::STARTING)
         {
             if (m_status == APPLICATION_STATUS::FAIL)
@@ -887,6 +618,8 @@ Finished:
 
     if (!m_fShutdownCalledFromNative)
     {
+        m_pLoggerProvider->NotifyStartupComplete();
+
         LogErrorsOnMainExit(hr);
         if (m_fInitialized)
         {
@@ -910,72 +643,20 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
     // This will be a common place for errors as it means the hostfxr_main returned
     // or there was an exception.
     //
-    CHAR            pzFileContents[4096] = { 0 };
-    DWORD           dwNumBytesRead;
-    STRU            struStdErrLog;
-    LARGE_INTEGER   li = { 0 };
-    BOOL            fLogged = FALSE;
-    DWORD           dwFilePointer = 0;
-
-    if (m_pConfig->QueryStdoutLogEnabled())
+    STRA struStdErrOutput;
+    if (m_pLoggerProvider->GetStdOutContent(&struStdErrOutput))
     {
-        // Put stdout/stderr logs into
-        if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
-        {
-            if (GetFileSizeEx(m_hLogFileHandle, &li) && li.LowPart > 0 && li.HighPart == 0)
-            {
-                if (li.LowPart > 4096)
-                {
-                    dwFilePointer = SetFilePointer(m_hLogFileHandle, -4096, NULL, FILE_END);
-                }
-                else
-                {
-                    dwFilePointer = SetFilePointer(m_hLogFileHandle, 0, NULL, FILE_BEGIN);
-                }
-                if (dwFilePointer != INVALID_SET_FILE_POINTER)
-                {
-                    if (ReadFile(m_hLogFileHandle, pzFileContents, 4096, &dwNumBytesRead, NULL))
-                    {
-                        if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)))
-                        {
-                            UTILITY::LogEventF(g_hEventLog,
-                                EVENTLOG_ERROR_TYPE,
-                                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-                                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
-                                m_pConfig->QueryApplicationPath()->QueryStr(),
-                                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                                hr,
-                                struStdErrLog.QueryStr());
-                            fLogged = TRUE;
-
-                        }
-                    }
-                }
-            }
-        }
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
+            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
+            m_pConfig->QueryApplicationPath()->QueryStr(),
+            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            hr,
+            struStdErrOutput.QueryStr());
     }
     else
     {
-        if (m_dwStdErrReadTotal > 0)
-        {
-            if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)))
-            {
-                UTILITY::LogEventF(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDERR_MSG,
-                    m_pConfig->QueryApplicationPath()->QueryStr(),
-                    m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                    hr,
-                    struStdErrLog.QueryStr());
-                fLogged = TRUE;
-            }
-        }
-    }
-
-    if (!fLogged)
-    {
-        // If we didn't log, log the generic message.
         UTILITY::LogEventF(g_hEventLog,
             EVENTLOG_ERROR_TYPE,
             ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
@@ -983,41 +664,34 @@ IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
             m_pConfig->QueryApplicationPath()->QueryStr(),
             m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
             hr);
-        fLogged = TRUE;
     }
 }
 
 //
 // Calls hostfxr_main with the hostfxr and application as arguments.
-// Method should be called with only
-// Need to have __try / __except in methods that require unwinding.
-// Note, this will not
 //
 HRESULT
 IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hostfxr_main_fn pProc)
 {
     HRESULT hr = S_OK;
+
     __try
     {
         m_ProcessExitCode = pProc(argc, argv);
+        if (m_ProcessExitCode != 0)
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+        }
     }
-    __except (FilterException(GetExceptionCode(), GetExceptionInformation()))
+    __except(GetExceptionCode() != 0)
     {
-        // TODO Log error message here.
-        hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
+        hr = HRESULT_FROM_WIN32(GetLastError());
     }
 
     return hr;
 }
 
 // static
-INT
-IN_PROCESS_APPLICATION::FilterException(unsigned int, struct _EXCEPTION_POINTERS*)
-{
-    // We assume that any exception is a failure as the applicaiton didn't start or there was a startup error.
-    // TODO, log error based on exception code.
-    return EXCEPTION_EXECUTE_HANDLER;
-}
 
 REQUESTHANDLER_CONFIG*
 IN_PROCESS_APPLICATION::QueryConfig() const
