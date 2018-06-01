@@ -25,12 +25,12 @@
     <MakeDir Directories="$(_InstallerSourceDir)" />
     <KoreBuild.Tasks.DownloadFile
       Uri="$(RuntimeArchiveLinkPrefix)-%(WindowsSharedFxRIDs.Identity).zip$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-%(WindowsSharedFxRIDs.Identity).zip"
-      Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-%(WindowsSharedFxRIDs.Identity).zip')" />
+      DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(WindowsSharedFxRIDs.Identity).zip"
+      Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(WindowsSharedFxRIDs.Identity).zip')" />
     <KoreBuild.Tasks.DownloadFile
       Uri="$(RuntimeArchiveLinkPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz"
-      Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz')" />
+      DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz"
+      Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz')" />
   </Target>
 
   <Target Name="_GenerateCumulativeArchive">
@@ -48,14 +48,14 @@
       Command="tar -xzf $(SharedFxIntermediateArchiveFilePrefix)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
     <Exec
-      Command="tar -xzf $(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot)"
+      Command="tar -xzf $(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
     <UnzipArchive
       File="$(SharedFxIntermediateArchiveFilePrefix)-$(SharedFxPlatform)$(ArchiveExtension)"
       Destination="$(_WorkRoot)"
       Condition="'$(ArchiveExtension)' == '.zip'" />
     <UnzipArchive
-      File="$(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-$(SharedFxPlatform)$(ArchiveExtension)"
+      File="$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-$(SharedFxPlatform)$(ArchiveExtension)"
       Destination="$(_WorkRoot)"
       Condition="'$(ArchiveExtension)' == '.zip'" />
 
@@ -142,13 +142,15 @@
       <Image>rhel.7</Image>
       <RpmVendor>.NET Foundation</RpmVendor>
       <RHInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet</RHInstallRoot>
+      <Rpm_DotnetRuntimeDependencyId>dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</Rpm_DotnetRuntimeDependencyId>
+      <Rpm_DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppPackageVersion.Split('-')[0])</Rpm_DotnetRuntimeDependencyVersion>
     </PropertyGroup>
 
     <!-- Build Docker Image -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
 
     <ItemGroup>
-      <RpmSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)" Version="$(MicrosoftNETCoreApp22InstallerVersion)" />
+      <RpmSharedFxDependencies Include="$(Rpm_DotnetRuntimeDependencyId)" Version="$(Rpm_DotnetRuntimeDependencyVersion)" />
       <RpmRHSharedFxDirectories Include="$(RHInstallRoot)/shared" />
       <RpmGenericSharedFxDirectories Include="$(InstallRoot)/shared" />
     </ItemGroup>
@@ -246,13 +248,14 @@
 
   <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
     <PropertyGroup>
-      <DotnetCoreDebianPackageVersion>$(MicrosoftNETCoreApp22PackageVersion)</DotnetCoreDebianPackageVersion>
+      <Deb_DotnetRuntimeDependencyId>dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</Deb_DotnetRuntimeDependencyId>
+      <Deb_DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppPackageVersion)</Deb_DotnetRuntimeDependencyVersion>
       <!-- Needed some creativity to convert the PackageVersion M.N.P-Build to the installer version M.N.P~Build, The conditional handles stabilized builds -->
-      <DotnetCoreDebianPackageVersion Condition="$(DotnetCoreDebianPackageVersion.Contains('-'))">$(DotnetCoreDebianPackageVersion.Substring(0, $(DotnetCoreDebianPackageVersion.IndexOf('-'))))~$(DotnetCoreDebianPackageVersion.Substring($([MSBuild]::Add($(DotnetCoreDebianPackageVersion.IndexOf('-')), 1))))</DotnetCoreDebianPackageVersion>
+      <Deb_DotnetRuntimeDependencyVersion Condition="$(Deb_DotnetRuntimeDependencyVersion.Contains('-'))">$(Deb_DotnetRuntimeDependencyVersion.Substring(0, $(Deb_DotnetRuntimeDependencyVersion.IndexOf('-'))))~$(Deb_DotnetRuntimeDependencyVersion.Substring($([MSBuild]::Add($(Deb_DotnetRuntimeDependencyVersion.IndexOf('-')), 1))))</Deb_DotnetRuntimeDependencyVersion>
     </PropertyGroup>
 
     <ItemGroup>
-      <_DebSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)" Version="$(DotnetCoreDebianPackageVersion)"/>
+      <_DebSharedFxDependencies Include="$(Deb_DotnetRuntimeDependencyId)" Version="$(Deb_DotnetRuntimeDependencyVersion)"/>
     </ItemGroup>
 
     <PropertyGroup>
