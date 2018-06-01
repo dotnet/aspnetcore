@@ -3,6 +3,18 @@
     <RemoveDir Directories="$(ArtifactsDir);$(IntermediateDir)" />
   </Target>
 
+  <Target Name="PrepareArtifactDirectories">
+    <!--
+    Add an empty directory with a dummy file to workaround issues in TC artifact dependencies.
+    https://youtrack.jetbrains.com/issue/TW-19132
+    -->
+    <ItemGroup>
+      <_ArtifactDirectories Include="$(FullSymbolsOutputPath);$(SignedMPacksOutputPath);$(SignedOobArchivePath);$(SharedFxOutputPath);$(PackagesOutputPath);$(SignedOobArchivePath)" />
+    </ItemGroup>
+    <MakeDir Directories="@(_ArtifactDirectories)" />
+    <Touch Files="%(_ArtifactDirectories.Identity).teamcitykeep" AlwaysCreate="true" />
+  </Target>
+
   <Target Name="ExtractInputs">
     <ItemGroup>
       <UnsignedPackages Include="$(UnsignedPackagesDir)*.nupkg" />
