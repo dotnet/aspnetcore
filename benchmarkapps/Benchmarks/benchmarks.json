@@ -15,5 +15,8 @@
   },
   "PlaintextRouting": {
     "Path": "/plaintext"
+  },
+  "PlaintextDispatcher": {
+    "Path": "/plaintext"
   }
 }

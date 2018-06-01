@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -16,15 +17,37 @@ namespace Benchmarks
         public static IWebHostBuilder GetWebHostBuilder(string[] args)
         {
             var config = new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .AddEnvironmentVariables(prefix: "RoutingBenchmarks_")
                 .Build();
 
             // Consoler logger has a major impact on perf results, so do not use
             // default builder.
 
-            return new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseKestrel()
-                .UseStartup<Startup>();
+            var webHostBuilder = new WebHostBuilder()
+                    .UseConfiguration(config)
+                    .UseKestrel();
+
+            var scenario = config["scenarios"]?.ToLower();
+            if (scenario == "plaintextdispatcher")
+            {
+                webHostBuilder.UseStartup<StartupUsingDispatcher>();
+                // for testing
+                webHostBuilder.UseSetting("Startup", nameof(StartupUsingDispatcher));
+            }
+            else if (scenario == "plaintextrouting")
+            {
+                webHostBuilder.UseStartup<StartupUsingRouting>();
+                // for testing
+                webHostBuilder.UseSetting("Startup", nameof(StartupUsingRouting));
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Invalid scenario '{scenario}'. Allowed scenarios are PlaintextDispatcher and PlaintextRouting");
+            }
+
+            return webHostBuilder;
         }
     }
 }
