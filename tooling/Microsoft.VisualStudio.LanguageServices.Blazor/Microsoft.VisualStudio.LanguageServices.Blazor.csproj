@@ -8,7 +8,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="$(RazorPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.6.27413" />
     <PackageReference Include="Microsoft.VisualStudio.Editor.Razor" Version="$(RazorPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="2.8.0-beta3" />
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="2.8.0" />
     <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="15.6.27413" />
     <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6071" />
     <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="8.0.50728" />

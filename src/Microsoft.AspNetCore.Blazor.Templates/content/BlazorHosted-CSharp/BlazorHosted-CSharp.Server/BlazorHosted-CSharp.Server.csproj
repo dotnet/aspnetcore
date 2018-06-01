@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Framework)' != 'netcoreapp2.0'">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0-rc1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="$(TemplateBlazorPackageVersion)" />
   </ItemGroup>
   <ItemGroup Condition="'$(Framework)' == 'netcoreapp2.0'">
