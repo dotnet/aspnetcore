@@ -4,5 +4,7 @@
     <RestoreSources>${RestoreSources}</RestoreSources>
     <RuntimeFrameworkVersion>${RuntimeFrameworkVersion}</RuntimeFrameworkVersion>
     <MicrosoftNETSdkRazorPackageVersion>${MicrosoftNETSdkRazorPackageVersion}</MicrosoftNETSdkRazorPackageVersion>
+    <DefaultPatchVersionForAspNetCoreAll2_1>${DefaultPatchVersionForAspNetCoreAll2_1}</DefaultPatchVersionForAspNetCoreAll2_1>
+    <DefaultPatchVersionForAspNetCoreApp2_1>${DefaultPatchVersionForAspNetCoreApp2_1}</DefaultPatchVersionForAspNetCoreApp2_1>
   </PropertyGroup>
 </Project>
