@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Blazor
     /// <summary>
     /// Supplies information about an error event that is being raised.
     /// </summary>
-    public class UIErrorEventArgs : UIProgressEventArgs
+    public class UIErrorEventArgs : UIEventArgs
     {
     }
 
