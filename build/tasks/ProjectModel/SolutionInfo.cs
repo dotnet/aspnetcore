@@ -21,7 +21,6 @@ namespace RepoTasks.ProjectModel
                 throw new ArgumentException(nameof(configName));
             }
 
-            Directory = Path.GetDirectoryName(fullPath);
             FullPath = fullPath;
             Directory = Path.GetDirectoryName(fullPath);
             ConfigName = configName;
@@ -35,7 +34,6 @@ namespace RepoTasks.ProjectModel
             }
         }
 
-        public string Directory { get; }
         public string FullPath { get; }
         public string Directory { get; }
         public string ConfigName { get; }
