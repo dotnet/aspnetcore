@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 var tokenizer = new PathTokenizer(context.HttpContext.Request.Path);
                 var root = tree.Root;
 
-                var treeEnumerator = new Treenumerator(root, tokenizer);
+                var treeEnumerator = new TreeEnumerator(root, tokenizer);
 
                 // Create a snapshot before processing the route. We'll restore this snapshot before running each
                 // to restore the state. This is likely an "empty" snapshot, which doesn't allocate.

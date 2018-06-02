@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.Routing.Internal;
 
 namespace Microsoft.AspNetCore.Routing.Tree
 {
-    internal struct Treenumerator : IEnumerator<UrlMatchingNode>
+    internal struct TreeEnumerator : IEnumerator<UrlMatchingNode>
     {
         private readonly Stack<UrlMatchingNode> _stack;
         private readonly PathTokenizer _tokenizer;
 
-        public Treenumerator(UrlMatchingNode root, PathTokenizer tokenizer)
+        public TreeEnumerator(UrlMatchingNode root, PathTokenizer tokenizer)
         {
             _stack = new Stack<UrlMatchingNode>();
             _tokenizer = tokenizer;

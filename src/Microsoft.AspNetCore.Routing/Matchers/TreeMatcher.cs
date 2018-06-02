@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 var tree = cache[i];
                 var tokenizer = new PathTokenizer(httpContext.Request.Path);
 
-                var treenumerator = new Treenumerator(tree.Root, tokenizer);
+                var treenumerator = new TreeEnumerator(tree.Root, tokenizer);
 
                 while (treenumerator.MoveNext())
                 {
