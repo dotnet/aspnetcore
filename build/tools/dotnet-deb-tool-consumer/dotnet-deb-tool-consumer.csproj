@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\sources.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreSources>

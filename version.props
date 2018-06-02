@@ -6,6 +6,9 @@
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
 
+    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2" -->
+    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
+
     <ExperimentalVersionPrefix>0.1.1</ExperimentalVersionPrefix>
     <ExperimentalVersionSuffix>rtm</ExperimentalVersionSuffix>
 

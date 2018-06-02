@@ -58,6 +58,13 @@ namespace RepoTasks.ProjectModel
 
             var tools = GetTools(instance).ToArray();
             bool.TryParse(instance.GetPropertyValue("IsPackable"), out var isPackable);
+
+            if (isPackable)
+            {
+                // the default packable setting is disabled for projects referencing this package.
+                isPackable = !frameworks.SelectMany(f => f.Dependencies.Keys).Any(d => d.Equals("Microsoft.NET.Test.Sdk", StringComparison.OrdinalIgnoreCase));
+            }
+
             var packageId = instance.GetPropertyValue("PackageId");
             var packageVersion = instance.GetPropertyValue("PackageVersion");
 
@@ -86,6 +93,7 @@ namespace RepoTasks.ProjectModel
             var globalProps = new Dictionary<string, string>()
             {
                 ["DesignTimeBuild"] = "true",
+                 // Isolate the project from post-restore side effects
                 ["ExcludeRestorePackageImports"] = "true",
             };
 
