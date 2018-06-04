@@ -62,8 +62,6 @@ src/*/CommonLib/aspnetcore_msg.h
 src/*/CommonLib/aspnetcore_msg.rc
 test/*/Debug
 test/*/Release
-test/gtest-1.8.0/msvc/Debug
-test/gtest-1.8.0/msvc/Release
 .build
 
 *.VC.*db

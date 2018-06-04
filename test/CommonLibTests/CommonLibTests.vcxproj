@@ -72,8 +72,8 @@
     <ProjectReference Include="..\..\src\AspNetCoreModuleV2\IISLib\IISLib.vcxproj">
       <Project>{09d9d1d6-2951-4e14-bc35-76a23cf9391a}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\gtest-1.8.0\msvc\2010\gtest.vcxproj">
-      <Project>{2af210a9-5bdc-45e8-95dd-07b5a2616493}</Project>
+    <ProjectReference Include="..\gtest\gtest.vcxproj">
+      <Project>{cac1267b-8778-4257-aac6-caf481723b01}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemDefinitionGroup />
@@ -88,7 +88,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest-1.8.0\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -111,7 +111,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest-1.8.0\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -132,7 +132,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest-1.8.0\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -155,7 +155,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest-1.8.0\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\..\src\AspNetCoreModuleV2\AspNetCore\Inc;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
