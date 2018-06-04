@@ -176,10 +176,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             else
             {
                 bool isStreamCall = descriptor.HasStreamingParameters;
-                if (isStreamResponse && isStreamCall)
-                {
-                    throw new NotSupportedException("Streaming responses for streaming uploads are not supported.");
-                }
                 return Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamResponse, isStreamCall);
             }
         }

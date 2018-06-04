@@ -1,9 +1,11 @@
+import { UploadStream } from "./UploadStream";
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { IConnection } from "./IConnection";
-import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamDataMessage, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { IStreamResult } from "./Stream";
 import { Arg, Subject } from "./Utils";
@@ -29,6 +31,7 @@ export class HubConnection {
     private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
     private methods: { [name: string]: Array<(...args: any[]) => void> };
     private id: number;
+    private streamId: number;
     private closedCallbacks: Array<(error?: Error) => void>;
     private receivedHandshakeResponse: boolean;
     private handshakeResolver!: (value?: PromiseLike<{}>) => void;
@@ -84,6 +87,7 @@ export class HubConnection {
         this.methods = {};
         this.closedCallbacks = [];
         this.id = 0;
+        this.streamId = 0;
         this.receivedHandshakeResponse = false;
         this.connectionState = HubConnectionState.Disconnected;
 
@@ -122,7 +126,7 @@ export class HubConnection {
 
         this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
 
-        // defensively cleanup timeout in case we receive a message from the server before we finish start
+        // defensively cleanup timeout in case we receive a message export from the server before we finish start
         this.cleanupTimeout();
         this.resetTimeoutPeriod();
         this.resetKeepAliveInterval();
@@ -156,11 +160,10 @@ export class HubConnection {
 
         const subject = new Subject<T>(() => {
             const cancelInvocation: CancelInvocationMessage = this.createCancelInvocation(invocationDescriptor.invocationId);
-            const cancelMessage: any = this.protocol.writeMessage(cancelInvocation);
 
             delete this.callbacks[invocationDescriptor.invocationId];
 
-            return this.sendMessage(cancelMessage);
+            return this.sendWithProtocol(cancelInvocation);
         });
 
         this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage | null, error?: Error) => {
@@ -181,9 +184,7 @@ export class HubConnection {
             }
         };
 
-        const message = this.protocol.writeMessage(invocationDescriptor);
-
-        this.sendMessage(message)
+        this.sendWithProtocol(invocationDescriptor)
             .catch((e) => {
                 subject.error(e);
                 delete this.callbacks[invocationDescriptor.invocationId];
@@ -197,6 +198,14 @@ export class HubConnection {
         return this.connection.send(message);
     }
 
+    /**
+     * Sends a js object to the server.
+     * @param message The js object to serialize and send.
+     */
+    public sendWithProtocol(message: any) {
+        return this.sendMessage(this.protocol.writeMessage(message));
+    }
+
     /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
      *
      * The Promise returned by this method resolves when the client has sent the invocation to the server. The server may still
@@ -207,11 +216,16 @@ export class HubConnection {
      * @returns {Promise<void>} A Promise that resolves when the invocation has been successfully sent, or rejects with an error.
      */
     public send(methodName: string, ...args: any[]): Promise<void> {
-        const invocationDescriptor = this.createInvocation(methodName, args, true);
+        return this.sendWithProtocol(this.createInvocation(methodName, args, true));
+    }
 
-        const message = this.protocol.writeMessage(invocationDescriptor);
+    public nextStreamId(): string {
+        this.streamId += 1;
+        return this.streamId.toString();
+    }
 
-        return this.sendMessage(message);
+    public newUploadStream(): UploadStream {
+        return new UploadStream(this);
     }
 
     /** Invokes a hub method on the server using the specified name and arguments.
@@ -229,7 +243,7 @@ export class HubConnection {
         const invocationDescriptor = this.createInvocation(methodName, args, false);
 
         const p = new Promise<any>((resolve, reject) => {
-            // invocationId will always have a value for a non-blocking invocation
+            // invocationId will always have a value for a non-blocking inexport vocation
             this.callbacks[invocationDescriptor.invocationId!] = (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => {
                 if (error) {
                     reject(error);
@@ -248,9 +262,7 @@ export class HubConnection {
                 }
             };
 
-            const message = this.protocol.writeMessage(invocationDescriptor);
-
-            this.sendMessage(message)
+            this.sendWithProtocol(invocationDescriptor)
                 .catch((e) => {
                     reject(e);
                     // invocationId will always have a value for a non-blocking invocation
@@ -536,6 +548,14 @@ export class HubConnection {
         return {
             invocationId: id,
             type: MessageType.CancelInvocation,
+        };
+    }
+
+    public createStreamDataMessage(id: string, item: any): StreamDataMessage {
+        return {
+            item,
+            streamId: id,
+            type: MessageType.StreamData,
         };
     }
 }

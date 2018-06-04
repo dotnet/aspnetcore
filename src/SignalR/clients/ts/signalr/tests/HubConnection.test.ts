@@ -330,6 +330,39 @@ describe("HubConnection", () => {
             });
         });
 
+        it("is able to send stream items to server", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    connection.receiveHandshakeResponse();
+
+                    const stream = hubConnection.newUploadStream();
+                    const invokePromise = hubConnection.invoke("testMethod", "arg", stream.placeholder);
+
+                    expect(JSON.parse(connection.sentData[0])).toEqual({
+                        arguments: ["arg", {streamId: "1"}],
+                        invocationId: "0",
+                        target: "testMethod",
+                        type: MessageType.Invocation,
+                    });
+
+                    await stream.write("item numero uno");
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                        item: "item numero uno",
+                        streamId: "1",
+                        type: MessageType.StreamData,
+                    });
+
+                    connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
+
+                    expect(await invokePromise).toBe("foo");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("completes pending invocations when stopped", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -18,7 +19,7 @@ namespace ClientSample
             {
                 cmd.Description = "Tests a streaming invocation from client to hub";
 
-                var baseUrlArgument = cmd.Argument("<BASEURL>", "The URL to the Chat Hub to test");
+                CommandArgument baseUrlArgument = cmd.Argument("<BASEURL>", "The URL to the Chat Hub to test");
 
                 cmd.OnExecute(() => ExecuteAsync(baseUrlArgument.Value));
             });
@@ -31,9 +32,10 @@ namespace ClientSample
                 .Build();
             await connection.StartAsync();
 
-            await BasicInvoke(connection);
-            //await MultiParamInvoke(connection);
-            //await AdditionalArgs(connection);
+            //await BasicInvoke(connection);
+            //await ScoreTrackerExample(connection);
+            //await FileUploadExample(connection);
+            await StreamingEcho(connection);
 
             return 0;
         }
@@ -46,6 +48,7 @@ namespace ClientSample
             foreach (var c in "hello")
             {
                 await channel.Writer.WriteAsync(c.ToString());
+                await Task.Delay(1000);
             }
             channel.Writer.TryComplete();
 
@@ -53,37 +56,96 @@ namespace ClientSample
             Debug.WriteLine($"You message was: {result}");
         }
 
-        private static async Task WriteStreamAsync<T>(IEnumerable<T> sequence, ChannelWriter<T> writer)
+        public static async Task ScoreTrackerExample(HubConnection connection)
         {
-            foreach (T element in sequence)
-            {
-                await writer.WriteAsync(element);
-                await Task.Delay(100);
-            }
+            // Andrew please add the updated code from your laptop here
 
-            writer.TryComplete();
-        }
+            var channel_one = Channel.CreateBounded<int>(2);
+            var channel_two = Channel.CreateBounded<int>(2);
+            _ = WriteItemsAsync(channel_one.Writer, new[] { 2, 2, 3 });
+            _ = WriteItemsAsync(channel_two.Writer, new[] { -2, 5, 3 });
 
-        public static async Task MultiParamInvoke(HubConnection connection)
-        {
-            var letters = Channel.CreateUnbounded<string>();
-            var numbers = Channel.CreateUnbounded<int>();
-
-            _ = WriteStreamAsync(new[] { "h", "i", "!" }, letters.Writer);
-            _ = WriteStreamAsync(new[] { 1, 2, 3, 4, 5 }, numbers.Writer);
-
-            var result = await connection.InvokeAsync<string>("DoubleStreamUpload", letters.Reader, numbers.Reader);
-
+            var result = await connection.InvokeAsync<string>("ScoreTracker", channel_one.Reader, channel_two.Reader);
             Debug.WriteLine(result);
+
+
+            async Task WriteItemsAsync(ChannelWriter<int> source, IEnumerable<int> scores)
+            {
+                await Task.Delay(1000);
+                foreach (var c in scores)
+                {
+                    await source.WriteAsync(c);
+                    await Task.Delay(250);
+                }
+
+                // tryComplete triggers the end of this upload's relayLoop
+                // which sends a StreamComplete to the server
+                source.TryComplete();
+            }
         }
 
-        public static async Task AdditionalArgs(HubConnection connection)
+        public static async Task FileUploadExample(HubConnection connection)
         {
-            var channel = Channel.CreateUnbounded<char>();
-            _ = WriteStreamAsync<char>("main message".ToCharArray(), channel.Writer);
+            var fileNameSource = @"C:\Users\t-dygray\Pictures\weeg.jpg";
+            var fileNameDest = @"C:\Users\t-dygray\Pictures\TargetFolder\weeg.jpg";
 
-            var result = await connection.InvokeAsync<string>("UploadWithSuffix", channel.Reader, " + wooh I'm a suffix");
-            Debug.WriteLine($"Your message was: {result}");
+            var channel = Channel.CreateUnbounded<byte[]>();
+            var invocation = connection.InvokeAsync<string>("UploadFile", fileNameDest, channel.Reader);
+
+            using (var file = new FileStream(fileNameSource, FileMode.Open, FileAccess.Read))
+            {
+                foreach (var chunk in GetChunks(file, kilobytesPerChunk: 5))
+                {
+                    await channel.Writer.WriteAsync(chunk);
+                }
+            }
+            channel.Writer.TryComplete();
+
+            Debug.WriteLine(await invocation);
+        }
+
+        public static IEnumerable<byte[]> GetChunks(FileStream fileStream, double kilobytesPerChunk)
+        {
+            var chunkSize = (int)kilobytesPerChunk * 1024;
+
+            var position = 0;
+            while (true)
+            {
+                if (position + chunkSize > fileStream.Length)
+                {
+                    var lastChunk = new byte[fileStream.Length - position];
+                    fileStream.Read(lastChunk, 0, lastChunk.Length);
+                    yield return lastChunk;
+                    break;
+                }
+
+                var chunk = new byte[chunkSize];
+                position += fileStream.Read(chunk, 0, chunk.Length);
+                yield return chunk;
+            }
+        }
+
+        public static async Task StreamingEcho(HubConnection connection)
+        {
+            var channel = Channel.CreateUnbounded<string>();
+
+            _ = Task.Run(async () =>
+            {
+                foreach (var phrase in new[] { "one fish", "two fish", "red fish", "blue fish" })
+                {
+                    await channel.Writer.WriteAsync(phrase);
+                }
+            });
+
+            var outputs = await connection.StreamAsChannelAsync<string>("StreamEcho", channel.Reader);
+
+            while (await outputs.WaitToReadAsync())
+            {
+                while (outputs.TryRead(out var item))
+                {
+                    Debug.WriteLine($"received '{item}'.");
+                }
+            }
         }
     }
 }

@@ -882,8 +882,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await hubConnection.StartAsync().OrTimeout();
-                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] {"X-test", "X-42"}).OrTimeout();
-                    Assert.Equal(new[] {"42", "test"}, headerValues);
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "X-test", "X-42" }).OrTimeout();
+                    Assert.Equal(new[] { "42", "test" }, headerValues);
                 }
                 catch (Exception ex)
                 {
@@ -946,8 +946,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await hubConnection.StartAsync().OrTimeout();
 
                     var features = await hubConnection.InvokeAsync<object[]>(nameof(TestHub.GetIHttpConnectionFeatureProperties)).OrTimeout();
-                    var localPort = (Int64)features[0];
-                    var remotePort = (Int64)features[1];
+                    var localPort = (long)features[0];
+                    var remotePort = (long)features[1];
                     var localIP = (string)features[2];
                     var remoteIP = (string)features[3];
 

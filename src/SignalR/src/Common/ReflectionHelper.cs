@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR
             // TODO #2594 - add Streams here, to make sending files easy
             while (type != null)
             {
-                if (type.GetGenericTypeDefinition() == typeof(ChannelReader<>))
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ChannelReader<>))
                 {
                     return true;
                 }
