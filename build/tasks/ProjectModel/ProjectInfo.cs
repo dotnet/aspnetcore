@@ -43,6 +43,5 @@ namespace RepoTasks.ProjectModel
 
         public IReadOnlyList<ProjectFrameworkInfo> Frameworks { get; }
         public IReadOnlyList<DotNetCliReferenceInfo> Tools { get; }
-        public SolutionInfo SolutionInfo { get; internal set; }
     }
 }
