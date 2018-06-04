@@ -22,7 +22,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_BuildRepositories" DependsOnTargets="GetRepoBatches">
+  <Target Name="_BuildRepositories" DependsOnTargets="GetRepoBatches" Condition=" @(RepositoryBuildOrder->Count()) != 0 ">
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="true"
@@ -35,7 +35,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_TestRepositories" DependsOnTargets="GetRepoBatches">
+  <Target Name="_TestRepositories" DependsOnTargets="GetRepoBatches" Condition=" @(RepositoryBuildOrder->Count()) != 0 ">
     <!--
       Use the task to sort instead of batching (i.e. using %(BatchedRepository.BuildGroup))
       When batching, StopOnFirstFailure doesn't help because the MSBuild task would be invoked multiple times

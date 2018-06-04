@@ -14,6 +14,7 @@
   <PropertyGroup>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.g.props</GeneratedPackageVersionPropsPath>
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcesPropsPath>
+    <GeneratedBrandingPropsPath>$(IntermediateDir)branding.g.props</GeneratedBrandingPropsPath>
 
     <PrepareDependsOn>PreinstallBundledPackages;SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
@@ -114,10 +115,33 @@
       Sources="@(_RestoreSources)"
       OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
 
+    <PropertyGroup>
+      <!-- Generate an MSBuild file that can be imported and used by Windows Installer builds to keep our versions consistent. -->
+      <BrandingPropsContent>
+<![CDATA[
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AspNetCoreMajorVersion>$(AspNetCoreMajorVersion)</AspNetCoreMajorVersion>
+    <AspNetCoreMinorVersion>$(AspNetCoreMinorVersion)</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>$(AspNetCorePatchVersion)</AspNetCorePatchVersion>
+    <AspNetCorePrereleaseVersionLabel>$(PrereleaseVersionLabel)</AspNetCorePrereleaseVersionLabel>
+    <AspNetCoreBuildNumber>$(BuildNumber)</AspNetCoreBuildNumber>
+    <AspNetCoreBrandingVersion>$(PackageBrandingVersion)</AspNetCoreBrandingVersion>
+  </PropertyGroup>
+</Project>
+]]>
+      </BrandingPropsContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(GeneratedBrandingPropsPath)" Overwrite="true" Lines="$(BrandingPropsContent)"/>
+
+    <Copy SourceFiles="$(GeneratedPackageVersionPropsPath);$(GeneratedBrandingPropsPath)" DestinationFolder="$(ArtifactsDir)" />
+
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
                 DestinationFolder="$(BuildDir)"
                 Overwrite="true"
-                Properties="version=$(PackageVersion);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)">
+                Properties="version=$(PackageVersion);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath);brandingPropsFile=$(GeneratedBrandingPropsPath)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>
   </Target>
@@ -169,7 +193,7 @@
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
       Repositories="@(Repository);@(ShippedRepository)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcePropsPath)" />
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)" />
 
     <!-- Skipped to workaround #1014. The order is hardcoded in buildorder.props -->
     <RepoTasks.AnalyzeBuildGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"

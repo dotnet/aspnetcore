@@ -77,7 +77,7 @@
       </FilesToPublish>
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
-      <FilesToPublish Include="$(DependencyAssetsDir)$(SiteExtensionArchiveFileName)" >
+      <FilesToPublish Include="$(DependencyAssetsDir)$(SiteExtensionArchiveFileName)" Condition="@(Repository->AnyHaveMetadataValue('Identity', 'AzureIntegration'))">
         <RelativeBlobPath>$(BlobBasePath)$(SiteExtensionArchiveFileName)</RelativeBlobPath>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
