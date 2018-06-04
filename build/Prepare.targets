@@ -47,8 +47,6 @@
 
     <MSBuild Projects="@(_UnzipProject)" BuildInParallel="true" Targets="_ExtractZipFile" />
 
-    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
-
     <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
     <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
   </Target>
