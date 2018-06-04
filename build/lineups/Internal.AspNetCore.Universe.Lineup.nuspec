@@ -11,5 +11,6 @@
   </metadata>
   <files>
     <file src="$dependenciesPropsFile$" target="build/dependencies.props" />
+    <file src="$brandingPropsFile$" target="build/branding.props" />
   </files>
 </package>
