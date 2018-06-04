@@ -169,9 +169,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
 
-                    // Compare the response with Uri.ToString(), rather than testUrl directly.
-                    // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
-                    Assert.Equal(new Uri(testUrl).ToString(), response);
+                    // Filter out the scope id for IPv6, that's not sent over the wire. "fe80::3%1"
+                    // See https://github.com/aspnet/Common/pull/369
+                    var uri = new Uri(testUrl);
+                    if (uri.HostNameType == UriHostNameType.IPv6)
+                    {
+                        var builder = new UriBuilder(uri);
+                        var ip = IPAddress.Parse(builder.Host);
+                        builder.Host = new IPAddress(ip.GetAddressBytes()).ToString(); // Without the scope id.
+                        uri = builder.Uri;
+                    }
+                    Assert.Equal(uri.ToString(), response);
                 }
             }
         }
