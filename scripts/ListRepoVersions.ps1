@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-    Tags each repo according to VersionPrefix in version.props of that repo
+    Lists the version of all submodules and this repo
 .PARAMETER Shipping
     Only list repos that are shipping
 #>
