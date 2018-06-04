@@ -14,6 +14,38 @@
     <button id="textbox-initially-populated-setnull" onclick="@(() => { textboxInitiallyPopulatedValue = null; })">Set null</button>
 </p>
 
+<h2>Numeric Textboxes</h2>
+<p>
+    int:
+    <input id="textbox-int" bind="textboxIntValue" type="number" />
+    <span id="textbox-int-value">@textboxIntValue</span>
+    <input id="textbox-int-mirror" bind="textboxIntValue" readonly />
+</p>
+<p>
+    long:
+    <input id="textbox-long" bind="textboxLongValue" type="number" />
+    <span id="textbox-long-value">@textboxLongValue</span>
+    <input id="textbox-long-mirror" bind="textboxLongValue" readonly />
+</p>
+<p>
+    float:
+    <input id="textbox-float" bind="textboxFloatValue" type="number" />
+    <span id="textbox-float-value">@textboxFloatValue</span>
+    <input id="textbox-float-mirror" bind="textboxFloatValue" readonly />
+</p>
+<p>
+    double:
+    <input id="textbox-double" bind="textboxDoubleValue" type="number" />
+    <span id="textbox-double-value">@textboxDoubleValue</span>
+    <input id="textbox-double-mirror" bind="textboxDoubleValue" readonly />
+</p>
+<p>
+    decimal:
+    <input id="textbox-decimal" bind="textboxDecimalValue" type="number" />
+    <span id="textbox-decimal-value">@textboxDecimalValue</span>
+    <input id="textbox-decimal-mirror" bind="textboxDecimalValue" readonly />
+</p>
+
 <h2>Text Area</h2>
 <p>
     Initially blank:
@@ -64,6 +96,12 @@
 
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
+
+    int textboxIntValue = -42;
+    long textboxLongValue = 3_000_000_000;
+    float textboxFloatValue = 3.141f;
+    double textboxDoubleValue = 3.14159265359d;
+    decimal textboxDecimalValue = 0.0000000000000000000000000001M;
 
     bool includeFourthOption = false;
     enum SelectableValue { First, Second, Third, Fourth }

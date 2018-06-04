@@ -161,5 +161,98 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("Fourth", boundValue.Text);
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
         }
+
+        [Fact]
+        public void CanBindTextboxInt()
+        {
+            var target = Browser.FindElement(By.Id("textbox-int"));
+            var boundValue = Browser.FindElement(By.Id("textbox-int-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-int-mirror"));
+            Assert.Equal("-42", target.GetAttribute("value"));
+            Assert.Equal("-42", boundValue.Text);
+            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("42\t");
+            Assert.Equal("42", boundValue.Text);
+            Assert.Equal("42", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxLong()
+        {
+            var target = Browser.FindElement(By.Id("textbox-long"));
+            var boundValue = Browser.FindElement(By.Id("textbox-long-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-long-mirror"));
+            Assert.Equal("3000000000", target.GetAttribute("value"));
+            Assert.Equal("3000000000", boundValue.Text);
+            Assert.Equal("3000000000", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("-3000000000\t");
+            Assert.Equal("-3000000000", boundValue.Text);
+            Assert.Equal("-3000000000", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxFloat()
+        {
+            var target = Browser.FindElement(By.Id("textbox-float"));
+            var boundValue = Browser.FindElement(By.Id("textbox-float-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-float-mirror"));
+            Assert.Equal("3.141", target.GetAttribute("value"));
+            Assert.Equal("3.141", boundValue.Text);
+            Assert.Equal("3.141", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("-3.141\t");
+            Assert.Equal("-3.141", boundValue.Text);
+            Assert.Equal("-3.141", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxDouble()
+        {
+            var target = Browser.FindElement(By.Id("textbox-double"));
+            var boundValue = Browser.FindElement(By.Id("textbox-double-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-double-mirror"));
+            Assert.Equal("3.14159265359", target.GetAttribute("value"));
+            Assert.Equal("3.14159265359", boundValue.Text);
+            Assert.Equal("3.14159265359", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("-3.14159265359\t");
+            Assert.Equal("-3.14159265359", boundValue.Text);
+            Assert.Equal("-3.14159265359", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Double shouldn't preserve trailing zeros
+            target.Clear();
+            target.SendKeys("0.010\t");
+            Assert.Equal("0.01", boundValue.Text);
+            Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxDecimal()
+        {
+            var target = Browser.FindElement(By.Id("textbox-decimal"));
+            var boundValue = Browser.FindElement(By.Id("textbox-decimal-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-decimal-mirror"));
+            Assert.Equal("0.0000000000000000000000000001", target.GetAttribute("value"));
+            Assert.Equal("0.0000000000000000000000000001", boundValue.Text);
+            Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Decimal should preserve trailing zeros
+            target.Clear();
+            target.SendKeys("0.010\t");
+            Assert.Equal("0.010", boundValue.Text);
+            Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
+        }
     }
 }

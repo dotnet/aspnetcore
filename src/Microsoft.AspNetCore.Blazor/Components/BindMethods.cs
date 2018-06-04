@@ -96,6 +96,38 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<long> setter, long existingValue)
+        {
+            return _ => setter(long.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<float> setter, float existingValue)
+        {
+            return _ => setter(float.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<double> setter, double existingValue)
+        {
+            return _ => setter(double.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<decimal> setter, decimal existingValue)
+        {
+            return _ => setter(decimal.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
         public static Action<UIEventArgs> SetValueHandler(Action<DateTime> setter, DateTime existingValue)
         {
             return _ => SetDateTimeValue(setter, ((UIChangeEventArgs)_).Value, null);
