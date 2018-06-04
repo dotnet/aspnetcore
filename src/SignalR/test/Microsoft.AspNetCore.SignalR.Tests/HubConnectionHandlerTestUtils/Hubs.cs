@@ -571,6 +571,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             return 42;
         }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source)
+        {
+            Channel<string> output = Channel.CreateUnbounded<string>();
+
+            _ = Task.Run(async () =>
+            {
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out string item))
+                    {
+                        await output.Writer.WriteAsync("echo:" + item);
+                    }
+                }
+
+                output.Writer.TryComplete();
+            });
+
+            return output.Reader;
+        }
     }
 
     public class SimpleHub : Hub

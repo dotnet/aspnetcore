@@ -131,6 +131,23 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             await Clients.Client(Context.ConnectionId).NoClientHandler();
         }
+
+        public ChannelReader<int> IncrementEach(ChannelReader<int> source)
+        {
+            var output = Channel.CreateUnbounded<int>();
+            _ = Task.Run(async () => {
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out var item))
+                    {
+                        await output.Writer.WriteAsync(item + 1);
+                    }
+                }
+                output.Writer.TryComplete();
+            });
+
+            return output.Reader;
+        }
     }
 
     internal static class TestHubMethodsImpl
