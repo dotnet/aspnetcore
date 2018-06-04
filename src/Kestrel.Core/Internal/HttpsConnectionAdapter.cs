@@ -158,6 +158,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 if ((_options.HttpProtocols & HttpProtocols.Http2) != 0)
                 {
                     sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http2);
+                    // https://tools.ietf.org/html/rfc7540#section-9.2.1
+                    sslOptions.AllowRenegotiation = false;
                 }
 
                 if ((_options.HttpProtocols & HttpProtocols.Http1) != 0)

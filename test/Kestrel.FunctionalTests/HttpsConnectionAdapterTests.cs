@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -345,11 +346,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task CertificatePassedToHttpContext()
+        [Theory]
+        [InlineData(HttpProtocols.Http1)]
+        [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure Http/1.1 doesn't regress with Http/2 enabled.
+        public async Task CertificatePassedToHttpContext(HttpProtocols httpProtocols)
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
             {
+                Protocols = httpProtocols,
                 ConnectionAdapters =
                 {
                     new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
