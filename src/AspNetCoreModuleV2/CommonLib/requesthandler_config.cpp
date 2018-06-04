@@ -33,34 +33,41 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
     STRU                    struHostFxrDllLocation;
     STRU                    struExeLocation;
 
-    if (ppAspNetCoreConfig == NULL)
+    try
     {
-        hr = E_INVALIDARG;
-        goto Finished;
+        if (ppAspNetCoreConfig == NULL)
+        {
+            hr = E_INVALIDARG;
+            goto Finished;
+        }
+
+        *ppAspNetCoreConfig = NULL;
+
+        pRequestHandlerConfig = new REQUESTHANDLER_CONFIG;
+
+        hr = pRequestHandlerConfig->Populate(pHttpServer, pHttpApplication);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
+        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
+            "REQUESTHANDLER_CONFIG::GetConfig, set config to ModuleContext");
+        // set appliction info here instead of inside Populate()
+        // as the destructor will delete the backend process
+        hr = pRequestHandlerConfig->QueryApplicationPath()->Copy(pHttpApplication->GetApplicationId());
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
+        *ppAspNetCoreConfig = pRequestHandlerConfig;
+        pRequestHandlerConfig = NULL;
     }
-
-    *ppAspNetCoreConfig = NULL;
-
-    pRequestHandlerConfig = new REQUESTHANDLER_CONFIG;
-
-    hr = pRequestHandlerConfig->Populate(pHttpServer, pHttpApplication);
-    if (FAILED(hr))
+    catch (std::bad_alloc&)
     {
-        goto Finished;
+        hr = E_OUTOFMEMORY;
     }
-
-    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
-        "REQUESTHANDLER_CONFIG::GetConfig, set config to ModuleContext");
-    // set appliction info here instead of inside Populate()
-    // as the destructor will delete the backend process
-    hr = pRequestHandlerConfig->QueryApplicationPath()->Copy(pHttpApplication->GetApplicationId());
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    *ppAspNetCoreConfig = pRequestHandlerConfig;
-    pRequestHandlerConfig = NULL;
 
 Finished:
 

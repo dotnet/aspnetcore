@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "sttimer.h"
 
 class FileOutputManager : public IOutputManager
 {

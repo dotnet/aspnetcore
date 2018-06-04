@@ -23,6 +23,7 @@
 #include "dbgutil.h"
 #include "ahutil.h"
 #include "hashfn.h"
+#include "sttimer.h"
 #include "irequesthandler.h"
 #include "sttimer.h"
 #include "requesthandler.h"

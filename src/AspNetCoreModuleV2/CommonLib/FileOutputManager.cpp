@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
-
+#include "sttimer.h"
 
 FileOutputManager::FileOutputManager()
     : m_pStdOutFile(NULL)

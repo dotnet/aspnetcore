@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "stdafx.h"
+
 #ifndef _STTIMER_H
 #define _STTIMER_H
 

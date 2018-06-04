@@ -2,6 +2,11 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+
+#include "precomp.hxx"
+#include "inprocesshandler.h"
+#include "requesthandler_config.h"
+
 typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]); // TODO these may need to be BSTRs
 
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
@@ -13,14 +18,13 @@ class IN_PROCESS_APPLICATION : public APPLICATION
 public:
     IN_PROCESS_APPLICATION(
         IHttpServer* pHttpServer,
-        REQUESTHANDLER_CONFIG *pConfig,
-        PCWSTR pDotnetExeLocation);
+        REQUESTHANDLER_CONFIG *pConfig);
 
     ~IN_PROCESS_APPLICATION();
 
     HRESULT
 	Initialize(
-		VOID
+        PCWSTR pDotnetExeLocation
 	);
 
     __override
@@ -156,7 +160,6 @@ private:
     HANDLE                          m_hErrThread;
     CHAR                            m_pzFileContents[4096] = { 0 };
     DWORD                           m_dwStdErrReadTotal;
-    PCWSTR                          m_pstrDotnetExeLocation;
     static IN_PROCESS_APPLICATION*  s_Application;
 
     IOutputManager*                 m_pLoggerProvider;

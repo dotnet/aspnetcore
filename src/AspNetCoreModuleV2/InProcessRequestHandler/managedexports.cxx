@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include "precomp.hxx"
-
+#include "inprocessapplication.h"
+#include "inprocesshandler.h"
+#include "requesthandler_config.h"
 //
 // Initialization export
 //

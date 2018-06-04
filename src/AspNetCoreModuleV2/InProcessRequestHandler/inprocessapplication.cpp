@@ -1,21 +1,26 @@
-#include "..\precomp.hxx"
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
+#include "inprocessapplication.h"
+#include "inprocesshandler.h"
 #include "hostfxroptions.h"
+#include "requesthandler_config.h"
+#include "environmentvariablehelpers.h"
+#include "aspnetcore_event.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 hostfxr_main_fn IN_PROCESS_APPLICATION::s_fMainCallback = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer *pHttpServer,
-    REQUESTHANDLER_CONFIG *pConfig,
-    PCWSTR pDotnetExeLocation) :
+    REQUESTHANDLER_CONFIG *pConfig) :
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_fBlockCallbacksIntoManaged(FALSE),
     m_fInitialized(FALSE),
     m_fShutdownCalledFromNative(FALSE),
     m_fShutdownCalledFromManaged(FALSE),
-    m_srwLock(),
-    m_pstrDotnetExeLocation(pDotnetExeLocation)
+    m_srwLock()
 {
     // is it guaranteed that we have already checked app offline at this point?
     // If so, I don't think there is much to do here.
@@ -24,8 +29,16 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
 
     InitializeSRWLock(&m_srwLock);
     m_pConfig = pConfig;
-    // TODO we can probably initialized as I believe we are the only ones calling recycle.
+
     m_status = APPLICATION_STATUS::STARTING;
+}
+
+HRESULT
+IN_PROCESS_APPLICATION::Initialize(
+    PCWSTR pDotnetExeLocation
+)
+{
+    return m_struExeLocation.Copy(pDotnetExeLocation);
 }
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
@@ -573,7 +586,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         }
 
         if (FAILED(hr = HOSTFXR_OPTIONS::Create(
-            m_pstrDotnetExeLocation,
+            m_struExeLocation.QueryStr(),
             m_pConfig->QueryProcessPath()->QueryStr(),
             m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
             m_pConfig->QueryArguments()->QueryStr(),

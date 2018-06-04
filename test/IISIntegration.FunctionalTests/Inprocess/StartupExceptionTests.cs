@@ -11,13 +11,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class StartupExceptionTests : IISFunctionalTestBase
     {
-
+        // TODO FileNotFound here.
         [Theory]
         [InlineData("CheckLogFile")]
         [InlineData("CheckErrLogFile")]
         public async Task CheckStdoutWithRandomNumber(string path)
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite");
+            deploymentParameters.PublishApplicationBeforeDeployment = true;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
             var randomNumberString = new Random(Guid.NewGuid().GetHashCode()).Next(10000000).ToString();
             deploymentParameters.EnvironmentVariables["ASPNETCORE_INPROCESS_RANDOM_VALUE"] = randomNumberString;
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStdoutWithLargeWrites(string path)
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite");
+            deploymentParameters.PublishApplicationBeforeDeployment = true;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
             var deploymentResult = await DeployAsync(deploymentParameters);
 

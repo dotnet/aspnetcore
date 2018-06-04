@@ -39,9 +39,9 @@
 #include "stringa.h"
 #include "multisz.h"
 #include "dbgutil.h"
-#include "ahutil.h"
 #include "hashfn.h"
 
+#include "requesthandler_config.h"
 #include "hostfxr_utility.h"
 #include "environmentvariablehash.h"
 #include "iapplication.h"
@@ -54,3 +54,11 @@
 
 #undef assert // Macro redefinition in IISLib.
 #include "gtest\gtest.h"
+
+// Externals defined in inprocess
+BOOL       g_fProcessDetach;
+HANDLE     g_hEventLog;
+DWORD g_dwAspNetCoreDebugFlags;
+PCSTR g_szDebugLabel;
+DWORD g_dwDebugFlags;
+

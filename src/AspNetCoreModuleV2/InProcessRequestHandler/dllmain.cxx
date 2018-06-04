@@ -1,7 +1,15 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
 // dllmain.cpp : Defines the entry point for the DLL application.
+
 #include "precomp.hxx"
 #include <IPHlpApi.h>
 #include <VersionHelpers.h>
+
+#include "inprocessapplication.h"
+#include "inprocesshandler.h"
+#include "requesthandler_config.h"
 
 BOOL                g_fGlobalInitialize = FALSE;
 BOOL                g_fProcessDetach = FALSE;
@@ -103,31 +111,56 @@ __stdcall
 CreateApplication(
     _In_  IHttpServer        *pServer,
     _In_  IHttpContext       *pHttpContext,
-    _In_  PCWSTR             pwzExeLocation,
+    _In_  PCWSTR              pwzExeLocation,
     _Out_ IAPPLICATION      **ppApplication
 )
 {
-    HRESULT      hr = S_OK;
-    IAPPLICATION *pApplication = NULL;
-    REQUESTHANDLER_CONFIG *pConfig;
+    HRESULT                 hr = S_OK;
+    IN_PROCESS_APPLICATION *pApplication = NULL;
+    REQUESTHANDLER_CONFIG  *pConfig = NULL;
+
     // Initialze some global variables here
     InitializeGlobalConfiguration(pServer);
 
-    hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), &pConfig);
-    if (FAILED(hr))
+    try
     {
-        return hr;
-    }
+        hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), &pConfig);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
 
-    pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig, pwzExeLocation);
-    if (pApplication == NULL)
+        pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig);
+
+        pConfig = NULL;
+
+        hr = pApplication->Initialize(pwzExeLocation);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
+        *ppApplication = pApplication;
+    }
+    catch (std::bad_alloc&)
     {
-        hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
-        goto Finished;
+        hr = E_OUTOFMEMORY;
     }
-
-    *ppApplication = pApplication;
 
 Finished:
+    if (FAILED(hr))
+    {
+        if (pApplication != NULL)
+        {
+            delete pApplication;
+            pApplication = NULL;
+        }
+        if (pConfig != NULL)
+        {
+            delete pConfig;
+            pConfig = NULL;
+        }
+    }
+
     return hr;
 }

@@ -211,16 +211,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="aspnetcore_event.h" />
-    <ClInclude Include="disconnectcontext.h" />
-    <ClInclude Include="environmentvariablehelpers.h" />
+    <ClInclude Include="inprocessapplication.h" />
+    <ClInclude Include="inprocesshandler.h" />
     <ClInclude Include="precomp.hxx" />
-    <ClInclude Include=".\inprocess\inprocessapplication.h" />
-    <ClInclude Include=".\inprocess\inprocesshandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cxx" />
-    <ClCompile Include=".\inprocess\inprocessapplication.cpp" />
-    <ClCompile Include=".\inprocess\inprocesshandler.cpp" />
+    <ClCompile Include="inprocessapplication.cpp" />
+    <ClCompile Include="inprocesshandler.cpp" />
     <ClCompile Include="managedexports.cxx" />
   </ItemGroup>
   <ItemGroup>

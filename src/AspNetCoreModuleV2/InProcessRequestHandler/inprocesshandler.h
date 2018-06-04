@@ -1,4 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
 #pragma once
+
+#include "precomp.hxx"
+#include "requesthandler.h"
 
 class IN_PROCESS_APPLICATION;
 
@@ -6,7 +12,6 @@ class IN_PROCESS_HANDLER : public REQUEST_HANDLER
 {
 public:
     IN_PROCESS_HANDLER(
-
         _In_ IHttpContext   *pW3Context,
         _In_ IN_PROCESS_APPLICATION  *pApplication);
 

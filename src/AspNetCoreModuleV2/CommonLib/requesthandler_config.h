@@ -209,10 +209,10 @@ public:
         return &m_struConfigPath;
     }
 
-private:
+protected:
 
     //
-    // private constructor
+    // protected constructor
     //
     REQUESTHANDLER_CONFIG() :
         m_fStdoutLogEnabled(FALSE),

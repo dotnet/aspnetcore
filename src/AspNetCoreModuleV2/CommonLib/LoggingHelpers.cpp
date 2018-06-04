@@ -16,19 +16,26 @@ LoggingHelpers::CreateLoggingProvider(
 
     DBG_ASSERT(outputManager != NULL);
 
-    if (fIsLoggingEnabled)
+    try
     {
-        FileOutputManager* manager = new FileOutputManager;
-        hr = manager->Initialize(pwzStdOutFileName, pwzApplicationPath);
-        *outputManager = manager;
+        if (fIsLoggingEnabled)
+        {
+            FileOutputManager* manager = new FileOutputManager;
+            hr = manager->Initialize(pwzStdOutFileName, pwzApplicationPath);
+            *outputManager = manager;
+        }
+        else if (fEnablePipe)
+        {
+            *outputManager = new PipeOutputManager;
+        }
+        else
+        {
+            *outputManager = new NullOutputManager;
+        }
     }
-    else if (fEnablePipe)
+    catch (std::bad_alloc&)
     {
-        *outputManager = new PipeOutputManager;
-    }
-    else
-    {
-        *outputManager = new NullOutputManager;
+        hr = E_OUTOFMEMORY;
     }
 
     return hr;

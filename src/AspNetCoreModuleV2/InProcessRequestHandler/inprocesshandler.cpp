@@ -1,4 +1,9 @@
-#include "..\precomp.hxx"
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
+#include "inprocesshandler.h"
+#include "inprocessapplication.h"
+#include "aspnetcore_event.h"
 
 IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ IHttpContext   *pW3Context,

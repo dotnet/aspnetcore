@@ -44,26 +44,6 @@
 #define WINVER 0x0601
 #define _WIN32_WINNT 0x0601
 
-#include "..\IISLib\acache.h"
-#include "..\IISLib\multisz.h"
-#include "..\IISLib\multisza.h"
-#include "..\IISLib\base64.h"
-#include "..\IISLib\listentry.h"
-#include "..\CommonLib\fx_ver.h"
-#include "..\CommonLib\debugutil.h"
-#include "..\CommonLib\requesthandler.h"
-#include "..\CommonLib\requesthandler_config.h"
-#include "..\CommonLib\utility.h"
-#include "..\CommonLib\application.h"
-#include "..\CommonLib\resources.h"
-#include "aspnetcore_event.h"
-#include "aspnetcore_msg.h"
-#include "disconnectcontext.h"
-#include "environmentvariablehelpers.h"
-#include "sttimer.h"
-#include ".\inprocess\InProcessHandler.h"
-#include ".\inprocess\inprocessapplication.h"
-
 #ifdef max
 #undef max
 template<typename T> inline T max(T a, T b)
