@@ -59,7 +59,7 @@ foreach ($line in Get-Content $localCoreSetupVersions) {
 }
 
 if (!$msNetCoreAppPackageVersion) {
-    Throw "$msNetCoreAppPackageName was not in $coreSetupVersions"
+    throw "$msNetCoreAppPackageName was not in $coreSetupVersions"
 }
 
 $coreAppDownloadLink = "https://dotnet.myget.org/F/dotnet-core/api/v2/package/$msNetCoreAppPackageName/$msNetCoreAppPackageVersion"
@@ -112,7 +112,7 @@ if (-not $NoCommit) {
     Invoke-Block { & git fetch origin }
 
     $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
-    $destinationBranch = "rybrande/UpgradeDepsTest"
+    $destinationBranch = "upgrade-netcore-deps"
 
     Invoke-Block { & git checkout -tb $destinationBranch "origin/$baseBranch" }
 }
@@ -120,7 +120,7 @@ if (-not $NoCommit) {
 try {
     $updatedVars = UpdateVersions $variables $dependencies $depsPath
     if (-not $NoCommit) {
-        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath "Upgrade to .NET Core $msNetCoreAppPackageVersion"
 
         if ($body) {
             CreatePR "aspnet" $GithubUsername $baseBranch $destinationBranch $body $GithubToken
