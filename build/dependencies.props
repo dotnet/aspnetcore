@@ -40,12 +40,12 @@
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.1.0</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.1.1-rtm-30818</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
-    <SeleniumSupportPackageVersion>3.7.0</SeleniumSupportPackageVersion>
-    <SeleniumWebDriverMicrosoftDriverPackageVersion>16.16299.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
-    <SeleniumWebDriverPackageVersion>3.7.0</SeleniumWebDriverPackageVersion>
+    <SeleniumFirefoxWebDriverPackageVersion>0.20.0</SeleniumFirefoxWebDriverPackageVersion>
+    <SeleniumSupportPackageVersion>3.12.1</SeleniumSupportPackageVersion>
+    <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
+    <SeleniumWebDriverPackageVersion>3.12.1</SeleniumWebDriverPackageVersion>
     <SystemSecurityPermissionsPackageVersion>4.5.0</SystemSecurityPermissionsPackageVersion>
-    <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
+    <XunitAnalyzersPackageVersion>0.9.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
