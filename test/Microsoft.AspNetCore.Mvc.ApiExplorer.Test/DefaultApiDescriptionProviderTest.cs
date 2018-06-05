@@ -666,6 +666,216 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Theory]
+        [InlineData(nameof(ReturnsActionResultOfProduct))]
+        [InlineData(nameof(ReturnsTaskOfActionResultOfProduct))]
+        public void GetApiDescription_ReturnsActionResultOfTWithProducesContentType(
+            string methodName)
+        {
+            // Arrange
+            var action = CreateActionDescriptor(methodName);
+            action.FilterDescriptors = new List<FilterDescriptor>()
+            {
+                // Since action is returning Void or Task, it does not make sense to provide a value for the
+                // 'Type' property to ProducesAttribute. But the same action could return other types of data
+                // based on runtime conditions.
+                new FilterDescriptor(
+                    new ProducesAttribute("text/json", "application/json"),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(200),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(202),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(typeof(BadData), 400),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(typeof(ErrorDetails), 500),
+                    FilterScope.Action)
+            };
+            var expectedMediaTypes = new[] { "application/json", "text/json" };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(4, description.SupportedResponseTypes.Count);
+
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(Product), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.Equal(202, responseType.StatusCode);
+                    Assert.Null(responseType.ModelMetadata);
+                    Assert.Empty(GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(BadData), responseType.Type);
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ErrorDetails), responseType.Type);
+                    Assert.Equal(500, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                });
+        }
+
+        [Theory]
+        [InlineData(nameof(ReturnsActionResultOfProduct))]
+        [InlineData(nameof(ReturnsTaskOfActionResultOfProduct))]
+        public void GetApiDescription_ReturnsActionResultOfTWithProducesContentType_ForStatusCode201(
+            string methodName)
+        {
+            // Arrange
+            var action = CreateActionDescriptor(methodName);
+            action.FilterDescriptors = new List<FilterDescriptor>()
+            {
+                // Since action is returning Void or Task, it does not make sense to provide a value for the
+                // 'Type' property to ProducesAttribute. But the same action could return other types of data
+                // based on runtime conditions.
+                new FilterDescriptor(
+                    new ProducesAttribute("text/json", "application/json"),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(201),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(204),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(typeof(BadData), 400),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(typeof(ErrorDetails), 500),
+                    FilterScope.Action)
+            };
+            var expectedMediaTypes = new[] { "application/json", "text/json" };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(4, description.SupportedResponseTypes.Count);
+
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(Product), responseType.Type);
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.Equal(204, responseType.StatusCode);
+                    Assert.Null(responseType.ModelMetadata);
+                    Assert.Empty(GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(BadData), responseType.Type);
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ErrorDetails), responseType.Type);
+                    Assert.Equal(500, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                });
+        }
+
+        [Theory]
+        [InlineData(nameof(ReturnsActionResultOfSequenceOfProducts))]
+        [InlineData(nameof(ReturnsTaskOfActionResultOfSequenceOfProducts))]
+        public void GetApiDescription_ReturnsActionResultOfSequenceOfTWithProducesContentType(
+            string methodName)
+        {
+            // Arrange
+            var action = CreateActionDescriptor(methodName);
+            action.FilterDescriptors = new List<FilterDescriptor>()
+            {
+                // Since action is returning Void or Task, it does not make sense to provide a value for the
+                // 'Type' property to ProducesAttribute. But the same action could return other types of data
+                // based on runtime conditions.
+                new FilterDescriptor(
+                    new ProducesAttribute("text/json", "application/json"),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(200),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(201),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(typeof(BadData), 400),
+                    FilterScope.Action),
+                new FilterDescriptor(
+                    new ProducesResponseTypeAttribute(typeof(ErrorDetails), 500),
+                    FilterScope.Action)
+            };
+            var expectedMediaTypes = new[] { "application/json", "text/json" };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(4, description.SupportedResponseTypes.Count);
+
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(IEnumerable<Product>), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(IEnumerable<Product>), responseType.Type);
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(BadData), responseType.Type);
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ErrorDetails), responseType.Type);
+                    Assert.Equal(500, responseType.StatusCode);
+                    Assert.NotNull(responseType.ModelMetadata);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                });
+        }
+
+        [Theory]
         [InlineData(nameof(ReturnsVoid))]
         [InlineData(nameof(ReturnsTask))]
         public void GetApiDescription_DefaultVoidStatus(string methodName)

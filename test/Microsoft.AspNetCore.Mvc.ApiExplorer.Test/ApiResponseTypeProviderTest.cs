@@ -98,9 +98,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                responseType =>
                {
                    Assert.Equal(200, responseType.StatusCode);
-                   Assert.Equal(typeof(void), responseType.Type);
+                   Assert.Equal(typeof(BaseModel), responseType.Type);
                    Assert.False(responseType.IsDefaultResponse);
-                   Assert.Empty(responseType.ApiResponseFormats);
+                   Assert.Collection(
+                        responseType.ApiResponseFormats,
+                        format => Assert.Equal("application/json", format.MediaType));
                },
                responseType =>
                {
