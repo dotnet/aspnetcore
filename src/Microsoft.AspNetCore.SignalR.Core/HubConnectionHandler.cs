@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.SignalR
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
             // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
             var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
+            var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval; 
             var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
             var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
 
@@ -79,13 +80,15 @@ namespace Microsoft.AspNetCore.SignalR
 
             Log.ConnectedStarting(_logger);
 
-            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory);
+            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory, clientTimeout);
 
             var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
             if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
             {
                 return;
             }
+
+            // -- the connectionContext has been set up --
 
             try
             {
@@ -197,6 +200,8 @@ namespace Microsoft.AspNetCore.SignalR
 
                     if (!buffer.IsEmpty)
                     {
+                        connection.ResetClientTimeout();
+
                         while (protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
                         {
                             await _dispatcher.DispatchMessageAsync(connection, message);

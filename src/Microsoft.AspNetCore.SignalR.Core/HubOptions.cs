@@ -27,6 +27,11 @@ namespace Microsoft.AspNetCore.SignalR
         public TimeSpan? KeepAliveInterval { get; set; } = null;
 
         /// <summary>
+        /// Gets or sets the time window clients have to send a message before the server closes the connection.
+        /// </summary>
+        public TimeSpan? ClientTimeoutInterval { get; set; } = null;
+
+        /// <summary>
         /// Gets or sets a collection of supported hub protocol names.
         /// </summary>
         public IList<string> SupportedProtocols { get; set; } = null;

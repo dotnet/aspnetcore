@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public static Mock<HubConnectionContext> CreateMock(ConnectionContext connection)
         {
-            var mock = new Mock<HubConnectionContext>(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance) { CallBase = true };
+            var mock = new Mock<HubConnectionContext>(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance, TimeSpan.FromSeconds(15)) { CallBase = true };
             var protocol = new JsonHubProtocol();
             mock.SetupGet(m => m.Protocol).Returns(protocol);
             return mock;

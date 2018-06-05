@@ -28,25 +28,40 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<object> _abortCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly long _keepAliveDuration;
+        private readonly long _keepAliveInterval;
+        private readonly long _clientTimeoutInterval;
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
-        private long _lastSendTimestamp = Stopwatch.GetTimestamp();
+        private long _lastSendTimeStamp = DateTime.UtcNow.Ticks;
+        private long _lastReceivedTimeStamp = DateTime.UtcNow.Ticks;
+        private bool _receivedMessageThisInterval = false;
         private ReadOnlyMemory<byte> _cachedPingMessage;
+        private bool _clientTimeoutActive;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
         /// </summary>
         /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
-        /// <param name="keepAliveInterval">The keep alive interval.</param>
+        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
+        /// <param name="clientTimeoutInterval">Clients we haven't heard from in this interval are assumed to have disconnected.</param>
+        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval)
         {
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = _connectionAbortedTokenSource.Token;
-            _keepAliveDuration = (int)keepAliveInterval.TotalMilliseconds * (Stopwatch.Frequency / 1000);
+            _keepAliveInterval = keepAliveInterval.Ticks;
+            _clientTimeoutInterval = clientTimeoutInterval.Ticks;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
+        /// </summary>
+        /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
+        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
+            : this(connectionContext, keepAliveInterval, loggerFactory, HubOptionsSetup.DefaultClientTimeoutInterval) { }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.
@@ -428,13 +443,15 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void KeepAliveTick()
         {
-            var timestamp = Stopwatch.GetTimestamp();
+            var currentTime = DateTime.UtcNow.Ticks;
+
             // Implements the keep-alive tick behavior
             // Each tick, we check if the time since the last send is larger than the keep alive duration (in ticks).
             // If it is, we send a ping frame, if not, we no-op on this tick. This means that in the worst case, the
             // true "ping rate" of the server could be (_hubOptions.KeepAliveInterval + HubEndPoint.KeepAliveTimerInterval),
             // because if the interval elapses right after the last tick of this timer, it won't be detected until the next tick.
-            if (timestamp - Interlocked.Read(ref _lastSendTimestamp) > _keepAliveDuration)
+
+            if (currentTime - Volatile.Read(ref _lastSendTimeStamp) > _keepAliveInterval)
             {
                 // Haven't sent a message for the entire keep-alive duration, so send a ping.
                 // If the transport channel is full, this will fail, but that's OK because
@@ -442,10 +459,37 @@ namespace Microsoft.AspNetCore.SignalR
                 // transport is still in the process of sending frames.
                 _ = TryWritePingAsync();
 
-                Interlocked.Exchange(ref _lastSendTimestamp, timestamp);
+                // We only update the timestamp here, because updating on each sent message is bad for performance
+                // There can be a lot of sent messages per 15 seconds
+                Volatile.Write(ref _lastSendTimeStamp, currentTime);
             }
         }
 
+        internal void StartClientTimeout()
+        {
+            if (_clientTimeoutActive)
+            {
+                return;
+            }
+            _clientTimeoutActive = true;
+            Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).CheckClientTimeout(), this);
+        }
+
+        private void CheckClientTimeout()
+        {
+            // If it's been too long since we've heard from the client, then close this
+            if (DateTime.UtcNow.Ticks - Volatile.Read(ref _lastReceivedTimeStamp) > _clientTimeoutInterval)
+            {
+                if (!_receivedMessageThisInterval)
+                {
+                    Abort();
+                }
+
+                _receivedMessageThisInterval = false;
+                Volatile.Write(ref _lastReceivedTimeStamp, DateTime.UtcNow.Ticks);
+            }
+        }
+        
         private static void AbortConnection(object state)
         {
             var connection = (HubConnectionContext)state;
@@ -462,6 +506,11 @@ namespace Microsoft.AspNetCore.SignalR
                 // Communicate the fact that we're finished triggering abort callbacks
                 connection._abortCompletedTcs.TrySetResult(null);
             }
+        }
+
+        internal void ResetClientTimeout()
+        {
+            _receivedMessageThisInterval = true;
         }
 
         private static class Log
