@@ -7,53 +7,53 @@
 
   <ItemGroup>
     <Repository Include="AADIntegration" />
+    <Repository Include="Antiforgery" />
     <Repository Include="AuthSamples" />
     <Repository Include="AzureIntegration" />
+    <Repository Include="BasicMiddleware" />
+    <Repository Include="BrowserLink" />
+    <Repository Include="Caching" />
+    <Repository Include="Common" />
+    <Repository Include="Configuration" />
+    <Repository Include="CORS" />
+    <Repository Include="DataProtection" />
+    <Repository Include="DependencyInjection" />
     <Repository Include="Diagnostics" />
+    <Repository Include="DotNetTools" />
     <Repository Include="EntityFrameworkCore" />
+    <Repository Include="FileSystem" />
+    <Repository Include="Hosting" />
+    <Repository Include="HtmlAbstractions" />
+    <Repository Include="HttpAbstractions" />
+    <Repository Include="HttpClientFactory" />
+    <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
+    <Repository Include="IISIntegration" />
     <Repository Include="JavaScriptServices" />
+    <Repository Include="JsonPatch" />
     <Repository Include="KestrelHttpServer" />
+    <Repository Include="Localization" />
+    <Repository Include="Logging" />
     <Repository Include="MetaPackages" />
     <Repository Include="MusicStore" />
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
+    <Repository Include="Options" />
     <Repository Include="Razor" />
+    <Repository Include="ResponseCaching" />
+    <Repository Include="Routing" />
     <Repository Include="Scaffolding" />
     <Repository Include="Security" />
+    <Repository Include="ServerTests" />
+    <Repository Include="Session" />
     <Repository Include="SignalR" />
-    <Repository Include="WebSockets" />
     <Repository Include="StaticFiles" />
+    <Repository Include="WebSockets" />
   </ItemGroup>
 
   <ItemGroup>
-    <ShippedRepository Include="Antiforgery" />
-    <ShippedRepository Include="BasicMiddleware" />
-    <ShippedRepository Include="BrowserLink" />
-    <ShippedRepository Include="Caching" />
-    <ShippedRepository Include="Common" />
-    <ShippedRepository Include="Configuration" />
-    <ShippedRepository Include="CORS" />
-    <ShippedRepository Include="DataProtection" />
-    <ShippedRepository Include="DependencyInjection" />
-    <ShippedRepository Include="DotNetTools" />
     <ShippedRepository Include="EventNotification" />
-    <ShippedRepository Include="FileSystem" />
-    <ShippedRepository Include="Hosting" />
-    <ShippedRepository Include="HtmlAbstractions" />
-    <ShippedRepository Include="HttpAbstractions" />
-    <ShippedRepository Include="HttpClientFactory" />
-    <ShippedRepository Include="HttpSysServer" />
-    <ShippedRepository Include="IISIntegration" />
-    <ShippedRepository Include="JsonPatch" />
-    <ShippedRepository Include="Localization" />
-    <ShippedRepository Include="Logging" />
     <ShippedRepository Include="Microsoft.Data.Sqlite" />
-    <ShippedRepository Include="Options" />
-    <ShippedRepository Include="ResponseCaching" />
-    <ShippedRepository Include="Routing" />
-    <ShippedRepository Include="ServerTests" />
-    <ShippedRepository Include="Session" />
     <ShippedRepository Include="Testing" />
   </ItemGroup>
 </Project>
