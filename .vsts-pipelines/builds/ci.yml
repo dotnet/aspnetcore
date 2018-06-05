@@ -1,0 +1,46 @@
+trigger:
+- dev
+- release/*
+
+phases:
+- phase: Windows
+  queue: Hosted VS2017
+  steps:
+  - checkout: self
+    clean: true
+  - script: .\build.cmd -ci
+    displayName: Run build.cmd
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
+
+- phase: Mac
+  queue: Hosted macOS Preview
+  steps:
+  - checkout: self
+    clean: true
+  - script: ./build.sh -ci
+    displayName: Run build.sh
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
+
+- phase: Linux
+  queue: Hosted Linux Preview
+  steps:
+  - checkout: self
+    clean: true
+  - script: ./build.sh -ci
+    displayName: Run build.sh
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
