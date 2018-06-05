@@ -424,8 +424,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 foreach (var metadataAttribute in responseMetadataAttributes)
                 {
                     metadataAttribute.SetContentTypes(contentTypes);
-
-                    if (metadataAttribute.Type != null)
+                    if (metadataAttribute.Type == typeof(void) &&
+                        type != null &&
+                        (metadataAttribute.StatusCode == StatusCodes.Status200OK || metadataAttribute.StatusCode == StatusCodes.Status201Created))
+                    {
+                        // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
+                        // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
+                        // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
+                        // from the return type.
+                        objectTypes[metadataAttribute.StatusCode] = type;
+                    }
+                    else if (metadataAttribute.Type != null)
                     {
                         objectTypes[metadataAttribute.StatusCode] = metadataAttribute.Type;
                     }
