@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("link", Attributes = HrefIncludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = HrefExcludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackHrefAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("link", Attributes = FallbackHrefIntegrityCheckAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackHrefIncludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackHrefExcludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackTestClassAttributeName, TagStructure = TagStructure.WithoutEndTag)]
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string HrefIncludeAttributeName = "asp-href-include";
         private const string HrefExcludeAttributeName = "asp-href-exclude";
         private const string FallbackHrefAttributeName = "asp-fallback-href";
+        private const string FallbackHrefIntegrityCheckAttributeName = "asp-fallback-href-integrity-check";
         private const string FallbackHrefIncludeAttributeName = "asp-fallback-href-include";
         private const string FallbackHrefExcludeAttributeName = "asp-fallback-href-exclude";
         private const string FallbackTestClassAttributeName = "asp-fallback-test-class";
@@ -146,6 +148,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         [HtmlAttributeName(FallbackHrefAttributeName)]
         public string FallbackHref { get; set; }
+
+        /// <summary>
+        /// Boolean value that determines if Integrity Hash will be compared with <see cref="FallbackHref"/> value.
+        /// Value defaults to true if not provided. 
+        /// Must be used in conjunction with <see cref="FallbackHref"/>.
+        /// </summary>
+        [HtmlAttributeName(FallbackHrefIntegrityCheckAttributeName)]
+        public bool? FallbackHrefIntegrityCheck { get; set; }
 
         /// <summary>
         /// Value indicating if file version should be appended to the href urls.
@@ -363,6 +373,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 var attribute = attributes[i];
                 if (string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // do not write integrity attribute when FallbackHrefIntegrityCheck is false
+                if (attribute.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase) && FallbackHrefIntegrityCheck == false)
                 {
                     continue;
                 }

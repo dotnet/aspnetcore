@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("script", Attributes = FallbackSrcIncludeAttributeName)]
     [HtmlTargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
     [HtmlTargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
+    [HtmlTargetElement("script", Attributes = FallbackIntegrityCheckAttributeName)]
     [HtmlTargetElement("script", Attributes = AppendVersionAttributeName)]
     public class ScriptTagHelper : UrlResolutionTagHelper
     {
@@ -34,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string SrcExcludeAttributeName = "asp-src-exclude";
         private const string FallbackSrcAttributeName = "asp-fallback-src";
         private const string FallbackSrcIncludeAttributeName = "asp-fallback-src-include";
+        private const string FallbackIntegrityCheckAttributeName = "asp-fallback-integrity-check";
         private const string FallbackSrcExcludeAttributeName = "asp-fallback-src-exclude";
         private const string FallbackTestExpressionAttributeName = "asp-fallback-test";
         private const string SrcAttributeName = "src";
@@ -128,6 +130,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         [HtmlAttributeName(FallbackSrcAttributeName)]
         public string FallbackSrc { get; set; }
+
+        /// <summary>
+        /// Boolean value that determines if Integrity Hash will be compared with <see cref="FallbackSrc"/> value.
+        /// Value defaults to true if not provided. 
+        /// Must be used in conjunction with <see cref="FallbackSrc"/>.
+        /// </summary>
+        [HtmlAttributeName(FallbackIntegrityCheckAttributeName)]
+        public bool? FallbackIntegrityCheck { get; set; }
 
         /// <summary>
         /// Value indicating if file version should be appended to src urls.
@@ -312,6 +322,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         var attribute = attributes[i];
                         if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                         {
+                            // do not write integrity attribute when fallbackintegrityCheck is false
+                            if (attribute.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase) && FallbackIntegrityCheck == false) continue;
+
                             StringWriter.Write(' ');
                             attribute.WriteTo(StringWriter, HtmlEncoder);
                         }

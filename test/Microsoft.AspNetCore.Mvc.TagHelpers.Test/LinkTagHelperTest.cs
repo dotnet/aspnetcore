@@ -263,7 +263,49 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             tagHelper.FallbackTestValue = "hidden";
                             tagHelper.AppendVersion = true;
                         }
-                    }
+                    },
+                    // asp-fallback-href-integrity-check Attribute true
+                    {
+                        new TagHelperAttributeList
+                        {
+                            new TagHelperAttribute("asp-fallback-href", "test.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden"),
+                            new TagHelperAttribute("asp-append-version", "true"),
+                            new TagHelperAttribute("asp-fallback-href-integrity-check", "true")
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.FallbackHref = "test.css";
+                            tagHelper.FallbackTestClass = "hidden";
+                            tagHelper.FallbackTestProperty = "visibility";
+                            tagHelper.FallbackTestValue = "hidden";
+                            tagHelper.AppendVersion = true;
+                            tagHelper.FallbackHrefIntegrityCheck = true;
+                        }
+                    },
+                    // asp-fallback-href-integrity-check Attribute false
+                    {
+                        new TagHelperAttributeList
+                        {
+                            new TagHelperAttribute("asp-fallback-href", "test.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden"),
+                            new TagHelperAttribute("asp-append-version", "true"),
+                            new TagHelperAttribute("asp-fallback-href-integrity-check", "false")
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.FallbackHref = "test.css";
+                            tagHelper.FallbackTestClass = "hidden";
+                            tagHelper.FallbackTestProperty = "visibility";
+                            tagHelper.FallbackTestValue = "hidden";
+                            tagHelper.AppendVersion = true;
+                            tagHelper.FallbackHrefIntegrityCheck = false;
+                        }
+                    },
                 };
             }
         }

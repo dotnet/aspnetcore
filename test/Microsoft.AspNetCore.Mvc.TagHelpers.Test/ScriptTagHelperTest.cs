@@ -159,6 +159,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
+                            new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                            new TagHelperAttribute("asp-fallback-integrity-check", "false")
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.FallbackSrc = "test.js";
+                            tagHelper.FallbackTestExpression = "isavailable()";
+                            tagHelper.FallbackIntegrityCheck = false;
+                        }
+                    },
+                    {
+                        new TagHelperAttributeList
+                        {
                             new TagHelperAttribute("asp-fallback-src-include", "*.js"),
                             new TagHelperAttribute("asp-fallback-test", "isavailable()")
                         },
@@ -180,6 +194,22 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             tagHelper.FallbackSrc = "test.js";
                             tagHelper.FallbackSrcInclude = "*.css";
                             tagHelper.FallbackTestExpression = "isavailable()";
+                        }
+                    },
+                    {
+                        new TagHelperAttributeList
+                        {
+                            new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            new TagHelperAttribute("asp-fallback-src-include", "*.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                            new TagHelperAttribute("asp-fallback-integrity-check", "false")
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.FallbackSrc = "test.js";
+                            tagHelper.FallbackSrcInclude = "*.css";
+                            tagHelper.FallbackTestExpression = "isavailable()";
+                            tagHelper.FallbackIntegrityCheck = false;
                         }
                     },
                     {

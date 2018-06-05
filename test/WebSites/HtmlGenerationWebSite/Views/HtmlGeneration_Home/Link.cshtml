@@ -46,6 +46,35 @@
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
 
+    <!-- Fallback to static href with no asp-fallback-href-integrity-check attribute, default behavior is to keep integrity hash -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          integrity="XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh+pQc="
+          crossorigin="anonymous"
+          asp-fallback-href="~/styles/site.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static href with asp-fallback-href-integrity-check set to true, default behavior is to keep integrity hash -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          integrity="XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh+pQc="
+          crossorigin="anonymous"
+          asp-fallback-href="~/styles/site.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden"
+          asp-fallback-href-integrity-check="true" />
+
+    <!-- Fallback to static href with asp-fallback-href-integrity-check set to false, removes integrity attribute on fallback so that different CSS can be loaded  -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          integrity="XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh+pQc="
+          crossorigin="anonymous"
+          asp-fallback-href="~/styles/siteIntegrity.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden"
+          asp-fallback-href-integrity-check="false" />
+
     <!-- Fallback to static href with dynamic attributes -->
     <link href="~/styles/site.min.css?a=b&c=d" rel="@("stylesheet")" data-extra="@("test")" title='@(@"""the"" title")'
           asp-fallback-href="~/styles/site.css?a=b&c=d"
