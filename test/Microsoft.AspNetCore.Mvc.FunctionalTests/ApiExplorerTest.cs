@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ApiExplorerWebSite;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -1156,6 +1157,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         private async Task ApiConvention_ForGetMethod(string action)
         {
+            // Arrange
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+
             // Act
             var response = await Client.GetStringAsync(
                 $"ApiExplorerResponseTypeWithApiConventionController/{action}");
@@ -1168,9 +1172,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
                 responseType =>
                 {
-                    Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(Product).FullName, responseType.ResponseType);
                     Assert.Equal(200, responseType.StatusCode);
-                    Assert.Empty(responseType.ResponseFormats);
+                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
                 },
                 responseType =>
                 {
@@ -1198,7 +1202,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
                 responseType =>
                 {
-                    Assert.Equal(typeof(IEnumerable<ApiExplorerWebSite.Product>).FullName, responseType.ResponseType);
+                    Assert.Equal(typeof(IEnumerable<Product>).FullName, responseType.ResponseType);
                     Assert.Equal(200, responseType.StatusCode);
                     var actualMediaTypes = responseType.ResponseFormats.Select(r => r.MediaType).OrderBy(r => r);
                     Assert.Equal(expectedMediaTypes, actualMediaTypes);
