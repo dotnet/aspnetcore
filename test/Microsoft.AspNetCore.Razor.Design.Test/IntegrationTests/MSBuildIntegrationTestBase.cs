@@ -70,6 +70,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 // Let the test app know it is running as part of a test.
                 "/p:RunningAsTest=true",
+
+                $"/p:MicrosoftNETCoreAppVersion={BuildVariables.MicrosoftNETCoreAppPackageVersion}",
+                $"/p:NETStandardLibraryPackageVersion={BuildVariables.NETStandardLibraryPackageVersion}",
             };
 
             if (!suppressRestore)

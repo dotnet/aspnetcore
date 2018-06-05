@@ -10,13 +10,14 @@
     <RazorSdkCurrentVersionTargets>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
 
-  <Import Project="$(SolutionRoot)build\dependencies.props" />
+  <!-- Import solution dependencies.props when building in place -->
+  <Import Project="..\..\build\dependencies.props" Condition="'$(BinariesRoot)'==''"/>
 
   <PropertyGroup>
     <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
 
-    <NETStandardImplicitPackageVersion>$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+    <NETStandardImplicitPackageVersion>$(NETStandardLibraryPackageVersion)</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <!-- Don't use the server when building in place. This locks up rzc.dll -->
