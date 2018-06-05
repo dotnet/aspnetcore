@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         internal override bool DesignTime => true;
 
         internal override bool UseTwoPhaseCompilation => true;
-
+        
         [Fact]
         public void ChildComponent_WithParameters()
         {
@@ -48,6 +48,39 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ComponentParameter_TypeMismatch_ReportsDiagnostic()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class CoolnessMeter : BlazorComponent
+    {
+        [Parameter] private int Coolness { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<CoolnessMeter Coolness=""@(""very-cool"")"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var assembly = CompileToAssembly(generated, throwOnFailure: false);
+            // This has some errors
+            Assert.Collection(
+                assembly.Diagnostics.OrderBy(d => d.Id),
+                d => Assert.Equal("CS1503", d.Id));
         }
 
         [Fact]
@@ -562,6 +595,46 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToComponent_TypeChecked_WithMatchingProperties()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        [Parameter]
+        int Value { get; set; }
+
+        [Parameter]
+        Action<int> ValueChanged { get; set; }
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent bind-Value=""ParentValue"" />
+@functions {
+    public string ParentValue { get; set; } = ""42"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var assembly = CompileToAssembly(generated, throwOnFailure: false);
+            // This has some errors
+            Assert.Collection(
+                assembly.Diagnostics.OrderBy(d => d.Id),
+                d => Assert.Equal("CS0029", d.Id),
+                d => Assert.Equal("CS1503", d.Id));
         }
 
         [Fact]

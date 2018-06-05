@@ -293,6 +293,39 @@ namespace Test
         }
 
         [Fact]
+        public void ComponentParameter_TypeMismatch_ReportsDiagnostic()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class CoolnessMeter : BlazorComponent
+    {
+        [Parameter] private int Coolness { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<CoolnessMeter Coolness=""@(""very-cool"")"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var assembly = CompileToAssembly(generated, throwOnFailure: false);
+            // This has some errors
+            Assert.Collection(
+                assembly.Diagnostics.OrderBy(d => d.Id),
+                d => Assert.Equal("CS1503", d.Id));
+        }
+
+        [Fact]
         public void EventHandler_OnElement_WithString()
         {
             // Arrange

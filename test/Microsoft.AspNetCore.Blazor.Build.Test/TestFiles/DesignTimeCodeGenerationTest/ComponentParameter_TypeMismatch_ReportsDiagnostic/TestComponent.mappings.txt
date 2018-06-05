@@ -3,8 +3,8 @@ Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (559:16,38 [15] )
 |*, TestAssembly|
 
-Source Location: (62:1,31 [13] x:\dir\subdir\Test\TestComponent.cshtml)
-|42.ToString()|
-Generated Location: (1167:30,31 [13] )
-|42.ToString()|
+Source Location: (58:1,27 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+|"very-cool"|
+Generated Location: (1162:30,27 [11] )
+|"very-cool"|
 

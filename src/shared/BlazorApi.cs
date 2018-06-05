@@ -72,6 +72,11 @@ namespace Microsoft.AspNetCore.Blazor.Shared
             public static readonly string ChildContent = nameof(ChildContent);
         }
 
+        public static class RuntimeHelpers
+        {
+            public static readonly string TypeCheck = "Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck";
+        }
+
         public static class RouteAttribute
         {
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Components.RouteAttribute";

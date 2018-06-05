@@ -26,13 +26,13 @@ global::System.Object __typeHelper = "*, TestAssembly";
         protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            __o = 
+            __o = Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<System.String>(
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                42.ToString()
 
 #line default
 #line hidden
-            ;
+            );
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
             }
             ));

@@ -379,9 +379,23 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
                 else
                 {
+                    if (node.BoundAttribute != null)
+                    {
+                        context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
+                        context.CodeWriter.Write("<");
+                        context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                        context.CodeWriter.Write(">");
+                        context.CodeWriter.Write("(");
+                    }
+
                     for (var i = 0; i < tokens.Count; i++)
                     {
                         context.CodeWriter.Write(tokens[i].Content);
+                    }
+
+                    if (node.BoundAttribute != null)
+                    {
+                        context.CodeWriter.Write(")");
                     }
                 }
             }

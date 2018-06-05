@@ -417,14 +417,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 }
                 else
                 {
-                    // This is the case when an attribute has an explicit C# transition like:
-                    // <MyComponent Foo="@bar" />
+                    // This is the case when an attribute contains C# code
                     context.CodeWriter.Write(DesignTimeVariable);
                     context.CodeWriter.Write(" = ");
+
+                    // If we have a parameter type, then add a type check.
+                    if (node.BoundAttribute != null)
+                    {
+                        context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
+                        context.CodeWriter.Write("<");
+                        context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                        context.CodeWriter.Write(">");
+                        context.CodeWriter.Write("(");
+                    }
 
                     for (var i = 0; i < tokens.Count; i++)
                     {
                         WriteCSharpToken(context, tokens[i]);
+                    }
+
+                    if (node.BoundAttribute != null)
+                    {
+                        context.CodeWriter.Write(")");
                     }
 
                     context.CodeWriter.Write(";");
