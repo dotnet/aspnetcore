@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="SimpleJson.cs" company="The Outercurve Foundation">
 //    Copyright (c) 2011, The Outercurve Foundation.
 //
@@ -926,8 +926,19 @@ namespace SimpleJson
 
         static void EatWhitespace(char[] json, ref int index)
         {
-            for (; index < json.Length; index++)
-                if (" \t\n\r\b\f".IndexOf(json[index]) == -1) break;
+            for (; index < json.Length; index++) {
+                switch (json[index]) {
+                    case ' ':
+                    case '\t':
+                    case '\n':
+                    case '\r':
+                    case '\b':
+                    case '\f':
+                        break;
+                    default:
+                        return;
+                }
+            }
         }
 
         static int LookAhead(char[] json, int index)
