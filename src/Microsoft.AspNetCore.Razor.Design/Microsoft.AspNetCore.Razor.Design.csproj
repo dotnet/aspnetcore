@@ -11,9 +11,9 @@
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 
-  <!-- 
+  <!--
     Building this package is somewhat complicated because we need to Build or Publish some other projects
-    that have different TFM's including one with multiple TFMs. 
+    that have different TFM's including one with multiple TFMs.
 
     We then need to include the output of those projects in our output directory (where it will be used
     by tests) and in the nukpg.
@@ -28,6 +28,24 @@
   <ItemGroup>
     <ProjectReference Include="..\$(TaskProject)\$(TaskProject).csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(ToolProject)" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)' == 'netcoreapp2.0'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'==''">
+    <!-- Binaries produced in this project -->
+    <SignedPackageFile Include="tools/rzc.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="tasks/net46/Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="tasks/netstandard2.0/Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="tools/Microsoft.AspNetCore.Razor.Language.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="tools/Microsoft.CodeAnalysis.Razor.dll" Certificate="$(AssemblySigningCertName)" />
+
+    <!-- Third-party assemblies -->
+    <SignedPackageFile Include="tools/Newtonsoft.Json.dll" Certificate="3PartyDual" />
+
+    <!-- Binaries that should be signed by corefx/roslyn -->
+    <ExcludePackageFileFromSigning Include="tools/Microsoft.CodeAnalysis.CSharp.dll" />
+    <ExcludePackageFileFromSigning Include="tools/Microsoft.CodeAnalysis.dll" />
+    <ExcludePackageFileFromSigning Include="tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
