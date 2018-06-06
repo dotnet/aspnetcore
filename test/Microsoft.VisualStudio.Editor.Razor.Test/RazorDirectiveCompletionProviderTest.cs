@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,9 +15,12 @@ using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Utilities;
 using Moq;
 using Xunit;
+using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -31,12 +33,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
 
+        public RazorDirectiveCompletionProviderTest()
+        {
+            CompletionBroker = Mock.Of<IAsyncCompletionBroker>(broker => broker.IsCompletionSupported(It.IsAny<IContentType>()) == true);
+            var razorBuffer = Mock.Of<ITextBuffer>(buffer => buffer.ContentType == Mock.Of<IContentType>());
+            TextBufferProvider = Mock.Of<RazorTextBufferProvider>(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out razorBuffer) == true);
+        }
+
+        private IAsyncCompletionBroker CompletionBroker { get; }
+
+        private RazorTextBufferProvider TextBufferProvider { get; }
+
         [Fact]
         public void AtDirectiveCompletionPoint_ReturnsFalseIfChangeHasNoOwner()
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
+            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider, CompletionBroker, TextBufferProvider);
             var document = CreateDocument();
             codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
             var syntaxTree = codeDocument.GetSyntaxTree();
@@ -61,7 +74,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     [RazorDirectiveCompletionProvider.DescriptionKey] = expectedDescription,
                 }).ToImmutableDictionary());
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
-            var completionProvider = new RazorDirectiveCompletionProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new RazorDirectiveCompletionProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionBroker,
+                TextBufferProvider);
 
             // Act
             var description = await completionProvider.GetDescriptionAsync(document, item, CancellationToken.None);
@@ -80,7 +96,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var document = CreateDocument();
             var item = CompletionItem.Create("TestDirective");
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
-            var completionProvider = new RazorDirectiveCompletionProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new RazorDirectiveCompletionProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionBroker,
+                TextBufferProvider);
 
             // Act
             var description = await completionProvider.GetDescriptionAsync(document, item, CancellationToken.None);
@@ -95,7 +114,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new FailOnGetCompletionsProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionBroker,
+                TextBufferProvider);
             var document = CreateDocument();
             document = document.WithFilePath("NotRazor.cs");
             var context = CreateContext(1, completionProvider, document);
@@ -121,7 +143,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             });
 
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new FailOnGetCompletionsProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionBroker,
+                TextBufferProvider);
             var context = CreateContext(1, completionProvider, document);
 
             // Act & Assert
@@ -136,7 +161,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
             codeDocumentProvider.Setup(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out codeDocument))
                 .Returns(false);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new FailOnGetCompletionsProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionBroker,
+                TextBufferProvider);
             var document = CreateDocument();
             var context = CreateContext(1, completionProvider, document);
 
@@ -149,7 +177,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider, false);
+            var completionProvider = new FailOnGetCompletionsProvider(
+                codeDocumentProvider,
+                CompletionBroker,
+                TextBufferProvider,
+                canGetSnapshotPoint: false);
             var document = CreateDocument();
             var context = CreateContext(0, completionProvider, document);
 
@@ -162,7 +194,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
+            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider, CompletionBroker, TextBufferProvider);
             var document = CreateDocument();
             var context = CreateContext(0, completionProvider, document);
 
@@ -177,7 +209,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@" + content, Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
+            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider, CompletionBroker, TextBufferProvider);
             var document = CreateDocument();
             var context = CreateContext(1, completionProvider, document);
 
@@ -190,7 +222,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@()", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
+            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider, CompletionBroker, TextBufferProvider);
             var document = CreateDocument();
             var context = CreateContext(2, completionProvider, document);
 
@@ -206,7 +238,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             codeDocumentProvider.Setup(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out codeDocument))
                 .Returns(true);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new FailOnGetCompletionsProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionBroker,
+                TextBufferProvider);
             var document = CreateDocument();
             var context = CreateContext(2, completionProvider, document);
 
@@ -219,7 +254,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider);
+            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider, CompletionBroker, TextBufferProvider);
             var document = CreateDocument();
             codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
             var syntaxTree = codeDocument.GetSyntaxTree();
@@ -240,7 +275,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@", new[] { SectionDirective.Directive });
-            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider);
+            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider, CompletionBroker, TextBufferProvider);
             var document = CreateDocument();
             codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
             var syntaxTree = codeDocument.GetSyntaxTree();
@@ -263,7 +298,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var customDirective = DirectiveDescriptor.CreateSingleLineDirective("custom");
             var codeDocumentProvider = CreateCodeDocumentProvider("@", new[] { customDirective });
-            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider);
+            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider, CompletionBroker, TextBufferProvider);
             var document = CreateDocument();
             codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
             var syntaxTree = codeDocument.GetSyntaxTree();
@@ -348,8 +383,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             private readonly bool _canGetSnapshotPoint;
 
-            public FailOnGetCompletionsProvider(Lazy<RazorCodeDocumentProvider> codeDocumentProvider, bool canGetSnapshotPoint = true)
-                : base(codeDocumentProvider)
+            public FailOnGetCompletionsProvider(
+                Lazy<RazorCodeDocumentProvider> codeDocumentProvider,
+                IAsyncCompletionBroker asyncCompletionBroker,
+                RazorTextBufferProvider textBufferProvider,
+                bool canGetSnapshotPoint = true)
+                : base(codeDocumentProvider, asyncCompletionBroker, textBufferProvider)
             {
                 _canGetSnapshotPoint = canGetSnapshotPoint;
             }

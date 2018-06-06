@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Projection;
 
@@ -36,16 +36,33 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
         private readonly Lazy<RazorCodeDocumentProvider> _codeDocumentProvider;
+        private readonly IAsyncCompletionBroker _asyncCompletionBroker;
+        private readonly RazorTextBufferProvider _textBufferProvider;
 
         [ImportingConstructor]
-        public RazorDirectiveCompletionProvider([Import(typeof(RazorCodeDocumentProvider))] Lazy<RazorCodeDocumentProvider> codeDocumentProvider)
+        public RazorDirectiveCompletionProvider(
+            [Import(typeof(RazorCodeDocumentProvider))] Lazy<RazorCodeDocumentProvider> codeDocumentProvider,
+            IAsyncCompletionBroker asyncCompletionBroker,
+            RazorTextBufferProvider textBufferProvider)
         {
             if (codeDocumentProvider == null)
             {
                 throw new ArgumentNullException(nameof(codeDocumentProvider));
             }
 
+            if (asyncCompletionBroker == null)
+            {
+                throw new ArgumentNullException(nameof(asyncCompletionBroker));
+            }
+
+            if (textBufferProvider == null)
+            {
+                throw new ArgumentNullException(nameof(textBufferProvider));
+            }
+
             _codeDocumentProvider = codeDocumentProvider;
+            _asyncCompletionBroker = asyncCompletionBroker;
+            _textBufferProvider = textBufferProvider;
         }
 
         public override Task<CompletionDescription> GetDescriptionAsync(Document document, CompletionItem item, CancellationToken cancellationToken)
@@ -83,6 +100,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 !context.Document.FilePath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
             {
                 // Not a Razor file.
+                return Task.CompletedTask;
+            }
+
+            if (!_textBufferProvider.TryGetFromDocument(context.Document, out var textBuffer) ||
+                !_asyncCompletionBroker.IsCompletionSupported(textBuffer.ContentType))
+            {
+                // Completion is not supported.
                 return Task.CompletedTask;
             }
 

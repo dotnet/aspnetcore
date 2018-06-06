@@ -25,6 +25,7 @@
     <MicrosoftVisualStudioComponentModelHostPackageVersion>15.0.26606</MicrosoftVisualStudioComponentModelHostPackageVersion>
     <MicrosoftVisualStudioEditorPackageVersion>15.6.161-preview</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioLanguageIntellisensePackageVersion>15.6.161-preview</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
+    <MicrosoftVisualStudioLanguagePackageVersion>15.8.519</MicrosoftVisualStudioLanguagePackageVersion>
     <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6070</MicrosoftVisualStudioOLEInteropPackageVersion>
     <MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>15.3.224</MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>
     <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>2.0.6142705</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
@@ -42,7 +43,7 @@
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
-    <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
+    <StreamJsonRpcPackageVersion>1.3.23</StreamJsonRpcPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview1-26727-04</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemValueTuplePackageVersion>4.6.0-preview1-26727-04</SystemValueTuplePackageVersion>
