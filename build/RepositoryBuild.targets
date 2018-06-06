@@ -7,6 +7,7 @@
     <_NoBuildRepos>$(NoBuild)</_NoBuildRepos>
     <_BuildScriptToExecute Condition="'$(OS)'!='Windows_NT'">build.sh</_BuildScriptToExecute>
     <_BuildScriptToExecute Condition="'$(OS)'=='Windows_NT'">build.cmd</_BuildScriptToExecute>
+    <_SignRequestIntermediateOutputPath>$(IntermediateDir)signrequests\</_SignRequestIntermediateOutputPath>
   </PropertyGroup>
 
   <Target Name="GetRepoBatches" DependsOnTargets="GeneratePropsFiles;ComputeGraph">
@@ -23,12 +24,21 @@
   </Target>
 
   <Target Name="_BuildRepositories" DependsOnTargets="GetRepoBatches" Condition=" @(RepositoryBuildOrder->Count()) != 0 ">
+    <RemoveDir Directories="$(_SignRequestIntermediateOutputPath)" />
+    <MakeDir Directories="$(_SignRequestIntermediateOutputPath)" />
+
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="true"
       StopOnFirstFailure="true"
       Targets="_BuildRepository"
       Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
+
+    <ItemGroup>
+      <SignRequests Include="$(_SignRequestIntermediateOutputPath)*.xml" />
+    </ItemGroup>
+
+    <MergeXmlFiles Files="@(SignRequests)" OutputPath="$(ArtifactsDir)signrequest.xml" />
 
     <PropertyGroup>
       <_NoBuildRepos>true</_NoBuildRepos>
@@ -102,9 +112,9 @@
     <PropertyGroup>
       <BuildArguments>/t:CleanArtifacts /t:Build /p:SkipTests=true $(RepositoryBuildArguments)</BuildArguments>
       <BuildArguments Condition="'$(ProduceRepoBinLog)' == 'true'">$(BuildArguments) /bl:$(LogOutputDir)$(RepositoryToBuild).build.binlog</BuildArguments>
-      <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
-      <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)\build\</RepositoryArtifactsBuildDirectory>
-      <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)\msbuild\</RepositoryArtifactsMSBuildDirectory>
+      <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts\</RepositoryArtifactsRoot>
+      <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)build\</RepositoryArtifactsBuildDirectory>
+      <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)msbuild\</RepositoryArtifactsMSBuildDirectory>
     </PropertyGroup>
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
@@ -131,6 +141,8 @@
     <Copy
        SourceFiles="@(RepositoryArtifacts)"
        DestinationFolder="$(BuildDir)" />
+
+    <Copy SourceFiles="$(RepositoryArtifactsRoot)signrequest.xml" DestinationFiles="$(_SignRequestIntermediateOutputPath)$(RepositoryToBuild).xml" />
 
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"
