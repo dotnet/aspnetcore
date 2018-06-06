@@ -18,12 +18,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         [GlobalSetup]
         public void Setup()
         {
-            _minimal = SetupMatcher(MinimalMatcher.CreateBuilder());
-            _dfa = SetupMatcher(DfaMatcher.CreateBuilder());
-            _instruction = SetupMatcher(InstructionMatcher.CreateBuilder());
-            _route = SetupMatcher(RouteMatcher.CreateBuilder());
-            _tree = SetupMatcher(TreeRouterMatcher.CreateBuilder());
-
             _endpoints = new MatcherEndpoint[1];
             _endpoints[0] = CreateEndpoint("/plaintext");
 
@@ -31,6 +25,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _requests[0] = new DefaultHttpContext();
             _requests[0].RequestServices = CreateServices();
             _requests[0].Request.Path = "/plaintext";
+
+            _minimal = SetupMatcher(MinimalMatcher.CreateBuilder());
+            _dfa = SetupMatcher(DfaMatcher.CreateBuilder());
+            _instruction = SetupMatcher(InstructionMatcher.CreateBuilder());
+            _route = SetupMatcher(RouteMatcher.CreateBuilder());
+            _tree = SetupMatcher(TreeRouterMatcher.CreateBuilder());
         }
 
         // For this case we're specifically targeting the last entry to hit 'worst case'
