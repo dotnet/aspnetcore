@@ -1,0 +1,5 @@
+Statement block - NullParentChunkGenerator - 11 - (0:0,0)
+    Transition span - NullSpanChunkGenerator - SpanEditHandler;Accepts:None - @ - (0:0,0)
+    MetaCode span - NullSpanChunkGenerator - SpanEditHandler;Accepts:None - { - (1:0,1)
+    Code span - StatementChunkGenerator - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL -  foo();  - (2:0,2)
+    MetaCode span - NullSpanChunkGenerator - SpanEditHandler;Accepts:None - } - (10:0,10)

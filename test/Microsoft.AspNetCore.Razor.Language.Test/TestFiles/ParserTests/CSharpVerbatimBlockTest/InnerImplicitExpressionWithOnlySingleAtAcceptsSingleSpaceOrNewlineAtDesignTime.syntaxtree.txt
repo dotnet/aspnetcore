@@ -1,0 +1,8 @@
+Statement block - NullParentChunkGenerator - 11 - (0:0,0)
+    MetaCode span - NullSpanChunkGenerator - SpanEditHandler;Accepts:None - { - (0:0,0)
+    Code span - StatementChunkGenerator - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - LF     - (1:0,1)
+    Expression block - ExpressionChunkGenerator - 1 - (7:1,4)
+        Transition span - NullSpanChunkGenerator - SpanEditHandler;Accepts:None - @ - (7:1,4)
+        Code span - ExpressionChunkGenerator - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[ATD];K14 -  - (8:1,5)
+    Code span - StatementChunkGenerator - SpanEditHandler;Accepts:Any - LF - (8:1,5)
+    MetaCode span - NullSpanChunkGenerator - SpanEditHandler;Accepts:None - } - (10:2,0)

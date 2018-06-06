@@ -10,125 +10,45 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private const string TestExtraKeyword = "model";
 
+        public CSharpVerbatimBlockTest()
+        {
+            UseBaselineTests = true;
+        }
+
         [Fact]
         public void VerbatimBlock()
         {
-            ParseBlockTest("@{ foo(); }",
-                           new StatementBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("{")
-                                   .Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code(" foo(); ")
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               Factory.MetaCode("}")
-                                   .Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@{ foo(); }");
         }
 
         [Fact]
         public void InnerImplicitExpressionWithOnlySingleAtOutputsZeroLengthCodeSpan()
         {
-            ParseBlockTest("{@}",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp()
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.EmptyCSharp().AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                                   ),
-                               Factory.EmptyCSharp().AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                           designTime: true,
-                           expectedErrors: new[]
-                           {
-                               RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 1),
-                                "}")
-                           });
+            ParseBlockTest("{@}");
         }
 
         [Fact]
         public void InnerImplicitExpressionDoesNotAcceptDotAfterAt()
         {
-            ParseBlockTest("{@.}",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp()
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.EmptyCSharp().AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                                   ),
-                               Factory.Code(".").AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                           designTime: true,
-                           expectedErrors: new[]
-                           {
-                               RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
-                                   new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 1),
-                                   ".")
-                           });
+            ParseBlockTest("{@.}");
         }
 
         [Fact]
         public void InnerImplicitExpressionWithOnlySingleAtAcceptsSingleSpaceOrNewlineAtDesignTime()
         {
-            ParseBlockTest("{" + Environment.NewLine
-                         + "    @" + Environment.NewLine
-                         + "}",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code(Environment.NewLine + "    ")
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.EmptyCSharp().AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                                   ),
-                               Factory.Code(Environment.NewLine).AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                /* designTimeParser */ true,
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(6 + Environment.NewLine.Length, 1, 5), Environment.NewLine.Length)));
+            ParseBlockTest("{" + Environment.NewLine + "    @" + Environment.NewLine + "}", designTime: true);
         }
 
         [Fact]
         public void InnerImplicitExpressionDoesNotAcceptTrailingNewlineInRunTimeMode()
         {
-            ParseBlockTest("{@foo." + Environment.NewLine
-                         + "}",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp()
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.Code("foo.").AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                               Factory.Code(Environment.NewLine).AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("{@foo." + Environment.NewLine + "}");
         }
 
         [Fact]
         public void InnerImplicitExpressionAcceptsTrailingNewlineInDesignTimeMode()
         {
-            ParseBlockTest("{@foo." + Environment.NewLine
-                         + "}",
-                           new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp()
-                                   .AsStatement()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.Code("foo.").AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                               Factory.Code(Environment.NewLine).AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                           designTime: true);
+            ParseBlockTest("{@foo." + Environment.NewLine + "}", designTime: true);
         }
     }
 }
