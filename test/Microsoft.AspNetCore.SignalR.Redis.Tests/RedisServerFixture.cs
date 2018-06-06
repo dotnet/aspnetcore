@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         {
             try
             {
-                return new ServerFixture<TStartup>();
+                return new ServerFixture<TStartup>(_loggerFactory);
             }
             catch (Exception ex)
             {

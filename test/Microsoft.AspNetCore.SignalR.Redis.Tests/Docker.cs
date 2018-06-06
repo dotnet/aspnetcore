@@ -29,14 +29,26 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private static Docker Create()
         {
-            // Currently Windows Server 2016 doesn't support linux containers which redis is.
-            if (string.Equals("True", Environment.GetEnvironmentVariable("APPVEYOR"), StringComparison.OrdinalIgnoreCase))
+            var location = GetDockerLocation();
+            if (location == null)
             {
                 return null;
             }
 
-            var location = GetDockerLocation();
-            return location == null ? null : new Docker(location);
+            var docker = new Docker(location);
+
+            // Windows docker must have Linux containers turned on, if they don't skip the docker tests
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                docker.RunCommand("info --format '{{.OSType}}'", out var output);
+
+                if (!string.Equals(output, "linux"))
+                {
+                    return null;
+                }
+            }
+
+            return docker;
         }
 
         private static string GetDockerLocation()
@@ -65,6 +77,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             // use redis base docker image
             // 20 second timeout to allow redis image to be downloaded, should be a rare occurance, only happening when a new version is released
             RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", logger, TimeSpan.FromSeconds(20));
+
+            // inspect the redis docker image and extract the IPAddress. Necessary when running tests from inside a docker container, spinning up a new docker container for redis
+            // outside the current container requires linking the networks (difficult to automate) or using the IP:Port combo
+            RunProcess(_path, "inspect --format=\"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\" " + _dockerContainerName, logger, TimeSpan.FromSeconds(5), out output);
+            output = output.Trim().Replace(Environment.NewLine, "");
+
+            // variable used by Startup.cs
+            Environment.SetEnvironmentVariable("REDIS_CONNECTION", $"{output}:6379");
         }
 
         public void Stop(ILogger logger)
@@ -130,6 +150,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 process.Close();
                 logger.LogError("Closing process '{processName}' because it is running longer than the configured timeout.", fileName);
             }
+
+            // Need to WaitForExit without a timeout to guarantee the output stream has written everything
+            process.WaitForExit();
 
             output = string.Join(Environment.NewLine, lines);
 

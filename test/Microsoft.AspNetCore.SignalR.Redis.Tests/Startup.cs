@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 {
                     // We start the servers before starting redis so we want to time them out ASAP
                     options.Configuration.ConnectTimeout = 1;
+                    options.Configuration.EndPoints.Add(Environment.GetEnvironmentVariable("REDIS_CONNECTION"));
                 });
 
             services.AddSingleton<IUserIdProvider, UserNameIdProvider>();
