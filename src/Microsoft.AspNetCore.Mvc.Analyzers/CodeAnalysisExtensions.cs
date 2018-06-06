@@ -11,6 +11,14 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     {
         public static bool HasAttribute(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
         {
+            Debug.Assert(typeSymbol != null);
+            Debug.Assert(attribute != null);
+
+            if (!inherit)
+            {
+                return HasAttribute(typeSymbol, attribute);
+            }
+
             foreach (var type in typeSymbol.GetTypeHierarchy())
             {
                 if (type.HasAttribute(attribute))
@@ -22,17 +30,47 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             return false;
         }
 
-        public static bool HasAttribute(this ISymbol symbol, ITypeSymbol attribute)
+        public static bool HasAttribute(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
         {
-            Debug.Assert(symbol != null);
+            Debug.Assert(methodSymbol != null);
             Debug.Assert(attribute != null);
 
-            foreach (var declaredAttribute in symbol.GetAttributes())
+            if (!inherit)
             {
-                if (declaredAttribute.AttributeClass == attribute)
+                return HasAttribute(methodSymbol, attribute);
+            }
+
+            while (methodSymbol != null)
+            {
+                if (methodSymbol.HasAttribute(attribute))
                 {
                     return true;
                 }
+
+                methodSymbol = methodSymbol.IsOverride ? methodSymbol.OverriddenMethod : null;
+            }
+
+            return false;
+        }
+
+        public static bool HasAttribute(this IPropertySymbol propertySymbol, ITypeSymbol attribute, bool inherit)
+        {
+            Debug.Assert(propertySymbol != null);
+            Debug.Assert(attribute != null);
+
+            if (!inherit)
+            {
+                return HasAttribute(propertySymbol, attribute);
+            }
+
+            while (propertySymbol != null)
+            {
+                if (propertySymbol.HasAttribute(attribute))
+                {
+                    return true;
+                }
+
+                propertySymbol = propertySymbol.IsOverride ? propertySymbol.OverriddenProperty : null;
             }
 
             return false;
@@ -59,6 +97,19 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             foreach (var type in target.GetTypeHierarchy())
             {
                 if (source == type)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasAttribute(this ISymbol symbol, ITypeSymbol attribute)
+        {
+            foreach (var declaredAttribute in symbol.GetAttributes())
+            {
+                if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
                 {
                     return true;
                 }
