@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem;
 using Moq;
 using Xunit;
-using ItemReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.ItemReference;
+using ItemReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectSystemSchema.ItemReference;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -19,9 +19,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Workspace = new AdhocWorkspace();
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
 
-            ReferenceItems = new ItemCollection(ManageProjectSystemSchema.ResolvedCompilationReference.SchemaName);
-            ContentItems = new ItemCollection(ManageProjectSystemSchema.ContentItem.SchemaName);
-            NoneItems = new ItemCollection(ManageProjectSystemSchema.NoneItem.SchemaName);
+            ReferenceItems = new ItemCollection(ManagedProjectSystemSchema.ResolvedCompilationReference.SchemaName);
+            ContentItems = new ItemCollection(ManagedProjectSystemSchema.ContentItem.SchemaName);
+            NoneItems = new ItemCollection(ManagedProjectSystemSchema.NoneItem.SchemaName);
         }
 
         private ItemCollection ReferenceItems { get; }
@@ -38,13 +38,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void GetChangedAndRemovedDocuments_ReturnsChangedContentAndNoneItems()
         {
             // Arrange
-            var afterChangeContentItems = new ItemCollection(ManageProjectSystemSchema.ContentItem.SchemaName);
+            var afterChangeContentItems = new ItemCollection(ManagedProjectSystemSchema.ContentItem.SchemaName);
             ContentItems.Item("Index.cshtml", new Dictionary<string, string>()
             {
                 [ItemReference.LinkPropertyName] = "NewIndex.cshtml",
                 [ItemReference.FullPathPropertyName] = "C:\\From\\Index.cshtml",
             });
-            var afterChangeNoneItems = new ItemCollection(ManageProjectSystemSchema.NoneItem.SchemaName);
+            var afterChangeNoneItems = new ItemCollection(ManagedProjectSystemSchema.NoneItem.SchemaName);
             NoneItems.Item("About.cshtml", new Dictionary<string, string>()
             {
                 [ItemReference.LinkPropertyName] = "NewAbout.cshtml",
@@ -378,7 +378,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             ReferenceItems.Item("c:\\nuget\\Microsoft.AspNetCore.Mvc.razor.dll");
-            var afterChangeContentItems = new ItemCollection(ManageProjectSystemSchema.ContentItem.SchemaName);
+            var afterChangeContentItems = new ItemCollection(ManagedProjectSystemSchema.ContentItem.SchemaName);
             ContentItems.Item("Index.cshtml", new Dictionary<string, string>()
             {
                 [ItemReference.FullPathPropertyName] = "C:\\Path\\Index.cshtml",

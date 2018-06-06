@@ -14,10 +14,10 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.ProjectSystem;
-using ContentItem = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.ContentItem;
-using ItemReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.ItemReference;
-using NoneItem = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.NoneItem;
-using ResolvedCompilationReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManageProjectSystemSchema.ResolvedCompilationReference;
+using ContentItem = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectSystemSchema.ContentItem;
+using ItemReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectSystemSchema.ItemReference;
+using NoneItem = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectSystemSchema.NoneItem;
+using ResolvedCompilationReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectSystemSchema.ResolvedCompilationReference;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {

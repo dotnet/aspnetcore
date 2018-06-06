@@ -4,7 +4,7 @@
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     // Well-Known Schema and property names defined by the ManagedProjectSystem
-    internal static class ManageProjectSystemSchema
+    internal static class ManagedProjectSystemSchema
     {
         public static class ResolvedCompilationReference
         {
