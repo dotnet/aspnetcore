@@ -100,6 +100,9 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Collection(liElements(),
                 li => Assert.Equal("a", li.Text),
                 li => Assert.Equal("b", li.Text));
+
+            // Textbox contains typed text
+            Assert.Equal("ab", inputElement.GetAttribute("value"));
         }
 
         [Fact]
