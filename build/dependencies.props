@@ -6,6 +6,7 @@
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0</MicrosoftNETCoreDotNetAppHostPackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.0</SystemDataSqlClientPackageVersion>
     <SystemMemoryPackageVersion>4.5.0</SystemMemoryPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0</SystemThreadingTasksExtensionsPackageVersion>
   </PropertyGroup>
@@ -112,7 +113,6 @@
     <SystemIOPipelinesPackageVersion>4.5.0</SystemIOPipelinesPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0</SystemNumericsVectorsPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
