@@ -23,10 +23,9 @@ registerFunction(`${registeredFunctionPrefix}.enableNavigationInterception`, () 
     if (anchorTarget) {
       const href = anchorTarget.getAttribute('href');
       const absoluteHref = toAbsoluteUri(href);
-      //if the user wants to user some specific browser/OS feature, we dont handle it and let the browser/OS
-      const anyChangeBehaviorKeyHold = event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
-      if (isWithinBaseUriSpace(absoluteHref) && !anyChangeBehaviorKeyHold) 
-      {
+
+      // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
+      if (isWithinBaseUriSpace(absoluteHref) && !eventHasSpecialKey(event)) {
         event.preventDefault();
         performInternalNavigation(absoluteHref);
       }
@@ -91,4 +90,8 @@ function isWithinBaseUriSpace(href: string) {
 
 function toBaseUriWithTrailingSlash(baseUri: string) {
   return baseUri.substr(0, baseUri.lastIndexOf('/') + 1);
+}
+
+function eventHasSpecialKey(event: MouseEvent) {
+  return event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
 }

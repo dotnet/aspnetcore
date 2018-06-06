@@ -88,43 +88,42 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanFollowLinkToOtherPageWithCtrlClick()
         {
+            // On macOS we need to hold the command key not the control for opening a popup
             var key = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? Keys.Command : Keys.Control;
+
             try
             {
-                SetUrlViaPushState($"{ServerPathBase}/RouterTest/");
+                SetUrlViaPushState($"{ServerPathBase}/");
 
                 var app = MountTestComponent<TestRouter>();
                 var button = app.FindElement(By.LinkText("Other"));
-                //on mac os build we need to hold the meta button not the control for openning a popup
               
-                new Actions(Browser)
-                    .KeyDown(Keys.Control)
-                    .Click(button)
-                    .Build()
-                    .Perform();
+                new Actions(Browser).KeyDown(key).Click(button).Build().Perform();
 
                 Assert.Equal(2, Browser.WindowHandles.Count);
-
-                //closing newly opened windows if a new one was opened
-
-                Browser.SwitchTo().Window(Browser.WindowHandles.Last());
-                Browser.Close();
-                Browser.SwitchTo().Window(Browser.WindowHandles.First());
             }
             finally
             {
-                // leaving the ctrl key up 
-                new Actions(Browser)
-                    .KeyUp(key)
-                    .Build()
-                    .Perform();
+                // Leaving the ctrl key up 
+                new Actions(Browser).KeyUp(key).Build().Perform();
+                
+                // Closing newly opened windows if a new one was opened
+                while (Browser.WindowHandles.Count > 1)
+                {
+                    Browser.SwitchTo().Window(Browser.WindowHandles.Last());
+                    Browser.Close();
+                }
+
+                // Needed otherwise Selenium tries to direct subsequent commands
+                // to the tab that has already been closed
+                Browser.SwitchTo().Window(Browser.WindowHandles.First());
             }
         }
 
         [Fact]
         public void CanFollowLinkToOtherPageDoesNotOpenNewWindow()
         {
-            SetUrlViaPushState($"{ServerPathBase}/RouterTest/");
+            SetUrlViaPushState($"{ServerPathBase}/");
 
             var app = MountTestComponent<TestRouter>();
             
