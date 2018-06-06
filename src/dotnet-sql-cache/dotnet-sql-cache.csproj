@@ -22,4 +22,17 @@
     <PackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- These files should be signed by corefx -->
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-arm64/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-x64/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win-x86/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Runtime.CompilerServices.Unsafe.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="tools/$(TargetFramework)/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" />
+  </ItemGroup>
+
 </Project>
