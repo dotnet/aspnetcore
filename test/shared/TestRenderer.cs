@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
         public T InstantiateComponent<T>() where T : IComponent
             => (T)InstantiateComponent(typeof(T));
 
-        protected override void UpdateDisplay(RenderBatch renderBatch)
+        protected override void UpdateDisplay(in RenderBatch renderBatch)
         {
             OnUpdateDisplay?.Invoke(renderBatch);
 

@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public void AttachComponent(IComponent component)
                 => AssignComponentId(component);
 
-            protected override void UpdateDisplay(RenderBatch renderBatch)
+            protected override void UpdateDisplay(in RenderBatch renderBatch)
             {
                 LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
             }

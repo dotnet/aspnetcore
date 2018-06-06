@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Updates the visible UI.
         /// </summary>
         /// <param name="renderBatch">The changes to the UI since the previous call.</param>
-        protected abstract void UpdateDisplay(RenderBatch renderBatch);
+        protected abstract void UpdateDisplay(in RenderBatch renderBatch);
 
         /// <summary>
         /// Notifies the specified component that an event has occurred.

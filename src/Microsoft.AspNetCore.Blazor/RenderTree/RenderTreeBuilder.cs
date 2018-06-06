@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="frame">A <see cref="RenderTreeFrame"/> holding the name and value of the attribute.</param>
-        public void AddAttribute(int sequence, RenderTreeFrame frame)
+        public void AddAttribute(int sequence, in RenderTreeFrame frame)
         {
             if (frame.FrameType != RenderTreeFrameType.Attribute)
             {

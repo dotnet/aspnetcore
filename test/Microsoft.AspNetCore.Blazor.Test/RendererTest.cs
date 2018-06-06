@@ -1080,7 +1080,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public new int AssignComponentId(IComponent component)
                 => base.AssignComponentId(component);
 
-            protected override void UpdateDisplay(RenderBatch renderBatch)
+            protected override void UpdateDisplay(in RenderBatch renderBatch)
             {
             }
         }

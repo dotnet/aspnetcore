@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// <summary>
     /// A bound event handler delegate.
     /// </summary>
-    public struct EventHandlerInvoker
+    public readonly struct EventHandlerInvoker
     {
         private readonly MulticastDelegate _delegate;
 

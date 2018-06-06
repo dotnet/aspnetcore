@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Blazor.Performance
             {
             }
 
-            protected override void UpdateDisplay(RenderBatch renderBatch)
+            protected override void UpdateDisplay(in RenderBatch renderBatch)
             {
             }
         }

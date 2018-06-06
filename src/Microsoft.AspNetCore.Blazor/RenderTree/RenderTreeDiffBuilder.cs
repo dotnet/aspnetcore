@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             }
         }
 
-        private static int NextSiblingIndex(RenderTreeFrame frame, int frameIndex)
+        private static int NextSiblingIndex(in RenderTreeFrame frame, int frameIndex)
         {
             switch (frame.FrameType)
             {

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <param name="parameterCollection">The <see cref="ParameterCollection"/>.</param>
         /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
         public static void AssignToProperties(
-            this ParameterCollection parameterCollection,
+            in this ParameterCollection parameterCollection,
             object target)
         {
             if (target == null)

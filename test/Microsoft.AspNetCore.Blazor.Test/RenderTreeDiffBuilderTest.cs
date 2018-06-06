@@ -1496,7 +1496,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
             }
 
-            protected override void UpdateDisplay(RenderBatch renderBatch)
+            protected override void UpdateDisplay(in RenderBatch renderBatch)
             {
             }
         }

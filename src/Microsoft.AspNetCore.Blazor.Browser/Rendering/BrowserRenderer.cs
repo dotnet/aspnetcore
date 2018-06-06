@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         }
 
         /// <inheritdoc />
-        protected override void UpdateDisplay(RenderBatch batch)
+        protected override void UpdateDisplay(in RenderBatch batch)
         {
             RegisteredFunction.InvokeUnmarshalled<int, RenderBatch, object>(
                 "renderBatch",
