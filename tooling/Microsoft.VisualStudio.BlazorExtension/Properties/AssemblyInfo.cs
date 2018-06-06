@@ -13,15 +13,15 @@ using Microsoft.VisualStudio.Shell;
     GenerateCodeBase = true,
     PublicKeyToken = "",
     OldVersionLowerBound = "0.0.0.0",
-    OldVersionUpperBound = "0.4.0.0",
-    NewVersion = "0.4.0.0")]
+    OldVersionUpperBound = "0.5.0.0",
+    NewVersion = "0.5.0.0")]
 [assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.VisualStudio.LanguageServices.Blazor",
     GenerateCodeBase = true,
     PublicKeyToken = "",
     OldVersionLowerBound = "0.0.0.0",
-    OldVersionUpperBound = "0.4.0.0",
-    NewVersion = "0.4.0.0")]
+    OldVersionUpperBound = "0.5.0.0",
+    NewVersion = "0.5.0.0")]
 [assembly: ProvideBindingRedirection(
     AssemblyName = "AngleSharp",
     PublicKeyToken = "",
