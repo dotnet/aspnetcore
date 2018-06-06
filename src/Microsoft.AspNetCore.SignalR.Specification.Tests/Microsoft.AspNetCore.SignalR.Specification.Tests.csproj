@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Tests for users to verify their own implementations of SignalR types</Description>
+    <DeveloperBuildTestTfms>netcoreapp2.2</DeveloperBuildTestTfms>
+    <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x86</RuntimeIdentifier>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\Common\DuplexPipe.cs" Link="DuplexPipe.cs" />
+    <Compile Include="..\Common\MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+    <Compile Include="..\..\test\Microsoft.AspNetCore.SignalR.Tests.Utils\HubConnectionContextUtils.cs" Link="HubConnectionContextUtils.cs" />
+    <Compile Include="..\..\test\Microsoft.AspNetCore.SignalR.Tests.Utils\TaskExtensions.cs" Link="TaskExtensions.cs" />
+    <Compile Include="..\..\test\Microsoft.AspNetCore.SignalR.Tests.Utils\TestClient.cs" Link="TestClient.cs" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Core\Microsoft.AspNetCore.SignalR.Core.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Protocols.MessagePack\Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj" />
+  </ItemGroup>
+  
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -9,7 +9,12 @@ using Moq;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public static class HubConnectionContextUtils
+#if TESTUTILS
+    public
+#else
+    internal
+#endif
+    static class HubConnectionContextUtils
     {
         public static HubConnectionContext Create(ConnectionContext connection, IHubProtocol protocol = null, string userIdentifier = null)
         {

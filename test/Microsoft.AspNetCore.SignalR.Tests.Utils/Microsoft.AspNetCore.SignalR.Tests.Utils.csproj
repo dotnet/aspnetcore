@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR.Tests</RootNamespace>
+    <DefineConstants>$(DefineConstants);TESTUTILS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

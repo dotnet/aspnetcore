@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the protocol used by this connection.
         /// </summary>
-        public virtual IHubProtocol Protocol { get; internal set; }
+        public virtual IHubProtocol Protocol { get; set; }
 
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
