@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import
     Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
@@ -14,6 +14,8 @@
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
+    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
+    <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>

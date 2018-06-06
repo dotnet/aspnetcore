@@ -23,14 +23,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/netstandard2.0/Microsoft.AspNetCore.Server.IIS.dll" Certificate="Microsoft" />
-  </ItemGroup>
-
   <ItemGroup Condition="$(PackNativeAssets) == 'true'">
     <SignedPackageFile Include="aspnetcorev2_inprocess_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorev2_inprocess.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorev2_inprocess_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorev2_inprocess.dll" Certificate="Microsoft" />
 
+    <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
     <Content Include="..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_inprocess.dll" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorev2_inprocess.dll" />
     <Content Include="..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.dll" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorev2_inprocess.dll" />
   </ItemGroup>

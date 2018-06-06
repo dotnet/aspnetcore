@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <PrepareDependsOn>InitializeComponents;$(PrepareDependsOn)</PrepareDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNativeArtifactsInfo</GetArtifactInfoDependsOn>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);RunNativeTest</TestDependsOn>
@@ -61,33 +62,35 @@
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
-  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
-    <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg">
-      <ArtifactType>NuGetPackage</ArtifactType>
-      <PackageId>Microsoft.AspNetCore.AspNetCoreModule</PackageId>
-      <Version>$(PackageVersion)</Version>
-      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-    </ArtifactInfo>
-    <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg" />
+  <Target Name="GetNativeArtifactsInfo" DependsOnTargets="InitializeComponents">
+    <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+      <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>Microsoft.AspNetCore.AspNetCoreModule</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+      </ArtifactInfo>
+      <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg" />
 
-    <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV2.$(PackageVersion).nupkg">
-      <ArtifactType>NuGetPackage</ArtifactType>
-      <PackageId>Microsoft.AspNetCore.AspNetCoreModuleV2</PackageId>
-      <Version>$(PackageVersion)</Version>
-      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-    </ArtifactInfo>
-    <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV2.$(PackageVersion).nupkg" />
+      <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV2.$(PackageVersion).nupkg">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>Microsoft.AspNetCore.AspNetCoreModuleV2</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+      </ArtifactInfo>
+      <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV2.$(PackageVersion).nupkg" />
 
-    <ArtifactInfo Include="$(AncmZipOutputPath)">
-      <ArtifactType>ZipArchive</ArtifactType>
-      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-      <Category>shipoob</Category>
-    </ArtifactInfo>
+      <ArtifactInfo Include="$(AncmZipOutputPath)">
+        <ArtifactType>ZipArchive</ArtifactType>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+        <Category>shipoob</Category>
+      </ArtifactInfo>
 
-    <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
+      <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
 
-    <FilesToSign Include="%(Components.BaseOutputPath)/%(Components.Platform)/%(Components.NativeAsset).dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-  </ItemGroup>
+      <FilesToSign Include="@(Components->'%(BaseOutputPath)/%(Platform)/%(NativeAsset).dll')" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="PackageNativeProjects">
     <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCoreV1.nuspec"
