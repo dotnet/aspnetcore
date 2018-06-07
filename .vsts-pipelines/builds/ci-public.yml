@@ -1,0 +1,15 @@
+trigger:
+- dev
+- release/*
+
+# See https://github.com/aspnet/BuildTools
+resources:
+  repositories:
+  - repository: buildtools
+    type: github
+    endpoint: DotNet-Bot GitHub Connection
+    name: aspnet/BuildTools
+    ref: refs/heads/dev
+    
+phases:
+- template: .vsts-pipelines/templates/project-ci.yml@buildtools
