@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -20,14 +21,14 @@ namespace Microsoft.Extensions.DependencyInjection
         public static ISignalRServerBuilder AddSignalRCore(this IServiceCollection services)
         {
             services.AddSingleton<SignalRCoreMarkerService>();
-            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
-            services.AddSingleton(typeof(IHubProtocolResolver), typeof(DefaultHubProtocolResolver));
-            services.AddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
-            services.AddSingleton(typeof(IHubContext<,>), typeof(HubContext<,>));
-            services.AddSingleton(typeof(HubConnectionHandler<>), typeof(HubConnectionHandler<>));
-            services.AddSingleton(typeof(IUserIdProvider), typeof(DefaultUserIdProvider));
-            services.AddSingleton(typeof(HubDispatcher<>), typeof(DefaultHubDispatcher<>));
-            services.AddScoped(typeof(IHubActivator<>), typeof(DefaultHubActivator<>));
+            services.TryAddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
+            services.TryAddSingleton(typeof(IHubProtocolResolver), typeof(DefaultHubProtocolResolver));
+            services.TryAddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
+            services.TryAddSingleton(typeof(IHubContext<,>), typeof(HubContext<,>));
+            services.TryAddSingleton(typeof(HubConnectionHandler<>), typeof(HubConnectionHandler<>));
+            services.TryAddSingleton(typeof(IUserIdProvider), typeof(DefaultUserIdProvider));
+            services.TryAddSingleton(typeof(HubDispatcher<>), typeof(DefaultHubDispatcher<>));
+            services.TryAddScoped(typeof(IHubActivator<>), typeof(DefaultHubActivator<>));
             services.AddAuthorization();
 
             var builder = new SignalRServerBuilder(services);
