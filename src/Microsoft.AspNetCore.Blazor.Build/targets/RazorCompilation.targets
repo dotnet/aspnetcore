@@ -14,6 +14,8 @@
     <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
 
+    <RazorLangVersion>Experimental</RazorLangVersion>
+
     <!-- 
       This version is used to build our RazorConfiguration, and is hardcoded into the tools in VS. If you change
       This to a value that doesn't match VS, then the Blazor Razor experience won't work for those documents.

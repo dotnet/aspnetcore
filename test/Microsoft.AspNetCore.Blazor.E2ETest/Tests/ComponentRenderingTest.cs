@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,6 +38,17 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             var appElement = MountTestComponent<TextOnlyComponent>();
             Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
+        }
+
+        // This verifies that we've correctly configured the Razor language version via MSBuild.
+        // See #974
+        [Fact]
+        public void CanRenderComponentWithDataDash()
+        {
+            var appElement = MountTestComponent<DataDashComponent>();
+            var element = appElement.FindElement(By.Id("cool_beans"));
+            Assert.Equal("17", element.GetAttribute("data-tab"));
+            Assert.Equal("17", element.Text);
         }
 
         [Fact]
