@@ -1,15 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''" />
+<Project Sdk="Microsoft.NET.Sdk" >
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <RestoreSources>$(RestoreSources);$(DotNetRestoreSources);</RestoreSources>
-
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <ItemGroup>

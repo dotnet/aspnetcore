@@ -197,7 +197,7 @@
       <VersionLines Include="$(PackageVersion)" />
     </ItemGroup>
 
-     <!-- Publish -->
+    <!-- Publish -->
     <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
       Targets="Publish"
       Properties="$(CommonSharedFxProps);GenerateRuntimeConfigurationFiles=true;SelfContained=false;PublishDir=$(SharedFxPublishDirectory)" />
@@ -528,6 +528,21 @@
       Overwrite="true"/>
   </Target>
 
-  <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx"/>
+  <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx;TestSharedFx"/>
+
+  <Target Name="TestSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
+    <PropertyGroup>
+      <UnitTestFxProject>$(RepositoryRoot)\test\SharedFx.UnitTests\SharedFx.UnitTests.csproj</UnitTestFxProject>
+      <UnitTestFxTestProps>
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
+        SharedFxOutputPath=$(SharedFxIntermediateOutputPath);
+        RepositoryCommit=$(RepositoryCommit);
+        SharedFxRuntimeIdentifier=$(SharedFXRid)
+      </UnitTestFxTestProps>
+    </PropertyGroup>
+    <MSBuild Projects="$(UnitTestFxProject)" Targets="Restore" Properties="_Dummy=restore;$(UnitTestFxTestProps)" />
+    <MSBuild Projects="$(UnitTestFxProject)" Targets="VSTest" Properties="$(UnitTestFxTestProps)" />
+  </Target>
 
 </Project>
