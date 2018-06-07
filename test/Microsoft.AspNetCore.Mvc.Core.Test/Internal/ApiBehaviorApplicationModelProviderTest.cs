@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -871,6 +872,59 @@ Environment.NewLine + "int b";
             var attribute = Assert.Single(action.Filters);
             var consumesAttribute = Assert.IsType<ConsumesAttribute>(attribute);
             Assert.Equal("multipart/form-data", Assert.Single(consumesAttribute.ContentTypes));
+        }
+
+        [Fact]
+        public void ApiConventionAttributeIsNotAdded_IfModelAlreadyHasAttribute()
+        {
+            // Arrange
+            var attribute = new ApiConventionAttribute(typeof(DefaultApiConventions));
+            var controllerType = CreateTestControllerType();
+
+            var model = new ControllerModel(controllerType.GetTypeInfo(), new[] { attribute })
+            {
+                Filters = { attribute, },
+            };
+
+            // Act
+            ApiBehaviorApplicationModelProvider.AddGloballyConfiguredApiConventions(model);
+
+            // Assert
+            Assert.Collection(
+                model.Filters,
+                filter => Assert.Same(attribute, filter));
+        }
+
+        [Fact]
+        public void ApiConventionAttributeIsAdded_IfAttributeExistsInAssembly()
+        {
+            // Arrange
+            var controllerType = CreateTestControllerType();
+            var model = new ControllerModel(controllerType.GetTypeInfo(), Array.Empty<object>());
+
+            // Act
+            ApiBehaviorApplicationModelProvider.AddGloballyConfiguredApiConventions(model);
+
+            // Assert
+            Assert.Collection(
+                model.Filters,
+                filter => Assert.IsType<ApiConventionAttribute>(filter));
+        }
+
+        // A dynamically generated type in an assembly that has an ApiConventionAttribute.
+        private static TypeBuilder CreateTestControllerType()
+        {
+            var attributeBuilder = new CustomAttributeBuilder(
+                typeof(ApiConventionAttribute).GetConstructor(new[] { typeof(Type) }),
+                new[] { typeof(DefaultApiConventions) });
+
+            var assemblyName = new AssemblyName("TestAssembly");
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+            assemblyBuilder.SetCustomAttribute(attributeBuilder);
+
+            var module = assemblyBuilder.DefineDynamicModule(assemblyName.Name);
+            var controllerType = module.DefineType("TestController");
+            return controllerType;
         }
 
         private static ApiBehaviorApplicationModelProvider GetProvider(

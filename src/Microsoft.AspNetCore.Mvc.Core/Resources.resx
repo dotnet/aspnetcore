@@ -442,4 +442,7 @@
   <data name="ApiController_MultipleBodyParametersFound" xml:space="preserve">
     <value>Action '{0}' has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify bound from query, '{2}' to specify bound from route, and '{3}' for parameters to be bound from body:</value>
   </data>
+  <data name="ApiConventionMustBeStatic" xml:space="preserve">
+    <value>API convention type '{0}' must be a static type.</value>
+  </data>
 </root>

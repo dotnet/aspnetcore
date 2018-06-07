@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -67,6 +68,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 if (isApiController)
                 {
                     InferBoundPropertyModelPrefixes(controllerModel);
+
+                    AddGloballyConfiguredApiConventions(controllerModel);
                 }
 
                 var controllerHasSelectorModel = controllerModel.Selectors.Any(s => s.AttributeRouteModel != null);
@@ -88,6 +91,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     AddMultipartFormDataConsumesAttribute(actionModel);
                 }
+            }
+        }
+
+        internal static void AddGloballyConfiguredApiConventions(ControllerModel controllerModel)
+        {
+            if (controllerModel.Filters.OfType<ApiConventionAttribute>().Any())
+            {
+                // ApiControllerAttribute is already associated with controller. Do not look for conventions configured at assembly.
+                return;
+            }
+
+            var assembly = controllerModel.ControllerType.Assembly;
+            foreach (var attribute in assembly.GetCustomAttributes<ApiConventionAttribute>())
+            {
+                controllerModel.Filters.Add(attribute);
             }
         }
 
