@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -14,6 +16,63 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class BraceSmartIndenterTest : BraceSmartIndenterTestBase
     {
+        [Fact]
+        public void AtValidContentKind_ReturnsFalseAtMarkup()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("<p></p>"));
+            var changePosition = 2;
+
+            // Act
+            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AtValidContentKind_ReturnsTrueAtCode()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@{}"));
+            var changePosition = 2;
+
+            // Act
+            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AtValidContentKind_ReturnsTrueAtMetacode()
+        {
+            // Arrange
+            var parseOptions = RazorParserOptions.Create(options => options.Directives.Add(FunctionsDirective.Directive));
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@functions {}"), parseOptions);
+            var changePosition = 12;
+
+            // Act
+            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AtValidContentKind_ReturnsFalseWhenNoOwner()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@DateTime.Now"));
+            var changePosition = 14; // 1 after the end of the content
+
+            // Act
+            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+
+            // Assert
+            Assert.False(result);
+        }
+
         [Fact]
         public void InsertIndent_InsertsProvidedIndentIntoBuffer()
         {
@@ -68,7 +127,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var documentTracker = CreateDocumentTracker(() => Mock.Of<ITextBuffer>(), textView);
             editorOperationsFactory.Setup(factory => factory.GetEditorOperations(textView))
                 .Returns(editorOperations.Object);
-            var smartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory.Object);
+            var codeDocumentProvider = Mock.Of<TextBufferCodeDocumentProvider>();
+            var smartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory.Object);
 
             // Act
             smartIndenter.TriggerSmartIndent(textView);
@@ -141,7 +201,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changeCollection = new TestTextChangeCollection();
             var textContentChangeArgs = new TestTextContentChangedEventArgs(changeCollection);
             var documentTracker = CreateDocumentTracker(() => Mock.Of<ITextBuffer>(), Mock.Of<ITextView>());
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory.Object);
+            var codeDocumentProvider = Mock.Of<TextBufferCodeDocumentProvider>();
+            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory.Object);
 
             // Act & Assert
             braceSmartIndenter.TextBuffer_OnChanged(null, textContentChangeArgs);
@@ -156,7 +217,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var edit = new TestEdit(0, 0, initialSnapshot, 0, initialSnapshot, string.Empty);
             var editorOperationsFactory = new Mock<IEditorOperationsFactoryService>();
             var documentTracker = CreateDocumentTracker(() => textBuffer, Mock.Of<ITextView>());
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory.Object);
+            var codeDocumentProvider = Mock.Of<TextBufferCodeDocumentProvider>();
+            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory.Object);
 
             // Act & Assert
             textBuffer.ApplyEdits(edit, edit);
@@ -167,12 +229,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var snapshot = new StringTextSnapshot(Environment.NewLine + "Hello World");
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create(snapshot.Content));
             ITextBuffer textBuffer = null;
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView: null);
             textBuffer = CreateTextBuffer(snapshot, documentTracker);
 
             // Act
-            var result = BraceSmartIndenter.TryCreateIndentationContext(0, Environment.NewLine.Length, Environment.NewLine, documentTracker, out var context);
+            var result = BraceSmartIndenter.TryCreateIndentationContext(0, Environment.NewLine.Length, Environment.NewLine, syntaxTree, documentTracker, out var context);
 
             // Assert
             Assert.Null(context);
@@ -184,13 +247,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var snapshot = new StringTextSnapshot("This Hello World");
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create(snapshot.Content));
             ITextBuffer textBuffer = null;
             var focusedTextView = CreateFocusedTextView(() => textBuffer);
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(snapshot, documentTracker);
 
             // Act
-            var result = BraceSmartIndenter.TryCreateIndentationContext(0, 5, "This ", documentTracker, out var context);
+            var result = BraceSmartIndenter.TryCreateIndentationContext(0, 5, "This ", syntaxTree, documentTracker, out var context);
 
             // Assert
             Assert.Null(context);
@@ -202,13 +266,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var initialSnapshot = new StringTextSnapshot(Environment.NewLine + "Hello World");
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create(initialSnapshot.Content));
             ITextBuffer textBuffer = null;
             var focusedTextView = CreateFocusedTextView(() => textBuffer);
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
 
             // Act
-            var result = BraceSmartIndenter.TryCreateIndentationContext(0, Environment.NewLine.Length, Environment.NewLine, documentTracker, out var context);
+            var result = BraceSmartIndenter.TryCreateIndentationContext(0, Environment.NewLine.Length, Environment.NewLine, syntaxTree, documentTracker, out var context);
 
             // Assert
             Assert.Null(context);
@@ -220,13 +285,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var initialSnapshot = new StringTextSnapshot("Hello\u0085World");
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create(initialSnapshot.Content));
             ITextBuffer textBuffer = null;
             var focusedTextView = CreateFocusedTextView(() => textBuffer);
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
 
             // Act
-            var result = BraceSmartIndenter.TryCreateIndentationContext(5, 1, "\u0085", documentTracker, out var context);
+            var result = BraceSmartIndenter.TryCreateIndentationContext(5, 1, "\u0085", syntaxTree, documentTracker, out var context);
 
             // Assert
             Assert.Null(context);
@@ -238,13 +304,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var initialSnapshot = new StringTextSnapshot("@{ " + Environment.NewLine + "World");
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create(initialSnapshot.Content));
             ITextBuffer textBuffer = null;
             var focusedTextView = CreateFocusedTextView(() => textBuffer);
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
 
             // Act
-            var result = BraceSmartIndenter.TryCreateIndentationContext(3, Environment.NewLine.Length, Environment.NewLine, documentTracker, out var context);
+            var result = BraceSmartIndenter.TryCreateIndentationContext(3, Environment.NewLine.Length, Environment.NewLine, syntaxTree, documentTracker, out var context);
 
             // Assert
             Assert.Null(context);
@@ -256,13 +323,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var initialSnapshot = new StringTextSnapshot("@{ \n}");
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create(initialSnapshot.Content));
             ITextBuffer textBuffer = null;
             var focusedTextView = CreateFocusedTextView(() => textBuffer);
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
 
             // Act
-            var result = BraceSmartIndenter.TryCreateIndentationContext(3, 1, "\n", documentTracker, out var context);
+            var result = BraceSmartIndenter.TryCreateIndentationContext(3, 1, "\n", syntaxTree, documentTracker, out var context);
 
             // Assert
             Assert.NotNull(context);

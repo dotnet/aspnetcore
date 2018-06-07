@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Text;
@@ -30,6 +31,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly ForegroundDispatcher _dispatcher;
         private readonly ITextBuffer _textBuffer;
         private readonly VisualStudioDocumentTracker _documentTracker;
+        private readonly TextBufferCodeDocumentProvider _codeDocumentProvider;
         private readonly IEditorOperationsFactoryService _editorOperationsFactory;
         private readonly StringBuilder _indentBuilder = new StringBuilder();
         private BraceIndentationContext _context;
@@ -42,6 +44,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public BraceSmartIndenter(
             ForegroundDispatcher dispatcher,
             VisualStudioDocumentTracker documentTracker,
+            TextBufferCodeDocumentProvider codeDocumentProvider,
             IEditorOperationsFactoryService editorOperationsFactory)
         {
             if (dispatcher == null)
@@ -54,6 +57,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(documentTracker));
             }
 
+            if (codeDocumentProvider == null)
+            {
+                throw new ArgumentNullException(nameof(codeDocumentProvider));
+            }
+
             if (editorOperationsFactory == null)
             {
                 throw new ArgumentNullException(nameof(editorOperationsFactory));
@@ -61,6 +69,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             _dispatcher = dispatcher;
             _documentTracker = documentTracker;
+            _codeDocumentProvider = codeDocumentProvider;
             _editorOperationsFactory = editorOperationsFactory;
             _textBuffer = _documentTracker.TextBuffer;
             _textBuffer.Changed += TextBuffer_OnChanged;
@@ -95,7 +104,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var newText = changeInformation.newText;
-            if (TryCreateIndentationContext(changeInformation.firstChange.NewPosition, newText.Length, newText, _documentTracker, out var context))
+            if (!_codeDocumentProvider.TryGetFromBuffer(_documentTracker.TextBuffer, out var codeDocument))
+            {
+                // Parse not available.
+                return;
+            }
+
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            if (TryCreateIndentationContext(changeInformation.firstChange.NewPosition, newText.Length, newText, syntaxTree, _documentTracker, out var context))
             {
                 _context = context;
             }
@@ -183,11 +199,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool TryCreateIndentationContext(int changePosition, int changeLength, string finalText, VisualStudioDocumentTracker documentTracker, out BraceIndentationContext context)
+        internal static bool TryCreateIndentationContext(
+            int changePosition,
+            int changeLength,
+            string finalText,
+            RazorSyntaxTree syntaxTree,
+            VisualStudioDocumentTracker documentTracker,
+            out BraceIndentationContext context)
         {
             var focusedTextView = documentTracker.GetFocusedTextView();
             if (focusedTextView != null && ParserHelpers.IsNewLine(finalText))
             {
+                if (!AtValidContentKind(changePosition, syntaxTree))
+                {
+                    context = null;
+                    return false;
+                }
+
                 var currentSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
                 var preChangeLineSnapshot = currentSnapshot.GetLineFromPosition(changePosition);
 
@@ -210,6 +238,36 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             context = null;
+            return false;
+        }
+
+        // Internal for testing
+        internal static bool AtValidContentKind(int changePosition, RazorSyntaxTree syntaxTree)
+        {
+            var change = new SourceChange(changePosition, 0, string.Empty);
+            var owner = syntaxTree.Root.LocateOwner(change);
+
+            if (owner == null)
+            {
+                return false;
+            }
+
+            if (owner.Kind == SpanKindInternal.MetaCode)
+            {
+                // @functions{|}
+                return true;
+            }
+
+            if (owner.Kind == SpanKindInternal.Code)
+            {
+                // It's important that we still indent in C# cases because in the example below we're asked for
+                // a content validation kind check at a 0 length C# code Span (marker).
+                // In the case that we do a smart indent in a situation when Roslyn would: Roslyn respects our
+                // indentation attempt and applies any additional modifications to the applicable span.
+                // @{|}
+                return true;
+            }
+            
             return false;
         }
 

@@ -11,14 +11,21 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         private readonly IEditorOperationsFactoryService _editorOperationsFactory;
         private readonly ForegroundDispatcher _dispatcher;
+        private readonly TextBufferCodeDocumentProvider _codeDocumentProvider;
 
         public DefaultBraceSmartIndenterFactory(
             ForegroundDispatcher dispatcher,
+            TextBufferCodeDocumentProvider codeDocumentProvider,
             IEditorOperationsFactoryService editorOperationsFactory)
         {
             if (dispatcher == null)
             {
                 throw new ArgumentNullException(nameof(dispatcher));
+            }
+
+            if (codeDocumentProvider == null)
+            {
+                throw new ArgumentNullException(nameof(codeDocumentProvider));
             }
 
             if (editorOperationsFactory == null)
@@ -27,6 +34,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             _dispatcher = dispatcher;
+            _codeDocumentProvider = codeDocumentProvider;
             _editorOperationsFactory = editorOperationsFactory;
         }
 
@@ -39,7 +47,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             _dispatcher.AssertForegroundThread();
 
-            var braceSmartIndenter = new BraceSmartIndenter(_dispatcher, documentTracker, _editorOperationsFactory);
+            var braceSmartIndenter = new BraceSmartIndenter(_dispatcher, documentTracker, _codeDocumentProvider, _editorOperationsFactory);
 
             return braceSmartIndenter;
         }
