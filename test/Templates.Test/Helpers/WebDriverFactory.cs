@@ -18,17 +18,20 @@ namespace Templates.Test.Helpers
 
         public static bool HostSupportsBrowserAutomation
             => string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_BROWSER_AUTOMATION_DISABLED")) &&
-               (IsAppVeyor || OSSupportsEdge());
+               (IsAppVeyor || (IsVSTS && RuntimeInformation.OSDescription.Contains("Microsoft Windows")) || OSSupportsEdge());
 
         private static bool IsAppVeyor
             => Environment.GetEnvironmentVariables().Contains("APPVEYOR");
+
+        private static bool IsVSTS
+            => Environment.GetEnvironmentVariables().Contains("TF_BUILD");
 
         public static IWebDriver CreateWebDriver()
         {
             // Where possible, it's preferable to use Edge because it's
             // far faster to automate than Chrome/Firefox. But on AppVeyor
-            // only Firefox is available.
-            var result = (IsAppVeyor || UseFirefox()) ? CreateFirefoxDriver() : CreateEdgeDriver();
+            // only Firefox is available and VSTS doesn't have Edge.
+            var result = (IsAppVeyor || IsVSTS || UseFirefox()) ? CreateFirefoxDriver() : CreateEdgeDriver();
             result.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(DefaultMaxWaitTimeInSeconds);
             return result;
 

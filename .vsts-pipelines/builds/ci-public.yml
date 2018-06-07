@@ -1,0 +1,42 @@
+trigger:
+- dev
+- release/*
+
+# See https://github.com/aspnet/BuildTools
+resources:
+  repositories:
+  - repository: buildtools
+    type: github
+    endpoint: DotNet-Bot GitHub Connection
+    name: aspnet/BuildTools
+    ref: refs/heads/dev
+
+phases:
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Windows
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: macOS
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+    - script: ./run.sh install-tools; $(Agent.WorkFolder)/.dotnet/dotnet dev-certs https 
+      displayName: install certs
+
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Linux
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x

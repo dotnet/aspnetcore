@@ -1,0 +1,38 @@
+trigger:
+- dev
+- release/*
+
+resources:
+  repositories:
+  - repository: buildtools
+    type: git
+    name: aspnet-BuildTools
+    ref: refs/heads/dev
+
+phases:
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Windows
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: macOS
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Linux
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
