@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         private Matcher _tree;
 
         private int[] _samples;
+        private EndpointFeature _feature;
 
         [GlobalSetup]
         public void Setup()
@@ -29,12 +30,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             _route = SetupMatcher(RouteMatcher.CreateBuilder());
             _tree = SetupMatcher(TreeRouterMatcher.CreateBuilder());
+
+            _feature = new EndpointFeature();
         }
 
         [Benchmark(OperationsPerInvoke = SampleCount)]
         public async Task LegacyRoute()
         {
-            var feature = new EndpointFeature();
+            var feature = _feature;
             for (var i = 0; i < SampleCount; i++)
             {
                 var sample = _samples[i];
@@ -47,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         [Benchmark(OperationsPerInvoke = SampleCount)]
         public async Task LegacyTreeRouter()
         {
-            var feature = new EndpointFeature();
+            var feature = _feature;
             for (var i = 0; i < SampleCount; i++)
             {
                 var sample = _samples[i];
