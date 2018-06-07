@@ -15,10 +15,10 @@
 [CmdletBinding(DefaultParameterSetName = 'Default')]
 param(
     [Parameter(ParameterSetName = 'Default')]
-    [string]$Account = "REDMOND\asplab",
+    [string]$Account = $null,
     [Parameter(ParameterSetName = 'Credential')]
     [pscredential]$Credential,
-    # A list of 
+    # A list of
     [string[]]$Agents = $null,
     # Skip agents
     [string[]]$ExcludeAgents = $null,
@@ -36,7 +36,11 @@ $bootstrapper = "$intermedateDir\vs_enterprise.exe"
 Invoke-WebRequest -Uri 'https://aka.ms/vs/15/pre/vs_enterprise.exe' -OutFile $bootstrapper
 
 if (-not $Agents) {
-    $Agents = Get-Agents | ? { ($_.OS -eq 'windows') -and ($_.Category -ne 'Codesign') } | % { $_.Name }
+    $Agents = Get-Agents | ? { $_.OS -eq 'windows' } | % { $_.Name }
+}
+
+if (-not $Account) {
+    $Account = whoami
 }
 
 if (-not $Credential) {
@@ -49,7 +53,7 @@ foreach ($agent in $Agents) {
         Write-Host -ForegroundColor Yellow "Skipping $agent"
         continue
     }
-    
+
     $session = New-PSSession -ComputerName $agent -Credential $Credential
 
     Write-Host "Installing or updating VS on $agent"
@@ -57,17 +61,17 @@ foreach ($agent in $Agents) {
     $tempItemDir = 'C:\temp\vs_install'
     $rspFile = Join-Path $tempItemDir 'vs.agents.json'
     $installerPath = Join-Path $tempItemDir 'vs_enterprise.exe'
-    
+
     # $using: is a special PowerShell 5 syntax for passing variables to a remote command
 
     Invoke-Command -Session $session -ScriptBlock {
         Remove-Item $using:tempItemDir -Recurse -Force -ErrorAction Ignore | Out-Null
         mkdir $using:tempItemDir -ErrorAction Ignore | Out-Null
     }
-    
+
     Copy-Item -ToSession $session $bootstrapper $installerPath
     Copy-Item -ToSession $session $PSScriptRoot\vs.agents.json $rspFile
-    
+
     Invoke-Command -Session $session -ScriptBlock {
         $ErrorActionPreference = 'Stop'
         Set-StrictMode -Version 1
