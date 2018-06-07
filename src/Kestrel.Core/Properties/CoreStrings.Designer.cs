@@ -1890,6 +1890,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2ErrorMinTlsVersion(object protocol)
             => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorMinTlsVersion", "protocol"), protocol);
 
+        /// <summary>
+        /// Invalid HTTP/2 connection preface.
+        /// </summary>
+        internal static string Http2ErrorInvalidPreface
+        {
+            get => GetString("Http2ErrorInvalidPreface");
+        }
+
+        /// <summary>
+        /// Invalid HTTP/2 connection preface.
+        /// </summary>
+        internal static string FormatHttp2ErrorInvalidPreface()
+            => GetString("Http2ErrorInvalidPreface");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -31,12 +31,28 @@ namespace Http2SampleApp
                     // Run callbacks on the transport thread
                     options.ApplicationSchedulingMode = SchedulingMode.Inline;
 
+                    // Http/1.1 endpoint for comparison
                     options.Listen(IPAddress.Any, basePort, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http1;
+                        listenOptions.UseConnectionLogging();
+                    });
+
+                    // TLS Http/1.1 or HTTP/2 endpoint negotiated via ALPN
+                    options.Listen(IPAddress.Any, basePort + 1, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                         listenOptions.UseHttps("testCert.pfx", "testPassword");
                         listenOptions.UseConnectionLogging();
                         listenOptions.ConnectionAdapters.Add(new TlsFilterAdapter());
+                    });
+
+                    // Prior knowledge, no TLS handshake. WARNING: Not supported by browsers
+                    // but useful for the h2spec tests
+                    options.Listen(IPAddress.Any, basePort + 5, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http2;
+                        listenOptions.UseConnectionLogging();
                     });
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())

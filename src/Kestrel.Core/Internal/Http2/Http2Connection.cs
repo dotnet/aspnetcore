@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (ClientPreface[i] != span[i])
                 {
-                    throw new Exception("Invalid HTTP/2 connection preface.");
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
                 }
             }
 
