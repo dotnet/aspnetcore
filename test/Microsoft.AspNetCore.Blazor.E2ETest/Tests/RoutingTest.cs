@@ -231,6 +231,19 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
         }
 
+        [Fact]
+        public void ClickingAnchorWithNoHrefShouldNotNavigate()
+        {
+            SetUrlViaPushState($"{ServerPathBase}/");
+            var initialUrl = Browser.Url;
+
+            var app = MountTestComponent<TestRouter>();
+            app.FindElement(By.Id("anchor-with-no-href")).Click();
+
+            Assert.Equal(initialUrl, Browser.Url);
+            AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
+        }
+
         public void Dispose()
         {
             // Clear any existing state
