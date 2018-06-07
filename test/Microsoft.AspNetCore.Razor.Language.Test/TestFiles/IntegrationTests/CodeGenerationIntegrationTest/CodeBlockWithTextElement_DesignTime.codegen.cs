@@ -32,8 +32,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-                                                             
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml"
+                                                 
 
+#line default
+#line hidden
         }
         #pragma warning restore 1998
     }

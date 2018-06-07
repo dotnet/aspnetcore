@@ -15,36 +15,55 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-              
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
+  
     
+
+#line default
+#line hidden
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
 __o = ViewBag?.Data;
 
 #line default
 #line hidden
-                              
+#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
+                  
     
+
+#line default
+#line hidden
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
 __o = ViewBag.IntIndexer?[0];
 
 #line default
 #line hidden
-                                       
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
+                           
     
+
+#line default
+#line hidden
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
 __o = ViewBag.StrIndexer?["key"];
 
 #line default
 #line hidden
-                                           
+#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
+                               
     
+
+#line default
+#line hidden
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
 __o = ViewBag?.Method(Value?[23]?.More)?["key"];
 
 #line default
 #line hidden
-                                                          
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
+                                              
 
+#line default
+#line hidden
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml"
 __o = ViewBag?.Data;
 
