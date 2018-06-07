@@ -25,7 +25,7 @@ namespace Templates.Test
 
         public TemplateTestBase(ITestOutputHelper output)
         {
-            TemplatePackageInstaller.EnsureTemplatePackagesWereReinstalled(output);
+            TemplatePackageInstaller.EnsureTemplatingEngineInitialized(output);
 
             Output = output;
             ProjectGuid = Guid.NewGuid().ToString("N");
@@ -57,16 +57,11 @@ $@"<Project>
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
         }
 
-        protected void InstallTemplatePackages()
-        {
-            throw new NotImplementedException();
-        }
-
         protected void RunDotNetNew(string templateName, string targetFrameworkOverride, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
         {
             SetAfterDirectoryBuildPropsContents();
 
-            var args = $"new {templateName}";
+            var args = $"new {templateName} --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
 
             if (!string.IsNullOrEmpty(targetFrameworkOverride))
             {

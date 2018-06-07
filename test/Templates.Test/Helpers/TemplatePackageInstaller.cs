@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
@@ -22,19 +25,25 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
         };
 
-        public static void EnsureTemplatePackagesWereReinstalled(ITestOutputHelper output)
+        public static string CustomHivePath { get; } = Path.Combine(AppContext.BaseDirectory, ".templateengine");
+
+        public static void EnsureTemplatingEngineInitialized(ITestOutputHelper output)
         {
             lock (_templatePackagesReinstallationLock)
             {
                 if (!_haveReinstalledTemplatePackages)
                 {
-                    ReinstallTemplatePackages(output);
+                    if (Directory.Exists(CustomHivePath))
+                    {
+                        Directory.Delete(CustomHivePath, recursive: true);
+                    }
+                    InstallTemplatePackages(output);
                     _haveReinstalledTemplatePackages = true;
                 }
             }
         }
 
-        private static void ReinstallTemplatePackages(ITestOutputHelper output)
+        private static void InstallTemplatePackages(ITestOutputHelper output)
         {
             // Remove any previous or prebundled version of the template packages
             foreach (var packageName in _templatePackages)
@@ -43,7 +52,7 @@ namespace Templates.Test.Helpers
                     output,
                     AppContext.BaseDirectory,
                     DotNetMuxer.MuxerPathOrDefault(),
-                    $"new --uninstall {packageName}");
+                    $"new --uninstall {packageName} --debug:custom-hive \"{CustomHivePath}\"");
 
                 // We don't need this command to succeed, because we'll verify next that
                 // uninstallation had the desired effect. This command is expected to fail
@@ -66,7 +75,7 @@ namespace Templates.Test.Helpers
                         output,
                         AppContext.BaseDirectory,
                         DotNetMuxer.MuxerPathOrDefault(),
-                        $"new --install \"{packagePath}\"");
+                        $"new --install \"{packagePath}\" --debug:custom-hive \"{CustomHivePath}\"");
                     proc.WaitForExit(assertSuccess: true);
                 }
             }
@@ -84,7 +93,7 @@ namespace Templates.Test.Helpers
                     output,
                     tempDir,
                     DotNetMuxer.MuxerPathOrDefault(),
-                    $"new \"{templateName}\"");
+                    $"new \"{templateName}\" --debug:custom-hive \"{CustomHivePath}\"");
 
                 proc.WaitForExit(assertSuccess: false);
 
