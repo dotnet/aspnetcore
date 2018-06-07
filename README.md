@@ -3,8 +3,6 @@ ASP.NET Core SignalR
 
 [![Join the chat at https://gitter.im/aspnet/SignalR](https://badges.gitter.im/aspnet/SignalR.svg)](https://gitter.im/aspnet/SignalR?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/80sq517n7peiaxi9/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/signalr/branch/dev)
-
 Travis:   [![Travis](https://travis-ci.org/aspnet/SignalR.svg?branch=dev)](https://travis-ci.org/aspnet/SignalR)
 
 ASP.NET Core SignalR is a new library for ASP.NET Core developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients as it happens, in real-time.
