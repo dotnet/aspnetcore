@@ -170,7 +170,7 @@
       Properties="$(RestoreProps);_Target=Restore;RestoreForce=true" />
   </Target>
 
-  <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
+  <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites">
     <PropertyGroup>
       <AppSharedFxProps>SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
       <AppSharedFxProps>$(AppSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</AppSharedFxProps>
@@ -182,11 +182,6 @@
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxDepVersion=$(PackageVersion)</AllSharedFxProps>
     </PropertyGroup>
 
-    <ItemGroup>
-      <VersionLines Include="$(CommitHash)" />
-      <VersionLines Include="$(PackageVersion)" />
-    </ItemGroup>
-
     <!-- Clear working directory -->
     <RemoveDir Directories="$(_WorkRoot)" />
 
@@ -196,7 +191,12 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PrepareForSharedFx" Properties="$(AllSharedFxProps)" />
   </Target>
 
-  <Target Name="_ResolveSharedFxFiles" DependsOnTargets="DefineSharedFxPrerequisites">
+  <Target Name="_ResolveSharedFxFiles" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
+    <ItemGroup>
+      <VersionLines Include="$(CommitHash)" />
+      <VersionLines Include="$(PackageVersion)" />
+    </ItemGroup>
+
      <!-- Publish -->
     <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
       Targets="Publish"
