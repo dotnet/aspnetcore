@@ -1,7 +1,5 @@
 import * as webpack from 'webpack';
 
-const reactHotLoaderWebpackLoader = 'react-hot-loader/webpack';
-const reactHotLoaderPatch = 'react-hot-loader/patch';
 const supportedTypeScriptLoaders = ['ts-loader', 'awesome-typescript-loader'];
 
 export function addReactHotModuleReplacementConfig(webpackConfig: webpack.Configuration) {
@@ -27,12 +25,6 @@ export function addReactHotModuleReplacementConfig(webpackConfig: webpack.Config
             continue;
         }
 
-        // This is the one - prefix it with the react-hot-loader loader
-        // (unless it's already in there somewhere)
-        if (!containsLoader(loadersArray, reactHotLoaderWebpackLoader)) {
-            loadersArray.unshift(reactHotLoaderWebpackLoader);
-            rule.use = loadersArray; // In case we normalised it to an array
-        }
         break;
     }
 
@@ -47,11 +39,6 @@ export function addReactHotModuleReplacementConfig(webpackConfig: webpack.Config
         if (typeof(entryConfig[entrypointName]) === 'string') {
             // Normalise to array
             entryConfig[entrypointName] = [entryConfig[entrypointName] as string];
-        }
-
-        let entryValueArray = entryConfig[entrypointName] as string[];
-        if (entryValueArray.indexOf(reactHotLoaderPatch) < 0) {
-            entryValueArray.unshift(reactHotLoaderPatch);
         }
     });
 }
