@@ -297,27 +297,27 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             private static readonly Action<ILogger, string, PathString, Exception> _matchSuccess = LoggerMessage.Define<string, PathString>(
                 LogLevel.Debug,
-                new EventId(0, "MatchSuccess"),
+                new EventId(1, "MatchSuccess"),
                 "Request matched endpoint '{EndpointName}' for request path '{Path}'.");
 
             private static readonly Action<ILogger, PathString, Exception> _matchFailed = LoggerMessage.Define<PathString>(
                 LogLevel.Debug,
-                new EventId(1, "MatchFailed"),
+                new EventId(2, "MatchFailed"),
                 "No endpoints matched request path '{Path}'.");
 
             private static readonly Action<ILogger, PathString, IEnumerable<string>, Exception> _matchAmbiguous = LoggerMessage.Define<PathString, IEnumerable<string>>(
                 LogLevel.Error,
-                new EventId(2, "MatchAmbiguous"),
+                new EventId(3, "MatchAmbiguous"),
                 "Request matched multiple endpoints for request path '{Path}'. Matching endpoints: {AmbiguousEndpoints}");
 
             private static readonly Action<ILogger, object, string, IRouteConstraint, Exception> _constraintFailed = LoggerMessage.Define<object, string, IRouteConstraint>(
                 LogLevel.Debug,
-                new EventId(3, "ContraintFailed"),
+                new EventId(4, "ContraintFailed"),
                 "Route value '{RouteValue}' with key '{RouteKey}' did not match the constraint '{RouteConstraint}'.");
 
             private static readonly Action<ILogger, string, PathString, Exception> _matchedTemplate = LoggerMessage.Define<string, PathString>(
                 LogLevel.Debug,
-                new EventId(4, "MatchedTemplate"),
+                new EventId(5, "MatchedTemplate"),
                 "Request matched the route pattern '{RouteTemplate}' for request path '{Path}'.");
 
             public static void MatchSuccess(ILogger logger, HttpContext httpContext, Endpoint endpoint)
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             public static void MatchedTemplate(ILogger logger, HttpContext httpContext, RouteTemplate template)
             {
-                _matchedTemplate(logger, httpContext.Request.Path, template.TemplateText, null);
+                _matchedTemplate(logger, template.TemplateText, httpContext.Request.Path, null);
             }
         }
     }
