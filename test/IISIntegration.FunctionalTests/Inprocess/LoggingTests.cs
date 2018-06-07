@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class LoggingTests : IISFunctionalTestBase
     {
-        [Theory]
+        [Theory(Skip = "See: https://github.com/aspnet/IISIntegration/issues/897")]
         [InlineData("CheckErrLogFile")]
         [InlineData("CheckLogFile")]
         public async Task CheckStdoutLogging(string path)

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _fixture = fixture;
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "See: https://github.com/aspnet/IISIntegration/issues/766")]
         public async Task ReadAndWriteSynchronously()
         {
             for (int i = 0; i < 100; i++)
