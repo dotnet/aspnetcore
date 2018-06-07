@@ -1,0 +1,13 @@
+trigger:
+- dev
+- release/*
+
+resources:
+  repositories:
+  - repository: buildtools
+    type: git
+    name: aspnet-BuildTools
+    ref: refs/heads/dev
+
+phases:
+- template: .vsts-pipelines/templates/project-ci.yml@buildtools
