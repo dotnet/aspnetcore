@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
+    <!-- Temporarily suppress packing this project until we can fix issues in its dependencies. -->
+    <IsPackable>false</IsPackable>
     <DeveloperBuildTestTfms>netcoreapp2.2</DeveloperBuildTestTfms>
     <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
     <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
