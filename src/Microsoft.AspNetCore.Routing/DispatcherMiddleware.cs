@@ -64,7 +64,11 @@ namespace Microsoft.AspNetCore.Routing
             await matcher.MatchAsync(httpContext, feature);
             if (feature.Endpoint != null)
             {
-                Log.EndpointMatched(_logger, feature);
+                Log.MatchSuccess(_logger, feature);
+            }
+            else
+            {
+                Log.MatchFailure(_logger);
             }
 
             await _next(httpContext);
@@ -101,13 +105,23 @@ namespace Microsoft.AspNetCore.Routing
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _matchSuccess = LoggerMessage.Define<string>(
-                LogLevel.Information,
-                new EventId(0, "MatchSuccess"),
+                LogLevel.Debug,
+                new EventId(1, "MatchSuccess"),
                 "Request matched endpoint '{EndpointName}'.");
 
-            public static void EndpointMatched(ILogger logger, EndpointFeature feature)
+            private static readonly Action<ILogger, Exception> _matchFailure = LoggerMessage.Define(
+                LogLevel.Debug,
+                new EventId(2, "MatchFailure"),
+                "Request did not match any endpoints.");
+
+            public static void MatchSuccess(ILogger logger, EndpointFeature feature)
             {
                 _matchSuccess(logger, feature.Endpoint.DisplayName, null);
+            }
+
+            public static void MatchFailure(ILogger logger)
+            {
+                _matchFailure(logger, null);
             }
         }
     }

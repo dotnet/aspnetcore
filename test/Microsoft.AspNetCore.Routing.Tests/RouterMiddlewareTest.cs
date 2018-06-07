@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing
     public class RouterMiddlewareTest
     {
         [Fact]
-        public async void Invoke_LogsCorrectValues_WhenNotHandled()
+        public async Task Invoke_LogsCorrectValues_WhenNotHandled()
         {
             // Arrange
             var expectedMessage = "Request did not match any routes.";
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public async void Invoke_DoesNotLog_WhenHandled()
+        public async Task Invoke_DoesNotLog_WhenHandled()
         {
             // Arrange
             var isHandled = true;
