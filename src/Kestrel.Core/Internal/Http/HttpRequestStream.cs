@@ -117,6 +117,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return ReadAsyncInternal(destination, cancellationToken);
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)

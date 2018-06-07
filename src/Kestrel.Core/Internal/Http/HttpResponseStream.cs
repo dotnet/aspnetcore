@@ -118,6 +118,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return new ValueTask(_httpResponseControl.WriteAsync(source, cancellationToken));
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public void StartAcceptingWrites()

@@ -36,8 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
 #if NETCOREAPP2_1
             if (!_eventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
-#else
+#elif NETSTANDARD2_0
             if (_eventArgs.Buffer != null)
+#else
+#error TFMs need to be updated
 #endif
             {
                 _eventArgs.SetBuffer(null, 0, 0);
@@ -63,10 +65,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
 #if NETCOREAPP2_1
             _eventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
-#else
+#elif NETSTANDARD2_0
             var segment = memory.GetArray();
 
             _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+#else
+#error TFMs need to be updated
 #endif
             if (!_socket.SendAsync(_eventArgs))
             {

@@ -154,8 +154,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             Assert.NotNull(connection.Features.Get<SslStream>());
 #if NETCOREAPP2_2
                             Assert.Equal("localhost", name);
-#else
+#elif NET461
                             Assert.Null(name);
+#else
+#error TFMs need to be updated
 #endif
                             selectorCalled++;
                             return _x509Certificate2;
@@ -194,8 +196,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             Assert.NotNull(connection.Features.Get<SslStream>());
 #if NETCOREAPP2_2
                             Assert.Equal("localhost", name);
-#else
+#elif NET461
                             Assert.Null(name);
+#else
+#error TFMs need to be updated
 #endif
                             selectorCalled++;
                             if (selectorCalled == 1)
@@ -282,8 +286,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             Assert.NotNull(connection.Features.Get<SslStream>());
 #if NETCOREAPP2_2
                             Assert.Equal("localhost", name);
-#else
+#elif NET461
                             Assert.Null(name);
+#else
+#error TFMs need to be updated
 #endif
                             selectorCalled++;
                             return _x509Certificate2;

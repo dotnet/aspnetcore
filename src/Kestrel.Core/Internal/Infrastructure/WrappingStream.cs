@@ -71,6 +71,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 #if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
             => _inner.ReadAsync(destination, cancellationToken);
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public override int ReadByte()
@@ -91,6 +94,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 #if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
             => _inner.WriteAsync(source, cancellationToken);
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public override void WriteByte(byte value)

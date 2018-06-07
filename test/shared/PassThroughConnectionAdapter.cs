@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Testing
                 _innerStream.Close();
             }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
             public override int Read(Span<byte> buffer)
             {
                 return _innerStream.Read(buffer);
@@ -165,7 +165,10 @@ namespace Microsoft.AspNetCore.Testing
             {
                 _innerStream.CopyTo(destination, bufferSize);
             }
-#endif 
+#elif NET461
+#else
+#error TFMs need to be updated
+#endif
         }
     }
 }

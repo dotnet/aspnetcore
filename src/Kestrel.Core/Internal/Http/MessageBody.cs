@@ -90,9 +90,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
 #if NETCOREAPP2_1
                             await destination.WriteAsync(memory);
-#else
+#elif NETSTANDARD2_0
                             var array = memory.GetArray();
                             await destination.WriteAsync(array.Array, array.Offset, array.Count, cancellationToken);
+#else
+#error TFMs need to be updated
 #endif
                         }
                     }

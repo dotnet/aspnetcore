@@ -25,10 +25,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
 #if NETCOREAPP2_1
             _eventArgs.SetBuffer(buffer);
-#else
+#elif NETSTANDARD2_0
             var segment = buffer.GetArray();
 
             _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+#else
+#error TFMs need to be updated
 #endif
             if (!_socket.ReceiveAsync(_eventArgs))
             {

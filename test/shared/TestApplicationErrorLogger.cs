@@ -45,9 +45,8 @@ namespace Microsoft.AspNetCore.Testing
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             var exceptionIsIgnored = IgnoredExceptions.Contains(exception?.GetType());
-#if true
+
             if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors && !exceptionIsIgnored)
-#endif
             {
                 var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
 
