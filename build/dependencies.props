@@ -3,25 +3,25 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17067</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
-    <MicrosoftAspNetCoreResponseCompressionPackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreResponseCompressionPackageVersion>
-    <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreServerHttpSysPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIISPackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreServerIISPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34373</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34373</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17081</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
+    <MicrosoftAspNetCoreResponseCompressionPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreResponseCompressionPackageVersion>
+    <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerHttpSysPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIISPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerIISPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34411</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26531-03</MicrosoftNETCoreApp22PackageVersion>
-    <MicrosoftNetHttpHeadersPackageVersion>2.2.0-preview1-34373</MicrosoftNetHttpHeadersPackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26606-01</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNetHttpHeadersPackageVersion>2.2.0-preview1-34411</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
