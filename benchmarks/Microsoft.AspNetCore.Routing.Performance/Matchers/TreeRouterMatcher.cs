@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             if (context.Handler != null)
             {
-                httpContext.Features.Set<IEndpointFeature>(feature);
                 await context.Handler(httpContext);
             }
         }

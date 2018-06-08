@@ -3,12 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public sealed class MatcherEndpoint : Endpoint
     {
+        internal static readonly Func<RequestDelegate, RequestDelegate> EmptyInvoker = (next) =>
+        {
+            return (context) => Task.CompletedTask;
+        };
+
         public MatcherEndpoint(
             Func<RequestDelegate, RequestDelegate> invoker,
             string template,
