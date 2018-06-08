@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             foreach (var group in groups)
             {
                 var template = TemplateParser.Parse(group.Key.Template);
-                var entryExists = entries.Any(item => item.RouteTemplate.TemplateText == template.TemplateText);
+                var entryExists = entries.Any(item => item.RouteTemplate.TemplateText == template.TemplateText && item.Order == group.Key.Order);
                 if (!entryExists)
                 {
                     entries.Add(MapInbound(template, group.Value.ToArray(), group.Key.Order));
