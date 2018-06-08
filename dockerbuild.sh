@@ -115,4 +115,5 @@ docker run \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
     ./build.sh \
-    ${build_args[@]+"${build_args[@]}"}
+    ${build_args[@]+"${build_args[@]}"} \
+    "-p:HostMachineRepositoryRoot=$DIR"

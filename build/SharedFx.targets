@@ -530,19 +530,34 @@
 
   <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx;TestSharedFx"/>
 
-  <Target Name="TestSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
+  <PropertyGroup>
+    <UnitTestFxProject>$(RepositoryRoot)\test\SharedFx.UnitTests\SharedFx.UnitTests.csproj</UnitTestFxProject>
+    <UnitTestFxTrxLogFile>$(LogOutputDir)SharedFx-UnitTests.trx</UnitTestFxTrxLogFile>
+    <UnitTestFxTrxPhysicalFilePath>$(UnitTestFxTrxLogFile)</UnitTestFxTrxPhysicalFilePath>
+    <UnitTestFxTrxPhysicalFilePath Condition="'$(HostMachineRepositoryRoot)' != ''">$(HostMachineRepositoryRoot)/artifacts/logs/SharedFx-UnitTests.trx</UnitTestFxTrxPhysicalFilePath>
+  </PropertyGroup>
+
+  <Target Name="TestSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash;InstallDotNet">
     <PropertyGroup>
-      <UnitTestFxProject>$(RepositoryRoot)\test\SharedFx.UnitTests\SharedFx.UnitTests.csproj</UnitTestFxProject>
       <UnitTestFxTestProps>
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         SharedFxOutputPath=$(SharedFxIntermediateOutputPath);
         RepositoryCommit=$(RepositoryCommit);
+        VSTestLogger=$([MSBuild]::Escape('trx;LogFileName=$(UnitTestFxTrxLogFile)'));
         SharedFxRuntimeIdentifier=$(SharedFXRid)
       </UnitTestFxTestProps>
     </PropertyGroup>
     <MSBuild Projects="$(UnitTestFxProject)" Targets="Restore" Properties="_Dummy=restore;$(UnitTestFxTestProps)" />
     <MSBuild Projects="$(UnitTestFxProject)" Targets="VSTest" Properties="$(UnitTestFxTestProps)" />
+    <CallTarget Targets="ReportTestSharedFxTrx" />
+    <OnError ExecuteTargets="ReportTestSharedFxTrx" />
+  </Target>
+
+  <Target Name="ReportTestSharedFxTrx">
+    <Message Text="##teamcity[importData type='vstest' path='$(UnitTestFxTrxPhysicalFilePath)']"
+      Importance="high"
+      Condition=" '$(TEAMCITY_VERSION)' != '' AND Exists('$(UnitTestFxTrxLogFile)') "/>
   </Target>
 
 </Project>

@@ -32,6 +32,9 @@ Re-installs KoreBuild
 .PARAMETER ConfigFile
 The path to the configuration file that stores values. Defaults to korebuild.json.
 
+.PARAMETER CI
+Sets up CI specific settings and variables.
+
 .PARAMETER PackageVersionPropsUrl
 (optional) the url of the package versions props path containing dependency versions.
 
@@ -81,7 +84,8 @@ param(
     [Alias('u')]
     [switch]$Update,
     [switch]$Reinstall,
-    [string]$ConfigFile,
+    [string]$ConfigFile = $null,
+    [switch]$CI,
     [string]$PackageVersionPropsUrl = $null,
     [string]$AccessTokenSuffix = $null,
     [string]$RestoreSources = $null,
@@ -235,7 +239,7 @@ $korebuildPath = Get-KoreBuild
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
-    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile
+    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile -CI:$CI
     Invoke-KoreBuildCommand $Command @MSBuildArguments
 }
 finally {

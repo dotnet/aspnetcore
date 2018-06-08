@@ -18,6 +18,7 @@ reinstall=false
 repo_path="$DIR"
 channel=''
 tools_source=''
+ci=false
 package_version_props_url=''
 asset_root_url=''
 access_token_suffix=''
@@ -48,6 +49,7 @@ __usage() {
     echo "    --product-build-id <ID>                   The product build ID for correlation with orchestrated builds."
     echo "    -u|--update                               Update to the latest KoreBuild even if the lock file is present."
     echo "    --reinstall                               Reinstall KoreBuild."
+    echo "    --ci                                      Apply CI specific settings and environment variables."
     echo ""
     echo "Description:"
     echo "    This function will create a file \$DIR/korebuild-lock.txt. This lock file can be committed to source, but does not have to be."
@@ -216,6 +218,9 @@ while [[ $# -gt 0 ]]; do
         --reinstall|-Reinstall)
             reinstall=true
             ;;
+        --ci|-[Cc][Ii])
+            ci=true
+            ;;
         --verbose|-Verbose)
             verbose=true
             ;;
@@ -288,7 +293,7 @@ fi
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
 get_korebuild
-set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file"
+set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
 
 # This incantation avoids unbound variable issues if msbuild_args is empty
 # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
