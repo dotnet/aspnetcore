@@ -1,5 +1,5 @@
 ﻿<Project>
-  <!-- These package version may be overridden or updated by automation. -->
+  <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <MicrosoftCSharpPackageVersion>4.6.0-preview1-26605-01</MicrosoftCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.2.0-preview1-26606-01</MicrosoftExtensionsDependencyModelPackageVersion>
