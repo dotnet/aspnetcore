@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.TestObjects
         {
             if (_isHandled)
             {
-                feature.Endpoint = new TestEndpoint(EndpointMetadataCollection.Empty, "Test endpoint");
+                feature.Endpoint = new TestEndpoint(EndpointMetadataCollection.Empty, "Test endpoint", address: null);
             }
 
             return Task.CompletedTask;

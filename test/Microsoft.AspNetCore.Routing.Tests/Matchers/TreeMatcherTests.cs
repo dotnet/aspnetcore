@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         private MatcherEndpoint CreateEndpoint(string template, int order, object values = null, EndpointMetadataCollection metadata = null)
         {
-            return new MatcherEndpoint((next) => null, template, values, order, metadata ?? EndpointMetadataCollection.Empty, template);
+            return new MatcherEndpoint((next) => null, template, values, order, metadata ?? EndpointMetadataCollection.Empty, template, address: null);
         }
 
         private TreeMatcher CreateTreeMatcher(EndpointDataSource endpointDataSource)
@@ -88,6 +88,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             // Assert
             Assert.Equal(endpointWithConstraint, endpointFeature.Endpoint);
-        }
     }
+}
 }

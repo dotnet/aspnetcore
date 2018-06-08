@@ -34,6 +34,9 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddSingleton<MatcherFactory, TreeMatcherFactory>();
 
+            // Link generation related services
+            services.TryAddSingleton<IEndpointFinder, DefaultEndpointFinder>();
+            services.TryAddSingleton<ILinkGenerator, DefaultLinkGenerator>();
             //
             // Endpoint Selection
             //

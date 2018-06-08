@@ -72,7 +72,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 template,
                 null,
                 0,
-                EndpointMetadataCollection.Empty, "endpoint: " + template);
+                EndpointMetadataCollection.Empty, 
+                "endpoint: " + template,
+                address: null);
         }
 
         internal (Matcher matcher, MatcherEndpoint endpoint) CreateMatcher(string template)

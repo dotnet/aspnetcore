@@ -35,7 +35,8 @@ namespace Benchmarks
                         values: new { },
                         order: 0,
                         metadata: EndpointMetadataCollection.Empty,
-                        displayName: "Plaintext"),
+                        displayName: "Plaintext",
+                        address: null),
                 }));
             });
         }

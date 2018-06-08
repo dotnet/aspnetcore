@@ -31,7 +31,7 @@ namespace DispatcherSample.Web
                             response.ContentLength = payloadLength;
                             return response.Body.WriteAsync(_homePayload, 0, payloadLength);
                         },
-                        "/", new { }, 0, EndpointMetadataCollection.Empty, "Home"),
+                        "/", new { }, 0, EndpointMetadataCollection.Empty, "Home", address: null),
                     new MatcherEndpoint((next) => (httpContext) =>
                         {
                             var response = httpContext.Response;
@@ -41,7 +41,7 @@ namespace DispatcherSample.Web
                             response.ContentLength = payloadLength;
                             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
                         },
-                        "/plaintext", new { }, 0, EndpointMetadataCollection.Empty, "Plaintext"),
+                        "/plaintext", new { }, 0, EndpointMetadataCollection.Empty, "Plaintext", address: null),
                 }));
             });
         }

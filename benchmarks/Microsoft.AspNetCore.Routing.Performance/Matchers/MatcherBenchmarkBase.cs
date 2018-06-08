@@ -31,7 +31,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                new { },
                0,
                EndpointMetadataCollection.Empty,
-               template);
+               template,
+               address: null);
         }
 
         internal static  int[] SampleRequests(int endpointCount, int count)
