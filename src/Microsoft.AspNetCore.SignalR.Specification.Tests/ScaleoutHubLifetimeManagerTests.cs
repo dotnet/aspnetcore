@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Specification.Tests
@@ -297,14 +296,12 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             {
                 // Force an exception when writing to connection
                 var connectionMock = HubConnectionContextUtils.CreateMock(client.Connection);
-                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>(), It.IsAny<CancellationToken>())).Throws(new Exception());
-                var connection = connectionMock.Object;
 
-                await manager2.OnConnectedAsync(connection).OrTimeout();
+                await manager2.OnConnectedAsync(connectionMock).OrTimeout();
 
                 // This doesn't throw because there is no connection.ConnectionId on this server so it has to publish to the backplane.
                 // And once that happens there is no way to know if the invocation was successful or not.
-                await manager1.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
+                await manager1.SendConnectionAsync(connectionMock.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
             }
         }
 
@@ -319,9 +316,8 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             {
                 // Force an exception when writing to connection
                 var connectionMock = HubConnectionContextUtils.CreateMock(client1.Connection);
-                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>(), It.IsAny<CancellationToken>())).Throws(new Exception());
 
-                var connection1 = connectionMock.Object;
+                var connection1 = connectionMock;
                 var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
                 await manager.OnConnectedAsync(connection1).OrTimeout();
