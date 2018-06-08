@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         if (!readableBuffer.IsEmpty)
                         {
-                            if (Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, out consumed, out examined))
+                            if (Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, _serverSettings.MaxFrameSize, out consumed, out examined))
                             {
                                 Log.LogTrace($"Connection id {ConnectionId} received {_incomingFrame.Type} frame with flags 0x{_incomingFrame.Flags:x} and length {_incomingFrame.Length} for stream ID {_incomingFrame.StreamId}");
                                 await ProcessFrameAsync<TContext>(application);

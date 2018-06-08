@@ -497,9 +497,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="MultipleCertificateSources" xml:space="preserve">
     <value>The endpoint {endpointName} specified multiple certificate sources.</value>
   </data>
-  <data name="Http2NotSupported" xml:space="preserve">
-    <value>HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.</value>
-  </data>
   <data name="WritingToResponseBodyAfterResponseCompleted" xml:space="preserve">
     <value>Cannot write to the response body, the response has completed.</value>
   </data>
@@ -517,5 +514,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="ConnectionTimedOutByServer" xml:space="preserve">
     <value>The connection was timed out by the server.</value>
+  </data>
+  <data name="Http2ErrorFrameOverLimit" xml:space="preserve">
+    <value>The received frame size of {size} exceeds the limit {limit}.</value>
   </data>
 </root>

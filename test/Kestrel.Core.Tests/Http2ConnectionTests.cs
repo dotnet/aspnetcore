@@ -300,6 +300,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task Frame_Received_OverMaxSize_FrameError()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            // Manually craft a frame where the size is too large. Our own frame class won't allow this.
+            // See Http2Frame.Length
+            var length = Http2Frame.MinAllowedMaxFrameSize + 1; // Too big
+            var frame = new byte[9 + length];
+            frame[0] = (byte)((length & 0x00ff0000) >> 16);
+            frame[1] = (byte)((length & 0x0000ff00) >> 8);
+            frame[2] = (byte)(length & 0x000000ff);
+            await SendAsync(frame);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 1,
+                expectedErrorCode: Http2ErrorCode.FRAME_SIZE_ERROR,
+                expectedErrorMessage: CoreStrings.FormatHttp2ErrorFrameOverLimit(length, Http2Frame.MinAllowedMaxFrameSize));
+        }
+
+        [Fact]
         public async Task DATA_Received_ReadByStream()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -2794,7 +2816,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     Assert.True(buffer.Length > 0);
 
-                    if (Http2FrameReader.ReadFrame(buffer, frame, out consumed, out examined))
+                    if (Http2FrameReader.ReadFrame(buffer, frame, 16_384, out consumed, out examined))
                     {
                         return frame;
                     }

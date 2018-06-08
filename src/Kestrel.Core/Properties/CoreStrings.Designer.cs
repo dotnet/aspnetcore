@@ -1779,20 +1779,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("MultipleCertificateSources", "endpointName"), endpointName);
 
         /// <summary>
-        /// HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.
-        /// </summary>
-        internal static string Http2NotSupported
-        {
-            get => GetString("Http2NotSupported");
-        }
-
-        /// <summary>
-        /// HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.
-        /// </summary>
-        internal static string FormatHttp2NotSupported()
-            => GetString("Http2NotSupported");
-
-        /// <summary>
         /// Cannot write to the response body, the response has completed.
         /// </summary>
         internal static string WritingToResponseBodyAfterResponseCompleted
@@ -1875,6 +1861,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatConnectionTimedOutByServer()
             => GetString("ConnectionTimedOutByServer");
+
+        /// <summary>
+        /// The received frame size of {size} exceeds the limit {limit}.
+        /// </summary>
+        internal static string Http2ErrorFrameOverLimit
+        {
+            get => GetString("Http2ErrorFrameOverLimit");
+        }
+
+        /// <summary>
+        /// The received frame size of {size} exceeds the limit {limit}.
+        /// </summary>
+        internal static string FormatHttp2ErrorFrameOverLimit(object size, object limit)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorFrameOverLimit", "size", "limit"), size, limit);
 
         private static string GetString(string name, params string[] formatterNames)
         {

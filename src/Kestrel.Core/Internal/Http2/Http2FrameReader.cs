@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public static class Http2FrameReader
     {
-        public static bool ReadFrame(ReadOnlySequence<byte> readableBuffer, Http2Frame frame, out SequencePosition consumed, out SequencePosition examined)
+        public static bool ReadFrame(ReadOnlySequence<byte> readableBuffer, Http2Frame frame, uint maxFrameSize, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = readableBuffer.Start;
             examined = readableBuffer.End;
@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             var headerSlice = readableBuffer.Slice(0, Http2Frame.HeaderLength);
             headerSlice.CopyTo(frame.Raw);
+
+            if (frame.Length > maxFrameSize)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorFrameOverLimit(frame.Length, maxFrameSize), Http2ErrorCode.FRAME_SIZE_ERROR);
+            }
 
             if (readableBuffer.Length < Http2Frame.HeaderLength + frame.Length)
             {
