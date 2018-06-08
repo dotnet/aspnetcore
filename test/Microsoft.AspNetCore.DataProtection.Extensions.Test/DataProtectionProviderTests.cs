@@ -115,7 +115,8 @@ namespace Microsoft.AspNetCore.DataProtection
             });
         }
 
-        [Fact]
+        [ConditionalFact]
+        [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
         public void System_UsesProvidedDirectoryAndCertificate()
         {
             var filePath = Path.Combine(GetTestFilesPath(), "TestCert.pfx");
@@ -162,12 +163,7 @@ namespace Microsoft.AspNetCore.DataProtection
             var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
             var certificate = new X509Certificate2(filePath, "password");
 
-            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-            {
-                store.Open(OpenFlags.ReadOnly);
-                // ensure this cert is not in the x509 store
-                Assert.Empty(store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, false));
-            }
+            AssetStoreDoesNotContain(certificate);
 
             WithUniqueTempDirectory(directory =>
             {
@@ -187,6 +183,24 @@ namespace Microsoft.AspNetCore.DataProtection
                 Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
                 Assert.Contains("X509Certificate", fileText, StringComparison.Ordinal);
             });
+        }
+
+        private static void AssetStoreDoesNotContain(X509Certificate2 certificate)
+        {
+            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            {
+                try
+                {
+                    store.Open(OpenFlags.ReadOnly);
+                }
+                catch
+                {
+                    return;
+                }
+
+                // ensure this cert is not in the x509 store
+                Assert.Empty(store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, false));
+            }
         }
 
         [Fact]
