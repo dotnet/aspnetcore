@@ -14,6 +14,46 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
   </ItemGroup>
 
+  <!--
+    Some sources are shared with the unit test so we can benchmark some 'test only' implementations
+    for perf comparisons.
+  -->
+  <ItemGroup>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\MatcherBuilder.cs">
+      <Link>Matchers\MatcherBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\BarebonesMatcher.cs">
+      <Link>Matchers\BarebonesMatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\BarebonesMatcherBuilder.cs">
+      <Link>Matchers\BarebonesMatcherBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\DfaMatcher.cs">
+      <Link>Matchers\DfaMatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\DfaMatcherBuilder.cs">
+      <Link>Matchers\DfaMatcherBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\InstructionMatcher.cs">
+      <Link>Matchers\InstructionMatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\InstructionMatcherBuilder.cs">
+      <Link>Matchers\InstructionMatcherBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\RouteMatcher.cs">
+      <Link>Matchers\RouteMatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\RouteMatcherBuilder.cs">
+      <Link>Matchers\RouteMatcherBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\TreeRouterMatcher.cs">
+      <Link>Matchers\TreeRouterMatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.AspNetCore.Routing.Tests\Matchers\TreeRouterMatcherBuilder.cs">
+      <Link>Matchers\TreeRouterMatcherBuilder.cs</Link>
+    </Compile>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />

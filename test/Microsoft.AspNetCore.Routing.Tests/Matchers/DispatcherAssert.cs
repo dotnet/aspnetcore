@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Xunit.Sdk;
 
@@ -13,11 +14,27 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             AssertMatch(feature, expected, new RouteValueDictionary());
         }
 
+        public static void AssertMatch(IEndpointFeature feature, Endpoint expected, string[] keys, string[] values)
+        {
+            if (keys.Length != values.Length)
+            {
+                throw new XunitException($"Keys and Values must be the same length.");
+            }
+
+            var zipped = keys.Zip(values, (k, v) => new KeyValuePair<string, object>(k, v));
+            AssertMatch(feature, expected, new RouteValueDictionary(zipped));
+        }
+
         public static void AssertMatch(IEndpointFeature feature, Endpoint expected, RouteValueDictionary values)
         {
             if (feature.Endpoint == null)
             {
                 throw new XunitException($"Was expected to match '{expected.DisplayName}' but did not match.");
+            }
+
+            if (feature.Values == null)
+            {
+                throw new XunitException("Values is null.");
             }
 
             if (!object.ReferenceEquals(expected, feature.Endpoint))
@@ -27,6 +44,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     $"'{feature.Endpoint.DisplayName}' with values: {FormatRouteValues(feature.Values)}.");
             }
 
+            // Note: this comparison is intended for unit testing, and is stricter than necessary to make tests
+            // more precise. Route value comparisons in product code are more flexible than a simple .Equals.
             if (values.Count != feature.Values.Count ||
                 !values.OrderBy(kvp => kvp.Key).SequenceEqual(feature.Values.OrderBy(kvp => kvp.Key)))
             {

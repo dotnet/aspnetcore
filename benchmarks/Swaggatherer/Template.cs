@@ -28,7 +28,7 @@ namespace Swaggatherer
             var setupMatcherLines = new List<string>();
             for (var i = 0; i < entries.Count; i++)
             {
-                setupMatcherLines.Add($"            builder.AddEntry(\"{entries[i].Template.TemplateText}\", _endpoints[{i}]);");
+                setupMatcherLines.Add($"            builder.AddEndpoint(_endpoints[{i}]);");
             }
 
             return string.Format(@"

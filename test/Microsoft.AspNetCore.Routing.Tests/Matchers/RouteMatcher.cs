@@ -4,16 +4,15 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    // This is an adapter to use TreeRouter in the conformance tests
-    internal class TreeRouterMatcher : Matcher
+    // This is an adapter to use Route in the conformance tests
+    internal class RouteMatcher : Matcher
     {
-        private readonly TreeRouter _inner;
+        private readonly RouteCollection _inner;
 
-        internal TreeRouterMatcher(TreeRouter inner)
+        internal RouteMatcher(RouteCollection inner)
         {
             _inner = inner;
         }

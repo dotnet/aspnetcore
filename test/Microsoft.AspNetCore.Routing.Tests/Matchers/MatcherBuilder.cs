@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal abstract class MatcherBuilder
     {
-        public abstract void AddEntry(string template, MatcherEndpoint endpoint);
+        public abstract void AddEndpoint(MatcherEndpoint endpoint);
 
         public abstract Matcher Build();
     }

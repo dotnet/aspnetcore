@@ -5,6 +5,10 @@
     <RootNamespace>Microsoft.AspNetCore.Routing</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
   </ItemGroup>

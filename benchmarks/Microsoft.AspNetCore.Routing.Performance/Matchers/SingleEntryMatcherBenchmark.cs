@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public class SingleEntryMatcherBenchmark : MatcherBenchmarkBase
     {
-        private Matcher _minimal;
+        private Matcher _baseline;
         private Matcher _dfa;
         private Matcher _instruction;
         private Matcher _route;
@@ -28,26 +28,26 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _requests[0].RequestServices = CreateServices();
             _requests[0].Request.Path = "/plaintext";
 
-            _minimal = SetupMatcher(MinimalMatcher.CreateBuilder());
-            _dfa = SetupMatcher(DfaMatcher.CreateBuilder());
-            _instruction = SetupMatcher(InstructionMatcher.CreateBuilder());
-            _route = SetupMatcher(RouteMatcher.CreateBuilder());
-            _tree = SetupMatcher(TreeRouterMatcher.CreateBuilder());
+            _baseline = SetupMatcher(new TrivialMatcherBuilder());
+            _dfa = SetupMatcher(new DfaMatcherBuilder());
+            _instruction = SetupMatcher(new InstructionMatcherBuilder());
+            _route = SetupMatcher(new RouteMatcherBuilder());
+            _tree = SetupMatcher(new TreeRouterMatcherBuilder());
 
             _feature = new EndpointFeature();
         }
 
         private Matcher SetupMatcher(MatcherBuilder builder)
         {
-            builder.AddEntry("/plaintext", _endpoints[0]);
+            builder.AddEndpoint(_endpoints[0]);
             return builder.Build();
         }
 
         [Benchmark(Baseline = true)]
-        public async Task Minimal()
+        public async Task Baseline()
         {
             var feature = _feature;
-            await _minimal.MatchAsync(_requests[0], feature);
+            await _baseline.MatchAsync(_requests[0], feature);
             Validate(_requests[0], _endpoints[0], feature.Endpoint);
         }
 
@@ -71,6 +71,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public async Task LegacyRoute()
         {
             var feature = _feature;
+
+            // This is required to make the legacy router implementation work with dispatcher.
+            _requests[0].Features.Set<IEndpointFeature>(feature);
+
             await _route.MatchAsync(_requests[0], feature);
             Validate(_requests[0], _endpoints[0], feature.Endpoint);
         }
@@ -79,6 +83,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public async Task LegacyTreeRouter()
         {
             var feature = _feature;
+
+            // This is required to make the legacy router implementation work with dispatcher.
+            _requests[0].Features.Set<IEndpointFeature>(feature);
+
             await _tree.MatchAsync(_requests[0], feature);
             Validate(_requests[0], _endpoints[0], feature.Endpoint);
         }
