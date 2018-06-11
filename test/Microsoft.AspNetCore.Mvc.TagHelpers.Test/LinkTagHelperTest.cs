@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             tagHelper.AppendVersion = true;
                         }
                     },
-                    // asp-fallback-href-integrity-check Attribute true
+                    // asp-suppress-fallback-integrity Attribute true
                     {
                         new TagHelperAttributeList
                         {
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             new TagHelperAttribute("asp-fallback-test-property", "visibility"),
                             new TagHelperAttribute("asp-fallback-test-value", "hidden"),
                             new TagHelperAttribute("asp-append-version", "true"),
-                            new TagHelperAttribute("asp-fallback-href-integrity-check", "true")
+                            new TagHelperAttribute("asp-suppress-fallback-integrity", "true")
                         },
                         tagHelper =>
                         {
@@ -282,10 +282,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             tagHelper.FallbackTestProperty = "visibility";
                             tagHelper.FallbackTestValue = "hidden";
                             tagHelper.AppendVersion = true;
-                            tagHelper.FallbackHrefIntegrityCheck = true;
+                            tagHelper.SuppressFallbackIntegrity = true;
                         }
                     },
-                    // asp-fallback-href-integrity-check Attribute false
+                    // asp-suppress-fallback-integrity Attribute false
                     {
                         new TagHelperAttributeList
                         {
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             new TagHelperAttribute("asp-fallback-test-property", "visibility"),
                             new TagHelperAttribute("asp-fallback-test-value", "hidden"),
                             new TagHelperAttribute("asp-append-version", "true"),
-                            new TagHelperAttribute("asp-fallback-href-integrity-check", "false")
+                            new TagHelperAttribute("asp-suppress-fallback-integrity", "false")
                         },
                         tagHelper =>
                         {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             tagHelper.FallbackTestProperty = "visibility";
                             tagHelper.FallbackTestValue = "hidden";
                             tagHelper.AppendVersion = true;
-                            tagHelper.FallbackHrefIntegrityCheck = false;
+                            tagHelper.SuppressFallbackIntegrity = false;
                         }
                     },
                 };

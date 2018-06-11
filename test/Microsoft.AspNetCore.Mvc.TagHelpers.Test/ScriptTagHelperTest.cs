@@ -161,13 +161,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         {
                             new TagHelperAttribute("asp-fallback-src", "test.js"),
                             new TagHelperAttribute("asp-fallback-test", "isavailable()"),
-                            new TagHelperAttribute("asp-fallback-integrity-check", "false")
+                            new TagHelperAttribute("asp-suppress-fallback-integrity", "false")
                         },
                         tagHelper =>
                         {
                             tagHelper.FallbackSrc = "test.js";
                             tagHelper.FallbackTestExpression = "isavailable()";
-                            tagHelper.FallbackIntegrityCheck = false;
+                            tagHelper.SuppressFallbackIntegrity = false;
                         }
                     },
                     {
@@ -202,14 +202,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             new TagHelperAttribute("asp-fallback-src", "test.js"),
                             new TagHelperAttribute("asp-fallback-src-include", "*.js"),
                             new TagHelperAttribute("asp-fallback-test", "isavailable()"),
-                            new TagHelperAttribute("asp-fallback-integrity-check", "false")
+                            new TagHelperAttribute("asp-suppress-fallback-integrity", "false")
                         },
                         tagHelper =>
                         {
                             tagHelper.FallbackSrc = "test.js";
                             tagHelper.FallbackSrcInclude = "*.css";
                             tagHelper.FallbackTestExpression = "isavailable()";
-                            tagHelper.FallbackIntegrityCheck = false;
+                            tagHelper.SuppressFallbackIntegrity = false;
                         }
                     },
                     {

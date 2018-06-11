@@ -34,7 +34,7 @@
     <script src="~/styles/siteIntegrity.js?a=integrity"
             asp-fallback-src="~/styles/sub/siteIntegrity2.js?a=integrity"
             asp-fallback-test="false"
-            asp-fallback-integrity-check="true"
+            asp-suppress-fallback-integrity="false"
             crossorigin="anonymous"
             integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
 
@@ -44,7 +44,7 @@
     <script src="~/styles/siteIntegrity.js?a=integrity"
             asp-fallback-src="~/styles/sub/siteIntegrity3.js?a=integrity"
             asp-fallback-test="false"
-            asp-fallback-integrity-check="false"
+            asp-suppress-fallback-integrity="true"
             crossorigin="anonymous"
             integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
        // Script uses fallback source, ignores integrity hash on fallback.
