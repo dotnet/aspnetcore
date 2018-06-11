@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
@@ -113,6 +113,10 @@
       this problem, we're only using the P2P references to force build ordering. Then we include the build
       output of those projects as content.
     -->
+    <Content Include="CodeSnippets.pkgdef">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Templates.pkgdef" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Templates\Microsoft.AspNetCore.Blazor.Templates.csproj">
       <Project>{edd21533-c6e6-4f85-be4f-10e06756e24c}</Project>
@@ -258,6 +262,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CodeSnippets\Blazor\para.snippet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Key.snk" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
