@@ -17,7 +17,6 @@ export class LongPollingTransport implements ITransport {
     private readonly pollAbort: AbortController;
 
     private url?: string;
-    private pollXhr?: XMLHttpRequest;
     private running: boolean;
     private receiving?: Promise<void>;
     private closeError?: Error;

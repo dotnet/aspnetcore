@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpTransportType, IHttpConnectionOptions, LogLevel, TransferFormat } from "@aspnet/signalr";
+import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@aspnet/signalr";
 import { eachTransport, ECHOENDPOINT_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
 
@@ -23,9 +23,7 @@ describe("connection", () => {
             ...commonOptions,
         });
 
-        let received = "";
         connection.onreceive = (data) => {
-            received += data;
             if (data === message) {
                 connection.stop();
             }
@@ -55,9 +53,7 @@ describe("connection", () => {
                     transport: transportType,
                 });
 
-                let received = "";
                 connection.onreceive = (data) => {
-                    received += data;
                     if (data === message) {
                         connection.stop();
                     }

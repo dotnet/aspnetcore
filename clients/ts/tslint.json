@@ -6,6 +6,8 @@
         "interface-name": false,
         "unified-signatures": false,
         "max-classes-per-file": false,
+        "no-floating-promises": true,
+        "no-unused-variable": [true, {"ignore-pattern": "^_"}],
         "no-empty": false,
         "no-bitwise": false,
         "no-console": false

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "cd ./signalr && npm run build && cd ../signalr-protocol-msgpack && npm run build",
+    "pretest": "tslint -c ./tslint.json -p ./signalr/tests/tsconfig.json && tslint -c ./tslint.json -p ./signalr-protocol-msgpack/tests/tsconfig.json",
     "test": "jest",
     "coverage": "jest --coverage"
   },

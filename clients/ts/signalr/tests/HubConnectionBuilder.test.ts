@@ -13,15 +13,6 @@ import { NullLogger } from "../src/Loggers";
 import { TestHttpClient } from "./TestHttpClient";
 import { PromiseSource } from "./Utils";
 
-const allTransportsNegotiateResponse = {
-    availableTransports: [
-        { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
-        { transport: "ServerSentEvents", transferFormats: ["Text"] },
-        { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
-    ],
-    connectionId: "abc123",
-};
-
 const longPollingNegotiateResponse = {
     availableTransports: [
         { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
@@ -79,11 +70,6 @@ describe("HubConnectionBuilder", () => {
 
     it("can configure transport type", async () => {
         const protocol = new TestProtocol();
-
-        const pollSent = new PromiseSource<HttpRequest>();
-        const pollCompleted = new PromiseSource<HttpResponse>();
-        const negotiateReceived = new PromiseSource<HttpRequest>();
-        const testClient = createTestClient(pollSent, pollCompleted.promise, allTransportsNegotiateResponse);
 
         const builder = createConnectionBuilder()
             .withUrl("http://example.com", HttpTransportType.WebSockets)

@@ -6,7 +6,6 @@ import { IConnection } from "./IConnection";
 import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { IStreamResult } from "./Stream";
-import { TextMessageFormat } from "./TextMessageFormat";
 import { Arg, Subject } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
@@ -354,7 +353,11 @@ export class HubConnection {
                         break;
                     case MessageType.Close:
                         this.logger.log(LogLevel.Information, "Close message received from server.");
+
+                        // We don't want to wait on the stop itself.
+                        // tslint:disable-next-line:no-floating-promises
                         this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : undefined);
+
                         break;
                     default:
                         this.logger.log(LogLevel.Warning, "Invalid message type: " + message.type);
@@ -377,12 +380,18 @@ export class HubConnection {
             this.logger.log(LogLevel.Error, message);
 
             const error = new Error(message);
+
+            // We don't want to wait on the stop itself.
+            // tslint:disable-next-line:no-floating-promises
             this.connection.stop(error);
             throw error;
         }
         if (responseMessage.error) {
             const message = "Server returned handshake error: " + responseMessage.error;
             this.logger.log(LogLevel.Error, message);
+
+            // We don't want to wait on the stop itself.
+            // tslint:disable-next-line:no-floating-promises
             this.connection.stop(new Error(message));
         } else {
             this.logger.log(LogLevel.Debug, "Server handshake complete.");
@@ -405,7 +414,8 @@ export class HubConnection {
 
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
-        // Terminate the connection
+        // Terminate the connection, but we don't need to wait on the promise.
+        // tslint:disable-next-line:no-floating-promises
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
@@ -417,6 +427,9 @@ export class HubConnection {
                 // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
                 const message = "Server requested a response, which is not supported in this version of the client.";
                 this.logger.log(LogLevel.Error, message);
+
+                // We don't need to wait on this Promise.
+                // tslint:disable-next-line:no-floating-promises
                 this.connection.stop(new Error(message));
             }
         } else {
