@@ -57,10 +57,10 @@ npm install -g typescript
 npm install -g tsd
 
 Write-Host "`nInstalling Git..."
-Copy "$setupFilesShare\Git-2.16.1.4-64-bit.exe" "c:\"
+Copy "$setupFilesShare\Git-2.17.1.2-64-bit.exe" "c:\"
 $args = "/SILENT /COMPONENTS='icons,ext\reg\shellhere,assoc,assoc_sh'"
-Start-Process -FilePath "c:\Git-2.16.1.4-64-bit.exe" -ArgumentList $args -Wait
-del "c:\Git-2.16.1.4-64-bit.exe" -Force
+Start-Process -FilePath "c:\Git-2.17.1.2-64-bit.exe" -ArgumentList $args -Wait
+del "c:\Git-2.17.1.2-64-bit.exe" -Force
 
 #TODO: Visual Studio's WTE install should install ANCM and following should not be required. 
 

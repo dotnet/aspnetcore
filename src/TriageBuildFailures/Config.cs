@@ -11,6 +11,7 @@ namespace TriageBuildFailures
     public class Config
     {
         public List<string> BuildIdAllowList { get; set; }
+        public List<string> BuildIdForbidList { get; set; }
         public EmailConfig Email { get; set; }
         public TeamCityConfig TeamCity { get; set; }
         public GitHubConfig GitHub { get; set; }

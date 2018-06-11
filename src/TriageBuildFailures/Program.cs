@@ -21,8 +21,6 @@ namespace TriageBuildFailures
         public static async Task Main(string[] args)
         {
             await new Triage().TriageFailures();
-
-            Console.ReadKey();
         }
     }
 
@@ -50,7 +48,7 @@ namespace TriageBuildFailures
             return JsonConvert.DeserializeObject<Config>(File.ReadAllText("config.json"));
         }
 
-        private DateTime CutoffDate { get; } = DateTime.Now.AddHours(-12);
+        private DateTime CutoffDate { get; } = DateTime.Now.AddHours(-24);
 
         /// <summary>
         /// Handle each CI failure in the most appropriate way.
@@ -71,7 +69,7 @@ namespace TriageBuildFailures
             _reporter.Output($"There were {builds.Count()} untriaged failures since {CutoffDate} and we handled them in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
         }
 
-        private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase> { new HandleNonAllowedBuilds(), new HandleLowValueBuilds(),
+        private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase> { new HandleLowValueBuilds(), new HandleNonAllowedBuilds(),
                 new HandleUniverseMovedOn(), new HandleTestFailures(),
                 new HandleBuildTimeFailures(), new HandleUnhandled() };
 

@@ -6,6 +6,7 @@ using TriageBuildFailures.TeamCity;
 
 namespace TriageBuildFailures.Handlers
 {
+
     /// <summary>
     /// Never ever post anything about any config we don't explicitly allow. Notify the build buddy, who will likely forward to the engineering alias.
     /// </summary>

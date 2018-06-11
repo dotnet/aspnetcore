@@ -3,7 +3,7 @@
 
 using Common;
 using McMaster.Extensions.CommandLineUtils;
-using System.IO;
+using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
@@ -18,7 +18,10 @@ namespace TriageBuildFailures.Email
 
         public EmailClient(EmailConfig config, IReporter reporter)
         {
-            _smtpClient = new SmtpClient();
+            _smtpClient = new SmtpClient(config.SMTPConfig.Host, config.SMTPConfig.Port);
+            _smtpClient.UseDefaultCredentials = false;
+            _smtpClient.Credentials = new NetworkCredential(config.SMTPConfig.Login, config.SMTPConfig.Password);
+            _smtpClient.EnableSsl = true;
             _reporter = reporter;
             Config = config;
         }
@@ -27,23 +30,12 @@ namespace TriageBuildFailures.Email
         {
             if (Constants.BeQuite)
             {
-                var tempMsg = $"We tried to send an email to {to} about {subject} with {body}";
-
-                _reporter.Output(tempMsg);
-                var folder = Path.Combine("temp", to);
-                Directory.CreateDirectory(folder);
-
-                using (var streamWriter = File.CreateText(Path.Combine(folder, $"{Path.GetRandomFileName()}.txt")))
-                {
-                    streamWriter.Write(tempMsg);
-                }
+                to = Config.QuiteEmail;
             }
-            else
+
+            using (var mailMessage = new MailMessage(Config.FromEmail, to, subject, body))
             {
-                using (var mailMessage = new MailMessage(Config.FromEmail, to, subject, body))
-                {
-                    await _smtpClient.SendMailAsync(mailMessage);
-                }
+                await _smtpClient.SendMailAsync(mailMessage);
             }
         }
     }
