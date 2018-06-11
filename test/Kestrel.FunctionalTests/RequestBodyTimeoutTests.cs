@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 DateHeaderValueManager = new DateHeaderValueManager(systemClock)
             };
 
-            var appRunningEvent = new ManualResetEventSlim();
+            var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(context =>
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
 
                 // The server must call Request.Body.ReadAsync() *before* the test sets systemClock.UtcNow (which is triggered by the
-                // server calling appRunningEvent.Set()).  If systemClock.UtcNow is set first, it's possible for the test to fail
+                // server calling appRunningEvent.SetResult(null)).  If systemClock.UtcNow is set first, it's possible for the test to fail
                 // due to the following race condition:
                 //
                 // 1. [test]    systemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
@@ -55,12 +55,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // test flakiness in our CI (https://github.com/aspnet/KestrelHttpServer/issues/2539).
                 //
                 // For verification, I was able to induce the race by adding a sleep in the RequestDelegate:
-                //     appRunningEvent.Set();
+                //     appRunningEvent.SetResult(null);
                 //     Thread.Sleep(5000);
                 //     return context.Request.Body.ReadAsync(new byte[1], 0, 1);
 
                 var readTask = context.Request.Body.ReadAsync(new byte[1], 0, 1);
-                appRunningEvent.Set();
+                appRunningEvent.SetResult(null);
                 return readTask;
             }, serviceContext))
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    Assert.True(appRunningEvent.Wait(TestConstants.DefaultTimeout));
+                    await appRunningEvent.Task.DefaultTimeout();
                     systemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
 
                     await connection.Receive(
@@ -100,13 +100,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 DateHeaderValueManager = new DateHeaderValueManager(systemClock),
             };
 
-            var appRunningEvent = new ManualResetEventSlim();
+            var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(context =>
             {
                 context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
 
-                appRunningEvent.Set();
+                appRunningEvent.SetResult(null);
                 return Task.CompletedTask;
             }, serviceContext))
             {
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    Assert.True(appRunningEvent.Wait(TestConstants.DefaultTimeout));
+                    await appRunningEvent.Task.DefaultTimeout();
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",

@@ -418,10 +418,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void WriteTimingAbortsConnectionWhenWriteDoesNotCompleteWithMinimumDataRate()
+        public async Task WriteTimingAbortsConnectionWhenWriteDoesNotCompleteWithMinimumDataRate()
         {
             var systemClock = new MockSystemClock();
-            var aborted = new ManualResetEventSlim();
+            var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _httpConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate =
                 new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnection.Http1Connection.Reset();
             _httpConnection.Http1Connection.RequestAborted.Register(() =>
             {
-                aborted.Set();
+                aborted.SetResult(null);
             });
 
             // Initialize timestamp
@@ -448,15 +448,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnection.Tick(systemClock.UtcNow);
 
             Assert.True(_httpConnection.RequestTimedOut);
-            Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
+            await aborted.Task.DefaultTimeout();
         }
 
         [Fact]
-        public void WriteTimingAbortsConnectionWhenSmallWriteDoesNotCompleteWithinGracePeriod()
+        public async Task WriteTimingAbortsConnectionWhenSmallWriteDoesNotCompleteWithinGracePeriod()
         {
             var systemClock = new MockSystemClock();
             var minResponseDataRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
-            var aborted = new ManualResetEventSlim();
+            var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _httpConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate = minResponseDataRate;
             _httpConnectionContext.ServiceContext.SystemClock = systemClock;
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnection.Http1Connection.Reset();
             _httpConnection.Http1Connection.RequestAborted.Register(() =>
             {
-                aborted.Set();
+                aborted.SetResult(null);
             });
 
             // Initialize timestamp
@@ -490,14 +490,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnection.Tick(systemClock.UtcNow);
 
             Assert.True(_httpConnection.RequestTimedOut);
-            Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
+            await aborted.Task.DefaultTimeout();
         }
 
         [Fact]
-        public void WriteTimingTimeoutPushedOnConcurrentWrite()
+        public async Task WriteTimingTimeoutPushedOnConcurrentWrite()
         {
             var systemClock = new MockSystemClock();
-            var aborted = new ManualResetEventSlim();
+            var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _httpConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate =
                 new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnection.Http1Connection.Reset();
             _httpConnection.Http1Connection.RequestAborted.Register(() =>
             {
-                aborted.Set();
+                aborted.SetResult(null);
             });
 
             // Initialize timestamp
@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnection.Tick(systemClock.UtcNow);
 
             Assert.True(_httpConnection.RequestTimedOut);
-            Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
+            await aborted.Task.DefaultTimeout();
         }
 
         [Fact]
@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var minResponseDataRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
             var numWrites = 5;
             var writeSize = 100;
-            var aborted = new TaskCompletionSource<object>();
+            var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _httpConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate = minResponseDataRate;
             _httpConnectionContext.ServiceContext.SystemClock = systemClock;

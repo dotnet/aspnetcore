@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var flushWh = new ManualResetEventSlim();
+            var flushWh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
 
                 // Don't complete response until client has received the first chunk.
-                flushWh.Wait();
+                await flushWh.Task.DefaultTimeout();
 
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }, testContext, listenOptions))
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Hello ",
                         "");
 
-                    flushWh.Set();
+                    flushWh.SetResult(null);
 
                     await connection.ReceiveEnd(
                         "6",
