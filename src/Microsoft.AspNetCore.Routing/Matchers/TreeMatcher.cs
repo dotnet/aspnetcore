@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -18,12 +19,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         private readonly IInlineConstraintResolver _constraintFactory;
         private readonly ILogger _logger;
+        private readonly EndpointSelector _endpointSelector;
         private readonly DataSourceDependantCache<UrlMatchingTree[]> _cache;
 
         public TreeMatcher(
             IInlineConstraintResolver constraintFactory,
             ILogger logger,
-            EndpointDataSource dataSource)
+            EndpointDataSource dataSource,
+            EndpointSelector endpointSelector)
         {
             if (constraintFactory == null)
             {
@@ -42,6 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             _constraintFactory = constraintFactory;
             _logger = logger;
+            _endpointSelector = endpointSelector;
             _cache = new DataSourceDependantCache<UrlMatchingTree[]>(dataSource, CreateTrees);
             _cache.EnsureInitialized();
         }
@@ -137,6 +141,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private Task SelectEndpointAsync(HttpContext httpContext, IEndpointFeature feature, IReadOnlyList<MatcherEndpoint> endpoints)
         {
+            var bestEndpoint = _endpointSelector.SelectBestCandidate(httpContext, endpoints);
+
             // REVIEW: Note that this code doesn't do anything significant now. This will eventually incorporate something like IActionConstraint
             switch (endpoints.Count)
             {

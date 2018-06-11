@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -32,6 +33,16 @@ namespace Microsoft.Extensions.DependencyInjection
             // Default matcher implementation
             //
             services.TryAddSingleton<MatcherFactory, TreeMatcherFactory>();
+
+            //
+            // Endpoint Selection
+            //
+            services.TryAddSingleton<EndpointSelector>();
+            services.TryAddSingleton<EndpointConstraintCache>();
+
+            // Will be cached by the EndpointSelector
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IEndpointConstraintProvider, DefaultEndpointConstraintProvider>());
 
             return services;
         }

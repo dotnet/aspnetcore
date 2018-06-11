@@ -24,12 +24,7 @@ namespace Microsoft.AspNetCore.Routing
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new TestServiceProvider();
 
-            RequestDelegate next = (c) => Task.FromResult<object>(null);
-
-            var logger = new Logger<DispatcherMiddleware>(NullLoggerFactory.Instance);
-            var options = Options.Create(new DispatcherOptions());
-            var matcherFactory = new TestMatcherFactory(false);
-            var middleware = new DispatcherMiddleware(matcherFactory, options, logger, next);
+            var middleware = CreateMiddleware();
 
             // Act
             await middleware.Invoke(httpContext);
@@ -53,12 +48,8 @@ namespace Microsoft.AspNetCore.Routing
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new TestServiceProvider();
 
-            RequestDelegate next = (c) => Task.FromResult<object>(null);
-
             var logger = new Logger<DispatcherMiddleware>(loggerFactory);
-            var options = Options.Create(new DispatcherOptions());
-            var matcherFactory = new TestMatcherFactory(true);
-            var middleware = new DispatcherMiddleware(matcherFactory, options, logger, next);
+            var middleware = CreateMiddleware(logger);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -67,6 +58,23 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(sink.Scopes);
             var write = Assert.Single(sink.Writes);
             Assert.Equal(expectedMessage, write.State?.ToString());
+        }
+
+        private DispatcherMiddleware CreateMiddleware(Logger<DispatcherMiddleware> logger = null)
+        {
+            RequestDelegate next = (c) => Task.FromResult<object>(null);
+
+            logger = logger ?? new Logger<DispatcherMiddleware>(NullLoggerFactory.Instance);
+
+            var options = Options.Create(new DispatcherOptions());
+            var matcherFactory = new TestMatcherFactory(true);
+            var middleware = new DispatcherMiddleware(
+                matcherFactory,
+                new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
+                logger,
+                next);
+
+            return middleware;
         }
     }
 }

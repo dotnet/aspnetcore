@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Routing
     {
         private readonly MatcherFactory _matcherFactory;
         private readonly ILogger _logger;
-        private readonly IOptions<DispatcherOptions> _options;
+        private readonly CompositeEndpointDataSource _endpointDataSource;
         private readonly RequestDelegate _next;
 
         private Task<Matcher> _initializationTask;
 
         public DispatcherMiddleware(
             MatcherFactory matcherFactory,
-            IOptions<DispatcherOptions> options,
+            CompositeEndpointDataSource endpointDataSource,
             ILogger<DispatcherMiddleware> logger,
             RequestDelegate next)
         {
@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(matcherFactory));
             }
 
-            if (options == null)
+            if (endpointDataSource == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(endpointDataSource));
             }
 
             if (logger == null)
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             _matcherFactory = matcherFactory;
-            _options = options;
+            _endpointDataSource = endpointDataSource;
             _logger = logger;
             _next = next;
         }
@@ -94,8 +94,7 @@ namespace Microsoft.AspNetCore.Routing
                 null) == null)
             {
                 // This thread won the race, do the initialization.
-                var dataSource = new CompositeEndpointDataSource(_options.Value.DataSources);
-                var matcher = _matcherFactory.CreateMatcher(dataSource);
+                var matcher = _matcherFactory.CreateMatcher(_endpointDataSource);
                 initializationTask.SetResult(matcher);
             }
 

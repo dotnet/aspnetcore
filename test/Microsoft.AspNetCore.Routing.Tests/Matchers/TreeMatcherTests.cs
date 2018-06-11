@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
@@ -21,16 +22,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private TreeMatcher CreateTreeMatcher(EndpointDataSource endpointDataSource)
         {
+            var compositeDataSource = new CompositeEndpointDataSource(new[] { endpointDataSource });
             var defaultInlineConstraintResolver = new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()));
-            return new TreeMatcher(defaultInlineConstraintResolver, NullLogger.Instance, endpointDataSource);
+            var endpointSelector = new EndpointSelector(
+                compositeDataSource,
+                new EndpointConstraintCache(compositeDataSource, new IEndpointConstraintProvider[] { new DefaultEndpointConstraintProvider() }),
+                NullLoggerFactory.Instance);
+
+            return new TreeMatcher(defaultInlineConstraintResolver, NullLogger.Instance, endpointDataSource, endpointSelector);
         }
 
         [Fact]
         public async Task MatchAsync_DuplicateTemplatesAndDifferentOrder_LowerOrderEndpointMatched()
         {
             // Arrange
-            var defaultInlineConstraintResolver = new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()));
-
             var higherOrderEndpoint = CreateEndpoint("/Teams", 1);
             var lowerOrderEndpoint = CreateEndpoint("/Teams", 0);
 
