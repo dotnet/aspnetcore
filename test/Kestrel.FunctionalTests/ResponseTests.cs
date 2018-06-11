@@ -1116,12 +1116,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var flushed = new SemaphoreSlim(0, 1);
             var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
 
-            using (var server = new TestServer(httpContext =>
+            using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.ContentLength = 12;
                 httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
-                flushed.Wait();
-                return Task.CompletedTask;
+                await flushed.WaitAsync();
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1152,7 +1151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 httpContext.Response.ContentLength = 12;
                 await httpContext.Response.WriteAsync("");
-                flushed.Wait();
+                await flushed.WaitAsync();
                 await httpContext.Response.WriteAsync("hello, world");
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -1180,23 +1179,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task WriteAfterConnectionCloseNoops()
         {
-            var connectionClosed = new ManualResetEventSlim();
-            var requestStarted = new ManualResetEventSlim();
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionClosed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async httpContext =>
             {
                 try
                 {
-                    requestStarted.Set();
-                    connectionClosed.Wait();
+                    requestStarted.SetResult(null);
+                    await connectionClosed.Task.DefaultTimeout();
                     httpContext.Response.ContentLength = 12;
                     await httpContext.Response.WriteAsync("hello, world");
-                    tcs.TrySetResult(null);
+                    appCompleted.TrySetResult(null);
                 }
                 catch (Exception ex)
                 {
-                    tcs.TrySetException(ex);
+                    appCompleted.TrySetException(ex);
                 }
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -1208,14 +1207,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    requestStarted.Wait();
+                    await requestStarted.Task.DefaultTimeout();
                     connection.Shutdown(SocketShutdown.Send);
                     await connection.WaitForConnectionClose().DefaultTimeout();
                 }
 
-                connectionClosed.Set();
+                connectionClosed.SetResult(null);
 
-                await tcs.Task.DefaultTimeout();
+                await appCompleted.Task.DefaultTimeout();
             }
         }
 
@@ -2280,19 +2279,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var largeString = new string('a', maxBytesPreCompleted + 1);
 
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestAbortedWh = new ManualResetEventSlim();
-            var requestStartWh = new ManualResetEventSlim();
+            var requestAbortedWh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStartWh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async httpContext =>
             {
-                requestStartWh.Set();
+                requestStartWh.SetResult(null);
 
                 var response = httpContext.Response;
                 var request = httpContext.Request;
                 var lifetime = httpContext.Features.Get<IHttpRequestLifetimeFeature>();
 
-                lifetime.RequestAborted.Register(() => requestAbortedWh.Set());
-                Assert.True(requestAbortedWh.Wait(TestConstants.DefaultTimeout));
+                lifetime.RequestAborted.Register(() => requestAbortedWh.SetResult(null));
+                await requestAbortedWh.Task.DefaultTimeout();
 
                 try
                 {
@@ -2316,15 +2315,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    Assert.True(requestStartWh.Wait(TestConstants.DefaultTimeout));
+                    await requestStartWh.Task.DefaultTimeout();
                 }
 
                 // Write failed - can throw TaskCanceledException or OperationCanceledException,
-                // dependending on how far the canceled write goes.
+                // depending on how far the canceled write goes.
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await writeTcs.Task).DefaultTimeout();
 
                 // RequestAborted tripped
-                Assert.True(requestAbortedWh.Wait(TestConstants.DefaultTimeout));
+                await requestAbortedWh.Task.DefaultTimeout();
             }
         }
 

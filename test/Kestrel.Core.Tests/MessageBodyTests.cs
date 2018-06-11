@@ -687,11 +687,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var logEvent = new ManualResetEventSlim();
+                var logEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 var mockLogger = new Mock<IKestrelTrace>();
                 mockLogger
                     .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
-                    .Callback(() => logEvent.Set());
+                    .Callback(() => logEvent.SetResult(null));
                 input.Http1Connection.ServiceContext.Log = mockLogger.Object;
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                Assert.True(logEvent.Wait(TestConstants.DefaultTimeout));
+                await logEvent.Task.DefaultTimeout();
 
                 await body.StopAsync();
             }

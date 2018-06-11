@@ -1696,8 +1696,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotEnforceRequestBodyMinimumDataRateOnUpgradedRequest()
         {
-            var appEvent = new ManualResetEventSlim();
-            var delayEvent = new ManualResetEventSlim();
+            var appEvent = new TaskCompletionSource<object>();
+            var delayEvent = new TaskCompletionSource<object>();
             var serviceContext = new TestServiceContext(LoggerFactory)
             {
                 SystemClock = new SystemClock()
@@ -1710,12 +1710,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync())
                 {
-                    appEvent.Set();
+                    appEvent.SetResult(null);
 
                     // Read once to go through one set of TryPauseTimingReads()/TryResumeTimingReads() calls
                     await stream.ReadAsync(new byte[1], 0, 1);
 
-                    delayEvent.Wait();
+                    await delayEvent.Task.DefaultTimeout();
 
                     // Read again to check that the connection is still alive
                     await stream.ReadAsync(new byte[1], 0, 1);
@@ -1735,11 +1735,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "a");
 
-                    Assert.True(appEvent.Wait(TestConstants.DefaultTimeout));
+                    await appEvent.Task.DefaultTimeout();
 
                     await Task.Delay(TimeSpan.FromSeconds(5));
 
-                    delayEvent.Set();
+                    delayEvent.SetResult(null);
 
                     await connection.Send("b");
 
