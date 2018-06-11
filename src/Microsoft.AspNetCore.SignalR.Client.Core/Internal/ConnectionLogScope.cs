@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         {
             get
             {
-                if (Count == 1 && index == 0)
+                if (index == 0)
                 {
                     return new KeyValuePair<string, object>(ClientConnectionIdKey, ConnectionId);
                 }
