@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
+  <Import Project="..\dependencies.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

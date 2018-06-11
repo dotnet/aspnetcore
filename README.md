@@ -1,10 +1,10 @@
 ## Prerequisites
 
-* [Policheck](http://aka.ms/policheck) - http://toolbox/policheck
-* CodeSign.Submitter - `\\cp1pd1cdscvlt04\public\Submitter Tool for Download\Submitter 4.1.1.1 (.net v3.5 runtime)\Codesign.Submitter.msi`
-* .NET 462 SDK
-* Set `Enable Win32 long paths` to true in the Local Group Policy Editor, see https://blogs.msdn.microsoft.com/jeremykuhne/2016/07/30/net-4-6-2-and-long-paths-on-windows-10/
+To run this repo, you need the following:
+
 * Win10/Win2016 or higher
+* Install [Policheck](http://aka.ms/policheck) - http://toolbox/policheck
+* Install the SSL/PKITA certificates for the ESRP client (see the AspNetCoreCerts KeyVault and https://aka.ms/esrpclient for details).
 
 ### Running locally without code signing
 
