@@ -541,6 +541,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task DetailedExceptionEvenWhenNotExplicitlySet()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
+
+            var methodName = nameof(MethodHub.ThrowHubException);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                var message = await client.InvokeAsync(methodName).OrTimeout();
+
+                Assert.Equal($"An unexpected error occurred invoking '{methodName}' on the server. HubException: This is a hub exception", message.Error);
+
+                // kill the connection
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task HubMethodDoesNotSendResultWhenInvocationIsNonBlocking()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();

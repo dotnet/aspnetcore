@@ -121,6 +121,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             throw new InvalidOperationException("BOOM!");
         }
 
+        public void ThrowHubException()
+        {
+            throw new HubException("This is a hub exception");
+        }
+
         public Task MethodThatYieldsFailedTask()
         {
             return Task.FromException(new InvalidOperationException("BOOM!"));
