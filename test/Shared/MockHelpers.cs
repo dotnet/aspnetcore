@@ -89,10 +89,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new AspNetRoleManager<TRole>(store, roles,
+            return new RoleManager<TRole>(store, roles,
                 new UpperInvariantLookupNormalizer(),
                 new IdentityErrorDescriber(),
-                null,
                 null);
         }
 

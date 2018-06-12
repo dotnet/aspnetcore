@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             RoleType = typeof(TRole);
             AddRoleValidator<RoleValidator<TRole>>();
-            Services.TryAddScoped<RoleManager<TRole>, RoleManager<TRole>>();
+            Services.TryAddScoped<RoleManager<TRole>>();
             return this;
         }
 

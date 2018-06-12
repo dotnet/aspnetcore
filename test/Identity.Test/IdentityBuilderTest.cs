@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var sp = services.BuildServiceProvider();
             Assert.NotNull(sp.GetRequiredService<IRoleValidator<PocoRole>>());
             Assert.IsType<NoopRoleStore>(sp.GetRequiredService<IRoleStore<PocoRole>>());
-            Assert.NotNull(sp.GetRequiredService<RoleManager<PocoRole>>());
+            Assert.IsType<RoleManager<PocoRole>>(sp.GetRequiredService<RoleManager<PocoRole>>());
         }
 
         [Fact]
@@ -153,7 +153,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentity<PocoUser,PocoRole>();
+            services.AddLogging()
+                .AddIdentity<PocoUser,PocoRole>()
+                .AddUserStore<NoopUserStore>()
+                .AddRoleStore<NoopRoleStore>();
 
             var provider = services.BuildServiceProvider();
             var userValidator = provider.GetRequiredService<IUserValidator<PocoUser>>() as UserValidator<PocoUser>;
@@ -164,6 +167,9 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var hasher = provider.GetRequiredService<IPasswordHasher<PocoUser>>() as PasswordHasher<PocoUser>;
             Assert.NotNull(hasher);
+
+            Assert.IsType<RoleManager<PocoRole>>(provider.GetRequiredService<RoleManager<PocoRole>>());
+            Assert.IsType<UserManager<PocoUser>>(provider.GetRequiredService<UserManager<PocoUser>>());
         }
 
         [Fact]
