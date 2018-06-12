@@ -3,63 +3,71 @@
 
 import { CompletionMessage, InvocationMessage, MessageType, StreamItemMessage } from "../src/IHubProtocol";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
-import { NullLogger } from "../src/Loggers";
 import { TextMessageFormat } from "../src/TextMessageFormat";
+import { VerifyLogger } from "./Common";
 
 describe("JsonHubProtocol", () => {
-    it("can write/read non-blocking Invocation message", () => {
-        const invocation = {
-            arguments: [42, true, "test", ["x1", "y2"], null],
-            headers: {},
-            target: "myMethod",
-            type: MessageType.Invocation,
-        } as InvocationMessage;
+    it("can write/read non-blocking Invocation message", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const invocation = {
+                arguments: [42, true, "test", ["x1", "y2"], null],
+                headers: {},
+                target: "myMethod",
+                type: MessageType.Invocation,
+            } as InvocationMessage;
 
-        const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
-        expect(parsedMessages).toEqual([invocation]);
+            const protocol = new JsonHubProtocol();
+            const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), logger);
+            expect(parsedMessages).toEqual([invocation]);
+        });
     });
 
-    it("can read Invocation message with Date argument", () => {
-        const invocation = {
-            arguments: [Date.UTC(2018, 1, 1, 12, 34, 56)],
-            headers: {},
-            target: "mymethod",
-            type: MessageType.Invocation,
-        } as InvocationMessage;
+    it("can read Invocation message with Date argument", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const invocation = {
+                arguments: [Date.UTC(2018, 1, 1, 12, 34, 56)],
+                headers: {},
+                target: "mymethod",
+                type: MessageType.Invocation,
+            } as InvocationMessage;
 
-        const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
-        expect(parsedMessages).toEqual([invocation]);
+            const protocol = new JsonHubProtocol();
+            const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), logger);
+            expect(parsedMessages).toEqual([invocation]);
+        });
     });
 
-    it("can write/read Invocation message with headers", () => {
-        const invocation = {
-            arguments: [42, true, "test", ["x1", "y2"], null],
-            headers: {
-                foo: "bar",
-            },
-            target: "myMethod",
-            type: MessageType.Invocation,
-        } as InvocationMessage;
+    it("can write/read Invocation message with headers", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const invocation = {
+                arguments: [42, true, "test", ["x1", "y2"], null],
+                headers: {
+                    foo: "bar",
+                },
+                target: "myMethod",
+                type: MessageType.Invocation,
+            } as InvocationMessage;
 
-        const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
-        expect(parsedMessages).toEqual([invocation]);
+            const protocol = new JsonHubProtocol();
+            const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), logger);
+            expect(parsedMessages).toEqual([invocation]);
+        });
     });
 
-    it("can write/read Invocation message", () => {
-        const invocation = {
-            arguments: [42, true, "test", ["x1", "y2"], null],
-            headers: {},
-            invocationId: "123",
-            target: "myMethod",
-            type: MessageType.Invocation,
-        } as InvocationMessage;
+    it("can write/read Invocation message", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const invocation = {
+                arguments: [42, true, "test", ["x1", "y2"], null],
+                headers: {},
+                invocationId: "123",
+                target: "myMethod",
+                type: MessageType.Invocation,
+            } as InvocationMessage;
 
-        const protocol = new JsonHubProtocol();
-        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
-        expect(parsedMessages).toEqual([invocation]);
+            const protocol = new JsonHubProtocol();
+            const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), logger);
+            expect(parsedMessages).toEqual([invocation]);
+        });
     });
 
     ([
@@ -101,9 +109,11 @@ describe("JsonHubProtocol", () => {
             type: MessageType.Completion,
         } as CompletionMessage],
     ] as Array<[string, CompletionMessage]>).forEach(([payload, expectedMessage]) =>
-        it("can read Completion message", () => {
-            const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
-            expect(messages).toEqual([expectedMessage]);
+        it("can read Completion message", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const messages = new JsonHubProtocol().parseMessages(payload, logger);
+                expect(messages).toEqual([expectedMessage]);
+            });
         }));
 
     ([
@@ -122,9 +132,11 @@ describe("JsonHubProtocol", () => {
             type: MessageType.StreamItem,
         } as StreamItemMessage],
     ] as Array<[string, StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
-        it("can read StreamItem message", () => {
-            const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
-            expect(messages).toEqual([expectedMessage]);
+        it("can read StreamItem message", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const messages = new JsonHubProtocol().parseMessages(payload, logger);
+                expect(messages).toEqual([expectedMessage]);
+            });
         }));
 
     ([
@@ -138,9 +150,11 @@ describe("JsonHubProtocol", () => {
             type: MessageType.StreamItem,
         } as StreamItemMessage],
     ] as Array<[string, StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
-        it("can read message with headers", () => {
-            const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
-            expect(messages).toEqual([expectedMessage]);
+        it("can read message with headers", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const messages = new JsonHubProtocol().parseMessages(payload, logger);
+                expect(messages).toEqual([expectedMessage]);
+            });
         }));
 
     ([
@@ -155,37 +169,43 @@ describe("JsonHubProtocol", () => {
         ["Completion message with result and error", `{"type":3,"invocationId":"1","result":2,"error":"error"}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
         ["Completion message with non-string error", `{"type":3,"invocationId":"1","error":21}${TextMessageFormat.RecordSeparator}`, "Invalid payload for Completion message."],
     ] as Array<[string, string, string]>).forEach(([name, payload, expectedError]) =>
-        it("throws for " + name, () => {
-            expect(() => new JsonHubProtocol().parseMessages(payload, NullLogger.instance))
-                .toThrow(expectedError);
+        it("throws for " + name, async () => {
+            await VerifyLogger.run(async (logger) => {
+                expect(() => new JsonHubProtocol().parseMessages(payload, logger))
+                    .toThrow(expectedError);
+            });
         }));
 
-    it("can read multiple messages", () => {
-        const payload = `{"type":2, "invocationId": "abc", "headers": {}, "item": 8}${TextMessageFormat.RecordSeparator}{"type":3, "invocationId": "abc", "headers": {}, "result": "OK"}${TextMessageFormat.RecordSeparator}`;
-        const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
-        expect(messages).toEqual([
-            {
-                headers: {},
-                invocationId: "abc",
-                item: 8,
-                type: MessageType.StreamItem,
-            } as StreamItemMessage,
-            {
-                headers: {},
-                invocationId: "abc",
-                result: "OK",
-                type: MessageType.Completion,
-            } as CompletionMessage,
-        ]);
+    it("can read multiple messages", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const payload = `{"type":2, "invocationId": "abc", "headers": {}, "item": 8}${TextMessageFormat.RecordSeparator}{"type":3, "invocationId": "abc", "headers": {}, "result": "OK"}${TextMessageFormat.RecordSeparator}`;
+            const messages = new JsonHubProtocol().parseMessages(payload, logger);
+            expect(messages).toEqual([
+                {
+                    headers: {},
+                    invocationId: "abc",
+                    item: 8,
+                    type: MessageType.StreamItem,
+                } as StreamItemMessage,
+                {
+                    headers: {},
+                    invocationId: "abc",
+                    result: "OK",
+                    type: MessageType.Completion,
+                } as CompletionMessage,
+            ]);
+        });
     });
 
-    it("can read ping message", () => {
-        const payload = `{"type":6}${TextMessageFormat.RecordSeparator}`;
-        const messages = new JsonHubProtocol().parseMessages(payload, NullLogger.instance);
-        expect(messages).toEqual([
-            {
-                type: MessageType.Ping,
-            },
-        ]);
+    it("can read ping message", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const payload = `{"type":6}${TextMessageFormat.RecordSeparator}`;
+            const messages = new JsonHubProtocol().parseMessages(payload, logger);
+            expect(messages).toEqual([
+                {
+                    type: MessageType.Ping,
+                },
+            ]);
+        });
     });
 });
