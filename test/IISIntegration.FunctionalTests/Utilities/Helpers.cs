@@ -21,31 +21,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
 
         public static void ModifyAspNetCoreSectionInWebConfig(IISDeploymentResult deploymentResult, string key, string value)
-            => ModifyAttributeInWebConfig(deploymentResult, key, value, section: "aspNetCore");
+            => ModifySectionInWebConfig(deploymentResult, key, value, section: "aspNetCore", 0);
 
-        public static void ModifyAttributeInWebConfig(IISDeploymentResult deploymentResult, string key, string value, string section)
+        public static void ModifySectionInWebConfig(IISDeploymentResult deploymentResult, string key, string value, string section, int index)
         {
-            var webConfigFile = GetWebConfigFile(deploymentResult);
+            // modify the web.config after publish
+            var root = deploymentResult.DeploymentResult.ContentRoot;
+            var webConfigFile = $"{root}/web.config";
             var config = XDocument.Load(webConfigFile);
-
-            var element = config.Descendants(section).Single();
+            var element = config.Descendants(section).ToList()[index];
             element.SetAttributeValue(key, value);
-
-            config.Save(webConfigFile);
-        }
-
-        public static void ModifyHandlerSectionInWebConfig(IISDeploymentResult deploymentResult, string handlerVersionValue)
-        {
-            var webConfigFile = GetWebConfigFile(deploymentResult);
-            var config = XDocument.Load(webConfigFile);
-
-            var handlerVersionElement = new XElement("handlerSetting");
-            handlerVersionElement.SetAttributeValue("name", "handlerVersion");
-            handlerVersionElement.SetAttributeValue("value", handlerVersionValue);
-
-            config.Descendants("aspNetCore").Single()
-                .Add(new XElement("handlerSettings", handlerVersionElement));
-
             config.Save(webConfigFile);
         }
 
@@ -61,8 +46,5 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 PublishApplicationBeforeDeployment = site == "InProcessWebSite",
             };
         }
-
-        private static string GetWebConfigFile(IISDeploymentResult deploymentResult)
-            => Path.Combine(deploymentResult.DeploymentResult.ContentRoot, "web.config");
     }
 }

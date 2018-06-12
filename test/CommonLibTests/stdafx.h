@@ -43,7 +43,6 @@
 
 #include "requesthandler_config.h"
 #include "hostfxr_utility.h"
-#include "config_utility.h"
 #include "environmentvariablehash.h"
 #include "iapplication.h"
 #include "utility.h"
@@ -52,11 +51,9 @@
 #include "resources.h"
 #include "aspnetcore_msg.h"
 #include "Helpers.h"
-#include "GlobalVersionUtility.h"
 
 #undef assert // Macro redefinition in IISLib.
-#include "gtest/gtest.h"
-#include "fakeclasses.h"
+#include "gtest\gtest.h"
 
 // Externals defined in inprocess
 BOOL       g_fProcessDetach;

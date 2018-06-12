@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "stdafx.h"
-
 class UTILITY
 {
 public:
@@ -123,4 +121,3 @@ private:
     UTILITY() {}
     ~UTILITY() {}
 };
-
