@@ -34,6 +34,11 @@ OUT_OF_PROCESS_APPLICATION::Initialize(
     if (m_pProcessManager == NULL)
     {
         m_pProcessManager = new PROCESS_MANAGER;
+        if (m_pProcessManager == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
 
         hr = m_pProcessManager->Initialize();
         if (FAILED(hr))

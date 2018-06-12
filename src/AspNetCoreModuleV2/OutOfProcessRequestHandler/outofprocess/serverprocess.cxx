@@ -187,6 +187,11 @@ SERVER_PROCESS::SetupListenPort(
     }
 
     pEntry = new ENVIRONMENT_VAR_ENTRY();
+    if (pEntry == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
 
     if (FAILED(hr = pEntry->Initialize(ASPNETCORE_PORT_ENV_STR, buffer)) ||
         FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry)) ||
@@ -237,6 +242,11 @@ SERVER_PROCESS::SetupAppPath(
     }
 
     pEntry = new ENVIRONMENT_VAR_ENTRY();
+    if (pEntry == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
 
     if (FAILED(hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppVirtualPath.QueryStr())) ||
         FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
@@ -304,6 +314,11 @@ SERVER_PROCESS::SetupAppToken(
         }
 
         pEntry = new ENVIRONMENT_VAR_ENTRY();
+        if (pEntry == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
 
         if (FAILED(strAppToken.CopyA(m_straGuid.QueryStr())) ||
             FAILED(hr = pEntry->Initialize(ASPNETCORE_APP_TOKEN_ENV_STR, strAppToken.QueryStr())) ||
@@ -443,6 +458,11 @@ SERVER_PROCESS::SetupCommandLine(
 
         dwBufferSize = strRelativePath.QueryCCH() + 1;
         pszFullPath = new WCHAR[dwBufferSize];
+        if (pszFullPath == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
 
         if (_wfullpath(pszFullPath,
             strRelativePath.QueryStr(),
@@ -674,6 +694,11 @@ SERVER_PROCESS::PostStartCheck(
     if (m_pForwarderConnection == NULL)
     {
         m_pForwarderConnection = new FORWARDER_CONNECTION();
+        if (m_pForwarderConnection == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
 
         hr = m_pForwarderConnection->Initialize(m_dwPort);
         if (FAILED(hr))
