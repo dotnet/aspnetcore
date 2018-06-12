@@ -3,25 +3,25 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.1-rtm-15790</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorPagesPackageVersion>2.1.0</MicrosoftAspNetCoreMvcRazorPagesPackageVersion>
-    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.0</MicrosoftAspNetCoreRazorDesignPackageVersion>
-    <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.1.0</MicrosoftAspNetCoreRazorRuntimePackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.1-rtm-15793</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.1</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.1.1</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.1.1</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorPagesPackageVersion>2.1.1</MicrosoftAspNetCoreMvcRazorPagesPackageVersion>
+    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.1</MicrosoftAspNetCoreRazorDesignPackageVersion>
+    <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.1.1</MicrosoftAspNetCoreRazorRuntimePackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.1</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.1</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildTasksCorePackageVersion>15.6.82</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.1</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.1</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.1</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.1</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>2.1.0</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.1</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.1.1</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
