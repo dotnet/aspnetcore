@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var authenticateResult = await policyEvaluator.AuthenticateAsync(effectivePolicy, context.HttpContext);
 
             // Allow Anonymous skips all authorization
-            if (context.Filters.Any(item => item is IAllowAnonymousFilter))
+            if (HasAllowAnonymous(context.Filters))
             {
                 return;
             }
@@ -217,6 +217,19 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             Debug.Assert(AuthorizeData != null);
             var policyProvider = serviceProvider.GetRequiredService<IAuthorizationPolicyProvider>();
             return AuthorizationApplicationModelProvider.GetFilter(policyProvider, AuthorizeData);
+        }
+
+        private static bool HasAllowAnonymous(IList<IFilterMetadata> filters)
+        {
+            for (var i = 0; i < filters.Count; i++)
+            {
+                if (filters[i] is IAllowAnonymousFilter)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

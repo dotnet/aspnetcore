@@ -552,5 +552,72 @@ Hello from /Pages/Shared/";
             var title = document.QuerySelector("title").TextContent;
             Assert.Equal("View Data in Pages", title);
         }
+
+        [Fact]
+        public async Task Antiforgery_RequestWithoutAntiforgeryToken_Returns200ForHeadRequests()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Head, "/Antiforgery/AntiforgeryDefault");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Antiforgery_RequestWithoutAntiforgeryToken_Returns400BadRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Antiforgery/AntiforgeryDefault");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Antiforgery_RequestWithAntiforgeryToken_Succeeds()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Antiforgery/AntiforgeryDefault");
+            await AddAntiforgeryHeadersAsync(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Antiforgery_IgnoreAntiforgeryTokenAppliedToModelWorks()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Antiforgery/IgnoreAntiforgery");
+            await AddAntiforgeryHeadersAsync(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        private async Task AddAntiforgeryHeadersAsync(HttpRequestMessage request)
+        {
+            var response = await Client.GetAsync(request.RequestUri);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody);
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(response);
+
+            request.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            request.Headers.Add("RequestVerificationToken", formToken);
+        }
     }
 }

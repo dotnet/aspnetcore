@@ -2,37 +2,44 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Xml.Linq;
+using AngleSharp.Dom.Html;
+using AngleSharp.Parser.Html;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public static class AntiforgeryTestHelper
     {
+        public static string RetrieveAntiforgeryToken(string htmlContent)
+            => RetrieveAntiforgeryToken(htmlContent, actionUrl: string.Empty);
+
         public static string RetrieveAntiforgeryToken(string htmlContent, string actionUrl)
         {
-            htmlContent = "<Root>" + htmlContent + "</Root>";
-            var reader = new StringReader(htmlContent);
-            var htmlDocument = XDocument.Load(reader);
+            var parser = new HtmlParser();
+            var htmlDocument = parser.Parse(htmlContent);
 
-            foreach (var form in htmlDocument.Descendants("form"))
+            return RetrieveAntiforgeryToken(htmlDocument);
+        }
+
+        public static string RetrieveAntiforgeryToken(IHtmlDocument htmlDocument)
+        {
+            var hiddenInputs = htmlDocument.QuerySelectorAll("form input[type=hidden]");
+            foreach (var input in hiddenInputs)
             {
-                foreach (var input in form.Descendants("input"))
+                if (!input.HasAttribute("name"))
                 {
-                    if (input.Attribute("name") != null &&
-                        input.Attribute("type") != null &&
-                        input.Attribute("type").Value == "hidden" &&
-                        (input.Attribute("name").Value == "__RequestVerificationToken" ||
-                         input.Attribute("name").Value == "HtmlEncode[[__RequestVerificationToken]]"))
-                    {
-                        return input.Attributes("value").First().Value;
-                    }
+                    continue;
+                }
+
+                var name = input.GetAttribute("name");
+                if (name == "__RequestVerificationToken" || name == "HtmlEncode[[__RequestVerificationToken]]")
+                {
+                    return input.GetAttribute("value");
                 }
             }
 
-            throw new Exception($"Antiforgery token could not be located in {htmlContent}.");
+            throw new Exception($"Antiforgery token could not be located in {htmlDocument.TextContent}.");
         }
 
         public static CookieMetadata RetrieveAntiforgeryCookie(HttpResponseMessage response)
