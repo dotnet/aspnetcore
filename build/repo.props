@@ -34,7 +34,7 @@
   <PropertyGroup>
     <!-- See https://microsoft.visualstudio.com/Universal%20Store/_packaging?feed=esrp&_a=feed to get the latest -->
     <ESRPClientExe>\\aspnetci\share\esrpclient.1.0.26\tools\EsrpClient.exe</ESRPClientExe>
-    <ESRPApplicationId>c60f7964-1143-48c1-8b20-3d8132073adb</ESRPApplicationId>
+    <ESRPApplicationId>f616b396-be72-40d2-98fd-d7c2e4041560</ESRPApplicationId>
   </PropertyGroup>
 
   <PropertyGroup>
