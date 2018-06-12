@@ -12,6 +12,9 @@
 
     <!-- See https://github.com/dotnet/symreader-converter -->
     <PackageReference Include="Microsoft.DiaSymReader.Pdb2Pdb" Version="$(MicrosoftDiaSymReaderPdb2PdbPackageVersion)" />
+
+    <!-- See https://aka.ms/esrpclient -->
+    <PackageReference Include="ESRPClient" Version="$(ESRPClientVersion)" />
    </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

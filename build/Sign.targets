@@ -133,7 +133,7 @@
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientExe) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress"
+      Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
     <Copy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
@@ -250,7 +250,7 @@
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientExe) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress"
+      Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
     <Copy SourceFiles="@(_FilesToSign->'$(SignOutputDir)%(FileName)%(Extension)')" DestinationFiles="@(_FilesToSign->'%(OriginalFilePath)')" />
