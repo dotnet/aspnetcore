@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Cors.Internal
         private static readonly Action<ILogger, string, Exception> _originNotAllowed;
         private static readonly Action<ILogger, string, Exception> _accessControlMethodNotAllowed;
         private static readonly Action<ILogger, string, Exception> _requestHeaderNotAllowed;
+        private static readonly Action<ILogger, Exception> _failedToSetCorsHeaders;
 
         static CORSLoggerExtensions()
         {
@@ -58,6 +59,11 @@ namespace Microsoft.AspNetCore.Cors.Internal
                 LogLevel.Information,
                 8,
                 "Request header '{requestHeader}' not allowed in CORS policy.");
+
+            _failedToSetCorsHeaders = LoggerMessage.Define(
+                LogLevel.Warning,
+                9,
+                "Failed to apply CORS Response headers.");
         }
 
         public static void IsPreflightRequest(this ILogger logger)
@@ -98,6 +104,11 @@ namespace Microsoft.AspNetCore.Cors.Internal
         public static void RequestHeaderNotAllowed(this ILogger logger, string requestHeader)
         {
             _requestHeaderNotAllowed(logger, requestHeader, null);
+        }
+
+        public static void FailedToSetCorsHeaders(this ILogger logger, Exception exception)
+        {
+            _failedToSetCorsHeaders(logger, exception);
         }
     }
 }
