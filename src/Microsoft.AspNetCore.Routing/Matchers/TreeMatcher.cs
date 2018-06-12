@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _cache.EnsureInitialized();
         }
 
-        public override async Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
         {
             if (httpContext == null)
             {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                             continue;
                         }
 
-                        await SelectEndpointAsync(httpContext, feature, (MatcherEndpoint[])entry.Tag);
+                        SelectEndpoint(httpContext, feature, (MatcherEndpoint[])entry.Tag);
 
                         if (feature.Endpoint != null)
                         {
@@ -109,11 +109,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                                 }
                             }
 
-                            return;
+                            // Found a matching endpoint
+                            return Task.CompletedTask;
                         }
                     }
                 }
             }
+
+            // No match found
+            return Task.CompletedTask;
         }
 
         private bool MatchConstraints(
@@ -139,19 +143,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return true;
         }
 
-        private Task SelectEndpointAsync(HttpContext httpContext, IEndpointFeature feature, IReadOnlyList<MatcherEndpoint> endpoints)
+        private void SelectEndpoint(HttpContext httpContext, IEndpointFeature feature, IReadOnlyList<MatcherEndpoint> endpoints)
         {
-            MatcherEndpoint endpoint;
-
-            try
-            {
-                endpoint = (MatcherEndpoint)_endpointSelector.SelectBestCandidate(httpContext, endpoints);
-            }
-            catch (Exception ex)
-            {
-                // Handle AmbiguousMatchException from EndpointSelector
-                return Task.FromException(ex);
-            }
+            var endpoint = (MatcherEndpoint)_endpointSelector.SelectBestCandidate(httpContext, endpoints);
 
             if (endpoint == null)
             {
@@ -164,8 +158,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 feature.Endpoint = endpoint;
                 feature.Invoker = endpoint.Invoker;
             }
-
-            return Task.CompletedTask;
         }
 
         private UrlMatchingTree[] CreateTrees(IReadOnlyList<Endpoint> endpoints)
