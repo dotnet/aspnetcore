@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public class TreeMatcherTests
     {
-        private MatcherEndpoint CreateEndpoint(string template, int order, object values = null)
+        private MatcherEndpoint CreateEndpoint(string template, int order, object values = null, EndpointMetadataCollection metadata = null)
         {
-            return new MatcherEndpoint((next) => null, template, values, order, EndpointMetadataCollection.Empty, template);
+            return new MatcherEndpoint((next) => null, template, values, order, metadata ?? EndpointMetadataCollection.Empty, template);
         }
 
         private TreeMatcher CreateTreeMatcher(EndpointDataSource endpointDataSource)
@@ -57,6 +57,37 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             // Assert
             Assert.Equal(lowerOrderEndpoint, endpointFeature.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled()
+        {
+            // Arrange
+            var endpointWithoutConstraint = CreateEndpoint("/Teams", 0);
+            var endpointWithConstraint = CreateEndpoint(
+                "/Teams",
+                0,
+                metadata: new EndpointMetadataCollection(new object[] { new HttpMethodEndpointConstraint(new[] { "POST" }) }));
+
+            var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpointWithoutConstraint,
+                endpointWithConstraint
+            });
+
+            var treeMatcher = CreateTreeMatcher(endpointDataSource);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "POST";
+            httpContext.Request.Path = "/Teams";
+
+            var endpointFeature = new EndpointFeature();
+
+            // Act
+            await treeMatcher.MatchAsync(httpContext, endpointFeature);
+
+            // Assert
+            Assert.Equal(endpointWithConstraint, endpointFeature.Endpoint);
         }
     }
 }

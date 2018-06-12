@@ -141,37 +141,31 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private Task SelectEndpointAsync(HttpContext httpContext, IEndpointFeature feature, IReadOnlyList<MatcherEndpoint> endpoints)
         {
-            var bestEndpoint = _endpointSelector.SelectBestCandidate(httpContext, endpoints);
+            MatcherEndpoint endpoint;
 
-            // REVIEW: Note that this code doesn't do anything significant now. This will eventually incorporate something like IActionConstraint
-            switch (endpoints.Count)
+            try
             {
-                case 0:
-                    {
-                        Log.MatchFailed(_logger, httpContext);
-                        return Task.CompletedTask;
-                    }
-
-                case 1:
-                    {
-                        var endpoint = endpoints[0];
-                        Log.MatchSuccess(_logger, httpContext, endpoint);
-
-                        feature.Endpoint = endpoint;
-                        feature.Invoker = endpoint.Invoker;
-
-                        return Task.CompletedTask;
-                    }
-
-                default:
-                    {
-                        Log.MatchAmbiguous(_logger, httpContext, endpoints);
-                        var message = Resources.FormatAmbiguousEndpoints(
-                            Environment.NewLine,
-                            string.Join(Environment.NewLine, endpoints.Select(a => a.DisplayName)));
-                        throw new AmbiguousMatchException(message);
-                    }
+                endpoint = (MatcherEndpoint)_endpointSelector.SelectBestCandidate(httpContext, endpoints);
             }
+            catch (Exception ex)
+            {
+                // Handle AmbiguousMatchException from EndpointSelector
+                return Task.FromException(ex);
+            }
+
+            if (endpoint == null)
+            {
+                Log.MatchFailed(_logger, httpContext);
+            }
+            else
+            {
+                Log.MatchSuccess(_logger, httpContext, endpoint);
+
+                feature.Endpoint = endpoint;
+                feature.Invoker = endpoint.Invoker;
+            }
+
+            return Task.CompletedTask;
         }
 
         private UrlMatchingTree[] CreateTrees(IReadOnlyList<Endpoint> endpoints)
