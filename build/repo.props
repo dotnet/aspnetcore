@@ -1,8 +1,6 @@
 <Project>
   <Import Project="dependencies.props" />
-
   <PropertyGroup>
-    <DisableDefaultTargets>true</DisableDefaultTargets>
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
     <UnsignedPackagesDir>$(DepsDirectory)build\</UnsignedPackagesDir>
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
@@ -30,9 +28,24 @@
     <UnsignedMPacksPath>$(IntermediateDir)UnsignedMPacks\</UnsignedMPacksPath>
   </PropertyGroup>
 
+  <!-- Properties for code sign -->
+  <PropertyGroup>
+    <CodeSignApprovers>elipton;joeloff</CodeSignApprovers>
+    <BinaryCodeSignCertificate>400</BinaryCodeSignCertificate>
+    <VSIXCodeSignCertificate>100040160</VSIXCodeSignCertificate>
+    <ThirdParthCodeSignCertificate>135020002</ThirdParthCodeSignCertificate>
+    <CodeSignDisplayName>Microsoft ASP.NET Core</CodeSignDisplayName>
+    <CodeSignUrl>https://www.asp.net/</CodeSignUrl>
+    <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
+    <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
+    <SkipArtifactVerification>true</SkipArtifactVerification>
+    <SkipBillOfMaterials>true</SkipBillOfMaterials>
+  </PropertyGroup>
+
   <!-- Properties for ESRP signing -->
   <PropertyGroup>
-    <ESRPApplicationId>f616b396-be72-40d2-98fd-d7c2e4041560</ESRPApplicationId>
+    <ESRPClientExe>\\aspnetci\share\esrpclient.1.0.23\tools\EsrpClient.exe</ESRPClientExe>
+    <ESRPApplicationId>c60f7964-1143-48c1-8b20-3d8132073adb</ESRPApplicationId>
   </PropertyGroup>
 
   <PropertyGroup>
