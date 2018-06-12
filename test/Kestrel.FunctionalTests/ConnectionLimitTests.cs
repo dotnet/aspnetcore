@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ResetsCountWhenConnectionClosed()
         {
-            var requestTcs = new TaskCompletionSource<object>();
-            var releasedTcs = new TaskCompletionSource<object>();
-            var lockedTcs = new TaskCompletionSource<bool>();
+            var requestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releasedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var lockedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var counter = new EventRaisingResourceCounter(ResourceCounter.Quota(1));
             counter.OnLock += (s, e) => lockedTcs.TrySetResult(e);
             counter.OnRelease += (s, e) => releasedTcs.TrySetResult(null);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task RejectsConnectionsWhenLimitReached()
         {
             const int max = 10;
-            var requestTcs = new TaskCompletionSource<object>();
+            var requestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = CreateServerWithMaxConnections(async context =>
             {
@@ -140,8 +140,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int count = 100;
             var opened = 0;
             var closed = 0;
-            var openedTcs = new TaskCompletionSource<object>();
-            var closedTcs = new TaskCompletionSource<object>();
+            var openedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var closedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var counter = new EventRaisingResourceCounter(ResourceCounter.Quota(uint.MaxValue));
 

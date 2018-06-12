@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
             {
                 _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                 sslStream.Dispose();
