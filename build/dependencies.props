@@ -14,7 +14,7 @@
     <MicrosoftAspNetCoreHttpOverridesPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreHttpOverridesPackageVersion>
     <MicrosoftAspNetCoreHttpPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreHttpSysSourcesPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreHttpSysSourcesPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-preview1-34411</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-a-preview1-publish-wait-for-exit-17062</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreTestingPackageVersion>
