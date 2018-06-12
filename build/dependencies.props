@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <MicrosoftDiaSymReaderPdb2PdbPackageVersion>1.1.0-beta1-62722-04</MicrosoftDiaSymReaderPdb2PdbPackageVersion>
-    <ESRPClientVersion>1.0.26</ESRPClientVersion>
+    <ESRPClientVersion>1.0.27</ESRPClientVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
