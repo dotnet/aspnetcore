@@ -3,8 +3,6 @@
   <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
 
   <PropertyGroup>
-    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)' == ''">https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/assets/</DotNetAssetRootUrl>
-
     <RestoreSources>
       $(DotNetAdditionalRestoreSources);
       $(DotNetRestoreSources);
@@ -12,7 +10,6 @@
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
-      https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/index.json;
       https://api.nuget.org/v3/index.json;
     </RestoreSources>
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">

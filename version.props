@@ -2,14 +2,14 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>2</AspNetCorePatchVersion>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <PrereleaseVersionLabel>rtm</PrereleaseVersionLabel>
 
     <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2" -->
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
 
-    <ExperimentalVersionPrefix>0.1.1</ExperimentalVersionPrefix>
+    <ExperimentalVersionPrefix>0.1.2</ExperimentalVersionPrefix>
     <ExperimentalVersionSuffix>rtm</ExperimentalVersionSuffix>
 
     <PackageVersionSuffix Condition=" '$(IsFinalBuild)' != 'true' AND '$(PrereleaseVersionLabel)' != '' ">$(PrereleaseVersionLabel)</PackageVersionSuffix>
