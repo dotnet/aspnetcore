@@ -77,7 +77,7 @@
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition ="'@(AspNetCoreBinaries)' != ''">
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
-          Certificate=$(MicrosoftAuthentiCodeSha1Sha2);
+          Certificate=$(MicrosoftAuthentiCodeSha2);
           JobName=AspNetCoreBinaries;
           Files=@(AspNetCoreBinaries)
         </AdditionalProperties>
