@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
         // TODO: Remove pInProcessHandler argument
-        public bool IsWebSocketAvailible(IntPtr pInProcessHandler)
+        public bool IsWebSocketAvailable(IntPtr pInProcessHandler)
         {
             // Check if the Http upgrade feature is available in IIS.
             // To check this, we can look at the server variable WEBSOCKET_VERSION

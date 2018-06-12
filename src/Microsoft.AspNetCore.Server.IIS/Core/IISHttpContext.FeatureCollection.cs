@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => _server.IsWebSocketAvailible(_pInProcessHandler);
+        bool IHttpUpgradeFeature.IsUpgradableRequest => _server.IsWebSocketAvailable(_pInProcessHandler);
 
         bool IFeatureCollection.IsReadOnly => false;
 

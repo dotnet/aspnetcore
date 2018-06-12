@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             ResetFeatureCollection();
 
-            if (!_server.IsWebSocketAvailible(_pInProcessHandler))
+            if (!_server.IsWebSocketAvailable(_pInProcessHandler))
             {
                 _currentIHttpUpgradeFeature = null;
             }
