@@ -50,7 +50,9 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConfigUtilityTests.cpp" />
     <ClCompile Include="FileOutputManagerTests.cpp" />
+    <ClCompile Include="GlobalVersionTests.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="hostfxr_utility_tests.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
@@ -93,7 +95,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\gtest\googletest\googlemock\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -118,7 +120,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\gtest\googletest\googlemock\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -141,7 +143,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\gtest\googletest\googlemock\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -166,9 +168,9 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\..\src\AspNetCoreModuleV2\IISLib;..\..\src\AspNetCoreModuleV2\CommonLib;..\gtest\googletest\googletest\include;..\gtest\googletest\googlemock\include;...\..\src\AspNetCoreModuleV2\AspNetCore\Inc;..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\;</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

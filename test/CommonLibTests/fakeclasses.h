@@ -1,7 +1,62 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#include "stdafx.h"
+#pragma once
+
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
+class MockProperty : public IAppHostProperty
+{
+public:
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, QueryInterface, HRESULT(REFIID riid, void ** ppvObject));
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, AddRef, ULONG());
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Release, ULONG());
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Name, HRESULT(BSTR* pbstrValue));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Value, HRESULT(VARIANT * pVariant));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, put_Value, HRESULT(VARIANT value));
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Clear, HRESULT());
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_StringValue, HRESULT(BSTR* pbstrValue));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Exception, HRESULT(IAppHostPropertyException ** ppException));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, GetMetadata, HRESULT(BSTR bstrMetadataType, VARIANT * pValue));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, SetMetadata, HRESULT(BSTR bstrMetadataType, VARIANT value));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Schema, HRESULT(IAppHostPropertySchema ** ppSchema));
+};
+
+class MockCollection : public IAppHostElementCollection
+{
+public:
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, QueryInterface, HRESULT(REFIID riid, void ** ppvObject));
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, AddRef, ULONG());
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Release, ULONG());
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Clear, HRESULT());
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Schema, HRESULT(IAppHostCollectionSchema** pSchema));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Count, HRESULT(DWORD * dwordElem));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, get_Item, HRESULT(VARIANT cIndex, IAppHostElement ** ppElement));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, AddElement, HRESULT(IAppHostElement * pElement, INT cPosition));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, DeleteElement, HRESULT(VARIANT cIndex));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, CreateNewElement, HRESULT(BSTR bstrElementName, IAppHostElement** ppElement));
+};
+
+class MockElement : public IAppHostElement
+{
+public:
+
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, QueryInterface, HRESULT(REFIID riid, void ** ppvObject));
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, AddRef, ULONG());
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Release, ULONG());
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Name, HRESULT(BSTR * pbstrName));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Collection, HRESULT(IAppHostElementCollection ** ppCollection));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Properties, HRESULT(IAppHostPropertyCollection ** ppProperties));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_ChildElements, HRESULT(IAppHostChildElementCollection ** ppElements));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, GetMetadata, HRESULT(BSTR bstrMetadataType, VARIANT * pValue));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, SetMetadata, HRESULT(BSTR bstrMetadataType, VARIANT value));
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Schema, HRESULT(IAppHostElementSchema** pSchema));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, GetElementByName, HRESULT(BSTR bstrSubName, IAppHostElement ** ppElement));
+    MOCK_METHOD2_WITH_CALLTYPE(__stdcall, GetPropertyByName, HRESULT(BSTR bstrSubName, IAppHostProperty ** ppProperty));
+    MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Clear, HRESULT());
+    MOCK_METHOD1_WITH_CALLTYPE(__stdcall, get_Methods, HRESULT(IAppHostMethodCollection ** ppMethods));
+};
 
 class MockHttpServer : public IHttpServer
 {

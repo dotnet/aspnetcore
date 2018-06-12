@@ -11,5 +11,6 @@
     <AspNetCoreModuleVersionMajor>8</AspNetCoreModuleVersionMajor>
     <AspNetCoreModuleVersionMinor>1</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>0</AspNetCoreModuleVersionRevision>
+    <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   </PropertyGroup>
 </Project>

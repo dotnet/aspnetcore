@@ -29,8 +29,8 @@
     
   </PropertyGroup>
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_outofprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_outofprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_outofprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)\$(AspNetCoreModuleOutOfProcessVersion)\%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_outofprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)\$(AspNetCoreModuleOutOfProcessVersion)\%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
