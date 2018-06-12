@@ -1,13 +1,24 @@
 import { ChildProcess, spawn } from "child_process";
-import * as fs from "fs";
 import { EOL } from "os";
-import * as path from "path";
-import { PassThrough, Readable } from "stream";
+import { Readable } from "stream";
 
-import { run } from "../../webdriver-tap-runner/lib";
+import * as _fs from "fs";
+import * as path from "path";
+import { promisify } from "util";
+
+import * as karma from "karma";
 
 import * as _debug from "debug";
 const debug = _debug("signalr-functional-tests:run");
+
+const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "artifacts");
+const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
+
+// Promisify things from fs we want to use.
+const fs = {
+    exists: promisify(_fs.exists),
+    mkdir: promisify(_fs.mkdir),
+};
 
 process.on("unhandledRejection", (reason) => {
     console.error(`Unhandled promise rejection: ${reason}`);
@@ -22,7 +33,7 @@ setTimeout(() => {
 
 function waitForMatch(command: string, process: ChildProcess, regex: RegExp): Promise<RegExpMatchArray> {
     return new Promise<RegExpMatchArray>((resolve, reject) => {
-        const commandDebug = _debug(`signalr-functional-tests:${command}`);
+        const commandDebug = _debug(`${command}`);
         try {
             let lastLine = "";
 
@@ -70,8 +81,10 @@ function waitForMatch(command: string, process: ChildProcess, regex: RegExp): Pr
 }
 
 let configuration = "Debug";
-let chromePath: string;
 let spec: string;
+let sauce = false;
+let allBrowsers = false;
+let noColor = false;
 
 for (let i = 2; i < process.argv.length; i += 1) {
     switch (process.argv[i]) {
@@ -83,30 +96,90 @@ for (let i = 2; i < process.argv.length; i += 1) {
         case "--verbose":
             _debug.enable("signalr-functional-tests:*");
             break;
-        case "--chrome":
-            i += 1;
-            chromePath = process.argv[i];
+        case "-vv":
+        case "--very-verbose":
+            _debug.enable("*");
             break;
         case "--spec":
             i += 1;
             spec = process.argv[i];
             break;
+        case "--sauce":
+            sauce = true;
+            console.log("Running on SauceLabs.");
+            break;
+        case "-a":
+        case "--all":
+            allBrowsers = true;
+            break;
+        case "--no-color":
+            noColor = true;
+            break;
     }
 }
 
-if (chromePath) {
-    debug(`Using Google Chrome at: '${chromePath}'`);
+const configFile = sauce ?
+    path.resolve(__dirname, "karma.sauce.conf.js") :
+    path.resolve(__dirname, "karma.local.conf.js");
+debug(`Loading Karma config file: ${configFile}`);
+
+// Gross but it works
+process.env.ASPNETCORE_SIGNALR_TEST_ALL_BROWSERS = allBrowsers ? "true" : null;
+const config = (karma as any).config.parseConfig(configFile);
+
+if (sauce) {
+    let failed = false;
+
+    if (!process.env.SAUCE_USERNAME) {
+        failed = true;
+        console.error("Required environment variable 'SAUCE_USERNAME' is missing!");
+    }
+
+    if (!process.env.SAUCE_ACCESS_KEY) {
+        failed = true;
+        console.error("Required environment variable 'SAUCE_ACCESS_KEY' is missing!");
+        process.exit(1);
+    }
+
+    if (failed) {
+        process.exit(1);
+    }
+}
+
+function runKarma(karmaConfig) {
+    return new Promise<karma.TestResults>((resolve, reject) => {
+        const server = new karma.Server(karmaConfig);
+        server.on("run_complete", (browsers, results) => {
+            return resolve(results);
+        });
+        server.start();
+    });
 }
 
 (async () => {
     try {
+        // Check if we got any browsers
+        if (config.browsers.length === 0) {
+            console.log("Unable to locate any suitable browsers. Skipping browser functional tests.");
+            process.exit(0);
+            return; // For good measure
+        }
+
         const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp2.2", "FunctionalTests.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
+        let desiredServerUrl = "http://127.0.0.1:0";
+
+        if (sauce) {
+            // SauceLabs can only proxy certain ports for Edge and Safari.
+            // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
+            desiredServerUrl = "http://127.0.0.1:9000";
+        }
+
         const dotnet = spawn("dotnet", [serverPath], {
             env: {
                 ...process.env,
-                ["ASPNETCORE_URLS"]: "http://127.0.0.1:0"
+                ["ASPNETCORE_URLS"]: desiredServerUrl,
             },
         });
 
@@ -121,26 +194,38 @@ if (chromePath) {
         process.on("exit", cleanup);
 
         debug("Waiting for Functional Test Server to start");
-        const results = await waitForMatch("dotnet", dotnet, /Now listening on: (http:\/\/[^\/]+:[\d]+)/);
-        debug(`Functional Test Server has started at ${results[1]}`);
+        const matches = await waitForMatch("dotnet", dotnet, /Now listening on: (http:\/\/[^\/]+:[\d]+)/);
+        const url = matches[1];
+        debug(`Functional Test Server has started at ${url}`);
 
-        let url = results[1] + "?cacheBust=true";
-        if (spec) {
-            url += `&spec=${encodeURI(spec)}`;
+        debug(`Using SignalR Server: ${url}`);
+
+        // Start karma server
+        const conf = {
+            ...config,
+            singleRun: true,
+        };
+
+        // Set output directory for console log
+        if (!await fs.exists(ARTIFACTS_DIR)) {
+            await fs.mkdir(ARTIFACTS_DIR);
+        }
+        if (!await fs.exists(LOGS_DIR)) {
+            await fs.mkdir(LOGS_DIR);
+        }
+        conf.browserConsoleLogOptions.path = path.resolve(LOGS_DIR, `browserlogs.console.${new Date().toISOString().replace(/:|\./g, "-")}`);
+
+        if (noColor) {
+            conf.colors = false;
         }
 
-        debug(`Using server url: ${url}`);
+        // Pass server URL to tests
+        conf.client.args = ["--server", url];
 
-        const failureCount = await run("SignalR Browser Functional Tests", {
-            browser: "chrome",
-            chromeBinaryPath: chromePath,
-            output: process.stdout,
-            url,
-            webdriverPort: 9515,
-        });
-        process.exit(failureCount);
+        const results = await runKarma(conf);
+        process.exit(results.exitCode);
     } catch (e) {
-        console.error("Error: " + e.toString());
+        console.error(e);
         process.exit(1);
     }
 })();

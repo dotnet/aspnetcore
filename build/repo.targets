@@ -19,7 +19,6 @@
     <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" />
     <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr" />
     <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr-protocol-msgpack" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/webdriver-tap-runner" />
   </Target>
 
   <PropertyGroup>
@@ -27,13 +26,13 @@
   </PropertyGroup>
 
   <Target Name="RunTSClientNodeTests">
-    <Message Text="Running TypeScript client Node tests" Importance="high" />
+    <Message Text="Running JavaScript client Node tests" Importance="high" />
     <Exec Command="npm test" WorkingDirectory="$(RepositoryRoot)clients/ts" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
   <Target Name="RunBrowserTests">
-    <Message Text="Running TypeScript client Browser tests" Importance="high" />
-    <Exec Command="npm run ci-test -- --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
+    <Message Text="Running JavaScript client Browser tests" Importance="high" />
+    <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
   <PropertyGroup>

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,19 @@ namespace FunctionalTests
     {
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
+            string url = null;
+            for (var i = 0; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "--url":
+                        i += 1;
+                        url = args[i];
+                        break;
+                }
+            }
+
+            var hostBuilder = new WebHostBuilder()
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole(options => options.IncludeScopes = true);
@@ -21,10 +34,15 @@ namespace FunctionalTests
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+                .UseStartup<Startup>();
 
-            host.Run();
+            if (!string.IsNullOrEmpty(url))
+            {
+                Console.WriteLine($"Forcing URL to: {url}");
+                hostBuilder.UseUrls(url);
+            }
+
+            hostBuilder.Build().Run();
         }
     }
 }

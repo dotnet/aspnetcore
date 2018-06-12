@@ -1,4 +1,4 @@
-# Debugging/Running Jest Tests
+# Debugging/Running JavaScript Unit Tests
 
 We use [Jest](https://facebook.github.io/jest/) as our JavaScript testing framework. We also use [ts-jest](https://github.com/kulshekhar/ts-jest) which builds TypeScript automatically.
 

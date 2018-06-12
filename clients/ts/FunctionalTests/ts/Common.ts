@@ -4,7 +4,28 @@
 import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
-export const ENDPOINT_BASE_URL = document.location.protocol + "//" + document.location.host;
+export let ENDPOINT_BASE_URL: string;
+
+if ((window as any).__karma__) {
+    const args = (window as any).__karma__.config.args as string[];
+    let server = "";
+
+    for (let i = 0; i < args.length; i += 1) {
+        switch (args[i]) {
+            case "--server":
+                i += 1;
+                server = args[i];
+                break;
+        }
+    }
+
+    // Running in Karma? Need to use an absolute URL
+    ENDPOINT_BASE_URL = server;
+    console.log(`Using SignalR Server: ${ENDPOINT_BASE_URL}`);
+} else {
+    ENDPOINT_BASE_URL = "";
+}
+
 export const ECHOENDPOINT_URL = ENDPOINT_BASE_URL + "/echo";
 
 export function getHttpTransportTypes(): HttpTransportType[] {

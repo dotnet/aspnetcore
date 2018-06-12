@@ -7,8 +7,8 @@ import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
 
-const TESTHUBENDPOINT_URL = "/testhub";
-const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = "/testhub-nowebsockets";
+const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
+const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub-nowebsockets";
 
 // On slower CI machines, these tests sometimes take longer than 5s
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
@@ -498,7 +498,7 @@ describe("hubConnection", () => {
                 try {
                     const jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken");
 
-                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub", {
                         accessTokenFactory: () => jwtToken,
                     }).build();
 
@@ -524,7 +524,7 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 try {
-                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub", {
                         accessTokenFactory: () => getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken"),
                     }).build();
 

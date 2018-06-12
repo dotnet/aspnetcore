@@ -48,7 +48,7 @@ describe("connection", () => {
                 const message = "Hello World!";
                 // the url should be resolved relative to the document.location.host
                 // and the leading '/' should be automatically added to the url
-                const connection = new HttpConnection("echo", {
+                const connection = new HttpConnection(ECHOENDPOINT_URL, {
                     ...commonOptions,
                     transport: transportType,
                 });
@@ -73,10 +73,11 @@ describe("connection", () => {
             });
 
             it("does not log content of messages sent or received by default", (done) => {
+                TestLogger.saveLogsAndReset();
                 const message = "Hello World!";
 
                 // DON'T use commonOptions because we want to specifically test the scenario where logMessageContent is not set.
-                const connection = new HttpConnection("echo", {
+                const connection = new HttpConnection(ECHOENDPOINT_URL, {
                     logger: TestLogger.instance,
                     transport: transportType,
                 });
@@ -105,10 +106,11 @@ describe("connection", () => {
             });
 
             it("does log content of messages sent or received when enabled", (done) => {
+                TestLogger.saveLogsAndReset();
                 const message = "Hello World!";
 
                 // DON'T use commonOptions because we want to specifically test the scenario where logMessageContent is set to true (even if commonOptions changes).
-                const connection = new HttpConnection("echo", {
+                const connection = new HttpConnection(ECHOENDPOINT_URL, {
                     logMessageContent: true,
                     logger: TestLogger.instance,
                     transport: transportType,

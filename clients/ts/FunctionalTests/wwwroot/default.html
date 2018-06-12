@@ -13,8 +13,10 @@
     <script type="text/javascript" src="lib/jasmine/jasmine.js"></script>
     <script type="text/javascript" src="lib/jasmine/jasmine-html.js"></script>
     <script type="text/javascript" src="lib/jasmine/boot.js"></script>
+    <script type="text/javascript" src="lib/jasmine-jsreporter.js"></script>
     <script type="text/javascript" src="lib/msgpack5/msgpack5.js"></script>
     <script type="text/javascript">
+        jasmine.getEnv().addReporter(new jasmine.JSReporter2());
         function getParameterByName(name, url) {
             if (!url) {
                 url = window.location.href;
