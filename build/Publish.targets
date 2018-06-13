@@ -14,7 +14,7 @@
       <SignedVSIX Include="$(SignedVSIXPath)**\*.vsix" />
     </ItemGroup>
 
-    <MSBuild
+    <MSBuild Condition=" @(SignedVSIX->Count()) != 0 "
       Projects="$(MSBuildProjectFullPath)"
       Targets="_PublishVsixToVsDrop"
       Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);SignedVSIXFileName=%(SignedVSIX.FileName)" />
