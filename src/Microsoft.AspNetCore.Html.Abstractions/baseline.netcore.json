@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Html.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Html.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Html.HtmlContentBuilder",
@@ -9,6 +9,58 @@
         "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CopyTo",
+          "Parameters": [
+            {
+              "Name": "destination",
+              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MoveTo",
+          "Parameters": [
+            {
+              "Name": "destination",
+              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteTo",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_Count",
@@ -73,58 +125,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CopyTo",
-          "Parameters": [
-            {
-              "Name": "destination",
-              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "MoveTo",
-          "Parameters": [
-            {
-              "Name": "destination",
-              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteTo",
-          "Parameters": [
-            {
-              "Name": "writer",
-              "Type": "System.IO.TextWriter"
-            },
-            {
-              "Name": "encoder",
-              "Type": "System.Text.Encodings.Web.HtmlEncoder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
           "Visibility": "Public",
           "GenericParameter": []
         },
