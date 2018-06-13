@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.DataProtection, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.DataProtection, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.DataProtectionServiceCollectionExtensions",
@@ -239,6 +239,26 @@
             {
               "Name": "thumbprint",
               "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnprotectKeysWithAnyCertificate",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "certificates",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2[]",
+              "IsParams": true
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
@@ -640,23 +660,23 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Length",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.ISecret",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Dispose",
           "Parameters": [],
           "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Length",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.ISecret",
           "Visibility": "Public",
           "GenericParameter": []
         },
