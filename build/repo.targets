@@ -101,7 +101,7 @@
 
     <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCoreV2.nuspec"
       DestinationFolder="$(BuildDir)"
-      Properties="version=$(PackageVersion);Configuration=$(Configuration)"
+      Properties="version=$(PackageVersion);Configuration=$(Configuration);AspNetCoreModuleOutOfProcessVersion=$(AspNetCoreModuleOutOfProcessVersion)"
       Overwrite="true"
       BasePath="$(RepositoryRoot)" />
 
