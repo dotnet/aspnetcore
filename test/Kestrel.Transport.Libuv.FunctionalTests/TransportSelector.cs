@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         public static IWebHostBuilder GetWebHostBuilder(Func<MemoryPool<byte>> memoryPoolFactory = null)
         {
-            return new WebHostBuilder().UseLibuv(options => { options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory; }).ConfigureServices(TestServer.RemoveDevCert);
+            return new WebHostBuilder().UseLibuv(options => { options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory; });
         }
     }
 }

@@ -45,15 +45,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, Action<IServiceCollection> configureServices)
+            : this(app, context, options => options.ListenOptions.Add(listenOptions), configureServices)
+        {
+        }
+        public TestServer(RequestDelegate app, TestServiceContext context, Action<KestrelServerOptions> configureKestrel)
+            : this(app, context, configureKestrel, _ => { })
+        {
+        }
+
+        public TestServer(RequestDelegate app, TestServiceContext context, Action<KestrelServerOptions> configureKestrel, Action<IServiceCollection> configureServices)
         {
             _app = app;
-            _listenOptions = listenOptions;
             Context = context;
 
             _host = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(o =>
+                .UseKestrel(options =>
                 {
-                    o.ListenOptions.Add(_listenOptions);
+                    configureKestrel(options);
+                    _listenOptions = options.ListenOptions.First();
                 })
                 .ConfigureServices(services =>
                 {
@@ -70,26 +79,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                         return new KestrelServer(sp.GetRequiredService<ITransportFactory>(), context);
                     });
-                    RemoveDevCert(services);
                     configureServices(services);
                 })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
                 .Build();
 
             _host.Start();
-        }
-
-        public static void RemoveDevCert(IServiceCollection services)
-        {
-            // KestrelServerOptionsSetup would scan all system certificates on every test server creation
-            // making test runs very slow
-            foreach (var descriptor in services.ToArray())
-            {
-                if (descriptor.ImplementationType == typeof(KestrelServerOptionsSetup))
-                {
-                    services.Remove(descriptor);
-                }
-            }
         }
 
         public IPEndPoint EndPoint => _listenOptions.IPEndPoint;

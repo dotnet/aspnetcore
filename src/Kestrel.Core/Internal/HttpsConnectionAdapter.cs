@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             bool certificateRequired;
             var feature = new TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
+            context.Features.Set<ITlsHandshakeFeature>(feature);
 
             if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
             {
@@ -210,6 +212,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 #error TFMs need to be updated
 #endif
             feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
+            feature.CipherAlgorithm = sslStream.CipherAlgorithm;
+            feature.CipherStrength = sslStream.CipherStrength;
+            feature.HashAlgorithm = sslStream.HashAlgorithm;
+            feature.HashStrength = sslStream.HashStrength;
+            feature.KeyExchangeAlgorithm = sslStream.KeyExchangeAlgorithm;
+            feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
+            feature.Protocol = sslStream.SslProtocol;
 
             return new HttpsAdaptedConnection(sslStream);
         }

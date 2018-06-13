@@ -518,4 +518,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorFrameOverLimit" xml:space="preserve">
     <value>The received frame size of {size} exceeds the limit {limit}.</value>
   </data>
+  <data name="Http2ErrorMinTlsVersion" xml:space="preserve">
+    <value>Tls 1.2 or later must be used for HTTP/2. {protocol} was negotiated.</value>
+  </data>
 </root>

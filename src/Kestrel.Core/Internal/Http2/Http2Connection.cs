@@ -3,14 +3,15 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -115,31 +116,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
-                while (!_stopping)
-                {
-                    var result = await Input.ReadAsync();
-                    var readableBuffer = result.Buffer;
-                    var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.End;
+                ValidateTlsRequirements();
 
-                    try
-                    {
-                        if (!readableBuffer.IsEmpty)
-                        {
-                            if (ParsePreface(readableBuffer, out consumed, out examined))
-                            {
-                                break;
-                            }
-                        }
-                        else if (result.IsCompleted)
-                        {
-                            return;
-                        }
-                    }
-                    finally
-                    {
-                        Input.AdvanceTo(consumed, examined);
-                    }
+                if (!await TryReadPrefaceAsync())
+                {
+                    return;
                 }
 
                 if (!_stopping)
@@ -213,6 +194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
 
                     await _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, errorCode);
+                    _frameWriter.Complete();
                 }
                 finally
                 {
@@ -220,6 +202,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _frameWriter.Abort(ex: null);
                 }
             }
+        }
+
+        // https://tools.ietf.org/html/rfc7540#section-9.2
+        // Some of these could not be checked in advance. Fail before using the connection.
+        private void ValidateTlsRequirements()
+        {
+            var tlsFeature = ConnectionFeatures.Get<ITlsHandshakeFeature>();
+            if (tlsFeature == null)
+            {
+                // Not using TLS at all.
+                return;
+            }
+
+            if (tlsFeature.Protocol < SslProtocols.Tls12)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorMinTlsVersion(tlsFeature.Protocol), Http2ErrorCode.INADEQUATE_SECURITY);
+            }
+        }
+
+        private async Task<bool> TryReadPrefaceAsync()
+        {
+            while (!_stopping)
+            {
+                var result = await Input.ReadAsync();
+                var readableBuffer = result.Buffer;
+                var consumed = readableBuffer.Start;
+                var examined = readableBuffer.End;
+
+                try
+                {
+                    if (!readableBuffer.IsEmpty)
+                    {
+                        if (ParsePreface(readableBuffer, out consumed, out examined))
+                        {
+                            return true;
+                        }
+                    }
+                    if (result.IsCompleted)
+                    {
+                        return false;
+                    }
+                }
+                finally
+                {
+                    Input.AdvanceTo(consumed, examined);
+                }
+            }
+
+            return false;
         }
 
         private bool ParsePreface(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)

@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
@@ -274,6 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _connectionContext = new Http2ConnectionContext
             {
+                ConnectionFeatures = new FeatureCollection(),
                 ServiceContext = new TestServiceContext()
                 {
                     Log = new TestKestrelTrace(_logger)

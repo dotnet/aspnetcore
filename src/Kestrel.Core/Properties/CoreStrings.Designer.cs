@@ -1876,6 +1876,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2ErrorFrameOverLimit(object size, object limit)
             => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorFrameOverLimit", "size", "limit"), size, limit);
 
+        /// <summary>
+        /// Tls 1.2 or later must be used for HTTP/2. {protocol} was negotiated.
+        /// </summary>
+        internal static string Http2ErrorMinTlsVersion
+        {
+            get => GetString("Http2ErrorMinTlsVersion");
+        }
+
+        /// <summary>
+        /// Tls 1.2 or later must be used for HTTP/2. {protocol} was negotiated.
+        /// </summary>
+        internal static string FormatHttp2ErrorMinTlsVersion(object protocol)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorMinTlsVersion", "protocol"), protocol);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

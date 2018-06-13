@@ -14,6 +14,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -30,8 +31,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
         private static X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
 
-        // https://github.com/aspnet/KestrelHttpServer/issues/240
-        // This test currently fails on mono because of an issue with SslStream.
         [Fact]
         public async Task CanReadAndWriteWithHttpsConnectionAdapter()
         {
@@ -52,6 +51,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     validateCertificate: false);
 
                 Assert.Equal("content=Hello+World%3F", result);
+            }
+        }
+
+        [Fact]
+        public async Task HandshakeDetailsAreAvailable()
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
+                }
+            };
+
+            using (var server = new TestServer(context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
+                Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
+                Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
+                Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
+                Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
+                Assert.True(tlsFeature.KeyExchangeAlgorithm > ExchangeAlgorithmType.None, "KeyExchangeAlgorithm");
+                Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
+
+                return context.Response.WriteAsync("hello world");
+            }, new TestServiceContext(LoggerFactory), listenOptions))
+            {
+                var result = await HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+                Assert.Equal("hello world", result);
             }
         }
 

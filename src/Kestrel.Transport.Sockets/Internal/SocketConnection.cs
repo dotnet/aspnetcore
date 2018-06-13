@@ -245,12 +245,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 var result = await Output.ReadAsync();
 
-                var buffer = result.Buffer;
-
                 if (result.IsCanceled)
                 {
                     break;
                 }
+
+                var buffer = result.Buffer;
 
                 var end = buffer.End;
                 var isCompleted = result.IsCompleted;

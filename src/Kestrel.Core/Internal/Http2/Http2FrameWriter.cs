@@ -32,6 +32,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _outputReader = outputPipeReader;
         }
 
+        public void Complete()
+        {
+            lock (_writeLock)
+            {
+                if (_completed)
+                {
+                    return;
+                }
+
+                _completed = true;
+                _outputWriter.Complete();
+            }
+        }
+
         public void Abort(Exception ex)
         {
             lock (_writeLock)
