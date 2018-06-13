@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Net.Http.Headers, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Net.Http.Headers, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Net.Http.Headers.CacheControlHeaderValue",
@@ -1513,6 +1513,94 @@
         },
         {
           "Kind": "Field",
+          "Name": "AccessControlAllowCredentials",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Credentials\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlAllowHeaders",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Headers\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlAllowMethods",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Methods\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlAllowOrigin",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Origin\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlExposeHeaders",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Expose-Headers\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlMaxAge",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Max-Age\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlRequestHeaders",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Request-Headers\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlRequestMethod",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Request-Method\""
+        },
+        {
+          "Kind": "Field",
           "Name": "Age",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -1532,6 +1620,17 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"Allow\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Authority",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":authority\""
         },
         {
           "Kind": "Field",
@@ -1642,6 +1741,28 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"Content-Range\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentSecurityPolicy",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Security-Policy\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentSecurityPolicyReportOnly",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Security-Policy-Report-Only\""
         },
         {
           "Kind": "Field",
@@ -1821,6 +1942,39 @@
         },
         {
           "Kind": "Field",
+          "Name": "Method",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":method\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Origin",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Origin\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":path\""
+        },
+        {
+          "Kind": "Field",
           "Name": "Pragma",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -1887,6 +2041,17 @@
         },
         {
           "Kind": "Field",
+          "Name": "Scheme",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":scheme\""
+        },
+        {
+          "Kind": "Field",
           "Name": "Server",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -1906,6 +2071,28 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"Set-Cookie\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":status\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "StrictTransportSecurity",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Strict-Transport-Security\""
         },
         {
           "Kind": "Field",
@@ -2220,6 +2407,48 @@
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsQuoted",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnescapeAsQuotedString",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EscapeAsQuotedString",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -2361,6 +2590,30 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_SubTypeWithoutSuffix",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Suffix",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Facets",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Primitives.StringSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_MatchesAllTypes",
           "Parameters": [],
           "ReturnType": "System.Boolean",
@@ -2370,6 +2623,14 @@
         {
           "Kind": "Method",
           "Name": "get_MatchesAllSubTypes",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MatchesAllSubTypesWithoutSuffix",
           "Parameters": [],
           "ReturnType": "System.Boolean",
           "Visibility": "Public",
@@ -2698,6 +2959,27 @@
           "ReturnType": "System.Boolean",
           "Virtual": true,
           "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetUnescapedValue",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAndEscapeValue",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
           "Visibility": "Public",
           "GenericParameter": []
         },

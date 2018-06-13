@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Features, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Features, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Http.CookieOptions",
@@ -123,6 +123,48 @@
         {
           "Kind": "Method",
           "Name": "set_HttpOnly",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxAge",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxAge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsEssential",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IsEssential",
           "Parameters": [
             {
               "Name": "value",
@@ -809,6 +851,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Revision",
           "Parameters": [],
           "ReturnType": "System.Int32",
@@ -861,17 +914,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetEnumerator",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2117,6 +2159,58 @@
           "Name": "GetReferredTokenBindingId",
           "Parameters": [],
           "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Features.ITrackingConsentFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsConsentNeeded",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HasConsent",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CanTrack",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GrantConsent",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithdrawConsent",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateConsentCookie",
+          "Parameters": [],
+          "ReturnType": "System.String",
           "GenericParameter": []
         }
       ],

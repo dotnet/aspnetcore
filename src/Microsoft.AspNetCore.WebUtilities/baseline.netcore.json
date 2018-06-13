@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.WebUtilities, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.WebUtilities, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.WebUtilities.WebEncoders",
@@ -207,6 +207,390 @@
           ],
           "ReturnType": "System.Byte[]",
           "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.WebUtilities.BufferedReadStream",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.IO.Stream",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BufferedData",
+          "Parameters": [],
+          "ReturnType": "System.ArraySegment<System.Byte>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CanRead",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CanSeek",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CanTimeout",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CanWrite",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Length",
+          "Parameters": [],
+          "ReturnType": "System.Int64",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Position",
+          "Parameters": [],
+          "ReturnType": "System.Int64",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Position",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Seek",
+          "Parameters": [
+            {
+              "Name": "offset",
+              "Type": "System.Int64"
+            },
+            {
+              "Name": "origin",
+              "Type": "System.IO.SeekOrigin"
+            }
+          ],
+          "ReturnType": "System.Int64",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetLength",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [
+            {
+              "Name": "disposing",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Flush",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FlushAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Write",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteAsync",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Read",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReadAsync",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Int32>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnsureBuffered",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnsureBufferedAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnsureBuffered",
+          "Parameters": [
+            {
+              "Name": "minCount",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnsureBufferedAsync",
+          "Parameters": [
+            {
+              "Name": "minCount",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReadLine",
+          "Parameters": [
+            {
+              "Name": "lengthLimit",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReadLineAsync",
+          "Parameters": [
+            {
+              "Name": "lengthLimit",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "inner",
+              "Type": "System.IO.Stream"
+            },
+            {
+              "Name": "bufferSize",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "inner",
+              "Type": "System.IO.Stream"
+            },
+            {
+              "Name": "bufferSize",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "bytePool",
+              "Type": "System.Buffers.ArrayPool<System.Byte>"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }

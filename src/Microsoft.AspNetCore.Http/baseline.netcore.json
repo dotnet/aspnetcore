@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Http.DefaultHttpContext",
@@ -389,6 +389,94 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Http.HttpRequestRewindExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "EnableBuffering",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "Microsoft.AspNetCore.Http.HttpRequest"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnableBuffering",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "Microsoft.AspNetCore.Http.HttpRequest"
+            },
+            {
+              "Name": "bufferThreshold",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnableBuffering",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "Microsoft.AspNetCore.Http.HttpRequest"
+            },
+            {
+              "Name": "bufferLimit",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnableBuffering",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "Microsoft.AspNetCore.Http.HttpRequest"
+            },
+            {
+              "Name": "bufferThreshold",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "bufferLimit",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Http.FormCollection",
       "Visibility": "Public",
       "Kind": "Class",
@@ -530,6 +618,202 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "get_Keys",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Values",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringValues>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ContainsKey",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryGetValue",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringValues",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsReadOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clear",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Contains",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CopyTo",
+          "Parameters": [
+            {
+              "Name": "array",
+              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>[]"
+            },
+            {
+              "Name": "arrayIndex",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Item",
           "Parameters": [
             {
@@ -593,197 +877,14 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_Count",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_IsReadOnly",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Keys",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.ICollection<System.String>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Values",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringValues>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Add",
+          "Name": "set_IsReadOnly",
           "Parameters": [
-            {
-              "Name": "item",
-              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Add",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            },
             {
               "Name": "value",
-              "Type": "Microsoft.Extensions.Primitives.StringValues"
+              "Type": "System.Boolean"
             }
           ],
           "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Clear",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Contains",
-          "Parameters": [
-            {
-              "Name": "item",
-              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "ContainsKey",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CopyTo",
-          "Parameters": [
-            {
-              "Name": "array",
-              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>[]"
-            },
-            {
-              "Name": "arrayIndex",
-              "Type": "System.Int32"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Remove",
-          "Parameters": [
-            {
-              "Name": "item",
-              "Type": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Remove",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "TryGetValue",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "Microsoft.Extensions.Primitives.StringValues",
-              "Direction": "Out"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2562,6 +2663,33 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.Extensions.DependencyInjection.HttpServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddHttpContextAccessor",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Http.FormCollection+Enumerator",
       "Visibility": "Public",
       "Kind": "Struct",
@@ -2570,6 +2698,17 @@
         "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "MoveNext",
@@ -2589,17 +2728,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -2617,6 +2745,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "MoveNext",
           "Parameters": [],
           "ReturnType": "System.Boolean",
@@ -2634,17 +2773,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, Microsoft.Extensions.Primitives.StringValues>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
           "Visibility": "Public",
           "GenericParameter": []
         }

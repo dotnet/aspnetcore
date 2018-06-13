@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Abstractions, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.MapExtensions",
@@ -912,6 +912,52 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_MaxAge",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxAge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsEssential",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IsEssential",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "Build",
           "Parameters": [
             {
@@ -1404,6 +1450,24 @@
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Http.HostString",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchesAny",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "patterns",
+              "Type": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>"
+            }
+          ],
+          "ReturnType": "System.Boolean",
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []

@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Owin, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Owin, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.OwinExtensions",
@@ -162,20 +162,20 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_FeatureMaps",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IDictionary<System.String, Microsoft.AspNetCore.Owin.OwinEnvironment+FeatureMap>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "GetEnumerator",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FeatureMaps",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, Microsoft.AspNetCore.Owin.OwinEnvironment+FeatureMap>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -257,6 +257,17 @@
         "Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_Environment",
@@ -434,17 +445,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "GetEnumerator",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, System.Object>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Dispose",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -558,6 +558,17 @@
       "BaseType": "System.Net.WebSockets.WebSocket",
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_CloseStatus",
@@ -697,17 +708,6 @@
           "ReturnType": "System.Void",
           "Virtual": true,
           "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "System.IDisposable",
           "Visibility": "Public",
           "GenericParameter": []
         },

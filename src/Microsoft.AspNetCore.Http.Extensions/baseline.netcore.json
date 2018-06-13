@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Extensions, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Extensions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions",
@@ -766,6 +766,27 @@
             {
               "Name": "value",
               "Type": "Microsoft.Net.Http.Headers.RangeHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Referer",
+          "Parameters": [],
+          "ReturnType": "System.Uri",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Referer",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Uri"
             }
           ],
           "ReturnType": "System.Void",
