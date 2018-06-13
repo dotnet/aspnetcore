@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Cors, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Cors, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.CorsMiddlewareExtensions",
@@ -10,6 +10,21 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseCors",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "UseCors",
@@ -103,6 +118,13 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Cors.Infrastructure.IEnableCorsAttribute",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -277,6 +299,26 @@
             {
               "Name": "policyProvider",
               "Type": "Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            },
+            {
+              "Name": "corsService",
+              "Type": "Microsoft.AspNetCore.Cors.Infrastructure.ICorsService"
+            },
+            {
+              "Name": "policyProvider",
+              "Type": "Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider"
             },
             {
               "Name": "policyName",
@@ -330,6 +372,32 @@
             {
               "Name": "value",
               "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddDefaultPolicy",
+          "Parameters": [
+            {
+              "Name": "policy",
+              "Type": "Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddDefaultPolicy",
+          "Parameters": [
+            {
+              "Name": "configurePolicy",
+              "Type": "System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder>"
             }
           ],
           "ReturnType": "System.Void",
