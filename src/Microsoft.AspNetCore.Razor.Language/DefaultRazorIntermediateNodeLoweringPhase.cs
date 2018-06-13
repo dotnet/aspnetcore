@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             document.Options = codeDocument.GetCodeGenerationOptions() ?? _optionsFeature.GetOptions();
 
-            var namespaces = new Dictionary<string, SourceSpan?>(StringComparer.Ordinal);
+            IReadOnlyList<UsingReference> importedUsings = Array.Empty<UsingReference>();
 
             // The import documents should be inserted logically before the main document.
             var imports = codeDocument.GetImportSyntaxTrees();
             if (imports != null)
             {
-                var importsVisitor = new ImportsVisitor(document, builder, namespaces, syntaxTree.Options.FeatureFlags);
+                var importsVisitor = new ImportsVisitor(document, builder, syntaxTree.Options.FeatureFlags);
 
                 for (var j = 0; j < imports.Count; j++)
                 {
@@ -49,26 +49,40 @@ namespace Microsoft.AspNetCore.Razor.Language
                     importsVisitor.FilePath = import.Source.FilePath;
                     importsVisitor.VisitBlock(import.Root);
                 }
+
+                importedUsings = importsVisitor.Usings;
             }
 
             var tagHelperPrefix = tagHelperContext?.Prefix;
-            var visitor = new MainSourceVisitor(document, builder, namespaces, tagHelperPrefix, syntaxTree.Options.FeatureFlags)
+            var visitor = new MainSourceVisitor(document, builder, tagHelperPrefix, syntaxTree.Options.FeatureFlags)
             {
                 FilePath = syntaxTree.Source.FilePath,
             };
 
             visitor.VisitBlock(syntaxTree.Root);
 
+            // 1. Prioritize non-imported usings over imported ones.
+            // 2. Don't import usings that already exist in primary document.
+            // 3. Allow duplicate usings in primary document (C# warning).
+            var usingReferences = new List<UsingReference>(visitor.Usings);
+            for (var j = importedUsings.Count - 1; j >= 0; j--)
+            {
+                if (!usingReferences.Contains(importedUsings[j]))
+                {
+                    usingReferences.Insert(0, importedUsings[j]);
+                }
+            }
+
             // In each lowering piece above, namespaces were tracked. We render them here to ensure every
             // lowering action has a chance to add a source location to a namespace. Ultimately, closest wins.
 
             var i = 0;
-            foreach (var @namespace in namespaces)
+            foreach (var reference in usingReferences)
             {
                 var @using = new UsingDirectiveIntermediateNode()
                 {
-                    Content = @namespace.Key,
-                    Source = @namespace.Value,
+                    Content = reference.Namespace,
+                    Source = reference.Source,
                 };
 
                 builder.Insert(i++, @using);
@@ -147,20 +161,50 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
+        private struct UsingReference : IEquatable<UsingReference>
+        {
+            public UsingReference(string @namespace, SourceSpan? source)
+            {
+                Namespace = @namespace;
+                Source = source;
+            }
+            public string Namespace { get; }
+
+            public SourceSpan? Source { get; }
+
+            public override bool Equals(object other)
+            {
+                if (other is UsingReference reference)
+                {
+                    return Equals(reference);
+                }
+
+                return false;
+            }
+            public bool Equals(UsingReference other)
+            {
+                return string.Equals(Namespace, other.Namespace, StringComparison.Ordinal);
+            }
+
+            public override int GetHashCode() => Namespace.GetHashCode();
+        }
+
         private class LoweringVisitor : ParserVisitor
         {
             protected readonly IntermediateNodeBuilder _builder;
             protected readonly DocumentIntermediateNode _document;
-            protected readonly Dictionary<string, SourceSpan?> _namespaces;
+            protected readonly List<UsingReference> _usings;
             protected readonly RazorParserFeatureFlags _featureFlags;
 
-            public LoweringVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, RazorParserFeatureFlags featureFlags)
+            public LoweringVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, RazorParserFeatureFlags featureFlags)
             {
                 _document = document;
                 _builder = builder;
-                _namespaces = namespaces;
+                _usings = new List<UsingReference>();
                 _featureFlags = featureFlags;
             }
+
+            public IReadOnlyList<UsingReference> Usings => _usings;
 
             public string FilePath { get; set; }
 
@@ -212,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var namespaceImport = chunkGenerator.Namespace.Trim();
                 var namespaceSpan = BuildSourceSpanFromNode(span);
-                _namespaces[namespaceImport] = namespaceSpan;
+                _usings.Add(new UsingReference(namespaceImport, namespaceSpan));
             }
 
             public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
@@ -353,8 +397,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             private readonly string _tagHelperPrefix;
 
-            public MainSourceVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, string tagHelperPrefix, RazorParserFeatureFlags featureFlags)
-                : base(document, builder, namespaces, featureFlags)
+            public MainSourceVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, string tagHelperPrefix, RazorParserFeatureFlags featureFlags)
+                : base(document, builder, featureFlags)
             {
                 _tagHelperPrefix = tagHelperPrefix;
             }
@@ -731,8 +775,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private class ImportsVisitor : LoweringVisitor
         {
-            public ImportsVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, RazorParserFeatureFlags featureFlags)
-                : base(document, new ImportBuilder(builder), namespaces, featureFlags)
+            public ImportsVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, RazorParserFeatureFlags featureFlags)
+                : base(document, new ImportBuilder(builder), featureFlags)
             {
             }
 

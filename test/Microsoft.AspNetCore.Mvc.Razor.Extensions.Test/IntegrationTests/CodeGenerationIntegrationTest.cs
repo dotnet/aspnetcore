@@ -23,6 +23,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         private CSharpCompilation BaseCompilation => MvcShim.BaseCompilation.WithAssemblyName("AppCode");
 
         #region Runtime
+
+        [Fact]
+        public void UsingDirectives_Runtime()
+        {
+            var compilation = BaseCompilation;
+
+            RunRuntimeTest(compilation, new[] { "The using directive for 'System' appeared previously in this namespace" });
+        }
+
         [Fact]
         public void InvalidNamespaceAtEOF_Runtime()
         {
@@ -301,6 +310,15 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
         #endregion
 
         #region DesignTime
+
+        [Fact]
+        public void UsingDirectives_DesignTime()
+        {
+            var compilation = BaseCompilation;
+
+            RunDesignTimeTest(compilation, new[] { "The using directive for 'System' appeared previously in this namespace" });
+        }
+
         [Fact]
         public void InvalidNamespaceAtEOF_DesignTime()
         {
@@ -597,7 +615,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
         private void RunRuntimeTest(
             CSharpCompilation baseCompilation,
-            IEnumerable<string> expectedErrors = null)
+            IEnumerable<string> expectedWarnings = null)
         {
             Assert.Empty(baseCompilation.GetDiagnostics());
 
@@ -611,12 +629,12 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             // Assert
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
-            AssertDocumentCompiles(document, baseCompilation, expectedErrors);
+            AssertDocumentCompiles(document, baseCompilation, expectedWarnings);
         }
 
         private void RunDesignTimeTest(
             CSharpCompilation baseCompilation,
-            IEnumerable<string> expectedErrors = null)
+            IEnumerable<string> expectedWarnings = null)
         {
             Assert.Empty(baseCompilation.GetDiagnostics());
 
@@ -631,13 +649,13 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
             AssertSourceMappingsMatchBaseline(document);
-            AssertDocumentCompiles(document, baseCompilation, expectedErrors);
+            AssertDocumentCompiles(document, baseCompilation, expectedWarnings);
         }
 
         private void AssertDocumentCompiles(
             RazorCodeDocument document,
             CSharpCompilation baseCompilation,
-            IEnumerable<string> expectedErrors = null)
+            IEnumerable<string> expectedWarnings = null)
         {
             var cSharp = document.GetCSharpDocument().GeneratedCode;
 
@@ -649,15 +667,15 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
             var diagnostics = compilation.GetDiagnostics();
 
-            var errors = diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning);
+            var warnings = diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning);
 
-            if (expectedErrors == null)
+            if (expectedWarnings == null)
             {
-                Assert.Empty(errors.Select(e => e.GetMessage()));
+                Assert.Empty(warnings);
             }
             else
             {
-                Assert.Equal(expectedErrors, errors.Select(e => e.GetMessage()));
+                Assert.Equal(expectedWarnings, warnings.Select(e => e.GetMessage()));
             }
         }
 
