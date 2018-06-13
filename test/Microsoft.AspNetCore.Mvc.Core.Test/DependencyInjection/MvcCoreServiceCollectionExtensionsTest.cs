@@ -306,6 +306,13 @@ namespace Microsoft.AspNetCore.Mvc
                             typeof(ApiBehaviorApplicationModelProvider),
                         }
                     },
+                    {
+                        typeof(EndpointDataSource),
+                        new Type[]
+                        {
+                            typeof(MvcEndpointDataSource),
+                        }
+                    },
                 };
             }
         }

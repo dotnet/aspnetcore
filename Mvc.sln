@@ -172,6 +172,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesClassLibrary", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Views.TestCommon", "test\Microsoft.AspNetCore.Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj", "{51E3E785-A9D1-4196-BAFE-A17FF4304B89}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DispatchingWebSite", "test\WebSites\DispatchingWebSite\DispatchingWebSite.csproj", "{ABB3737F-E518-4E40-8A9C-F3281D610E8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -906,6 +908,18 @@ Global
 		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|x86.ActiveCfg = Release|Any CPU
 		{51E3E785-A9D1-4196-BAFE-A17FF4304B89}.Release|x86.Build.0 = Release|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Debug|x86.Build.0 = Debug|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Release|x86.ActiveCfg = Release|Any CPU
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -976,6 +990,7 @@ Global
 		{E83D3745-9BCF-40E8-8D34-AFBA604C2439} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{17122147-ADFD-41C8-87D9-CCC582CCA8F9} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{51E3E785-A9D1-4196-BAFE-A17FF4304B89} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{ABB3737F-E518-4E40-8A9C-F3281D610E8F} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {63D344F6-F86D-40E6-85B9-0AABBE338C4A}
