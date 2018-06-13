@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -45,11 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
-        private static readonly byte[] _authorityBytes = Encoding.ASCII.GetBytes("authority");
-        private static readonly byte[] _methodBytes = Encoding.ASCII.GetBytes("method");
-        private static readonly byte[] _pathBytes = Encoding.ASCII.GetBytes("path");
-        private static readonly byte[] _schemeBytes = Encoding.ASCII.GetBytes("scheme");
-        private static readonly byte[] _statusBytes = Encoding.ASCII.GetBytes("status");
+        private static readonly byte[] _authorityBytes = Encoding.ASCII.GetBytes(HeaderNames.Authority);
+        private static readonly byte[] _methodBytes = Encoding.ASCII.GetBytes(HeaderNames.Method);
+        private static readonly byte[] _pathBytes = Encoding.ASCII.GetBytes(HeaderNames.Path);
+        private static readonly byte[] _schemeBytes = Encoding.ASCII.GetBytes(HeaderNames.Scheme);
+        private static readonly byte[] _statusBytes = Encoding.ASCII.GetBytes(HeaderNames.Status);
         private static readonly byte[] _connectionBytes = Encoding.ASCII.GetBytes("connection");
         private static readonly byte[] _teBytes = Encoding.ASCII.GetBytes("te");
         private static readonly byte[] _trailersBytes = Encoding.ASCII.GetBytes("trailers");
@@ -802,9 +803,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 return false;
             }
-
-            // Skip ':'
-            name = name.Slice(1);
 
             if (name.SequenceEqual(_pathBytes))
             {

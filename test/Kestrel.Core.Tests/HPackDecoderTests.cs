@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void DecodesIndexedHeaderField_StaticTable()
         {
             _decoder.Decode(_indexedHeaderStatic, endHeaders: true, handler: this);
-            Assert.Equal("GET", _decodedHeaders[":method"]);
+            Assert.Equal("GET", _decodedHeaders[HeaderNames.Method]);
         }
 
         [Fact]

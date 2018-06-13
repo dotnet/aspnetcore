@@ -31,27 +31,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static readonly IEnumerable<KeyValuePair<string, string>> _postRequestHeaders = new[]
         {
-            new KeyValuePair<string, string>(":method", "POST"),
-            new KeyValuePair<string, string>(":path", "/"),
-            new KeyValuePair<string, string>(":scheme", "http"),
-            new KeyValuePair<string, string>(":authority", "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
         };
 
         private static readonly IEnumerable<KeyValuePair<string, string>> _expectContinueRequestHeaders = new[]
         {
-            new KeyValuePair<string, string>(":method", "POST"),
-            new KeyValuePair<string, string>(":path", "/"),
-            new KeyValuePair<string, string>(":authority", "127.0.0.1"),
-            new KeyValuePair<string, string>(":scheme", "http"),
+            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             new KeyValuePair<string, string>("expect", "100-continue"),
         };
 
         private static readonly IEnumerable<KeyValuePair<string, string>> _browserRequestHeaders = new[]
         {
-            new KeyValuePair<string, string>(":method", "GET"),
-            new KeyValuePair<string, string>(":path", "/"),
-            new KeyValuePair<string, string>(":scheme", "http"),
-            new KeyValuePair<string, string>(":authority", "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
             new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
             new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
@@ -67,10 +67,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static readonly IEnumerable<KeyValuePair<string, string>> _oneContinuationRequestHeaders = new[]
         {
-            new KeyValuePair<string, string>(":method", "GET"),
-            new KeyValuePair<string, string>(":path", "/"),
-            new KeyValuePair<string, string>(":scheme", "http"),
-            new KeyValuePair<string, string>(":authority", "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>("a", _largeHeaderValue),
             new KeyValuePair<string, string>("b", _largeHeaderValue),
             new KeyValuePair<string, string>("c", _largeHeaderValue),
@@ -79,10 +79,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static readonly IEnumerable<KeyValuePair<string, string>> _twoContinuationsRequestHeaders = new[]
         {
-            new KeyValuePair<string, string>(":method", "GET"),
-            new KeyValuePair<string, string>(":path", "/"),
-            new KeyValuePair<string, string>(":scheme", "http"),
-            new KeyValuePair<string, string>(":authority", "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>("a", _largeHeaderValue),
             new KeyValuePair<string, string>("b", _largeHeaderValue),
             new KeyValuePair<string, string>("c", _largeHeaderValue),
@@ -1078,9 +1078,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(":unknown", "0"),
             };
 
@@ -1092,10 +1092,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":status", "200"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Status, "200"),
             };
 
             return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.Http2ErrorResponsePseudoHeaderField);
@@ -1167,9 +1167,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("connection", "keep-alive")
             };
 
@@ -1181,9 +1181,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("te", "trailers, deflate")
             };
 
@@ -1195,9 +1195,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("te", "trailers")
             };
 
@@ -1222,10 +1222,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":authority", "local=host:80"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "local=host:80"),
             };
             await InitializeConnectionAsync(_noopApplication);
 
@@ -1246,7 +1246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
@@ -1255,9 +1255,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             };
             await InitializeConnectionAsync(_noopApplication);
 
@@ -1278,7 +1278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
@@ -1287,9 +1287,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("Host", "host1"),
                 new KeyValuePair<string, string>("Host", "host2"),
             };
@@ -1312,7 +1312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
@@ -1321,10 +1321,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":authority", ""),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, ""),
             };
             await InitializeConnectionAsync(_noopApplication);
 
@@ -1345,7 +1345,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
@@ -1354,10 +1354,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":authority", ""),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, ""),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
             await InitializeConnectionAsync(_echoHost);
@@ -1379,7 +1379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
             Assert.Equal("", _decodedHeaders[HeaderNames.Host]);
         }
@@ -1389,10 +1389,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":authority", "def"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "def"),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
             await InitializeConnectionAsync(_echoHost);
@@ -1414,7 +1414,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
             Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
         }
@@ -1424,9 +1424,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
             await InitializeConnectionAsync(_echoHost);
@@ -1448,7 +1448,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
             Assert.Equal("abc", _decodedHeaders[HeaderNames.Host]);
         }
@@ -1458,10 +1458,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":authority", "def"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "def"),
                 new KeyValuePair<string, string>("Host", "a=bc"),
             };
             await InitializeConnectionAsync(_echoHost);
@@ -1483,7 +1483,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(4, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
             Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
         }
@@ -1493,10 +1493,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var headers = new[]
             {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":authority", "d=ef"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "d=ef"),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
             await InitializeConnectionAsync(_echoHost);
@@ -1518,7 +1518,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("400", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
@@ -2242,7 +2242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(11, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders["content-length"]);
             Assert.Equal(_largeHeaderValue, _decodedHeaders["a"]);
             Assert.Equal(_largeHeaderValue, _decodedHeaders["b"]);
@@ -2968,10 +2968,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
                 var requestHeaders = new[]
                 {
-                    new KeyValuePair<string, string>(":method", "GET"),
-                    new KeyValuePair<string, string>(":path", "/"),
-                    new KeyValuePair<string, string>(":authority", "127.0.0.1"),
-                    new KeyValuePair<string, string>(":scheme", "http"),
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 };
 
                 foreach (var headerField in requestHeaders)
@@ -2991,9 +2991,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
                 var requestHeaders = new[]
                 {
-                    new KeyValuePair<string, string>(":method", "GET"),
-                    new KeyValuePair<string, string>(":path", "/"),
-                    new KeyValuePair<string, string>(":scheme", "http"),
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 };
 
                 foreach (var headerField in requestHeaders)
@@ -3011,12 +3011,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             get
             {
                 var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
-                var methodHeader = new[] { new KeyValuePair<string, string>(":method", "CONNECT") };
+                var methodHeader = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT") };
                 var requestHeaders = new[]
                 {
-                    new KeyValuePair<string, string>(":path", "/"),
-                    new KeyValuePair<string, string>(":scheme", "http"),
-                    new KeyValuePair<string, string>(":authority", "127.0.0.1"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
                 };
 
                 foreach (var headerField in requestHeaders)
@@ -3036,10 +3036,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
                 var requestHeaders = new[]
                 {
-                    new KeyValuePair<string, string>(":method", "GET"),
-                    new KeyValuePair<string, string>(":path", "/"),
-                    new KeyValuePair<string, string>(":authority", "127.0.0.1"),
-                    new KeyValuePair<string, string>(":scheme", "http"),
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                     new KeyValuePair<string, string>("content-length", "0")
                 };
 

@@ -57,15 +57,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
 
             _httpVersion = Http.HttpVersion.Http2;
-            var methodText = RequestHeaders[":method"];
+            var methodText = RequestHeaders[HeaderNames.Method];
             Method = HttpUtilities.GetKnownMethod(methodText);
             _methodText = methodText;
-            if (!string.Equals(RequestHeaders[":scheme"], Scheme, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestLine);
             }
 
-            var path = RequestHeaders[":path"].ToString();
+            var path = RequestHeaders[HeaderNames.Path].ToString();
             var queryIndex = path.IndexOf('?');
 
             Path = queryIndex == -1 ? path : path.Substring(0, queryIndex);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // request message that contains more than one Host header field or a
             // Host header field with an invalid field-value.
 
-            var authority = RequestHeaders[":authority"];
+            var authority = RequestHeaders[HeaderNames.Authority];
             var host = HttpRequestHeaders.HeaderHost;
             if (authority.Count > 0)
             {
