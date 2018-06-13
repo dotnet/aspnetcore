@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -50,38 +51,48 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 return GetEndpointConstraintsFromEntry(entry, httpContext, endpoint);
             }
 
-            if (endpoint.Metadata == null || endpoint.Metadata.Count == 0)
+            List<EndpointConstraintItem> items = null;
+
+            if (endpoint.Metadata != null && endpoint.Metadata.Count > 0)
             {
-                return null;
+                items = endpoint.Metadata
+                    .OfType<IEndpointConstraintMetadata>()
+                    .Select(m => new EndpointConstraintItem(m))
+                    .ToList();
             }
 
-            var items = endpoint.Metadata
-                .OfType<IEndpointConstraintMetadata>()
-                .Select(m => new EndpointConstraintItem(m))
-                .ToList();
+            IReadOnlyList<IEndpointConstraint> endpointConstraints = null;
 
-            ExecuteProviders(httpContext, endpoint, items);
-
-            var endpointConstraints = ExtractEndpointConstraints(items);
-
-            var allEndpointConstraintsCached = true;
-            for (var i = 0; i < items.Count; i++)
+            if (items != null && items.Count > 0)
             {
-                var item = items[i];
-                if (!item.IsReusable)
+                ExecuteProviders(httpContext, endpoint, items);
+
+                endpointConstraints = ExtractEndpointConstraints(items);
+
+                var allEndpointConstraintsCached = true;
+                for (var i = 0; i < items.Count; i++)
                 {
-                    item.Constraint = null;
-                    allEndpointConstraintsCached = false;
+                    var item = items[i];
+                    if (!item.IsReusable)
+                    {
+                        item.Constraint = null;
+                        allEndpointConstraintsCached = false;
+                    }
                 }
-            }
 
-            if (allEndpointConstraintsCached)
-            {
-                entry = new CacheEntry(endpointConstraints);
+                if (allEndpointConstraintsCached)
+                {
+                    entry = new CacheEntry(endpointConstraints);
+                }
+                else
+                {
+                    entry = new CacheEntry(items);
+                }
             }
             else
             {
-                entry = new CacheEntry(items);
+                // No constraints
+                entry = new CacheEntry();
             }
 
             cache.Entries.TryAdd(endpoint, entry);
@@ -90,11 +101,15 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 
         private IReadOnlyList<IEndpointConstraint> GetEndpointConstraintsFromEntry(CacheEntry entry, HttpContext httpContext, Endpoint endpoint)
         {
-            Debug.Assert(entry.EndpointConstraints != null || entry.Items != null);
-
             if (entry.EndpointConstraints != null)
             {
                 return entry.EndpointConstraints;
+            }
+
+            if (entry.Items == null)
+            {
+                // Endpoint has no constraints
+                return null;
             }
 
             var items = new List<EndpointConstraintItem>(entry.Items.Count);

@@ -211,6 +211,49 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         }
 
         [Fact]
+        public void SelectBestCandidate_MultipleCallsNoConstraint_ReturnsEndpoint()
+        {
+            // Arrange
+            var noConstraint = new TestEndpoint(EndpointMetadataCollection.Empty, "noConstraint");
+
+            var actions = new Endpoint[] { noConstraint };
+
+            var selector = CreateSelector(actions);
+            var context = CreateHttpContext("POST");
+
+            // Act
+            var action1 = selector.SelectBestCandidate(context, actions);
+            var action2 = selector.SelectBestCandidate(context, actions);
+
+            // Assert
+            Assert.Same(action1, noConstraint);
+            Assert.Same(action2, noConstraint);
+        }
+
+        [Fact]
+        public void SelectBestCandidate_MultipleCallsNonConstraintMetadata_ReturnsEndpoint()
+        {
+            // Arrange
+            var noConstraint = new TestEndpoint(new EndpointMetadataCollection(new[]
+            {
+                new object(),
+            }), "noConstraint");
+
+            var actions = new Endpoint[] { noConstraint };
+
+            var selector = CreateSelector(actions);
+            var context = CreateHttpContext("POST");
+
+            // Act
+            var action1 = selector.SelectBestCandidate(context, actions);
+            var action2 = selector.SelectBestCandidate(context, actions);
+
+            // Assert
+            Assert.Same(action1, noConstraint);
+            Assert.Same(action2, noConstraint);
+        }
+
+        [Fact]
         public void SelectBestCandidate_EndpointConstraintFactory_ReturnsNull()
         {
             // Arrange
@@ -225,10 +268,12 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var context = CreateHttpContext("POST");
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            var action1 = selector.SelectBestCandidate(context, actions);
+            var action2 = selector.SelectBestCandidate(context, actions);
 
             // Assert
-            Assert.Same(action, nullConstraint);
+            Assert.Same(action1, nullConstraint);
+            Assert.Same(action2, nullConstraint);
         }
 
         // There's a custom constraint provider registered that only understands BooleanConstraintMarker
