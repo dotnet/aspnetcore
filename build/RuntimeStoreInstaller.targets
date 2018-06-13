@@ -31,7 +31,11 @@
     <TimestampFreeLinuxRSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.patch.tar.gz</TimestampFreeLinuxRSArchive>
   </PropertyGroup>
 
-  <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs;GenerateRelabledInstallers" />
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateRuntimeVersionFile;GenerateTargzs;GenerateRpms;GenerateDebs;GenerateRelabledInstallers" />
+
+  <Target Name="GenerateRuntimeVersionFile">
+    <WriteLinesToFile File="$(_InstallersOutputDir)runtime.version" Lines="$(MicrosoftNETCoreApp20PackageVersion)" Overwrite="true" />
+  </Target>
 
   <Target Name="_EnsureInstallerPrerequisites">
     <MakeDir Directories="$(_InstallersOutputDir)" />
