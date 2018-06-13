@@ -88,8 +88,8 @@
 	branch = release/2.1
 [submodule "modules/Identity"]
 	path = modules/Identity
-	url = https://github.com/aspnet/Identity.git
-	branch = release/2.1
+	url = https://github.com/aspnet/Identity-Private.git
+	branch = release/2.1-msrc
 [submodule "modules/IISIntegration"]
 	path = modules/IISIntegration
 	url = https://github.com/aspnet/IISIntegration.git
@@ -104,8 +104,8 @@
 	branch = release/2.1
 [submodule "modules/KestrelHttpServer"]
 	path = modules/KestrelHttpServer
-	url = https://github.com/aspnet/KestrelHttpServer.git
-	branch = release/2.1
+	url = https://github.com/aspnet/KestrelHttpServer-Private.git
+	branch = release/2.1-msrc
 [submodule "modules/Localization"]
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
