@@ -16,6 +16,7 @@
     <tags>Microsoft.AspNetCore.AspNetCoreModule</tags>
     <contentFiles>
       <files include="any/any/*/*.dll" buildAction="None" copyToOutput="true" flatten="false" />
+      <files include="any/any/*/*/*.dll" buildAction="None" copyToOutput="true" flatten="false" />
     </contentFiles>
   </metadata>
   <files>
