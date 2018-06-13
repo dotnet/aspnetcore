@@ -14,6 +14,8 @@
 #include <shellapi.h>
 #include <sstream>
 #include <memory>
+#include <experimental/filesystem>
+
 #include "Shlwapi.h"
 #include <io.h>
 #include "hashtable.h"
@@ -31,10 +33,11 @@
 #include "application.h"
 #include "SRWLockWrapper.h"
 #include "environmentvariablehash.h"
+#include "fx_ver.h"
 #include "utility.h"
+#include "GlobalVersionUtility.h"
 #include "resources.h"
 #include "aspnetcore_msg.h"
-#include "fx_ver.h"
 #include "hostfxr_utility.h"
 #include "hostfxroptions.h"
 #include "IOutputManager.h"
@@ -42,3 +45,4 @@
 #include "PipeOutputManager.h"
 #include "NullOutputManager.h"
 #include "LoggingHelpers.h"
+

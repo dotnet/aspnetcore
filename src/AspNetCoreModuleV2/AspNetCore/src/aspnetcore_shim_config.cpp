@@ -3,6 +3,7 @@
 
 #include "aspnetcore_shim_config.h"
 
+#include "config_utility.h"
 #include "hostfxr_utility.h"
 #include "debugutil.h"
 #include "ahutil.h"
@@ -191,6 +192,8 @@ ASPNETCORE_SHIM_CONFIG::Populate(
     {
         goto Finished;
     }
+
+    hr = ConfigUtility::FindHandlerVersion(pAspNetCoreElement, &m_struHandlerVersion);
 
 Finished:
 

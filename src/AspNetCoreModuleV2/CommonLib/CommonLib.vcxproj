@@ -181,6 +181,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="config_utility.h" />
+    <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="FileOutputManager.h" />
     <ClInclude Include="fx_ver.h" />
@@ -205,6 +207,7 @@
   <ItemGroup>
     <ClCompile Include="FileOutputManager.cpp" />
     <ClCompile Include="fx_ver.cxx" />
+    <ClCompile Include="GlobalVersionUtility.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />
     <ClCompile Include="hostfxroptions.cpp" />
     <ClCompile Include="requesthandler_config.cpp" />

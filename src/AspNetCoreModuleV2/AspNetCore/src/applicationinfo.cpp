@@ -358,60 +358,47 @@ Finished:
 
 HRESULT
 APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(
-    PCWSTR libraryName,
-    STRU* struFilename)
+    PCWSTR pstrHandlerDllName,
+    STRU* struFilename
+)
 {
     HRESULT hr = S_OK;
-    DWORD dwSize = MAX_PATH;
-    BOOL  fDone = FALSE;
-    DWORD dwPosition = 0;
 
-    // Though we could call LoadLibrary(L"aspnetcorerh.dll") relying the OS to solve
-    // the path (the targeted dll is the same folder of w3wp.exe/iisexpress)
-    // let's still load with full path to avoid security issue
-    if (FAILED(hr = struFilename->Resize(dwSize + 20)))
+    try
     {
-        goto Finished;
-    }
+        std::wstring modulePath = GlobalVersionUtility::GetModuleName(g_hModule);
 
-    while (!fDone)
-    {
-        DWORD dwReturnedSize = GetModuleFileNameW(g_hModule, struFilename->QueryStr(), dwSize);
-        if (dwReturnedSize == 0)
+        modulePath = GlobalVersionUtility::RemoveFileNameFromFolderPath(modulePath);
+
+        std::wstring retval = GlobalVersionUtility::GetGlobalRequestHandlerPath(modulePath.c_str(),
+            m_pConfiguration->QueryHandlerVersion()->QueryStr(),
+            pstrHandlerDllName
+        );
+
+        if (FAILED(hr = struFilename->Copy(retval.c_str())))
         {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            fDone = TRUE;
-            goto Finished;
-        }
-        else if ((dwReturnedSize == dwSize) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
-        {
-            dwSize *= 2; // smaller buffer. increase the buffer and retry
-            if (FAILED(hr = struFilename->Resize(dwSize + 40))) // + 40 for aspnetcorerh.dll
-            {
-                goto Finished;
-            }
-        }
-        else
-        {
-            fDone = TRUE;
+            return hr;
         }
     }
-
-    if (FAILED(hr = struFilename->SyncWithBuffer()))
+    catch (std::exception& e)
     {
-        goto Finished;
+        STRU struEvent;
+        if (SUCCEEDED(struEvent.Copy(ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG))
+            && SUCCEEDED(struEvent.AppendA(e.what())))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
+                struEvent.QueryStr());
+        }
+       
+        hr = E_FAIL;
     }
-    dwPosition = struFilename->LastIndexOf(L'\\', 0);
-    struFilename->QueryStr()[dwPosition] = L'\0';
-
-    if (FAILED(hr = struFilename->SyncWithBuffer()) ||
-        FAILED(hr = struFilename->Append(L"\\")) ||
-        FAILED(hr = struFilename->Append(libraryName)))
+    catch (...)
     {
-        goto Finished;
+        hr = E_FAIL;
     }
 
-Finished:
     return hr;
 }
 

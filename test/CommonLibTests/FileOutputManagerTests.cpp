@@ -40,8 +40,6 @@ namespace FileOutManagerStartupTests
                 wprintf(expected, out);
             }
           
-            // std::filesystem is available on c++17, however gtest fails to build when using it
-            // c++14 has filesystem as experimental.
             for (auto & p : std::experimental::filesystem::directory_iterator(tempDirectory))
             {
                 std::wstring filename(p.path().filename());

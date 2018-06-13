@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -84,5 +86,22 @@ namespace TestSites
 
         public Task UpgradeFeatureDetection(HttpContext context) =>
             context.Response.WriteAsync(context.Features.Get<IHttpUpgradeFeature>() != null? "Enabled": "Disabled");
+
+        public Task CheckRequestHandlerVersion(HttpContext context)
+        {
+            // We need to check if the aspnetcorev2_outofprocess dll is loaded by iisexpress.exe
+            // As they aren't in the same process, we will try to delete the file and expect a file
+            // in use error
+            try
+            {
+                File.Delete(context.Request.Headers["ANCMRHPath"]);
+            }
+            catch(UnauthorizedAccessException)
+            {
+                return context.Response.WriteAsync("Hello World");
+            }
+
+            return context.Response.WriteAsync(context.Request.Headers["ANCMRHPath"]);
+        }
     }
 }

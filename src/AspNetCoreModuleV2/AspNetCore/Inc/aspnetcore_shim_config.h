@@ -4,6 +4,7 @@
 #pragma once
 
 #include "precomp.hxx"
+#include <map>
 
 #define CS_ASPNETCORE_SECTION                            L"system.webServer/aspNetCore"
 #define CS_ASPNETCORE_PROCESS_EXE_PATH                   L"processPath"
@@ -105,6 +106,14 @@ public:
         return m_hostingModel;
     }
 
+    STRU*
+    QueryHandlerVersion(
+        VOID
+    )
+    {
+        return &m_struHandlerVersion;
+    }
+
 private:
     ASPNETCORE_SHIM_CONFIG() :
         m_cRefs(1),
@@ -120,5 +129,6 @@ private:
     STRU                   m_struConfigPath;
     APP_HOSTING_MODEL      m_hostingModel;
     STRU                   m_struHostFxrLocation;
+    STRU                   m_struHandlerVersion;
 };
 
