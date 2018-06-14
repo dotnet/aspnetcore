@@ -33,12 +33,12 @@ describe("ServerSentEventsTransport", () => {
 
             await TestEventSource.eventSource.openSet;
 
-            expect(connectComplete).toEqual(false);
+            expect(connectComplete).toBe(false);
 
             TestEventSource.eventSource.onopen(new TestMessageEvent());
 
             await connectPromise;
-            expect(connectComplete).toEqual(true);
+            expect(connectComplete).toBe(true);
         });
     });
 
@@ -49,7 +49,7 @@ describe("ServerSentEventsTransport", () => {
                 await VerifyLogger.run(async (logger) => {
                     await createAndStartSSE(logger, input, () => "secretToken");
 
-                    expect(TestEventSource.eventSource.url).toEqual(expected);
+                    expect(TestEventSource.eventSource.url).toBe(expected);
                 });
             });
         });
@@ -66,8 +66,8 @@ describe("ServerSentEventsTransport", () => {
 
             await sse.send("");
 
-            expect(request!.headers!.Authorization).toEqual("Bearer secretToken");
-            expect(request!.url).toEqual("http://example.com");
+            expect(request!.headers!.Authorization).toBe("Bearer secretToken");
+            expect(request!.url).toBe("http://example.com");
         });
     });
 
@@ -83,7 +83,7 @@ describe("ServerSentEventsTransport", () => {
 
             await sse.send("send data");
 
-            expect(request!.content).toEqual("send data");
+            expect(request!.content).toBe("send data");
         });
     });
 
@@ -100,8 +100,8 @@ describe("ServerSentEventsTransport", () => {
             message.data = "receive data";
             TestEventSource.eventSource.onmessage(message);
 
-            expect(typeof received!).toEqual("string");
-            expect(received!).toEqual("receive data");
+            expect(typeof received!).toBe("string");
+            expect(received!).toBe("receive data");
         });
     });
 
@@ -116,8 +116,8 @@ describe("ServerSentEventsTransport", () => {
 
             await sse.stop();
 
-            expect(closeCalled).toEqual(true);
-            expect(TestEventSource.eventSource.closed).toEqual(true);
+            expect(closeCalled).toBe(true);
+            expect(TestEventSource.eventSource.closed).toBe(true);
         });
     });
 
@@ -136,9 +136,9 @@ describe("ServerSentEventsTransport", () => {
             errorEvent.data = "error";
             TestEventSource.eventSource.onerror(errorEvent);
 
-            expect(closeCalled).toEqual(true);
-            expect(TestEventSource.eventSource.closed).toEqual(true);
-            expect(error).toMatchObject({ message: "error" });
+            expect(closeCalled).toBe(true);
+            expect(TestEventSource.eventSource.closed).toBe(true);
+            expect(error).toEqual(new Error("error"));
         });
     });
 
@@ -148,7 +148,7 @@ describe("ServerSentEventsTransport", () => {
 
             await expect(sse.send(""))
                 .rejects
-                .toMatchObject({ message: "Cannot send until the transport is connected" });
+                .toEqual(new Error("Cannot send until the transport is connected"));
         });
     });
 
@@ -171,9 +171,9 @@ describe("ServerSentEventsTransport", () => {
             errorEvent.data = "some data";
             TestEventSource.eventSource.onmessage(errorEvent);
 
-            expect(closeCalled).toEqual(true);
-            expect(TestEventSource.eventSource.closed).toEqual(true);
-            expect(error).toMatchObject({ message: "error parsing" });
+            expect(closeCalled).toBe(true);
+            expect(TestEventSource.eventSource.closed).toBe(true);
+            expect(error).toEqual(new Error("error parsing"));
         });
     });
 });
