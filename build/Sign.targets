@@ -101,7 +101,7 @@
       </_SignProject>
     </ItemGroup>
 
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="$(BuildInParallel)" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="false" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
   </Target>
 
   <Target Name="RebuildPackages">
