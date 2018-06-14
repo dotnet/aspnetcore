@@ -25,8 +25,7 @@ private:
     STRU m_wsStdOutLogFileName;
     STRU m_wsApplicationPath;
     STRU m_struLogFilePath;
-    int m_fdStdOut;
-    int m_fdStdErr;
-    FILE* m_pStdOutFile;
+    int m_fdPreviousStdOut;
+    int m_fdPreviousStdErr;
 };
 

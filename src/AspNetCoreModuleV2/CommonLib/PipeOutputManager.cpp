@@ -39,6 +39,7 @@ PipeOutputManager::StopOutputRedirection()
     }
 
     if (m_hErrThread != NULL &&
+        m_hErrThread != INVALID_HANDLE_VALUE &&
         GetExitCodeThread(m_hErrThread, &dwThreadStatus) != 0 &&
         dwThreadStatus == STILL_ACTIVE)
     {
@@ -64,14 +65,14 @@ PipeOutputManager::StopOutputRedirection()
 
     // Restore the original stdout and stderr handles of the process,
     // as the application has either finished startup or has exited.
-    if (_dup2(m_fdStdOut, _fileno(stdout)) == -1)
+    if (m_fdPreviousStdOut != -1)
     {
-        return;
+        _dup2(m_fdPreviousStdOut, _fileno(stdout));
     }
 
-    if (_dup2(m_fdStdErr, _fileno(stderr)) == -1)
+    if (m_fdPreviousStdErr != -1)
     {
-        return;
+        _dup2(m_fdPreviousStdErr, _fileno(stderr));
     }
 
     if (GetStdOutContent(&straStdOutput))
@@ -89,18 +90,8 @@ HRESULT PipeOutputManager::Start()
     HANDLE                  hStdErrReadPipe;
     HANDLE                  hStdErrWritePipe;
 
-    m_fdStdOut = _dup(_fileno(stdout));
-    if (m_fdStdOut == -1)
-    {
-        hr = E_HANDLE;
-        goto Finished;
-    }
-    m_fdStdErr = _dup(_fileno(stderr));
-    if (m_fdStdErr == -1)
-    {
-        hr = E_HANDLE;
-        goto Finished;
-    }
+    m_fdPreviousStdOut = _dup(_fileno(stdout));
+    m_fdPreviousStdErr = _dup(_fileno(stderr));
 
     if (!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/))
     {

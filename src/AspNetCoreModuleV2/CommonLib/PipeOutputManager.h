@@ -32,7 +32,7 @@ private:
     CHAR                            m_pzFileContents[MAX_PIPE_READ_SIZE] = { 0 };
     BOOL                            m_fDisposed;
     DWORD                           m_dwStdErrReadTotal;
-    int                             m_fdStdOut;
-    int                             m_fdStdErr;
+    int                             m_fdPreviousStdOut;
+    int                             m_fdPreviousStdErr;
 };
 

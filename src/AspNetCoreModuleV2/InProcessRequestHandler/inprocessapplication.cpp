@@ -403,7 +403,10 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
                 goto Finished;
             }
 
-            m_pLoggerProvider->Start();
+            if (FAILED(hr = m_pLoggerProvider->Start()))
+            {
+                goto Finished;
+            }
         }
       
         if (m_status != APPLICATION_STATUS::STARTING)
