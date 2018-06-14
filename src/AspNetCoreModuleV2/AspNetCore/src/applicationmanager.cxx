@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+#include <memory>
 #include "applicationmanager.h"
-
 #include "proxymodule.h"
 #include "utility.h"
-#include <memory>
 
 // The application manager is a singleton across ANCM.
 APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
@@ -17,34 +16,30 @@ APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
 HRESULT
 APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     _In_ IHttpServer*          pServer,
-    _In_ ASPNETCORE_SHIM_CONFIG*    pConfig,
+    _In_ IHttpContext*         pHttpContext,
     _Out_ APPLICATION_INFO **  ppApplicationInfo
 )
 {
-    HRESULT                hr = S_OK;
-    APPLICATION_INFO      *pApplicationInfo = NULL;
-    APPLICATION_INFO_KEY   key;
-    BOOL                   fExclusiveLock = FALSE;
-    BOOL                   fMixedHostingModelError = FALSE;
-    BOOL                   fDuplicatedInProcessApp = FALSE;
-    PCWSTR                 pszApplicationId = NULL;
+    HRESULT                 hr = S_OK;
+    APPLICATION_INFO       *pApplicationInfo = NULL;
+    BOOL                    fExclusiveLock = FALSE;
+    BOOL                    fMixedHostingModelError = FALSE;
+    BOOL                    fDuplicatedInProcessApp = FALSE;
+    PCWSTR                  pszApplicationId = NULL;
+    APP_HOSTING_MODEL       hostingModel = HOSTING_UNKNOWN;
+
     STACK_STRU ( strEventMsg, 256 );
 
     DBG_ASSERT(pServer);
-    DBG_ASSERT(pConfig);
+    DBG_ASSERT(pHttpContext);
     DBG_ASSERT(ppApplicationInfo);
 
     *ppApplicationInfo = NULL;
 
     // The configuration path is unique for each application and is used for the
     // key in the applicationInfoHash.
-    pszApplicationId = pConfig->QueryConfigPath()->QueryStr();
-    hr = key.Initialize(pszApplicationId);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
+    pszApplicationId = pHttpContext->GetApplication()->GetApplicationId();
+    
     // When accessing the m_pApplicationInfoHash, we need to acquire the application manager
     // lock to avoid races on setting state.
     AcquireSRWLockShared(&m_srwLock);
@@ -54,32 +49,24 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
         hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
         goto Finished;
     }
-    m_pApplicationInfoHash->FindKey(&key, ppApplicationInfo);
+    m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
     ReleaseSRWLockShared(&m_srwLock);
 
     if (*ppApplicationInfo == NULL)
     {
-        // Check which hosting model we want to support
-        switch (pConfig->QueryHostingModel())
+
+        pApplicationInfo = new APPLICATION_INFO();
+        if (pApplicationInfo == NULL)
         {
-        case HOSTING_IN_PROCESS:
-            if (m_pApplicationInfoHash->Count() > 0)
-            {
-                // Only one inprocess app is allowed per IIS worker process
-                fDuplicatedInProcessApp = TRUE;
-                hr = HRESULT_FROM_WIN32(ERROR_APP_INIT_FAILURE);
-                goto Finished;
-            }
-            break;
-
-        case HOSTING_OUT_PROCESS:
-            break;
-
-        default:
-            hr = E_UNEXPECTED;
+            hr = E_OUTOFMEMORY;
             goto Finished;
         }
-        pApplicationInfo = new APPLICATION_INFO(pServer);
+
+        hr = pApplicationInfo->Initialize(pServer, pHttpContext->GetApplication(), m_pFileWatcher);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
 
         AcquireSRWLockExclusive(&m_srwLock);
         fExclusiveLock = TRUE;
@@ -89,56 +76,47 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
             goto Finished;
         }
-        m_pApplicationInfoHash->FindKey(&key, ppApplicationInfo);
+        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
 
         if (*ppApplicationInfo != NULL)
         {
             // someone else created the application
-            delete pApplicationInfo;
-            pApplicationInfo = NULL;
             goto Finished;
         }
 
-        // hosting model check. We do not allow mixed scenario for now
-        // could be changed in the future
-        if (m_hostingModel != HOSTING_UNKNOWN)
+        hr = m_pApplicationInfoHash->InsertRecord(pApplicationInfo);
+        if (FAILED(hr))
         {
-            if (m_hostingModel != pConfig->QueryHostingModel())
+            goto Finished;
+        }
+
+        hostingModel = pApplicationInfo->QueryConfig()->QueryHostingModel();
+
+        if (m_pApplicationInfoHash->Count() == 1)
+        {
+            m_hostingModel = hostingModel;
+            pApplicationInfo->UpdateAllowStartStatus(TRUE);
+        }
+        else
+        {
+            if (hostingModel == HOSTING_OUT_PROCESS &&  hostingModel == m_hostingModel)
             {
-                // hosting model does not match, error out
-                fMixedHostingModelError = TRUE;
-                hr = HRESULT_FROM_WIN32(ERROR_APP_INIT_FAILURE);
-                goto Finished;
+                pApplicationInfo->UpdateAllowStartStatus(TRUE);
+            }
+            else
+            {
+                if (hostingModel != m_hostingModel)
+                {
+                    fMixedHostingModelError = TRUE;
+                }
+                else
+                {
+                    fDuplicatedInProcessApp = TRUE;
+                }
             }
         }
 
-        hr = pApplicationInfo->Initialize(pConfig, m_pFileWatcher);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        hr = m_pApplicationInfoHash->InsertRecord( pApplicationInfo );
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        //
-        // first application will decide which hosting model allowed by this process
-        //
-        if (m_hostingModel == HOSTING_UNKNOWN)
-        {
-            m_hostingModel = pConfig->QueryHostingModel();
-        }
-
         *ppApplicationInfo = pApplicationInfo;
-        pApplicationInfo->StartMonitoringAppOffline();
-
-        // Release the locko after starting to monitor for app offline to avoid races with it being dropped.
-        ReleaseSRWLockExclusive(&m_srwLock);
-
-        fExclusiveLock = FALSE;
         pApplicationInfo = NULL;
     }
 
@@ -149,52 +127,30 @@ Finished:
         ReleaseSRWLockExclusive(&m_srwLock);
     }
 
+    // log the error
+    if (fDuplicatedInProcessApp)
+    {
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
+            ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
+            pszApplicationId);
+        
+    }
+    else if (fMixedHostingModelError)
+    {
+        UTILITY::LogEventF(g_hEventLog,
+            EVENTLOG_ERROR_TYPE,
+            ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
+            ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
+            pszApplicationId,
+            hostingModel);
+    }
+
     if (pApplicationInfo != NULL)
     {
         pApplicationInfo->DereferenceApplicationInfo();
         pApplicationInfo = NULL;
-    }
-
-    if (FAILED(hr))
-    {
-        if (fDuplicatedInProcessApp)
-        {
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
-                pszApplicationId)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
-                    strEventMsg.QueryStr());
-            }
-        }
-        else if (fMixedHostingModelError)
-        {
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
-                pszApplicationId,
-                pConfig->QueryHostingModel())))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
-                    strEventMsg.QueryStr());
-            }
-        }
-        else
-        {
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
-                pszApplicationId,
-                hr)))
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
-                    strEventMsg.QueryStr());
-            }
-        }
     }
 
     return hr;
@@ -237,7 +193,7 @@ APPLICATION_MANAGER::FindConfigChangedApplication(
         }
         else
         {
-            pContext->MultiSz.Append(*pstruConfigPath);
+            pContext->MultiSz.Append(pEntry->QueryApplicationInfoKey());
         }
     }
     return fChanged;
@@ -256,7 +212,6 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
 )
 {
     HRESULT                 hr = S_OK;
-    APPLICATION_INFO_KEY    key;
     DWORD                   dwPreviousCounter = 0;
     APPLICATION_INFO_HASH*  table = NULL;
     CONFIG_CHANGE_CONTEXT   context;
@@ -276,11 +231,6 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
         return hr;
     }
 
-    hr = key.Initialize(pszApplicationId);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
     // Make a shallow copy of existing hashtable as we may need to remove nodes
     // This will be used for finding differences in which applications are affected by a config change.
     table = new APPLICATION_INFO_HASH();
@@ -353,13 +303,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                     strEventMsg.QueryStr());
             }
 
-            hr = key.Initialize(path);
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-
-            table->FindKey(&key, &pRecord);
+            table->FindKey(path, &pRecord);
             DBG_ASSERT(pRecord != NULL);
 
             // RecycleApplication is called on a separate thread.

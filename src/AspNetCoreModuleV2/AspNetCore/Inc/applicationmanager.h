@@ -71,7 +71,7 @@ public:
     HRESULT
     GetOrCreateApplicationInfo(
         _In_ IHttpServer*          pServer,
-        _In_ ASPNETCORE_SHIM_CONFIG*    pConfig,
+        _In_ IHttpContext*         pHttpContext,
         _Out_ APPLICATION_INFO **  ppApplicationInfo
     );
 

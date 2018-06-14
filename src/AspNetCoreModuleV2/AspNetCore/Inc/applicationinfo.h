@@ -27,64 +27,27 @@ HRESULT
 extern BOOL     g_fRecycleProcessCalled;
 extern PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 
-//
-// The key used for hash-table lookups, consists of the port on which the http process is created.
-//
-class APPLICATION_INFO_KEY
-{
-public:
-
-    APPLICATION_INFO_KEY(
-        VOID
-    ) : INLINE_STRU_INIT(m_struKey)
-    {
-    }
-
-    HRESULT
-        Initialize(
-            _In_ LPCWSTR pszKey
-        )
-    {
-        return m_struKey.Copy(pszKey);
-    }
-
-    BOOL
-        GetIsEqual(
-            const APPLICATION_INFO_KEY * key2
-        ) const
-    {
-        return m_struKey.Equals(key2->m_struKey);
-    }
-
-    DWORD CalcKeyHash() const
-    {
-        return Hash(m_struKey.QueryStr());
-    }
-
-private:
-
-    INLINE_STRU(m_struKey, 1024);
-};
-
-
 class APPLICATION_INFO
 {
 public:
 
-    APPLICATION_INFO(IHttpServer *pServer) :
-        m_pServer(pServer),
-        m_cRefs(1), m_fAppOfflineFound(FALSE),
-        m_pAppOfflineHtm(NULL), m_pFileWatcherEntry(NULL),
+    APPLICATION_INFO() :
+        m_pServer(NULL),
+        m_cRefs(1),
+        m_fAppOfflineFound(FALSE),
+        m_fAllowStart(FALSE),
+        m_pAppOfflineHtm(NULL),
+        m_pFileWatcherEntry(NULL),
         m_pConfiguration(NULL),
         m_pfnAspNetCoreCreateApplication(NULL)
     {
         InitializeSRWLock(&m_srwLock);
     }
 
-    APPLICATION_INFO_KEY *
+    PCWSTR
     QueryApplicationInfoKey()
     {
-        return &m_applicationInfoKey;
+        return m_struInfoKey.QueryStr();
     }
 
     virtual
@@ -92,7 +55,8 @@ public:
 
     HRESULT
     Initialize(
-        _In_ ASPNETCORE_SHIM_CONFIG   *pConfiguration,
+        _In_ IHttpServer         *pServer,
+        _In_ IHttpApplication    *pApplication,
         _In_ FILE_WATCHER        *pFileWatcher
     );
 
@@ -122,6 +86,18 @@ public:
         return m_fAppOfflineFound;
     }
 
+    BOOL QueryAllowStart()
+    {
+        return m_fAllowStart;
+    }
+
+    VOID
+    UpdateAllowStartStatus(BOOL fAllowed)
+    {
+        // no lock, as no expectation for concurrent accesses
+        m_fAllowStart = fAllowed;
+    }
+
     VOID
     UpdateAppOfflineFileHandle();
 
@@ -133,6 +109,7 @@ public:
     {
         return m_pConfiguration;
     }
+
 
     //
     // ExtractApplication will increase the reference counter of the application
@@ -170,8 +147,9 @@ private:
     static VOID DoRecycleApplication(LPVOID lpParam);
 
     mutable LONG            m_cRefs;
-    APPLICATION_INFO_KEY    m_applicationInfoKey;
+    STRU                    m_struInfoKey;
     BOOL                    m_fAppOfflineFound;
+    BOOL                    m_fAllowStart; // Flag indicates whether there is (configuration) error blocking application from starting
     APP_OFFLINE_HTM        *m_pAppOfflineHtm;
     FILE_WATCHER_ENTRY     *m_pFileWatcherEntry;
     ASPNETCORE_SHIM_CONFIG *m_pConfiguration;
@@ -185,7 +163,7 @@ private:
 };
 
 class APPLICATION_INFO_HASH :
-    public HASH_TABLE<APPLICATION_INFO, APPLICATION_INFO_KEY *>
+    public HASH_TABLE<APPLICATION_INFO, PCWSTR>
 {
 
 public:
@@ -193,7 +171,7 @@ public:
     APPLICATION_INFO_HASH()
     {}
 
-    APPLICATION_INFO_KEY *
+    PCWSTR
     ExtractKey(
         APPLICATION_INFO *pApplicationInfo
     )
@@ -203,19 +181,23 @@ public:
 
     DWORD
     CalcKeyHash(
-        APPLICATION_INFO_KEY *key
+        PCWSTR  pszApplicationId
     )
     {
-        return key->CalcKeyHash();
+        return HashStringNoCase(pszApplicationId);
     }
 
     BOOL
     EqualKeys(
-        APPLICATION_INFO_KEY *key1,
-        APPLICATION_INFO_KEY *key2
+        PCWSTR pszKey1,
+        PCWSTR pszKey2
     )
     {
-        return key1->GetIsEqual(key2);
+        return CompareStringOrdinal(pszKey1,
+            -1,
+            pszKey2,
+            -1,
+            TRUE) == CSTR_EQUAL;
     }
 
     VOID

@@ -82,7 +82,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 )
 {
     HRESULT hr = S_OK;
-    ASPNETCORE_SHIM_CONFIG *pConfig = NULL;
     APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     IAPPLICATION* pApplication = NULL;
@@ -94,20 +93,22 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         goto Finished;
     }
 
-    hr = ASPNETCORE_SHIM_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext->GetApplication(), &pConfig);
+    pApplicationManager = APPLICATION_MANAGER::GetInstance();
+
+    hr = pApplicationManager->GetOrCreateApplicationInfo(
+        g_pHttpServer,
+        pHttpContext,
+        &m_pApplicationInfo);
     if (FAILED(hr))
     {
         goto Finished;
     }
 
-    pApplicationManager = APPLICATION_MANAGER::GetInstance();
-
-    hr = pApplicationManager->GetOrCreateApplicationInfo(
-        g_pHttpServer,
-        pConfig,
-        &m_pApplicationInfo);
-    if (FAILED(hr))
+    if (!m_pApplicationInfo->QueryAllowStart())
     {
+        // Application cannot be started due to wrong hosting mode
+        // the error should already been logged to window event log for the first request
+        hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
         goto Finished;
     }
 

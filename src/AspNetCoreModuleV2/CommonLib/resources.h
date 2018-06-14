@@ -43,5 +43,5 @@
 #define ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND_MSG       L"Could not find application executable in '%s'. ErrorCode = '0x%x'."
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_MSG      L"Application '%s' with physical root '%s' hit unexpected managed exception, ErrorCode = '0x%x. Please check the stderr logs for more information."
 #define ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG            L"Invalid or unknown processPath provided in web.config: processPath = %s, ErrorCode = '0x%x'."
-#define ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG            L"Could not find the aspnetcorerh.dll for in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application."
-#define ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG       L"Could not find the aspnetcorerh.dll for out-of-process application. Please confirm the aspnetcorerh.dll is installed in installed globally for IIS or IISExpress."
+#define ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG            L"Could not find the assembly '%s' for in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application."
+#define ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG       L"Could not find the assembly '%s' for out-of-process application. Please confirm the assembly is installed correctly for IIS or IISExpress."

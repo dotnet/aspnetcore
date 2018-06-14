@@ -41,38 +41,51 @@ APPLICATION_INFO::~APPLICATION_INFO()
     // since the former will use it during shutdown
     if (m_pConfiguration != NULL)
     {
-        // Need to dereference the configuration instance
-        m_pConfiguration->DereferenceConfiguration();
+        delete m_pConfiguration;
         m_pConfiguration = NULL;
     }
 }
 
 HRESULT
 APPLICATION_INFO::Initialize(
-    _In_ ASPNETCORE_SHIM_CONFIG   *pConfiguration,
+    _In_ IHttpServer              *pServer,
+    _In_ IHttpApplication         *pApplication,
     _In_ FILE_WATCHER             *pFileWatcher
 )
 {
     HRESULT hr = S_OK;
 
-    DBG_ASSERT(pConfiguration);
+    DBG_ASSERT(pServer);
+    DBG_ASSERT(pApplication);
     DBG_ASSERT(pFileWatcher);
 
-    m_pConfiguration = pConfiguration;
+    // todo: make sure Initialize should be called only once
+    m_pServer = pServer;
+    m_pConfiguration = new ASPNETCORE_SHIM_CONFIG();
 
-    // reference the configuration instance to prevent it will be not release
-    // earlier in case of configuration change and shutdown
-    m_pConfiguration->ReferenceConfiguration();
+    if (m_pConfiguration == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
 
-    hr = m_applicationInfoKey.Initialize(pConfiguration->QueryConfigPath()->QueryStr());
+    hr = m_pConfiguration->Populate(m_pServer, pApplication);
     if (FAILED(hr))
     {
         goto Finished;
     }
 
+    hr = m_struInfoKey.Copy(pApplication->GetApplicationId());
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    m_pFileWatcherEntry = new FILE_WATCHER_ENTRY(pFileWatcher);
     if (m_pFileWatcherEntry == NULL)
     {
-        m_pFileWatcherEntry = new FILE_WATCHER_ENTRY(pFileWatcher);
+        hr = E_OUTOFMEMORY;
+        goto Finished;
     }
 
     UpdateAppOfflineFileHandle();
@@ -296,10 +309,11 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
 
                 if (FAILED(hr = FindNativeAssemblyFromHostfxr(options.get(), pstrHandlerDllName, &struFileName)))
                 {
-                    UTILITY::LogEvent(g_hEventLog,
-                            EVENTLOG_INFORMATION_TYPE,
+                    UTILITY::LogEventF(g_hEventLog,
+                            EVENTLOG_ERROR_TYPE,
                             ASPNETCORE_EVENT_INPROCESS_RH_MISSING,
-                            ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG);
+                            ASPNETCORE_EVENT_INPROCESS_RH_MISSING_MSG,
+                            struFileName.IsEmpty() ? s_pwzAspnetcoreInProcessRequestHandlerName : struFileName.QueryStr());
 
                     goto Finished;
                 }
@@ -308,10 +322,11 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
             {
                 if (FAILED(hr = FindNativeAssemblyFromGlobalLocation(pstrHandlerDllName, &struFileName)))
                 {
-                    UTILITY::LogEvent(g_hEventLog,
-                        EVENTLOG_INFORMATION_TYPE,
+                    UTILITY::LogEventF(g_hEventLog,
+                        EVENTLOG_ERROR_TYPE,
                         ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
-                        ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG);
+                        ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG,
+                        struFileName.IsEmpty() ? s_pwzAspnetcoreOutOfProcessRequestHandlerName : struFileName.QueryStr());
 
                     goto Finished;
                 }
@@ -581,6 +596,15 @@ APPLICATION_INFO::RecycleApplication()
                 pApplication,       // thread function arguments
                 0,          // default creation flags
                 NULL);      // receive thread identifier
+        }
+        else
+        {
+            if (m_pConfiguration->QueryHostingModel() == HOSTING_IN_PROCESS)
+            {
+                // In process application failed to start for whatever reason, need to recycle the work process
+                m_pServer->RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
+            }
+
         }
 
         if (hThread == NULL)
