@@ -23,7 +23,7 @@ if ((window as any).__karma__) {
     ENDPOINT_BASE_URL = server;
     console.log(`Using SignalR Server: ${ENDPOINT_BASE_URL}`);
 } else {
-    ENDPOINT_BASE_URL = "";
+    ENDPOINT_BASE_URL = `${document.location.protocol}//${document.location.host}`;
 }
 
 export const ECHOENDPOINT_URL = ENDPOINT_BASE_URL + "/echo";
