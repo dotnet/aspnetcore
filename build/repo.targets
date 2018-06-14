@@ -4,7 +4,6 @@
   <Import Project="Sign.targets" />
   <Import Project="Verify.targets" />
   <Import Project="Publish.targets" />
-  <Import Project="Symbols.targets" />
 
   <!-- packages required to implement the targets in this file-->
   <PropertyGroup>
