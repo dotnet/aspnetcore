@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Identity.Specification.Tests, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Identity.Specification.Tests, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Identity.Test.IdentityResultAssert",
@@ -489,55 +489,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_LogMessages",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IList<System.String>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Identity.Test.ITestLogger",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "BeginScope<T0>",
-          "Parameters": [
-            {
-              "Name": "state",
-              "Type": "T0"
-            }
-          ],
-          "ReturnType": "System.IDisposable",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
-          "Visibility": "Public",
-          "GenericParameter": [
-            {
-              "ParameterName": "TState",
-              "ParameterPosition": 0,
-              "BaseTypeOrInterfaces": []
-            }
-          ]
-        },
-        {
-          "Kind": "Method",
-          "Name": "IsEnabled",
-          "Parameters": [
-            {
-              "Name": "logLevel",
-              "Type": "Microsoft.Extensions.Logging.LogLevel"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Log<T0>",
           "Parameters": [
             {
@@ -573,6 +524,55 @@
               "BaseTypeOrInterfaces": []
             }
           ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsEnabled",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginScope<T0>",
+          "Parameters": [
+            {
+              "Name": "state",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_LogMessages",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.Test.ITestLogger",
+          "Visibility": "Public",
+          "GenericParameter": []
         },
         {
           "Kind": "Constructor",
@@ -862,6 +862,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "ResetAuthenticatorKeyUpdatesSecurityStamp",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "CheckSetEmailValidatesUser",
           "Parameters": [],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -1115,6 +1123,7 @@
           "Name": "CanFindUsersViaUserQuerable",
           "Parameters": [],
           "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
