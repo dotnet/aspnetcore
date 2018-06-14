@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.NodeServices, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.NodeServices, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.NodeServicesServiceCollectionExtensions",
@@ -716,6 +716,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "InvokeExportAsync<T0>",
           "Parameters": [
             {
@@ -748,17 +759,6 @@
               "BaseTypeOrInterfaces": []
             }
           ]
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
         },
         {
           "Kind": "Method",
