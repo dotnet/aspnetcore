@@ -32,3 +32,4 @@ project.lock.json
 global.json
 *.log
 *.binlog
+msbuild.ProjectImports.zip

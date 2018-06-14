@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
+  <Import Project="..\dependencies.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -11,6 +12,9 @@
 
     <!-- See https://github.com/dotnet/symreader-converter -->
     <PackageReference Include="Microsoft.DiaSymReader.Pdb2Pdb" Version="$(MicrosoftDiaSymReaderPdb2PdbPackageVersion)" />
+
+    <!-- See https://aka.ms/esrpclient -->
+    <PackageReference Include="ESRPClient" Version="$(ESRPClientVersion)" />
    </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

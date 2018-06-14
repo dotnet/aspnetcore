@@ -67,19 +67,25 @@
 
   <Target Name="SignFiles">
     <ItemGroup>
-      <AspNetCoreBinaries Include="
+      <_AspNetCoreBinaries Include="
         @(PackageBinaries);
         @(VSIXBinaries);
         @(OobArchiveBinaries);
         @(MPackBinaries);
         @(SharedFxBinaries);" />
+    </ItemGroup>
 
+    <RepoTasks.CreateBatches Items="@(_AspNetCoreBinaries)" MaxBatchSize="500">
+      <Output TaskParameter="Items" ItemName="AspNetCoreBinaries" />
+    </RepoTasks.CreateBatches>
+
+    <ItemGroup>
+      <_SignProject Remove="@(_SignProject)" />
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition ="'@(AspNetCoreBinaries)' != ''">
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
-          Certificate=$(BinaryCodeSignCertificate);
-          JobName=AspNetCoreBinaries;
-          Description=Signing AspNetCore binaries;
+          Certificate=$(MicrosoftAuthentiCodeSha2);
+          JobName=AspNetCoreBinaries-Job%(AspNetCoreBinaries.Batch);
           Files=@(AspNetCoreBinaries)
         </AdditionalProperties>
       </_SignProject>
@@ -88,15 +94,14 @@
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(ThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
-          Certificate=$(ThirdParthCodeSignCertificate);
+          Certificate=$(Microsoft3rdPartyAppComponentDual);
           JobName=ThirdPartyBinaries;
-          Description=Signing third party binaries;
           Files=@(ThirdPartyBinaries)
         </AdditionalProperties>
       </_SignProject>
     </ItemGroup>
 
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="$(BuildInParallel)" />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="$(BuildInParallel)" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
   </Target>
 
   <Target Name="RebuildPackages">
@@ -135,13 +140,12 @@
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientExe) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress"
+      Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-packages.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
-    <Copy
-      Files="@(_UnsignedNupkgs)"
-      DestinationFolder="$(PackagesOutputPath)"
-      Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'" />
+    <Copy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
+      SourceFiles="@(_UnsignedNupkgs)"
+      DestinationFolder="$(PackagesOutputPath)" />
   </Target>
 
   <!-- Repacks MPacks with their signed binaries -->
@@ -202,18 +206,18 @@
     <ItemGroup>
       <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
 
-      <_SignProject Project="$(MSBuildProjectFullPath)" Condition="'@(VSIXToSign)' != ''">
+      <_SignProject Remove="@(_SignProject)" />
+      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(VSIXToSign)' != ''">
         <AdditionalProperties>
-          Certificate=$(VSIXCodeSignCertificate);
+          Certificate=$(MicrosoftOpc2);
           JobName=AspNetCoreVSIX;
           LocalBuild=$(LocalBuild);
-          Description=Signing AspNetCore VSIX;
           Files=@(VSIXToSign)
         </AdditionalProperties>
       </_SignProject>
     </ItemGroup>
 
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" Condition="'@(_SignProject)' != ''" />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
 
     <MakeDir Directories="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
 
@@ -223,34 +227,40 @@
   </Target>
 
   <Target Name="SubmitCodeSign">
-    <ItemGroup>
-      <_Approvers Include="$(CodeSignApprovers)" />
-      <_Files Include="$(Files)" />
-
-      <_ResponseFileLines Include="--approver=%(_Approvers.Identity)" />
-      <_ResponseFileLines Include="--cert=$(Certificate)" />
-      <_ResponseFileLines Include="--local-build" Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'" />
-      <_ResponseFileLines Include="--description=$(Description)" />
-      <_ResponseFileLines Include="--display-name=$(CodeSignDisplayName)" />
-      <_ResponseFileLines Include="--display-url=$(CodeSignUrl)" />
-      <_ResponseFileLines Include="--job-name=$(Jobname)" />
-      <_ResponseFileLines Include="--log-dir=$(LogOutputDir)" />
-      <_ResponseFileLines Include="-f=%(_Files.Identity)" />
-    </ItemGroup>
-
     <PropertyGroup>
-      <ResponseFilePath>$(IntermediateDir)$(JobName).rsp</ResponseFilePath>
-      <CodeSignExeOutputPath>$(RepositoryRoot)src\CodeSign\bin\$(Configuration)\net462\CodeSign.exe</CodeSignExeOutputPath>
+      <SigningStagingDir>$(IntermediateDir)u\$(JobName)\</SigningStagingDir>
+      <SignOutputDir>$(IntermediateDir)s\$(JobName)\</SignOutputDir>
+      <_ManifestOutputPath>$(IntermediateDir)esrp-$(JobName)-sign.json</_ManifestOutputPath>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_FilesPaths Include="$(Files)" />
+      <_FilesToSign Include="$(SigningStagingDir)$([System.Guid]::NewGuid())%(_FilesPaths.Extension)">
+        <OriginalFilePath>%(_FilesPaths.Identity)</OriginalFilePath>
+      </_FilesToSign>
+    </ItemGroup>
 
     <Message Text="Executing code sign job $(JobName)..." Importance="High" />
 
-    <WriteLinesToFile
-      File="$(ResponseFilePath)"
-      Lines="@(_ResponseFileLines)"
-      Overwrite="true" />
+    <Copy SourceFiles="@(_FilesToSign->'%(OriginalFilePath)')" DestinationFiles="@(_FilesToSign)" />
 
-    <Exec Command="&quot;$(CodeSignExeOutputPath)&quot; @$(ResponseFilePath)" />
+    <Microsoft.Build.OOB.ESRP.CreateSignManifests
+       ApplicationId="$(ESRPApplicationId)"
+       DestinationRootDirectory="$(SignOutputDir)"
+       Files="@(_FilesToSign)"
+       ManifestOutputPath="$(_ManifestOutputPath)"
+       KeyCodes="$(Certificate)">
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+    </Microsoft.Build.OOB.ESRP.CreateSignManifests>
+
+    <Exec
+      Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-$(JobName).log"
+      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
+
+    <Copy SourceFiles="@(_FilesToSign->'$(SignOutputDir)%(FileName)%(Extension)')" DestinationFiles="@(_FilesToSign->'%(OriginalFilePath)')" />
   </Target>
 
   <!-- Repacks aspnetcore shared framework -->

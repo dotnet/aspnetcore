@@ -5,6 +5,7 @@
     <_RepoTaskAssembly>$(MSBuildThisFileDirectory)bin\publish\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>
 
+  <UsingTask TaskName="RepoTasks.CreateBatches" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifySignedSharedFxBinaries" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyPoliCheckResults" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="Microsoft.Build.OOB.ESRP.CreateSignManifests" AssemblyFile="$(_RepoTaskAssembly)" />
@@ -14,8 +15,9 @@
     <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(USERPROFILE)' != '' ">$(USERPROFILE)\.nuget\packages\</NuGetPackagesPath>
     <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(HOME)' != '' ">$(HOME)\.nuget\packages\</NuGetPackagesPath>
     <NuGetPackagesPath>$([MSBuild]::NormalizeDirectory($(NuGetPackagesPath)))</NuGetPackagesPath>
-    
+
     <Pdb2PdbToolPath>$(NuGetPackagesPath)microsoft.diasymreader.pdb2pdb\$(MicrosoftDiaSymReaderPdb2PdbPackageVersion)\tools\Pdb2Pdb.exe</Pdb2PdbToolPath>
+    <ESRPClientToolPath>$(NuGetPackagesPath)esrpclient\$(ESRPClientVersion)\tools\EsrpClient.exe</ESRPClientToolPath>
   </PropertyGroup>
 
 </Project>

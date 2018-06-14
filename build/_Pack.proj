@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <!-- Required for "Pack" to succeed. -->
-    <TargetFramework>netstandard1.0</TargetFramework>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-  </PropertyGroup>
-</Project>
