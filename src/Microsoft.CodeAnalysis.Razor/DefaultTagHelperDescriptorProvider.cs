@@ -31,8 +31,19 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            var @interface = compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
+            var @string = compilation.GetSpecialType(SpecialType.System_String);
+            
+            // Ensure ITagHelper and System.String are available. They may be missing or 
+            // errored if we're missing references.
+            if (@interface == null || @interface.TypeKind == TypeKind.Error ||
+                @string == null || @string.TypeKind == TypeKind.Error)
+            {
+                return;
+            }
+
             var types = new List<INamedTypeSymbol>();
-            var visitor = TagHelperTypeVisitor.Create(compilation, types);
+            var visitor = new TagHelperTypeVisitor(@interface, types);
 
             // We always visit the global namespace.
             visitor.Visit(compilation.Assembly.GlobalNamespace);
