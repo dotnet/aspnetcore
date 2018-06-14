@@ -86,7 +86,6 @@
         </AdditionalProperties>
       </_SignProject>
 
-
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(ThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);

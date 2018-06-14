@@ -59,6 +59,8 @@ namespace Microsoft.Build.OOB.ESRP
             set;
         }
 
+        public int MaxBatchSize { get; set; } = 50;
+
         [Required]
         public string ManifestOutputPath
         {
@@ -261,19 +263,20 @@ namespace Microsoft.Build.OOB.ESRP
                     operations.AddRange(o);
                 }
 
-                var signRequestFiles = GetSignRequestFiles(kcb.Files);
-
-                var sb = new SignBatches
+                foreach (var signRequestFiles in GetSignRequestFiles(kcb.Files).Batch(MaxBatchSize))
                 {
-                    DestinationRootDirectory = DestinationRootDirectory,
-                    SignRequestFiles = signRequestFiles.ToArray(),
-                    SigningInfo = new SigningInfo
+                    var sb = new SignBatches
                     {
-                        Operations = operations.ToArray()
-                    }
-                };
+                        DestinationRootDirectory = DestinationRootDirectory,
+                        SignRequestFiles = signRequestFiles.ToArray(),
+                        SigningInfo = new SigningInfo
+                        {
+                            Operations = operations.ToArray()
+                        }
+                    };
 
-                signBatches.Add(sb);
+                    signBatches.Add(sb);
+                }
             }
 
             si.SignBatches = signBatches.ToArray();
@@ -294,19 +297,21 @@ namespace Microsoft.Build.OOB.ESRP
             }
 
             var signBatches = new List<SignBatches>();
-            var signRequestFiles = GetSignRequestFiles(Files);
 
-            var sb = new SignBatches
+            foreach (var signRequestFiles in GetSignRequestFiles(Files).Batch(MaxBatchSize))
             {
-                DestinationRootDirectory = DestinationRootDirectory,
-                SignRequestFiles = signRequestFiles.ToArray(),
-                SigningInfo = new SigningInfo
+                var sb = new SignBatches
                 {
-                    Operations = operations.ToArray()
-                }
-            };
+                    DestinationRootDirectory = DestinationRootDirectory,
+                    SignRequestFiles = signRequestFiles.ToArray(),
+                    SigningInfo = new SigningInfo
+                    {
+                        Operations = operations.ToArray()
+                    }
+                };
 
-            signBatches.Add(sb);
+                signBatches.Add(sb);
+            }
             si.SignBatches = signBatches.ToArray();
 
             return si;

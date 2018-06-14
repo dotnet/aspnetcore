@@ -3,7 +3,7 @@
     <_PoliCheckOutputFile>$(IntermediateDir)policheck_results.xml</_PoliCheckOutputFile>
   </PropertyGroup>
 
-  <Target Name="PoliCheck" DependsOnTargets="_GetPolicheckSettings;_CorePolicheck;_VerifyPolicheckResults" />
+  <Target Name="PoliCheck" DependsOnTargets="_GetPolicheckSettings;_CorePolicheck;_VerifyPolicheckResults" Condition=" '$(SkipPolicheck)' != 'true' " />
 
   <Target Name="_GetPolicheckSettings">
     <!-- These are terms that appear frequently but are not used offensively e.g. red is a color constant name. -->
