@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.Twitter, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.Twitter, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.TwitterExtensions",
@@ -601,6 +601,122 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Events",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.Twitter.TwitterEvents",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Events",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.Twitter.TwitterEvents"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateEventsAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Object>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleRemoteAuthenticateAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateTicketAsync",
+          "Parameters": [
+            {
+              "Name": "identity",
+              "Type": "System.Security.Claims.ClaimsIdentity"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            },
+            {
+              "Name": "token",
+              "Type": "Microsoft.AspNetCore.Authentication.Twitter.AccessToken"
+            },
+            {
+              "Name": "user",
+              "Type": "Newtonsoft.Json.Linq.JObject"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleChallengeAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions>"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.UrlEncoder"
+            },
+            {
+              "Name": "clock",
+              "Type": "Microsoft.AspNetCore.Authentication.ISystemClock"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions",
       "Visibility": "Public",
       "Kind": "Class",
@@ -738,6 +854,16 @@
             }
           ],
           "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Validate",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
           "Visibility": "Public",
           "GenericParameter": []
         },

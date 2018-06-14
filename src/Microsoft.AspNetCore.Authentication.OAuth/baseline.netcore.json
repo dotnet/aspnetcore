@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.OAuth, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.OAuth, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.OAuthExtensions",
@@ -419,6 +419,41 @@
         },
         {
           "Kind": "Method",
+          "Name": "MapAll",
+          "Parameters": [
+            {
+              "Name": "collection",
+              "Type": "Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapAllExcept",
+          "Parameters": [
+            {
+              "Name": "collection",
+              "Type": "Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection"
+            },
+            {
+              "Name": "exclusions",
+              "Type": "System.String[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "DeleteClaim",
           "Parameters": [
             {
@@ -428,6 +463,26 @@
             {
               "Name": "claimType",
               "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DeleteClaims",
+          "Parameters": [
+            {
+              "Name": "collection",
+              "Type": "Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection"
+            },
+            {
+              "Name": "claimTypes",
+              "Type": "System.String[]",
+              "IsParams": true
             }
           ],
           "ReturnType": "System.Void",
@@ -698,6 +753,97 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Authentication.OAuth.OAuthChallengeProperties",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.AuthenticationProperties",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Scope",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Scope",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.ICollection<System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetScope",
+          "Parameters": [
+            {
+              "Name": "scopes",
+              "Type": "System.String[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            },
+            {
+              "Name": "parameters",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.Object>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ScopeKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Authentication.OAuth.OAuthDefaults",
       "Visibility": "Public",
       "Kind": "Class",
@@ -841,6 +987,20 @@
             {
               "Name": "redirectUri",
               "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FormatScope",
+          "Parameters": [
+            {
+              "Name": "scopes",
+              "Type": "System.Collections.Generic.IEnumerable<System.String>"
             }
           ],
           "ReturnType": "System.String",
@@ -1600,6 +1760,46 @@
               "Type": "System.String"
             }
           ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.OAuth.Claims.MapAllClaimsAction",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Run",
+          "Parameters": [
+            {
+              "Name": "userData",
+              "Type": "Newtonsoft.Json.Linq.JObject"
+            },
+            {
+              "Name": "identity",
+              "Type": "System.Security.Claims.ClaimsIdentity"
+            },
+            {
+              "Name": "issuer",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
           "Visibility": "Public",
           "GenericParameter": []
         }

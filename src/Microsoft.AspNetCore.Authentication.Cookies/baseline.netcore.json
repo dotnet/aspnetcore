@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.Cookies, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.Cookies, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.CookieExtensions",
@@ -239,10 +239,8 @@
       "Name": "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Authentication.AuthenticationHandler<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Authentication.IAuthenticationSignInHandler"
-      ],
+      "BaseType": "Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+      "ImplementedInterfaces": [],
       "Members": [
         {
           "Kind": "Method",
@@ -306,7 +304,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "SignInAsync",
+          "Name": "HandleSignInAsync",
           "Parameters": [
             {
               "Name": "user",
@@ -319,13 +317,13 @@
           ],
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationSignInHandler",
-          "Visibility": "Public",
+          "Override": true,
+          "Visibility": "Protected",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "SignOutAsync",
+          "Name": "HandleSignOutAsync",
           "Parameters": [
             {
               "Name": "properties",
@@ -334,8 +332,8 @@
           ],
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationSignOutHandler",
-          "Visibility": "Public",
+          "Override": true,
+          "Visibility": "Protected",
           "GenericParameter": []
         },
         {

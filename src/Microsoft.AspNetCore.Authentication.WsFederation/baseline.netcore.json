@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.WsFederation, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.WsFederation, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.WsFederationExtensions",
@@ -767,6 +767,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "HandleRequestAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Events",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Authentication.WsFederation.WsFederationEvents",
@@ -794,17 +805,6 @@
           "Virtual": true,
           "Override": true,
           "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "HandleRequestAsync",
-          "Parameters": [],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler",
-          "Visibility": "Public",
           "GenericParameter": []
         },
         {

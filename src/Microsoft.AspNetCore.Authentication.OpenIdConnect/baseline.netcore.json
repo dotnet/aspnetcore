@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.OpenIdConnect, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.OpenIdConnect, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.OpenIdConnectExtensions",
@@ -639,6 +639,27 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_OnSignedOutCallbackRedirect",
+          "Parameters": [],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.RemoteSignOutContext, System.Threading.Tasks.Task>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OnSignedOutCallbackRedirect",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.RemoteSignOutContext, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_OnRemoteSignOut",
           "Parameters": [],
           "ReturnType": "System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.RemoteSignOutContext, System.Threading.Tasks.Task>",
@@ -784,6 +805,20 @@
             {
               "Name": "context",
               "Type": "Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SignedOutCallbackRedirect",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authentication.OpenIdConnect.RemoteSignOutContext"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -1266,6 +1301,113 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.OAuth.OAuthChallengeProperties",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MaxAge",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxAge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Prompt",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Prompt",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            },
+            {
+              "Name": "parameters",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.Object>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MaxAgeKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "PromptKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults",
       "Visibility": "Public",
       "Kind": "Class",
@@ -1349,6 +1491,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "HandleRequestAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Backchannel",
           "Parameters": [],
           "ReturnType": "System.Net.Http.HttpClient",
@@ -1392,17 +1545,6 @@
           "Virtual": true,
           "Override": true,
           "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "HandleRequestAsync",
-          "Parameters": [],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler",
-          "Visibility": "Public",
           "GenericParameter": []
         },
         {
@@ -1750,6 +1892,27 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_MaxAge",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxAge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_ProtocolValidator",
           "Parameters": [],
           "ReturnType": "Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectProtocolValidator",
@@ -1906,6 +2069,27 @@
         {
           "Kind": "Method",
           "Name": "set_ResponseType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Prompt",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Prompt",
           "Parameters": [
             {
               "Name": "value",
