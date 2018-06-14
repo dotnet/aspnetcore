@@ -68,6 +68,9 @@ $packageBlobUrl = "https://$AccountName.blob.core.windows.net/$packagesFolder"
 if (-not $BaseBlobFeedUrl) {
     $BaseBlobFeedUrl = "https://$AccountName.blob.core.windows.net/$packagesFolder"
 }
+else {
+    $BaseBlobFeedUrl = "$BaseBlobFeedUrl/$packagesFolder"
+}
 
 $packageGlobPath = "$ArtifactsPath/packages/**/*.nupkg"
 $globs = (
