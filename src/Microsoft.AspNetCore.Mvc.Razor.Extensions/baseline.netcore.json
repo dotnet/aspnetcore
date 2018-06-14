@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Razor.Extensions, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Razor.Extensions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.Razor.Extensions.AssemblyAttributeInjectionPass",
@@ -76,6 +76,20 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Register",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "Register",
@@ -294,6 +308,34 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.Razor.Extensions.IViewComponentTagHelperTargetExtension",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Razor.Language.CodeGeneration.ICodeTargetExtension"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WriteViewComponentTagHelper",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeRenderingContext"
+            },
+            {
+              "Name": "node",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.Razor.Extensions.ModelDirective",
       "Visibility": "Public",
       "Kind": "Class",
@@ -308,10 +350,10 @@
           "Parameters": [
             {
               "Name": "builder",
-              "Type": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder"
+              "Type": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder"
             }
           ],
-          "ReturnType": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder",
+          "ReturnType": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder",
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
@@ -326,6 +368,20 @@
             }
           ],
           "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Register",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder",
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
@@ -520,6 +576,20 @@
           "Parameters": [
             {
               "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Register",
+          "Parameters": [
+            {
+              "Name": "builder",
               "Type": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder"
             }
           ],
@@ -569,10 +639,10 @@
           "Parameters": [
             {
               "Name": "builder",
-              "Type": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder"
+              "Type": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder"
             }
           ],
-          "ReturnType": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder",
+          "ReturnType": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder",
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
@@ -592,6 +662,20 @@
             }
           ],
           "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Register",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Language.IRazorEngineBuilder",
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
@@ -656,6 +740,20 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Register",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "Register",
@@ -746,6 +844,16 @@
         {
           "Kind": "Field",
           "Name": "RazorPageDocumentKind",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "RouteTemplateKey",
           "Parameters": [],
           "ReturnType": "System.String",
           "Static": true,
@@ -867,6 +975,110 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Razor.Language.ITagHelperDescriptorProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "Microsoft.AspNetCore.Razor.Language.Intermediate.ExtensionIntermediateNode",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Children",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeCollection",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClassName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClassName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TagHelper",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Language.TagHelperDescriptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TagHelper",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Razor.Language.TagHelperDescriptor"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Accept",
+          "Parameters": [
+            {
+              "Name": "visitor",
+              "Type": "Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeVisitor"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteNode",
+          "Parameters": [
+            {
+              "Name": "target",
+              "Type": "Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeTarget"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeRenderingContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
           "Visibility": "Public",
           "GenericParameter": []
         },

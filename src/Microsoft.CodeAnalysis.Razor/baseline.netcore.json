@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.CodeAnalysis.Razor, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.CodeAnalysis.Razor, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature",
@@ -216,6 +216,17 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"RazorCSharp\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "CoreContentType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"RazorCoreCSharp\""
         }
       ],
       "GenericParameters": []
