@@ -747,7 +747,7 @@ describe("HttpConnection", () => {
 
                 await expect(connection.start(TransferFormat.Text))
                     .rejects
-                    .toThrow("Unable to initialize any of the available transports.");
+                    .toEqual(new Error("Unable to initialize any of the available transports."));
 
                 expect(eventSourceConstructorCalled).toEqual(true);
             },

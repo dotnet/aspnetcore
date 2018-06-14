@@ -81,7 +81,7 @@ export class WebSocketTransport implements ITransport {
     }
 
     public send(data: any): Promise<void> {
-        if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
+        if (this.webSocket && this.webSocket.readyState === this.webSocketConstructor.OPEN) {
             this.logger.log(LogLevel.Trace, `(WebSockets transport) sending data. ${getDataDetail(data, this.logMessageContent)}.`);
             this.webSocket.send(data);
             return Promise.resolve();
