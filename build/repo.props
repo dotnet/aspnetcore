@@ -44,7 +44,7 @@
 
   <!-- Properties for ESRP signing -->
   <PropertyGroup>
-    <ESRPClientExe>\\aspnetci\share\esrpclient.1.0.23\tools\EsrpClient.exe</ESRPClientExe>
+    <ESRPClientExe>\\aspnetci\share\esrpclient.1.0.27\tools\EsrpClient.exe</ESRPClientExe>
     <ESRPApplicationId>f616b396-be72-40d2-98fd-d7c2e4041560</ESRPApplicationId>
   </PropertyGroup>
 
