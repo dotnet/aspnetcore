@@ -1,0 +1,7 @@
+[
+    {
+        "TypeId": "public class Microsoft.AspNetCore.HttpsPolicy.HstsMiddleware",
+        "MemberId": "public .ctor(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpsPolicy.HstsOptions> options)",
+        "Kind": "Removal"
+    }
+]
