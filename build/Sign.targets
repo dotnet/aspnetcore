@@ -75,7 +75,7 @@
         @(SharedFxBinaries);" />
     </ItemGroup>
 
-    <RepoTasks.CreateBatches Items="@(_AspNetCoreBinaries)" MaxBatchSize="500">
+    <RepoTasks.CreateBatches Items="@(_AspNetCoreBinaries)" MaxBatchSize="200">
       <Output TaskParameter="Items" ItemName="AspNetCoreBinaries" />
     </RepoTasks.CreateBatches>
 
@@ -101,7 +101,7 @@
       </_SignProject>
     </ItemGroup>
 
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="false" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="true" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
   </Target>
 
   <Target Name="RebuildPackages">
