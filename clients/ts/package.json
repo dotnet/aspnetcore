@@ -20,7 +20,7 @@
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.2",
     "rollup-plugin-sourcemaps": "^0.4.2",
-    "ts-jest": "^22.4.4",
+    "ts-jest": "^22.4.6",
     "tslint": "^5.9.1",
     "typescript": "^2.7.1",
     "uglify-js": "^3.3.5"
