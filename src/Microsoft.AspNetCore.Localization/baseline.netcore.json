@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Localization, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Localization, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.ApplicationBuilderExtensions",
@@ -36,6 +36,45 @@
             {
               "Name": "options",
               "Type": "Microsoft.AspNetCore.Builder.RequestLocalizationOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseRequestLocalization",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "optionsAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.RequestLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseRequestLocalization",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "cultures",
+              "Type": "System.String[]",
+              "IsParams": true
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
@@ -180,6 +219,47 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "AddSupportedCultures",
+          "Parameters": [
+            {
+              "Name": "cultures",
+              "Type": "System.String[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.RequestLocalizationOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddSupportedUICultures",
+          "Parameters": [
+            {
+              "Name": "uiCultures",
+              "Type": "System.String[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.RequestLocalizationOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetDefaultCulture",
+          "Parameters": [
+            {
+              "Name": "defaultCulture",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.RequestLocalizationOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -196,6 +276,22 @@
       "BaseType": "Microsoft.AspNetCore.Localization.RequestCultureProvider",
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "DetermineProviderCultureResult",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_MaximumAcceptLanguageHeaderValuesToTry",
@@ -218,22 +314,6 @@
           "GenericParameter": []
         },
         {
-          "Kind": "Method",
-          "Name": "DetermineProviderCultureResult",
-          "Parameters": [
-            {
-              "Name": "httpContext",
-              "Type": "Microsoft.AspNetCore.Http.HttpContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -252,6 +332,22 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "DetermineProviderCultureResult",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_CookieName",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -268,22 +364,6 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "DetermineProviderCultureResult",
-          "Parameters": [
-            {
-              "Name": "httpContext",
-              "Type": "Microsoft.AspNetCore.Http.HttpContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -509,6 +589,22 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "DetermineProviderCultureResult",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_QueryStringKey",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -546,22 +642,6 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "DetermineProviderCultureResult",
-          "Parameters": [
-            {
-              "Name": "httpContext",
-              "Type": "Microsoft.AspNetCore.Http.HttpContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -716,6 +796,22 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "DetermineProviderCultureResult",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Options",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Builder.RequestLocalizationOptions",
@@ -732,22 +828,6 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "DetermineProviderCultureResult",
-          "Parameters": [
-            {
-              "Name": "httpContext",
-              "Type": "Microsoft.AspNetCore.Http.HttpContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
-          "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
           "Visibility": "Public",
           "GenericParameter": []
         },

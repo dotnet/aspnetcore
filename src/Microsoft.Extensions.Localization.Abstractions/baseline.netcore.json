@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Localization.Abstractions, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Localization.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Localization.IStringLocalizer",
@@ -324,21 +324,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "WithCulture",
-          "Parameters": [
-            {
-              "Name": "culture",
-              "Type": "System.Globalization.CultureInfo"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Localization.IStringLocalizer",
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Localization.IStringLocalizer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "get_Item",
           "Parameters": [
             {
@@ -383,6 +368,21 @@
           ],
           "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString>",
           "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Localization.IStringLocalizer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithCulture",
+          "Parameters": [
+            {
+              "Name": "culture",
+              "Type": "System.Globalization.CultureInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Localization.IStringLocalizer",
           "Virtual": true,
           "ImplementedInterface": "Microsoft.Extensions.Localization.IStringLocalizer",
           "Visibility": "Public",

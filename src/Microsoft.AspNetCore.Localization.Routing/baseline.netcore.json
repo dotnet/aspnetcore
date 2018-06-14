@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Localization.Routing, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Localization.Routing, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider",
@@ -8,6 +8,22 @@
       "BaseType": "Microsoft.AspNetCore.Localization.RequestCultureProvider",
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "DetermineProviderCultureResult",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_RouteDataStringKey",
@@ -47,22 +63,6 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "DetermineProviderCultureResult",
-          "Parameters": [
-            {
-              "Name": "httpContext",
-              "Type": "Microsoft.AspNetCore.Http.HttpContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
           "Visibility": "Public",
           "GenericParameter": []
         },
