@@ -244,6 +244,7 @@
     </ItemGroup>
 
     <Message Text="Executing code sign job $(JobName).%0A  @(_FilesPath->Count()) files%0A  @(_FilesToSign->Distinct()->Count()) unique files" Importance="High" />
+    <Message Text="Go grab a coffee. This is going to take a while..." Importance="High" Condition="@(_FilesToSign->Distinct()->Count()) > 300" />
 
     <Copy SourceFiles="@(_FilesToSign->Distinct()->'%(OriginalFilePath)')" DestinationFiles="%(_FilesToSign.Identity)" />
 
@@ -262,6 +263,8 @@
     <Exec
       Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-$(JobName).log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
+
+    <Message Text="Finished code sign job $(JobName)" Importance="High" />
 
     <Copy SourceFiles="@(_FilesToSign)" DestinationFolder="$(SignOutputDir)" Condition="'$(LocalBuild)'=='true'" />
 
