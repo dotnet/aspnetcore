@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "targetver.h"
-
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 #include <Windows.h>
@@ -25,18 +23,10 @@
 #include "dbgutil.h"
 #include "ahutil.h"
 #include "hashfn.h"
-#include "sttimer.h"
-#include "irequesthandler.h"
-#include "sttimer.h"
-#include "requesthandler.h"
-#include "iapplication.h"
-#include "application.h"
-#include "SRWLockWrapper.h"
-#include "fx_ver.h"
-#include "utility.h"
-#include "GlobalVersionUtility.h"
-#include "resources.h"
-#include "aspnetcore_msg.h"
-#include "hostfxr_utility.h"
-#include "hostfxroptions.h"
+#include "environmentvariablehash.h"
+#include "IOutputManager.h"
+#include "FileOutputManager.h"
+#include "PipeOutputManager.h"
+#include "NullOutputManager.h"
+#include "LoggingHelpers.h"
 
