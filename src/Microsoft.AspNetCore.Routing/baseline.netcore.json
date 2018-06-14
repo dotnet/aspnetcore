@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Routing, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Routing, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.MapRouteRouteBuilderExtensions",
@@ -969,6 +969,66 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "OnRouteMatched",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Routing.RouteContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnVirtualPathGenerated",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Routing.VirtualPathContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.VirtualPathData",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RouteAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Routing.RouteContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetVirtualPath",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Routing.VirtualPathContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.VirtualPathData",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Constraints",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IDictionary<System.String, Microsoft.AspNetCore.Routing.IRouteConstraint>",
@@ -1104,66 +1164,6 @@
           "ReturnType": "System.Void",
           "Virtual": true,
           "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "OnRouteMatched",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Routing.RouteContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "OnVirtualPathGenerated",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Routing.VirtualPathContext"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Routing.VirtualPathData",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "RouteAsync",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Routing.RouteContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetVirtualPath",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Routing.VirtualPathContext"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Routing.VirtualPathData",
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
-          "Visibility": "Public",
           "GenericParameter": []
         },
         {
@@ -1371,6 +1371,36 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "RouteAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Routing.RouteContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetVirtualPath",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Routing.VirtualPathContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.VirtualPathData",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Item",
           "Parameters": [
             {
@@ -1403,36 +1433,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouteCollection",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "RouteAsync",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Routing.RouteContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetVirtualPath",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Routing.VirtualPathContext"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Routing.VirtualPathData",
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouter",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2443,6 +2443,26 @@
             {
               "Name": "urlEncoder",
               "Type": "System.Text.Encodings.Web.UrlEncoder"
+            },
+            {
+              "Name": "objectPool",
+              "Type": "Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext>"
+            },
+            {
+              "Name": "constraintResolver",
+              "Type": "Microsoft.AspNetCore.Routing.IInlineConstraintResolver"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             },
             {
               "Name": "objectPool",
