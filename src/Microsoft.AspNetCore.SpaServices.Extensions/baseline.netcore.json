@@ -1,0 +1,825 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.SpaServices.Extensions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.SpaStaticFilesExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddSpaStaticFiles",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "configuration",
+              "Type": "System.Action<Microsoft.AspNetCore.SpaServices.StaticFiles.SpaStaticFilesOptions>",
+              "DefaultValue": "null"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseSpaStaticFiles",
+          "Parameters": [
+            {
+              "Name": "applicationBuilder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseSpaStaticFiles",
+          "Parameters": [
+            {
+              "Name": "applicationBuilder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Builder.StaticFileOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.SpaPrerenderingExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseSpaPrerendering",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "configuration",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.SpaPrerenderingOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.SpaPrerenderingOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BootModuleBuilder",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SpaServices.Prerendering.ISpaPrerendererBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BootModuleBuilder",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.SpaServices.Prerendering.ISpaPrerendererBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BootModulePath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BootModulePath",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExcludeUrls",
+          "Parameters": [],
+          "ReturnType": "System.String[]",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ExcludeUrls",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SupplyData",
+          "Parameters": [],
+          "ReturnType": "System.Action<Microsoft.AspNetCore.Http.HttpContext, System.Collections.Generic.IDictionary<System.String, System.Object>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SupplyData",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.HttpContext, System.Collections.Generic.IDictionary<System.String, System.Object>>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.SpaProxyingExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseProxyToSpaDevelopmentServer",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "baseUri",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseProxyToSpaDevelopmentServer",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "baseUri",
+              "Type": "System.Uri"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseProxyToSpaDevelopmentServer",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "baseUriTaskFactory",
+              "Type": "System.Func<System.Threading.Tasks.Task<System.Uri>>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.SpaApplicationBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseSpa",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "configuration",
+              "Type": "System.Action<Microsoft.AspNetCore.SpaServices.ISpaBuilder>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.ISpaBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationBuilder",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Options",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SpaServices.SpaOptions",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.SpaOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_DefaultPage",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.PathString",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DefaultPage",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_DefaultPageStaticFileOptions",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Builder.StaticFileOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DefaultPageStaticFileOptions",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Builder.StaticFileOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SourcePath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SourcePath",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StartupTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_StartupTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.StaticFiles.ISpaStaticFileProvider",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FileProvider",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileProviders.IFileProvider",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.StaticFiles.SpaStaticFilesOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_RootPath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RootPath",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer.ReactDevelopmentServerMiddlewareExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseReactDevelopmentServer",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "npmScript",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.Prerendering.ISpaPrerendererBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.AngularCli.AngularCliBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SpaServices.Prerendering.ISpaPrerendererBuilder"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SpaServices.Prerendering.ISpaPrerendererBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "npmScript",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SpaServices.AngularCli.AngularCliMiddlewareExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseAngularCliServer",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "npmScript",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.NodeServices.Util.EventedStreamReader+OnReceivedChunkHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.MulticastDelegate",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "chunk",
+              "Type": "System.ArraySegment<System.Char>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginInvoke",
+          "Parameters": [
+            {
+              "Name": "chunk",
+              "Type": "System.ArraySegment<System.Char>"
+            },
+            {
+              "Name": "callback",
+              "Type": "System.AsyncCallback"
+            },
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IAsyncResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EndInvoke",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "System.IAsyncResult"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.IntPtr"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.NodeServices.Util.EventedStreamReader+OnReceivedLineHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.MulticastDelegate",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "line",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginInvoke",
+          "Parameters": [
+            {
+              "Name": "line",
+              "Type": "System.String"
+            },
+            {
+              "Name": "callback",
+              "Type": "System.AsyncCallback"
+            },
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IAsyncResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EndInvoke",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "System.IAsyncResult"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.IntPtr"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.NodeServices.Util.EventedStreamReader+OnStreamClosedHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.MulticastDelegate",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginInvoke",
+          "Parameters": [
+            {
+              "Name": "callback",
+              "Type": "System.AsyncCallback"
+            },
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IAsyncResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EndInvoke",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "System.IAsyncResult"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.IntPtr"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
