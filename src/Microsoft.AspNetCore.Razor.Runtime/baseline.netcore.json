@@ -1,6 +1,737 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Razor.Runtime, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Razor.Runtime, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ChildContentRetrieved",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TagHelpers",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Output",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Context",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "tagHelper",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddHtmlAttribute",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "valueStyle",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddHtmlAttribute",
+          "Parameters": [
+            {
+              "Name": "attribute",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddTagHelperAttribute",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "valueStyle",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddTagHelperAttribute",
+          "Parameters": [
+            {
+              "Name": "attribute",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Reinitialize",
+          "Parameters": [
+            {
+              "Name": "tagName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "tagMode",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagMode"
+            },
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            },
+            {
+              "Name": "uniqueId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "executeChildContentAsync",
+              "Type": "System.Func<System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetOutputContentAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "tagName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "tagMode",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagMode"
+            },
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            },
+            {
+              "Name": "uniqueId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "executeChildContentAsync",
+              "Type": "System.Func<System.Threading.Tasks.Task>"
+            },
+            {
+              "Name": "startTagHelperWritingScope",
+              "Type": "System.Action<System.Text.Encodings.Web.HtmlEncoder>"
+            },
+            {
+              "Name": "endTagHelperWritingScope",
+              "Type": "System.Func<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "RunAsync",
+          "Parameters": [
+            {
+              "Name": "executionContext",
+              "Type": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Begin",
+          "Parameters": [
+            {
+              "Name": "tagName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "tagMode",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagMode"
+            },
+            {
+              "Name": "uniqueId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "executeChildContentAsync",
+              "Type": "System.Func<System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "End",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "startTagHelperWritingScope",
+              "Type": "System.Action<System.Text.Encodings.Web.HtmlEncoder>"
+            },
+            {
+              "Name": "endTagHelperWritingScope",
+              "Type": "System.Func<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.IRazorSourceChecksumMetadata",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Checksum",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ChecksumAlgorithm",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Identifier",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Identifier",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Kind",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Metadata",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<System.Object>",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Type",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Kind",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Identifier",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Type",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "kind",
+              "Type": "System.String"
+            },
+            {
+              "Name": "identifier",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetChecksumMetadata",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.Hosting.IRazorSourceChecksumMetadata>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemLoader",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "LoadItems",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateItem",
+          "Parameters": [
+            {
+              "Name": "attribute",
+              "Type": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemAttribute"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LoadAttributes",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemAttribute>",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Key",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ConfigurationName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configurationName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AssemblyName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExtensionName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "extensionName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "assemblyName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_LanguageVersion",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "languageVersion",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Razor.Hosting.IRazorSourceChecksumMetadata"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Checksum",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.Hosting.IRazorSourceChecksumMetadata",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ChecksumAlgorithm",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.Hosting.IRazorSourceChecksumMetadata",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Identifier",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.Hosting.IRazorSourceChecksumMetadata",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "checksumAlgorithm",
+              "Type": "System.String"
+            },
+            {
+              "Name": "checksum",
+              "Type": "System.String"
+            },
+            {
+              "Name": "identifier",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
     {
       "Name": "Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent",
       "Visibility": "Public",
@@ -8,6 +739,58 @@
       "BaseType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CopyTo",
+          "Parameters": [
+            {
+              "Name": "destination",
+              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MoveTo",
+          "Parameters": [
+            {
+              "Name": "destination",
+              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteTo",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_IsModified",
@@ -75,38 +858,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "CopyTo",
-          "Parameters": [
-            {
-              "Name": "destination",
-              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "MoveTo",
-          "Parameters": [
-            {
-              "Name": "destination",
-              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Clear",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
@@ -147,26 +898,6 @@
           "ReturnType": "System.String",
           "Virtual": true,
           "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteTo",
-          "Parameters": [
-            {
-              "Name": "writer",
-              "Type": "System.IO.TextWriter"
-            },
-            {
-              "Name": "encoder",
-              "Type": "System.Text.Encodings.Web.HtmlEncoder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -825,24 +1556,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "Process",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext"
-            },
-            {
-              "Name": "output",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "ProcessAsync",
           "Parameters": [
             {
@@ -857,6 +1570,24 @@
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Process",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext"
+            },
+            {
+              "Name": "output",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -878,6 +1609,26 @@
         "Microsoft.AspNetCore.Html.IHtmlContentContainer"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WriteTo",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_Name",
@@ -912,26 +1663,6 @@
             }
           ],
           "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteTo",
-          "Parameters": [
-            {
-              "Name": "writer",
-              "Type": "System.IO.TextWriter"
-            },
-            {
-              "Name": "encoder",
-              "Type": "System.Text.Encodings.Web.HtmlEncoder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1091,69 +1822,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "SetAttribute",
-          "Parameters": [
-            {
-              "Name": "name",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "System.Object"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetAttribute",
-          "Parameters": [
-            {
-              "Name": "attribute",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Add",
-          "Parameters": [
-            {
-              "Name": "name",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "System.Object"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Add",
-          "Parameters": [
-            {
-              "Name": "attribute",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Insert",
           "Parameters": [
             {
@@ -1169,22 +1837,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.IList<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Remove",
-          "Parameters": [
-            {
-              "Name": "attribute",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1206,14 +1858,17 @@
         },
         {
           "Kind": "Method",
-          "Name": "RemoveAll",
+          "Name": "Add",
           "Parameters": [
             {
-              "Name": "name",
-              "Type": "System.String"
+              "Name": "attribute",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
             }
           ],
-          "ReturnType": "System.Boolean",
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1225,6 +1880,82 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "attribute",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAttribute",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAttribute",
+          "Parameters": [
+            {
+              "Name": "attribute",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveAll",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1354,6 +2085,58 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "CopyTo",
+          "Parameters": [
+            {
+              "Name": "destination",
+              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MoveTo",
+          "Parameters": [
+            {
+              "Name": "destination",
+              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteTo",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_IsModified",
           "Parameters": [],
           "ReturnType": "System.Boolean",
@@ -1369,45 +2152,6 @@
           "ReturnType": "System.Boolean",
           "Virtual": true,
           "Abstract": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetHtmlContent",
-          "Parameters": [
-            {
-              "Name": "htmlContent",
-              "Type": "Microsoft.AspNetCore.Html.IHtmlContent"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetContent",
-          "Parameters": [
-            {
-              "Name": "unencoded",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetHtmlContent",
-          "Parameters": [
-            {
-              "Name": "encoded",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1458,6 +2202,90 @@
         },
         {
           "Kind": "Method",
+          "Name": "Clear",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Reinitialize",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetContent",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetContent",
+          "Parameters": [
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetHtmlContent",
+          "Parameters": [
+            {
+              "Name": "htmlContent",
+              "Type": "Microsoft.AspNetCore.Html.IHtmlContent"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetContent",
+          "Parameters": [
+            {
+              "Name": "unencoded",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetHtmlContent",
+          "Parameters": [
+            {
+              "Name": "encoded",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "AppendFormat",
           "Parameters": [
             {
@@ -1493,103 +2321,6 @@
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Clear",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Reinitialize",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CopyTo",
-          "Parameters": [
-            {
-              "Name": "destination",
-              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "MoveTo",
-          "Parameters": [
-            {
-              "Name": "destination",
-              "Type": "Microsoft.AspNetCore.Html.IHtmlContentBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContentContainer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetContent",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetContent",
-          "Parameters": [
-            {
-              "Name": "encoder",
-              "Type": "System.Text.Encodings.Web.HtmlEncoder"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteTo",
-          "Parameters": [
-            {
-              "Name": "writer",
-              "Type": "System.IO.TextWriter"
-            },
-            {
-              "Name": "encoder",
-              "Type": "System.Text.Encodings.Web.HtmlEncoder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1734,6 +2465,26 @@
         "Microsoft.AspNetCore.Html.IHtmlContentContainer"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WriteTo",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_TagName",
@@ -1922,26 +2673,6 @@
           "GenericParameter": []
         },
         {
-          "Kind": "Method",
-          "Name": "WriteTo",
-          "Parameters": [
-            {
-              "Name": "writer",
-              "Type": "System.IO.TextWriter"
-            },
-            {
-              "Name": "encoder",
-              "Type": "System.Text.Encodings.Web.HtmlEncoder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -1956,296 +2687,6 @@
             {
               "Name": "getChildContentAsync",
               "Type": "System.Func<System.Boolean, System.Text.Encodings.Web.HtmlEncoder, System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_ChildContentRetrieved",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Items",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_TagHelpers",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Output",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Context",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Add",
-          "Parameters": [
-            {
-              "Name": "tagHelper",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AddHtmlAttribute",
-          "Parameters": [
-            {
-              "Name": "name",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "System.Object"
-            },
-            {
-              "Name": "valueStyle",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AddHtmlAttribute",
-          "Parameters": [
-            {
-              "Name": "attribute",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AddTagHelperAttribute",
-          "Parameters": [
-            {
-              "Name": "name",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "System.Object"
-            },
-            {
-              "Name": "valueStyle",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AddTagHelperAttribute",
-          "Parameters": [
-            {
-              "Name": "attribute",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Reinitialize",
-          "Parameters": [
-            {
-              "Name": "tagName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "tagMode",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagMode"
-            },
-            {
-              "Name": "items",
-              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
-            },
-            {
-              "Name": "uniqueId",
-              "Type": "System.String"
-            },
-            {
-              "Name": "executeChildContentAsync",
-              "Type": "System.Func<System.Threading.Tasks.Task>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetOutputContentAsync",
-          "Parameters": [],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "tagName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "tagMode",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagMode"
-            },
-            {
-              "Name": "items",
-              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
-            },
-            {
-              "Name": "uniqueId",
-              "Type": "System.String"
-            },
-            {
-              "Name": "executeChildContentAsync",
-              "Type": "System.Func<System.Threading.Tasks.Task>"
-            },
-            {
-              "Name": "startTagHelperWritingScope",
-              "Type": "System.Action<System.Text.Encodings.Web.HtmlEncoder>"
-            },
-            {
-              "Name": "endTagHelperWritingScope",
-              "Type": "System.Func<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "RunAsync",
-          "Parameters": [
-            {
-              "Name": "executionContext",
-              "Type": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Begin",
-          "Parameters": [
-            {
-              "Name": "tagName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "tagMode",
-              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagMode"
-            },
-            {
-              "Name": "uniqueId",
-              "Type": "System.String"
-            },
-            {
-              "Name": "executeChildContentAsync",
-              "Type": "System.Func<System.Threading.Tasks.Task>"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "End",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "startTagHelperWritingScope",
-              "Type": "System.Action<System.Text.Encodings.Web.HtmlEncoder>"
-            },
-            {
-              "Name": "endTagHelperWritingScope",
-              "Type": "System.Func<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>"
             }
           ],
           "Visibility": "Public",
