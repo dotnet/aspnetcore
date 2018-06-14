@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Formatters.Xml, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Formatters.Xml, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DataMemberRequiredBindingMetadataProvider",
@@ -40,7 +40,9 @@
       "Visibility": "Public",
       "Kind": "Class",
       "BaseType": "Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy"
+      ],
       "Members": [
         {
           "Kind": "Method",
@@ -97,6 +99,16 @@
             }
           ],
           "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExceptionPolicy",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -208,6 +220,18 @@
             {
               "Name": "suppressInputFormatterBuffering",
               "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Mvc.MvcOptions"
             }
           ],
           "Visibility": "Public",
@@ -323,6 +347,28 @@
         },
         {
           "Kind": "Method",
+          "Name": "CreateXmlWriter",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext"
+            },
+            {
+              "Name": "writer",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "xmlWriterSettings",
+              "Type": "System.Xml.XmlWriterSettings"
+            }
+          ],
+          "ReturnType": "System.Xml.XmlWriter",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "WriteResponseBodyAsync",
           "Parameters": [
             {
@@ -366,8 +412,36 @@
           "Name": ".ctor",
           "Parameters": [
             {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
               "Name": "writerSettings",
               "Type": "System.Xml.XmlWriterSettings"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "writerSettings",
+              "Type": "System.Xml.XmlWriterSettings"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             }
           ],
           "Visibility": "Public",
@@ -381,7 +455,9 @@
       "Visibility": "Public",
       "Kind": "Class",
       "BaseType": "Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy"
+      ],
       "Members": [
         {
           "Kind": "Method",
@@ -417,6 +493,16 @@
           "Name": "get_XmlDictionaryReaderQuotas",
           "Parameters": [],
           "ReturnType": "System.Xml.XmlDictionaryReaderQuotas",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExceptionPolicy",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -532,6 +618,18 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Mvc.MvcOptions"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -622,6 +720,28 @@
         },
         {
           "Kind": "Method",
+          "Name": "CreateXmlWriter",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext"
+            },
+            {
+              "Name": "writer",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "xmlWriterSettings",
+              "Type": "System.Xml.XmlWriterSettings"
+            }
+          ],
+          "ReturnType": "System.Xml.XmlWriter",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "WriteResponseBodyAsync",
           "Parameters": [
             {
@@ -637,6 +757,28 @@
           "Virtual": true,
           "Override": true,
           "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Serialize",
+          "Parameters": [
+            {
+              "Name": "xmlSerializer",
+              "Type": "System.Xml.Serialization.XmlSerializer"
+            },
+            {
+              "Name": "xmlWriter",
+              "Type": "System.Xml.XmlWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
           "GenericParameter": []
         },
         {
@@ -665,8 +807,36 @@
           "Name": ".ctor",
           "Parameters": [
             {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
               "Name": "writerSettings",
               "Type": "System.Xml.XmlWriterSettings"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "writerSettings",
+              "Type": "System.Xml.XmlWriterSettings"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             }
           ],
           "Visibility": "Public",
@@ -754,17 +924,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Current",
-          "Parameters": [],
-          "ReturnType": "T0",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerator<T0>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Dispose",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -793,6 +952,17 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<T0>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1236,124 +1406,6 @@
           "ReturnType": "Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProvider",
           "Static": true,
           "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal.FormattingUtilities",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "GetDefaultXmlReaderQuotas",
-          "Parameters": [],
-          "ReturnType": "System.Xml.XmlDictionaryReaderQuotas",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetDefaultXmlWriterSettings",
-          "Parameters": [],
-          "ReturnType": "System.Xml.XmlWriterSettings",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "DefaultMaxDepth",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Static": true,
-          "ReadOnly": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "XsdDataContractExporter",
-          "Parameters": [],
-          "ReturnType": "System.Runtime.Serialization.XsdDataContractExporter",
-          "Static": true,
-          "ReadOnly": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal.MvcXmlDataContractSerializerMvcOptionsSetup",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Configure",
-          "Parameters": [
-            {
-              "Name": "options",
-              "Type": "Microsoft.AspNetCore.Mvc.MvcOptions"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal.MvcXmlSerializerMvcOptionsSetup",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Configure",
-          "Parameters": [
-            {
-              "Name": "options",
-              "Type": "Microsoft.AspNetCore.Mvc.MvcOptions"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
           "Visibility": "Public",
           "GenericParameter": []
         }

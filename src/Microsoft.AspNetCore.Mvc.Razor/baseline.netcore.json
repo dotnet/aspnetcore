@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Razor, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Razor, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.Razor.HelperResult",
@@ -535,6 +535,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "EnsureRenderedBodyOrSections",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.IRazorPage",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Context",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
@@ -665,17 +676,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "EnsureRenderedBodyOrSections",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.IRazorPage",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "BeginContext",
           "Parameters": [
             {
@@ -789,6 +789,68 @@
         "Microsoft.AspNetCore.Mvc.Razor.IRazorPage"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "EnsureRenderedBodyOrSections",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.IRazorPage",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DefineSection",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "section",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.RenderAsyncDelegate"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginContext",
+          "Parameters": [
+            {
+              "Name": "position",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "length",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "isLiteral",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EndContext",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_ViewContext",
@@ -1177,24 +1239,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "DefineSection",
-          "Parameters": [
-            {
-              "Name": "name",
-              "Type": "System.String"
-            },
-            {
-              "Name": "section",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.RenderAsyncDelegate"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Write",
           "Parameters": [
             {
@@ -1411,50 +1455,6 @@
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Html.HtmlString",
           "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "BeginContext",
-          "Parameters": [
-            {
-              "Name": "position",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "length",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "isLiteral",
-              "Type": "System.Boolean"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "EndContext",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "EnsureRenderedBodyOrSections",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.IRazorPage",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1732,6 +1732,54 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "FindView",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ActionContext"
+            },
+            {
+              "Name": "viewName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "isMainPage",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetView",
+          "Parameters": [
+            {
+              "Name": "executingFilePath",
+              "Type": "System.String"
+            },
+            {
+              "Name": "viewPath",
+              "Type": "System.String"
+            },
+            {
+              "Name": "isMainPage",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_ViewLookupCache",
           "Parameters": [],
           "ReturnType": "Microsoft.Extensions.Caching.Memory.IMemoryCache",
@@ -1798,54 +1846,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "FindView",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Mvc.ActionContext"
-            },
-            {
-              "Name": "viewName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "isMainPage",
-              "Type": "System.Boolean"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetView",
-          "Parameters": [
-            {
-              "Name": "executingFilePath",
-              "Type": "System.String"
-            },
-            {
-              "Name": "viewPath",
-              "Type": "System.String"
-            },
-            {
-              "Name": "isMainPage",
-              "Type": "System.Boolean"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "GetAbsolutePath",
           "Parameters": [
             {
@@ -1887,6 +1887,42 @@
             {
               "Name": "razorProject",
               "Type": "Microsoft.AspNetCore.Razor.Language.RazorProject"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "diagnosticSource",
+              "Type": "System.Diagnostics.DiagnosticSource"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pageFactory",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider"
+            },
+            {
+              "Name": "pageActivator",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator"
+            },
+            {
+              "Name": "htmlEncoder",
+              "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            },
+            {
+              "Name": "optionsAccessor",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>"
+            },
+            {
+              "Name": "razorFileSystem",
+              "Type": "Microsoft.AspNetCore.Razor.Language.RazorProjectFileSystem"
             },
             {
               "Name": "loggerFactory",
@@ -1954,6 +1990,14 @@
         {
           "Kind": "Method",
           "Name": "get_PageViewLocationFormats",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AreaPageViewLocationFormats",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IList<System.String>",
           "Visibility": "Public",
@@ -2297,6 +2341,32 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentPropertyActivator",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Activate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "tagHelperComponent",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.TagHelperComponentTagHelper",
       "Visibility": "Public",
       "Kind": "Class",
@@ -2337,6 +2407,48 @@
           "Virtual": true,
           "Override": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PropertyActivator",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentPropertyActivator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PropertyActivator",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentPropertyActivator"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ViewContext",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ViewContext",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            }
+          ],
+          "ReturnType": "System.Void",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2596,1500 +2708,6 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.CSharpCompiler",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_ParseOptions",
-          "Parameters": [],
-          "ReturnType": "Microsoft.CodeAnalysis.CSharp.CSharpParseOptions",
-          "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_CSharpCompilationOptions",
-          "Parameters": [],
-          "ReturnType": "Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions",
-          "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_EmitOptions",
-          "Parameters": [],
-          "ReturnType": "Microsoft.CodeAnalysis.Emit.EmitOptions",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CreateSyntaxTree",
-          "Parameters": [
-            {
-              "Name": "sourceText",
-              "Type": "Microsoft.CodeAnalysis.Text.SourceText"
-            }
-          ],
-          "ReturnType": "Microsoft.CodeAnalysis.SyntaxTree",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CreateCompilation",
-          "Parameters": [
-            {
-              "Name": "assemblyName",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.CodeAnalysis.CSharp.CSharpCompilation",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetDependencyContextCompilationOptions",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.DependencyModel.CompilationOptions",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "manager",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorReferenceManager"
-            },
-            {
-              "Name": "hostingEnvironment",
-              "Type": "Microsoft.AspNetCore.Hosting.IHostingEnvironment"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.DefaultRazorPageFactoryProvider",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "CreateFactory",
-          "Parameters": [
-            {
-              "Name": "relativePath",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "viewCompilerProvider",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.DefaultRazorReferenceManager",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorReferenceManager",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_CompilationReferences",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "partManager",
-              "Type": "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartManager"
-            },
-            {
-              "Name": "optionsAccessor",
-              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.DefaultRazorViewEngineFileProviderAccessor",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.Internal.IRazorViewEngineFileProviderAccessor"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_FileProvider",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.FileProviders.IFileProvider",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.Internal.IRazorViewEngineFileProviderAccessor",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "optionsAccessor",
-              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.DefaultTagHelperActivator",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Create<T0>",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
-            }
-          ],
-          "ReturnType": "T0",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator",
-          "Visibility": "Public",
-          "GenericParameter": [
-            {
-              "ParameterName": "TTagHelper",
-              "ParameterPosition": 0,
-              "BaseTypeOrInterfaces": [
-                "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper"
-              ]
-            }
-          ]
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "typeActivatorCache",
-              "Type": "Microsoft.AspNetCore.Mvc.Internal.ITypeActivatorCache"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.DefaultTagHelperFactory",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.ITagHelperFactory"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "CreateTagHelper<T0>",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
-            }
-          ],
-          "ReturnType": "T0",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.ITagHelperFactory",
-          "Visibility": "Public",
-          "GenericParameter": [
-            {
-              "ParameterName": "TTagHelper",
-              "ParameterPosition": 0,
-              "BaseTypeOrInterfaces": [
-                "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper"
-              ]
-            }
-          ]
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "activator",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.ExpressionRewriter",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.CodeAnalysis.CSharp.CSharpSyntaxRewriter",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Rewrite",
-          "Parameters": [
-            {
-              "Name": "compilation",
-              "Type": "Microsoft.CodeAnalysis.CSharp.CSharpCompilation"
-            }
-          ],
-          "ReturnType": "Microsoft.CodeAnalysis.CSharp.CSharpCompilation",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "VisitClassDeclaration",
-          "Parameters": [
-            {
-              "Name": "node",
-              "Type": "Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax"
-            }
-          ],
-          "ReturnType": "Microsoft.CodeAnalysis.SyntaxNode",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "VisitSimpleLambdaExpression",
-          "Parameters": [
-            {
-              "Name": "node",
-              "Type": "Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax"
-            }
-          ],
-          "ReturnType": "Microsoft.CodeAnalysis.SyntaxNode",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "semanticModel",
-              "Type": "Microsoft.CodeAnalysis.SemanticModel"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.FileProviderRazorProject",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Razor.Language.RazorProject",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "GetItem",
-          "Parameters": [
-            {
-              "Name": "path",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Razor.Language.RazorProjectItem",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "EnumerateItems",
-          "Parameters": [
-            {
-              "Name": "path",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorProjectItem>",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "accessor",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Internal.IRazorViewEngineFileProviderAccessor"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.FileProviderRazorProjectItem",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Razor.Language.RazorProjectItem",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_FileInfo",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.FileProviders.IFileInfo",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_BasePath",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_FilePath",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Exists",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_PhysicalPath",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Read",
-          "Parameters": [],
-          "ReturnType": "System.IO.Stream",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "fileInfo",
-              "Type": "Microsoft.Extensions.FileProviders.IFileInfo"
-            },
-            {
-              "Name": "basePath",
-              "Type": "System.String"
-            },
-            {
-              "Name": "path",
-              "Type": "System.String"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.IRazorViewEngineFileProviderAccessor",
-      "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_FileProvider",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.FileProviders.IFileProvider",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.LazyMetadataReferenceFeature",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.CodeAnalysis.Razor.IMetadataReferenceFeature"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_References",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.CodeAnalysis.Razor.IMetadataReferenceFeature",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Engine",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Razor.Language.RazorEngine",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.Language.IRazorEngineFeature",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_Engine",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "Microsoft.AspNetCore.Razor.Language.RazorEngine"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.Language.IRazorEngineFeature",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "referenceManager",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorReferenceManager"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.MvcRazorDiagnosticSourceExtensions",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "BeforeViewPage",
-          "Parameters": [
-            {
-              "Name": "diagnosticSource",
-              "Type": "System.Diagnostics.DiagnosticSource"
-            },
-            {
-              "Name": "page",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.IRazorPage"
-            },
-            {
-              "Name": "viewContext",
-              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AfterViewPage",
-          "Parameters": [
-            {
-              "Name": "diagnosticSource",
-              "Type": "System.Diagnostics.DiagnosticSource"
-            },
-            {
-              "Name": "page",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.IRazorPage"
-            },
-            {
-              "Name": "viewContext",
-              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.MvcRazorLoggerExtensions",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "RazorFileToCodeCompilationStart",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "filePath",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "RazorFileToCodeCompilationEnd",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "filePath",
-              "Type": "System.String"
-            },
-            {
-              "Name": "startTimestamp",
-              "Type": "System.Int64"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "ViewLookupCacheMiss",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "viewName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "controllerName",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "ViewLookupCacheHit",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "viewName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "controllerName",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "PrecompiledViewFound",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "relativePath",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GeneratedCodeToAssemblyCompilationStart",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "filePath",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "TagHelperComponentInitialized",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "componentName",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "TagHelperComponentProcessed",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "componentName",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GeneratedCodeToAssemblyCompilationEnd",
-          "Parameters": [
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            },
-            {
-              "Name": "filePath",
-              "Type": "System.String"
-            },
-            {
-              "Name": "startTimestamp",
-              "Type": "System.Int64"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.MvcRazorMvcViewOptionsSetup",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Configure",
-          "Parameters": [
-            {
-              "Name": "options",
-              "Type": "Microsoft.AspNetCore.Mvc.MvcViewOptions"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "razorViewEngine",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "System.Attribute",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorPagePropertyActivator",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Activate",
-          "Parameters": [
-            {
-              "Name": "page",
-              "Type": "System.Object"
-            },
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "pageType",
-              "Type": "System.Type"
-            },
-            {
-              "Name": "modelType",
-              "Type": "System.Type"
-            },
-            {
-              "Name": "metadataProvider",
-              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider"
-            },
-            {
-              "Name": "propertyValueAccessors",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorPagePropertyActivator+PropertyValueAccessors"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorViewCompiler",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompiler"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "CompileAsync",
-          "Parameters": [
-            {
-              "Name": "relativePath",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompiler",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CompileAndEmit",
-          "Parameters": [
-            {
-              "Name": "relativePath",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "fileProvider",
-              "Type": "Microsoft.Extensions.FileProviders.IFileProvider"
-            },
-            {
-              "Name": "templateEngine",
-              "Type": "Microsoft.AspNetCore.Razor.Language.RazorTemplateEngine"
-            },
-            {
-              "Name": "csharpCompiler",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Internal.CSharpCompiler"
-            },
-            {
-              "Name": "compilationCallback",
-              "Type": "System.Action<Microsoft.AspNetCore.Mvc.Razor.Compilation.RoslynCompilationContext>"
-            },
-            {
-              "Name": "precompiledViews",
-              "Type": "System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor>"
-            },
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorViewCompilerProvider",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "GetCompiler",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompiler",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "applicationPartManager",
-              "Type": "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartManager"
-            },
-            {
-              "Name": "razorTemplateEngine",
-              "Type": "Microsoft.AspNetCore.Razor.Language.RazorTemplateEngine"
-            },
-            {
-              "Name": "fileProviderAccessor",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Internal.IRazorViewEngineFileProviderAccessor"
-            },
-            {
-              "Name": "csharpCompiler",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Internal.CSharpCompiler"
-            },
-            {
-              "Name": "viewEngineOptionsAccessor",
-              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>"
-            },
-            {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorViewEngineOptionsSetup",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Configure",
-          "Parameters": [
-            {
-              "Name": "options",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "hostingEnvironment",
-              "Type": "Microsoft.AspNetCore.Hosting.IHostingEnvironment"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.ServiceBasedTagHelperActivator",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Create<T0>",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
-            }
-          ],
-          "ReturnType": "T0",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator",
-          "Visibility": "Public",
-          "GenericParameter": [
-            {
-              "ParameterName": "TTagHelper",
-              "ParameterPosition": 0,
-              "BaseTypeOrInterfaces": [
-                "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper"
-              ]
-            }
-          ]
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.TagHelperComponentManager",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentManager"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Components",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentManager",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "tagHelperComponents",
-              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.TagHelpersAsServices",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "AddTagHelpersAsServices",
-          "Parameters": [
-            {
-              "Name": "manager",
-              "Type": "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartManager"
-            },
-            {
-              "Name": "services",
-              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheItem",
-      "Visibility": "Public",
-      "Kind": "Struct",
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Location",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_PageFactory",
-          "Parameters": [],
-          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "razorPageFactory",
-              "Type": "System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage>"
-            },
-            {
-              "Name": "location",
-              "Type": "System.String"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheKey",
-      "Visibility": "Public",
-      "Kind": "Struct",
-      "Sealed": true,
-      "ImplementedInterfaces": [
-        "System.IEquatable<Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheKey>"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_ViewName",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_ControllerName",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_AreaName",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_PageName",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_IsMainPage",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_ViewLocationExpanderValues",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Equals",
-          "Parameters": [
-            {
-              "Name": "y",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheKey"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IEquatable<Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheKey>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Equals",
-          "Parameters": [
-            {
-              "Name": "obj",
-              "Type": "System.Object"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetHashCode",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "viewName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "isMainPage",
-              "Type": "System.Boolean"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "viewName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "controllerName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "areaName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "pageName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "isMainPage",
-              "Type": "System.Boolean"
-            },
-            {
-              "Name": "values",
-              "Type": "System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheResult",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_ViewEntry",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheItem",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_ViewStartEntries",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheItem>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_SearchedLocations",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerable<System.String>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Success",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "view",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheItem"
-            },
-            {
-              "Name": "viewStarts",
-              "Type": "System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Razor.Internal.ViewLocationCacheItem>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "searchedLocations",
-              "Type": "System.Collections.Generic.IEnumerable<System.String>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.ViewPath",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "NormalizePath",
-          "Parameters": [
-            {
-              "Name": "path",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
       "Name": "Microsoft.AspNetCore.Mvc.Razor.Compilation.CompilationFailedException",
       "Visibility": "Public",
       "Kind": "Class",
@@ -4215,9 +2833,54 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Item",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Type",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem"
+            },
+            {
+              "Name": "attribute",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -4523,6 +3186,111 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartFactory",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetDefaultApplicationParts",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetApplicationParts",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyPart",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ApplicationParts.IRazorCompiledItemProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Assembly",
+          "Parameters": [],
+          "ReturnType": "System.Reflection.Assembly",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ApplicationParts.IRazorCompiledItemProvider",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CompiledItems",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.Extensions.DependencyInjection.MvcRazorMvcBuilderExtensions",
       "Visibility": "Public",
       "Kind": "Class",
@@ -4679,127 +3447,6 @@
               ]
             }
           ]
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorPagePropertyActivator+PropertyValueAccessors",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_UrlHelperAccessor",
-          "Parameters": [],
-          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_UrlHelperAccessor",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_JsonHelperAccessor",
-          "Parameters": [],
-          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_JsonHelperAccessor",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_DiagnosticSourceAccessor",
-          "Parameters": [],
-          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_DiagnosticSourceAccessor",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_HtmlEncoderAccessor",
-          "Parameters": [],
-          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_HtmlEncoderAccessor",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_ModelExpressionProviderAccessor",
-          "Parameters": [],
-          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_ModelExpressionProviderAccessor",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, System.Object>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
         }
       ],
       "GenericParameters": []
