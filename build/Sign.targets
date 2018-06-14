@@ -67,7 +67,7 @@
 
   <Target Name="SignFiles">
     <ItemGroup>
-      <_AspNetCoreBinaries Include="
+      <AspNetCoreBinaries Include="
         @(PackageBinaries);
         @(VSIXBinaries);
         @(OobArchiveBinaries);
@@ -75,17 +75,13 @@
         @(SharedFxBinaries);" />
     </ItemGroup>
 
-    <RepoTasks.CreateBatches Items="@(_AspNetCoreBinaries)" MaxBatchSize="200">
-      <Output TaskParameter="Items" ItemName="AspNetCoreBinaries" />
-    </RepoTasks.CreateBatches>
-
     <ItemGroup>
       <_SignProject Remove="@(_SignProject)" />
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition ="'@(AspNetCoreBinaries)' != ''">
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(MicrosoftAuthentiCodeSha2);
-          JobName=AspNetCoreBinaries-Job%(AspNetCoreBinaries.Batch);
+          JobName=AspNetCoreBinaries;
           Files=@(AspNetCoreBinaries)
         </AdditionalProperties>
       </_SignProject>
@@ -230,24 +226,31 @@
     <PropertyGroup>
       <SigningStagingDir>$(IntermediateDir)u\$(JobName)\</SigningStagingDir>
       <SignOutputDir>$(IntermediateDir)s\$(JobName)\</SignOutputDir>
-      <_ManifestOutputPath>$(IntermediateDir)esrp-$(JobName)-sign.json</_ManifestOutputPath>
+      <_ManifestOutputPath>$(IntermediateDir)esrpconfig\$(JobName)\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <_FilesPaths Include="$(Files)" />
-      <_FilesToSign Include="$(SigningStagingDir)$([System.Guid]::NewGuid())%(_FilesPaths.Extension)">
-        <OriginalFilePath>%(_FilesPaths.Identity)</OriginalFilePath>
+      <_FilesPath Include="$(Files)" />
+    </ItemGroup>
+
+    <RepoTasks.GetFileHash Files="@(_FilesPath)">
+      <Output TaskParameter="Items" ItemName="_FilesWithHash"/>
+    </RepoTasks.GetFileHash>
+
+    <ItemGroup>
+      <_FilesToSign Include="$(SigningStagingDir)%(_FilesWithHash.FileHash)%(_FilesWithHash.Extension)">
+        <OriginalFilePath>%(_FilesWithHash.Identity)</OriginalFilePath>
       </_FilesToSign>
     </ItemGroup>
 
-    <Message Text="Executing code sign job $(JobName)..." Importance="High" />
+    <Message Text="Executing code sign job $(JobName).%0A  @(_FilesPath->Count()) files%0A  @(_FilesToSign->Distinct()->Count()) unique files" Importance="High" />
 
-    <Copy SourceFiles="@(_FilesToSign->'%(OriginalFilePath)')" DestinationFiles="@(_FilesToSign)" />
+    <Copy SourceFiles="@(_FilesToSign->Distinct()->'%(OriginalFilePath)')" DestinationFiles="%(_FilesToSign.Identity)" />
 
     <Microsoft.Build.OOB.ESRP.CreateSignManifests
        ApplicationId="$(ESRPApplicationId)"
        DestinationRootDirectory="$(SignOutputDir)"
-       Files="@(_FilesToSign)"
+       Files="@(_FilesToSign->Distinct())"
        ManifestOutputPath="$(_ManifestOutputPath)"
        KeyCodes="$(Certificate)">
       <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
@@ -260,7 +263,9 @@
       Command="$(ESRPClientToolPath) sign -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-$(JobName).log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
-    <Copy SourceFiles="@(_FilesToSign->'$(SignOutputDir)%(FileName)%(Extension)')" DestinationFiles="@(_FilesToSign->'%(OriginalFilePath)')" />
+    <Copy SourceFiles="@(_FilesToSign)" DestinationFolder="$(SignOutputDir)" Condition="'$(LocalBuild)'=='true'" />
+
+    <Copy SourceFiles="$(SignOutputDir)%(_FilesToSign.FileName)%(Extension)" DestinationFiles="%(OriginalFilePath)" />
   </Target>
 
   <!-- Repacks aspnetcore shared framework -->
