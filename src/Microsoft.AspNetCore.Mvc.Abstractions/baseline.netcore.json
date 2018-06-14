@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Abstractions, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.ActionContext",
@@ -757,6 +757,37 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "GetBindingInfo",
+          "Parameters": [
+            {
+              "Name": "attributes",
+              "Type": "System.Collections.Generic.IEnumerable<System.Object>"
+            },
+            {
+              "Name": "modelMetadata",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryApplyBindingInfo",
+          "Parameters": [
+            {
+              "Name": "modelMetadata",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -1390,6 +1421,24 @@
         },
         {
           "Kind": "Method",
+          "Name": "CreateBinder",
+          "Parameters": [
+            {
+              "Name": "metadata",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata"
+            },
+            {
+              "Name": "bindingInfo",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_BindingInfo",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo",
@@ -1415,6 +1464,15 @@
           "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider",
           "Virtual": true,
           "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Services",
+          "Parameters": [],
+          "ReturnType": "System.IServiceProvider",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2126,6 +2184,22 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ParameterName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_PropertyName",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -2670,6 +2744,72 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetMetadataForProperties",
+          "Parameters": [
+            {
+              "Name": "modelType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata>",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetMetadataForType",
+          "Parameters": [
+            {
+              "Name": "modelType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetMetadataForParameter",
+          "Parameters": [
+            {
+              "Name": "parameter",
+              "Type": "System.Reflection.ParameterInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelPropertyCollection",
       "Visibility": "Public",
       "Kind": "Class",
@@ -2714,6 +2854,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Root",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry",
@@ -2754,17 +2905,6 @@
           "Name": "get_ErrorCount",
           "Parameters": [],
           "ReturnType": "System.Int32",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Count",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<System.String, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2813,6 +2953,23 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.IReadOnlyDictionary<System.String, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryAddModelException",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Boolean",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -4185,6 +4342,118 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsReadOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clear",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Contains",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CopyTo",
+          "Parameters": [
+            {
+              "Name": "array",
+              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>[]"
+            },
+            {
+              "Name": "arrayIndex",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Item",
           "Parameters": [
             {
@@ -4221,28 +4490,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_Count",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_IsReadOnly",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "get_Keys",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.ICollection<System.Object>",
@@ -4268,22 +4515,6 @@
           "Name": "Add",
           "Parameters": [
             {
-              "Name": "item",
-              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Add",
-          "Parameters": [
-            {
               "Name": "key",
               "Type": "System.Object"
             },
@@ -4301,33 +4532,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "Clear",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Contains",
-          "Parameters": [
-            {
-              "Name": "item",
-              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "ContainsKey",
           "Parameters": [
             {
@@ -4339,53 +4543,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.IDictionary<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CopyTo",
-          "Parameters": [
-            {
-              "Name": "array",
-              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>[]"
-            },
-            {
-              "Name": "arrayIndex",
-              "Type": "System.Int32"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetEnumerator",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Remove",
-          "Parameters": [
-            {
-              "Name": "item",
-              "Type": "System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry>>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -4777,6 +4934,20 @@
         },
         {
           "Kind": "Method",
+          "Name": "ForParameter",
+          "Parameters": [
+            {
+              "Name": "parameter",
+              "Type": "System.Reflection.ParameterInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_ContainerType",
           "Parameters": [],
           "ReturnType": "System.Type",
@@ -4804,6 +4975,14 @@
           "Name": "get_Name",
           "Parameters": [],
           "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ParameterInfo",
+          "Parameters": [],
+          "ReturnType": "System.Reflection.ParameterInfo",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -4871,6 +5050,13 @@
           "Parameters": [],
           "GenericParameter": [],
           "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Parameter",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
         }
       ],
       "GenericParameters": []
@@ -4966,6 +5152,23 @@
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ExceptionPolicy",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy",
           "GenericParameter": []
         }
       ],
@@ -5092,6 +5295,75 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Formatters.InputFormatterException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Exception",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "innerException",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "AllExceptions",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MalformedInputExceptions",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
         }
       ],
       "GenericParameters": []
@@ -5910,6 +6182,43 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "IsEffectivePolicy<T0>",
+          "Parameters": [
+            {
+              "Name": "policy",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TMetadata",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindEffectivePolicy<T0>",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TMetadata",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata"
+              ]
+            }
+          ]
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -6181,6 +6490,17 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.Filters.IAlwaysRunResultFilter",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Filters.IResultFilter"
+      ],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.Filters.IAsyncActionFilter",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -6206,6 +6526,17 @@
           "GenericParameter": []
         }
       ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Filters.IAsyncAlwaysRunResultFilter",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Filters.IAsyncResultFilter"
+      ],
+      "Members": [],
       "GenericParameters": []
     },
     {
@@ -7740,6 +8071,27 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_IsDefaultResponse",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IsDefaultResponse",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -8733,17 +9085,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Current",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Dispose",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -8772,6 +9113,17 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.KeyValuePair<System.String, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -8837,17 +9189,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Current",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerator<System.String>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Dispose",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -8876,6 +9217,17 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<System.String>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -8941,17 +9293,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Current",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Dispose",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -8980,6 +9321,17 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry>",
           "Visibility": "Public",
           "GenericParameter": []
         },

@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Localization, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Localization, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.Localization.HtmlLocalizer",
@@ -769,22 +769,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "WithCulture",
-          "Parameters": [
-            {
-              "Name": "culture",
-              "Type": "System.Globalization.CultureInfo"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "GetAllStrings",
           "Parameters": [
             {
@@ -793,6 +777,22 @@
             }
           ],
           "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithCulture",
+          "Parameters": [
+            {
+              "Name": "culture",
+              "Type": "System.Globalization.CultureInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer",
@@ -828,62 +828,6 @@
               "Type": "Microsoft.AspNetCore.Hosting.IHostingEnvironment"
             }
           ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.Localization.Internal.MvcLocalizationServices",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "AddLocalizationServices",
-          "Parameters": [
-            {
-              "Name": "services",
-              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
-            },
-            {
-              "Name": "format",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
-            },
-            {
-              "Name": "setupAction",
-              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AddMvcLocalizationServices",
-          "Parameters": [
-            {
-              "Name": "services",
-              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
-            },
-            {
-              "Name": "format",
-              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
-            },
-            {
-              "Name": "setupAction",
-              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -974,6 +918,174 @@
           "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -1055,6 +1167,174 @@
             {
               "Name": "setupAction",
               "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvcLocalization",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "localizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.Extensions.Localization.LocalizationOptions>"
+            },
+            {
+              "Name": "format",
+              "Type": "Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat"
+            },
+            {
+              "Name": "dataAnnotationsLocalizationOptionsSetupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
             }
           ],
           "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",

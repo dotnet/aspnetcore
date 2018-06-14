@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.WebApiCompatShim, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.WebApiCompatShim, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "System.Net.Http.HttpRequestMessageExtensions",
@@ -388,483 +388,6 @@
               "BaseTypeOrInterfaces": []
             }
           ]
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "System.Net.Http.Formatting.ContentNegotiationResult",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Formatter",
-          "Parameters": [],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatter",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_Formatter",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_MediaType",
-          "Parameters": [],
-          "ReturnType": "System.Net.Http.Headers.MediaTypeHeaderValue",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_MediaType",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "formatter",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
-            },
-            {
-              "Name": "mediaType",
-              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "System.Net.Http.Formatting.DefaultContentNegotiator",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "System.Net.Http.Formatting.IContentNegotiator"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_ExcludeMatchOnTypeOnly",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Negotiate",
-          "Parameters": [
-            {
-              "Name": "type",
-              "Type": "System.Type"
-            },
-            {
-              "Name": "request",
-              "Type": "System.Net.Http.HttpRequestMessage"
-            },
-            {
-              "Name": "formatters",
-              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
-            }
-          ],
-          "ReturnType": "System.Net.Http.Formatting.ContentNegotiationResult",
-          "Virtual": true,
-          "ImplementedInterface": "System.Net.Http.Formatting.IContentNegotiator",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "ComputeFormatterMatches",
-          "Parameters": [
-            {
-              "Name": "type",
-              "Type": "System.Type"
-            },
-            {
-              "Name": "request",
-              "Type": "System.Net.Http.HttpRequestMessage"
-            },
-            {
-              "Name": "formatters",
-              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
-            }
-          ],
-          "ReturnType": "System.Collections.ObjectModel.Collection<System.Net.Http.Formatting.MediaTypeFormatterMatch>",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SelectResponseMediaTypeFormatter",
-          "Parameters": [
-            {
-              "Name": "matches",
-              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Formatting.MediaTypeFormatterMatch>"
-            }
-          ],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SelectResponseCharacterEncoding",
-          "Parameters": [
-            {
-              "Name": "request",
-              "Type": "System.Net.Http.HttpRequestMessage"
-            },
-            {
-              "Name": "formatter",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
-            }
-          ],
-          "ReturnType": "System.Text.Encoding",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "MatchAcceptHeader",
-          "Parameters": [
-            {
-              "Name": "sortedAcceptValues",
-              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
-            },
-            {
-              "Name": "formatter",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
-            }
-          ],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "MatchRequestMediaType",
-          "Parameters": [
-            {
-              "Name": "request",
-              "Type": "System.Net.Http.HttpRequestMessage"
-            },
-            {
-              "Name": "formatter",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
-            }
-          ],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "ShouldMatchOnType",
-          "Parameters": [
-            {
-              "Name": "sortedAcceptValues",
-              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "MatchType",
-          "Parameters": [
-            {
-              "Name": "type",
-              "Type": "System.Type"
-            },
-            {
-              "Name": "formatter",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
-            }
-          ],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SortMediaTypeWithQualityHeaderValuesByQFactor",
-          "Parameters": [
-            {
-              "Name": "headerValues",
-              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
-            }
-          ],
-          "ReturnType": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SortStringWithQualityHeaderValuesByQFactor",
-          "Parameters": [
-            {
-              "Name": "headerValues",
-              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Headers.StringWithQualityHeaderValue>"
-            }
-          ],
-          "ReturnType": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.StringWithQualityHeaderValue>",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "UpdateBestMatch",
-          "Parameters": [
-            {
-              "Name": "current",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatch"
-            },
-            {
-              "Name": "potentialReplacement",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatch"
-            }
-          ],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "excludeMatchOnTypeOnly",
-              "Type": "System.Boolean"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "System.Net.Http.Formatting.FormDataCollection",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "GetEnumerator",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "query",
-              "Type": "System.String"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "System.Net.Http.Formatting.IContentNegotiator",
-      "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Negotiate",
-          "Parameters": [
-            {
-              "Name": "type",
-              "Type": "System.Type"
-            },
-            {
-              "Name": "request",
-              "Type": "System.Net.Http.HttpRequestMessage"
-            },
-            {
-              "Name": "formatters",
-              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
-            }
-          ],
-          "ReturnType": "System.Net.Http.Formatting.ContentNegotiationResult",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Formatter",
-          "Parameters": [],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatter",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_MediaType",
-          "Parameters": [],
-          "ReturnType": "System.Net.Http.Headers.MediaTypeHeaderValue",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Quality",
-          "Parameters": [],
-          "ReturnType": "System.Double",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Ranking",
-          "Parameters": [],
-          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "formatter",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
-            },
-            {
-              "Name": "mediaType",
-              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
-            },
-            {
-              "Name": "quality",
-              "Type": "System.Nullable<System.Double>"
-            },
-            {
-              "Name": "ranking",
-              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking",
-      "Visibility": "Public",
-      "Kind": "Enumeration",
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Field",
-          "Name": "None",
-          "Parameters": [],
-          "GenericParameter": [],
-          "Literal": "0"
-        },
-        {
-          "Kind": "Field",
-          "Name": "MatchOnCanWriteType",
-          "Parameters": [],
-          "GenericParameter": [],
-          "Literal": "1"
-        },
-        {
-          "Kind": "Field",
-          "Name": "MatchOnRequestAcceptHeaderLiteral",
-          "Parameters": [],
-          "GenericParameter": [],
-          "Literal": "2"
-        },
-        {
-          "Kind": "Field",
-          "Name": "MatchOnRequestAcceptHeaderSubtypeMediaRange",
-          "Parameters": [],
-          "GenericParameter": [],
-          "Literal": "3"
-        },
-        {
-          "Kind": "Field",
-          "Name": "MatchOnRequestAcceptHeaderAllMediaRange",
-          "Parameters": [],
-          "GenericParameter": [],
-          "Literal": "4"
-        },
-        {
-          "Kind": "Field",
-          "Name": "MatchOnRequestMediaType",
-          "Parameters": [],
-          "GenericParameter": [],
-          "Literal": "5"
         }
       ],
       "GenericParameters": []
@@ -1436,14 +959,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Message",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "ExecuteResultAsync",
           "Parameters": [
             {
@@ -1455,6 +970,14 @@
           "Virtual": true,
           "Override": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Message",
+          "Parameters": [],
+          "ReturnType": "System.String",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1499,22 +1022,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Exception",
-          "Parameters": [],
-          "ReturnType": "System.Exception",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_IncludeErrorDetail",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "ExecuteResultAsync",
           "Parameters": [
             {
@@ -1526,6 +1033,22 @@
           "Virtual": true,
           "Override": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Exception",
+          "Parameters": [],
+          "ReturnType": "System.Exception",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IncludeErrorDetail",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1922,22 +1445,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_ModelState",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_IncludeErrorDetail",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "ExecuteResultAsync",
           "Parameters": [
             {
@@ -1949,6 +1456,22 @@
           "Virtual": true,
           "Override": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ModelState",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IncludeErrorDetail",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1980,14 +1503,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Content",
-          "Parameters": [],
-          "ReturnType": "T0",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "ExecuteResultAsync",
           "Parameters": [
             {
@@ -1999,6 +1514,14 @@
           "Virtual": true,
           "Override": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Content",
+          "Parameters": [],
+          "ReturnType": "T0",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -3062,6 +2585,579 @@
           "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.ContentNegotiationResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Formatter",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Formatter",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MediaType",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Headers.MediaTypeHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MediaType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.DefaultContentNegotiator",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Net.Http.Formatting.IContentNegotiator"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ExcludeMatchOnTypeOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Negotiate",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatters",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.ContentNegotiationResult",
+          "Virtual": true,
+          "ImplementedInterface": "System.Net.Http.Formatting.IContentNegotiator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ComputeFormatterMatches",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatters",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
+            }
+          ],
+          "ReturnType": "System.Collections.ObjectModel.Collection<System.Net.Http.Formatting.MediaTypeFormatterMatch>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SelectResponseMediaTypeFormatter",
+          "Parameters": [
+            {
+              "Name": "matches",
+              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Formatting.MediaTypeFormatterMatch>"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SelectResponseCharacterEncoding",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Text.Encoding",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchMediaTypeMapping",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchAcceptHeader",
+          "Parameters": [
+            {
+              "Name": "sortedAcceptValues",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchRequestMediaType",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ShouldMatchOnType",
+          "Parameters": [
+            {
+              "Name": "sortedAcceptValues",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchType",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SortMediaTypeWithQualityHeaderValuesByQFactor",
+          "Parameters": [
+            {
+              "Name": "headerValues",
+              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SortStringWithQualityHeaderValuesByQFactor",
+          "Parameters": [
+            {
+              "Name": "headerValues",
+              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Headers.StringWithQualityHeaderValue>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.StringWithQualityHeaderValue>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UpdateBestMatch",
+          "Parameters": [
+            {
+              "Name": "current",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatch"
+            },
+            {
+              "Name": "potentialReplacement",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatch"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "excludeMatchOnTypeOnly",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.FormDataCollection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReadAsNameValueCollection",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Specialized.NameValueCollection",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Get",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetValues",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String[]",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pairs",
+              "Type": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "uri",
+              "Type": "System.Uri"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "query",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.IContentNegotiator",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Negotiate",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatters",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.ContentNegotiationResult",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Formatter",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MediaType",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Headers.MediaTypeHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Quality",
+          "Parameters": [],
+          "ReturnType": "System.Double",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Ranking",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            },
+            {
+              "Name": "quality",
+              "Type": "System.Nullable<System.Double>"
+            },
+            {
+              "Name": "ranking",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnCanWriteType",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestAcceptHeaderLiteral",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestAcceptHeaderSubtypeMediaRange",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestAcceptHeaderAllMediaRange",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestWithMediaTypeMapping",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestMediaType",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "6"
         }
       ],
       "GenericParameters": []
