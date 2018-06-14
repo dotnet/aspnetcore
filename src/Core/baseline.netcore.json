@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Identity.Core, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Identity.Core, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "System.Security.Claims.PrincipalExtensions",
@@ -41,6 +41,28 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddIdentityCore<T0>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TUser",
+              "ParameterPosition": 0,
+              "Class": true,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
         {
           "Kind": "Method",
           "Name": "AddIdentityCore<T0>",
@@ -265,6 +287,63 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Identity.DefaultPersonalDataProtector",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Identity.IPersonalDataProtector"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IPersonalDataProtector",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IPersonalDataProtector",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "keyRing",
+              "Type": "Microsoft.AspNetCore.Identity.ILookupProtectorKeyRing"
+            },
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.Identity.ILookupProtector"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Identity.EmailTokenProvider<T0>",
       "Visibility": "Public",
       "Kind": "Class",
@@ -370,7 +449,7 @@
           "Visibility": "Public",
           "GenericParameter": [
             {
-              "ParameterName": "TUser",
+              "ParameterName": "TValidator",
               "ParameterPosition": 0,
               "Class": true,
               "BaseTypeOrInterfaces": []
@@ -386,7 +465,7 @@
           "Visibility": "Public",
           "GenericParameter": [
             {
-              "ParameterName": "TUser",
+              "ParameterName": "TFactory",
               "ParameterPosition": 0,
               "Class": true,
               "BaseTypeOrInterfaces": []
@@ -419,7 +498,7 @@
           "Visibility": "Public",
           "GenericParameter": [
             {
-              "ParameterName": "TUser",
+              "ParameterName": "TValidator",
               "ParameterPosition": 0,
               "Class": true,
               "BaseTypeOrInterfaces": []
@@ -435,7 +514,7 @@
           "Visibility": "Public",
           "GenericParameter": [
             {
-              "ParameterName": "TUser",
+              "ParameterName": "TStore",
               "ParameterPosition": 0,
               "Class": true,
               "BaseTypeOrInterfaces": []
@@ -531,6 +610,32 @@
         },
         {
           "Kind": "Method",
+          "Name": "AddPersonalDataProtection<T0, T1>",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProtector",
+              "ParameterPosition": 0,
+              "Class": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Identity.ILookupProtector"
+              ]
+            },
+            {
+              "ParameterName": "TKeyRing",
+              "ParameterPosition": 1,
+              "Class": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Identity.ILookupProtectorKeyRing"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
           "Name": "AddRoleStore<T0>",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
@@ -538,7 +643,7 @@
           "Visibility": "Public",
           "GenericParameter": [
             {
-              "ParameterName": "TRole",
+              "ParameterName": "TStore",
               "ParameterPosition": 0,
               "Class": true,
               "BaseTypeOrInterfaces": []
@@ -1055,6 +1160,27 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_Stores",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Identity.StoreOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Stores",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Identity.StoreOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -1166,6 +1292,84 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Identity.ILookupProtector",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "keyId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "data",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "keyId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "data",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.ILookupProtectorKeyRing",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CurrentKeyId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "keyId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAllKeyIds",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.String>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Identity.IPasswordHasher<T0>",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -1246,6 +1450,58 @@
           "GenericParameter": []
         }
       ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.IPersonalDataProtector",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.IProtectedUserStore<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Identity.IUserStore<T0>"
+      ],
+      "Members": [],
       "GenericParameters": [
         {
           "ParameterName": "TUser",
@@ -3561,6 +3817,23 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Identity.PersonalDataAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Identity.PhoneNumberTokenProvider<T0>",
       "Visibility": "Public",
       "Kind": "Class",
@@ -3626,6 +3899,23 @@
           "BaseTypeOrInterfaces": []
         }
       ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.ProtectedPersonalDataAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.PersonalDataAttribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
     },
     {
       "Name": "Microsoft.AspNetCore.Identity.RoleManager<T0>",
@@ -3987,6 +4277,34 @@
         },
         {
           "Kind": "Method",
+          "Name": "ValidateRoleAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UpdateRoleAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "ThrowIfDisposed",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -4281,6 +4599,64 @@
           "ReturnType": "System.String",
           "Virtual": true,
           "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.StoreOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MaxLengthForKeys",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxLengthForKeys",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ProtectPersonalData",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ProtectPersonalData",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -6636,6 +7012,28 @@
         },
         {
           "Kind": "Method",
+          "Name": "UpdatePasswordHash",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "newPassword",
+              "Type": "System.String"
+            },
+            {
+              "Name": "validatePassword",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "GetChangeEmailTokenPurpose",
           "Parameters": [
             {
@@ -6645,6 +7043,50 @@
           ],
           "ReturnType": "System.String",
           "Static": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ValidateUserAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ValidatePasswordAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "password",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UpdateUserAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
           "Visibility": "Protected",
           "GenericParameter": []
         },
@@ -6706,7 +7148,7 @@
           "Parameters": [],
           "ReturnType": "System.String",
           "Static": true,
-          "Visibility": "Protected",
+          "Visibility": "Public",
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"ResetPassword\""
@@ -6717,7 +7159,7 @@
           "Parameters": [],
           "ReturnType": "System.String",
           "Static": true,
-          "Visibility": "Protected",
+          "Visibility": "Public",
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"ChangePhoneNumber\""
@@ -6728,7 +7170,7 @@
           "Parameters": [],
           "ReturnType": "System.String",
           "Static": true,
-          "Visibility": "Protected",
+          "Visibility": "Public",
           "GenericParameter": [],
           "Constant": true,
           "Literal": "\"EmailConfirmation\""

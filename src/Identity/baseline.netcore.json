@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Identity, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Identity, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions",
@@ -17,6 +17,38 @@
             {
               "Name": "services",
               "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TUser",
+              "ParameterPosition": 0,
+              "Class": true,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "TRole",
+              "ParameterPosition": 1,
+              "Class": true,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddIdentity<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Identity.IdentityOptions>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
@@ -75,38 +107,6 @@
           "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AddIdentity<T0, T1>",
-          "Parameters": [
-            {
-              "Name": "services",
-              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
-            },
-            {
-              "Name": "setupAction",
-              "Type": "System.Action<Microsoft.AspNetCore.Identity.IdentityOptions>"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": [
-            {
-              "ParameterName": "TUser",
-              "ParameterPosition": 0,
-              "Class": true,
-              "BaseTypeOrInterfaces": []
-            },
-            {
-              "ParameterName": "TRole",
-              "ParameterPosition": 1,
-              "Class": true,
-              "BaseTypeOrInterfaces": []
-            }
-          ]
         }
       ],
       "GenericParameters": []
@@ -555,6 +555,22 @@
         },
         {
           "Kind": "Method",
+          "Name": "AddSignInManager",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
+          "Static": true,
+          "New": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "AddSignInManager<T0>",
           "Parameters": [
             {
@@ -564,6 +580,7 @@
           ],
           "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
           "Static": true,
+          "New": true,
           "Extension": true,
           "Visibility": "Public",
           "GenericParameter": [
@@ -635,6 +652,212 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Identity.IdentityCookiesBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationCookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ApplicationCookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExternalCookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ExternalCookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TwoFactorRememberMeCookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TwoFactorRememberMeCookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TwoFactorUserIdCookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TwoFactorUserIdCookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddIdentityCookies",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityCookiesBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddIdentityCookies",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            },
+            {
+              "Name": "configureCookies",
+              "Type": "System.Action<Microsoft.AspNetCore.Identity.IdentityCookiesBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityCookiesBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddApplicationCookie",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddExternalCookie",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddTwoFactorRememberMeCookie",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddTwoFactorUserIdCookie",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Identity.ISecurityStampValidator",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -654,6 +877,17 @@
           "GenericParameter": []
         }
       ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.ITwoFactorSecurityStampValidator",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Identity.ISecurityStampValidator"
+      ],
+      "Members": [],
       "GenericParameters": []
     },
     {
@@ -724,6 +958,62 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "get_SignInManager",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Identity.SignInManager<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Options",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Clock",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.ISystemClock",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SecurityStampVerified",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "VerifySecurityStamp",
+          "Parameters": [
+            {
+              "Name": "principal",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "ValidateAsync",
           "Parameters": [
             {
@@ -789,6 +1079,28 @@
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ValidateAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TValidator",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Identity.ISecurityStampValidator"
+              ]
+            }
+          ]
         }
       ],
       "GenericParameters": []
@@ -1085,6 +1397,38 @@
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ValidateTwoFactorSecurityStampAsync",
+          "Parameters": [
+            {
+              "Name": "principal",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ValidateSecurityStampAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "securityStamp",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
           "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
@@ -1491,6 +1835,79 @@
             {
               "Name": "schemes",
               "Type": "Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.SecurityStampValidator<T0>",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Identity.ITwoFactorSecurityStampValidator"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "VerifySecurityStamp",
+          "Parameters": [
+            {
+              "Name": "principal",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SecurityStampVerified",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions>"
+            },
+            {
+              "Name": "signInManager",
+              "Type": "Microsoft.AspNetCore.Identity.SignInManager<T0>"
+            },
+            {
+              "Name": "clock",
+              "Type": "Microsoft.AspNetCore.Authentication.ISystemClock"
             }
           ],
           "Visibility": "Public",
