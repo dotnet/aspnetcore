@@ -11,7 +11,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -30,6 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private readonly HttpConnectionContext _context;
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<object> _lifetimeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private IList<IAdaptedConnection> _adaptedConnections;
         private IDuplexPipe _adaptedTransport;
@@ -52,8 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private readonly object _writeTimingLock = new object();
         private int _writeTimingWrites;
         private long _writeTimingTimeoutTimestamp;
-
-        private Task _lifetimeTask;
 
         public HttpConnection(HttpConnectionContext context)
         {
@@ -98,12 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public Task StartRequestProcessing<TContext>(IHttpApplication<TContext> application)
-        {
-            return _lifetimeTask = ProcessRequestsAsync(application);
-        }
-
-        private async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
+        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
         {
             try
             {
@@ -132,9 +125,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _adaptedTransport = adaptedPipeline;
                 }
 
-                // Do this before the first await so we don't yield control to the transport until we've
-                // added the connection to the connection manager
-                _context.ServiceContext.ConnectionManager.AddConnection(_context.HttpConnectionId, this);
                 _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
 
                 _context.ConnectionFeatures.Set<IConnectionTimeoutFeature>(this);
@@ -194,7 +184,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                _context.ServiceContext.ConnectionManager.RemoveConnection(_context.HttpConnectionId);
                 DisposeAdaptedConnections();
 
                 if (_http1Connection?.IsUpgraded == true)
@@ -204,6 +193,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 Log.ConnectionStop(ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(this);
+
+                _lifetimeTcs.SetResult(null);
             }
         }
 
@@ -269,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
             }
 
-            return _lifetimeTask;
+            return _lifetimeTcs.Task;
         }
 
         public void OnInputOrOutputCompleted()

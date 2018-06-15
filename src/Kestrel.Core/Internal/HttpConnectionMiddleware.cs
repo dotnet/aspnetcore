@@ -73,22 +73,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             var connection = new HttpConnection(httpConnectionContext);
+            _serviceContext.ConnectionManager.AddConnection(httpConnectionId, connection);
 
-            var processingTask = connection.StartRequestProcessing(_application);
+            try
+            {
+                var processingTask = connection.ProcessRequestsAsync(_application);
 
-            connectionContext.Transport.Input.OnWriterCompleted(
-                (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                connection);
+                connectionContext.Transport.Input.OnWriterCompleted(
+                    (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
+                    connection);
 
-            connectionContext.Transport.Output.OnReaderCompleted(
-                (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                connection);
+                connectionContext.Transport.Output.OnReaderCompleted(
+                    (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
+                    connection);
 
-            await AsTask(lifetimeFeature.ConnectionClosed);
+                await AsTask(lifetimeFeature.ConnectionClosed);
 
-            connection.OnConnectionClosed();
+                connection.OnConnectionClosed();
 
-            await processingTask;
+                await processingTask;
+            }
+            finally
+            {
+                _serviceContext.ConnectionManager.RemoveConnection(httpConnectionId);
+            }
         }
 
         private Task AsTask(CancellationToken token)
