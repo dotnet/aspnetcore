@@ -114,7 +114,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await hubConnection.StartAsync().OrTimeout();
 
             var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.OrTimeout());
-            Assert.Equal("Server timeout (100.00ms) elapsed without receiving a message from the server.", exception.Message);
+
+            // We use an interpolated string so the tests are accurate on non-US machines.
+            Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
         }
 
         [Fact]
@@ -137,7 +139,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var invokeTask = hubConnection.InvokeAsync("Method").OrTimeout();
 
                 var exception = await Assert.ThrowsAsync<TimeoutException>(() => invokeTask);
-                Assert.Equal("Server timeout (2000.00ms) elapsed without receiving a message from the server.", exception.Message);
+
+                // We use an interpolated string so the tests are accurate on non-US machines.
+                Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
             }
         }
 

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -508,8 +511,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     var startTask = hubConnection.StartAsync(cts.Token);
-                    var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
-                    Assert.Equal("The operation was canceled.", exception.Message);
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
+
+                    // We aren't worried about the exact message and it's localized so asserting it is non-trivial.
                 }
                 finally
                 {
