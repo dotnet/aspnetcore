@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsStatement()));
+                    Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsCodeBlock()));
         }
 
         [Fact]

@@ -377,10 +377,19 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var backgroundParserArgs = (BackgroundParserResultsReadyEventArgs)state;
             if (_latestChangeReference == null || // extra hardening
-                _latestChangeReference != backgroundParserArgs.ChangeReference ||
-                backgroundParserArgs.ChangeReference.Snapshot != TextBuffer.CurrentSnapshot)
+                _latestChangeReference != backgroundParserArgs.ChangeReference)
             {
                 // In the middle of parsing a newer change or about to parse a newer change.
+                return;
+            }
+
+            if (backgroundParserArgs.ChangeReference.Snapshot != TextBuffer.CurrentSnapshot)
+            {
+                // Changes have impacted the snapshot after our we recorded our last change reference.
+                // This can happen for a multitude of reasons, usually because of a user auto-completing
+                // C# statements (causes multiple edits in quick succession). This ensures that our latest
+                // parse corresponds to the current snapshot.
+                QueueReparse();
                 return;
             }
 

@@ -307,6 +307,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return _self.With(new StatementChunkGenerator());
         }
 
+        public SpanConstructor AsCodeBlock()
+        {
+            return AsStatement().With(new CodeBlockEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString));
+        }
+
         public SpanConstructor AsExpression()
         {
             return _self.With(new ExpressionChunkGenerator());

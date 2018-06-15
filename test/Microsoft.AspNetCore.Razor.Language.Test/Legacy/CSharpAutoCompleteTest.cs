@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                Factory.Code(Environment.NewLine + "foo").AsStatement()));
+                Factory.Code(Environment.NewLine + "foo").AsCodeBlock()));
         }
 
         [Fact]

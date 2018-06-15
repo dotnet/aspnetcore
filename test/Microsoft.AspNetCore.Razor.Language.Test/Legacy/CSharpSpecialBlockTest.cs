@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code(code).AsStatement(),
+                    Factory.Code(code).AsCodeBlock(),
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code(" { { { { } zoop").AsStatement()));
+                    Factory.Code(" { { { { } zoop").AsCodeBlock()));
         }
 
         [Fact]

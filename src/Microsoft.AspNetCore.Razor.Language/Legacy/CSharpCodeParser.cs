@@ -1818,7 +1818,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             NextToken();
                             Balance(BalancingModes.NoErrorOnFailure, CSharpSymbolType.LeftBrace, CSharpSymbolType.RightBrace, startingBraceLocation);
                             Span.ChunkGenerator = new StatementChunkGenerator();
+                            var existingEditHandler = Span.EditHandler;
+                            Span.EditHandler = new CodeBlockEditHandler(Language.TokenizeString);
                             Output(SpanKindInternal.Code);
+
+                            Span.EditHandler = existingEditHandler;
                         });
                         break;
                 }
