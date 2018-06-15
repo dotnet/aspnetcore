@@ -101,7 +101,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     action.RouteValues,
                     action.AttributeRouteInfo.Order,
                     metadataCollection,
-                    action.DisplayName));
+                    action.DisplayName,
+                    new Address(action.AttributeRouteInfo.Name)));
             }
         }
 
