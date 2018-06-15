@@ -25,8 +25,8 @@
     <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
     <MicrosoftAspNetCoreHttpPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreHttpPackageVersion>
     <MicrosoftAspNetCoreJsonPatchPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreJsonPatchPackageVersion>
-    <MicrosoftAspNetCoreLocalizationPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreLocalizationPackageVersion>
-    <MicrosoftAspNetCoreLocalizationRoutingPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreLocalizationRoutingPackageVersion>
+    <MicrosoftAspNetCoreLocalizationPackageVersion>2.2.0-a-preview1-a-16708</MicrosoftAspNetCoreLocalizationPackageVersion>
+    <MicrosoftAspNetCoreLocalizationRoutingPackageVersion>2.2.0-a-preview1-a-16708</MicrosoftAspNetCoreLocalizationRoutingPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>2.2.0-preview1-34481</MicrosoftAspNetCoreRazorDesignPackageVersion>
@@ -62,7 +62,7 @@
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLocalizationPackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsLocalizationPackageVersion>
+    <MicrosoftExtensionsLocalizationPackageVersion>2.2.0-a-preview1-a-16708</MicrosoftExtensionsLocalizationPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsLoggingDebugPackageVersion>
