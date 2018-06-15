@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Security.Authentication;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -703,7 +704,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
-            _ = _currentHeadersStream.ProcessRequestsAsync(application);
+            // Must not allow app code to block the connection handling loop.
+            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            {
+                var (app, currentStream) = (Tuple<IHttpApplication<TContext>, Http2Stream>)state;
+                _ = currentStream.ProcessRequestsAsync(app);
+            },
+            new Tuple<IHttpApplication<TContext>, Http2Stream>(application, _currentHeadersStream));
         }
 
         private void ResetRequestHeaderParsingState()
