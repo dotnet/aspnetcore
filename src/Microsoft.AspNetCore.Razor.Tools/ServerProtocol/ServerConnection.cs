@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -283,14 +284,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
         // Internal for testing.
         internal static bool TryCreateServerCore(string clientDir, string pipeName, out int? processId, bool debug = false)
         {
-            string expectedPath;
-            string processArguments;
             processId = null;
 
             // The server should be in the same directory as the client
             var expectedCompilerPath = Path.Combine(clientDir, ServerName);
-            expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-            processArguments = $@"""{expectedCompilerPath}"" {(debug ? "--debug" : "")} server -p {pipeName}";
+            var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+            var argumentList = new string[]
+            {
+                expectedCompilerPath,
+                debug ? "--debug" : "",
+                "server",
+                "-p",
+                pipeName
+            };
+            var processArguments = ArgumentEscaper.EscapeAndConcatenate(argumentList);
 
             if (!File.Exists(expectedCompilerPath))
             {

@@ -164,5 +164,34 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Equal(0, exitCode);
             Assert.Contains("shut down completed", output.ToString());
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithWhiteSpaceInPipeName_BuildsSuccessfully()
+        {
+            // Start the server
+            var pipeName = "pipe with whitespace";
+            var fixture = new BuildServerTestFixture(pipeName);
+
+            try
+            {
+                // Run a build
+                var result = await DotnetMSBuild(
+                    "Build",
+                    "/p:_RazorForceBuildServer=true",
+                    buildServerPipeName: pipeName);
+
+                Assert.BuildPassed(result);
+                Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
+                Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
+                Assert.FileExists(result, OutputPath, "SimpleMvc.Views.dll");
+                Assert.FileExists(result, OutputPath, "SimpleMvc.Views.pdb");
+            }
+            finally
+            {
+                // Shutdown the server
+                fixture.Dispose();
+            }
+        }
     }
 }

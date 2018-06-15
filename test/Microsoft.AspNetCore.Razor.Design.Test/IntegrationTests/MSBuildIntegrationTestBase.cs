@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             if (!suppressBuildServer)
             {
-                buildArgumentList.Add($"/p:_RazorBuildServerPipeName={buildServerPipeName ?? BuildServer.PipeName}");
+                buildArgumentList.Add($@"/p:_RazorBuildServerPipeName=""{buildServerPipeName ?? BuildServer.PipeName}""");
             }
 
             if (!string.IsNullOrEmpty(target))
