@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     // Otherwise, assume that the environment variable specifies the name of the log file.
                     if (Directory.Exists(loggingFileName))
                     {
-                        loggingFileName = Path.Combine(loggingFileName, $"server.{loggingFileName}.{GetCurrentProcessId()}.log");
+                        loggingFileName = Path.Combine(loggingFileName, $"razorserver.{GetCurrentProcessId()}.log");
                     }
 
                     // Open allowing sharing. We allow multiple processes to log to the same file, so we use share mode to allow that.

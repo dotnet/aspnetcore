@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             if (!suppressBuildServer)
             {
-                buildArgumentList.Add($"/p:_RazorBuildServerPipeName={buildServerPipeName ?? BuildServer.PipeName}");
+                buildArgumentList.Add($@"/p:_RazorBuildServerPipeName=""{buildServerPipeName ?? BuildServer.PipeName}""");
 
                 // The build server will not be used in netcoreapp2.0 because PipeOptions.CurrentUserOnly is not available.
                 // But we still want to make sure to run the tests on the server. So suppress that check.

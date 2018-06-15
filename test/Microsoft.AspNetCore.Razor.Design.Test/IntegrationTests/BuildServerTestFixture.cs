@@ -14,9 +14,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         private static readonly TimeSpan _defaultShutdownTimeout = TimeSpan.FromSeconds(60);
 
-        public BuildServerTestFixture()
+        public BuildServerTestFixture() : this(Guid.NewGuid().ToString())
         {
-            PipeName = Guid.NewGuid().ToString();
+        }
+
+        internal BuildServerTestFixture(string pipeName)
+        {
+            PipeName = pipeName;
 
             if (!ServerConnection.TryCreateServerCore(Environment.CurrentDirectory, PipeName, out var processId))
             {
@@ -52,19 +56,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     throw new InvalidOperationException(
                         $"Build server at pipe {PipeName} failed to shutdown with exit code {exitCode}. Output: {output}");
                 }
-            }
-        }
-
-        private static string RecursiveFind(string path, string start)
-        {
-            var test = Path.Combine(start, path);
-            if (File.Exists(test))
-            {
-                return start;
-            }
-            else
-            {
-                return RecursiveFind(path, new DirectoryInfo(start).Parent.FullName);
             }
         }
     }
