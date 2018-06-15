@@ -16,7 +16,7 @@
     "build:lint": "node ../node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:esm": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
     "build:cjs": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
-    "build:browser": "node ../node_modules/rollup/bin/rollup -c",
+    "build:browser": "node ../node_modules/webpack-cli/bin/cli.js",
     "build:uglify": "node ../node_modules/uglify-js/bin/uglifyjs --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
     "prepack": "node ../build/embed-version.js",
     "test": "echo \"Run 'npm test' in the 'clients\\ts' folder to test this package\" && exit 1"
