@@ -1,11 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
@@ -39,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
-        public void Execute_NoOpsIfCompilationSymbolIsNotSet()
+        public void Execute_NoOpsIfCompilationIsNotSet()
         {
             // Arrange
             var descriptorProvider = new DefaultTagHelperDescriptorProvider();
@@ -51,79 +49,6 @@ namespace Microsoft.CodeAnalysis.Razor
 
             // Assert
             Assert.Empty(context.Results);
-        }
-
-        [Fact]
-        public void Execute_NoOpsIfTagHelperInterfaceCannotBeFound()
-        {
-            // Arrange
-            var references = new[]
-            {
-                MetadataReference.CreateFromFile(typeof(string).Assembly.Location),
-            };
-            var compilation = CSharpCompilation.Create("Test", references: references);
-
-            var descriptorProvider = new DefaultTagHelperDescriptorProvider();
-
-            var context = TagHelperDescriptorProviderContext.Create();
-            context.SetCompilation(compilation);
-
-            // Act 
-            descriptorProvider.Execute(context);
-
-            // Assert
-            Assert.Empty(context.Results);
-        }
-
-        [Fact]
-        public void Execute_NoOpsIfStringCannotBeFound()
-        {
-            // Arrange
-            var references = new[]
-            {
-                MetadataReference.CreateFromFile(typeof(ITagHelper).Assembly.Location),
-            };
-            var compilation = CSharpCompilation.Create("Test", references: references);
-
-            var descriptorProvider = new DefaultTagHelperDescriptorProvider();
-
-            var context = TagHelperDescriptorProviderContext.Create();
-            context.SetCompilation(compilation);
-
-            // Act 
-            descriptorProvider.Execute(context);
-
-            // Assert
-            Assert.Empty(context.Results);
-        }
-
-        [Fact]
-        public void Execute_DiscoversTagHelpersFromCompilation()
-        {
-            // Arrange
-            var references = new[]
-            {
-                MetadataReference.CreateFromFile(typeof(string).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ITagHelper).Assembly.Location),
-            };
-            var projectDirectory = TestProject.GetProjectDirectory(GetType());
-            var tagHelperContent = File.ReadAllText(Path.Combine(projectDirectory, "TagHelperTypes.cs"));
-            var syntaxTree = CSharpSyntaxTree.ParseText(tagHelperContent);
-            var compilation = CSharpCompilation.Create("Test", references: references, syntaxTrees: new[] { syntaxTree });
-
-            var descriptorProvider = new DefaultTagHelperDescriptorProvider();
-
-            var context = TagHelperDescriptorProviderContext.Create();
-            context.SetCompilation(compilation);
-
-            // Act 
-            descriptorProvider.Execute(context);
-
-            // Assert
-            Assert.Collection(
-                context.Results.OrderBy(r => r.Name),
-                tagHelper => Assert.Equal(typeof(Valid_InheritedTagHelper).FullName, tagHelper.Name),
-                tagHelper => Assert.Equal(typeof(Valid_PlainTagHelper).FullName, tagHelper.Name));
         }
     }
 }

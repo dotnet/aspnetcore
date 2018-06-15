@@ -19,7 +19,10 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var context = TagHelperDescriptorProviderContext.Create(results);
             var compilation = CSharpCompilation.Create("__TagHelpers", references: _referenceFeature.References);
-            context.SetCompilation(compilation);
+            if (IsValidCompilation(compilation))
+            {
+                context.SetCompilation(compilation);
+            }
 
             for (var i = 0; i < _providers.Length; i++)
             {
@@ -33,6 +36,19 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             _referenceFeature = Engine.Features.OfType<IMetadataReferenceFeature>().FirstOrDefault();
             _providers = Engine.Features.OfType<ITagHelperDescriptorProvider>().OrderBy(f => f.Order).ToArray();
+        }
+
+        internal static bool IsValidCompilation(Compilation compilation)
+        {
+            var iTagHelper = compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
+            var @string = compilation.GetSpecialType(SpecialType.System_String);
+
+            // Do some minimal tests to verify the compilation is valid. If symbols for ITagHelper or System.String 
+            // are missing or errored, the compilation may be missing references.
+            return iTagHelper != null &&
+                iTagHelper.TypeKind != TypeKind.Error &&
+                @string != null &&
+                @string.TypeKind != TypeKind.Error;
         }
     }
 }

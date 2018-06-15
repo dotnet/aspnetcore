@@ -86,9 +86,6 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             Assert.False(isTagHelper);
         }
 
-
-
-
         public class Invalid_NestedPublicTagHelper : TagHelper
         {
         }
@@ -97,5 +94,25 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         {
             public string Invoke(string foo) => null;
         }
+    }
+
+    public abstract class Invalid_AbstractTagHelper : TagHelper
+    {
+    }
+
+    public class Invalid_GenericTagHelper<T> : TagHelper
+    {
+    }
+
+    internal class Invalid_InternalTagHelper : TagHelper
+    {
+    }
+
+    public class Valid_PlainTagHelper : TagHelper
+    {
+    }
+
+    public class Valid_InheritedTagHelper : Valid_PlainTagHelper
+    {
     }
 }
