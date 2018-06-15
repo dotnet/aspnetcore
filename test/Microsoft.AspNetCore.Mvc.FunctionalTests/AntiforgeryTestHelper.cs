@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 }
             }
 
-            throw new Exception($"Antiforgery token could not be located in {htmlDocument.TextContent}.");
+            throw new Exception($"Antiforgery token could not be located in {htmlDocument.Source.Text}.");
         }
 
         public static CookieMetadata RetrieveAntiforgeryCookie(HttpResponseMessage response)
