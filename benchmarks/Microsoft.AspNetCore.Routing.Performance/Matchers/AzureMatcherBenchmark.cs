@@ -61,10 +61,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             for (var i = 0; i < SampleCount; i++)
             {
                 var sample = _samples[i];
-                if (sample == 805)
-                {
-                    GC.KeepAlive(5);
-                }
                 var httpContext = _requests[sample];
                 await _dfa.MatchAsync(httpContext, feature);
                 Validate(httpContext, _endpoints[sample], feature.Endpoint);

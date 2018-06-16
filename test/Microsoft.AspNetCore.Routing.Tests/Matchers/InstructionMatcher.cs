@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             var i = 0;
-            Candidate match = default(Candidate);
+            var candidates = new List<Candidate>();
             while (i < state.Instructions.Length)
             {
                 var instruction = state.Instructions[i];
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                         {
                             if (count == instruction.Depth)
                             {
-                                match = state.Candidates[instruction.Payload];
+                                candidates.Add(state.Candidates[instruction.Payload]);
                             }
                             i++;
                             break;
@@ -92,10 +92,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 }
             }
 
-            if (match.Endpoint != null)
+            var matches = new List<(Endpoint, RouteValueDictionary)>();
+            for (i = 0; i < candidates.Count; i++)
             { 
                 var values = new RouteValueDictionary();
-                var parameters = match.Parameters;
+                var parameters = candidates[i].Parameters;
                 if (parameters != null)
                 {
                     for (var j = 0; j < parameters.Length; j++)
@@ -113,13 +114,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     }
                 }
 
-                feature.Endpoint = match.Endpoint;
-                feature.Values = values;
+                matches.Add((candidates[i].Endpoint, values));
 
                 notmatch:;
             }
 
-
+            feature.Endpoint = matches.Count == 0 ? null : matches[0].Item1;
+            feature.Values = matches.Count == 0 ? null : matches[0].Item2;
 
             return Task.CompletedTask;
         }

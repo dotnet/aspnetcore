@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     return comparison;
                 }
 
-                comparison = y.Precedence.CompareTo(x.Precedence);
+                comparison = x.Precedence.CompareTo(y.Precedence);
                 if (comparison != 0)
                 {
                     return comparison;
