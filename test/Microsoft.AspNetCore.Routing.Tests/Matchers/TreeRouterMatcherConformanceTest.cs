@@ -1,14 +1,33 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
+using Xunit;
+
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    public class TreeRouterMatcherConformanceTest : MatcherConformanceTest
+    public class TreeRouterMatcherConformanceTest : FullFeaturedMatcherConformanceTest
     {
-        internal override Matcher CreateMatcher(MatcherEndpoint endpoint)
+        // TreeRouter doesn't support non-inline default values.
+        [Fact]
+        public override Task Match_NonInlineDefaultValues()
+        {
+            return Task.CompletedTask;
+        }
+
+        // TreeRouter doesn't support non-inline default values.
+        [Fact]
+        public override Task Match_ExtraDefaultValues()
+        {
+            return Task.CompletedTask;
+        }
+        internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
         {
             var builder = new TreeRouterMatcherBuilder();
-            builder.AddEndpoint(endpoint);
+            for (var i = 0; i < endpoints.Length; i++)
+            {
+                builder.AddEndpoint(endpoints[i]);
+            }
             return builder.Build();
         }
     }

@@ -3,12 +3,15 @@
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    public class RouteMatcherConformanceTest : MatcherConformanceTest
+    public class RouteMatcherConformanceTest : FullFeaturedMatcherConformanceTest
     {
-        internal override Matcher CreateMatcher(MatcherEndpoint endpoint)
+        internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
         {
             var builder = new RouteMatcherBuilder();
-            builder.AddEndpoint(endpoint);
+            for (int i = 0; i < endpoints.Length; i++)
+            {
+                builder.AddEndpoint(endpoints[i]); 
+            }
             return builder.Build();
         }
     }

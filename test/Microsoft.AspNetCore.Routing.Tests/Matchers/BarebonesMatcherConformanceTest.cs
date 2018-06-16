@@ -24,6 +24,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         // Route values not supported
+        [Fact]
+        public override Task Match_SingleParameter_WierdNames()
+        {
+            return Task.CompletedTask;
+        }
+
+        // Route values not supported
         [Theory]
         [InlineData(null, null, null, null)]
         public override Task Match_MultipleParameters(string template, string path, string[] keys, string[] values)
@@ -32,10 +39,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return Task.CompletedTask;
         }
 
-        internal override Matcher CreateMatcher(MatcherEndpoint endpoint)
+        internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
         {
             var builder = new BarebonesMatcherBuilder();
-            builder.AddEndpoint(endpoint);
+            for (int i = 0; i < endpoints.Length; i++)
+            {
+                builder.AddEndpoint(endpoints[i]);
+            }
             return builder.Build();
         }
     }

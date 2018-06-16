@@ -88,6 +88,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             // Assert
             Assert.Equal(endpointWithConstraint, endpointFeature.Endpoint);
+        }
     }
-}
 }
