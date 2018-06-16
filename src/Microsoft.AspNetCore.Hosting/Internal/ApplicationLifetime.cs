@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
     /// </summary>
-    public class ApplicationLifetime : IApplicationLifetime, Extensions.Hosting.IApplicationLifetime
+    public class ApplicationLifetime : IApplicationLifetime
     {
         private readonly CancellationTokenSource _startedSource = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppingSource = new CancellationTokenSource();

@@ -5,7 +5,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
-    public class HostingEnvironment : IHostingEnvironment, Extensions.Hosting.IHostingEnvironment
+    public class HostingEnvironment : IHostingEnvironment
     {
         public string EnvironmentName { get; set; } = Hosting.EnvironmentName.Production;
 
