@@ -39,28 +39,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var state = _state;
 
             var path = httpContext.Request.Path.Value;
-
-            // This section tokenizes the path by marking the sequence of slashes, and their 
-            // position in the string. The consuming code uses the sequence and the count of
-            // slashes to deduce the length of each segment.
-            //
-            // If there is residue (text after last slash) then the length of the segment will
-            // computed based on the string length.
-            var buffer = stackalloc Segment[32];
-            var count = 0;
-            var start = 1; // PathString guarantees a leading /
-            var end = 0;
-            while ((end = path.IndexOf('/', start)) >= 0 && count < 32)
-            {
-                buffer[count++] = new Segment() { Start = start, Length = end - start, };
-                start = end + 1; // resume search after the current character
-            }
-
-            // Residue
-            if (start < path.Length)
-            {
-                buffer[count++] = new Segment() { Start = start, Length = path.Length - start, };
-            }
+            var buffer = stackalloc PathSegment[32];
+            var count = FastPathTokenizer.Tokenize(path, buffer, 32);
 
             var i = 0;
             var candidates = new List<Candidate>();
@@ -125,12 +105,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return Task.CompletedTask;
         }
 
-        public struct Segment
-        {
-            public int Start;
-            public int Length;
-        }
-
         public struct Candidate
         {
             public Endpoint Endpoint;
@@ -173,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public abstract class JumpTable
         {
-            public unsafe abstract int GetDestination(Segment* segments, int count, string path);
+            public unsafe abstract int GetDestination(PathSegment* segments, int depth, string path);
         }
 
         public class JumpTableBuilder
@@ -208,7 +182,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 _entries = entries;
             }
 
-            public unsafe override int GetDestination(Segment* segments, int count, string path)
+            public unsafe override int GetDestination(PathSegment* segments, int count, string path)
             {
                 if (_depth == count)
                 {

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -34,33 +33,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var current = 0;
 
             var path = httpContext.Request.Path.Value;
-
-            // This section tokenizes the path by marking the sequence of slashes, and their 
-            // position in the string. The consuming code uses the sequence and the count of
-            // slashes to deduce the length of each segment.
-            //
-            // If there is residue (text after last slash) then the length of the segment will
-            // computed based on the string length.
-            var buffer = stackalloc Segment[32];
-            var segment = 0;
-            var start = 1; // PathString guarantees a leading /
-            var end = 0;
-            var length = 0;
-            while ((end = path.IndexOf('/', start)) >= 0 && segment < 32)
+            var buffer = stackalloc PathSegment[32];
+            var count = FastPathTokenizer.Tokenize(path, buffer, 32);
+            
+            for (var i = 0; i < count; i++)
             {
-                length = end - start;
-                buffer[segment++] = new Segment() { Start = start, Length = length, };
-                current = states[current].Transitions.GetDestination(path, start, length);
-
-                start = end + 1; // resume search after the current character
-            }
-
-            // Residue
-            length = path.Length - start;
-            if (length > 0)
-            {
-                buffer[segment++] = new Segment() { Start = start, Length = length, };
-                current = states[current].Transitions.GetDestination(path, start, length);
+                current = states[current].Transitions.GetDestination(buffer, i, path);
             }
 
             var matches = new List<(Endpoint, RouteValueDictionary)>();
@@ -98,12 +76,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return Task.CompletedTask;
         }
 
-        public struct Segment
-        {
-            public int Start;
-            public int Length;
-        }
-
         public struct State
         {
             public bool IsAccepting;
@@ -119,7 +91,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public abstract class JumpTable
         {
-            public abstract int GetDestination(string text, int start, int length);
+            public unsafe abstract int GetDestination(PathSegment* segments, int depth, string path);
         }
 
         public class JumpTableBuilder
@@ -154,17 +126,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 _entries = entries;
             }
 
-            public override int GetDestination(string text, int start, int length)
+            public unsafe override int GetDestination(PathSegment* segments, int depth, string path)
             {
                 for (var i = 0; i < _entries.Length; i++)
                 {
-                    if (length == _entries[i].text.Length &&
+                    var segment = segments[depth];
+                    if (segment.Length == _entries[i].text.Length &&
                         string.Compare(
-                        text,
-                        start,
+                        path,
+                        segment.Start,
                         _entries[i].text,
                         0,
-                        length,
+                        segment.Length,
                         StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         return _entries[i].destination;
