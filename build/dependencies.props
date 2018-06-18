@@ -80,7 +80,7 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0-preview1-34481</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26614-02</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26612-04</MicrosoftNETCoreApp22PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>2.2.0-preview1-34481</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34481</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
