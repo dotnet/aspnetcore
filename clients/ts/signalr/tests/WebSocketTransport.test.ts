@@ -6,7 +6,7 @@ import { TransferFormat } from "../src/ITransport";
 import { WebSocketTransport } from "../src/WebSocketTransport";
 import { VerifyLogger } from "./Common";
 import { TestMessageEvent } from "./TestEventSource";
-import { TestCloseEvent, TestEvent, TestWebSocket } from "./TestWebSocket";
+import { TestCloseEvent, TestErrorEvent, TestEvent, TestWebSocket } from "./TestWebSocket";
 
 describe("WebSocketTransport", () => {
     it("sets websocket binarytype to arraybuffer on Binary transferformat", async () => {
@@ -40,7 +40,7 @@ describe("WebSocketTransport", () => {
 
     it("connect fails if there is error during connect", async () => {
         await VerifyLogger.run(async (logger) => {
-            (global as any).ErrorEvent = TestEvent;
+            (global as any).ErrorEvent = TestErrorEvent;
             const webSocket = new WebSocketTransport(undefined, logger, true, TestWebSocket);
 
             let connectComplete: boolean = false;
@@ -56,7 +56,8 @@ describe("WebSocketTransport", () => {
             TestWebSocket.webSocket.onerror(new TestEvent());
 
             await expect(connectPromise)
-                .rejects;
+                .rejects
+                .toBeNull();
             expect(connectComplete).toBe(false);
         });
     });

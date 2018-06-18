@@ -79,7 +79,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
         }
 
         const msgpack = msgpack5();
-        const properties = msgpack.decode(new Buffer(input));
+        const properties = msgpack.decode(Buffer.from(input));
         if (properties.length === 0 || !(properties instanceof Array)) {
             throw new Error("Invalid payload.");
         }
