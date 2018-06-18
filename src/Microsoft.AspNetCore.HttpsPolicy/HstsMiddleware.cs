@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -52,6 +53,14 @@ namespace Microsoft.AspNetCore.HttpsPolicy
             _excludedHosts = hstsOptions.ExcludedHosts;
             _logger = loggerFactory.CreateLogger<HstsMiddleware>();
         }
+
+        /// <summary>
+        /// Initialize the HSTS middleware.
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="options"></param>
+        public HstsMiddleware(RequestDelegate next, IOptions<HstsOptions> options)
+            : this(next, options, NullLoggerFactory.Instance) { }
 
         /// <summary>
         /// Invoke the middleware.
