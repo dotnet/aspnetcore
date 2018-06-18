@@ -22,3 +22,5 @@ node_modules
 .deps
 global.json
 msbuild.ProjectImports.zip
+.dotnet/
+.tools/
