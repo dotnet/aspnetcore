@@ -1,4 +1,5 @@
 ﻿using AspNetCoreSdkTests.Templates;
+using AspNetCoreSdkTests.Util;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -85,20 +86,25 @@ namespace AspNetCoreSdkTests
         {
             if (runtimeIdentifier == RuntimeIdentifier.None)
             {
+                // Offline restore is broken in SDK 2.1.301 (https://github.com/aspnet/Universe/issues/1220)
+                var packageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 301)) ? NuGetPackageSource.NuGetOrg : NuGetPackageSource.None;
+
                 // Framework-dependent
                 return new[]
                 {
                     Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+                    Template.GetInstance<ConsoleApplicationTemplate>(packageSource, runtimeIdentifier),
+                    
                     // Offline restore currently not supported for RazorClassLibrary template (https://github.com/aspnet/Universe/issues/1123)
                     Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<WebTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<RazorTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<MvcTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<AngularTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<ReactTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<WebApiTemplate>(NuGetPackageSource.None, runtimeIdentifier),
+
+                    Template.GetInstance<WebTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<RazorTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<MvcTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<AngularTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactReduxTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<WebApiTemplate>(packageSource, runtimeIdentifier),
                 };
             }
             else
@@ -108,15 +114,15 @@ namespace AspNetCoreSdkTests
                 {
                     // ClassLibrary does not require a package source, even for self-contained deployments
                     Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
                     Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<WebTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
-                    Template.GetInstance<RazorTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
-                    Template.GetInstance<MvcTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
-                    Template.GetInstance<AngularTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
-                    Template.GetInstance<ReactTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
-                    Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
-                    Template.GetInstance<WebApiTemplate>(NuGetPackageSource.DotNetCore, runtimeIdentifier),
+                    Template.GetInstance<WebTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<RazorTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<MvcTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<AngularTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<ReactTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<WebApiTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
                 };
             }
         }

@@ -105,7 +105,7 @@ namespace AspNetCoreSdkTests.Templates
             // Build depends on Restore
             _ = ObjFilesAfterRestore;
 
-            DotNetUtil.Build(TempDir, RuntimeIdentifier);
+            DotNetUtil.Build(TempDir, NuGetPackageSource, RuntimeIdentifier);
             return (IOUtil.GetFiles(Path.Combine(TempDir, "obj")), IOUtil.GetFiles(Path.Combine(TempDir, "bin")));
         }
 

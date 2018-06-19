@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace AspNetCoreSdkTests.Util
 {
@@ -21,6 +23,27 @@ namespace AspNetCoreSdkTests.Util
         private const string _urls = "--urls http://127.0.0.1:0;https://127.0.0.1:0";
 
         public static string PublishOutput => "pub";
+
+        private static readonly Lazy<Version> _sdkVersion = new Lazy<Version>(GetSdkVersion, LazyThreadSafetyMode.PublicationOnly);
+
+        public static Version SdkVersion => _sdkVersion.Value;
+
+        private static Version GetSdkVersion()
+        {
+            var info = RunDotNet("--info", workingDirectory: null);
+            var versionString = Regex.Match(info, @"Version:\W*([0-9.]+)").Groups[1].Value;
+            var version = new Version(versionString);
+
+            // Supported version range is [2.1.300,2.1.301] (inclusive)
+            if (version >= new Version(2, 1, 300) && version <= new Version(2, 1, 301))
+            {
+                return version;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unsupported SDK version: {version}");
+            }
+        }
 
         private static IEnumerable<KeyValuePair<string, string>> GetEnvironment(NuGetPackageSource nuGetPackageSource)
         {
@@ -45,9 +68,15 @@ namespace AspNetCoreSdkTests.Util
                 workingDirectory, GetEnvironment(packageSource));
         }
 
-        public static string Build(string workingDirectory, RuntimeIdentifier runtimeIdentifier)
+        public static string Build(string workingDirectory, NuGetPackageSource packageSource, RuntimeIdentifier runtimeIdentifier)
         {
-            return RunDotNet($"build --no-restore {runtimeIdentifier.RuntimeArgument}", workingDirectory);
+            // "dotnet build" cannot use "--no-restore" if the app is self-contained and the SDK contains a patched runtime
+            // https://github.com/dotnet/sdk/issues/2312, https://github.com/dotnet/cli/issues/9514
+            bool restoreRequired = (runtimeIdentifier != RuntimeIdentifier.None) && (DotNetUtil.SdkVersion >= new Version(2, 1, 301));
+
+            var restoreArgument = restoreRequired ? $"--no-cache {packageSource.SourceArgument}" : "--no-restore";
+
+            return RunDotNet($"build {restoreArgument} {runtimeIdentifier.RuntimeArgument}", workingDirectory, GetEnvironment(packageSource));
         }
 
         public static (Process Process, ConcurrentStringBuilder OutputBuilder, ConcurrentStringBuilder ErrorBuilder) Run(
