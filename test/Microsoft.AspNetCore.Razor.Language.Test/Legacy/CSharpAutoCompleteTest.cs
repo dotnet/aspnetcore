@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
-                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None)));
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
+                    Factory.EmptyCSharp().AsCodeBlock()));
         }
 
         [Fact]

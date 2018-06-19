@@ -1820,6 +1820,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             Span.ChunkGenerator = new StatementChunkGenerator();
                             var existingEditHandler = Span.EditHandler;
                             Span.EditHandler = new CodeBlockEditHandler(Language.TokenizeString);
+
+                            AddMarkerSymbolIfNecessary();
+
                             Output(SpanKindInternal.Code);
 
                             Span.EditHandler = existingEditHandler;

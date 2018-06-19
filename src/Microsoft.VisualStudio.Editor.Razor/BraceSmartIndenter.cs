@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -11,6 +10,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
+using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -210,7 +210,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var focusedTextView = documentTracker.GetFocusedTextView();
             if (focusedTextView != null && ParserHelpers.IsNewLine(finalText))
             {
-                if (!AtValidContentKind(changePosition, syntaxTree))
+                if (!AtApplicableRazorBlock(changePosition, syntaxTree))
                 {
                     context = null;
                     return false;
@@ -242,33 +242,66 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool AtValidContentKind(int changePosition, RazorSyntaxTree syntaxTree)
+        internal static bool AtApplicableRazorBlock(int changePosition, RazorSyntaxTree syntaxTree)
         {
+            // Our goal here is to return true when we're acting on code blocks that have all 
+            // whitespace content and are surrounded by metacode.
+            // Some examples:
+            // @functions { |}
+            // @section foo { |}
+            // @{ |}
+
             var change = new SourceChange(changePosition, 0, string.Empty);
             var owner = syntaxTree.Root.LocateOwner(change);
 
-            if (owner == null)
+            if (IsUnlinkedSpan(owner))
             {
                 return false;
             }
 
-            if (owner.Kind == SpanKindInternal.MetaCode)
+            if (SurroundedByInvalidContent(owner))
             {
-                // @functions{|}
-                return true;
+                return false;
             }
 
-            if (owner.Kind == SpanKindInternal.Code)
+            if (ContainsInvalidContent(owner))
             {
-                // It's important that we still indent in C# cases because in the example below we're asked for
-                // a content validation kind check at a 0 length C# code Span (marker).
-                // In the case that we do a smart indent in a situation when Roslyn would: Roslyn respects our
-                // indentation attempt and applies any additional modifications to the applicable span.
-                // @{|}
-                return true;
+                return false;
             }
-            
+
+            // Indentable content inside of a code block.
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool ContainsInvalidContent(Span owner)
+        {
+            // We only support whitespace based content. Any non-whitespace content is an unkonwn to us
+            // in regards to indentation.
+            for (var i = 0; i < owner.Symbols.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(owner.Symbols[i].Content))
+                {
+                    return true;
+                }
+            }
+
             return false;
+        }
+
+        // Internal for testing
+        internal static bool IsUnlinkedSpan(Span owner)
+        {
+            return owner == null ||
+                owner.Next == null ||
+                owner.Previous == null;
+        }
+
+        // Internal for testing
+        internal static bool SurroundedByInvalidContent(Span owner)
+        {
+            return owner.Next.Kind != SpanKindInternal.MetaCode ||
+                owner.Previous.Kind != SpanKindInternal.MetaCode;
         }
 
         internal static bool BeforeClosingBrace(int linePosition, ITextSnapshotLine lineSnapshot)

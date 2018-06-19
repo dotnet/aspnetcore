@@ -949,7 +949,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{")
                         .AutoCompleteWith("}", atEndOfSpan: true)
-                        .Accepts(AcceptedCharactersInternal.None)));
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory.EmptyCSharp().AsCodeBlock()));
         }
 
         [Fact]

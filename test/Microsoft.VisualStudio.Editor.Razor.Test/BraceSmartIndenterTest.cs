@@ -5,47 +5,232 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Moq;
 using Xunit;
+using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
+using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class BraceSmartIndenterTest : BraceSmartIndenterTestBase
     {
         [Fact]
-        public void AtValidContentKind_ReturnsFalseAtMarkup()
+        public void AtApplicableRazorBlock_NestedIfBlock_ReturnsFalse()
         {
             // Arrange
-            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("<p></p>"));
-            var changePosition = 2;
+            var syntaxTree = GetSyntaxTree("@{ if (true) { } }");
 
             // Act
-            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(14, syntaxTree);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void AtValidContentKind_ReturnsTrueAtCode()
+        public void AtApplicableRazorBlock_SectionBlock_ReturnsTrue()
         {
             // Arrange
-            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@{}"));
-            var changePosition = 2;
+            var syntaxTree = GetSyntaxTree("@section Foo { }");
 
             // Act
-            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(15, syntaxTree);
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void AtValidContentKind_ReturnsTrueAtMetacode()
+        public void AtApplicableRazorBlock_FunctionsBlock_ReturnsTrue()
+        {
+            // Arrange
+            var syntaxTree = GetSyntaxTree("@functions { }");
+
+            // Act
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(13, syntaxTree);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AtApplicableRazorBlock_ExplicitCodeBlock_ReturnsTrue()
+        {
+            // Arrange
+            var syntaxTree = GetSyntaxTree("@{ }");
+
+            // Act
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(3, syntaxTree);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ContainsInvalidContent_NewLineSpan_ReturnsFalse()
+        {
+            // Arrange
+            var span = ExtractSpan(2, "@{" + Environment.NewLine + "}");
+
+            // Act
+            var result = BraceSmartIndenter.ContainsInvalidContent(span);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ContainsInvalidContent_WhitespaceSpan_ReturnsFalse()
+        {
+            // Arrange
+            var span = ExtractSpan(2, "@{ }");
+
+            // Act
+            var result = BraceSmartIndenter.ContainsInvalidContent(span);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ContainsInvalidContent_MarkerSpan_ReturnsFalse()
+        {
+            // Arrange
+            var span = ExtractSpan(3, "@{}");
+
+            // Act
+            var result = BraceSmartIndenter.ContainsInvalidContent(span);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ContainsInvalidContent_NonWhitespaceMarker_ReturnsTrue()
+        {
+            // Arrange
+            var span = ExtractSpan(2, "@{ if}");
+
+            // Act
+            var result = BraceSmartIndenter.ContainsInvalidContent(span);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsUnlinkedSpan_NullPrevious_ReturnsTrue()
+        {
+            // Arrange
+            var span = ExtractSpan(0, "@{}");
+
+            // Act
+            var result = BraceSmartIndenter.IsUnlinkedSpan(span);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsUnlinkedSpan_NullNext_ReturnsTrue()
+        {
+            // Arrange
+            var span = ExtractSpan(3, "@{}");
+
+            // Act
+            var result = BraceSmartIndenter.IsUnlinkedSpan(span);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsUnlinkedSpan_NullOwner_ReturnsTrue()
+        {
+            // Arrange
+            Span owner = null;
+
+            // Act
+            var result = BraceSmartIndenter.IsUnlinkedSpan(owner);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void SurroundedByInvalidContent_MetacodeSurroundings_ReturnsFalse()
+        {
+            // Arrange
+            var span = ExtractSpan(2, "@{}");
+
+            // Act
+            var result = BraceSmartIndenter.SurroundedByInvalidContent(span);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void SurroundedByInvalidContent_OnlyNextMetacode_ReturnsTrue()
+        {
+            // Arrange
+            var span = ExtractSpan(9, "@{<p></p>}");
+
+            // Act
+            var result = BraceSmartIndenter.SurroundedByInvalidContent(span);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void SurroundedByInvalidContent_OnlyPreviousMetacode_ReturnsTrue()
+        {
+            // Arrange
+            var span = ExtractSpan(2, "@{<p>");
+
+            // Act
+            var result = BraceSmartIndenter.SurroundedByInvalidContent(span);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AtApplicableRazorBlock_AtMarkup_ReturnsFalse()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("<p></p>"));
+            var changePosition = 2;
+
+            // Act
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(changePosition, syntaxTree);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AtApplicableRazorBlock_AtExplicitCodeBlocksCode_ReturnsTrue()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@{}"));
+            var changePosition = 2;
+
+            // Act
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(changePosition, syntaxTree);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AtApplicableRazorBlock_AtMetacode_ReturnsTrue()
         {
             // Arrange
             var parseOptions = RazorParserOptions.Create(options => options.Directives.Add(FunctionsDirective.Directive));
@@ -53,21 +238,21 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changePosition = 12;
 
             // Act
-            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(changePosition, syntaxTree);
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void AtValidContentKind_ReturnsFalseWhenNoOwner()
+        public void AtApplicableRazorBlock_WhenNoOwner_ReturnsFalse()
         {
             // Arrange
             var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@DateTime.Now"));
             var changePosition = 14; // 1 after the end of the content
 
             // Act
-            var result = BraceSmartIndenter.AtValidContentKind(changePosition, syntaxTree);
+            var result = BraceSmartIndenter.AtApplicableRazorBlock(changePosition, syntaxTree);
 
             // Assert
             Assert.False(result);
@@ -337,6 +522,27 @@ namespace Microsoft.VisualStudio.Editor.Razor
             Assert.Same(focusedTextView, context.FocusedTextView);
             Assert.Equal(3, context.ChangePosition);
             Assert.True(result);
+        }
+
+        private static RazorSyntaxTree GetSyntaxTree(string content)
+        {
+            var syntaxTree = RazorSyntaxTree.Parse(
+                TestRazorSourceDocument.Create(content),
+                RazorParserOptions.Create(options =>
+                {
+                    options.Directives.Add(FunctionsDirective.Directive);
+                    options.Directives.Add(SectionDirective.Directive);
+                }));
+            syntaxTree.Root.LinkNodes();
+
+            return syntaxTree;
+        }
+
+        private static Span ExtractSpan(int spanLocation, string content)
+        {
+            var syntaxTree = GetSyntaxTree(content);
+            var span = syntaxTree.Root.LocateOwner(new SourceChange(new SourceSpan(spanLocation, 0), string.Empty));
+            return span;
         }
 
         protected class TestTextContentChangedEventArgs : TextContentChangedEventArgs
