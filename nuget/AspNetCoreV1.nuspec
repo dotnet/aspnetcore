@@ -19,8 +19,10 @@
     </contentFiles>
   </metadata>
   <files>
-    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\Win32\aspnetcore.dll" target="contentFiles\any\any\x86\aspnetcore.dll" />
-    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\x64\aspnetcore.dll" target="contentFiles\any\any\x64\aspnetcore.dll" />
+    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\Win32\aspnetcore.dll" target="contentFiles\any\any\x86\" />
+    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\x64\aspnetcore.dll" target="contentFiles\any\any\x64\" />
+    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\Win32\aspnetcore.pdb" target="contentFiles\any\any\x86\" />
+    <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\x64\aspnetcore.pdb" target="contentFiles\any\any\x64\" />
     <file src="src\AspNetCoreModuleV1\AspNetCore\bin\$Configuration$\x64\*.xml"/>
     <file src="tools\installancm.ps1"/>
     <file src="LICENSE.txt"/>
