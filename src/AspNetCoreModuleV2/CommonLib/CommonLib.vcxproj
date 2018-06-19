@@ -206,6 +206,7 @@
     <ClInclude Include="utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="debugutil.cpp" />
     <ClCompile Include="fx_ver.cxx" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />

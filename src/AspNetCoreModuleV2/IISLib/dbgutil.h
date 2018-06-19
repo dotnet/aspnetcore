@@ -7,11 +7,11 @@
 #include <crtdbg.h>
 
 //
-// TODO 
+// TODO
 //      Using _CrtDbg implementation. If hooking is desired
 //      wrappers should be provided here so that we can reimplement
 //      if neecessary.
-// 
+//
 //      IF_DEBUG/DEBUG FLAGS
 //
 //      registry configuration
@@ -56,7 +56,7 @@ extern DWORD DEBUG_FLAGS_VAR;
 
 #define DECLARE_DEBUG_PRINT_OBJECT( _pszLabel_ )                \
     PCSTR DEBUG_LABEL_VAR = _pszLabel_;                 \
-    DWORD DEBUG_FLAGS_VAR = DEBUG_FLAGS_ANY;            \
+    DWORD DEBUG_FLAGS_VAR = DEBUG_FLAGS_WARN;            \
 
 #define DECLARE_DEBUG_PRINT_OBJECT2( _pszLabel_, _dwLevel_ )    \
     PCSTR DEBUG_LABEL_VAR = _pszLabel_;                 \

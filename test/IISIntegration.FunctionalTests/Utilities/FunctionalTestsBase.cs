@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     public class FunctionalTestsBase : LoggedTest
     {
+        private const string DebugEnvironmentVariable = "ASPNETCORE_MODULE_DEBUG";
+
         public FunctionalTestsBase(ITestOutputHelper output = null) : base(output)
         {
         }
@@ -17,6 +19,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected virtual async Task<IISDeploymentResult> DeployAsync(DeploymentParameters parameters)
         {
+            if (!parameters.EnvironmentVariables.ContainsKey(DebugEnvironmentVariable))
+            {
+                // enable debug output
+                parameters.EnvironmentVariables[DebugEnvironmentVariable] = "4";
+            }
             _deployer = ApplicationDeployerFactory.Create(parameters, LoggerFactory);
 
             var result = await _deployer.DeployAsync();

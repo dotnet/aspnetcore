@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var response = await deploymentResult.RetryingHttpClient.GetAsync(_helloWorldRequest);
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(_helloWorldResponse, responseText);
+            AssertLoadedVersion(version);
         }
 
         [Theory] // Tests need to publish to change folder locations
@@ -99,9 +100,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(_helloWorldResponse, responseText);
+            AssertLoadedVersion(version);
         }
 
-        [Theory] 
+        [Theory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_MultipleRequestHandlers_UpgradeWorks(string version)
@@ -134,6 +136,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             responseText = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(_helloWorldResponse, responseText);
+            AssertLoadedVersion(version);
         }
 
         private DeploymentParameters GetGlobalVersionBaseDeploymentParameters()
@@ -155,6 +158,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                deploymentResult.DeploymentResult.DeploymentParameters.RuntimeArchitecture.ToString(),
                version,
                _aspNetCoreDll);
+        }
+
+        private void AssertLoadedVersion(string version)
+        {
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains(version + @"\aspnetcorev2_outofprocess.dll"));
         }
     }
 }

@@ -179,7 +179,6 @@
     <ClInclude Include="percpu.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="prime.h" />
-    <ClInclude Include="pudebug.h" />
     <ClInclude Include="reftrace.h" />
     <ClInclude Include="rwlock.h" />
     <ClInclude Include="stringa.h" />

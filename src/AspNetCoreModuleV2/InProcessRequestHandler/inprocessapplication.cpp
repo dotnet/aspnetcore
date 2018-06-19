@@ -408,7 +408,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
                 goto Finished;
             }
         }
-      
+
         if (m_status != APPLICATION_STATUS::STARTING)
         {
             if (m_status == APPLICATION_STATUS::FAIL)

@@ -9,6 +9,9 @@
 #include "globalmodule.h"
 #include "acache.h"
 #include "utility.h"
+#include "debugutil.h"
+
+DECLARE_DEBUG_PRINT_OBJECT("aspnetcore.dll");
 
 HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
@@ -20,11 +23,8 @@ HMODULE             g_hAspnetCoreRH = NULL;
 BOOL                g_fAspnetcoreRHAssemblyLoaded = FALSE;
 BOOL                g_fAspnetcoreRHLoadedError = FALSE;
 BOOL                g_fInShutdown = FALSE;
-DWORD               g_dwAspNetCoreDebugFlags = 0;
 DWORD               g_dwActiveServerProcesses = 0;
 SRWLOCK             g_srwLock;
-DWORD               g_dwDebugFlags = 0;
-PCSTR               g_szDebugLabel = "ASPNET_CORE_MODULE";
 PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 
 VOID
@@ -100,13 +100,6 @@ HRESULT
 
     UNREFERENCED_PARAMETER(dwServerVersion);
 
-#ifdef DEBUG
-    CREATE_DEBUG_PRINT_OBJECT("Asp.Net Core Module");
-    g_dwDebugFlags = DEBUG_FLAGS_ANY;
-#endif // DEBUG
-
-    CREATE_DEBUG_PRINT_OBJECT;
-
     //LoadGlobalConfiguration();
 
     InitializeSRWLock(&g_srwLock);
@@ -147,20 +140,10 @@ HRESULT
             fDisableANCM = (dwData != 0);
         }
 
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"DebugFlags",
-            NULL,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD))
-        {
-            g_dwAspNetCoreDebugFlags = dwData;
-        }
-
         RegCloseKey(hKey);
     }
+
+    DebugInitialize();
 
     if (fDisableANCM)
     {

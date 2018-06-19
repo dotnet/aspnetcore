@@ -8,7 +8,6 @@
 // Externals defined in inprocess
 BOOL       g_fProcessDetach;
 HANDLE     g_hEventLog;
-DWORD g_dwAspNetCoreDebugFlags;
 PCSTR g_szDebugLabel;
 DWORD g_dwDebugFlags;
 

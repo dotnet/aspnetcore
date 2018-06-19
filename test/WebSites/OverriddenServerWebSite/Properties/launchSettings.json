@@ -18,7 +18,8 @@
         "ANCM_PATH": "$(TargetDir)$(AncmV2Path)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "LAUNCHER_PATH": "$(DotNetPath)"
+        "LAUNCHER_PATH": "$(DotNetPath)",
+        "ASPNETCORE_MODULE_DEBUG": "4"
       }
     },
     "ANCM IIS": {
@@ -30,7 +31,8 @@
         "ANCM_PATH": "$(TargetDir)$(AncmV2Path)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "LAUNCHER_PATH": "$(DotNetPath)"
+        "LAUNCHER_PATH": "$(DotNetPath)",
+        "ASPNETCORE_MODULE_DEBUG": "4"
       }
     }
   }
