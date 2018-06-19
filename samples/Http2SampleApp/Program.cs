@@ -1,8 +1,12 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Security.Authentication;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -32,12 +36,46 @@ namespace Http2SampleApp
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                         listenOptions.UseHttps("testCert.pfx", "testPassword");
                         listenOptions.UseConnectionLogging();
+                        listenOptions.ConnectionAdapters.Add(new TlsFilterAdapter());
                     });
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>();
 
             hostBuilder.Build().Run();
+        }
+
+        // https://tools.ietf.org/html/rfc7540#appendix-A
+        // Allows filtering TLS handshakes on a per connection basis
+        private class TlsFilterAdapter : IConnectionAdapter
+        {
+            public bool IsHttps => false;
+
+            public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
+            {
+                var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
+
+                if (tlsFeature.CipherAlgorithm == CipherAlgorithmType.Null)
+                {
+                    throw new NotSupportedException("Prohibited cipher: " + tlsFeature.CipherAlgorithm);
+                }
+
+                return Task.FromResult<IAdaptedConnection>(new AdaptedConnection(context.ConnectionStream));
+            }
+
+            private class AdaptedConnection : IAdaptedConnection
+            {
+                public AdaptedConnection(Stream adaptedStream)
+                {
+                    ConnectionStream = adaptedStream;
+                }
+
+                public Stream ConnectionStream { get; }
+
+                public void Dispose()
+                {
+                }
+            }
         }
     }
 }
