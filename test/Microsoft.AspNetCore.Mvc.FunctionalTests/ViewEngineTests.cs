@@ -246,11 +246,11 @@ ViewWithNestedLayout-Content
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/7922")]
+        [Fact]
         public Task RazorViewEngine_RendersViewsFromEmbeddedFileProvider_WhenLookedupByName()
             => RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider("/EmbeddedViews/LookupByName");
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/7922")]
+        [Fact]
         public Task RazorViewEngine_RendersViewsFromEmbeddedFileProvider_WhenLookedupByPath()
             => RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider("/EmbeddedViews/LookupByPath");
 
