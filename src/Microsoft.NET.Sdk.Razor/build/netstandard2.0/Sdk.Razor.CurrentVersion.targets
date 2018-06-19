@@ -326,6 +326,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       
       <Content Condition="'%(Content.Extension)'=='.cshtml'" CopyToPublishDirectory="Never" />
     </ItemGroup>
+
+    <ItemGroup Condition="
+      '$(ResolvedRazorCompileToolset)'=='RazorSdk' and
+      '$(EnableDefaultRazorGenerateItems)'=='true'">
+
+      <Content Condition="'%(Content.Extension)'=='.cshtml'" Pack="$(IncludeRazorContentInPack)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="AssignRazorGenerateTargetPaths" Condition="'@(RazorGenerate)' != ''">
