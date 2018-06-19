@@ -553,6 +553,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
         }
 
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithStartupObjectSpecified_Works()
+        {
+            var result = await DotnetMSBuild("Build", $"/p:StartupObject=SimpleMvc.Program");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
+        }
+
         private static DependencyContext ReadDependencyContext(string depsFilePath)
         {
             var reader = new DependencyContextJsonReader();
