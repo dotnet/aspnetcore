@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal("Hello World", responseText);
 
-            Dispose();
+            StopServer();
 
             var folderPath = Path.Combine(deploymentResult.DeploymentResult.ContentRoot, @"logs");
 

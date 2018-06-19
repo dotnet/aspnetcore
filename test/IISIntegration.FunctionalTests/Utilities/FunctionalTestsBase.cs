@@ -33,7 +33,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public override void Dispose()
         {
+            StopServer();
+        }
+
+        public void StopServer()
+        {
             _deployer?.Dispose();
+            _deployer = null;
         }
     }
 }

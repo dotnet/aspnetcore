@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(_helloWorldResponse, responseText);
 
-            Dispose();
+            StopServer();
 
             deploymentResult = await DeployAsync(deploymentParameters);
 
