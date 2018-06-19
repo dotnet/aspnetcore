@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ApiActionsDoNotRequireExplicitModelValidationCheckFacts : AnalyzerTestBase
     {
-        private static DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC7001_ApiActionsHaveBadModelStateFilter;
+        private static DiagnosticDescriptor DiagnosticDescriptor = ExperimentalDiagnosticDescriptors.MVC7001_ApiActionsHaveBadModelStateFilter;
 
         protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; }
             = new ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer();

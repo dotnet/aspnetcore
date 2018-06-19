@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ActionsMustNotBeAsyncVoidFacts : AnalyzerTestBase
     {
-        private static DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC7003_ActionsMustNotBeAsyncVoid;
+        private static DiagnosticDescriptor DiagnosticDescriptor = ExperimentalDiagnosticDescriptors.MVC7003_ActionsMustNotBeAsyncVoid;
 
         protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; }
             = new ActionsMustNotBeAsyncVoidAnalyzer();

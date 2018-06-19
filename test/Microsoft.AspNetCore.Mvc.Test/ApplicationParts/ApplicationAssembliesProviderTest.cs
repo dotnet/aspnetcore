@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             // Arrange
             var excludeAssemblies = new string[]
             {
+                "Microsoft.AspNetCore.Mvc.Analyzers",
                 "Microsoft.AspNetCore.Mvc.Test",
                 "Microsoft.AspNetCore.Mvc.Core.TestCommon",
             };

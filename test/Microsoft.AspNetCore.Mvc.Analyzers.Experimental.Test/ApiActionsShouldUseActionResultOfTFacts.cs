@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ApiActionsShouldUseActionResultOfTFacts : AnalyzerTestBase
     {
-        private static DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC7002_ApiActionsShouldReturnActionResultOf;
+        private static DiagnosticDescriptor DiagnosticDescriptor = ExperimentalDiagnosticDescriptors.MVC7002_ApiActionsShouldReturnActionResultOf;
 
         protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; }
             = new ApiActionsShouldUseActionResultOfTAnalyzer();

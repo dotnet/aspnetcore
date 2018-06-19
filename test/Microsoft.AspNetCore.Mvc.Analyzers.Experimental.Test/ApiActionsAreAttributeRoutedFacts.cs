@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class ApiActionsAreAttributeRoutedFacts : AnalyzerTestBase
     {
-        private static DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC7000_ApiActionsMustBeAttributeRouted;
+        private static DiagnosticDescriptor DiagnosticDescriptor = ExperimentalDiagnosticDescriptors.MVC7000_ApiActionsMustBeAttributeRouted;
 
         protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; }
             = new ApiActionsAreAttributeRoutedAnalyzer();

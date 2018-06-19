@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public static readonly string ReturnTypeKey = "ReturnType";
 
         public ApiActionsShouldUseActionResultOfTAnalyzer()
-            : base(DiagnosticDescriptors.MVC7002_ApiActionsShouldReturnActionResultOf)
+            : base(ExperimentalDiagnosticDescriptors.MVC7002_ApiActionsShouldReturnActionResultOf)
         {
         }
 

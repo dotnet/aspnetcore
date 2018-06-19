@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         internal const string MethodNameKey = "MethodName";
 
         public ApiActionsAreAttributeRoutedAnalyzer()
-            : base(DiagnosticDescriptors.MVC7000_ApiActionsMustBeAttributeRouted)
+            : base(ExperimentalDiagnosticDescriptors.MVC7000_ApiActionsMustBeAttributeRouted)
         {
         }
 

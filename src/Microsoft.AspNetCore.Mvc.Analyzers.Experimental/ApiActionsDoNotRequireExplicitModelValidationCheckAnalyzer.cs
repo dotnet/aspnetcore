@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : ApiControllerAnalyzerBase
     {
         public ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer()
-            : base(DiagnosticDescriptors.MVC7001_ApiActionsHaveBadModelStateFilter)
+            : base(ExperimentalDiagnosticDescriptors.MVC7001_ApiActionsHaveBadModelStateFilter)
         {
         }
 

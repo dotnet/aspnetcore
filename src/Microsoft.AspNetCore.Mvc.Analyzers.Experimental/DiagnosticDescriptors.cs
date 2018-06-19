@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
-    public static class DiagnosticDescriptors
+    public static class ExperimentalDiagnosticDescriptors
     {
         public static readonly DiagnosticDescriptor MVC7000_ApiActionsMustBeAttributeRouted =
             new DiagnosticDescriptor(

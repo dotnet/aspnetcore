@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public static readonly string ReturnTypeKey = "ReturnType";
 
         public ActionsMustNotBeAsyncVoidAnalyzer()
-            : base(DiagnosticDescriptors.MVC7003_ActionsMustNotBeAsyncVoid)
+            : base(ExperimentalDiagnosticDescriptors.MVC7003_ActionsMustNotBeAsyncVoid)
         {
         }
 

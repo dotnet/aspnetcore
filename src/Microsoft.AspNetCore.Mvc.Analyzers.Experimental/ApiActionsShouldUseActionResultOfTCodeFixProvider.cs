@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     public class ApiActionsShouldUseActionResultOfTCodeFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
-            ImmutableArray.Create(DiagnosticDescriptors.MVC7002_ApiActionsShouldReturnActionResultOf.Id);
+            ImmutableArray.Create(ExperimentalDiagnosticDescriptors.MVC7002_ApiActionsShouldReturnActionResultOf.Id);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
