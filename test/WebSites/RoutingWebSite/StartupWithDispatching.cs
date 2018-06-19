@@ -33,26 +33,24 @@ namespace RoutingWebSite
         {
             app.UseDispatcher();
 
-            app.UseEndpoint();
+            app.UseMvcWithEndpoint(routes =>
+            {
+                routes.MapAreaEndpoint(
+                   "flightRoute",
+                   "adminRoute",
+                   "{area:exists}/{controller}/{action}",
+                   new { controller = "Home", action = "Index" },
+                   new { area = "Travel" });
 
-            //app.UseMvcWithEndpoint(routes =>
-            //{
-            //    routes.MapAreaEndpoint(
-            //       "flightRoute",
-            //       "adminRoute",
-            //       "{area:exists}/{controller}/{action}",
-            //       new { controller = "Home", action = "Index" },
-            //       new { area = "Travel" });
+                routes.MapEndpoint(
+                    "ActionAsMethod",
+                    "{controller}/{action}",
+                    defaults: new { controller = "Home", action = "Index" });
 
-            //    routes.MapEndpoint(
-            //        "ActionAsMethod",
-            //        "{controller}/{action}",
-            //        defaults: new { controller = "Home", action = "Index" });
-
-            //    routes.MapEndpoint(
-            //        "RouteWithOptionalSegment",
-            //        "{controller}/{action}/{path?}");
-            //});
+                routes.MapEndpoint(
+                    "RouteWithOptionalSegment",
+                    "{controller}/{action}/{path?}");
+            });
         }
     }
 }
