@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+#include "debugutil.h"
 
 // static
 HRESULT
@@ -569,9 +570,12 @@ UTILITY::LogEvent(
         );
     }
 
-    if (dwEventInfoType == EVENTLOG_ERROR_TYPE)
+    STACK_STRA(converted, 256);
+    if (converted.CopyW(pstrMsg))
     {
-        fwprintf(stderr, L"ERROR: %s\n", pstrMsg);
+        DebugPrintf(
+            dwEventInfoType == EVENTLOG_ERROR_TYPE ? ASPNETCORE_DEBUG_FLAG_ERROR : ASPNETCORE_DEBUG_FLAG_INFO,
+            "Event Log: %s", converted.QueryStr());
     }
 }
 

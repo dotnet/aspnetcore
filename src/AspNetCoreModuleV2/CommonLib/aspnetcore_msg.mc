@@ -212,6 +212,12 @@ Language=English
 %1
 .
 
+Messageid=1031
+SymbolicName=ASPNETCORE_EVENT_INVALID_PROCESS_PATH
+Language=English
+%1
+.
+
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
 ;

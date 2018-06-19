@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include "stdafx.h"
-#include <experimental/filesystem>
 
 namespace fs = std::experimental::filesystem;
 
@@ -96,7 +95,7 @@ GlobalVersionUtility::RemoveFileNameFromFolderPath(std::wstring fileName)
     return path.parent_path();
 }
 
-std::wstring 
+std::wstring
 GlobalVersionUtility::GetModuleName(HMODULE hModuleName)
 {
     DWORD dwSize = MAX_PATH;
@@ -126,6 +125,6 @@ GlobalVersionUtility::GetModuleName(HMODULE hModuleName)
             fDone = TRUE;
         }
     }
-    
+
     return retVal;
 }

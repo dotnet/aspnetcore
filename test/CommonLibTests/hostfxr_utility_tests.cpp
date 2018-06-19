@@ -84,7 +84,6 @@ TEST(ParseHostFxrArguments, ProvideNoArgs_InvalidArgs)
 TEST(GetAbsolutePathToDotnetFromProgramFiles, BackupWorks)
 {
     STRU struAbsolutePathToDotnet;
-    HRESULT hr = S_OK;
     BOOL fDotnetInProgramFiles;
     BOOL is64Bit;
     BOOL fIsWow64 = FALSE;
@@ -109,15 +108,14 @@ TEST(GetAbsolutePathToDotnetFromProgramFiles, BackupWorks)
         fDotnetInProgramFiles = UTILITY::CheckIfFileExists(L"C:/Program Files (x86)/dotnet/dotnet.exe");
     }
 
-    hr = HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles(&struAbsolutePathToDotnet);
+    auto dotnetPath = HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles();
     if (fDotnetInProgramFiles)
     {
-        EXPECT_EQ(hr, S_OK);
+        EXPECT_TRUE(dotnetPath.has_value());
     }
     else
     {
-        EXPECT_NE(hr, S_OK);
-        EXPECT_TRUE(struAbsolutePathToDotnet.IsEmpty());
+        EXPECT_FALSE(dotnetPath.has_value());
     }
 }
 
@@ -138,5 +136,5 @@ TEST(GetHostFxrArguments, InvalidParams)
         &retVal, // arg count
         &bstrArray); // args array.
 
-    EXPECT_EQ(E_INVALIDARG, hr);
+    EXPECT_EQ(HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND), hr);
 }

@@ -8,15 +8,15 @@ class GlobalVersionUtility
 {
 public:
 
-    static 
-        std::wstring 
+    static
+        std::wstring
         GetGlobalRequestHandlerPath(PCWSTR pwzAspNetCoreFolderPath, PCWSTR pwzHandlerVersion, PCWSTR pwzHandlerName);
 
     static
         std::wstring
         FindHighestGlobalVersion(PCWSTR pwzAspNetCoreFolderPath);
 
-    static 
+    static
         std::wstring
         RemoveFileNameFromFolderPath(std::wstring fileName);
 

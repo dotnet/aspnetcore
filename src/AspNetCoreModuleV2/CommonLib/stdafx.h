@@ -38,5 +38,6 @@
 #include "resources.h"
 #include "aspnetcore_msg.h"
 #include "hostfxr_utility.h"
+#include "EventLog.h"
 #include "hostfxroptions.h"
 

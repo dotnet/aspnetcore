@@ -54,7 +54,6 @@
 #include "debugutil.h"
 
 // Common lib
-#include "hostfxr_utility.h"
 #include "requesthandler.h"
 #include "utility.h"
 #include "application.h"

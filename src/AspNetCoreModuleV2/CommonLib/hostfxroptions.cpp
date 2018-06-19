@@ -39,7 +39,7 @@ HRESULT HOSTFXR_OPTIONS::Create(
             goto Finished;
         }
     }
-    else if (HOSTFXR_UTILITY::IsDotnetExecutable(&struExeLocation))
+    else if (HOSTFXR_UTILITY::IsDotnetExecutable(struExeLocation.QueryStr()))
     {
         if (FAILED(hr = HOSTFXR_UTILITY::ParseHostfxrArguments(
             pcwzArguments,
