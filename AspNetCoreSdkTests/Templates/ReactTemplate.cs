@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AspNetCoreSdkTests.Templates
 {
@@ -9,6 +10,10 @@ namespace AspNetCoreSdkTests.Templates
         public ReactTemplate() { }
 
         public override string Name => "react";
+
+        // Remove generated hashes since they may var by platform
+        public override IEnumerable<string> FilesAfterPublish =>
+            base.FilesAfterPublish.Select(f => Regex.Replace(f, @"\.[0-9a-f]{8}\.", ".[HASH]."));
 
         public override IEnumerable<string> ExpectedFilesAfterPublish =>
             base.ExpectedFilesAfterPublish
@@ -19,15 +24,15 @@ namespace AspNetCoreSdkTests.Templates
                 Path.Combine("ClientApp", "build", "index.html"),
                 Path.Combine("ClientApp", "build", "manifest.json"),
                 Path.Combine("ClientApp", "build", "service-worker.js"),
-                Path.Combine("ClientApp", "build", "static", "css", "main.8302bbea.css"),
-                Path.Combine("ClientApp", "build", "static", "css", "main.8302bbea.css.map"),
-                Path.Combine("ClientApp", "build", "static", "js", "main.31eb739b.js"),
-                Path.Combine("ClientApp", "build", "static", "js", "main.31eb739b.js.map"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.448c34a5.woff2"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.89889688.svg"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.e18bbf61.ttf"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.f4769f9b.eot"),
-                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.fa277232.woff"),
+                Path.Combine("ClientApp", "build", "static", "css", "main.[HASH].css"),
+                Path.Combine("ClientApp", "build", "static", "css", "main.[HASH].css.map"),
+                Path.Combine("ClientApp", "build", "static", "js", "main.[HASH].js"),
+                Path.Combine("ClientApp", "build", "static", "js", "main.[HASH].js.map"),
+                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].woff2"),
+                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].svg"),
+                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].ttf"),
+                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].eot"),
+                Path.Combine("ClientApp", "build", "static", "media", "glyphicons-halflings-regular.[HASH].woff"),
             });
     }
 }
