@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+DECLARE_DEBUG_PRINT_OBJECT2("tests", ASPNETCORE_DEBUG_FLAG_INFO | ASPNETCORE_DEBUG_FLAG_CONSOLE);
+
 #if defined(_WIN32)
 int wmain(int argc, wchar_t* argv[])
 #else

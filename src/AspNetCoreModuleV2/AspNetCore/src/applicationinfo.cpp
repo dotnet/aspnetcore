@@ -191,15 +191,14 @@ APPLICATION_INFO::EnsureApplicationCreated(
     IHttpContext *pHttpContext
 )
 {
-    HRESULT             hr = S_OK;
     IAPPLICATION       *pApplication = NULL;
     STRU                struExeLocation;
-    STACK_STRU(struFileName, 300);  // >MAX_PATH
     STRU                struHostFxrDllLocation;
+    STACK_STRU(struFileName, 300);  // >MAX_PATH
 
     if (m_pApplication != NULL)
     {
-        goto Finished;
+        return S_OK;
     }
 
     if (m_pApplication == NULL)
@@ -207,7 +206,7 @@ APPLICATION_INFO::EnsureApplicationCreated(
         SRWExclusiveLock lock(m_srwLock);
         if (m_pApplication != NULL)
         {
-            goto Finished;
+            return S_OK;
         }
 
         //
@@ -221,27 +220,19 @@ APPLICATION_INFO::EnsureApplicationCreated(
             // FindRequestHandlerAssembly obtains a global lock, but after releasing the lock,
             // there is a period where we could call
 
-            hr = FindRequestHandlerAssembly(struExeLocation);
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
+            RETURN_IF_FAILED(FindRequestHandlerAssembly(struExeLocation));
 
             if (m_pfnAspNetCoreCreateApplication == NULL)
             {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
-                goto Finished;
+                RETURN_IF_FAILED(HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION));
             }
 
-            hr = m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext, struExeLocation.QueryStr(), &pApplication);
-
+            RETURN_IF_FAILED(m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext, struExeLocation.QueryStr(), &pApplication));
             m_pApplication = pApplication;
         }
     }
 
-Finished:
-
-    return hr;
+    return S_OK;
 }
 
 HRESULT
@@ -288,20 +279,17 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
             {
                 std::unique_ptr<HOSTFXR_OPTIONS> options;
 
-                if (FAILED(hr = HOSTFXR_OPTIONS::Create(
+                FINISHED_IF_FAILED(HOSTFXR_OPTIONS::Create(
                     NULL,
                     m_pConfiguration->QueryProcessPath()->QueryStr(),
                     m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
                     m_pConfiguration->QueryArguments()->QueryStr(),
                     g_hEventLog,
-                    options)))
-                {
-                    goto Finished;
-                }
+                    options));
 
-                location.Copy(options->GetExeLocation());
+                FINISHED_IF_FAILED(location.Copy(options->GetExeLocation()));
 
-                if (FAILED(hr = FindNativeAssemblyFromHostfxr(options.get(), pstrHandlerDllName, &struFileName)))
+                if (FAILED_LOG(hr = FindNativeAssemblyFromHostfxr(options.get(), pstrHandlerDllName, &struFileName)))
                 {
                     UTILITY::LogEventF(g_hEventLog,
                             EVENTLOG_ERROR_TYPE,
@@ -314,7 +302,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
             }
             else
             {
-                if (FAILED(hr = FindNativeAssemblyFromGlobalLocation(pstrHandlerDllName, &struFileName)))
+                if (FAILED_LOG(hr = FindNativeAssemblyFromGlobalLocation(pstrHandlerDllName, &struFileName)))
                 {
                     UTILITY::LogEventF(g_hEventLog,
                         EVENTLOG_ERROR_TYPE,
@@ -326,7 +314,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
                 }
             }
 
-            WDebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, L"Loading request handler: %s", struFileName.QueryStr());
+            WLOG_INFOF(L"Loading request handler: %s", struFileName.QueryStr());
 
             g_hAspnetCoreRH = LoadLibraryW(struFileName.QueryStr());
 

@@ -18,8 +18,6 @@ namespace ConfigUtilityTests
             IAppHostElement* retElement = NULL;
 
             STRU handlerVersion;
-            BSTR bstrKey = SysAllocString(key.c_str());
-            BSTR bstrValue = SysAllocString(value.c_str());
 
             // NiceMock removes warnings about "uninteresting calls",
             auto element = std::make_unique<NiceMock<MockElement>>();
@@ -39,15 +37,13 @@ namespace ConfigUtilityTests
             ON_CALL(*nameElement, GetPropertyByName(_, _))
                 .WillByDefault(DoAll(testing::SetArgPointee<1>(mockProperty.get()), testing::Return(S_OK)));
             EXPECT_CALL(*mockProperty, get_StringValue(_))
-                .WillOnce(DoAll(testing::SetArgPointee<0>(bstrKey), testing::Return(S_OK)))
-                .WillOnce(DoAll(testing::SetArgPointee<0>(bstrValue), testing::Return(S_OK)));
+                .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(key.c_str())), testing::Return(S_OK)))
+                .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(value.c_str())), testing::Return(S_OK)));
 
             HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), &handlerVersion);
 
+            EXPECT_EQ(hr, S_OK);
             EXPECT_STREQ(handlerVersion.QueryStr(), expected.c_str());
-
-            SysFreeString(bstrKey);
-            SysFreeString(bstrValue);
         }
     };
 
@@ -66,11 +62,6 @@ namespace ConfigUtilityTests
         IAppHostElement* retElement = NULL;
         STRU handlerVersion;
 
-        BSTR bstrKey = SysAllocString(L"key");
-        BSTR bstrValue = SysAllocString(L"value");
-        BSTR bstrKey2 = SysAllocString(L"handlerVersion");
-        BSTR bstrValue2  = SysAllocString(L"value2");
-
         auto element = std::make_unique<NiceMock<MockElement>>();
         auto innerElement = std::make_unique<NiceMock<MockElement>>();
         auto collection = std::make_unique<NiceMock<MockCollection>>();
@@ -88,18 +79,14 @@ namespace ConfigUtilityTests
         ON_CALL(*nameElement, GetPropertyByName(_, _))
             .WillByDefault(DoAll(testing::SetArgPointee<1>(mockProperty.get()), testing::Return(S_OK)));
         EXPECT_CALL(*mockProperty, get_StringValue(_))
-            .WillOnce(DoAll(testing::SetArgPointee<0>(bstrKey), testing::Return(S_OK)))
-            .WillOnce(DoAll(testing::SetArgPointee<0>(bstrValue), testing::Return(S_OK)))
-            .WillOnce(DoAll(testing::SetArgPointee<0>(bstrKey2), testing::Return(S_OK)))
-            .WillOnce(DoAll(testing::SetArgPointee<0>(bstrValue2), testing::Return(S_OK)));
+            .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(L"key")), testing::Return(S_OK)))
+            .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(L"value")), testing::Return(S_OK)))
+            .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(L"handlerVersion")), testing::Return(S_OK)))
+            .WillOnce(DoAll(testing::SetArgPointee<0>(SysAllocString(L"value2")), testing::Return(S_OK)));
 
         HRESULT hr = ConfigUtility::FindHandlerVersion(element.get(), &handlerVersion);
 
+        EXPECT_EQ(hr, S_OK);
         EXPECT_STREQ(handlerVersion.QueryStr(), L"value2");
-
-        SysFreeString(bstrKey);
-        SysFreeString(bstrValue);
-        SysFreeString(bstrKey2);
-        SysFreeString(bstrValue2);
     }
 }

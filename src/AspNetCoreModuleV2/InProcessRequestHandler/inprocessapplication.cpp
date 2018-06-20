@@ -557,7 +557,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     VOID
 )
 {
-    HRESULT             hr = S_OK;
+    HRESULT             hr;
     HMODULE             hModule = nullptr;
     DWORD               hostfxrArgc = 0;
     BSTR               *hostfxrArgv = NULL;
@@ -576,7 +576,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         if (hModule == NULL)
         {
             // .NET Core not installed (we can log a more detailed error message here)
-            hr = ERROR_BAD_ENVIRONMENT;
+            hr = LOG_IF_FAILED(ERROR_BAD_ENVIRONMENT);
             goto Finished;
         }
 
@@ -584,29 +584,23 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         pProc = (hostfxr_main_fn)GetProcAddress(hModule, "hostfxr_main");
         if (pProc == NULL)
         {
-            hr = ERROR_BAD_ENVIRONMENT;
+            hr = LOG_IF_FAILED(ERROR_BAD_ENVIRONMENT);
             goto Finished;
         }
 
-        if (FAILED(hr = HOSTFXR_OPTIONS::Create(
+        FINISHED_IF_FAILED(hr = HOSTFXR_OPTIONS::Create(
             m_struExeLocation.QueryStr(),
             m_pConfig->QueryProcessPath()->QueryStr(),
             m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
             m_pConfig->QueryArguments()->QueryStr(),
             g_hEventLog,
             hostFxrOptions
-            )))
-        {
-            goto Finished;
-        }
+            ));
 
         hostfxrArgc = hostFxrOptions->GetArgc();
         hostfxrArgv = hostFxrOptions->GetArgv();
 
-        if (FAILED(hr = SetEnvironementVariablesOnWorkerProcess()))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(SetEnvironementVariablesOnWorkerProcess());
     }
 
     // There can only ever be a single instance of .NET Core

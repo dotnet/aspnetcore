@@ -17,90 +17,38 @@ public:
     HRESULT
     FindHandlerVersion(IAppHostElement* pElement, STRU* strHandlerVersionValue)
     {
-        HRESULT hr = S_OK;
-        IAppHostElement                *pHandlerSettings = NULL;
-        IAppHostElementCollection      *pHandlerSettingsCollection = NULL;
-        ENUM_INDEX                      index;
-        IAppHostElement                *pHandlerVar = NULL;
+        HRESULT hr;
+        CComPtr<IAppHostElement>           pHandlerSettings = nullptr;
+        CComPtr<IAppHostElementCollection> pHandlerSettingsCollection = nullptr;
+        CComPtr<IAppHostElement>           pHandlerVar = nullptr;
+        ENUM_INDEX                         index {};
         STRU strHandlerName;
         STRU strHandlerValue;
 
-        hr = GetElementChildByName(pElement,
-            CS_ASPNETCORE_HANDLER_SETTINGS,
-            &pHandlerSettings);
-        if (FAILED(hr))
+        RETURN_IF_FAILED(GetElementChildByName(pElement, CS_ASPNETCORE_HANDLER_SETTINGS,&pHandlerSettings));
+        RETURN_IF_FAILED(pHandlerSettings->get_Collection(&pHandlerSettingsCollection));
+
+        RETURN_IF_FAILED(hr = FindFirstElement(pHandlerSettingsCollection, &index, &pHandlerVar));
+
+        while (hr != S_FALSE)
         {
-            goto Finished;
-        }
-
-        hr = pHandlerSettings->get_Collection(&pHandlerSettingsCollection);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        for (hr = FindFirstElement(pHandlerSettingsCollection, &index, &pHandlerVar);
-            SUCCEEDED(hr);
-            hr = FindNextElement(pHandlerSettingsCollection, &index, &pHandlerVar))
-        {
-            if (hr == S_FALSE)
-            {
-                hr = S_OK;
-                break;
-            }
-
-            hr = GetElementStringProperty(pHandlerVar,
-                CS_ASPNETCORE_HANDLER_SETTINGS_NAME,
-                &strHandlerName);
-
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-
-            hr = GetElementStringProperty(pHandlerVar,
-                CS_ASPNETCORE_HANDLER_SETTINGS_VALUE,
-                &strHandlerValue);
-
-            if (FAILED(hr))
-            {
-                goto Finished;
-
-            }
+            RETURN_IF_FAILED(GetElementStringProperty(pHandlerVar, CS_ASPNETCORE_HANDLER_SETTINGS_NAME, &strHandlerName));
+            RETURN_IF_FAILED(GetElementStringProperty(pHandlerVar, CS_ASPNETCORE_HANDLER_SETTINGS_VALUE, &strHandlerValue));
 
             if (strHandlerName.Equals(CS_ASPNETCORE_HANDLER_VERSION, TRUE))
             {
-                hr = strHandlerVersionValue->Copy(strHandlerValue);
-                goto Finished;
+                RETURN_IF_FAILED(strHandlerVersionValue->Copy(strHandlerValue));
+                break;
             }
 
             strHandlerName.Reset();
             strHandlerValue.Reset();
+            pHandlerVar.Release();
 
-            pHandlerVar->Release();
-            pHandlerVar = NULL;
-        }
-    Finished:
-
-        if (pHandlerVar != NULL)
-        {
-            pHandlerVar->Release();
-            pHandlerVar = NULL;
+            RETURN_IF_FAILED(hr = FindNextElement(pHandlerSettingsCollection, &index, &pHandlerVar));
         }
 
-        if (pHandlerSettingsCollection != NULL)
-        {
-            pHandlerSettingsCollection->Release();
-            pHandlerSettingsCollection = NULL;
-        }
-
-        if (pHandlerSettings != NULL)
-        {
-            pHandlerSettings->Release();
-            pHandlerSettings = NULL;
-        }
-
-        return hr;
+        return S_OK;
     }
 };
 

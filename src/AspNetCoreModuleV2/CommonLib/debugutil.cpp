@@ -132,7 +132,7 @@ DebugPrintf(
 VOID
 WDebugPrintf(
     DWORD   dwFlag,
-    LPWSTR  szFormat,
+    LPCWSTR   szFormat,
     ...
     )
 {

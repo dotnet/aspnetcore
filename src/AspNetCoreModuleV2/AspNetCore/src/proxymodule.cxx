@@ -97,8 +97,8 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             &m_pApplicationInfo);
         if (FAILED(hr))
         {
-        goto Finished;
-    }
+            goto Finished;
+        }
 
     if (!m_pApplicationInfo->QueryAllowStart())
     {
@@ -172,7 +172,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
     catch (...)
     {
-        hr = CaughtExceptionHResult();
+        hr = OBSERVE_CAUGHT_EXCEPTION();
     }
 
 Finished:
@@ -214,8 +214,7 @@ ASPNET_CORE_PROXY_MODULE::OnAsyncCompletion(
     }
     catch (...)
     {
-        // Log exception
-        CaughtExceptionHResult();
+        OBSERVE_CAUGHT_EXCEPTION();
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
 }

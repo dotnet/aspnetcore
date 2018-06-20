@@ -29,23 +29,31 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
         _Out_ BSTR**		ppwzArgv
 )
 {
-    HRESULT hr = S_OK;
+    WLOG_INFOF(L"Resolving standalone hostfxr parameters for application: %s arguments: %s path: %s",
+        pwzExeAbsolutePath,
+        pcwzArguments,
+        pwzExeAbsolutePath);
 
     const fs::path exePath(pwzExeAbsolutePath);
 
     if (!exePath.has_extension())
     {
+        WLOG_INFOF(L"Exe path has not extension, returning");
+
         return false;
     }
 
     const fs::path physicalPath(pcwzApplicationPhysicalPath);
     const fs::path hostFxrLocation = physicalPath / "hostfxr.dll";
 
+    WLOG_INFOF(L"Checking hostfxr.dll at %s", hostFxrLocation.c_str());
+
     if (!is_regular_file(hostFxrLocation))
     {
         fs::path runtimeConfigLocation = exePath;
         runtimeConfigLocation.replace_extension(L".runtimeconfig.json");
 
+        WLOG_INFOF(L"Checking runtimeconfig.json at %s", runtimeConfigLocation.c_str());
         if (!is_regular_file(runtimeConfigLocation))
         {
             EVENTLOG(hEventLog, INPROCESS_FULL_FRAMEWORK_APP, pcwzApplicationPhysicalPath, 0);
@@ -61,23 +69,23 @@ HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
 
     if (!is_regular_file(dllPath))
     {
+        WLOG_INFOF(L"Application dll at %s was not found", dllPath.c_str());
         return E_FAIL;
     }
 
     auto arguments = std::wstring(dllPath) + L" " + pcwzArguments;
 
-    if (FAILED(hr = pStruHostFxrDllLocation->Copy(hostFxrLocation.c_str())))
-    {
-        return hr;
-    }
+    RETURN_IF_FAILED(pStruHostFxrDllLocation->Copy(hostFxrLocation.c_str()));
 
-    return ParseHostfxrArguments(
+    RETURN_IF_FAILED(ParseHostfxrArguments(
         arguments.c_str(),
         pwzExeAbsolutePath,
         pcwzApplicationPhysicalPath,
         hEventLog,
         pdwArgCount,
-        ppwzArgv);
+        ppwzArgv));
+
+    return S_OK;
 }
 
 BOOL
@@ -102,6 +110,11 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
 {
     HRESULT                     hr = S_OK;
 
+    WLOG_INFOF(L"Resolving hostfxr parameters for application: %s arguments: %s path: %s",
+        pcwzProcessPath,
+        pcwzArguments,
+        pcwzApplicationPhysicalPath);
+
     const fs::path applicationPhysicalPath = pcwzApplicationPhysicalPath;
     fs::path processPath = ExpandEnvironmentVariables(pcwzProcessPath);
     std::wstring arguments = ExpandEnvironmentVariables(pcwzArguments);
@@ -114,6 +127,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     // Check if the absolute path is to dotnet or not.
     if (IsDotnetExecutable(processPath))
     {
+        WLOG_INFOF(L"Process path %s is dotnet, treating application as portable", processPath.c_str());
         //
         // The processPath ends with dotnet.exe or dotnet
         // like: C:\Program Files\dotnet\dotnet.exe, C:\Program Files\dotnet\dotnet, dotnet.exe, or dotnet.
@@ -134,29 +148,21 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             return E_FAIL;
         }
 
-        if (FAILED(hr = HOSTFXR_UTILITY::ParseHostfxrArguments(
+        RETURN_IF_FAILED(HOSTFXR_UTILITY::ParseHostfxrArguments(
             arguments.c_str(),
             processPath.c_str(),
             pcwzApplicationPhysicalPath,
             hEventLog,
             pdwArgCount,
-            pbstrArgv)))
-        {
-            return hr;
-        }
+            pbstrArgv));
 
-        if (FAILED(hr = pStruHostFxrDllLocation->Copy(hostFxrPath->c_str())))
-        {
-            return hr;
-        }
-
-        if (FAILED(hr = pStruExeAbsolutePath->Copy(processPath.c_str())))
-        {
-            return hr;
-        }
+        RETURN_IF_FAILED(pStruHostFxrDllLocation->Copy(hostFxrPath->c_str()));
+        RETURN_IF_FAILED(pStruExeAbsolutePath->Copy(processPath.c_str()));
     }
     else
     {
+        WLOG_INFOF(L"Process path %s is not dotnet, treating application as standalone", processPath.c_str());
+
         //
         // The processPath is a path to the application executable
         // like: C:\test\MyApp.Exe or MyApp.Exe
@@ -164,23 +170,16 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         //
         if (is_regular_file(processPath))
         {
-            if (FAILED(hr = GetStandaloneHostfxrParameters(
+            RETURN_IF_FAILED(GetStandaloneHostfxrParameters(
                 processPath.c_str(),
                 pcwzApplicationPhysicalPath,
                 arguments.c_str(),
                 hEventLog,
                 pStruHostFxrDllLocation,
                 pdwArgCount,
-                pbstrArgv)))
-            {
-                return hr;
-            }
+                pbstrArgv));
 
-            if (FAILED(hr = pStruExeAbsolutePath->Copy(processPath.c_str())))
-            {
-                return hr;
-            }
-
+            RETURN_IF_FAILED(pStruExeAbsolutePath->Copy(processPath.c_str()));
         }
         else
         {
@@ -189,7 +188,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             // then it is an invalid argument.
             //
             hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-            UTILITY::LogEventF(hEventLog, ASPNETCORE_EVENT_INVALID_PROCESS_PATH_LEVEL, ASPNETCORE_EVENT_INVALID_PROCESS_PATH, ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG, processPath.c_str(), hr);
+            EVENTLOG(hEventLog, INVALID_PROCESS_PATH, processPath.c_str(), hr);
             return hr;
         }
     }
@@ -228,6 +227,11 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
     STRU        struTempPath;
     INT         intArgsProcessed = 0;
 
+    WLOG_INFOF(L"Resolving hostfxr_main arguments application: %s arguments: %s path: %s",
+        pwzExePath,
+        pwzArgumentsFromConfig,
+        pcwzApplicationPhysicalPath);
+
     // If we call CommandLineToArgvW with an empty string, argc is 5 for some interesting reason.
     // Protectively guard against this by check if the string is null or empty.
     if (pwzArgumentsFromConfig == NULL || wcscmp(pwzArgumentsFromConfig, L"") == 0)
@@ -240,7 +244,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
 
     if (pwzArgs == NULL)
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
+        hr = LOG_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
         goto Failure;
     }
 
@@ -283,6 +287,10 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
                 goto Failure;
             }
         }
+
+        WLOG_INFOF(L"Argument[%d] = %s",
+            intArgsProcessed + 1,
+            argv[intArgsProcessed + 1]);
     }
 
     *pbstrArgv = argv;
@@ -317,11 +325,15 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
      const fs::path & requestedPath
 )
 {
+    WLOG_INFOF(L"Resolving absolute path do dotnet.exe from %s", requestedPath.c_str());
+
     //
     // If we are given an absolute path to dotnet.exe, we are done
     //
     if (is_regular_file(requestedPath))
     {
+        WLOG_INFOF(L"Found dotnet.exe at %s", requestedPath.c_str());
+
         return std::make_optional(requestedPath);
     }
 
@@ -330,6 +342,8 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
 
     if (is_regular_file(pathWithExe))
     {
+        WLOG_INFOF(L"Found dotnet.exe at %s", pathWithExe.c_str());
+
         return std::make_optional(pathWithExe);
     }
 
@@ -345,10 +359,21 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
     const auto dotnetViaWhere = InvokeWhereToFindDotnet();
     if (dotnetViaWhere.has_value())
     {
+        WLOG_INFOF(L"Found dotnet.exe wia where.exe invocation at %s", dotnetViaWhere.value().c_str());
+
         return dotnetViaWhere;
     }
 
-    return GetAbsolutePathToDotnetFromProgramFiles();
+    const auto programFilesLocation = GetAbsolutePathToDotnetFromProgramFiles();
+    if (programFilesLocation.has_value())
+    {
+        WLOG_INFOF(L"Found dotnet.exe in Program Files at %s", programFilesLocation.value().c_str());
+
+        return programFilesLocation;
+    }
+
+    WLOG_INFOF(L"dotnet.exe not found");
+    return std::nullopt;
 }
 
 std::optional<fs::path>
@@ -359,6 +384,8 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
 {
     std::vector<std::wstring> versionFolders;
     const auto hostFxrBase = dotnetPath.parent_path() / "host" / "fxr";
+
+    WLOG_INFOF(L"Resolving absolute path do hostfxr.dll from %s", dotnetPath.c_str());
 
     if (!is_directory(hostFxrBase))
     {
@@ -387,6 +414,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
         return std::nullopt;
     }
 
+    WLOG_INFOF(L"hostfxr.dll located at %s", hostFxrPath.c_str());
     return std::make_optional(hostFxrPath);
 }
 
@@ -643,8 +671,7 @@ HOSTFXR_UTILITY::FindDotNetFolders(
 
     do
     {
-        std::wstring folder(data.cFileName);
-        pvFolders.push_back(folder);
+        pvFolders.emplace_back(data.cFileName);
     } while (FindNextFileW(handle, &data));
 
     FindClose(handle);

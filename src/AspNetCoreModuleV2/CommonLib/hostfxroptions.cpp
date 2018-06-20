@@ -11,22 +11,21 @@ HRESULT HOSTFXR_OPTIONS::Create(
         _In_ HANDLE         hEventLog,
         _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper)
 {
-    HRESULT hr = S_OK;
     STRU struHostFxrDllLocation;
     STRU struExeAbsolutePath;
     STRU struExeLocation;
     BSTR* pwzArgv;
     DWORD dwArgCount;
 
-    if (pcwzExeLocation != NULL && FAILED(struExeLocation.Copy(pcwzExeLocation)))
+    if (pcwzExeLocation != NULL)
     {
-        goto Finished;
+        RETURN_IF_FAILED(struExeLocation.Copy(pcwzExeLocation));
     }
 
     // If the exe was not provided by the shim, reobtain the hostfxr parameters (which finds dotnet).
     if (struExeLocation.IsEmpty())
     {
-        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
+        RETURN_IF_FAILED(HOSTFXR_UTILITY::GetHostFxrParameters(
             hEventLog,
             pcwzProcessPath,
             pcwzApplicationPhysicalPath,
@@ -34,48 +33,34 @@ HRESULT HOSTFXR_OPTIONS::Create(
             &struHostFxrDllLocation,
             &struExeAbsolutePath,
             &dwArgCount,
-            &pwzArgv)))
-        {
-            goto Finished;
-        }
+            &pwzArgv));
     }
     else if (HOSTFXR_UTILITY::IsDotnetExecutable(struExeLocation.QueryStr()))
     {
-        if (FAILED(hr = HOSTFXR_UTILITY::ParseHostfxrArguments(
+        RETURN_IF_FAILED(HOSTFXR_UTILITY::ParseHostfxrArguments(
             pcwzArguments,
             pcwzExeLocation,
             pcwzApplicationPhysicalPath,
             hEventLog,
             &dwArgCount,
-            &pwzArgv)))
-        {
-            goto Finished;
-        }
+            &pwzArgv));
     }
     else
     {
-        if (FAILED(hr = HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
+        RETURN_IF_FAILED(HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
             pcwzExeLocation,
             pcwzApplicationPhysicalPath,
             pcwzArguments,
             hEventLog,
             &struHostFxrDllLocation,
             &dwArgCount,
-            &pwzArgv)))
-        {
-            goto Finished;
-        }
+            &pwzArgv));
     }
 
     ppWrapper = std::make_unique<HOSTFXR_OPTIONS>();
-    if (FAILED(hr = ppWrapper->Populate(struHostFxrDllLocation.QueryStr(), struExeAbsolutePath.QueryStr(), dwArgCount, pwzArgv)))
-    {
-        goto Finished;
-    }
+    RETURN_IF_FAILED(ppWrapper->Populate(struHostFxrDllLocation.QueryStr(), struExeAbsolutePath.QueryStr(), dwArgCount, pwzArgv));
 
-Finished:
-
-    return hr;
+    return S_OK;
 }
 
 

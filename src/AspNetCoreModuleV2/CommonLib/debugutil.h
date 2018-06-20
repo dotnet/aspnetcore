@@ -10,6 +10,18 @@
 #define ASPNETCORE_DEBUG_FLAG_ERROR         DEBUG_FLAG_ERROR
 #define ASPNETCORE_DEBUG_FLAG_CONSOLE       0x00000008
 
+#define LOG_INFO(...) DebugPrint(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
+#define LOG_INFOF(...) DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
+#define WLOG_INFOF(...) WDebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
+
+#define LOG_WARN(...) DebugPrint(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
+#define LOG_WARNF(...) DebugPrintf(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
+#define WLOG_WARNF(...) WDebugPrintf(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
+
+#define LOG_ERROR(...) DebugPrint(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
+#define LOG_ERRORF(...) DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
+#define WLOG_ERRORF(...) WDebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
+
 VOID
 DebugInitialize();
 
@@ -34,6 +46,6 @@ DebugPrintf(
 VOID
 WDebugPrintf(
     DWORD   dwFlag,
-    LPWSTR  szFormat,
+    LPCWSTR  szFormat,
     ...
     );
