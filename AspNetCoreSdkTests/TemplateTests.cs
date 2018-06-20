@@ -109,20 +109,23 @@ namespace AspNetCoreSdkTests
             }
             else
             {
+                // Pre-release SDKs require a private nuget feed
+                var packageSource = (DotNetUtil.SdkVersion == new Version(2, 1, 302)) ? NuGetPackageSource.EnvironmentVariableAndNuGetOrg : NuGetPackageSource.NuGetOrg;
+
                 // Self-contained
                 return new[]
                 {
                     // ClassLibrary does not require a package source, even for self-contained deployments
                     Template.GetInstance<ClassLibraryTemplate>(NuGetPackageSource.None, runtimeIdentifier),
-                    Template.GetInstance<ConsoleApplicationTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<RazorClassLibraryTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<WebTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<RazorTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<MvcTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<AngularTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<ReactTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<ReactReduxTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
-                    Template.GetInstance<WebApiTemplate>(NuGetPackageSource.NuGetOrg, runtimeIdentifier),
+                    Template.GetInstance<ConsoleApplicationTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<RazorClassLibraryTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<WebTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<RazorTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<MvcTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<AngularTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<ReactReduxTemplate>(packageSource, runtimeIdentifier),
+                    Template.GetInstance<WebApiTemplate>(packageSource, runtimeIdentifier),
                 };
             }
         }

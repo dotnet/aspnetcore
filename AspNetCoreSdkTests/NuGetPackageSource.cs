@@ -28,6 +28,12 @@ namespace AspNetCoreSdkTests
             SourceArgumentLazy = new Lazy<string>(() => $"--source {GetPackageSourceFromEnvironment()}"),
         };
 
+        public static NuGetPackageSource EnvironmentVariableAndNuGetOrg { get; } = new NuGetPackageSource
+        {
+            Name = nameof(EnvironmentVariableAndNuGetOrg),
+            SourceArgumentLazy = new Lazy<string>(() => string.Join(" ", EnvironmentVariable.SourceArgument, NuGetOrg.SourceArgument)),
+        };
+
         private NuGetPackageSource() { }
 
         public string Name { get; private set; }
