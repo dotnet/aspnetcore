@@ -5,7 +5,7 @@
     ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
-@Html.Partial("_StatusMessage", Model.StatusMessage)
+<partial name="_StatusMessage" for="StatusMessage" />
 <h2>@ViewData["Title"]</h2>
 
 <div class="alert alert-warning" role="alert">

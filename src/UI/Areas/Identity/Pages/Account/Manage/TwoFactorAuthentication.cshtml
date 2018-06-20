@@ -4,7 +4,7 @@
     ViewData["Title"] = "Two-factor authentication (2FA)";
 }
 
-@Html.Partial("_StatusMessage", Model.StatusMessage)
+<partial name="_StatusMessage" for="StatusMessage" />
 <h4>@ViewData["Title"]</h4>
 @if (Model.Is2faEnabled)
 {
