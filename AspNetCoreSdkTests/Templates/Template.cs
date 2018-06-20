@@ -56,7 +56,7 @@ namespace AspNetCoreSdkTests.Templates
                 GetHttpResponsesAfterExec, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public override string ToString() => $"{Name}, source: {NuGetPackageSource}, rid: {RuntimeIdentifier}";
+        public override string ToString() => $"{Name}, source: {NuGetPackageSource}, rid: {RuntimeIdentifier}, sdk: {DotNetUtil.SdkVersion}";
 
         private string TempDir => Path.Combine(AssemblySetUp.TempDir, Name, NuGetPackageSource.Name, RuntimeIdentifier.Name );
 
