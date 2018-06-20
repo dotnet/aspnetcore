@@ -68,7 +68,7 @@ public:
 
             }
 
-            if (strHandlerName.Equals(CS_ASPNETCORE_HANDLER_VERSION))
+            if (strHandlerName.Equals(CS_ASPNETCORE_HANDLER_VERSION, TRUE))
             {
                 hr = strHandlerVersionValue->Copy(strHandlerValue);
                 goto Finished;
