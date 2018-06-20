@@ -190,6 +190,7 @@
   <ItemGroup>
     <ClInclude Include="application.h" />
     <ClInclude Include="config_utility.h" />
+    <ClInclude Include="exceptions.h" />
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="hostfxroptions.h" />

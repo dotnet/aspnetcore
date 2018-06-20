@@ -70,7 +70,7 @@ RegisterModule(
 DWORD                           dwServerVersion,
 IHttpModuleRegistrationInfo *   pModuleInfo,
 IHttpServer *                   pHttpServer
-)
+) try
 /*++
 
 Routine description:
@@ -222,4 +222,4 @@ Finished:
 
     return hr;
 }
-
+CATCH_RETURN()

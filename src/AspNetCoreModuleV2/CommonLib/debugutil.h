@@ -2,7 +2,8 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
-#include "stdafx.h"
+
+#include <Windows.h>
 
 #define ASPNETCORE_DEBUG_FLAG_INFO          DEBUG_FLAG_INFO
 #define ASPNETCORE_DEBUG_FLAG_WARNING       DEBUG_FLAG_WARN

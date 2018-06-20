@@ -40,4 +40,4 @@
 #include "hostfxr_utility.h"
 #include "EventLog.h"
 #include "hostfxroptions.h"
-
+#include "exceptions.h"

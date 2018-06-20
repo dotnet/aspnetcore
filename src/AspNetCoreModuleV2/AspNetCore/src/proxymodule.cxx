@@ -6,8 +6,7 @@
 #include "applicationmanager.h"
 #include "applicationinfo.h"
 #include "acache.h"
-#include "hostfxroptions.h"
-
+#include "exceptions.h"
 
 __override
 HRESULT
@@ -16,13 +15,12 @@ ASPNET_CORE_PROXY_MODULE_FACTORY::GetHttpModule(
     IModuleAllocator *  pAllocator
 )
 {
-    ASPNET_CORE_PROXY_MODULE *pModule = new (pAllocator) ASPNET_CORE_PROXY_MODULE();
-    if (pModule == NULL)
+    try
     {
-        return E_OUTOFMEMORY;
+        *ppModule = THROW_IF_NULL_ALLOC(new (pAllocator) ASPNET_CORE_PROXY_MODULE());;
+        return S_OK;
     }
-    *ppModule = pModule;
-    return S_OK;
+    CATCH_RETURN();
 }
 
 __override
@@ -82,21 +80,23 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     IAPPLICATION* pApplication = NULL;
     STRU struExeLocation;
-
-    if (g_fInShutdown)
+    try
     {
-        hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
-        goto Finished;
-    }
 
-    pApplicationManager = APPLICATION_MANAGER::GetInstance();
+        if (g_fInShutdown)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
+            goto Finished;
+        }
 
-    hr = pApplicationManager->GetOrCreateApplicationInfo(
-        g_pHttpServer,
+        pApplicationManager = APPLICATION_MANAGER::GetInstance();
+
+        hr = pApplicationManager->GetOrCreateApplicationInfo(
+            g_pHttpServer,
         pHttpContext,
-        &m_pApplicationInfo);
-    if (FAILED(hr))
-    {
+            &m_pApplicationInfo);
+        if (FAILED(hr))
+        {
         goto Finished;
     }
 
@@ -105,69 +105,75 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         // Application cannot be started due to wrong hosting mode
         // the error should already been logged to window event log for the first request
         hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
-        goto Finished;
-    }
+            goto Finished;
+        }
 
-    // app_offline check to avoid loading aspnetcorerh.dll unnecessarily
-    if (m_pApplicationInfo->AppOfflineFound())
+        // app_offline check to avoid loading aspnetcorerh.dll unnecessarily
+        if (m_pApplicationInfo->AppOfflineFound())
+        {
+            // servicing app_offline
+            HTTP_DATA_CHUNK   DataChunk;
+            IHttpResponse    *pResponse = NULL;
+            APP_OFFLINE_HTM  *pAppOfflineHtm = NULL;
+
+            pResponse = pHttpContext->GetResponse();
+            pAppOfflineHtm = m_pApplicationInfo->QueryAppOfflineHtm();
+            DBG_ASSERT(pAppOfflineHtm);
+            DBG_ASSERT(pResponse);
+
+            // Ignore failure hresults as nothing we can do
+            // Set fTrySkipCustomErrors to true as we want client see the offline content
+            pResponse->SetStatus(503, "Service Unavailable", 0, hr, NULL, TRUE);
+            pResponse->SetHeader("Content-Type",
+            "text/html",
+            (USHORT)strlen("text/html"),
+            FALSE
+            );
+
+            DataChunk.DataChunkType = HttpDataChunkFromMemory;
+            DataChunk.FromMemory.pBuffer = (PVOID)pAppOfflineHtm->m_Contents.QueryStr();
+            DataChunk.FromMemory.BufferLength = pAppOfflineHtm->m_Contents.QueryCB();
+            pResponse->WriteEntityChunkByReference(&DataChunk);
+
+            retVal = RQ_NOTIFICATION_FINISH_REQUEST;
+            goto Finished;
+        }
+
+        // make sure assmebly is loaded and application is created
+        hr = m_pApplicationInfo->EnsureApplicationCreated(pHttpContext);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
+        m_pApplicationInfo->ExtractApplication(&pApplication);
+
+        // make sure application is in running state
+        // cannot recreate the application as we cannot reload clr for inprocess
+        if (pApplication != NULL &&
+            pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
+            pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
+            goto Finished;
+        }
+
+        // Create RequestHandler and process the request
+        hr = pApplication->CreateHandler(pHttpContext,
+                    &m_pHandler);
+
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
+        retVal = m_pHandler->OnExecuteRequestHandler();
+
+    }
+    catch (...)
     {
-        // servicing app_offline
-        HTTP_DATA_CHUNK   DataChunk;
-        IHttpResponse    *pResponse = NULL;
-        APP_OFFLINE_HTM  *pAppOfflineHtm = NULL;
-
-        pResponse = pHttpContext->GetResponse();
-        pAppOfflineHtm = m_pApplicationInfo->QueryAppOfflineHtm();
-        DBG_ASSERT(pAppOfflineHtm);
-        DBG_ASSERT(pResponse);
-
-        // Ignore failure hresults as nothing we can do
-        // Set fTrySkipCustomErrors to true as we want client see the offline content
-        pResponse->SetStatus(503, "Service Unavailable", 0, hr, NULL, TRUE);
-        pResponse->SetHeader("Content-Type",
-                             "text/html",
-                             (USHORT)strlen("text/html"),
-                             FALSE
-        );
-
-        DataChunk.DataChunkType = HttpDataChunkFromMemory;
-        DataChunk.FromMemory.pBuffer = (PVOID)pAppOfflineHtm->m_Contents.QueryStr();
-        DataChunk.FromMemory.BufferLength = pAppOfflineHtm->m_Contents.QueryCB();
-        pResponse->WriteEntityChunkByReference(&DataChunk);
-
-        retVal = RQ_NOTIFICATION_FINISH_REQUEST;
-        goto Finished;
+        hr = CaughtExceptionHResult();
     }
-
-    // make sure assmebly is loaded and application is created
-    hr = m_pApplicationInfo->EnsureApplicationCreated(pHttpContext);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    m_pApplicationInfo->ExtractApplication(&pApplication);
-
-    // make sure application is in running state
-    // cannot recreate the application as we cannot reload clr for inprocess
-    if (pApplication != NULL &&
-        pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
-        pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
-    {
-        hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
-        goto Finished;
-    }
-
-    // Create RequestHandler and process the request
-    hr = pApplication->CreateHandler(pHttpContext,
-                                     &m_pHandler);
-
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    retVal = m_pHandler->OnExecuteRequestHandler();
 
 Finished:
     if (FAILED(hr))
@@ -200,7 +206,16 @@ ASPNET_CORE_PROXY_MODULE::OnAsyncCompletion(
     IHttpCompletionInfo *   pCompletionInfo
 )
 {
-    return m_pHandler->OnAsyncCompletion(
-        pCompletionInfo->GetCompletionBytes(),
-        pCompletionInfo->GetCompletionStatus());
+    try
+    {
+        return m_pHandler->OnAsyncCompletion(
+            pCompletionInfo->GetCompletionBytes(),
+            pCompletionInfo->GetCompletionStatus());
+    }
+    catch (...)
+    {
+        // Log exception
+        CaughtExceptionHResult();
+        return RQ_NOTIFICATION_FINISH_REQUEST;
+    }
 }
