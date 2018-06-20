@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers
@@ -31,26 +32,27 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         }
 
         public static bool HasAttribute(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
+            => GetAttributes(methodSymbol, attribute, inherit).Any();
+
+        public static IEnumerable<AttributeData> GetAttributes(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
         {
             Debug.Assert(methodSymbol != null);
             Debug.Assert(attribute != null);
 
-            if (!inherit)
-            {
-                return HasAttribute(methodSymbol, attribute);
-            }
-
             while (methodSymbol != null)
             {
-                if (methodSymbol.HasAttribute(attribute))
+                foreach (var attributeData in GetAttributes(methodSymbol, attribute))
                 {
-                    return true;
+                    yield return attributeData;
+                }
+
+                if (!inherit)
+                {
+                    break;
                 }
 
                 methodSymbol = methodSymbol.IsOverride ? methodSymbol.OverriddenMethod : null;
             }
-
-            return false;
         }
 
         public static bool HasAttribute(this IPropertySymbol propertySymbol, ITypeSymbol attribute, bool inherit)
@@ -116,6 +118,17 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
 
             return false;
+        }
+
+        private static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, ITypeSymbol attribute)
+        {
+            foreach (var declaredAttribute in symbol.GetAttributes())
+            {
+                if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
+                {
+                    yield return declaredAttribute;
+                }
+            }
         }
 
         private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol typeSymbol)

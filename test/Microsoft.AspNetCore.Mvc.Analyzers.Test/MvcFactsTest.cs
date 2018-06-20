@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         [Fact]
         public Task IsController_ReturnsFalseForValueType() => IsControllerReturnsFalse(typeof(ValueTypeController));
 
-
         [Fact]
         public Task IsController_ReturnsFalseForGenericType() => IsControllerReturnsFalse(typeof(OpenGenericController<>));
 

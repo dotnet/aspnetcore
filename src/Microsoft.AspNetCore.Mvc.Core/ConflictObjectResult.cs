@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -10,8 +11,11 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ObjectResult"/> that when executed will produce a Conflict (409) response.
     /// </summary>
+    [DefaultStatusCode(DefaultStatusCode)]
     public class ConflictObjectResult : ObjectResult
     {
+        private const int DefaultStatusCode = StatusCodes.Status409Conflict;
+
         /// <summary>
         /// Creates a new <see cref="ConflictObjectResult"/> instance.
         /// </summary>
@@ -19,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc
         public ConflictObjectResult(object error)
             : base(error)
         {
-            StatusCode = StatusCodes.Status409Conflict;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
@@ -34,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(modelState));
             }
 
-            StatusCode = StatusCodes.Status409Conflict;
+            StatusCode = DefaultStatusCode;
         }
     }
 }

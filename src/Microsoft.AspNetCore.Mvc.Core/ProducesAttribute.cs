@@ -82,9 +82,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var objectResult = context.Result as ObjectResult;
-
-            if (objectResult != null)
+            if (context.Result is ObjectResult objectResult)
             {
                 // Check if there are any IFormatFilter in the pipeline, and if any of them is active. If there is one,
                 // do not override the content type value.

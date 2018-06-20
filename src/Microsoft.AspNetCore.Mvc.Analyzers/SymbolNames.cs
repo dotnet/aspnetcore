@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     {
         public const string AllowAnonymousAttribute = "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute";
 
+        public const string ApiConventionAttribute = "Microsoft.AspNetCore.Mvc.ApiConventionAttribute";
+
         public const string AuthorizeAttribute = "Microsoft.AspNetCore.Authorization.AuthorizeAttribute";
 
         public const string IFilterMetadataType = "Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata";
@@ -15,12 +17,14 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public const string IHtmlHelperType = "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper";
 
+        public const string IRouteTemplateProvider = "Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider";
+
         public const string PageModelAttributeType = "Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageModelAttribute";
 
         public const string PartialMethod = "Partial";
 
-        public const string RenderPartialMethod = "RenderPartial";
+        public const string ProducesResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute";
 
-        public const string IRouteTemplateProvider = "Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider";
+        public const string RenderPartialMethod = "RenderPartial";
     }
 }

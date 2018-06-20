@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -10,8 +11,11 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that returns an Accepted (202) response with a Location header.
     /// </summary>
+    [DefaultStatusCode(DefaultStatusCode)]
     public class AcceptedResult : ObjectResult
     {
+        private const int DefaultStatusCode = StatusCodes.Status202Accepted;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
         /// provided.
@@ -19,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc
         public AcceptedResult()
             : base(value: null)
         {
-            StatusCode = StatusCodes.Status202Accepted;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
@@ -32,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc
             : base(value)
         {
             Location = location;
-            StatusCode = StatusCodes.Status202Accepted;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
@@ -59,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
             }
 
-            StatusCode = StatusCodes.Status202Accepted;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>

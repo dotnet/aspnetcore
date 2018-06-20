@@ -8,14 +8,18 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// An <see cref="ActionResult"/> that returns a Created (201) response with a Location header.
     /// </summary>
+    [DefaultStatusCode(DefaultStatusCode)]
     public class CreatedAtRouteResult : ObjectResult
     {
+        private const int DefaultStatusCode = StatusCodes.Status201Created;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CreatedAtRouteResult"/> class with the values
         /// provided.
@@ -42,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             RouteName = routeName;
             RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
-            StatusCode = StatusCodes.Status201Created;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
