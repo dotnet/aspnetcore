@@ -153,7 +153,7 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
     }
 
     {
-        SRWLockWrapper lock(m_srwLock);
+        SRWExclusiveLock lock(m_srwLock);
 
         if (m_fShutdownCalledFromNative ||
             m_status == APPLICATION_STATUS::STARTING ||
@@ -223,7 +223,7 @@ IN_PROCESS_APPLICATION::Recycle(
     }
 
     {
-        SRWLockWrapper lock(m_srwLock);
+        SRWExclusiveLock lock(m_srwLock);
 
         if (m_fRecycleCalled)
         {
@@ -388,7 +388,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
     {
         // Set up stdout redirect
 
-        SRWLockWrapper lock(m_srwLock);
+        SRWExclusiveLock lock(m_srwLock);
 
         if (m_pLoggerProvider == NULL)
         {

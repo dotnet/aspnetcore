@@ -192,7 +192,6 @@ APPLICATION_INFO::EnsureApplicationCreated(
 )
 {
     HRESULT             hr = S_OK;
-    BOOL                fLocked = FALSE;
     IAPPLICATION       *pApplication = NULL;
     STRU                struExeLocation;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
@@ -205,8 +204,7 @@ APPLICATION_INFO::EnsureApplicationCreated(
 
     if (m_pApplication == NULL)
     {
-        AcquireSRWLockExclusive(&m_srwLock);
-        fLocked = TRUE;
+        SRWExclusiveLock lock(m_srwLock);
         if (m_pApplication != NULL)
         {
             goto Finished;
@@ -243,10 +241,6 @@ APPLICATION_INFO::EnsureApplicationCreated(
 
 Finished:
 
-    if (fLocked)
-    {
-        ReleaseSRWLockExclusive(&m_srwLock);
-    }
     return hr;
 }
 
@@ -254,7 +248,6 @@ HRESULT
 APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
 {
     HRESULT             hr = S_OK;
-    BOOL                fLocked = FALSE;
     PCWSTR              pstrHandlerDllName;
     STACK_STRU(struFileName, 256);
 
@@ -265,8 +258,8 @@ APPLICATION_INFO::FindRequestHandlerAssembly(STRU& location)
     }
     else if (!g_fAspnetcoreRHAssemblyLoaded)
     {
-        AcquireSRWLockExclusive(&g_srwLock);
-        fLocked = TRUE;
+        SRWExclusiveLock lock(g_srwLock);
+
         if (g_fAspnetcoreRHLoadedError)
         {
             hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
@@ -365,11 +358,6 @@ Finished:
     if (!g_fAspnetcoreRHLoadedError && FAILED(hr))
     {
         g_fAspnetcoreRHLoadedError = TRUE;
-    }
-
-    if (fLocked)
-    {
-        ReleaseSRWLockExclusive(&g_srwLock);
     }
     return hr;
 }
@@ -561,14 +549,13 @@ Finished:
 VOID
 APPLICATION_INFO::RecycleApplication()
 {
-    IAPPLICATION* pApplication = NULL;
+    IAPPLICATION* pApplication;
     HANDLE       hThread = INVALID_HANDLE_VALUE;
-    BOOL         fLockAcquired = FALSE;
 
     if (m_pApplication != NULL)
     {
-        AcquireSRWLockExclusive(&m_srwLock);
-        fLockAcquired = TRUE;
+        SRWExclusiveLock lock(m_srwLock);
+
         if (m_pApplication != NULL)
         {
             pApplication = m_pApplication;
@@ -623,11 +610,6 @@ APPLICATION_INFO::RecycleApplication()
             // Closing a thread handle does not terminate the associated thread or remove the thread object.
             CloseHandle(hThread);
         }
-
-        if (fLockAcquired)
-        {
-            ReleaseSRWLockExclusive(&m_srwLock);
-        }
     }
 }
 
@@ -655,13 +637,12 @@ VOID
 APPLICATION_INFO::ShutDownApplication()
 {
     IAPPLICATION* pApplication = NULL;
-    BOOL         fLockAcquired = FALSE;
 
     // pApplication can be NULL due to app_offline
     if (m_pApplication != NULL)
     {
-        AcquireSRWLockExclusive(&m_srwLock);
-        fLockAcquired = TRUE;
+        SRWExclusiveLock lock(m_srwLock);
+
         if (m_pApplication != NULL)
         {
             pApplication = m_pApplication;
@@ -670,11 +651,6 @@ APPLICATION_INFO::ShutDownApplication()
             m_pApplication = NULL;
             pApplication->ShutDown();
             pApplication->DereferenceApplication();
-        }
-
-        if (fLockAcquired)
-        {
-            ReleaseSRWLockExclusive(&m_srwLock);
         }
     }
 }

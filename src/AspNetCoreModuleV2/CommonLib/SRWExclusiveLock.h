@@ -3,11 +3,11 @@
 
 #pragma once
 
-class SRWLockWrapper
+class SRWExclusiveLock
 {
 public:
-	SRWLockWrapper(const SRWLOCK& lock);
-	~SRWLockWrapper();
+	SRWExclusiveLock(const SRWLOCK& lock);
+	~SRWExclusiveLock();
 private:
     const SRWLOCK& m_lock;
 };

@@ -44,6 +44,7 @@
 *.hs text=auto
 *.rc text=auto
 
+*.vcxproj text=auto
 *.csproj text=auto
 *.vbproj text=auto
 *.fsproj text=auto

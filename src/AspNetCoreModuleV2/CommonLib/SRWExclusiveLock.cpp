@@ -2,15 +2,15 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
-#include "SRWLockWrapper.h"
+#include "SRWExclusiveLock.h"
 
-SRWLockWrapper::SRWLockWrapper(const SRWLOCK& lock)
+SRWExclusiveLock::  SRWExclusiveLock(const SRWLOCK& lock)
     : m_lock(lock)
 {
     AcquireSRWLockExclusive(const_cast<SRWLOCK*>(&m_lock));
 }
 
-SRWLockWrapper::~SRWLockWrapper()
+SRWExclusiveLock::~SRWExclusiveLock()
 {
     ReleaseSRWLockExclusive(const_cast<SRWLOCK*>(&m_lock));
 }

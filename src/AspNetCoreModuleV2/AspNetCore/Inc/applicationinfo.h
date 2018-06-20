@@ -12,6 +12,7 @@
 #include "hashfn.h"
 #include "aspnetcore_shim_config.h"
 #include "iapplication.h"
+#include "SRWSharedLock.h"
 
 #define API_BUFFER_TOO_SMALL 0x80008098
 
@@ -119,13 +120,12 @@ public:
     VOID
     ExtractApplication(IAPPLICATION** ppApplication)
     {
-        AcquireSRWLockShared(&m_srwLock);
+        SRWSharedLock lock(m_srwLock);
         if (m_pApplication != NULL)
         {
             m_pApplication->ReferenceApplication();
         }
         *ppApplication = m_pApplication;
-        ReleaseSRWLockShared(&m_srwLock);
     }
 
     VOID

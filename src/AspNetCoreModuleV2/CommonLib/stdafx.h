@@ -31,7 +31,7 @@
 #include "requesthandler.h"
 #include "iapplication.h"
 #include "application.h"
-#include "SRWLockWrapper.h"
+#include "SRWExclusiveLock.h"
 #include "fx_ver.h"
 #include "utility.h"
 #include "GlobalVersionUtility.h"
