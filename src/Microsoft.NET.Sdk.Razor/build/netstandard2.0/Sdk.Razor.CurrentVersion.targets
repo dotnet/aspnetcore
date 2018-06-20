@@ -74,6 +74,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveRazorGenerateInputs
     </PrepareForBuildDependsOn>
 
+    <GenerateNuspecDependsOn>
+      ResolveRazorGenerateInputs;
+      $(GenerateNuspecDependsOn)
+    </GenerateNuspecDependsOn>
+
     <PrepareForRunDependsOn>
       _RazorPrepareForRun;
       $(PrepareForRunDependsOn)
@@ -325,6 +330,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       '$(RazorCompileOnPublish)'=='true'">
       
       <Content Condition="'%(Content.Extension)'=='.cshtml'" CopyToPublishDirectory="Never" />
+    </ItemGroup>
+
+    <ItemGroup Condition="
+      '$(ResolvedRazorCompileToolset)'=='RazorSdk' and
+      '$(EnableDefaultRazorGenerateItems)'=='true'">
+
+      <Content Condition="'%(Content.Extension)'=='.cshtml'" Pack="$(IncludeRazorContentInPack)" />
     </ItemGroup>
   </Target>
 
