@@ -48,6 +48,18 @@
     <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion" />
     <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion" />
 
+    <!--
+      BenchmarksOnly* package versions come from NuGet.org and are intended only for use in benchmarks apps where EF
+      is not otherwise referenced. They avoid unnecessary changes to the Universe build graph or to product
+      dependencies. Do not use these external dependencies elsewhere.
+    -->
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
+    <ExternalDependency Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" />
+    <ExternalDependency Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" />
+    <ExternalDependency Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" />
+
     <ExternalDependency Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="$(MicrosoftDotNetProjectModelPackageVersion)" />
     <ExternalDependency Include="Microsoft.DiaSymReader.Native" Version="$(MicrosoftDiaSymReaderNativePackageVersion)" />
