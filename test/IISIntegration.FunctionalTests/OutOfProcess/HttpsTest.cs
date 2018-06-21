@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using IISIntegration.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,10 +31,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task HttpsHelloWorld(TestVariant variant)
         {
+            var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = new DeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
-                ApplicationBaseUriHint = "https://localhost:44394/",
+                ApplicationBaseUriHint = $"https://localhost:{port}/",
                 ServerConfigTemplateContent = GetHttpsServerConfig()
             };
 
@@ -53,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public Task HttpsHelloWorld_NoClientCert(TestVariant variant)
         {
-            return HttpsHelloWorldCerts(variant, port: 44397, sendClientCert: false);
+            return HttpsHelloWorldCerts(variant, sendClientCert: false);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
@@ -62,11 +64,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public Task HttpsHelloWorld_ClientCert(TestVariant variant)
         {
-            return HttpsHelloWorldCerts(variant, port: 44301, sendClientCert: true);
+            return HttpsHelloWorldCerts(variant, sendClientCert: true);
         }
 
-        private async Task HttpsHelloWorldCerts(TestVariant variant, int port, bool sendClientCert)
+        private async Task HttpsHelloWorldCerts(TestVariant variant, bool sendClientCert)
         {
+            var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = new DeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetOutOfProcessTestSitesPath(),
