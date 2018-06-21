@@ -95,7 +95,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal("Hello World", responseText);
         }
 
-
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress)
                 .WithTfms(Tfm.NetCoreApp22)

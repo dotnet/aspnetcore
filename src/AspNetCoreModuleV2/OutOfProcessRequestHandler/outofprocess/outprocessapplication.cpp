@@ -118,8 +118,8 @@ OUT_OF_PROCESS_APPLICATION::SetWebsocketStatus(
     IHttpContext* pHttpContext
 )
 {
-    // Even though the applicationhost.config file contains the websocket element,	
-    // the websocket module may still not be enabled.	
+    // Even though the applicationhost.config file contains the websocket element,
+    // the websocket module may still not be enabled.
     PCWSTR pszTempWebsocketValue;
     DWORD cbLength;
     HRESULT hr;

@@ -118,6 +118,8 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
         }
 
         *ppApplicationInfo = pApplicationInfo;
+        pApplicationInfo->StartMonitoringAppOffline();
+
         pApplicationInfo = NULL;
     }
 

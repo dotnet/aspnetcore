@@ -22,7 +22,7 @@ namespace IISIntegration.FunctionalTests.Inprocess
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, "https://github.com/aspnet/IISIntegration/issues/866")]
-        public async Task Test()
+        public async Task SingleProcessTestServer_HelloWorld()
         {
             var helloWorld = "Hello World";
             var expectedPath = "/Path";

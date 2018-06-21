@@ -232,14 +232,18 @@ IN_PROCESS_APPLICATION::Recycle(
     if (!m_pHttpServer->IsCommandLineLaunch())
     {
         // IIS scenario.
-        // notify IIS first so that new request will be routed to new worker process
+        // We don't actually handle any shutdown logic here.
+        // Instead, we notify IIS that the process needs to be recycled, which will call
+        // ApplicationManager->Shutdown(). This will call shutdown on the application.
         m_pHttpServer->RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
     }
     else
     {
         // IISExpress scenario
-        // Shutdown the managed application and call exit to terminate current process
+        // Try to graceful shutdown the managed application
+        // and call exit to terminate current process
         ShutDown();
+        exit(0);
     }
 }
 
