@@ -44,6 +44,54 @@
 
     <!-- Restore the target project -->
     <MSBuild
+      ContinueOnError="true"
+      Projects="$(_WorkRoot)Archive.csproj"
+      Targets="Restore"
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+
+    <!-- Retry if restore failed -->
+    <PropertyGroup>
+      <RestorePassed>$(MSBuildLastTaskResult)</RestorePassed>
+    </PropertyGroup>
+    <Warning Text="Restore failed, retry #1." Condition="'$(RestorePassed)' == 'false'"/>
+    <MSBuild
+      ContinueOnError="true"
+      Condition="'$(RestorePassed)' == 'false'"
+      Projects="$(_WorkRoot)Archive.csproj"
+      Targets="Restore"
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+
+    <!-- Retry if restore failed -->
+    <PropertyGroup>
+      <RestorePassed>$(MSBuildLastTaskResult)</RestorePassed>
+    </PropertyGroup>
+    <Warning Text="Restore failed, retry #2." Condition="'$(RestorePassed)' == 'false'"/>
+    <MSBuild
+      ContinueOnError="true"
+      Condition="'$(RestorePassed)' == 'false'"
+      Projects="$(_WorkRoot)Archive.csproj"
+      Targets="Restore"
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+
+    <!-- Retry if restore failed -->
+    <PropertyGroup>
+      <RestorePassed>$(MSBuildLastTaskResult)</RestorePassed>
+    </PropertyGroup>
+    <Warning Text="Restore failed, retry #3." Condition="'$(RestorePassed)' == 'false'"/>
+    <MSBuild
+      ContinueOnError="true"
+      Condition="'$(RestorePassed)' == 'false'"
+      Projects="$(_WorkRoot)Archive.csproj"
+      Targets="Restore"
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+
+    <!-- Retry if restore failed -->
+    <PropertyGroup>
+      <RestorePassed>$(MSBuildLastTaskResult)</RestorePassed>
+    </PropertyGroup>
+    <Warning Text="Restore failed, retry #4." Condition="'$(RestorePassed)' == 'false'"/>
+    <MSBuild
+      Condition="'$(RestorePassed)' == 'false'"
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
       Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
