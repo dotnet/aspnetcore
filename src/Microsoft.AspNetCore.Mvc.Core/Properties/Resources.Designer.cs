@@ -1480,6 +1480,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatApiConventionMustBeStatic(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMustBeStatic"), p0);
 
+        /// <summary>
+        /// Invalid type parameter '{0}' specified for '{1}'.
+        /// </summary>
+        internal static string InvalidTypeTForActionResultOfT
+        {
+            get => GetString("InvalidTypeTForActionResultOfT");
+        }
+
+        /// <summary>
+        /// Invalid type parameter '{0}' specified for '{1}'.
+        /// </summary>
+        internal static string FormatInvalidTypeTForActionResultOfT(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidTypeTForActionResultOfT"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

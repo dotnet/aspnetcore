@@ -445,4 +445,7 @@
   <data name="ApiConventionMustBeStatic" xml:space="preserve">
     <value>API convention type '{0}' must be a static type.</value>
   </data>
+  <data name="InvalidTypeTForActionResultOfT" xml:space="preserve">
+    <value>Invalid type parameter '{0}' specified for '{1}'.</value>
+  </data>
 </root>
