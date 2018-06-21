@@ -39,6 +39,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return Task.CompletedTask;
         }
 
+        // Route constraints not supported
+        [Fact]
+        public override Task Match_Constraint()
+        {
+            return Task.CompletedTask;
+        }
+
         internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
         {
             var builder = new BarebonesMatcherBuilder();

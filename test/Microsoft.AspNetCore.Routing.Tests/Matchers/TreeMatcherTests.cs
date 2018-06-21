@@ -33,6 +33,52 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         [Fact]
+        public async Task MatchAsync_ValidRouteConstraint_EndpointMatched()
+        {
+            // Arrange
+            var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/{p:int}", 0)
+            });
+
+            var treeMatcher = CreateTreeMatcher(endpointDataSource);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Path = "/1";
+
+            var endpointFeature = new EndpointFeature();
+
+            // Act
+            await treeMatcher.MatchAsync(httpContext, endpointFeature);
+
+            // Assert
+            Assert.NotNull(endpointFeature.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_InvalidRouteConstraint_NoEndpointMatched()
+        {
+            // Arrange
+            var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/{p:int}", 0)
+            });
+
+            var treeMatcher = CreateTreeMatcher(endpointDataSource);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Path = "/One";
+
+            var endpointFeature = new EndpointFeature();
+
+            // Act
+            await treeMatcher.MatchAsync(httpContext, endpointFeature);
+
+            // Assert
+            Assert.Null(endpointFeature.Endpoint);
+        }
+
+        [Fact]
         public async Task MatchAsync_DuplicateTemplatesAndDifferentOrder_LowerOrderEndpointMatched()
         {
             // Arrange

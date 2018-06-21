@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 foreach (var kvp in constraints)
                 {
                     var constraint = kvp.Value;
-                    if (!constraint.Match(httpContext, null, kvp.Key, values, RouteDirection.IncomingRequest))
+                    if (!constraint.Match(httpContext, new DummyRouter(), kvp.Key, values, RouteDirection.IncomingRequest))
                     {
                         values.TryGetValue(kvp.Key, out var value);
 
@@ -141,6 +141,19 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             return true;
+        }
+
+        private class DummyRouter : IRouter
+        {
+            public VirtualPathData GetVirtualPath(VirtualPathContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RouteAsync(RouteContext context)
+            {
+                return Task.CompletedTask;
+            }
         }
 
         private void SelectEndpoint(HttpContext httpContext, IEndpointFeature feature, IReadOnlyList<MatcherEndpoint> endpoints)

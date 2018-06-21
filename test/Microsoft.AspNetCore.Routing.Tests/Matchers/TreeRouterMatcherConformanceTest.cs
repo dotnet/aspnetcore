@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             return Task.CompletedTask;
         }
+
         internal override Matcher CreateMatcher(params MatcherEndpoint[] endpoints)
         {
             var builder = new TreeRouterMatcherBuilder();

@@ -209,6 +209,21 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         [Fact]
+        public virtual async Task Match_Constraint()
+        {
+            // Arrange
+            var (matcher, endpoint) = CreateMatcher("/{p:int}");
+            var (httpContext, feature) = CreateContext("/14");
+            var values = new RouteValueDictionary(new { p = "14", });
+
+            // Act
+            await matcher.MatchAsync(httpContext, feature);
+
+            // Assert
+            DispatcherAssert.AssertMatch(feature, endpoint, values);
+        }
+
+        [Fact]
         public virtual async Task Match_SingleParameter_TrailingSlash()
         {
             // Arrange
