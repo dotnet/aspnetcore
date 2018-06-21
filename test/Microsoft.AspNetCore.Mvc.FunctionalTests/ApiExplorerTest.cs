@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -1019,6 +1020,75 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ApiExplorer_Parameters_DefaultValue()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("ApiExplorerParameters/DefaultValueParameters");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var parameters = description.ParameterDescriptions;
+
+            Assert.Collection(
+                parameters,
+                parameter =>
+                {
+                    Assert.Equal("searchTerm", parameter.Name);
+                    Assert.Null(parameter.DefaultValue);
+                },
+                parameter =>
+                {
+                    Assert.Equal("top", parameter.Name);
+                    Assert.Equal("10", parameter.DefaultValue);
+                },
+                parameter =>
+                {
+                    Assert.Equal("searchDay", parameter.Name);
+                    Assert.Equal(nameof(DayOfWeek.Wednesday), parameter.DefaultValue);
+                });
+        }
+
+        [Fact]
+        public async Task ApiExplorer_Parameters_IsRequired()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("ApiExplorerParameters/IsRequiredParameters");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var parameters = description.ParameterDescriptions;
+
+            Assert.Collection(
+                parameters,
+                parameter =>
+                {
+                    Assert.Equal("requiredParam", parameter.Name);
+                    Assert.True(parameter.IsRequired);
+                },
+                parameter =>
+                {
+                    Assert.Equal("notRequiredParam", parameter.Name);
+                    Assert.False(parameter.IsRequired);
+                },
+                parameter =>
+                {
+                    Assert.Equal("Id", parameter.Name);
+                    Assert.True(parameter.IsRequired);
+                },
+                parameter =>
+                {
+                    Assert.Equal("Name", parameter.Name);
+                    Assert.False(parameter.IsRequired);
+                });
+        }
+
+        [Fact]
         public async Task ApiExplorer_Updates_WhenActionDescriptorCollectionIsUpdated()
         {
             // Act - 1
@@ -1111,6 +1181,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public string Source { get; set; }
 
             public string Type { get; set; }
+
+            public string DefaultValue { get; set; }
+
+            public bool IsRequired { get; set; }
         }
 
         // Used to serialize data between client and server

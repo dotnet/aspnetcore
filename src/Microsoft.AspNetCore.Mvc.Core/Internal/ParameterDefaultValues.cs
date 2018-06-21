@@ -30,17 +30,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static object GetParameterDefaultValue(ParameterInfo parameterInfo)
         {
-            if (!ParameterDefaultValue.TryGetDefaultValue(parameterInfo, out var defaultValue))
+            TryGetDeclaredParameterDefaultValue(parameterInfo, out var defaultValue);
+            if (defaultValue == null && parameterInfo.ParameterType.IsValueType)
             {
-                var defaultValueAttribute = parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: false);
-                defaultValue = defaultValueAttribute?.Value;
-
-                if (defaultValue == null && parameterInfo.ParameterType.IsValueType)
-                {
-                    defaultValue = Activator.CreateInstance(parameterInfo.ParameterType);
-                }
+                defaultValue = Activator.CreateInstance(parameterInfo.ParameterType);
             }
+
             return defaultValue;
+        }
+
+        public static bool TryGetDeclaredParameterDefaultValue(ParameterInfo parameterInfo, out object defaultValue)
+        {
+            if (ParameterDefaultValue.TryGetDefaultValue(parameterInfo, out defaultValue))
+            {
+                return true;
+            }
+
+            var defaultValueAttribute = parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: false);
+            if (defaultValueAttribute != null)
+            {
+                defaultValue = defaultValueAttribute.Value;
+                return true;
+            }
+
+            return false;
         }
     }
 }

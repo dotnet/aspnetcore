@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -1416,6 +1417,172 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.Equal(typeof(string), comments.Type);
         }
 
+        [Fact]
+        public void ProcessIsRequired_SetsTrue_ForFromBodyParameters()
+        {
+            // Arrange
+            var description = new ApiParameterDescription { Source = BindingSource.Body, };
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+
+            // Assert
+            Assert.True(description.IsRequired);
+        }
+
+        [Fact]
+        public void ProcessIsRequired_SetsTrue_ForParameterDescriptorsWithBindRequired()
+        {
+            // Arrange
+            var description = new ApiParameterDescription
+            {
+                Source = BindingSource.Query,
+            };
+            var context = GetApiParameterContext(description);
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            modelMetadataProvider
+                .ForProperty<Person>(nameof(Person.Name))
+                .BindingDetails(d => d.IsBindingRequired = true);
+            description.ModelMetadata = modelMetadataProvider.GetMetadataForProperty(typeof(Person), nameof(Person.Name));
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+
+            // Assert
+            Assert.True(description.IsRequired);
+        }
+
+        [Fact]
+        public void ProcessIsRequired_SetsTrue_ForRequiredRouteParameterDescriptors()
+        {
+            // Arrange
+            var description = new ApiParameterDescription
+            {
+                Source = BindingSource.Path,
+                RouteInfo = new ApiParameterRouteInfo(),
+            };
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+
+            // Assert
+            Assert.True(description.IsRequired);
+        }
+
+        [Fact]
+        public void ProcessIsRequired_DoesNotSetToTrue_ByDefault()
+        {
+            // Arrange
+            var description = new ApiParameterDescription();
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+
+            // Assert
+            Assert.False(description.IsRequired);
+        }
+
+        [Fact]
+        public void ProcessIsRequired_DoesNotSetToTrue_ForParameterDescriptorsWithValidationRequired()
+        {
+            // Arrange
+            var description = new ApiParameterDescription();
+            var context = GetApiParameterContext(description);
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            modelMetadataProvider
+                .ForProperty<Person>(nameof(Person.Name))
+                .ValidationDetails(d => d.IsRequired = true);
+            description.ModelMetadata = modelMetadataProvider.GetMetadataForProperty(typeof(Person), nameof(Person.Name));
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+
+            // Assert
+            Assert.False(description.IsRequired);
+        }
+
+        [Fact]
+        public void ProcessDefaultValue_SetsDefaultRouteValue()
+        {
+            // Arrange
+            var methodInfo = GetType().GetMethod(nameof(ParameterDefaultValue), BindingFlags.Instance | BindingFlags.NonPublic);
+            var parameterInfo = methodInfo.GetParameters()[0];
+
+            var defaultValue = new object();
+            var description = new ApiParameterDescription
+            {
+                Source = BindingSource.Path,
+                RouteInfo = new ApiParameterRouteInfo {  DefaultValue = defaultValue },
+                ParameterDescriptor = new ControllerParameterDescriptor
+                {
+                    ParameterInfo = parameterInfo,
+                },
+            };
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessParameterDefaultValue(context);
+
+            // Assert
+            Assert.Same(defaultValue, description.DefaultValue);
+        }
+
+        [Fact]
+        public void ProcessDefaultValue_SetsDefaultValue_FromParameterInfo()
+        {
+            // Arrange
+            var methodInfo = GetType().GetMethod(nameof(ParameterDefaultValue), BindingFlags.Instance | BindingFlags.NonPublic);
+            var parameterInfo = methodInfo.GetParameters()[0];
+            var description = new ApiParameterDescription
+            {
+                Source = BindingSource.Query,
+                ParameterDescriptor = new ControllerParameterDescriptor
+                {
+                    ParameterInfo = parameterInfo,
+                },
+            };
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessParameterDefaultValue(context);
+
+            // Assert
+            Assert.Equal(10, description.DefaultValue);
+        }
+
+        [Fact]
+        public void ProcessDefaultValue_DoesNotSpecifyDefaultValueForValueTypes_WhenNoValueIsSpecified()
+        {
+            // Arrange
+            var methodInfo = GetType().GetMethod(nameof(AcceptsId_Query), BindingFlags.Instance | BindingFlags.NonPublic);
+            var parameterInfo = methodInfo.GetParameters()[0];
+            var description = new ApiParameterDescription
+            {
+                Source = BindingSource.Query,
+                ParameterDescriptor = new ControllerParameterDescriptor
+                {
+                    ParameterInfo = parameterInfo,
+                },
+            };
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessParameterDefaultValue(context);
+
+            // Assert
+            Assert.Null(description.DefaultValue);
+        }
+
+        private static ApiParameterContext GetApiParameterContext(ApiParameterDescription description)
+        {
+            var context = new ApiParameterContext(new EmptyModelMetadataProvider(), new ControllerActionDescriptor(), new TemplatePart[0]);
+            context.Results.Add(description);
+            return context;
+        }
+
         private IReadOnlyList<ApiDescription> GetApiDescriptions(
             ActionDescriptor action,
             List<MockInputFormatter> inputFormatters = null,
@@ -1710,6 +1877,8 @@ namespace Microsoft.AspNetCore.Mvc.Description
         private void FromBody([FromBody] int id)
         {
         }
+
+        private void ParameterDefaultValue(int value = 10) { }
 
         private class TestController
         {

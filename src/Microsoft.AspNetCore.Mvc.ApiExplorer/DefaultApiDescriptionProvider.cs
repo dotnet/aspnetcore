@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -177,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     var visitor = new PseudoModelBindingVisitor(context, actionParameter);
 
-                    ModelMetadata metadata = null;
+                    ModelMetadata metadata;
                     if (_mvcOptions.AllowValidatingTopLevelNodes &&
                         actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
                         _modelMetadataProvider is ModelMetadataProvider provider)
@@ -232,6 +230,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             // Next, we want to join up any route parameters with those discovered from the action's parameters.
+            // This will result us in creating a parameter representation for each route parameter that does not
+            // have a mapping parameter or bound property.
+            ProcessRouteParameters(context);
+
+            // Set IsRequired=true
+            ProcessIsRequired(context);
+
+            // Set DefaultValue
+            ProcessParameterDefaultValue(context);
+
+            return context.Results;
+        }
+
+        private void ProcessRouteParameters(ApiParameterContext context)
+        {
             var routeParameters = new Dictionary<string, ApiParameterRouteInfo>(StringComparer.OrdinalIgnoreCase);
             foreach (var routeParameter in context.RouteParameters)
             {
@@ -271,8 +284,46 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Source = BindingSource.Path,
                 });
             }
+        }
 
-            return context.Results;
+        internal static void ProcessIsRequired(ApiParameterContext context)
+        {
+            foreach (var parameter in context.Results)
+            {
+                if (parameter.Source == BindingSource.Body)
+                {
+                    parameter.IsRequired = true;
+                }
+
+                if (parameter.ModelMetadata != null && parameter.ModelMetadata.IsBindingRequired)
+                {
+                    parameter.IsRequired = true;
+                }
+
+                if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null && !parameter.RouteInfo.IsOptional)
+                {
+                    parameter.IsRequired = true;
+                }
+            }
+        }
+
+        internal static void ProcessParameterDefaultValue(ApiParameterContext context)
+        {
+            foreach (var parameter in context.Results)
+            {
+                if (parameter.Source == BindingSource.Path)
+                {
+                    parameter.DefaultValue = parameter.RouteInfo?.DefaultValue;
+                }
+                else
+                {
+                    if (parameter.ParameterDescriptor is ControllerParameterDescriptor controllerParameter &&
+                        ParameterDefaultValues.TryGetDeclaredParameterDefaultValue(controllerParameter.ParameterInfo, out var defaultValue))
+                    {
+                        parameter.DefaultValue = defaultValue;
+                    }
+                }
+            }
         }
 
         private ApiParameterRouteInfo CreateRouteInfo(TemplatePart routeParameter)
@@ -414,29 +465,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 .Select(fd => fd.Filter)
                 .OfType<IApiRequestMetadataProvider>()
                 .ToArray();
-        }
-
-        private class ApiParameterContext
-        {
-            public ApiParameterContext(
-                IModelMetadataProvider metadataProvider,
-                ControllerActionDescriptor actionDescriptor,
-                IReadOnlyList<TemplatePart> routeParameters)
-            {
-                MetadataProvider = metadataProvider;
-                ActionDescriptor = actionDescriptor;
-                RouteParameters = routeParameters;
-
-                Results = new List<ApiParameterDescription>();
-            }
-
-            public ControllerActionDescriptor ActionDescriptor { get; }
-
-            public IModelMetadataProvider MetadataProvider { get; }
-
-            public IList<ApiParameterDescription> Results { get; }
-
-            public IReadOnlyList<TemplatePart> RouteParameters { get; }
         }
 
         private class ApiParameterDescriptionContext

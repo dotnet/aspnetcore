@@ -28,8 +28,8 @@ namespace ApiExplorerWebSite
 
         public void OnResourceExecuting(ResourceExecutingContext context)
         {
-            var controllerActionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
-            if (controllerActionDescriptor != null && controllerActionDescriptor.MethodInfo.IsDefined(typeof(PassThruAttribute)))
+            if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor &&
+                controllerActionDescriptor.MethodInfo.IsDefined(typeof(PassThruAttribute)))
             {
                 return;
             }
@@ -69,6 +69,8 @@ namespace ApiExplorerWebSite
                     Name = parameter.Name,
                     Source = parameter.Source.Id,
                     Type = parameter.Type?.FullName,
+                    DefaultValue = parameter.DefaultValue?.ToString(),
+                    IsRequired = parameter.IsRequired,
                 };
 
                 if (parameter.RouteInfo != null)
@@ -143,6 +145,10 @@ namespace ApiExplorerWebSite
             public string Source { get; set; }
 
             public string Type { get; set; }
+
+            public string DefaultValue { get; set; }
+
+            public bool IsRequired { get; set; }
         }
 
         // Used to serialize data between client and server
