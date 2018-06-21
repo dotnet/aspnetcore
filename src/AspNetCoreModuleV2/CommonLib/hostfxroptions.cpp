@@ -4,6 +4,8 @@
 #include "hostfxroptions.h"
 
 #include "hostfxr_utility.h"
+#include "debugutil.h"
+#include "exceptions.h"
 
 HRESULT HOSTFXR_OPTIONS::Create(
         _In_ PCWSTR         pcwzExeLocation,

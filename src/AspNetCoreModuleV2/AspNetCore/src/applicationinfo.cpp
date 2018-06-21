@@ -10,6 +10,7 @@
 #include "resources.h"
 #include "SRWExclusiveLock.h"
 #include "GlobalVersionUtility.h"
+#include "exceptions.h"
 
 const PCWSTR APPLICATION_INFO::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR APPLICATION_INFO::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";

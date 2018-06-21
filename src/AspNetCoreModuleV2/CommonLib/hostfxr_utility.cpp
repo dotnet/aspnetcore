@@ -7,6 +7,8 @@
 #include "EventLog.h"
 #include "ntassert.h"
 #include "fx_ver.h"
+#include "debugutil.h"
+#include "exceptions.h"
 
 namespace fs = std::experimental::filesystem;
 

@@ -10,6 +10,7 @@
 #include "utility.h"
 #include "EventLog.h"
 #include "SRWExclusiveLock.h"
+#include "exceptions.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 hostfxr_main_fn IN_PROCESS_APPLICATION::s_fMainCallback = NULL;

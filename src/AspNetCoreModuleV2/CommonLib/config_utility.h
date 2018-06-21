@@ -6,6 +6,7 @@
 #include <httpserv.h>
 #include "ahutil.h"
 #include "stringu.h"
+#include "exceptions.h"
 
 class ConfigUtility
 {
