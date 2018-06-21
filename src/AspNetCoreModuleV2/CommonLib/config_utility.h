@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include "stdafx.h"
+#include <httpserv.h>
+#include "ahutil.h"
+#include "stringu.h"
 
 class ConfigUtility
 {

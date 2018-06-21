@@ -8,9 +8,9 @@
 #include <VersionHelpers.h>
 
 #include "inprocessapplication.h"
-#include "inprocesshandler.h"
 #include "requesthandler_config.h"
 #include "debugutil.h"
+#include "resources.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 

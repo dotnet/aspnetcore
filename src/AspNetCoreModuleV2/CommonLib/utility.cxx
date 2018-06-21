@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "stdafx.h"
+#include "utility.h"
+
+#include <Shlwapi.h>
 #include "debugutil.h"
 
 // static

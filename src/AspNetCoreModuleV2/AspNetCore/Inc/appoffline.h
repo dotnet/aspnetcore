@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "precomp.hxx"
+#include "stringa.h"
+#include "stringu.h"
 
 class APP_OFFLINE_HTM
 {

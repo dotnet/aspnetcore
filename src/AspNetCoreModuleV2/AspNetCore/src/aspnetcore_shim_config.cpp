@@ -5,7 +5,6 @@
 
 #include "config_utility.h"
 #include "hostfxr_utility.h"
-#include "debugutil.h"
 #include "ahutil.h"
 
 ASPNETCORE_SHIM_CONFIG::~ASPNETCORE_SHIM_CONFIG()

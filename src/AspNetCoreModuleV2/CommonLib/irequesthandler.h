@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <httpserv.h>
+
 //
 // Pure abstract class
 //

@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "precomp.hxx"
-
 #include "applicationinfo.h"
 #include "applicationmanager.h"
 #include "proxymodule.h"
@@ -10,6 +8,8 @@
 #include "acache.h"
 #include "utility.h"
 #include "debugutil.h"
+#include "resources.h"
+#include "exceptions.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcore.dll");
 

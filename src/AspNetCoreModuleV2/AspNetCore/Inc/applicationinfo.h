@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "precomp.hxx"
+#include <httpserv.h>
 
 #include "hostfxroptions.h"
 #include "appoffline.h"
@@ -13,6 +13,7 @@
 #include "aspnetcore_shim_config.h"
 #include "iapplication.h"
 #include "SRWSharedLock.h"
+#include "ntassert.h"
 
 #define API_BUFFER_TOO_SMALL 0x80008098
 

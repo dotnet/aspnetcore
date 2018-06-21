@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "precomp.hxx"
-
 #include "applicationinfo.h"
 #include "multisz.h"
 #include "filewatcher.h"

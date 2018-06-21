@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <synchapi.h>
+
 class SRWSharedLock
 {
 public:

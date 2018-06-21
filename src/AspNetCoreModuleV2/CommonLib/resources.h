@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "aspnetcore_msg.h"
+
 #define IDS_INVALID_PROPERTY        1000
 #define IDS_SERVER_ERROR            1001
 

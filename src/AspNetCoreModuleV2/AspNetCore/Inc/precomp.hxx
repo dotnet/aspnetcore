@@ -16,40 +16,8 @@
 #include <Windows.h>
 #include <atlbase.h>
 #include <httpserv.h>
-
 #include "stringu.h"
-#include "stringa.h"
-
-#include "ntassert.h"
-#include "dbgutil.h"
-
-#include "aspnetcore_msg.h"
-#include "resources.h"
-
-#include <memory>
-
-FORCEINLINE
-DWORD
-WIN32_FROM_HRESULT(
-    HRESULT hr
-)
-{
-    if ((FAILED(hr)) &&
-        (HRESULT_FACILITY(hr) == FACILITY_WIN32))
-    {
-        return HRESULT_CODE(hr);
-    }
-    return hr;
-}
-
-FORCEINLINE
-HRESULT
-HRESULT_FROM_GETLASTERROR()
-{
-    return  ( GetLastError() != NO_ERROR )
-           ? HRESULT_FROM_WIN32( GetLastError() )
-           : E_FAIL;
-}
+#include "stringu.h"
 
 extern PVOID        g_pModuleId;
 extern BOOL         g_fAspnetcoreRHAssemblyLoaded;

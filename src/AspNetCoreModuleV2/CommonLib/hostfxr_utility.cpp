@@ -1,8 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "stdafx.h"
+#include "hostfxr_utility.h"
+
 #include <string>
+#include "EventLog.h"
+#include "ntassert.h"
+#include "fx_ver.h"
 
 namespace fs = std::experimental::filesystem;
 

@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "stdafx.h"
+#include "hostfxroptions.h"
+
+#include "hostfxr_utility.h"
 
 HRESULT HOSTFXR_OPTIONS::Create(
         _In_ PCWSTR         pcwzExeLocation,

@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include <Windows.h>
 #include <memory>
+
+#include "stringu.h"
 
 class HOSTFXR_OPTIONS
 {

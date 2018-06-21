@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "precomp.h"
-
+#include <Windows.h>
 #include <vector>
 #include <experimental/filesystem>
 #include <optional>
+#include "stringu.h"
 
 typedef INT(*hostfxr_get_native_search_directories_fn) (CONST INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
 typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]);

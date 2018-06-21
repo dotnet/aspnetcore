@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "stdafx.h"
+#include "iapplication.h"
+#include "ntassert.h"
 
 class APPLICATION : public IAPPLICATION
 {

@@ -3,20 +3,12 @@
 
 #pragma once
 
-#include "precomp.hxx"
+#include <windows.h>
+
+#include "stringu.h"
 
 #define FILE_WATCHER_SHUTDOWN_KEY           (ULONG_PTR)(-1)
 #define FILE_WATCHER_ENTRY_BUFFER_SIZE      4096
-#ifndef CONTAINING_RECORD
-//
-// Calculate the address of the base of the structure given its type, and an
-// address of a field within the structure.
-//
-
-#define CONTAINING_RECORD(address, type, field) \
-    ((type *)((PCHAR)(address)-(ULONG_PTR)(&((type *)0)->field)))
-
-#endif // !CONTAINING_RECORD
 #define FILE_NOTIFY_VALID_MASK          0x00000fff
 #define FILE_WATCHER_ENTRY_SIGNATURE       ((DWORD) 'FWES')
 #define FILE_WATCHER_ENTRY_SIGNATURE_FREE  ((DWORD) 'sewf')

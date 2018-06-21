@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "stdafx.h"
+#include "irequesthandler.h"
+#include "ntassert.h"
 
 //
 // Pure abstract class

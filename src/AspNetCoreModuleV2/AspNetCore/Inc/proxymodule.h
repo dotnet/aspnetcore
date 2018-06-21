@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "precomp.hxx"
-
 #include "applicationinfo.h"
 #include "irequesthandler.h"
 

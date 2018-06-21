@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string>
+
 // Note: This is not SemVer (esp., in comparing pre-release part, fx_ver_t does not
 // compare multiple dot separated identifiers individually.) ex: 1.0.0-beta.2 vs. 1.0.0-beta.11
 struct fx_ver_t
@@ -22,8 +24,6 @@ struct fx_ver_t
     bool is_prerelease() const { return !m_pre.empty(); }
 
     std::wstring as_str() const;
-    std::wstring prerelease_glob() const;
-    std::wstring patch_glob() const;
 
     bool operator ==(const fx_ver_t& b) const;
     bool operator !=(const fx_ver_t& b) const;

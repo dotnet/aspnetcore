@@ -7,6 +7,9 @@
 #include "requesthandler_config.h"
 #include "environmentvariablehelpers.h"
 #include "aspnetcore_event.h"
+#include "utility.h"
+#include "EventLog.h"
+#include "SRWExclusiveLock.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 hostfxr_main_fn IN_PROCESS_APPLICATION::s_fMainCallback = NULL;

@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "precomp.hxx"
-#include <map>
+#include <windows.h>
+#include <httpserv.h>
+
+#include "stringu.h"
 
 #define CS_ASPNETCORE_SECTION                            L"system.webServer/aspNetCore"
 #define CS_ASPNETCORE_PROCESS_EXE_PATH                   L"processPath"

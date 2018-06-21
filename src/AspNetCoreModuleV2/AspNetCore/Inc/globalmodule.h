@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "precomp.hxx"
-
 #include "applicationmanager.h"
 
 class ASPNET_CORE_GLOBAL_MODULE : public CGlobalModule

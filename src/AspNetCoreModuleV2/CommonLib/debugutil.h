@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Windows.h>
+#include "dbgutil.h"
 
 #define ASPNETCORE_DEBUG_FLAG_INFO          DEBUG_FLAG_INFO
 #define ASPNETCORE_DEBUG_FLAG_WARNING       DEBUG_FLAG_WARN

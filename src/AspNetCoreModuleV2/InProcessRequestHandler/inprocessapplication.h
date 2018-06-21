@@ -4,6 +4,7 @@
 #pragma once
 
 #include "precomp.hxx"
+#include "application.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
 

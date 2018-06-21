@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "stdafx.h"
+#include <Windows.h>
+#include <experimental/filesystem>
+
+#include "GlobalVersionUtility.h"
 
 namespace fs = std::experimental::filesystem;
 

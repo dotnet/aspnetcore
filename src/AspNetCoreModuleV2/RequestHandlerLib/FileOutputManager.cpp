@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "sttimer.h"
+#include "utility.h"
 
 FileOutputManager::FileOutputManager()
 {
@@ -160,8 +161,8 @@ FileOutputManager::Start()
 
     // There are a few options for redirecting stdout/stderr,
     // but there are issues with most of them.
-    // AllocConsole() 
-    // *stdout = *m_pStdFile; 
+    // AllocConsole()
+    // *stdout = *m_pStdFile;
     // *stderr = *m_pStdFile;
     // Calling _dup2 on stderr fails on IIS. IIS sets stderr to -2
     // _dup2(_fileno(m_pStdFile), _fileno(stdout));

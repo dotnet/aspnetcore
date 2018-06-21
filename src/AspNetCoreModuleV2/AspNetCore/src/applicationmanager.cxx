@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include <memory>
 #include "applicationmanager.h"
+
 #include "proxymodule.h"
 #include "utility.h"
+#include "resources.h"
+#include "SRWExclusiveLock.h"
 
 // The application manager is a singleton across ANCM.
 APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;

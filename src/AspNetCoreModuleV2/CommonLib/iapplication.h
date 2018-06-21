@@ -3,7 +3,7 @@
 
 #pragma once
 
-class IREQUEST_HANDLER;
+#include "irequesthandler.h"
 
 enum APPLICATION_STATUS
 {

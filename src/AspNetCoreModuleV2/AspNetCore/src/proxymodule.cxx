@@ -7,7 +7,6 @@
 #include "applicationinfo.h"
 #include "acache.h"
 #include "exceptions.h"
-
 __override
 HRESULT
 ASPNET_CORE_PROXY_MODULE_FACTORY::GetHttpModule(

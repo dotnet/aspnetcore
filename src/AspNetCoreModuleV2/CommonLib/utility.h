@@ -5,6 +5,10 @@
 
 #include "stdafx.h"
 
+#include <httpserv.h>
+#include "stringa.h"
+#include "stringu.h"
+
 class UTILITY
 {
 public:
