@@ -231,7 +231,8 @@ APPLICATION_INFO::EnsureApplicationCreated(
                 RETURN_IF_FAILED(HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION));
             }
 
-            RETURN_IF_FAILED(m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext, struExeLocation.QueryStr(), &pApplication));
+            RETURN_IF_FAILED(m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext->GetApplication(), &pApplication));
+            pApplication->SetParameter(L"InProcessExeLocation", struExeLocation.QueryStr());
             m_pApplication = pApplication;
         }
     }

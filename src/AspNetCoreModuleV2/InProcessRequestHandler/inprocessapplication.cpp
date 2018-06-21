@@ -37,14 +37,6 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_status = APPLICATION_STATUS::STARTING;
 }
 
-HRESULT
-IN_PROCESS_APPLICATION::Initialize(
-    PCWSTR pDotnetExeLocation
-)
-{
-    return m_struExeLocation.Copy(pDotnetExeLocation);
-}
-
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 {
 

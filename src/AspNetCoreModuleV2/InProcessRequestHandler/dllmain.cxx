@@ -82,13 +82,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     return TRUE;
 }
 
-// TODO remove pHttpContext from the CreateApplication call.
 HRESULT
 __stdcall
 CreateApplication(
     _In_  IHttpServer        *pServer,
-    _In_  IHttpContext       *pHttpContext,
-    _In_  PCWSTR              pwzExeLocation,
+    _In_  IHttpApplication   *pHttpApplication,
     _Out_ IAPPLICATION      **ppApplication
 )
 {
@@ -101,7 +99,7 @@ CreateApplication(
 
     try
     {
-        hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpContext->GetApplication(), &pConfig);
+        hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig);
         if (FAILED(hr))
         {
             goto Finished;
@@ -110,12 +108,6 @@ CreateApplication(
         pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig);
 
         pConfig = NULL;
-
-        hr = pApplication->Initialize(pwzExeLocation);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
 
         *ppApplication = pApplication;
     }

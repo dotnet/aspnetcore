@@ -20,10 +20,9 @@
 typedef
 HRESULT
 (WINAPI * PFN_ASPNETCORE_CREATE_APPLICATION)(
-    _In_  IHttpServer    *pServer,
-    _In_  IHttpContext   *pHttpContext,
-    _In_  PCWSTR          pwzExeLocation, // TODO remove both pwzExeLocation and pHttpContext from this api
-    _Out_ IAPPLICATION  **pApplication
+    _In_  IHttpServer        *pServer,
+    _In_  IHttpApplication   *pHttpApplication,
+    _Out_ IAPPLICATION      **pApplication
     );
 
 extern BOOL     g_fRecycleProcessCalled;

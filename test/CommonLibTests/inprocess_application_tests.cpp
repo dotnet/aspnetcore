@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+
 #include "inprocessapplication.h"
 #include "fakeclasses.h"
 
@@ -18,7 +19,7 @@ namespace InprocessTests
         IN_PROCESS_APPLICATION *app = new IN_PROCESS_APPLICATION(server, requestHandlerConfig);
         {
             std::wstring exePath(L"hello");
-            app->Initialize(exePath.c_str());
+            app->SetParameter(L"InProcessExeLocation", exePath.c_str());
         }
         ASSERT_STREQ(app->QueryExeLocation(), L"hello");
     }

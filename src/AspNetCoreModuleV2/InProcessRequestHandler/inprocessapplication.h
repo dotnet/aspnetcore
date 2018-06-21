@@ -23,11 +23,6 @@ public:
 
     ~IN_PROCESS_APPLICATION();
 
-    HRESULT
-	Initialize(
-        PCWSTR pDotnetExeLocation
-	);
-
     __override
     VOID
     ShutDown();
@@ -53,6 +48,19 @@ public:
         _In_  IHttpContext       *pHttpContext,
         _Out_ IREQUEST_HANDLER   **pRequestHandler)
     override;
+
+    VOID
+    SetParameter(
+        _In_ LPCWSTR           pzName,
+        _In_ LPCWSTR           pzValue)
+    override
+    {
+        const auto exeLocationParameterName = L"InProcessExeLocation";
+        if (_wcsicmp(pzName, exeLocationParameterName) == 0)
+        {
+            m_struExeLocation.Copy(pzValue);
+        }
+    }
 
     // Executes the .NET Core process
     HRESULT
@@ -169,11 +177,6 @@ private:
     // Allows to override call to hostfxr_main with custome callback
     // used in testing
     static hostfxr_main_fn          s_fMainCallback;
-
-    VOID
-    SetStdOut(
-        VOID
-    );
 
     static
     VOID
