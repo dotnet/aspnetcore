@@ -17,7 +17,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("ClassLibrary")]
-        public async Task Pack__NoBuild_Works_IncludesRazorAssembly()
+        public async Task Pack_NoBuild_IncludeRazorContent_IncludesRazorViewContent()
+        {
+            var result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result);
+
+            result = await DotnetMSBuild("Pack", "/p:NoBuild=true /p:IncludeRazorContentInPack=true");
+            Assert.BuildPassed(result);
+
+            Assert.NuspecContains(
+                result,
+                Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
+                @"<files include=""any/netstandard2.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
+
+            Assert.NupkgContains(
+                result,
+                Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
+                Path.Combine("contentFiles", "any", "netstandard2.0", "Views", "Shared", "_Layout.cshtml"));
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Pack_NoBuild_Works_IncludesRazorAssembly()
         {
             var result = await DotnetMSBuild("Build");
             Assert.BuildPassed(result);
