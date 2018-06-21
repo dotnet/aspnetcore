@@ -278,6 +278,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(document, null, designTime, new RazorDiagnostic[0]);
         }
 
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives)
+        {
+            ParseBlockTest(document, directives, null);
+        }
+
         internal virtual void ParseBlockTest(string document, params RazorDiagnostic[] expectedErrors)
         {
             ParseBlockTest(document, false, expectedErrors);

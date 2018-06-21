@@ -1,0 +1,29 @@
+Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006]> - 29 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+        CSharpSymbolType.Identifier;[section];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [Header] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Symbols:1
+        CSharpSymbolType.Identifier;[Header];
+    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (15:0,15) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (16:0,16) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Markup block - Gen<None> - 12 - (17:0,17)
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (17:0,17) - Symbols:1
+            HtmlSymbolType.NewLine;[LF];
+        Tag block - Gen<None> - 3 - (19:1,0)
+            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (19:1,0) - Symbols:3
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (22:1,3) - Symbols:1
+            HtmlSymbolType.Text;[Foo];
+        Tag block - Gen<None> - 4 - (25:1,6)
+            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (25:1,6) - Symbols:4
+                HtmlSymbolType.OpenAngle;[<];
+                HtmlSymbolType.ForwardSlash;[/];
+                HtmlSymbolType.Text;[p];
+                HtmlSymbolType.CloseAngle;[>];

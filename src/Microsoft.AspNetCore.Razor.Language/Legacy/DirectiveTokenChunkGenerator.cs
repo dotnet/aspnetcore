@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Descriptor = tokenDescriptor;
         }
 
-        public DirectiveTokenDescriptor Descriptor { get; set; }
+        public DirectiveTokenDescriptor Descriptor { get; }
 
         public override void Accept(ParserVisitor visitor, Span span)
         {
@@ -36,6 +37,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             combiner.Add(Type);
 
             return combiner.CombinedHash;
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder("DirectiveToken {");
+            builder.Append(Descriptor.Name);
+            builder.Append(";");
+            builder.Append(Descriptor.Kind);
+            builder.Append(";Opt:");
+            builder.Append(Descriptor.Optional);
+            builder.Append("}");
+
+            return builder.ToString();
         }
     }
 }
