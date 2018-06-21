@@ -27,7 +27,7 @@
       BuildArtifacts="@(ArtifactInfo)"
       PackageArtifacts="@(PackageArtifact)"
       ExternalDependencies="@(ExternalDependency)"
-      MetapackageVersion="$(PackageVersion)" />
+      MetapackageVersion="$(LZMAMicrosoftAspNetCoreAppAll21PackageVersion)" />
 
     <ItemGroup>
       <_FallbackArchiveRestoreSources Include="$(RestoreSources)" />
