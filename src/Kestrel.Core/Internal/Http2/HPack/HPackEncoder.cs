@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     return false;
                 }
 
-                buffer[i++] = (byte)(s[j] | (lowercase ? toLowerMask : 0));
+                buffer[i++] = (byte)(s[j] | (lowercase && s[j] >= (byte)'A' && s[j] <= (byte)'Z' ? toLowerMask : 0));
             }
 
             length = i;
