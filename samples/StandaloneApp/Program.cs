@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Browser.Rendering;
-using Microsoft.AspNetCore.Blazor.Browser.Services;
+using Microsoft.AspNetCore.Blazor.Hosting;
 
 namespace StandaloneApp
 {
@@ -10,12 +9,11 @@ namespace StandaloneApp
     {
         public static void Main(string[] args)
         {
-            var serviceProvider = new BrowserServiceProvider(configure =>
-            {
-                // Add any custom services here
-            });
-
-            new BrowserRenderer(serviceProvider).AddComponent<App>("app");
+            CreateHostBuilder(args).Build().Run();
         }
+
+        public static IWebAssemblyHostBuilder CreateHostBuilder(string[] args) =>
+            BlazorWebAssemblyHost.CreateDefaultBuilder()
+                .UseBlazorStartup<Startup>();
     }
 }
