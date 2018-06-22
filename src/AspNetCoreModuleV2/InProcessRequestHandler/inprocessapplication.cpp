@@ -243,7 +243,13 @@ IN_PROCESS_APPLICATION::Recycle(
         // Try to graceful shutdown the managed application
         // and call exit to terminate current process
         ShutDown();
-        exit(0);
+
+        // If we set a static callback, we don't want to kill the current process as
+        // that will kill the test process and means we are running in hostable webcore mode.
+        if (s_fMainCallback == NULL)
+        {
+            exit(0);
+        }
     }
 }
 
