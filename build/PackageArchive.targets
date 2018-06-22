@@ -31,6 +31,8 @@
 
     <ItemGroup>
       <_FallbackArchiveRestoreSources Include="$(RestoreSources)" />
+      <!-- Add nuget to restore released packages (i.e. pinned runtimes/metapackages) -->
+      <_FallbackArchiveRestoreSources Include="https://api.nuget.org/v3/index.json" />
       <_FallbackArchiveRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
       <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
     </ItemGroup>
@@ -59,7 +61,7 @@
       Condition="'$(RestorePassed)' == 'false'"
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true;_Target=Restore2" />
 
     <!-- Retry if restore failed -->
     <PropertyGroup>
@@ -71,7 +73,7 @@
       Condition="'$(RestorePassed)' == 'false'"
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true;_Target=Restore3" />
 
     <!-- Retry if restore failed -->
     <PropertyGroup>
@@ -83,7 +85,7 @@
       Condition="'$(RestorePassed)' == 'false'"
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true;_Target=Restore4" />
 
     <!-- Retry if restore failed -->
     <PropertyGroup>
@@ -94,7 +96,7 @@
       Condition="'$(RestorePassed)' == 'false'"
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true;_Target=Restore5" />
 
     <!-- Create the archive -->
     <RepoTasks.CreateLzma OutputPath="$(FallbackOutputPath)" Sources="$(FallbackStagingDir)" />
