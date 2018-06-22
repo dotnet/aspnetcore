@@ -197,6 +197,7 @@
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />
+    <ClInclude Include="HandleWrapper.h" />
     <ClInclude Include="hostfxroptions.h" />
     <ClInclude Include="hostfxr_utility.h" />
     <ClInclude Include="iapplication.h" />

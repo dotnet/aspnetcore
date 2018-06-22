@@ -4,11 +4,13 @@
 #include "hostfxr_utility.h"
 
 #include <string>
+#include <atlcomcli.h>
 #include "EventLog.h"
 #include "ntassert.h"
 #include "fx_ver.h"
 #include "debugutil.h"
 #include "exceptions.h"
+#include "HandleWrapper.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -440,9 +442,11 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
     SECURITY_ATTRIBUTES securityAttributes;
 
     CHAR                pzFileContents[READ_BUFFER_SIZE];
-    HANDLE              hStdOutReadPipe = INVALID_HANDLE_VALUE;
-    HANDLE              hStdOutWritePipe = INVALID_HANDLE_VALUE;
-    LPWSTR              pwzDotnetName = NULL;
+    HandleWrapper<InvalidHandleTraits>     hStdOutReadPipe;
+    HandleWrapper<InvalidHandleTraits>     hStdOutWritePipe;
+    HandleWrapper<InvalidHandleTraits>     hProcess;
+    HandleWrapper<InvalidHandleTraits>     hThread;
+    CComBSTR            pwzDotnetName = NULL;
     DWORD               dwFilePointer;
     BOOL                fIsWow64Process;
     BOOL                fIsCurrentProcess64Bit;
@@ -453,8 +457,6 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
     DWORD               dwBinaryType;
     INT                 index = 0;
     INT                 prevIndex = 0;
-    BOOL                fProcessCreationResult = FALSE;
-    BOOL                fResult = FALSE;
     std::optional<fs::path> result;
 
     // Set the security attributes for the read/write pipe
@@ -462,17 +464,11 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
     securityAttributes.lpSecurityDescriptor = NULL;
     securityAttributes.bInheritHandle = TRUE;
 
+    LOG_INFO("Invoking where.exe to find dotnet.exe");
+
     // Create a read/write pipe that will be used for reading the result of where.exe
-    if (!CreatePipe(&hStdOutReadPipe, &hStdOutWritePipe, &securityAttributes, 0))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
-    if (!SetHandleInformation(hStdOutReadPipe, HANDLE_FLAG_INHERIT, 0))
-    {
-        hr = ERROR_FILE_INVALID;
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF(!CreatePipe(&hStdOutReadPipe, &hStdOutWritePipe, &securityAttributes, 0));
+    FINISHED_LAST_ERROR_IF(!SetHandleInformation(hStdOutReadPipe, HANDLE_FLAG_INHERIT, 0));
 
     // Set the stdout and err pipe to the write pipes.
     startupInfo.cb = sizeof(startupInfo);
@@ -482,14 +478,10 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
 
     // CreateProcess requires a mutable string to be passed to commandline
     // See https://blogs.msdn.microsoft.com/oldnewthing/20090601-00/?p=18083/
-    pwzDotnetName = SysAllocString(L"\"where.exe\" dotnet.exe");
-    if (pwzDotnetName == NULL)
-    {
-        goto Finished;
-    }
+    pwzDotnetName = L"\"where.exe\" dotnet.exe";
 
     // Create a process to invoke where.exe
-    fProcessCreationResult = CreateProcessW(NULL,
+    FINISHED_LAST_ERROR_IF(!CreateProcessW(NULL,
         pwzDotnetName,
         NULL,
         NULL,
@@ -499,20 +491,18 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
         NULL,
         &startupInfo,
         &processInformation
-    );
+    ));
 
-    if (!fProcessCreationResult)
-    {
-        goto Finished;
-    }
+    // Store handles into wrapper so they get closed automatically
+    hProcess = processInformation.hProcess;
+    hThread = processInformation.hThread;
 
     // Wait for where.exe to return, waiting 2 seconds.
-    if (WaitForSingleObject(processInformation.hProcess, 2000) != WAIT_OBJECT_0)
+    if (LOG_LAST_ERROR_IF(WaitForSingleObject(processInformation.hProcess, 2000) != WAIT_OBJECT_0))
     {
         // Timeout occured, terminate the where.exe process and return.
-        TerminateProcess(processInformation.hProcess, 2);
-        hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
-        goto Finished;
+        FINISHED_LAST_ERROR_IF(!TerminateProcess(processInformation.hProcess, 2));
+        FINISHED_IF_FAILED(HRESULT_FROM_WIN32(ERROR_TIMEOUT));
     }
 
     //
@@ -520,10 +510,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
     // and 2 if there was an error. Check if the exit code is 1 and set
     // a new hr result saying it couldn't find dotnet.exe
     //
-    if (!GetExitCodeProcess(processInformation.hProcess, &dwExitCode))
-    {
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF (!GetExitCodeProcess(processInformation.hProcess, &dwExitCode));
 
     //
     // In this block, if anything fails, we will goto our fallback of
@@ -531,7 +518,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
     //
     if (dwExitCode != 0)
     {
-        goto Finished;
+        FINISHED_IF_FAILED(E_FAIL);
     }
 
     // Where succeeded.
@@ -539,38 +526,30 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
     dwFilePointer = SetFilePointer(hStdOutReadPipe, 0, NULL, FILE_BEGIN);
     if (dwFilePointer == INVALID_SET_FILE_POINTER)
     {
-        goto Finished;
+        FINISHED_IF_FAILED(E_FAIL);
     }
 
     //
     // As the call to where.exe succeeded (dotnet.exe was found), ReadFile should not hang.
     // TODO consider putting ReadFile in a separate thread with a timeout to guarantee it doesn't block.
     //
-    if (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, NULL))
-    {
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, NULL));
 
     if (dwNumBytesRead >= READ_BUFFER_SIZE)
     {
         // This shouldn't ever be this large. We could continue to call ReadFile in a loop,
         // however if someone had this many dotnet.exes on their machine.
-        goto Finished;
+        FINISHED_IF_FAILED(E_FAIL);
     }
 
-    hr = HRESULT_FROM_WIN32(GetLastError());
-    if (FAILED(hr = struDotnetLocationsString.CopyA(pzFileContents, dwNumBytesRead)))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(struDotnetLocationsString.CopyA(pzFileContents, dwNumBytesRead));
+
+    WLOG_INFOF(L"where.exe invocation returned: %s", struDotnetLocationsString.QueryStr());
 
     // Check the bitness of the currently running process
     // matches the dotnet.exe found.
-    if (!IsWow64Process(GetCurrentProcess(), &fIsWow64Process))
-    {
-        // Calling IsWow64Process failed
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF (!IsWow64Process(GetCurrentProcess(), &fIsWow64Process));
+
     if (fIsWow64Process)
     {
         // 32 bit mode
@@ -584,6 +563,8 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
         fIsCurrentProcess64Bit = systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
     }
 
+    WLOG_INFOF(L"Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
+
     while (TRUE)
     {
         index = struDotnetLocationsString.IndexOf(L"\r\n", prevIndex);
@@ -591,46 +572,28 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
         {
             break;
         }
-        if (FAILED(hr = struDotnetSubstring.Copy(&struDotnetLocationsString.QueryStr()[prevIndex], index - prevIndex)))
-        {
-            goto Finished;
-        }
+
+        FINISHED_IF_FAILED(struDotnetSubstring.Copy(&struDotnetLocationsString.QueryStr()[prevIndex], index - prevIndex));
         // \r\n is two wchars, so add 2 here.
         prevIndex = index + 2;
 
-        if (GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType) &&
-            fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY))
+        WLOG_INFOF(L"Processing entry %s", struDotnetSubstring.QueryStr());
+
+        if (LOG_LAST_ERROR_IF(!GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType)))
+        {
+            continue;
+        }
+
+        WLOG_INFOF(L"Binary type %d", dwBinaryType);
+
+        if (fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY))
         {
             // The bitness of dotnet matched with the current worker process bitness.
-            result = std::make_optional(struDotnetSubstring.QueryStr());
-            fResult = TRUE;
-            break;
+            return std::make_optional(struDotnetSubstring.QueryStr());
         }
     }
 
-Finished:
-
-    if (hStdOutReadPipe != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(hStdOutReadPipe);
-    }
-    if (hStdOutWritePipe != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(hStdOutWritePipe);
-    }
-    if (processInformation.hProcess != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(processInformation.hProcess);
-    }
-    if (processInformation.hThread != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(processInformation.hThread);
-    }
-    if (pwzDotnetName != NULL)
-    {
-        SysFreeString(pwzDotnetName);
-    }
-
+    Finished:
     return result;
 }
 

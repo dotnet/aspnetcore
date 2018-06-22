@@ -26,18 +26,47 @@
 #endif
 
 #define OBSERVE_CAUGHT_EXCEPTION()                              CaughtExceptionHResult(LOCATION_INFO);
-#define RETURN_CAUGHT_EXCEPTION()                               return CaughtExceptionHResult(LOCATION_INFO);
-#define CATCH_RETURN()                                          catch (...) { RETURN_CAUGHT_EXCEPTION(); }
-#define THROW_IF_NULL_ALLOC(ptr)                                Throw_IfNullAlloc(ptr)
 #define RETURN_IF_FAILED(hr)                                    do { HRESULT __hrRet = hr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); return __hrRet; }} while (0, 0)
+#define RETURN_CAUGHT_EXCEPTION()                               return CaughtExceptionHResult(LOCATION_INFO);
+#define RETURN_LAST_ERROR_IF(condition)                         do { if (condition) { return LogLastError(LOCATION_INFO); }} while (0, 0)
+#define RETURN_LAST_ERROR_IF_NULL(ptr)                          do { if ((ptr) == nullptr) { return LogLastError(LOCATION_INFO); }} while (0, 0)
+
 #define FINISHED_IF_FAILED(hrr)                                 do { HRESULT __hrRet = hrr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; goto Finished; }} while (0, 0)
+#define FINISHED_IF_NULL_ALLOC(ptr)                             do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); goto Finished; }} while (0, 0)
+#define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); goto Finished; }} while (0, 0)
+#define FINISHED_LAST_ERROR_IF_NULL(ptr)                        do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); goto Finished; }} while (0, 0)
+
+#define THROW_IF_NULL_ALLOC(ptr)                                Throw_IfNullAlloc(ptr)
+
+#define CATCH_RETURN()                                          catch (...) { RETURN_CAUGHT_EXCEPTION(); }
 #define LOG_IF_FAILED(hr)                                       LogHResultFailed(LOCATION_INFO, hr)
+#define LOG_LAST_ERROR_IF(condition)                            LogLastErrorIf(LOCATION_INFO, condition)
 #define SUCCEEDED_LOG(hr)                                       SUCCEEDED(LOG_IF_FAILED(hr))
 #define FAILED_LOG(hr)                                          FAILED(LOG_IF_FAILED(hr))
 
  __declspec(noinline) inline VOID ReportUntypedException(LOCATION_ARGUMENTS_ONLY)
 {
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, LOCATION_FORMAT "Unhandled non-standard exception", LOCATION_CALL_ONLY);
+}
+
+ __declspec(noinline) inline HRESULT LogLastError(LOCATION_ARGUMENTS_ONLY)
+{
+    const auto lastError = GetLastError();
+    const auto hr = HRESULT_FROM_WIN32(lastError);
+
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, LOCATION_FORMAT "Operation failed with LastError: %d HR: 0x%x", LOCATION_CALL lastError, hr);
+
+    return hr;
+}
+
+ __declspec(noinline) inline bool LogLastErrorIf(LOCATION_ARGUMENTS_ONLY, bool condition)
+{
+    if (condition)
+    {
+        LogLastError(LOCATION_CALL_ONLY);
+    }
+
+    return condition;
 }
 
  __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS std::exception& exception)
