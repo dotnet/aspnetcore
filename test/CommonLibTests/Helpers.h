@@ -5,21 +5,24 @@
 class Helpers
 {
 public:
-
-    static
-        std::wstring
-        CreateRandomValue();
-
-    static
-        std::wstring
-        CreateRandomTempDirectory();
-
-    static
-        void
-        DeleteDirectory(std::wstring directory);
-
     static
         std::wstring
         ReadFileContent(std::wstring file);
 };
 
+class TempDirectory
+{
+public:
+
+    TempDirectory();
+
+    ~TempDirectory();
+
+    std::experimental::filesystem::path path() const
+    {
+        return m_path;
+    }
+
+private:
+    std::experimental::filesystem::path m_path;
+};

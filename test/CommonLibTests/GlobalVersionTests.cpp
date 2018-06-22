@@ -30,32 +30,32 @@ namespace GlobalVersionTests
 
     TEST(GetRequestHandlerVersions, GetFolders)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / L"2.0.0"));
 
-        auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.c_str());
+        auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.path().c_str());
         EXPECT_EQ(res.size(), 1);
         EXPECT_EQ(res.at(0), fx_ver_t(2, 0, 0, std::wstring()));
     }
 
     TEST(GetRequestHandlerVersions, GetFolderPreview)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0-preview"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / L"2.0.0-preview"));
 
-        auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.c_str());
+        auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.path().c_str());
         EXPECT_EQ(res.size(), 1);
         EXPECT_EQ(res.at(0), fx_ver_t(2, 0, 0, std::wstring(L"-preview")));
     }
 
     TEST(GetRequestHandlerVersions, GetFolderManyVersions)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\1.9.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / + L"2.0.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / + L"1.9.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / + L"2.1.0"));
 
-        auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.c_str());
+        auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.path().c_str());
         EXPECT_EQ(res.size(), 3);
         EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_t(1, 9, 0, std::wstring())) != std::end(res));
         EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_t(2, 0, 0, std::wstring())) != std::end(res));
@@ -64,90 +64,90 @@ namespace GlobalVersionTests
 
     TEST(FindHighestGlobalVersion, HighestVersionWithSingleFolder)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
 
-        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.c_str());
+        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.path().c_str());
 
         EXPECT_STREQ(res.c_str(), L"2.0.0");
     }
 
     TEST(FindHighestGlobalVersion, HighestVersionWithMultipleVersions)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0"));
 
-        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.c_str());
+        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.path().c_str());
 
         EXPECT_STREQ(res.c_str(), L"2.1.0");
     }
 
     TEST(FindHighestGlobalVersion, HighestVersionWithMultipleVersionsPreview)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.2.0-preview"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.2.0-preview"));
 
-        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.c_str());
+        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.path().c_str());
 
         EXPECT_STREQ(res.c_str(), L"2.2.0-preview");
     }
 
     TEST(FindHighestGlobalVersion, HighestVersionWithMultipleVersionNoPreview)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0-preview"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0-preview"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0"));
 
-        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.c_str());
+        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.path().c_str());
 
         EXPECT_STREQ(res.c_str(), L"2.1.0");
     }
 
     TEST(GetGlobalRequestHandlerPath, FindHighestVersionNoHandlerName)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.c_str(), L"", L"aspnetcorev2_outofprocess.dll");
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
+        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.path().c_str(), L"", L"aspnetcorev2_outofprocess.dll");
 
-        EXPECT_STREQ(result.c_str(), (tempPath + L"2.0.0\\aspnetcorev2_outofprocess.dll").c_str());
+        EXPECT_STREQ(result.c_str(), (tempPath.path() / L"2.0.0\\aspnetcorev2_outofprocess.dll").c_str());
     }
 
     TEST(GetGlobalRequestHandlerPath, FindHighestVersionPreviewWins)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0-preview"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0-preview"));
 
-        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.c_str(), L"", L"aspnetcorev2_outofprocess.dll");
+        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.path().c_str(), L"", L"aspnetcorev2_outofprocess.dll");
 
-        EXPECT_STREQ(result.c_str(), (tempPath + L"2.1.0-preview\\aspnetcorev2_outofprocess.dll").c_str());
+        EXPECT_STREQ(result.c_str(), (tempPath.path() / L"2.1.0-preview\\aspnetcorev2_outofprocess.dll").c_str());
     }
 
     TEST(GetGlobalRequestHandlerPath, FindHighestVersionSpecificVersion)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0-preview"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0-preview"));
 
-        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.c_str(), L"2.0.0", L"aspnetcorev2_outofprocess.dll");
+        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.path().c_str(), L"2.0.0", L"aspnetcorev2_outofprocess.dll");
 
-        EXPECT_STREQ(result.c_str(), (tempPath + L"2.0.0\\aspnetcorev2_outofprocess.dll").c_str());
+        EXPECT_STREQ(result.c_str(), (tempPath.path() / L"2.0.0\\aspnetcorev2_outofprocess.dll").c_str());
     }
 
     TEST(GetGlobalRequestHandlerPath, FindHighestVersionSpecificPreview)
     {
-        std::wstring tempPath = Helpers::CreateRandomTempDirectory();
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.0.0"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.1.0-preview"));
-        EXPECT_TRUE(fs::create_directories(tempPath + L"\\2.2.0"));
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.0.0"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0-preview"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.2.0"));
 
 
-        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.c_str(), L"2.1.0-preview", L"aspnetcorev2_outofprocess.dll");
+        auto result = GlobalVersionUtility::GetGlobalRequestHandlerPath(tempPath.path().c_str(), L"2.1.0-preview", L"aspnetcorev2_outofprocess.dll");
 
-        EXPECT_STREQ(result.c_str(), (tempPath + L"2.1.0-preview\\aspnetcorev2_outofprocess.dll").c_str());
+        EXPECT_STREQ(result.c_str(), (tempPath.path() / L"2.1.0-preview\\aspnetcorev2_outofprocess.dll").c_str());
     }
 }
