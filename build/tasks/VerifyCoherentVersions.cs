@@ -5,12 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Build.Framework;
-using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
 using RepoTasks.ProjectModel;
 
 namespace RepoTasks
@@ -91,29 +87,50 @@ namespace RepoTasks
                     foreach (var dependency in dependencySet.Packages)
                     {
                         PackageInfo dependencyPackageInfo;
-                        var depVersion = dependency.VersionRange.MinVersion.ToString();
+                        var minVersion = dependency.VersionRange.MinVersion;
+                        var minVersionString = minVersion.ToString();
                         if (dependencyMap.TryGetValue(dependency.Id, out var externalDepVersions))
                         {
-                            var matchedVersion = externalDepVersions.FirstOrDefault(d => depVersion.Equals(d));
+                            var matchedVersion = externalDepVersions.FirstOrDefault(d => minVersionString.Equals(d));
+
+                            // If dependency does not match an external dependency version, check if matching version
+                            // will be built in Universe. That's fine in benchmark apps for example.
+                            var universePackageVersion = string.Empty;
+                            if (matchedVersion == null &&
+                                packageLookup.TryGetValue(dependency.Id, out var universePackageInfo))
+                            {
+                                if (universePackageInfo.Version == minVersion)
+                                {
+                                    continue;
+                                }
+
+                                // Include Universe version in following error message.
+                                universePackageVersion = universePackageInfo.Version.ToString();
+                            }
 
                             if (matchedVersion == null)
                             {
                                 var versions = string.Join(" or ", externalDepVersions);
+                                if (!string.IsNullOrEmpty(universePackageVersion))
+                                {
+                                    versions += $" or {universePackageVersion}";
+                                }
+
                                 Log.LogError($"Package {packageInfo.Id} has an external dependency on the wrong version of {dependency.Id}. "
-                                    + $"It uses {depVersion} but only {versions} is allowed.");
+                                    + $"It uses {minVersionString} but only {versions} is allowed.");
                             }
 
                             continue;
                         }
                         else if (!packageLookup.TryGetValue(dependency.Id, out dependencyPackageInfo))
                         {
-                            Log.LogError($"Package {packageInfo.Id} has an undefined external dependency on {dependency.Id}/{depVersion}. " +
+                            Log.LogError($"Package {packageInfo.Id} has an undefined external dependency on {dependency.Id}/{minVersionString}. " +
                                 "If the package is built in aspnet/Universe, make sure it is also marked as 'ship'. " +
                                 "If it is an external dependency, add it as a new ExternalDependency.");
                             continue;
                         }
 
-                        if (dependencyPackageInfo.Version != dependency.VersionRange.MinVersion)
+                        if (dependencyPackageInfo.Version != minVersion)
                         {
                             // For any dependency in the universe
                             // Add a mismatch if the min version doesn't work out
