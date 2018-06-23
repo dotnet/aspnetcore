@@ -53,12 +53,12 @@
       is not otherwise referenced. They avoid unnecessary changes to the Universe build graph or to product
       dependencies. Do not use these external dependencies elsewhere.
     -->
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
-    <ExternalDependency Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" />
-    <ExternalDependency Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" />
-    <ExternalDependency Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" VariableName="BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" VariableName="BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" VariableName="BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion" />
+    <ExternalDependency Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" VariableName="BenchmarksOnlyMySqlConnectorPackageVersion" />
+    <ExternalDependency Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" VariableName="BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion" />
+    <ExternalDependency Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" VariableName="BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion" />
 
     <ExternalDependency Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="$(MicrosoftDotNetProjectModelPackageVersion)" />
