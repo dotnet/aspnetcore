@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -9,23 +10,40 @@ namespace Microsoft.AspNetCore.Mvc
     {
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public static void Get<TModel>(object id) { }
-
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public static void Get<TModel>() { }
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+        public static void Get(
+            [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Suffix)]
+            [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
+            object id) { }
 
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public static void Post<TModel>(TModel model) { }
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+        public static void Post(
+            [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
+            [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
+            object model) { }
 
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public static void Put<TModel>(object id, TModel model) { }
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+        public static void Put(
+            [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Suffix)]
+            [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
+            object id,
+            
+            [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
+            [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
+            object model) { }
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public static void Delete<TModel>(object id) { }
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+        public static void Delete(
+            [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Suffix)]
+            [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
+            object id) { }
     }
 }

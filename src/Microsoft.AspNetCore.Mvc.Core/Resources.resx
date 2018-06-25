@@ -448,4 +448,7 @@
   <data name="InvalidTypeTForActionResultOfT" xml:space="preserve">
     <value>Invalid type parameter '{0}' specified for '{1}'.</value>
   </data>
+  <data name="ApiConvention_UnsupportedAttributesOnConvention" xml:space="preserve">
+    <value>Method {0} is decorated with the following attributes that are not allowed on an API convention method:{1}The following attributes are allowed on API convention methods: {2}.</value>
+  </data>
 </root>

@@ -1494,6 +1494,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatInvalidTypeTForActionResultOfT(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidTypeTForActionResultOfT"), p0, p1);
 
+        /// <summary>
+        /// Method {0} is decorated with the following attributes that are not allowed on an API convention method:{1}The following attributes are allowed on API convention methods: {2}.
+        /// </summary>
+        internal static string ApiConvention_UnsupportedAttributesOnConvention
+        {
+            get => GetString("ApiConvention_UnsupportedAttributesOnConvention");
+        }
+
+        /// <summary>
+        /// Method {0} is decorated with the following attributes that are not allowed on an API convention method:{1}The following attributes are allowed on API convention methods: {2}.
+        /// </summary>
+        internal static string FormatApiConvention_UnsupportedAttributesOnConvention(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConvention_UnsupportedAttributesOnConvention"), p0, p1, p2);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

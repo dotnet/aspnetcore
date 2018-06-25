@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -68,11 +69,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 if (isApiController)
                 {
                     InferBoundPropertyModelPrefixes(controllerModel);
-
-                    AddGloballyConfiguredApiConventions(controllerModel);
                 }
 
                 var controllerHasSelectorModel = controllerModel.Selectors.Any(s => s.AttributeRouteModel != null);
+                var conventions = controllerModel.Attributes.OfType<ApiConventionTypeAttribute>().ToArray();
+                if (conventions.Length == 0)
+                {
+                    var controllerAssembly = controllerModel.ControllerType.Assembly;
+                    conventions = controllerAssembly.GetCustomAttributes<ApiConventionTypeAttribute>().ToArray();
+                }
 
                 foreach (var actionModel in controllerModel.Actions)
                 {
@@ -90,22 +95,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     InferParameterModelPrefixes(actionModel);
 
                     AddMultipartFormDataConsumesAttribute(actionModel);
+
+                    DiscoverApiConvention(actionModel, conventions);
                 }
-            }
-        }
-
-        internal static void AddGloballyConfiguredApiConventions(ControllerModel controllerModel)
-        {
-            if (controllerModel.Filters.OfType<ApiConventionAttribute>().Any())
-            {
-                // ApiControllerAttribute is already associated with controller. Do not look for conventions configured at assembly.
-                return;
-            }
-
-            var assembly = controllerModel.ControllerType.Assembly;
-            foreach (var attribute in assembly.GetCustomAttributes<ApiConventionAttribute>())
-            {
-                controllerModel.Filters.Add(attribute);
             }
         }
 
@@ -248,6 +240,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 BindingSource.Query;
 
             return bindingSource;
+        }
+
+        internal static void DiscoverApiConvention(ActionModel actionModel, ApiConventionTypeAttribute[] apiConventionAttributes)
+        {
+            if (actionModel.Filters.OfType<IApiResponseMetadataProvider>().Any())
+            {
+                // If an action already has providers, don't discover any from conventions.
+                return;
+            }
+
+            if (ApiConventionResult.TryGetApiConvention(actionModel.ActionMethod, apiConventionAttributes, out var result))
+            {
+                actionModel.Properties[typeof(ApiConventionResult)] = result;
+            }
         }
 
         private bool ParameterExistsInAnyRoute(ActionModel actionModel, string parameterName)
