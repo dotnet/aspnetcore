@@ -31,6 +31,7 @@
 #define RETURN_LAST_ERROR_IF(condition)                         do { if (condition) { return LogLastError(LOCATION_INFO); }} while (0, 0)
 #define RETURN_LAST_ERROR_IF_NULL(ptr)                          do { if ((ptr) == nullptr) { return LogLastError(LOCATION_INFO); }} while (0, 0)
 
+#define FINISHED(hrr)                                           do { HRESULT __hrRet = hrr; LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; goto Finished; } while (0, 0)
 #define FINISHED_IF_FAILED(hrr)                                 do { HRESULT __hrRet = hrr; if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; goto Finished; }} while (0, 0)
 #define FINISHED_IF_NULL_ALLOC(ptr)                             do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); goto Finished; }} while (0, 0)
 #define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); goto Finished; }} while (0, 0)
