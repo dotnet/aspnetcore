@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 _writer.GetStringBuilder().Clear();
                 _visitor.Visit(node);
                 var actual = _writer.GetStringBuilder().ToString();
-                var actualLineCount = actual.Split("\r\n").Length;
+                var actualLineCount = actual.Split(new[] { "\r\n" }, StringSplitOptions.None).Length;
 
                 var expectedLineIndex = 1;
                 while (expectedLineIndex++ < actualLineCount && _index < _baseline.Length)
