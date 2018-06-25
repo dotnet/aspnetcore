@@ -3,32 +3,32 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17081</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreMvcTestingPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34411</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34411</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17090</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreMvcTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview1-34530</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview1-34530</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26606-01</MicrosoftNETCoreApp22PackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34411</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34530</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
