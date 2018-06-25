@@ -20,7 +20,7 @@
       <ResolvedAssembliesToPublish Remove="@(ResolvedAssembliesToPublish)" />
 
       <!-- Move wwwroot files to output root -->
-      <ContentWithTargetPath Update="@(ContentWithTargetPath)" Condition="$([System.String]::new(%(TargetPath)).StartsWith('wwwroot\'))">
+      <ContentWithTargetPath Update="@(ContentWithTargetPath)" Condition="$([System.String]::new(%(TargetPath)).StartsWith('wwwroot\')) OR $([System.String]::new(%(TargetPath)).StartsWith('wwwroot/'))">
         <TargetPath>$(BlazorPublishDistDir)$([System.String]::new(%(TargetPath)).Substring(8))</TargetPath>
       </ContentWithTargetPath>
       
