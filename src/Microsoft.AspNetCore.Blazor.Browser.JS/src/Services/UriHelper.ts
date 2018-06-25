@@ -22,7 +22,7 @@ registerFunction(`${registeredFunctionPrefix}.enableNavigationInterception`, () 
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
     const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement;
     const hrefAttributeName = 'href';
-    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
+    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName) && event.button === 0) {
       const href = anchorTarget.getAttribute(hrefAttributeName)!;
       const absoluteHref = toAbsoluteUri(href);
 
