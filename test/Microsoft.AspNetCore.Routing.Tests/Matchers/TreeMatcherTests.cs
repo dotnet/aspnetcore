@@ -1,23 +1,22 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public class TreeMatcherTests
     {
-        private MatcherEndpoint CreateEndpoint(string template, int order, object values = null, EndpointMetadataCollection metadata = null)
+        private MatcherEndpoint CreateEndpoint(string template, int order, object defaultValues = null, EndpointMetadataCollection metadata = null)
         {
-            return new MatcherEndpoint((next) => null, template, values, order, metadata ?? EndpointMetadataCollection.Empty, template, address: null);
+            var defaults = defaultValues == null ? new RouteValueDictionary() : new RouteValueDictionary(defaultValues);
+            return new MatcherEndpoint((next) => null, template, defaults, new RouteValueDictionary(), order, metadata ?? EndpointMetadataCollection.Empty, template);
         }
 
         private TreeMatcher CreateTreeMatcher(EndpointDataSource endpointDataSource)

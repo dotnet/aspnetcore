@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -35,7 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<MatcherFactory, TreeMatcherFactory>();
 
             // Link generation related services
-            services.TryAddSingleton<IEndpointFinder, DefaultEndpointFinder>();
+            services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();
+            services.TryAddSingleton<IEndpointFinder<RouteValuesBasedEndpointFinderContext>, RouteValuesBasedEndpointFinder>();
             services.TryAddSingleton<ILinkGenerator, DefaultLinkGenerator>();
             //
             // Endpoint Selection

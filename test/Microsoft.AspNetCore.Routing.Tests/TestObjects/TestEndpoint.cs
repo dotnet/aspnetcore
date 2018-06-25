@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Routing.TestObjects
 {
     internal class TestEndpoint : Endpoint
     {
-        public TestEndpoint(EndpointMetadataCollection metadata, string displayName, Address address)
-            : base(metadata, displayName, address)
+        public TestEndpoint(EndpointMetadataCollection metadata, string displayName)
+            : base(metadata, displayName)
         {
         }
     }

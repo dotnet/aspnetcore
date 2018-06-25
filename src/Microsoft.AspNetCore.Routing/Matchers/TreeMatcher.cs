@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                         {
                             if (feature.Endpoint is MatcherEndpoint endpoint)
                             {
-                                foreach (var kvp in endpoint.Values)
+                                foreach (var kvp in endpoint.Defaults)
                                 {
                                     if (!feature.Values.ContainsKey(kvp.Key))
                                     {

@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // MatcherEndpoint.Values contains the default values parsed from the template
             // as well as those specified with a literal. We need to separate those
             // for legacy cases.
-            var defaults = new RouteValueDictionary(endpoint.Values);
-            for (var i = 0; i < endpoint.ParsedTemlate.Parameters.Count; i++)
+            var defaults = endpoint.Defaults;
+            for (var i = 0; i < endpoint.ParsedTemplate.Parameters.Count; i++)
             {
-                var parameter = endpoint.ParsedTemlate.Parameters[i];
+                var parameter = endpoint.ParsedTemplate.Parameters[i];
                 if (parameter.DefaultValue != null)
                 {
                     defaults.Remove(parameter.Name);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     return comparison;
                 }
 
-                comparison = RoutePrecedence.ComputeInbound(Endpoint.ParsedTemlate).CompareTo(RoutePrecedence.ComputeInbound(other.Endpoint.ParsedTemlate));
+                comparison = RoutePrecedence.ComputeInbound(Endpoint.ParsedTemplate).CompareTo(RoutePrecedence.ComputeInbound(other.Endpoint.ParsedTemplate));
                 if (comparison != 0)
                 {
                     return comparison;

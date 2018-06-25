@@ -34,17 +34,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         internal static MatcherEndpoint CreateEndpoint(
             string template, 
-            object defaults = null,
+            object defaultValues = null,
             int? order = null)
         {
+            var defaults = defaultValues == null ? new RouteValueDictionary() : new RouteValueDictionary(defaultValues);
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 template,
                 defaults,
+                new RouteValueDictionary(),
                 order ?? 0,
                 EndpointMetadataCollection.Empty,
-                "endpoint: " + template,
-                address: null);
+                "endpoint: " + template);
         }
 
         internal (Matcher matcher, MatcherEndpoint endpoint) CreateMatcher(string template)

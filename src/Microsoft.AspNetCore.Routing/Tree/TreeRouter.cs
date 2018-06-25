@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             // The decision tree will give us back all entries that match the provided route data in the correct
             // order. We just need to iterate them and use the first one that can generate a link.
-            var matches = _linkGenerationTree.GetMatches(context);
+            var matches = _linkGenerationTree.GetMatches(context.Values, context.AmbientValues);
 
             if (matches == null)
             {

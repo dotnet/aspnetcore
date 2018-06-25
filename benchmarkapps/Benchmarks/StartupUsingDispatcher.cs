@@ -32,11 +32,11 @@ namespace Benchmarks
                             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
                         },
                         template: "/plaintext",
-                        values: new { },
+                        defaults: new RouteValueDictionary(),
+                        requiredValues: new RouteValueDictionary(),
                         order: 0,
                         metadata: EndpointMetadataCollection.Empty,
-                        displayName: "Plaintext",
-                        address: null),
+                        displayName: "Plaintext"),
                 }));
             });
         }

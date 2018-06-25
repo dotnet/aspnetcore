@@ -15,23 +15,23 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class DefaultLinkGenerator : ILinkGenerator
     {
-        private readonly IEndpointFinder _endpointFinder;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
         private readonly ILogger<DefaultLinkGenerator> _logger;
 
         public DefaultLinkGenerator(
-            IEndpointFinder endpointFinder,
             ObjectPool<UriBuildingContext> uriBuildingContextPool,
             ILogger<DefaultLinkGenerator> logger)
         {
-            _endpointFinder = endpointFinder;
             _uriBuildingContextPool = uriBuildingContextPool;
             _logger = logger;
         }
 
-        public string GetLink(LinkGeneratorContext context)
+        public string GetLink(
+            IEnumerable<Endpoint> endpoints,
+            RouteValueDictionary explicitValues,
+            RouteValueDictionary ambientValues)
         {
-            if (TryGetLink(context, out var link))
+            if (TryGetLink(endpoints, explicitValues, ambientValues, out var link))
             {
                 return link;
             }
@@ -39,10 +39,12 @@ namespace Microsoft.AspNetCore.Routing
             throw new InvalidOperationException("Could not find a matching endpoint to generate a link.");
         }
 
-        public bool TryGetLink(LinkGeneratorContext context, out string link)
+        public bool TryGetLink(
+            IEnumerable<Endpoint> endpoints,
+            RouteValueDictionary explicitValues,
+            RouteValueDictionary ambientValues,
+            out string link)
         {
-            var address = context.Address;
-            var endpoints = _endpointFinder.FindEndpoints(address);
             link = null;
 
             if (endpoints == null)
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Routing
 
             foreach (var endpoint in matcherEndpoints)
             {
-                link = GetLink(endpoint.ParsedTemlate, endpoint.Values, context);
+                link = GetLink(endpoint.ParsedTemplate, endpoint.Defaults, explicitValues, ambientValues);
                 if (link != null)
                 {
                     return true;
@@ -71,19 +73,17 @@ namespace Microsoft.AspNetCore.Routing
 
         private string GetLink(
             RouteTemplate template,
-            IReadOnlyDictionary<string, object> defaultValues,
-            LinkGeneratorContext context)
+            RouteValueDictionary defaults,
+            RouteValueDictionary explicitValues,
+            RouteValueDictionary ambientValues)
         {
-            var defaults = new RouteValueDictionary(defaultValues);
             var templateBinder = new TemplateBinder(
                 UrlEncoder.Default,
                 _uriBuildingContextPool,
                 template,
                 defaults);
 
-            var values = templateBinder.GetValues(
-                new RouteValueDictionary(context.AmbientValues),
-                new RouteValueDictionary(context.SuppliedValues));
+            var values = templateBinder.GetValues(ambientValues, explicitValues);
             if (values == null)
             {
                 // We're missing one of the required values for this route.

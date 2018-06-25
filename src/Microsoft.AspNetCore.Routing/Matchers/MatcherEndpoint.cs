@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
@@ -19,12 +18,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public MatcherEndpoint(
             Func<RequestDelegate, RequestDelegate> invoker,
             string template,
-            object values,
+            RouteValueDictionary defaults,
+            RouteValueDictionary requiredValues,
             int order,
             EndpointMetadataCollection metadata,
-            string displayName,
-            Address address)
-            : base(metadata, displayName, address)
+            string displayName)
+            : base(metadata, displayName)
         {
             if (invoker == null)
             {
@@ -37,24 +36,31 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             Invoker = invoker;
-            Template = template;
-            ParsedTemlate = TemplateParser.Parse(template);
-            var mergedDefaults = GetDefaults(ParsedTemlate, new RouteValueDictionary(values));
-            Values = mergedDefaults;
             Order = order;
+
+            Template = template;
+            ParsedTemplate = TemplateParser.Parse(template);
+
+            RequiredValues = requiredValues;
+            var mergedDefaults = GetDefaults(ParsedTemplate, defaults);
+            Defaults = mergedDefaults;
         }
 
         public int Order { get; }
         public Func<RequestDelegate, RequestDelegate> Invoker { get; }
         public string Template { get; }
-        public IReadOnlyDictionary<string, object> Values { get; }
+        public RouteValueDictionary Defaults { get; }
+
+        // Values required by an endpoint for it to be successfully matched on link generation
+        public RouteValueDictionary RequiredValues { get; }
 
         // Todo: needs review
-        public RouteTemplate ParsedTemlate { get; }
+        public RouteTemplate ParsedTemplate { get; }
 
-        private RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate, RouteValueDictionary defaults)
+        // Merge inline and non inline defaults into one
+        private RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate, RouteValueDictionary nonInlineDefaults)
         {
-            var result = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
+            var result = nonInlineDefaults == null ? new RouteValueDictionary() : new RouteValueDictionary(nonInlineDefaults);
 
             foreach (var parameter in parsedTemplate.Parameters)
             {

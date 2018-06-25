@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(new { controller = "Home" });
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(new { controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home", link);
@@ -37,11 +37,12 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var expectedMessage = "Could not find a matching endpoint to generate a link.";
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(new { controller = "Home" });
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(new { controller = "Home" });
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => linkGenerator.GetLink(context));
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues));
             Assert.Equal(expectedMessage, exception.Message);
         }
 
@@ -50,11 +51,15 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(new { controller = "Home" });
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(new { controller = "Home" });
 
             // Act
-            var canGenerateLink = linkGenerator.TryGetLink(context, out var link);
+            var canGenerateLink = linkGenerator.TryGetLink(
+                new[] { endpoint },
+                context.ExplicitValues,
+                context.AmbientValues,
+                out var link);
 
             // Assert
             Assert.False(canGenerateLink);
@@ -68,11 +73,14 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint("{controller}/{action}/{id?}");
             var endpoint2 = CreateEndpoint("{controller}/{action}");
             var endpoint3 = CreateEndpoint("{controller}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint1, endpoint2, endpoint3));
-            var context = CreateLinkGeneratorContext(new { controller = "Home", action = "Index", id = "10" });
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(new { controller = "Home", action = "Index", id = "10" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(
+                new[] { endpoint1, endpoint2, endpoint3 },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index/10", link);
@@ -85,11 +93,14 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint("{controller}/{action}/{id}");
             var endpoint2 = CreateEndpoint("{controller}/{action}");
             var endpoint3 = CreateEndpoint("{controller}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint1, endpoint2, endpoint3));
-            var context = CreateLinkGeneratorContext(new { controller = "Home", action = "Index" });
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(
+                new[] { endpoint1, endpoint2, endpoint3 },
+                context.ExplicitValues,
+                context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -100,13 +111,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { name = "name with %special #characters" },
                 ambientValues: new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?name=name%20with%20%25special%20%23characters", link);
@@ -117,13 +128,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 new { color = new List<string> { "red", "green", "blue" } },
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?color=red&color=green&color=blue", link);
@@ -134,13 +145,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 new { items = new List<int> { 10, 20, 30 } },
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?items=10&items=20&items=30", link);
@@ -151,13 +162,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 new { color = new List<string> { } },
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -168,13 +179,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 new { page = 1, color = new List<string> { "red", "green", "blue" }, message = "textfortest" },
                 new { controller = "Home", action = "Index" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index?page=1&color=red&color=green&color=blue&message=textfortest", link);
@@ -185,13 +196,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index" },
                 ambientValues: new { controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -201,9 +212,9 @@ namespace Microsoft.AspNetCore.Routing
         //public void RouteGenerationRejectsConstraints()
         //{
         //    // Arrange
-        //    var context = CreateLinkGeneratorContext(new { p1 = "abcd" });
+        //    var context = CreateRouteValuesContext(new { p1 = "abcd" });
 
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        "{p1}/{p2}",
         //        new { p2 = "catchall" },
         //        true,
@@ -220,16 +231,16 @@ namespace Microsoft.AspNetCore.Routing
         //public void RouteGenerationAcceptsConstraints()
         //{
         //    // Arrange
-        //    var context = CreateLinkGeneratorContext(new { p1 = "hello", p2 = "1234" });
+        //    var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
 
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        "{p1}/{p2}",
         //        new { p2 = "catchall" },
         //        true,
         //        new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.NotNull(pathData);
@@ -242,9 +253,9 @@ namespace Microsoft.AspNetCore.Routing
         //public void RouteWithCatchAllRejectsConstraints()
         //{
         //    // Arrange
-        //    var context = CreateLinkGeneratorContext(new { p1 = "abcd" });
+        //    var context = CreateRouteValuesContext(new { p1 = "abcd" });
 
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        "{p1}/{*p2}",
         //        new { p2 = "catchall" },
         //        true,
@@ -261,16 +272,16 @@ namespace Microsoft.AspNetCore.Routing
         //public void RouteWithCatchAllAcceptsConstraints()
         //{
         //    // Arrange
-        //    var context = CreateLinkGeneratorContext(new { p1 = "hello", p2 = "1234" });
+        //    var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
 
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        "{p1}/{*p2}",
         //        new { p2 = "catchall" },
         //        true,
         //        new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.NotNull(pathData);
@@ -283,7 +294,7 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLinkWithNonParameterConstraintReturnsUrlWithoutQueryString()
         //{
         //    // Arrange
-        //    var context = CreateLinkGeneratorContext(new { p1 = "hello", p2 = "1234" });
+        //    var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
 
         //    var target = new Mock<IRouteConstraint>();
         //    target
@@ -297,14 +308,14 @@ namespace Microsoft.AspNetCore.Routing
         //        .Returns(true)
         //        .Verifiable();
 
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        "{p1}/{p2}",
         //        new { p2 = "catchall" },
         //        true,
         //        new RouteValueDictionary(new { p2 = target.Object }));
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.NotNull(pathData);
@@ -322,13 +333,13 @@ namespace Microsoft.AspNetCore.Routing
         //{
         //    // Arrange
         //    var constraint = new CapturingConstraint();
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "slug/{controller}/{action}",
         //        defaultValues: null,
         //        handleRequest: true,
         //        constraints: new { c = constraint });
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Store" },
         //        ambientValues: new { Controller = "Home", action = "Blog", extra = "42" });
 
@@ -336,7 +347,7 @@ namespace Microsoft.AspNetCore.Routing
         //        new { controller = "Home", action = "Store", extra = "42" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/slug/Home/Store", link);
@@ -353,13 +364,13 @@ namespace Microsoft.AspNetCore.Routing
         //{
         //    // Arrange
         //    var constraint = new CapturingConstraint();
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "slug/{controller}/{action}",
         //        defaultValues: new { otherthing = "17" },
         //        handleRequest: true,
         //        constraints: new { c = constraint });
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Store" },
         //        ambientValues: new { Controller = "Home", action = "Blog" });
 
@@ -367,7 +378,7 @@ namespace Microsoft.AspNetCore.Routing
         //        new { controller = "Home", action = "Store" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/slug/Home/Store", link);
@@ -383,13 +394,13 @@ namespace Microsoft.AspNetCore.Routing
         //{
         //    // Arrange
         //    var constraint = new CapturingConstraint();
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "slug/{controller}/{action}",
         //        defaultValues: new { action = "Index" },
         //        handleRequest: true,
         //        constraints: new { c = constraint });
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { controller = "Shopping" },
         //        ambientValues: new { Controller = "Home", action = "Blog" });
 
@@ -397,7 +408,7 @@ namespace Microsoft.AspNetCore.Routing
         //        new { controller = "Shopping", action = "Index" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/slug/Shopping", link);
@@ -414,13 +425,13 @@ namespace Microsoft.AspNetCore.Routing
         //{
         //    // Arrange
         //    var constraint = new CapturingConstraint();
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "slug/{controller}/{action}",
         //        defaultValues: new { otherthing = "17", thirdthing = "13" },
         //        handleRequest: true,
         //        constraints: new { c = constraint });
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Store", thirdthing = "13" },
         //        ambientValues: new { Controller = "Home", action = "Blog", otherthing = "17" });
 
@@ -428,7 +439,7 @@ namespace Microsoft.AspNetCore.Routing
         //        new { controller = "Home", action = "Store", otherthing = "17", thirdthing = "13" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/slug/Home/Store", link);
@@ -442,12 +453,12 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_InlineConstraints_Success()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("{controller}/{action}/{id:int}");
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("{controller}/{action}/{id:int}");
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home", id = 4 });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/Home/Index/4", link);
@@ -459,8 +470,8 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_InlineConstraints_NonMatchingvalue()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("{controller}/{action}/{id:int}");
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("{controller}/{action}/{id:int}");
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home", id = "asf" });
 
         //    // Act
@@ -474,12 +485,12 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_InlineConstraints_OptionalParameter_ValuePresent()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("{controller}/{action}/{id:int?}");
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("{controller}/{action}/{id:int?}");
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home", id = 98 });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/Home/Index/98", link);
@@ -491,12 +502,12 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_InlineConstraints_OptionalParameter_ValueNotPresent()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("{controller}/{action}/{id:int?}");
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("{controller}/{action}/{id:int?}");
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/Home/Index", link);
@@ -508,8 +519,8 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_InlineConstraints_OptionalParameter_ValuePresent_ConstraintFails()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("{controller}/{action}/{id:int?}");
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("{controller}/{action}/{id:int?}");
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home", id = "sdfd" });
 
         //    // Act
@@ -523,12 +534,12 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_InlineConstraints_CompositeInlineConstraint()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("{controller}/{action}/{id:int:range(1,20)}");
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("{controller}/{action}/{id:int:range(1,20)}");
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home", id = 14 });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/Home/Index/14", link);
@@ -541,17 +552,17 @@ namespace Microsoft.AspNetCore.Routing
         //{
         //    // Arrange
         //    var constraint = new MaxLengthRouteConstraint(20);
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "{controller}/{action}/{name:alpha}",
         //        defaultValues: null,
         //        handleRequest: true,
         //        constraints: new { name = constraint });
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home", name = "products" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/Home/Index/products", link);
@@ -564,12 +575,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name?}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index/products", link);
@@ -580,12 +591,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name?}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -598,12 +609,12 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = CreateEndpoint(
                 template: "{controller}/{action}/{name?}",
                 defaultValues: new { name = "default-products" });
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index/products", link);
@@ -616,12 +627,12 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = CreateEndpoint(
                 template: "{controller}/{action}/{name?}",
                 defaultValues: new { name = "products" });
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -632,12 +643,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home", name = "products", format = "json" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index/products?format=json", link);
@@ -647,17 +658,17 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_OptionalParameter_FollowedByDotAfterSlash_ParameterPresent()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "{controller}/{action}/.{name?}",
         //        defaultValues: null,
         //        handleRequest: true,
         //        constraints: null);
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home", name = "products" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/Home/Index/.products", link);
@@ -669,17 +680,17 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_OptionalParameter_FollowedByDotAfterSlash_ParameterNotPresent()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "{controller}/{action}/.{name?}",
         //        defaultValues: null,
         //        handleRequest: true,
         //        constraints: null);
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { action = "Index", controller = "Home" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/Home/Index/", link);
@@ -692,12 +703,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name?}");
-            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-            var context = CreateLinkGeneratorContext(
+            var linkGenerator = CreateLinkGenerator();
+            var context = CreateRouteValuesContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
 
             // Act
-            var link = linkGenerator.GetLink(context);
+            var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
             // Assert
             Assert.Equal("/Home/Index", link);
@@ -707,14 +718,14 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_TwoOptionalParameters_OneValueFromAmbientValues()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("a/{b=15}/{c?}/{d?}");
-        //    var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("a/{b=15}/{c?}/{d?}");
+        //    var linkGenerator = CreateLinkGenerator();
+        //    var context = CreateRouteValuesContext(
         //        suppliedValues: new { },
         //        ambientValues: new { c = "17" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/a/15/17", link);
@@ -724,14 +735,14 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_OptionalParameterAfterDefault_OneValueFromAmbientValues()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint("a/{b=15}/{c?}");
-        //    var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
-        //    var context = CreateLinkGeneratorContext(
+        //    var endpoint = CreateEndpoints("a/{b=15}/{c?}");
+        //    var linkGenerator = CreateLinkGenerator();
+        //    var context = CreateRouteValuesContext(
         //        suppliedValues: new { },
         //        ambientValues: new { c = "17" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.Equal("/a/15/17", link);
@@ -741,18 +752,18 @@ namespace Microsoft.AspNetCore.Routing
         //public void GetLink_TwoOptionalParametersAfterDefault_LastValueFromAmbientValues()
         //{
         //    // Arrange
-        //    var endpoint = CreateEndpoint(
+        //    var endpoint = CreateEndpoints(
         //        template: "a/{b=15}/{c?}/{d?}",
         //        defaultValues: null,
         //        handleRequest: true,
         //        constraints: null);
 
-        //    var context = CreateLinkGeneratorContext(
+        //    var context = CreateRouteValuesContext(
         //        values: new { },
         //        ambientValues: new { d = "17" });
 
         //    // Act
-        //    var link = linkGenerator.GetLink(context);
+        //    var link = linkGenerator.GetLink(new[] { endpoint }, context.ExplicitValues, context.AmbientValues);
 
         //    // Assert
         //    Assert.NotNull(pathData);
@@ -761,39 +772,32 @@ namespace Microsoft.AspNetCore.Routing
         //    
         //}
 
-        private LinkGeneratorContext CreateLinkGeneratorContext(object suppliedValues, object ambientValues = null)
+        private RouteValuesBasedEndpointFinderContext CreateRouteValuesContext(object suppliedValues, object ambientValues = null)
         {
-            var context = new LinkGeneratorContext();
-            context.SuppliedValues = new RouteValueDictionary(suppliedValues);
+            var context = new RouteValuesBasedEndpointFinderContext();
+            context.ExplicitValues = new RouteValueDictionary(suppliedValues);
             context.AmbientValues = new RouteValueDictionary(ambientValues);
             return context;
         }
 
         private MatcherEndpoint CreateEndpoint(string template, object defaultValues = null)
         {
+            var defaults = defaultValues == null ? new RouteValueDictionary() : new RouteValueDictionary(defaultValues);
             return new MatcherEndpoint(
                 next => (httpContext) => Task.CompletedTask,
                 template,
-                defaultValues,
+                defaults,
+                new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
-                null,
-                new Address("foo"));
+                null);
         }
 
-        private ILinkGenerator CreateLinkGenerator(IEndpointFinder endpointFinder)
+        private ILinkGenerator CreateLinkGenerator()
         {
             return new DefaultLinkGenerator(
-                endpointFinder,
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 Mock.Of<ILogger<DefaultLinkGenerator>>());
-        }
-
-        private DefaultEndpointFinder CreateEndpointFinder(params Endpoint[] endpoints)
-        {
-            return new DefaultEndpointFinder(
-                new CompositeEndpointDataSource(new[] { new DefaultEndpointDataSource(endpoints) }),
-                NullLogger<DefaultEndpointFinder>.Instance);
         }
     }
 }

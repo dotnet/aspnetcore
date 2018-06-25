@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return new MatcherEndpoint(
                (next) => (context) => Task.CompletedTask,
                template,
-               new { },
+               new RouteValueDictionary(),
+               new RouteValueDictionary(),
                0,
                EndpointMetadataCollection.Empty,
-               template,
-               address: null);
+               template);
         }
 
         internal static  int[] SampleRequests(int endpointCount, int count)

@@ -20,18 +20,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 new OutboundMatchClassifier());
         }
 
-        public IList<OutboundMatchResult> GetMatches(VirtualPathContext context)
+        public IList<OutboundMatchResult> GetMatches(RouteValueDictionary values, RouteValueDictionary ambientValues)
         {
             // Perf: Avoid allocation for List if there aren't any Matches or Criteria
             if (_root.Matches.Count > 0 || _root.Criteria.Count > 0)
             {
                 var results = new List<OutboundMatchResult>();
-                Walk(results, context, _root, isFallbackPath: false);
+                Walk(results, values, ambientValues, _root, isFallbackPath: false);
                 results.Sort(OutboundMatchResultComparer.Instance);
                 return results;
             }
 
-            return null;            
+            return null;
         }
 
         // We need to recursively walk the decision tree based on the provided route data
@@ -61,7 +61,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         // The decision tree uses a tree data structure to execute these rules across all candidates at once.
         private void Walk(
             List<OutboundMatchResult> results,
-            VirtualPathContext context,
+            RouteValueDictionary values,
+            RouteValueDictionary ambientValues,
             DecisionTreeNode<OutboundMatch> node,
             bool isFallbackPath)
         {
@@ -78,12 +79,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var key = criterion.Key;
 
                 object value;
-                if (context.Values.TryGetValue(key, out value))
+                if (values.TryGetValue(key, out value))
                 {
                     DecisionTreeNode<OutboundMatch> branch;
                     if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))
                     {
-                        Walk(results, context, branch, isFallbackPath);
+                        Walk(results, values, ambientValues, branch, isFallbackPath);
                     }
                 }
                 else
@@ -92,18 +93,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     // if an ambient value was supplied. The path explored with the empty value is considered
                     // the fallback path.
                     DecisionTreeNode<OutboundMatch> branch;
-                    if (context.AmbientValues.TryGetValue(key, out value) &&
+                    if (ambientValues.TryGetValue(key, out value) &&
                         !criterion.Branches.Comparer.Equals(value, string.Empty))
                     {
                         if (criterion.Branches.TryGetValue(value, out branch))
                         {
-                            Walk(results, context, branch, isFallbackPath);
+                            Walk(results, values, ambientValues, branch, isFallbackPath);
                         }
                     }
 
                     if (criterion.Branches.TryGetValue(string.Empty, out branch))
                     {
-                        Walk(results, context, branch, isFallbackPath: true);
+                        Walk(results, values, ambientValues, branch, isFallbackPath: true);
                     }
                 }
             }
@@ -155,7 +156,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 }
 
                 return StringComparer.Ordinal.Compare(
-                    x.Match.Entry.RouteTemplate.TemplateText, 
+                    x.Match.Entry.RouteTemplate.TemplateText,
                     y.Match.Entry.RouteTemplate.TemplateText);
             }
         }

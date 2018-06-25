@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -38,10 +37,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // MatcherEndpoint.Values contains the default values parsed from the template
             // as well as those specified with a literal. We need to separate those
             // for legacy cases.
-            var defaults = new RouteValueDictionary(endpoint.Values);
-            for (var i = 0; i < endpoint.ParsedTemlate.Parameters.Count; i++)
+            var defaults = endpoint.Defaults;
+            for (var i = 0; i < endpoint.ParsedTemplate.Parameters.Count; i++)
             {
-                var parameter = endpoint.ParsedTemlate.Parameters[i];
+                var parameter = endpoint.ParsedTemplate.Parameters[i];
                 if (parameter.DefaultValue == null && defaults.ContainsKey(parameter.Name))
                 {
                     throw new InvalidOperationException(
@@ -50,8 +49,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             _inner.MapInbound(
-                handler, 
-                endpoint.ParsedTemlate,
+                handler,
+                endpoint.ParsedTemplate,
                 routeName: null,
                 order: endpoint.Order);
         }

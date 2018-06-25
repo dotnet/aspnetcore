@@ -24,13 +24,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             // Arrange
             var defaultEndpoint = new TestEndpoint(
                 EndpointMetadataCollection.Empty,
-                "No constraint endpoint",
-                address: null);
+                "No constraint endpoint");
 
             var postEndpoint = new TestEndpoint(
                 new EndpointMetadataCollection(new object[] { new HttpMethodEndpointConstraint(new[] { "POST" }) }),
-                "POST constraint endpoint",
-                address: null);
+                "POST constraint endpoint");
 
             var endpoints = new Endpoint[]
                 {
@@ -62,13 +60,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 
             var defaultEndpoint1 = new TestEndpoint(
                 EndpointMetadataCollection.Empty,
-                "Ambiguous1",
-                address: null);
+                "Ambiguous1");
 
             var defaultEndpoint2 = new TestEndpoint(
                 EndpointMetadataCollection.Empty,
-                "Ambiguous2",
-                address: null);
+                "Ambiguous2");
 
             var endpoints = new Endpoint[]
                 {
@@ -100,8 +96,8 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 
             var actions = new Endpoint[]
             {
-                new TestEndpoint(EndpointMetadataCollection.Empty, "A1", address: null),
-                new TestEndpoint(EndpointMetadataCollection.Empty, "A2", address: null),
+                new TestEndpoint(EndpointMetadataCollection.Empty, "A1"),
+                new TestEndpoint(EndpointMetadataCollection.Empty, "A2"),
             };
             var selector = CreateSelector(actions, loggerFactory);
 
@@ -124,13 +120,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             // Arrange
             var actionWithConstraints = new TestEndpoint(
                 new EndpointMetadataCollection(new[] { new HttpMethodEndpointConstraint(new string[] { "POST" }) }),
-                "Has constraint",
-                address: null);
+                "Has constraint");
 
             var actionWithoutConstraints = new TestEndpoint(
                 EndpointMetadataCollection.Empty,
-                "No constraint",
-                address: null);
+                "No constraint");
 
             var actions = new Endpoint[] { actionWithConstraints, actionWithoutConstraints };
 
@@ -150,13 +144,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             // Arrange
             var action1 = new TestEndpoint(
                 new EndpointMetadataCollection(new[] { new BooleanConstraint() { Pass = false, } }),
-                "action1",
-                address: null);
+                "action1");
 
             var action2 = new TestEndpoint(
                 new EndpointMetadataCollection(new[] { new BooleanConstraint() { Pass = false, } }),
-                "action2",
-                address: null);
+                "action2");
 
             var actions = new Endpoint[] { action1, action2 };
 
@@ -179,16 +171,14 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 new BooleanConstraint() { Pass = false, Order = 0 },
                 new BooleanConstraint() { Pass = true, Order = 1 },
             }),
-            "action1",
-            address: null);
+            "action1");
 
             var action2 = new TestEndpoint(new EndpointMetadataCollection(new[]
             {
                 new BooleanConstraint() { Pass = true, Order = 0 },
                 new BooleanConstraint() { Pass = false, Order = 1 },
             }),
-            "action2",
-            address: null);
+            "action2");
 
             var actions = new Endpoint[] { action1, action2 };
 
@@ -213,13 +203,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                     Constraint = new BooleanConstraint() { Pass = true },
                 },
             }),
-            "actionWithConstraints",
-            address: null);
+            "actionWithConstraints");
 
             var actionWithoutConstraints = new TestEndpoint(
                 EndpointMetadataCollection.Empty,
-                "actionWithoutConstraints",
-                address: null);
+                "actionWithoutConstraints");
 
             var actions = new Endpoint[] { actionWithConstraints, actionWithoutConstraints };
 
@@ -237,7 +225,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         public void SelectBestCandidate_MultipleCallsNoConstraint_ReturnsEndpoint()
         {
             // Arrange
-            var noConstraint = new TestEndpoint(EndpointMetadataCollection.Empty, "noConstraint", address: null);
+            var noConstraint = new TestEndpoint(EndpointMetadataCollection.Empty, "noConstraint");
 
             var actions = new Endpoint[] { noConstraint };
 
@@ -261,8 +249,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             {
                 new object(),
             }),
-            "noConstraint",
-            address: null);
+            "noConstraint");
 
             var actions = new Endpoint[] { noConstraint };
 
@@ -286,8 +273,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             {
                 new ConstraintFactory(),
             }),
-            "nullConstraint",
-            address: null);
+            "nullConstraint");
 
             var actions = new Endpoint[] { nullConstraint };
 
@@ -312,13 +298,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             {
                 new BooleanConstraintMarker() { Pass = true },
             }),
-            "actionWithConstraints",
-            address: null);
+            "actionWithConstraints");
 
             var actionWithoutConstraints = new TestEndpoint(
                 EndpointMetadataCollection.Empty,
-                "actionWithoutConstraints",
-                address: null);
+                "actionWithoutConstraints");
 
             var actions = new Endpoint[] { actionWithConstraints, actionWithoutConstraints, };
 
@@ -341,15 +325,13 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             {
                 new BooleanConstraint() { Pass = true, Order = 0, },
             }),
-            "best",
-            address: null);
+            "best");
 
             var worst = new TestEndpoint(new EndpointMetadataCollection(new[]
             {
                 new BooleanConstraint() { Pass = true, Order = 1, },
             }),
-            "worst",
-            address: null);
+            "worst");
 
             var actions = new Endpoint[] { best, worst };
 
@@ -374,8 +356,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 new BooleanConstraint() { Pass = true, Order = 1, },
                 new BooleanConstraint() { Pass = true, Order = 2, },
             }),
-            "best",
-            address: null);
+            "best");
 
             var worst = new TestEndpoint(new EndpointMetadataCollection(new[]
             {
@@ -383,8 +364,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 new BooleanConstraint() { Pass = true, Order = 1, },
                 new BooleanConstraint() { Pass = true, Order = 3, },
             }),
-            "worst",
-            address: null);
+            "worst");
 
             var actions = new Endpoint[] { best, worst };
 
@@ -408,8 +388,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 new BooleanConstraint() { Pass = true, Order = 1, },
                 new BooleanConstraint() { Pass = false, Order = 2, },
             }),
-            "nomatch1",
-            address: null);
+            "nomatch1");
 
             var nomatch2 = new TestEndpoint(new EndpointMetadataCollection(new[]
             {
@@ -417,10 +396,9 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 new BooleanConstraint() { Pass = true, Order = 1, },
                 new BooleanConstraint() { Pass = false, Order = 3, },
             }),
-            "nomatch2",
-            address: null);
+            "nomatch2");
 
-            var best = new TestEndpoint(EndpointMetadataCollection.Empty, "best", address: null);
+            var best = new TestEndpoint(EndpointMetadataCollection.Empty, "best");
 
             var actions = new Endpoint[] { best, nomatch1, nomatch2 };
 

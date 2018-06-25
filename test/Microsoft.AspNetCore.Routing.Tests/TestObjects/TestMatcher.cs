@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matchers;
@@ -22,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.TestObjects
         {
             if (_isHandled)
             {
-                feature.Endpoint = new TestEndpoint(EndpointMetadataCollection.Empty, "Test endpoint", address: null);
+                feature.Endpoint = new TestEndpoint(EndpointMetadataCollection.Empty, "Test endpoint");
             }
 
             return Task.CompletedTask;

@@ -10,19 +10,15 @@ namespace Microsoft.AspNetCore.Routing
     {
         protected Endpoint(
             EndpointMetadataCollection metadata,
-            string displayName,
-            Address address)
+            string displayName)
         {
             // All are allowed to be null
             Metadata = metadata ?? EndpointMetadataCollection.Empty;
             DisplayName = displayName;
-            Address = address;
         }
 
         public string DisplayName { get; }
 
         public EndpointMetadataCollection Metadata { get; }
-
-        public Address Address { get; }
     }
 }
