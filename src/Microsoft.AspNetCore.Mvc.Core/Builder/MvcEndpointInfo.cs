@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Builder
                 ParsedTemplate = TemplateParser.Parse(template);
 
                 Constraints = GetConstraints(constraintResolver, ParsedTemplate, constraints);
-                Defaults = GetDefaults(ParsedTemplate, defaults);
+                Defaults = defaults;
+                MergedDefaults = GetDefaults(ParsedTemplate, defaults);
             }
             catch (Exception exception)
             {
@@ -41,7 +42,13 @@ namespace Microsoft.AspNetCore.Builder
 
         public string Name { get; }
         public string Template { get; }
+
+        // Non-inline defaults
         public RouteValueDictionary Defaults { get; }
+
+        // Inline and non-inline defaults merged into one
+        public RouteValueDictionary MergedDefaults { get; }
+
         public IDictionary<string, IRouteConstraint> Constraints { get; }
         public RouteValueDictionary DataTokens { get; }
         internal RouteTemplate ParsedTemplate { get; private set; }

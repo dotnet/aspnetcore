@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
@@ -20,7 +19,7 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class MvcEndpointDataSourceTests
     {
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
         {
             // Arrange
             var routeValue = "Value";
-            var routeValues = new Dictionary<string, string>
+            var requiredValues = new Dictionary<string, string>
             {
                 ["Name"] = routeValue
             };
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
             {
                 new ActionDescriptor
                 {
-                    RouteValues = routeValues,
+                    RouteValues = requiredValues,
                     DisplayName = displayName,
                     AttributeRouteInfo = new AttributeRouteInfo
                     {
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
             var endpoint = Assert.Single(dataSource.Endpoints);
             var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
 
-            var endpointValue = matcherEndpoint.Values["Name"];
+            var endpointValue = matcherEndpoint.RequiredValues["Name"];
             Assert.Equal(routeValue, endpointValue);
 
             Assert.Equal(displayName, matcherEndpoint.DisplayName);
@@ -187,13 +186,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
         public void InitializeEndpoints_SingleAction(string endpointInfoRoute, string[] finalEndpointTemplates)
         {
             // Arrange
-            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
-            mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(new List<ActionDescriptor>
-            {
-                CreateActionDescriptor("TestController", "TestAction")
-            }, 0));
-
-            var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController", action = "TestAction" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute));
 
             // Act
@@ -218,13 +213,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
         public void InitializeEndpoints_AreaSingleAction(string endpointInfoRoute, string[] finalEndpointTemplates)
         {
             // Arrange
-            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
-            mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(new List<ActionDescriptor>
-            {
-                CreateActionDescriptor("TestController", "TestAction", "TestArea")
-            }, 0));
-
-            var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController", action = "TestAction", area = "TestArea" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, endpointInfoRoute));
 
             // Act
@@ -243,13 +234,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
         public void InitializeEndpoints_SingleAction_WithActionDefault()
         {
             // Arrange
-            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
-            mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(new List<ActionDescriptor>
-            {
-                CreateActionDescriptor("TestController", "TestAction")
-            }, 0));
-
-            var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController", action = "TestAction" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
                 string.Empty,
                 "{controller}/{action}",
@@ -268,15 +255,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
         public void InitializeEndpoints_MultipleActions_WithActionConstraint()
         {
             // Arrange
-            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
-            mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(new List<ActionDescriptor>
-            {
-                CreateActionDescriptor("TestController", "TestAction"),
-                CreateActionDescriptor("TestController", "TestAction1"),
-                CreateActionDescriptor("TestController", "TestAction2")
-            }, 0));
-
-            var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController", action = "TestAction" },
+                new { controller = "TestController", action = "TestAction1" },
+                new { controller = "TestController", action = "TestAction2" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
                 string.Empty,
                 "{controller}/{action}",
@@ -297,16 +280,12 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
         public void InitializeEndpoints_MultipleActions(string endpointInfoRoute, string[] finalEndpointTemplates)
         {
             // Arrange
-            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
-            mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(new List<ActionDescriptor>
-            {
-                CreateActionDescriptor("TestController1", "TestAction1"),
-                CreateActionDescriptor("TestController1", "TestAction2"),
-                CreateActionDescriptor("TestController1", "TestAction3"),
-                CreateActionDescriptor("TestController2", "TestAction1")
-            }, 0));
-
-            var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController1", action = "TestAction1" },
+                new { controller = "TestController1", action = "TestAction2" },
+                new { controller = "TestController1", action = "TestAction3" },
+                new { controller = "TestController2", action = "TestAction1" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
             dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
                 string.Empty,
                 endpointInfoRoute));
@@ -320,6 +299,276 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
 
             // Assert
             Assert.Collection(dataSource.Endpoints, inspectors);
+        }
+
+        [Fact]
+        public void ConventionalRoute_WithNoRouteName_DoesNotAddRouteNameMetadata()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "Home", action = "Index" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo(string.Empty, "named/{controller}/{action}/{id?}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            var endpoint = Assert.Single(dataSource.Endpoints);
+            var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
+            var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            Assert.Null(routeNameMetadata);
+        }
+
+        [Fact]
+        public void CanCreateMultipleEndpoints_WithSameRouteName()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "Home", action = "Index" },
+                new { controller = "Products", action = "Details" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo("namedRoute", "named/{controller}/{action}/{id?}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            Assert.Collection(
+                dataSource.Endpoints,
+                (ep) =>
+                {
+                    var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
+                    var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+                    Assert.NotNull(routeNameMetadata);
+                    Assert.Equal("namedRoute", routeNameMetadata.Name);
+                    Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.Template);
+                },
+                (ep) =>
+                {
+                    var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
+                    var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+                    Assert.NotNull(routeNameMetadata);
+                    Assert.Equal("namedRoute", routeNameMetadata.Name);
+                    Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.Template);
+                });
+        }
+
+        [Fact]
+        public void InitializeEndpoints_ConventionalRoutes_StaticallyDefinedOrder_IsMaintained()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "Home", action = "Index" },
+                new { controller = "Products", action = "Details" });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
+                name: string.Empty,
+                template: "{controller}/{action}/{id?}"));
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
+                name: "namedRoute",
+                "named/{controller}/{action}/{id?}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            Assert.Collection(
+                dataSource.Endpoints,
+                (ep) =>
+                {
+                    var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
+                    Assert.Equal("Home/Index/{id?}", matcherEndpoint.Template);
+                    Assert.Equal(1, matcherEndpoint.Order);
+                },
+                (ep) =>
+                {
+                    var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
+                    Assert.Equal("named/Home/Index/{id?}", matcherEndpoint.Template);
+                    Assert.Equal(2, matcherEndpoint.Order);
+                },
+                (ep) =>
+                {
+                    var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
+                    Assert.Equal("Products/Details/{id?}", matcherEndpoint.Template);
+                    Assert.Equal(1, matcherEndpoint.Order);
+                },
+                (ep) =>
+                {
+                    var matcherEndpoint = Assert.IsType<MatcherEndpoint>(ep);
+                    Assert.Equal("named/Products/Details/{id?}", matcherEndpoint.Template);
+                    Assert.Equal(2, matcherEndpoint.Order);
+                });
+        }
+
+        [Fact]
+        public void RequiredValue_WithNoCorresponding_TemplateParameter_DoesNotProduceEndpoint()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(new { area = "admin", controller = "home", action = "index" });
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{controller}/{action}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            Assert.Empty(dataSource.Endpoints);
+        }
+
+        // Since area, controller, action and page are special, check to see if the followin test succeeds for a 
+        // custom required value too.
+        [Fact(Skip = "Needs review")]
+        public void NonReservedRequiredValue_WithNoCorresponding_TemplateParameter_DoesNotProduceEndpoint()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(new { controller = "home", action = "index", foo = "bar" });
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{controller}/{action}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            Assert.Empty(dataSource.Endpoints);
+        }
+
+        [Fact]
+        public void TemplateParameter_WithNoDefaultOrRequiredValue_DoesNotProduceEndpoint()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(new { controller = "home", action = "index" });
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{area}/{controller}/{action}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            Assert.Empty(dataSource.Endpoints);
+        }
+
+        [Fact]
+        public void TemplateParameter_WithDefaultValue_AndNullRequiredValue_DoesNotProduceEndpoint()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(new { area = (string)null, controller = "home", action = "index" });
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{area=admin}/{controller}/{action}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            Assert.Empty(dataSource.Endpoints);
+        }
+
+        [Fact]
+        public void TemplateParameter_WithNullRequiredValue_DoesNotProduceEndpoint()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(new { area = (string)null, controller = "home", action = "index" });
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{area}/{controller}/{action}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            Assert.Empty(dataSource.Endpoints);
+        }
+
+        [Fact]
+        public void NoDefaultValues_RequiredValues_UsedToCreateDefaultValues()
+        {
+            // Arrange
+            var expectedDefaults = new RouteValueDictionary(new { controller = "Foo", action = "Bar" });
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: expectedDefaults);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(string.Empty, "{controller}/{action}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            var endpoint = Assert.Single(dataSource.Endpoints);
+            var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
+            Assert.Equal("Foo/Bar", matcherEndpoint.Template);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
+        }
+
+        [Fact]
+        public void RequiredValues_NotPresent_InDefaultValues_IsAddedToDefaultValues()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(
+                new { controller = "Foo", action = "Bar", subarea = "test" });
+            var expectedDefaults = requiredValues;
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            var endpoint = Assert.Single(dataSource.Endpoints);
+            var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
+            Assert.Equal("Foo/Bar", matcherEndpoint.Template);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
+        }
+
+        [Fact]
+        public void RequiredValues_IsSubsetOf_DefaultValues()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(
+                new { controller = "Foo", action = "Bar", subarea = "test" });
+            var expectedDefaults = new RouteValueDictionary(
+                new { controller = "Foo", action = "Bar", subarea = "test", subscription = "general" });
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}/{subscription=general}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            var endpoint = Assert.Single(dataSource.Endpoints);
+            var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
+            Assert.Equal("Foo/Bar/{subscription=general}", matcherEndpoint.Template);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
+        }
+
+        [Fact]
+        public void RequiredValues_HavingNull_AndNotPresentInDefaultValues_IsAddedToDefaultValues()
+        {
+            // Arrange
+            var requiredValues = new RouteValueDictionary(
+                new { area = (string)null, controller = "Foo", action = "Bar", page = (string)null });
+            var expectedDefaults = requiredValues;
+            var actionDescriptorCollection = GetActionDescriptorCollection(requiredValues: requiredValues);
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(
+                CreateEndpointInfo(string.Empty, "{controller=Home}/{action=Index}"));
+
+            // Act
+            dataSource.InitializeEndpoints();
+
+            // Assert
+            var endpoint = Assert.Single(dataSource.Endpoints);
+            var matcherEndpoint = Assert.IsType<MatcherEndpoint>(endpoint);
+            Assert.Equal("Foo/Bar", matcherEndpoint.Template);
+            AssertIsSubset(expectedDefaults, matcherEndpoint.Defaults);
         }
 
         private MvcEndpointDataSource CreateMvcEndpointDataSource(
@@ -362,18 +611,45 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Internal
             return new MvcEndpointInfo(name, template, defaults, constraints, dataTokens, constraintResolver);
         }
 
+        private IActionDescriptorCollectionProvider GetActionDescriptorCollection(params object[] requiredValues)
+        {
+            var actionDescriptors = new List<ActionDescriptor>();
+            foreach (var requiredValue in requiredValues)
+            {
+                actionDescriptors.Add(CreateActionDescriptor(requiredValue));
+            }
+
+            var actionDescriptorCollectionProvider = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorCollectionProvider
+                .Setup(m => m.ActionDescriptors)
+                .Returns(new ActionDescriptorCollection(actionDescriptors, version: 0));
+            return actionDescriptorCollectionProvider.Object;
+        }
+
         private ActionDescriptor CreateActionDescriptor(string controller, string action, string area = null)
         {
-            return new ActionDescriptor
+            return CreateActionDescriptor(new { controller = controller, action = action, area = area });
+        }
+
+        private ActionDescriptor CreateActionDescriptor(object requiredValues)
+        {
+            var actionDescriptor = new ActionDescriptor();
+            var routeValues = new RouteValueDictionary(requiredValues);
+            foreach (var kvp in routeValues)
             {
-                RouteValues =
-                    {
-                        ["controller"] = controller,
-                        ["action"] = action,
-                        ["area"] = area
-                    },
-                DisplayName = string.Empty,
-            };
+                actionDescriptor.RouteValues[kvp.Key] = kvp.Value?.ToString();
+            }
+            return actionDescriptor;
+        }
+
+        private void AssertIsSubset(RouteValueDictionary subset, RouteValueDictionary fullSet)
+        {
+            foreach (var subsetPair in subset)
+            {
+                var isPresent = fullSet.TryGetValue(subsetPair.Key, out var fullSetPairValue);
+                Assert.True(isPresent);
+                Assert.Equal(subsetPair.Value, fullSetPairValue);
+            }
         }
     }
 }

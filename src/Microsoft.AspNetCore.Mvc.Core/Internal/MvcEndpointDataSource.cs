@@ -68,6 +68,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 if (action.AttributeRouteInfo == null)
                 {
+                    // In traditional conventional routing setup, the routes defined by a user have a static order
+                    // defined by how they are added into the list. We would like to maintain the same order when building
+                    // up the endpoints too.
+                    //
+                    // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
+                    // This is for scenarios dealing with migrating existing Routing based code to Dispatcher world.
+                    var conventionalRouteOrder = 0;
+
                     // Check each of the conventional templates to see if the action would be reachable
                     // If the action and template are compatible then create an endpoint with the
                     // area/controller/action parameter parts replaced with literals
@@ -100,7 +108,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 {
                                     var subTemplate = RouteTemplateWriter.ToString(newEndpointTemplate.Segments.Take(i));
 
-                                    var subEndpoint = CreateEndpoint(action, subTemplate, 0, endpointInfo);
+                                    var subEndpoint = CreateEndpoint(
+                                        action,
+                                        endpointInfo.Name,
+                                        subTemplate,
+                                        endpointInfo.Defaults,
+                                        ++conventionalRouteOrder,
+                                        endpointInfo);
                                     _endpoints.Add(subEndpoint);
                                 }
 
@@ -119,14 +133,26 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                             var newTemplate = RouteTemplateWriter.ToString(newEndpointTemplate.Segments);
 
-                            var endpoint = CreateEndpoint(action, newTemplate, 0, endpointInfo);
+                            var endpoint = CreateEndpoint(
+                                action,
+                                endpointInfo.Name,
+                                newTemplate,
+                                endpointInfo.Defaults,
+                                ++conventionalRouteOrder,
+                                endpointInfo);
                             _endpoints.Add(endpoint);
                         }
                     }
                 }
                 else
                 {
-                    var endpoint = CreateEndpoint(action, action.AttributeRouteInfo.Template, action.AttributeRouteInfo.Order, action.AttributeRouteInfo);
+                    var endpoint = CreateEndpoint(
+                        action,
+                        action.AttributeRouteInfo.Name,
+                        action.AttributeRouteInfo.Template,
+                        nonInlineDefaults: null,
+                        action.AttributeRouteInfo.Order,
+                        action.AttributeRouteInfo);
                     _endpoints.Add(endpoint);
                 }
             }
@@ -144,7 +170,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return false;
         }
 
-        private bool UseDefaultValuePlusRemainingSegementsOptional(int segmentIndex, ActionDescriptor action, MvcEndpointInfo endpointInfo, RouteTemplate template)
+        private bool UseDefaultValuePlusRemainingSegementsOptional(
+            int segmentIndex,
+            ActionDescriptor action,
+            MvcEndpointInfo endpointInfo,
+            RouteTemplate template)
         {
             // Check whether the remaining segments are all optional and one or more of them is
             // for area/controller/action and has a default value
@@ -164,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     {
                         if (IsMvcParameter(part.Name))
                         {
-                            if (endpointInfo.Defaults[part.Name] is string defaultValue
+                            if (endpointInfo.MergedDefaults[part.Name] is string defaultValue
                                 && action.RouteValues.TryGetValue(part.Name, out var routeValue)
                                 && string.Equals(defaultValue, routeValue, StringComparison.OrdinalIgnoreCase))
                             {
@@ -196,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             else
             {
-                if (endpointInfo.Defaults != null && string.Equals(actionValue, endpointInfo.Defaults[routeKey] as string, StringComparison.OrdinalIgnoreCase))
+                if (endpointInfo.MergedDefaults != null && string.Equals(actionValue, endpointInfo.MergedDefaults[routeKey] as string, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -235,7 +265,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private MatcherEndpoint CreateEndpoint(ActionDescriptor action, string template, int order, object source)
+        private MatcherEndpoint CreateEndpoint(
+            ActionDescriptor action,
+            string routeName,
+            string template,
+            object nonInlineDefaults,
+            int order,
+            object source)
         {
             RequestDelegate invokerDelegate = (context) =>
             {
@@ -260,10 +296,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             metadata.Add(source);
             metadata.Add(action);
 
+            if (!string.IsNullOrEmpty(routeName))
+            {
+                metadata.Add(new RouteNameMetadata(routeName));
+            }
+
             // Add filter descriptors to endpoint metadata
             if (action.FilterDescriptors != null && action.FilterDescriptors.Count > 0)
             {
-                metadata.AddRange(action.FilterDescriptors.OrderBy(f => f, FilterDescriptorOrderComparer.Comparer).Select(f => f.Filter));
+                metadata.AddRange(action.FilterDescriptors.OrderBy(f => f, FilterDescriptorOrderComparer.Comparer)
+                    .Select(f => f.Filter));
             }
 
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
@@ -281,12 +323,39 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var endpoint = new MatcherEndpoint(
                 next => invokerDelegate,
                 template,
-                action.RouteValues,
+                new RouteValueDictionary(nonInlineDefaults),
+                new RouteValueDictionary(action.RouteValues),
                 order,
                 metadataCollection,
-                action.DisplayName,
-                address: null);
+                action.DisplayName);
+
+            // Use defaults after the endpoint is created as it merges both the inline and
+            // non-inline defaults into one.
+            EnsureRequiredValuesInDefaults(endpoint.RequiredValues, endpoint.Defaults);
+
             return endpoint;
+        }
+
+        // Ensure required values are a subset of defaults
+        // Examples:
+        //
+        // Template: {controller}/{action}/{category}/{id?}
+        // Defaults(in-line or non in-line): category=products
+        // Required values: controller=foo, action=bar
+        // Final constructed template: foo/bar/{category}/{id?}
+        // Final defaults: controller=foo, action=bar, category=products
+        //
+        // Template: {controller=Home}/{action=Index}/{category=products}/{id?}
+        // Defaults: controller=Home, action=Index, category=products
+        // Required values: controller=foo, action=bar
+        // Final constructed template: foo/bar/{category}/{id?}
+        // Final defaults: controller=foo, action=bar, category=products
+        private void EnsureRequiredValuesInDefaults(RouteValueDictionary requiredValues, RouteValueDictionary defaults)
+        {
+            foreach (var kvp in requiredValues)
+            {
+                defaults[kvp.Key] = kvp.Value;
+            }
         }
 
         private IChangeToken GetCompositeChangeToken()
@@ -321,5 +390,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
 
         public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
+
+        private class RouteNameMetadata : IRouteNameMetadata
+        {
+            public RouteNameMetadata(string routeName)
+            {
+                Name = routeName;
+            }
+
+            public string Name { get; }
+        }
     }
 }
