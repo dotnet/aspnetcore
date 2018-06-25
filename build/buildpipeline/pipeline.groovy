@@ -12,7 +12,7 @@ def parameters = [
 windowsPipeline.triggerPipelineOnEveryGithubPR("Windows ${configuration} x64 Build", parameters)
 windowsPipeline.triggerPipelineOnGithubPush(parameters)
 
-windowsESPipeline.triggerPipelineOnEveryGithubPR("Windows ${configuration} x64 Build (Spanish language image) ", parameters)
+windowsESPipeline.triggerPipelineOnEveryGithubPR("Windows ${configuration} Spanish Language x64 Build", parameters)
 windowsESPipeline.triggerPipelineOnGithubPush(parameters)
 
 linuxPipeline.triggerPipelineOnEveryGithubPR("Ubuntu 16.04 ${configuration} Build", parameters)
