@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 _writer.GetStringBuilder().Clear();
                 _visitor.Visit(node);
                 var actual = _writer.GetStringBuilder().ToString();
-                var actualLineCount = actual.Split(new[] { "\r\n" }, StringSplitOptions.None).Length;
+                var actualLineCount = actual.Split(new[] { _writer.NewLine }, StringSplitOptions.None).Length;
 
                 var expectedLineIndex = 1;
                 while (expectedLineIndex++ < actualLineCount && _index < _baseline.Length)
                 {
-                    expected += $"\r\n{_baseline[_index++]}";
+                    expected += $"{_writer.NewLine}{_baseline[_index++]}";
                 }
 
                 AssertNodeEquals(node, Ancestors, expected, actual);
