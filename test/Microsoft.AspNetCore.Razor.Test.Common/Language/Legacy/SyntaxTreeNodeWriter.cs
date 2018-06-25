@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 diagnostics = csharpSymbol.Errors;
             }
 
-            var symbolString = $"{symbolType};[{symbol.Content}];{string.Join(",", diagnostics.Select(diagnostic => diagnostic.Id))}";
+            var symbolString = $"{symbolType};[{symbol.Content}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
             Write(symbolString);
         }
 

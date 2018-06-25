@@ -1,0 +1,30 @@
+Markup block - Gen<None> - 87 - (0:0,0)
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:1
+        HtmlSymbolType.Unknown;[];
+    Directive block - Gen<Directive:{inherits;SingleLine;FileScopedSinglyOccurring}> - 87 - (0:0,0)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [inherits] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+            CSharpSymbolType.Identifier;[inherits];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (9:0,9) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        Code span - Gen<DirectiveToken {TypeName;Type;Opt:False}> - [System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (10:0,10) - Symbols:17
+            CSharpSymbolType.Identifier;[System];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[Web];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[Mvc];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[WebViewPage];
+            CSharpSymbolType.LessThan;[<];
+            CSharpSymbolType.Identifier;[IEnumerable];
+            CSharpSymbolType.LessThan;[<];
+            CSharpSymbolType.Identifier;[MvcApplication2];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[Models];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[RegisterModel];
+            CSharpSymbolType.GreaterThan;[>];
+            CSharpSymbolType.GreaterThan;[>];
+    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (87:0,87) - Symbols:1
+        HtmlSymbolType.Unknown;[];

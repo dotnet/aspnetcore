@@ -1,0 +1,155 @@
+Directive block - Gen<Directive:{custom;SingleLine;Unrestricted}> - 246 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.Transition;[@];
+    MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
+        CSharpSymbolType.Identifier;[custom];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (7:0,7) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(bool, int)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (8:0,8) - Symbols:6
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[bool];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.RightParenthesis;[)];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (19:0,19) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(int aa, string bb)?] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (20:0,20) - Symbols:11
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[aa];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[string];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[bb];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.QuestionMark;[?];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (40:0,40) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(  int?   q   ,  bool   w   )] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (41:0,41) - Symbols:14
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.WhiteSpace;[  ];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.QuestionMark;[?];
+        CSharpSymbolType.WhiteSpace;[   ];
+        CSharpSymbolType.Identifier;[q];
+        CSharpSymbolType.WhiteSpace;[   ];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[  ];
+        CSharpSymbolType.Keyword;[bool];
+        CSharpSymbolType.WhiteSpace;[   ];
+        CSharpSymbolType.Identifier;[w];
+        CSharpSymbolType.WhiteSpace;[   ];
+        CSharpSymbolType.RightParenthesis;[)];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (70:0,70) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [( int  ?  q, bool ?w ,(long ?  [])) ?] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (71:0,71) - Symbols:26
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.WhiteSpace;[  ];
+        CSharpSymbolType.QuestionMark;[?];
+        CSharpSymbolType.WhiteSpace;[  ];
+        CSharpSymbolType.Identifier;[q];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[bool];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.QuestionMark;[?];
+        CSharpSymbolType.Identifier;[w];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[long];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.QuestionMark;[?];
+        CSharpSymbolType.WhiteSpace;[  ];
+        CSharpSymbolType.LeftBracket;[[];
+        CSharpSymbolType.RightBracket;[]];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.QuestionMark;[?];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (108:0,108) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(List<(int, string)?> aa, string bb)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (109:0,109) - Symbols:19
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[List];
+        CSharpSymbolType.LessThan;[<];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[string];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.QuestionMark;[?];
+        CSharpSymbolType.GreaterThan;[>];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[aa];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[string];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[bb];
+        CSharpSymbolType.RightParenthesis;[)];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (145:0,145) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {;Type;Opt:False}> - [(string ss, (int u, List<(string, int)> k, (Char c, bool b, List<int> l)), global::System.Int32[] a)] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (146:0,146) - Symbols:56
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[string];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[ss];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[u];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[List];
+        CSharpSymbolType.LessThan;[<];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Keyword;[string];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.GreaterThan;[>];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[k];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.LeftParenthesis;[(];
+        CSharpSymbolType.Identifier;[Char];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[c];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Keyword;[bool];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[b];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[List];
+        CSharpSymbolType.LessThan;[<];
+        CSharpSymbolType.Keyword;[int];
+        CSharpSymbolType.GreaterThan;[>];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[l];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.RightParenthesis;[)];
+        CSharpSymbolType.Comma;[,];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[global];
+        CSharpSymbolType.DoubleColon;[::];
+        CSharpSymbolType.Identifier;[System];
+        CSharpSymbolType.Dot;[.];
+        CSharpSymbolType.Identifier;[Int32];
+        CSharpSymbolType.LeftBracket;[[];
+        CSharpSymbolType.RightBracket;[]];
+        CSharpSymbolType.WhiteSpace;[ ];
+        CSharpSymbolType.Identifier;[a];
+        CSharpSymbolType.RightParenthesis;[)];

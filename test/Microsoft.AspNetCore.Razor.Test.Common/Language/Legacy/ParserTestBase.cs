@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: UseBaselineTests);
 
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
@@ -420,6 +420,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, null, false);
         }
 
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives)
+        {
+            ParseDocumentTest(document, directives, expected: null);
+        }
+
         internal virtual void ParseDocumentTest(string document, Block expectedRoot)
         {
             ParseDocumentTest(document, expectedRoot, false, null);
@@ -453,6 +458,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseDocument(document, directives, designTime);
+
+            if (UseBaselineTests && !IsTheory)
+            {
+                AssertSyntaxTreeNodeMatchesBaseline(result);
+                return;
+            }
 
             if (FixupSpans)
             {

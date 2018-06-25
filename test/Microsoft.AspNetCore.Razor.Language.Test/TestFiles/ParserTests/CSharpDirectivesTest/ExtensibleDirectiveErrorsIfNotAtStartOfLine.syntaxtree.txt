@@ -1,0 +1,26 @@
+Statement block - Gen<None> - 48 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
+        CSharpSymbolType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [  ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Symbols:1
+        CSharpSymbolType.WhiteSpace;[  ];
+    Directive block - Gen<Directive:{custom;SingleLine;Unrestricted} [RZ2005(4:0,4 [6] )]> - 44 - (3:0,3)
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (3:0,3) - Symbols:1
+            CSharpSymbolType.Transition;[@];
+        MetaCode span - Gen<None> - [custom] - SpanEditHandler;Accepts:None - (4:0,4) - Symbols:1
+            CSharpSymbolType.Identifier;[custom];
+        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (10:0,10) - Symbols:1
+            CSharpSymbolType.WhiteSpace;[ ];
+        Code span - Gen<DirectiveToken {;Type;Opt:False}> - [System.Text.Encoding.ASCIIEncoding] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (11:0,11) - Symbols:7
+            CSharpSymbolType.Identifier;[System];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[Text];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[Encoding];
+            CSharpSymbolType.Dot;[.];
+            CSharpSymbolType.Identifier;[ASCIIEncoding];
+        Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:WhiteSpace - (45:0,45) - Symbols:1
+            CSharpSymbolType.NewLine;[LF];
+    Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (47:1,0) - Symbols:1
+        CSharpSymbolType.Unknown;[];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (47:1,0) - Symbols:1
+        CSharpSymbolType.RightBrace;[}];

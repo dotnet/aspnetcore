@@ -1,4 +1,4 @@
-Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006]> - 29 - (0:0,0)
+Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006(16:0,16 [1] )]> - 29 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:1
         CSharpSymbolType.Transition;[@];
     MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Symbols:1
