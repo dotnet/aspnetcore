@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
@@ -27,8 +28,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
         private GCHandle _httpServerHandle;
         private readonly IApplicationLifetime _applicationLifetime;
-        private readonly IAuthenticationSchemeProvider _authentication;
+        private readonly ILogger<IISHttpServer> _logger;
         private readonly IISServerOptions _options;
+        private readonly IISNativeApplication _nativeApplication;
 
         private volatile int _stopping;
         private bool Stopping => _stopping == 1;
@@ -56,10 +58,17 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return _websocketAvailable.Value;
         }
 
-        public IISHttpServer(IApplicationLifetime applicationLifetime, IAuthenticationSchemeProvider authentication, IOptions<IISServerOptions> options)
+        public IISHttpServer(
+            IISNativeApplication nativeApplication,
+            IApplicationLifetime applicationLifetime,
+            IAuthenticationSchemeProvider authentication,
+            IOptions<IISServerOptions> options,
+            ILogger<IISHttpServer> logger
+            )
         {
+            _nativeApplication = nativeApplication;
             _applicationLifetime = applicationLifetime;
-            _authentication = authentication;
+            _logger = logger;
             _options = options.Value;
 
             if (_options.ForwardWindowsAuthentication)
@@ -73,10 +82,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this);
-
-            // Start the server by registering the callback
-            NativeMethods.HttpRegisterCallbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
-
+            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
             return Task.CompletedTask;
         }
 
@@ -86,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 cancellationToken.Register(() =>
                 {
-                    NativeMethods.HttpStopCallsIntoManaged();
+                    _nativeApplication.StopCallsIntoManaged();
                     _shutdownSignal.TrySetResult(null);
                 });
             }
@@ -98,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
 
             // First call back into native saying "DON'T SEND ME ANY MORE REQUESTS"
-            NativeMethods.HttpStopIncomingRequests();
+            _nativeApplication.StopIncomingRequests();
 
             try
             {
@@ -110,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 else
                 {
                     // We have drained all requests. Block any callbacks into managed at this point.
-                    NativeMethods.HttpStopCallsIntoManaged();
+                    _nativeApplication.StopCallsIntoManaged();
                     _shutdownSignal.TrySetResult(null);
                 }
             }
@@ -127,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _stopping = 1;
 
             // Block any more calls into managed from native as we are unloading.
-            NativeMethods.HttpStopCallsIntoManaged();
+            _nativeApplication.StopCallsIntoManaged();
             _shutdownSignal.TrySetResult(null);
 
             if (_httpServerHandle.IsAllocated)
@@ -136,8 +142,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
 
             _memoryPool.Dispose();
-
-            GC.SuppressFinalize(this);
+            _nativeApplication.Dispose();
         }
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
@@ -155,8 +160,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private static async Task HandleRequest(IISHttpContext context)
         {
-            var result = await context.ProcessRequestAsync();
-            CompleteRequest(context, result);
+            bool successfulRequest = false;
+            try
+            {
+                successfulRequest = await context.ProcessRequestAsync();
+            }
+            catch (Exception ex)
+            {
+                context.Server._logger.LogError("Exception in ProcessRequestAsync", ex);
+            }
+            finally
+            {
+                CompleteRequest(context, successfulRequest);
+            }
         }
 
         private static bool HandleShutdown(IntPtr pvRequestContext)
@@ -181,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (Interlocked.Decrement(ref context.Server._outstandingRequests) == 0 && context.Server.Stopping)
             {
                 // All requests have been drained.
-                NativeMethods.HttpStopCallsIntoManaged();
+                context.Server._nativeApplication.StopCallsIntoManaged();
                 context.Server._shutdownSignal.TrySetResult(null);
             }
 
@@ -214,12 +230,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server);
             }
-        }
-
-        ~IISHttpServer()
-        {
-            // If this finalize is invoked, try our best to block all calls into managed.
-            NativeMethods.HttpStopCallsIntoManaged();
         }
     }
 

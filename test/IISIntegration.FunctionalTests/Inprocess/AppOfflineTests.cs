@@ -114,7 +114,7 @@ namespace IISIntegration.FunctionalTests.Inprocess
 
             var hostShutdownToken = deploymentResult.DeploymentResult.HostShutdownToken;
 
-            Assert.True(hostShutdownToken.WaitHandle.WaitOne(millisecondsTimeout: 1000));
+            Assert.True(hostShutdownToken.WaitHandle.WaitOne(Helpers.DefaultTimeout));
             Assert.True(hostShutdownToken.IsCancellationRequested);
         }
 

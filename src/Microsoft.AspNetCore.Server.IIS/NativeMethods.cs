@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern void http_indicate_completion(IntPtr pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
 
         [DllImport(AspNetCoreModuleDll)]
-        private static extern void register_callbacks(PFN_REQUEST_HANDLER request_callback, PFN_SHUTDOWN_HANDLER shutdown_callback, PFN_ASYNC_COMPLETION managed_context_handler, IntPtr pvRequestContext, IntPtr pvShutdownContext);
+        private static extern int register_callbacks(IntPtr pInProcessApplication, PFN_REQUEST_HANDLER requestCallback, PFN_SHUTDOWN_HANDLER shutdownCallback, PFN_ASYNC_COMPLETION asyncCallback, IntPtr pvRequestContext, IntPtr pvShutdownContext);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_write_response_bytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected);
@@ -65,10 +65,10 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern unsafe HttpApiTypes.HTTP_REQUEST_V2* http_get_raw_request(IntPtr pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll)]
-        private static extern void http_stop_calls_into_managed();
+        private static extern int http_stop_calls_into_managed(IntPtr pInProcessApplication);
 
         [DllImport(AspNetCoreModuleDll)]
-        private static extern void http_stop_incoming_requests();
+        private static extern int http_stop_incoming_requests(IntPtr pInProcessApplication);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe HttpApiTypes.HTTP_RESPONSE_V2* http_get_raw_response(IntPtr pInProcessHandler);
@@ -142,9 +142,9 @@ namespace Microsoft.AspNetCore.Server.IIS
         {
             http_indicate_completion(pInProcessHandler, notificationStatus);
         }
-        public static void HttpRegisterCallbacks(PFN_REQUEST_HANDLER request_callback, PFN_SHUTDOWN_HANDLER shutdown_callback, PFN_ASYNC_COMPLETION managed_context_handler, IntPtr pvRequestContext, IntPtr pvShutdownContext)
+        public static void HttpRegisterCallbacks(IntPtr pInProcessApplication, PFN_REQUEST_HANDLER requestCallback, PFN_SHUTDOWN_HANDLER shutdownCallback, PFN_ASYNC_COMPLETION asyncCallback, IntPtr pvRequestContext, IntPtr pvShutdownContext)
         {
-            register_callbacks(request_callback, shutdown_callback, managed_context_handler, pvRequestContext, pvShutdownContext);
+            Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, asyncCallback, pvRequestContext, pvShutdownContext));
         }
 
         public static unsafe int HttpWriteResponseBytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
@@ -161,14 +161,14 @@ namespace Microsoft.AspNetCore.Server.IIS
             return http_get_raw_request(pInProcessHandler);
         }
 
-        public static void HttpStopCallsIntoManaged()
+        public static void HttpStopCallsIntoManaged(IntPtr pInProcessApplication)
         {
-            http_stop_calls_into_managed();
+            Validate(http_stop_calls_into_managed(pInProcessApplication));
         }
 
-        public static void HttpStopIncomingRequests()
+        public static void HttpStopIncomingRequests(IntPtr pInProcessApplication)
         {
-            http_stop_incoming_requests();
+            Validate(http_stop_incoming_requests(pInProcessApplication));
         }
 
         public static unsafe HttpApiTypes.HTTP_RESPONSE_V2* HttpGetRawResponse(IntPtr pInProcessHandler)

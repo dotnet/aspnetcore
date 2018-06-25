@@ -9,8 +9,9 @@
 // Initialization export
 //
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
-VOID
+HRESULT
 register_callbacks(
+    _In_ IN_PROCESS_APPLICATION* pInProcessApplication,
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
     _In_ PFN_MANAGED_CONTEXT_HANDLER async_completion_handler,
@@ -18,13 +19,20 @@ register_callbacks(
     _In_ VOID* pvShutdownHandlerContext
 )
 {
-    IN_PROCESS_APPLICATION::GetInstance()->SetCallbackHandles(
+    if (pInProcessApplication == NULL)
+    {
+        return E_INVALIDARG;
+    }
+
+    pInProcessApplication->SetCallbackHandles(
         request_handler,
         shutdown_handler,
         async_completion_handler,
         pvRequstHandlerContext,
         pvShutdownHandlerContext
     );
+
+    return S_OK;
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
@@ -150,12 +158,12 @@ http_get_completion_info(
 }
 
 //
-// todo: we should not rely on IN_PROCESS_APPLICATION::GetInstance()
 // the signature should be changed. application's based address should be passed in
 //
 
 struct IISConfigurationData
 {
+    IN_PROCESS_APPLICATION* pInProcessApplication;
     BSTR pwzFullApplicationPath;
     BSTR pwzVirtualApplicationPath;
     BOOL fWindowsAuthEnabled;
@@ -169,16 +177,15 @@ http_get_application_properties(
     _In_ IISConfigurationData* pIISCofigurationData
 )
 {
-    REQUESTHANDLER_CONFIG* pConfiguration = NULL;
-    IN_PROCESS_APPLICATION* pApplication = IN_PROCESS_APPLICATION::GetInstance();
-
-    if (pApplication == NULL)
+    auto pInProcessApplication = IN_PROCESS_APPLICATION::GetInstance();
+    if (pInProcessApplication == NULL)
     {
         return E_FAIL;
     }
 
-    pConfiguration = pApplication->QueryConfig();
+    auto pConfiguration = pInProcessApplication->QueryConfig();
 
+    pIISCofigurationData->pInProcessApplication = pInProcessApplication;
     pIISCofigurationData->pwzFullApplicationPath = SysAllocString(pConfiguration->QueryApplicationPhysicalPath()->QueryStr());
     pIISCofigurationData->pwzVirtualApplicationPath = SysAllocString(pConfiguration->QueryApplicationVirtualPath()->QueryStr());
     pIISCofigurationData->fWindowsAuthEnabled = pConfiguration->QueryWindowsAuthEnabled();
@@ -433,17 +440,29 @@ http_get_authentication_information(
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
-VOID
-http_stop_calls_into_managed()
+HRESULT
+http_stop_calls_into_managed(_In_ IN_PROCESS_APPLICATION* pInProcessApplication)
 {
-    IN_PROCESS_APPLICATION::GetInstance()->StopCallsIntoManaged();
+    if (pInProcessApplication == NULL)
+    {
+        return E_INVALIDARG;
+    }
+
+    pInProcessApplication->StopCallsIntoManaged();
+    return S_OK;
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
-VOID
-http_stop_incoming_requests()
+HRESULT
+http_stop_incoming_requests(_In_ IN_PROCESS_APPLICATION* pInProcessApplication)
 {
-    IN_PROCESS_APPLICATION::GetInstance()->StopIncomingRequests();
+    if (pInProcessApplication == NULL)
+    {
+        return E_INVALIDARG;
+    }
+
+    pInProcessApplication->StopIncomingRequests();
+    return S_OK;
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT

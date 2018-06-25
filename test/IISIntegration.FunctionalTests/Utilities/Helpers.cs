@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -11,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class Helpers
     {
+        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
+
         public static string GetTestWebSitePath(string name)
         {
             return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"test", "WebSites", name);
