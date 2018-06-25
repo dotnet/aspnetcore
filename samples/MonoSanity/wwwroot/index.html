@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <title>Mono sanity check</title>
@@ -139,32 +139,21 @@
       throw new Error('This is a JavaScript exception.');
     }
 
-    // Normally, applications would use the higher-level APIs for registering invocable
-    // functions, and for invoking them with automatic argument/result marshalling.
-    // But since this project is trying to test low-level Mono runtime capabilities,
-    // we implement our own marshalling here.
-    window.Blazor = {
-      platform: {
-        monoGetRegisteredFunction: function (name) { return blazorRegisteredFunctions[name]; }
-      }
-    };
-    var blazorRegisteredFunctions = {
-      evaluateJsExpression: function (dotNetStringExpression) {
-        var result = eval(dotnetStringToJavaScriptString(dotNetStringExpression));
-        return result === null || result === undefined
-          ? result // Pass through null/undefined so we can verify this is handled upstream
-          : javaScriptStringToDotNetString(result.toString());
-      },
+    function evaluateJsExpression(dotNetStringExpression) {
+      var result = eval(dotnetStringToJavaScriptString(dotNetStringExpression));
+      return result === null || result === undefined
+        ? result // Pass through null/undefined so we can verify this is handled upstream
+        : javaScriptStringToDotNetString(result.toString());
+    }
 
-      divideNumbersUnmarshalled: function (a, b) {
-        // In this example, neither the arguments nor return value are boxed
-        // -- we expect to receive and return numbers directly
-        if (b === 0) {
-          throw new Error('Division by zero');
-        }
-        return a / b;
+    function divideNumbersUnmarshalled(a, b) {
+      // In this example, neither the arguments nor return value are boxed
+      // -- we expect to receive and return numbers directly
+      if (b === 0) {
+        throw new Error('Division by zero');
       }
-    };
+      return a / b;
+    }
   </script>
 </body>
 </html>

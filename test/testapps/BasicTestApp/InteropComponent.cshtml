@@ -1,6 +1,5 @@
-@using Microsoft.AspNetCore.Blazor.Browser.Interop
+@using Microsoft.JSInterop
 @using BasicTestApp.InteropTest
-@using Microsoft.AspNetCore.Blazor
 
 <button id="btn-interop" onclick="@InvokeInteropAsync">Invoke interop!</button>
 
@@ -41,51 +40,53 @@
     public IDictionary<string, string> ReturnValues { get; set; } = new Dictionary<string, string>();
     public IDictionary<string, string> Invocations { get; set; } = new Dictionary<string, string>();
 
-    public JavaScriptException ExceptionFromSyncMethod { get; set; }
-    public JavaScriptException SyncExceptionFromAsyncMethod { get; set; }
-    public JavaScriptException AsyncExceptionFromAsyncMethod { get; set; }
+    public JSException ExceptionFromSyncMethod { get; set; }
+    public JSException SyncExceptionFromAsyncMethod { get; set; }
+    public JSException AsyncExceptionFromAsyncMethod { get; set; }
 
     public bool DoneWithInterop { get; set; }
 
     public async Task InvokeInteropAsync()
     {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime.Current);
+
         Console.WriteLine("Starting interop invocations.");
-        await RegisteredFunction.InvokeAsync<object>("BasicTestApp.Interop.InvokeDotNetInteropMethodsAsync");
+        await JSRuntime.Current.InvokeAsync<object>("jsInteropTests.invokeDotNetInteropMethodsAsync");
         Console.WriteLine("Showing interop invocation results.");
-        var collectResults = RegisteredFunction.Invoke<Dictionary<string,string>>("BasicTestApp.Interop.CollectResults");
+        var collectResults = inProcRuntime.Invoke<Dictionary<string,string>>("jsInteropTests.collectInteropResults");
 
         ReturnValues = collectResults.ToDictionary(kvp => kvp.Key,kvp => System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(kvp.Value)));
 
         var invocations = new Dictionary<string, string>();
         foreach (var interopResult in JavaScriptInterop.Invocations)
         {
-            var interopResultValue = JsonUtil.Serialize(interopResult.Value);
+            var interopResultValue = Json.Serialize(interopResult.Value);
             invocations[interopResult.Key] = interopResultValue;
         }
 
         try
         {
-            RegisteredFunction.Invoke<object>("BasicTestApp.Interop.FunctionThrows");
+            inProcRuntime.Invoke<object>("jsInteropTests.functionThrowsException");
         }
-        catch (JavaScriptException e)
+        catch (JSException e)
         {
             ExceptionFromSyncMethod = e;
         }
 
         try
         {
-            await RegisteredFunction.InvokeAsync<object>("BasicTestApp.Interop.AsyncFunctionThrowsSyncException");
+            await JSRuntime.Current.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsSyncException");
         }
-        catch (JavaScriptException e)
+        catch (JSException e)
         {
             SyncExceptionFromAsyncMethod = e;
         }
 
         try
         {
-            await RegisteredFunction.InvokeAsync<object>("BasicTestApp.Interop.AsyncFunctionThrowsAsyncException");
+            await JSRuntime.Current.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsAsyncException");
         }
-        catch (JavaScriptException e)
+        catch (JSException e)
         {
             AsyncExceptionFromAsyncMethod = e;
         }

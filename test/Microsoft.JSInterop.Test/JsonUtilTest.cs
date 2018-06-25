@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Json;
+using Microsoft.JSInterop.Internal;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Test
+namespace Microsoft.JSInterop.Test
 {
     public class JsonUtilTest
     {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         [InlineData(true, "true")]
         public void CanSerializePrimitivesToJson(object value, string expectedJson)
         {
-            Assert.Equal(expectedJson, JsonUtil.Serialize(value));
+            Assert.Equal(expectedJson, Json.Serialize(value));
         }
 
         [Theory]
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         [InlineData("true", true)]
         public void CanDeserializePrimitivesFromJson(string json, object expectedValue)
         {
-            Assert.Equal(expectedValue, JsonUtil.Deserialize<object>(json));
+            Assert.Equal(expectedValue, Json.Deserialize<object>(json));
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             Assert.Equal(
                 "{\"id\":1844,\"name\":\"Athos\",\"pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"hobby\":2,\"nicknames\":[\"Comte de la Fère\",\"Armand\"],\"birthInstant\":\"1825-08-06T18:45:21.0000000-06:00\",\"age\":\"7665.01:30:00\",\"allergies\":{\"Ducks\":true,\"Geese\":false}}",
-                JsonUtil.Serialize(person));
+                Json.Serialize(person));
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var json = "{\"id\":1844,\"name\":\"Athos\",\"pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"hobby\":2,\"nicknames\":[\"Comte de la Fère\",\"Armand\"],\"birthInstant\":\"1825-08-06T18:45:21.0000000-06:00\",\"age\":\"7665.01:30:00\",\"allergies\":{\"Ducks\":true,\"Geese\":false}}";
 
             // Act
-            var person = JsonUtil.Deserialize<Person>(json);
+            var person = Json.Deserialize<Person>(json);
 
             // Assert
             Assert.Equal(1844, person.Id);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var json = "{\"ID\":1844,\"NamE\":\"Athos\"}";
 
             // Act
-            var person = JsonUtil.Deserialize<Person>(json);
+            var person = Json.Deserialize<Person>(json);
 
             // Assert
             Assert.Equal(1844, person.Id);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var json = "{\"member1\":\"Hello\"}";
 
             // Act
-            var person = JsonUtil.Deserialize<PrefersPropertiesOverFields>(json);
+            var person = Json.Deserialize<PrefersPropertiesOverFields>(json);
 
             // Assert
             Assert.Equal("Hello", person.Member1);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             };
             
             // Act
-            var result = JsonUtil.Serialize(commandResult);
+            var result = Json.Serialize(commandResult);
             
             // Assert
             Assert.Equal("{\"stringProperty\":\"Test\",\"boolProperty\":true,\"nullableIntProperty\":1}", result);
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var json = "{\"stringProperty\":\"Test\",\"boolProperty\":true,\"nullableIntProperty\":1}";
 
             //Act
-            var simpleError = JsonUtil.Deserialize<SimpleStruct>(json);
+            var simpleError = Json.Deserialize<SimpleStruct>(json);
 
             // Assert
             Assert.Equal("Test", simpleError.StringProperty);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                JsonUtil.Deserialize<ClashingProperties>("{}");
+                Json.Deserialize<ClashingProperties>("{}");
             });
 
             Assert.Equal($"The type '{typeof(ClashingProperties).FullName}' contains multiple public properties " +
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                JsonUtil.Deserialize<ClashingFields>("{}");
+                Json.Deserialize<ClashingFields>("{}");
             });
 
             Assert.Equal($"The type '{typeof(ClashingFields).FullName}' contains multiple public fields " +
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act
             var exception = Assert.Throws<InvalidOperationException>(() =>
             {
-                JsonUtil.Deserialize<NonEmptyConstructorPoco>(json); 
+                Json.Deserialize<NonEmptyConstructorPoco>(json); 
             });
 
             // Assert
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void SupportsInternalCustomSerializer()
         {
             // Arrange/Act
-            var json = JsonUtil.Serialize(new WithCustomSerializer());
+            var json = Json.Serialize(new WithCustomSerializer());
 
             // Asssert
             Assert.Equal("{\"key1\":\"value1\",\"key2\":123}", json);

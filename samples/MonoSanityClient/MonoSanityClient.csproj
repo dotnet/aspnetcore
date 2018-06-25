@@ -10,8 +10,8 @@
   <Import Project="..\..\src\Microsoft.AspNetCore.Blazor.Build\ReferenceFromSource.props" />
 
   <ItemGroup>
-    <!-- Share the WebAssembly.Runtime.cs source here so we get access to the same interop externs -->
-    <Compile Include="..\..\src\Microsoft.AspNetCore.Blazor.Browser\Interop\WebAssembly.Runtime.cs" />
+    <!-- Share the InternalCalls.cs source here so we get access to the same interop externs -->
+    <Compile Include="..\..\src\mono\Mono.WebAssembly.Interop\InternalCalls.cs" />
   </ItemGroup>
 
 </Project>

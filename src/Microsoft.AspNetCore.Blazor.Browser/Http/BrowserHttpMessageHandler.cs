@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Browser.Interop;
+using Microsoft.JSInterop;
+using Mono.WebAssembly.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,11 +65,18 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
 
             options.RequestUri = request.RequestUri.ToString();
 
-            RegisteredFunction.InvokeUnmarshalled<int, byte[], string, object>(
-                $"{typeof(BrowserHttpMessageHandler).FullName}.Send",
-                id,
-                request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
-                JsonUtil.Serialize(options));
+            if (JSRuntime.Current is MonoWebAssemblyJSRuntime mono)
+            {
+                mono.InvokeUnmarshalled<int, byte[], string, object>(
+                    "Blazor._internal.http.sendAsync",
+                    id,
+                    request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
+                    Json.Serialize(options));
+            }
+            else
+            {
+                throw new NotImplementedException("BrowserHttpMessageHandler only supports running under Mono WebAssembly.");
+            }
 
             return await tcs.Task;
         }
@@ -98,7 +106,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Http
             }
             else
             {
-                var responseDescriptor = JsonUtil.Deserialize<ResponseDescriptor>(responseDescriptorJson);
+                var responseDescriptor = Json.Deserialize<ResponseDescriptor>(responseDescriptorJson);
                 var responseContent = responseBodyData == null ? null : new ByteArrayContent(responseBodyData);
                 var responseMessage = responseDescriptor.ToResponseMessage(responseContent);
                 tcs.SetResult(responseMessage);

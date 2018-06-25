@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,7 +26,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "Microsoft.AspNetCore.Blazor.Browser.dll",
                 "Microsoft.AspNetCore.Blazor.dll",
                 "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
-                "Microsoft.Extensions.DependencyInjection.dll"
+                "Microsoft.Extensions.DependencyInjection.dll",
+                "Microsoft.JSInterop.dll",
+                "Mono.WebAssembly.Interop.dll",
             }.Select(a => hintPaths.Single(p => Path.GetFileName(p) == a))
             .ToArray();
 
@@ -59,7 +61,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "Microsoft.AspNetCore.Blazor.dll",
                 "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
                 "Microsoft.Extensions.DependencyInjection.dll",
+                "Microsoft.JSInterop.dll",
                 "Mono.Security.dll",
+                "Mono.WebAssembly.Interop.dll",
                 "mscorlib.dll",
                 "netstandard.dll",
                 "StandaloneApp.dll",

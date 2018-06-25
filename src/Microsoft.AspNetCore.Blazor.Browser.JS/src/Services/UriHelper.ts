@@ -1,17 +1,18 @@
-import { registerFunction } from '../Interop/RegisteredFunction';
 import { platform } from '../Environment';
 import { MethodHandle, System_String } from '../Platform/Platform';
 const registeredFunctionPrefix = 'Microsoft.AspNetCore.Blazor.Browser.Services.BrowserUriHelper';
 let notifyLocationChangedMethod: MethodHandle;
 let hasRegisteredEventListeners = false;
 
-registerFunction(`${registeredFunctionPrefix}.getLocationHref`,
-  () => platform.toDotNetString(location.href));
+// These are the functions we're making available for invocation from .NET
+export const internalFunctions = {
+  enableNavigationInterception,
+  navigateTo,
+  getBaseURI: () => document.baseURI,
+  getLocationHref: () => location.href,
+}
 
-registerFunction(`${registeredFunctionPrefix}.getBaseURI`,
-  () => document.baseURI ? platform.toDotNetString(document.baseURI) : null);
-
-registerFunction(`${registeredFunctionPrefix}.enableNavigationInterception`, () => {
+function enableNavigationInterception() {
   if (hasRegisteredEventListeners) {
     return;
   }
@@ -35,11 +36,7 @@ registerFunction(`${registeredFunctionPrefix}.enableNavigationInterception`, () 
   });
 
   window.addEventListener('popstate', handleInternalNavigation);
-});
-
-registerFunction(`${registeredFunctionPrefix}.navigateTo`, (uriDotNetString: System_String) => {
-  navigateTo(platform.toJavaScriptString(uriDotNetString));
-});
+}
 
 export function navigateTo(uri: string) {
   const absoluteUri = toAbsoluteUri(uri);

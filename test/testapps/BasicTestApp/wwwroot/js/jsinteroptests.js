@@ -1,94 +1,82 @@
+/// <reference path="../../../../../src/microsoft.jsinterop/javascriptruntime/dist/microsoft.jsinterop.d.ts" />
 
 // We'll store the results from the tests here
 var results = {};
+var assemblyName = 'BasicTestApp';
 
 function invokeDotNetInteropMethodsAsync() {
   console.log('Invoking void sync methods.');
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidParameterless'));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithOneParameter'), ...createArgumentList(1));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithTwoParameters'), ...createArgumentList(2));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithThreeParameters'), ...createArgumentList(3));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithFourParameters'), ...createArgumentList(4));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithFiveParameters'), ...createArgumentList(5));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithSixParameters'), ...createArgumentList(6));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithSevenParameters'), ...createArgumentList(7));
-  Blazor.invokeDotNetMethod(createMethodOptions('VoidWithEightParameters'), ...createArgumentList(8));
+  DotNet.invokeMethod(assemblyName, 'VoidParameterless');
+  DotNet.invokeMethod(assemblyName, 'VoidWithOneParameter', ...createArgumentList(1));
+  DotNet.invokeMethod(assemblyName, 'VoidWithTwoParameters', ...createArgumentList(2));
+  DotNet.invokeMethod(assemblyName, 'VoidWithThreeParameters', ...createArgumentList(3));
+  DotNet.invokeMethod(assemblyName, 'VoidWithFourParameters', ...createArgumentList(4));
+  DotNet.invokeMethod(assemblyName, 'VoidWithFiveParameters', ...createArgumentList(5));
+  DotNet.invokeMethod(assemblyName, 'VoidWithSixParameters', ...createArgumentList(6));
+  DotNet.invokeMethod(assemblyName, 'VoidWithSevenParameters', ...createArgumentList(7));
+  DotNet.invokeMethod(assemblyName, 'VoidWithEightParameters', ...createArgumentList(8));
 
   console.log('Invoking returning sync methods.');
-  results['result1'] = Blazor.invokeDotNetMethod(createMethodOptions('ReturnArray'));
-  results['result2'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoOneParameter'), ...createArgumentList(1));
-  results['result3'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoTwoParameters'), ...createArgumentList(2));
-  results['result4'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoThreeParameters'), ...createArgumentList(3));
-  results['result5'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoFourParameters'), ...createArgumentList(4));
-  results['result6'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoFiveParameters'), ...createArgumentList(5));
-  results['result7'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoSixParameters'), ...createArgumentList(6));
-  results['result8'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoSevenParameters'), ...createArgumentList(7));
-  results['result9'] = Blazor.invokeDotNetMethod(createMethodOptions('EchoEightParameters'), ...createArgumentList(8));
+  results['result1'] = DotNet.invokeMethod(assemblyName, 'ReturnArray');
+  results['result2'] = DotNet.invokeMethod(assemblyName, 'EchoOneParameter', ...createArgumentList(1));
+  results['result3'] = DotNet.invokeMethod(assemblyName, 'EchoTwoParameters', ...createArgumentList(2));
+  results['result4'] = DotNet.invokeMethod(assemblyName, 'EchoThreeParameters', ...createArgumentList(3));
+  results['result5'] = DotNet.invokeMethod(assemblyName, 'EchoFourParameters', ...createArgumentList(4));
+  results['result6'] = DotNet.invokeMethod(assemblyName, 'EchoFiveParameters', ...createArgumentList(5));
+  results['result7'] = DotNet.invokeMethod(assemblyName, 'EchoSixParameters', ...createArgumentList(6));
+  results['result8'] = DotNet.invokeMethod(assemblyName, 'EchoSevenParameters', ...createArgumentList(7));
+  results['result9'] = DotNet.invokeMethod(assemblyName, 'EchoEightParameters', ...createArgumentList(8));
 
   console.log('Invoking void async methods.');
-  return Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidParameterlessAsync'))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithOneParameterAsync'), ...createArgumentList(1)))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithTwoParametersAsync'), ...createArgumentList(2)))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithThreeParametersAsync'), ...createArgumentList(3)))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithFourParametersAsync'), ...createArgumentList(4)))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithFiveParametersAsync'), ...createArgumentList(5)))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithSixParametersAsync'), ...createArgumentList(6)))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithSevenParametersAsync'), ...createArgumentList(7)))
-    .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('VoidWithEightParametersAsync'), ...createArgumentList(8)))
+  return DotNet.invokeMethodAsync(assemblyName, 'VoidParameterlessAsync')
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithOneParameterAsync', ...createArgumentList(1)))
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithTwoParametersAsync', ...createArgumentList(2)))
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithThreeParametersAsync', ...createArgumentList(3)))
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithFourParametersAsync', ...createArgumentList(4)))
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithFiveParametersAsync', ...createArgumentList(5)))
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithSixParametersAsync', ...createArgumentList(6)))
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithSevenParametersAsync', ...createArgumentList(7)))
+    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithEightParametersAsync', ...createArgumentList(8)))
     .then(() => {
       console.log('Invoking returning async methods.');
-      return Blazor.invokeDotNetMethodAsync(createMethodOptions('ReturnArrayAsync'))
+      return DotNet.invokeMethodAsync(assemblyName, 'ReturnArrayAsync')
         .then(r => results['result1Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoOneParameterAsync'), ...createArgumentList(1)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoOneParameterAsync', ...createArgumentList(1)))
         .then(r => results['result2Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoTwoParametersAsync'), ...createArgumentList(2)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoTwoParametersAsync', ...createArgumentList(2)))
         .then(r => results['result3Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoThreeParametersAsync'), ...createArgumentList(3)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoThreeParametersAsync', ...createArgumentList(3)))
         .then(r => results['result4Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoFourParametersAsync'), ...createArgumentList(4)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoFourParametersAsync', ...createArgumentList(4)))
         .then(r => results['result5Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoFiveParametersAsync'), ...createArgumentList(5)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoFiveParametersAsync', ...createArgumentList(5)))
         .then(r => results['result6Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoSixParametersAsync'), ...createArgumentList(6)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoSixParametersAsync', ...createArgumentList(6)))
         .then(r => results['result7Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoSevenParametersAsync'), ...createArgumentList(7)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoSevenParametersAsync', ...createArgumentList(7)))
         .then(r => results['result8Async'] = r)
-        .then(() => Blazor.invokeDotNetMethodAsync(createMethodOptions('EchoEightParametersAsync'), ...createArgumentList(8)))
+        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoEightParametersAsync', ...createArgumentList(8)))
         .then(r => results['result9Async'] = r);
     })
     .then(() => {
       console.log('Invoking methods that throw exceptions');
       try {
-        Blazor.invokeDotNetMethod(createMethodOptions('ThrowException'))
+        DotNet.invokeMethod(assemblyName, 'ThrowException');
       } catch (e) {
         results['ThrowException'] = e.message;
       }
 
-      try {
-        Blazor.invokeDotNetMethodAsync(createMethodOptions('AsyncThrowSyncException'));
-      } catch (e) {
-        results['AsyncThrowSyncException'] = e.message;
-      }
-
-      return Blazor.invokeDotNetMethodAsync(createMethodOptions('AsyncThrowAsyncException'))
+      return DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowSyncException')
         .catch(e => {
-          results['AsyncThrowAsyncException'] = e.message;
-          return Promise.resolve();
-        })
-        .then(() => console.log('Done invoking interop methods'));
-    });
-}
+          results['AsyncThrowSyncException'] = e.message;
 
-function createMethodOptions(methodName) {
-  return {
-    type: {
-      assembly: 'BasicTestApp',
-      name: 'BasicTestApp.InteropTest.JavaScriptInterop'
-    },
-    method: {
-      name: methodName
-    }
-  };
+          return DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowAsyncException');
+        }).catch(e => {
+          results['AsyncThrowAsyncException'] = e.message;
+
+          console.log('Done invoking interop methods');
+        });
+    });
 }
 
 function createArgumentList(argumentNumber){
@@ -143,12 +131,13 @@ function createArgumentList(argumentNumber){
   return array;
 }
 
-Blazor.registerFunction('BasicTestApp.Interop.InvokeDotNetInteropMethodsAsync', invokeDotNetInteropMethodsAsync);
-Blazor.registerFunction('BasicTestApp.Interop.CollectResults', collectInteropResults);
-
-Blazor.registerFunction('BasicTestApp.Interop.FunctionThrows', functionThrowsException);
-Blazor.registerFunction('BasicTestApp.Interop.AsyncFunctionThrowsSyncException', asyncFunctionThrowsSyncException);
-Blazor.registerFunction('BasicTestApp.Interop.AsyncFunctionThrowsAsyncException', asyncFunctionThrowsAsyncException);
+window.jsInteropTests = {
+  invokeDotNetInteropMethodsAsync: invokeDotNetInteropMethodsAsync,
+  collectInteropResults: collectInteropResults,
+  functionThrowsException: functionThrowsException,
+  asyncFunctionThrowsSyncException: asyncFunctionThrowsSyncException,
+  asyncFunctionThrowsAsyncException: asyncFunctionThrowsAsyncException
+};
 
 function functionThrowsException() {
   throw new Error('Function threw an exception!');

@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Browser.Interop;
 using Microsoft.AspNetCore.Blazor.Browser.Services;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.JSInterop;
+using Mono.WebAssembly.Interop;
 using System;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
@@ -59,11 +59,18 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignComponentId(component);
-            RegisteredFunction.InvokeUnmarshalled<int, string, int, object>(
-                "attachRootComponentToElement",
+
+            // The only reason we're calling this synchronously is so that, if it throws,
+            // we get the exception back *before* attempting the first UpdateDisplay
+            // (otherwise the logged exception will come from UpdateDisplay instead of here)
+            // When implementing support for out-of-process runtimes, we'll need to call this
+            // asynchronously and ensure we surface any exceptions correctly.
+            ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(
+                "Blazor._internal.attachRootComponentToElement",
                 _browserRendererId,
                 domElementSelector,
                 componentId);
+
             component.SetParameters(ParameterCollection.Empty);
         }
 
@@ -78,10 +85,19 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <inheritdoc />
         protected override void UpdateDisplay(in RenderBatch batch)
         {
-            RegisteredFunction.InvokeUnmarshalled<int, RenderBatch, object>(
-                "renderBatch",
-                _browserRendererId,
-                batch);
+            if (JSRuntime.Current is MonoWebAssemblyJSRuntime mono)
+            {
+                mono.InvokeUnmarshalled<int, RenderBatch, object>(
+                    "Blazor._internal.renderBatch",
+                    _browserRendererId,
+                    batch);
+            }
+            else
+            {
+                // When implementing support for an out-of-process JS runtime, we'll need to
+                // do something here to serialize and transmit the RenderBatch efficiently.
+                throw new NotImplementedException("TODO: Support BrowserRenderer.UpdateDisplay on other runtimes.");
+            }
         }
     }
 }

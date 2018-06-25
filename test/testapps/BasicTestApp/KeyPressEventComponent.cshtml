@@ -1,4 +1,4 @@
-@using System.Collections.Generic
+@using Microsoft.JSInterop
 
 Type here: <input onkeypress=@OnKeyPressed />
 <ul>
@@ -13,7 +13,7 @@ Type here: <input onkeypress=@OnKeyPressed />
 
     void OnKeyPressed(UIKeyboardEventArgs eventArgs)
     {
-        Console.WriteLine(JsonUtil.Serialize(eventArgs));
+        Console.WriteLine(Json.Serialize(eventArgs));
         keysPressed.Add(eventArgs.Key);
     }
 }

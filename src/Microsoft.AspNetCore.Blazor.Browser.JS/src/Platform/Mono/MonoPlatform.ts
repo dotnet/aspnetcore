@@ -1,6 +1,5 @@
 import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getAssemblyNameFromUrl } from '../DotNet';
-import { getRegisteredFunction } from '../../Interop/RegisteredFunction';
 
 const assemblyHandleCache: { [assemblyName: string]: number } = {};
 const typeHandleCache: { [fullyQualifiedTypeName: string]: number } = {};
@@ -134,10 +133,6 @@ export const monoPlatform: Platform = {
   },
 };
 
-// Bypass normal type checking to add this extra function. It's only intended to be called from
-// the JS code in Mono's driver.c. It's never intended to be called from TypeScript.
-(monoPlatform as any).monoGetRegisteredFunction = getRegisteredFunction;
-
 function findAssembly(assemblyName: string): number {
   let assemblyHandle = assemblyHandleCache[assemblyName];
   if (!assemblyHandle) {
@@ -229,6 +224,7 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   module.postRun.push(() => {
     const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string']);
     load_runtime('appBinDir');
+    attachInteropInvoker();
     onReady();
   });
 
@@ -253,4 +249,31 @@ function asyncLoad(url, onload, onerror) {
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
+}
+
+function attachInteropInvoker() {
+  const dotNetDispatcherInvokeMethodHandle = findMethod('Microsoft.JSInterop', 'Microsoft.JSInterop', 'DotNetDispatcher', 'Invoke');
+  const dotNetDispatcherBeginInvokeMethodHandle = findMethod('Microsoft.JSInterop', 'Microsoft.JSInterop', 'DotNetDispatcher', 'BeginInvoke');
+
+  DotNet.attachDispatcher({
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, argsJson) => {
+      monoPlatform.callMethod(dotNetDispatcherBeginInvokeMethodHandle, null, [
+        callId ? monoPlatform.toDotNetString(callId.toString()) : null,
+        monoPlatform.toDotNetString(assemblyName),
+        monoPlatform.toDotNetString(methodIdentifier),
+        monoPlatform.toDotNetString(argsJson)
+      ]);
+    },
+
+    invokeDotNetFromJS: (assemblyName, methodIdentifier, argsJson) => {
+      const resultJsonStringPtr = monoPlatform.callMethod(dotNetDispatcherInvokeMethodHandle, null, [
+        monoPlatform.toDotNetString(assemblyName),
+        monoPlatform.toDotNetString(methodIdentifier),
+        monoPlatform.toDotNetString(argsJson)
+      ]) as System_String;
+      return resultJsonStringPtr
+        ? JSON.parse(monoPlatform.toJavaScriptString(resultJsonStringPtr))
+        : null;
+    },
+  });
 }

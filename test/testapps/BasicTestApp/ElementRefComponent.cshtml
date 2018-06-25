@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Blazor.Browser.Interop
+@using Microsoft.JSInterop
 
 <h1>Element capture</h1>
 
@@ -29,8 +29,8 @@
     bool _toggleCapturedElementPresence = true;
     ElementRef _myInput;
 
-    void MakeInteropCall()
+    async Task MakeInteropCall()
     {
-        RegisteredFunction.Invoke<object>("setElementValue", _myInput, $"Clicks: {++_count}");
+        await JSRuntime.Current.InvokeAsync<object>("setElementValue", _myInput, $"Clicks: {++_count}");
     }
 }

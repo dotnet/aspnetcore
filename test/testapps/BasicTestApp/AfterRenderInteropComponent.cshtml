@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Blazor.Browser.Interop
+@using Microsoft.JSInterop
 
 <input ref="myInput" value="Value set during render" />
 
@@ -7,6 +7,6 @@
 
     protected override void OnAfterRender()
     {
-        RegisteredFunction.Invoke<object>("setElementValue", myInput, "Value set after render");
+        JSRuntime.Current.InvokeAsync<object>("setElementValue", myInput, "Value set after render");
     }
 }

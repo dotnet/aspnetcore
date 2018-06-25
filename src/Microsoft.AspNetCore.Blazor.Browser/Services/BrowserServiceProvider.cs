@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
     {
         private readonly IServiceProvider _underlyingProvider;
 
+        static BrowserServiceProvider()
+        {
+            // TODO: Remove once we make this part of the app startup mechanism
+            GC.KeepAlive(ActivateMonoJSRuntime.EnsureActivated());
+        }
+
         /// <summary>
         /// Constructs an instance of <see cref="BrowserServiceProvider"/>.
         /// </summary>

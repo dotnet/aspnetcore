@@ -1,4 +1,4 @@
-﻿import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
+import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { renderBatch as renderBatchStruct, arrayRange, arraySegment, renderTreeDiffStructLength, renderTreeDiff, RenderBatchPointer, RenderTreeDiffPointer } from './RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
@@ -6,11 +6,10 @@ import { BrowserRenderer } from './BrowserRenderer';
 type BrowserRendererRegistry = { [browserRendererId: number]: BrowserRenderer };
 const browserRenderers: BrowserRendererRegistry = {};
 
-export function attachRootComponentToElement(browserRendererId: number, elementSelector: System_String, componentId: number) {
-  const elementSelectorJs = platform.toJavaScriptString(elementSelector);
-  const element = document.querySelector(elementSelectorJs);
+export function attachRootComponentToElement(browserRendererId: number, elementSelector: string, componentId: number) {
+  const element = document.querySelector(elementSelector);
   if (!element) {
-    throw new Error(`Could not find any element matching selector '${elementSelectorJs}'.`);
+    throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
   }
 
   let browserRenderer = browserRenderers[browserRendererId];

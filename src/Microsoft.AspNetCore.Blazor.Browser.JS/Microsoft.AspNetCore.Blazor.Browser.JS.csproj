@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.0.0" />
     <WebpackInputs Include="**\*.ts" Exclude="node_modules\**" />
+    <WebpackInputs Include="..\Microsoft.JSInterop\TypeScript\src\**" />
   </ItemGroup>
 
   <Import Project="..\Microsoft.AspNetCore.Blazor.BuildTools\ReferenceFromSource.props" />

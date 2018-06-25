@@ -1,4 +1,3 @@
-﻿import { registerFunction } from '../Interop/RegisteredFunction';
 import { platform } from '../Environment';
 import { MethodHandle, System_String, System_Array } from '../Platform/Platform';
 const httpClientAssembly = 'Microsoft.AspNetCore.Blazor.Browser';
@@ -8,9 +7,10 @@ const httpClientFullTypeName = `${httpClientNamespace}.${httpClientTypeName}`;
 let receiveResponseMethod: MethodHandle;
 let allocateArrayMethod: MethodHandle;
 
-registerFunction(`${httpClientFullTypeName}.Send`, (id: number, body: System_Array<any>, jsonFetchArgs: System_String) => {
-  sendAsync(id, body, jsonFetchArgs);
-});
+// These are the functions we're making available for invocation from .NET
+export const internalFunctions = {
+  sendAsync
+}
 
 async function sendAsync(id: number, body: System_Array<any>, jsonFetchArgs: System_String) {
   let response: Response;

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj" />
+    <ProjectReference Include="..\mono\Mono.WebAssembly.Interop\Mono.WebAssembly.Interop.csproj" />
   </ItemGroup>
 
 </Project>

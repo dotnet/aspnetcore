@@ -1,4 +1,14 @@
-﻿(function () {
+(function () {
+  // Implement just enough of the DotNet.* API surface for unmarshalled interop calls to work
+  // in the cases used in this project
+  window.DotNet = {
+    jsCallDispatcher: {
+      findJSFunction: function (identifier) {
+        return window[identifier];
+      }
+    }
+  };
+
   window.initMono = function initMono(loadAssemblyUrls, onReadyCallback) {
     window.Browser = {
       init: function () { },

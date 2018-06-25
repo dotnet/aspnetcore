@@ -1,4 +1,4 @@
-﻿@addTagHelper *, TestContentPackage
+@addTagHelper *, TestContentPackage
 @using TestContentPackage
 
 <h1>Functionality and content from an external package</h1>
@@ -31,8 +31,8 @@
 {
     string result;
 
-    void ShowJavaScriptPrompt()
+    async Task ShowJavaScriptPrompt()
     {
-        result = MyPrompt.Show("Hello!");
+        result = await MyPrompt.Show("Hello!");
     }
 }

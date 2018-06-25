@@ -53,11 +53,11 @@
   <script>
     // The client-side .NET code calls this when it is ready to be called from test code
     // The Xunit test code polls until it sees the flag is set
-    Blazor.registerFunction('testReady', function () {
-        window.isTestReady = true;
-        document.getElementsByTagName('APP')[0].textContent = '';
-        document.getElementById('test-selector').style.display = 'block';
-    });
+    function testReady() {
+      window.isTestReady = true;
+      document.getElementsByTagName('APP')[0].textContent = '';
+      document.getElementById('test-selector').style.display = 'block';
+    }
 
     // The Xunit test code calls this when setting up tests for specific components
     function mountTestComponent(typeName) {
@@ -67,9 +67,9 @@
     }
 
     // Used by ElementRefComponent
-    Blazor.registerFunction('setElementValue', function (element, newValue) {
+    function setElementValue(element, newValue) {
       element.value = newValue;
-    });
+    }
   </script>
 </body>
 </html>
