@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "sttimer.h"
 #include "utility.h"
+#include "exceptions.h"
+#include "debugutil.h"
 
 FileOutputManager::FileOutputManager()
 {
@@ -37,25 +39,23 @@ FileOutputManager::~FileOutputManager()
     if (m_fdPreviousStdOut >= 0)
     {
         _dup2(m_fdPreviousStdOut, _fileno(stdout));
+        LOG_INFOF("Restoring original stdout of stdout: %d", m_fdPreviousStdOut);
     }
 
     if (m_fdPreviousStdErr >= 0)
     {
         _dup2(m_fdPreviousStdErr, _fileno(stderr));
+        LOG_INFOF("Restoring original stdout of stdout: %d", m_fdPreviousStdOut);
     }
 }
 
 HRESULT
 FileOutputManager::Initialize(PCWSTR pwzStdOutLogFileName, PCWSTR pwzApplicationPath)
 {
-    HRESULT hr = S_OK;
+    RETURN_IF_FAILED(m_wsApplicationPath.Copy(pwzApplicationPath));
+    RETURN_IF_FAILED(m_wsStdOutLogFileName.Copy(pwzStdOutLogFileName));
 
-    if (SUCCEEDED(hr = m_wsApplicationPath.Copy(pwzApplicationPath)))
-    {
-        hr = m_wsStdOutLogFileName.Copy(pwzStdOutLogFileName);
-    }
-
-    return hr;
+    return S_OK;
 }
 
 void FileOutputManager::NotifyStartupComplete()
@@ -102,33 +102,28 @@ bool FileOutputManager::GetStdOutContent(STRA* struStdOutput)
         }
     }
 
+    LOG_INFOF("First 4KB captured by stdout: %s", pzFileContents);
+
     return fLogged;
 }
 
 HRESULT
 FileOutputManager::Start()
 {
-    HRESULT hr;
     SYSTEMTIME systemTime;
     SECURITY_ATTRIBUTES saAttr = { 0 };
     STRU struPath;
-    hr = UTILITY::ConvertPathToFullPath(
+
+    RETURN_IF_FAILED(UTILITY::ConvertPathToFullPath(
         m_wsStdOutLogFileName.QueryStr(),
         m_wsApplicationPath.QueryStr(),
-        &struPath);
-    if (FAILED(hr))
-    {
-        return hr;
-    }
+        &struPath));
 
-    hr = UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
-    if (FAILED(hr))
-    {
-        return hr;
-    }
+    RETURN_IF_FAILED(UTILITY::EnsureDirectoryPathExist(struPath.QueryStr()));
 
     GetSystemTime(&systemTime);
-    hr = m_struLogFilePath.SafeSnwprintf(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
+    RETURN_IF_FAILED(
+        m_struLogFilePath.SafeSnwprintf(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
         struPath.QueryStr(),
         systemTime.wYear,
         systemTime.wMonth,
@@ -136,11 +131,7 @@ FileOutputManager::Start()
         systemTime.wHour,
         systemTime.wMinute,
         systemTime.wSecond,
-        GetCurrentProcessId());
-    if (FAILED(hr))
-    {
-        return hr;
-    }
+        GetCurrentProcessId()));
 
     m_fdPreviousStdOut = _dup(_fileno(stdout));
     m_fdPreviousStdErr = _dup(_fileno(stderr));
@@ -155,8 +146,7 @@ FileOutputManager::Start()
 
     if (m_hLogFileHandle == INVALID_HANDLE_VALUE)
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        return hr;
+        return LOG_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
 
     // There are a few options for redirecting stdout/stderr,
@@ -173,21 +163,15 @@ FileOutputManager::Start()
     // Calling SetStdHandle works for redirecting managed logs, however you cannot
     // capture native logs (including hostfxr failures).
 
-    if (!SetStdHandle(STD_OUTPUT_HANDLE, m_hLogFileHandle))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        return hr;
-    }
+    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_OUTPUT_HANDLE, m_hLogFileHandle));
 
-    if (!SetStdHandle(STD_ERROR_HANDLE, m_hLogFileHandle))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        return hr;
-    }
-
+    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_ERROR_HANDLE, m_hLogFileHandle));
 
     // Periodically flush the log content to file
     m_Timer.InitializeTimer(STTIMER::TimerCallback, &m_struLogFilePath, 3000, 3000);
 
-    return hr;
+    WLOG_INFOF(L"Created log file for inprocess application: %s",
+        m_struLogFilePath.QueryStr());
+
+    return S_OK;
 }

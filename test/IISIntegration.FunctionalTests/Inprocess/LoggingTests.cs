@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class LoggingTests : IISFunctionalTestBase
     {
-        [Theory(Skip = "See: https://github.com/aspnet/IISIntegration/issues/897")]
+        [Theory]
         [InlineData("CheckErrLogFile")]
         [InlineData("CheckLogFile")]
         public async Task CheckStdoutLogging(string path)
@@ -24,47 +24,45 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogEnabled", "true");
-            Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogFile", @".\logs\stdout");
-
-            var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
-
-            var responseText = await response.Content.ReadAsStringAsync();
-
-            Assert.Equal("Hello World", responseText);
-
-            StopServer();
-
-            var folderPath = Path.Combine(deploymentResult.DeploymentResult.ContentRoot, @"logs");
-
-            var fileInDirectory = Directory.GetFiles(folderPath).Single();
-            Assert.NotNull(fileInDirectory);
-
-            string contents = null;
-            for (var i = 0; i < 20; i++)
+            try
             {
-                try
-                {
-                    contents = await File.ReadAllTextAsync(fileInDirectory);
-                    break;
-                }
-                catch (IOException)
-                {
-                    // File in use by IISExpress, delay a bit before rereading.
-                }
-                await Task.Delay(20);
+                Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogEnabled", "true");
+                Helpers.ModifyAspNetCoreSectionInWebConfig(deploymentResult, "stdoutLogFile", @".\logs\stdout");
+
+                var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
+
+                var responseText = await response.Content.ReadAsStringAsync();
+
+                Assert.Equal("Hello World", responseText);
+
+                StopServer();
+
+                var folderPath = Path.Combine(deploymentResult.DeploymentResult.ContentRoot, @"logs");
+
+                var fileInDirectory = Directory.GetFiles(folderPath).Single();
+                Assert.NotNull(fileInDirectory);
+
+                string contents = null;
+
+                // RetryOperation doesn't support async lambdas, call synchronous ReadAllText.
+                RetryHelper.RetryOperation(
+                    () => contents = File.ReadAllText(fileInDirectory),
+                    e => Logger.LogError($"Failed to read file: {e.Message}"),
+                    retryCount: 10,
+                    retryDelayMilliseconds: 100);
+
+                Assert.NotNull(contents);
+                Assert.Contains("TEST MESSAGE", contents);
             }
+            finally
+            {
 
-            Assert.NotNull(contents);
-
-            // Open the log file and see if there are any contents.
-            Assert.Contains("TEST MESSAGE", contents);
-
-            RetryHelper.RetryOperation(
-                () => Directory.Delete(deploymentParameters.PublishedApplicationRootPath, true),
-                e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
-                retryCount: 3,
-                retryDelayMilliseconds: 100);
+                RetryHelper.RetryOperation(
+                    () => Directory.Delete(deploymentParameters.PublishedApplicationRootPath, true),
+                    e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
+                    retryCount: 3,
+                    retryDelayMilliseconds: 100);
+            }
         }
     }
 }

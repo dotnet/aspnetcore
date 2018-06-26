@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "stdafx.h"
+#include "exceptions.h"
+#include "SRWExclusiveLock.h"
 
 PipeOutputManager::PipeOutputManager() :
     m_dwStdErrReadTotal(0),
@@ -10,6 +12,7 @@ PipeOutputManager::PipeOutputManager() :
     m_hErrThread(INVALID_HANDLE_VALUE),
     m_fDisposed(FALSE)
 {
+    InitializeSRWLock(&m_srwLock);
 }
 
 PipeOutputManager::~PipeOutputManager()
@@ -27,6 +30,12 @@ PipeOutputManager::StopOutputRedirection()
     {
         return;
     }
+    SRWExclusiveLock lock(m_srwLock);
+
+    if (m_fDisposed)
+    {
+        return;
+    }
     m_fDisposed = true;
 
     fflush(stdout);
@@ -38,17 +47,20 @@ PipeOutputManager::StopOutputRedirection()
         m_hErrWritePipe = INVALID_HANDLE_VALUE;
     }
 
+    // GetExitCodeThread returns 0 on failure; thread status code is invalid.
     if (m_hErrThread != NULL &&
         m_hErrThread != INVALID_HANDLE_VALUE &&
-        GetExitCodeThread(m_hErrThread, &dwThreadStatus) != 0 &&
+        !LOG_LAST_ERROR_IF(GetExitCodeThread(m_hErrThread, &dwThreadStatus) == 0) &&
         dwThreadStatus == STILL_ACTIVE)
     {
-        // wait for gracefullshut down, i.e., the exit of the background thread or timeout
+        // wait for graceful shutdown, i.e., the exit of the background thread or timeout
         if (WaitForSingleObject(m_hErrThread, PIPE_OUTPUT_THREAD_TIMEOUT) != WAIT_OBJECT_0)
         {
             // if the thread is still running, we need kill it first before exit to avoid AV
-            if (GetExitCodeThread(m_hErrThread, &dwThreadStatus) != 0 && dwThreadStatus == STILL_ACTIVE)
+            if (!LOG_LAST_ERROR_IF(GetExitCodeThread(m_hErrThread, &dwThreadStatus) == 0) &&
+                dwThreadStatus == STILL_ACTIVE)
             {
+                LOG_WARN("Thread reading stdout/err hit timeout, forcibly closing thread.");
                 TerminateThread(m_hErrThread, STATUS_CONTROL_C_EXIT);
             }
         }
@@ -68,11 +80,13 @@ PipeOutputManager::StopOutputRedirection()
     if (m_fdPreviousStdOut != -1)
     {
         _dup2(m_fdPreviousStdOut, _fileno(stdout));
+        LOG_INFOF("Restoring original stdout of stdout: %d", m_fdPreviousStdOut);
     }
 
     if (m_fdPreviousStdErr != -1)
     {
         _dup2(m_fdPreviousStdErr, _fileno(stderr));
+        LOG_INFOF("Restoring original stdout of stderr: %d", m_fdPreviousStdErr);
     }
 
     if (GetStdOutContent(&straStdOutput))
@@ -85,7 +99,6 @@ PipeOutputManager::StopOutputRedirection()
 
 HRESULT PipeOutputManager::Start()
 {
-    HRESULT hr = S_OK;
     SECURITY_ATTRIBUTES     saAttr = { 0 };
     HANDLE                  hStdErrReadPipe;
     HANDLE                  hStdErrWritePipe;
@@ -93,24 +106,12 @@ HRESULT PipeOutputManager::Start()
     m_fdPreviousStdOut = _dup(_fileno(stdout));
     m_fdPreviousStdErr = _dup(_fileno(stderr));
 
-    if (!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF(!CreatePipe(&hStdErrReadPipe, &hStdErrWritePipe, &saAttr, 0 /*nSize*/));
 
     // TODO this still doesn't redirect calls in native, like wprintf
-    if (!SetStdHandle(STD_ERROR_HANDLE, hStdErrWritePipe))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_ERROR_HANDLE, hStdErrWritePipe));
 
-    if (!SetStdHandle(STD_OUTPUT_HANDLE, hStdErrWritePipe))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF(!SetStdHandle(STD_OUTPUT_HANDLE, hStdErrWritePipe));
 
     m_hErrReadPipe = hStdErrReadPipe;
     m_hErrWritePipe = hStdErrWritePipe;
@@ -124,14 +125,9 @@ HRESULT PipeOutputManager::Start()
         0,          // default creation flags
         NULL);      // receive thread identifier
 
-    if (m_hErrThread == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    RETURN_LAST_ERROR_IF_NULL(m_hErrThread);
 
-Finished:
-    return hr;
+    return S_OK;
 }
 
 VOID
