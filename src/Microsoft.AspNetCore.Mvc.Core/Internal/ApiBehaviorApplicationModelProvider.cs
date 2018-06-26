@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var metadata = _modelMetadataProvider.GetMetadataForProperty(
                         controllerModel.ControllerType,
                         property.PropertyInfo.Name);
-                    if (metadata.IsComplexType)
+                    if (metadata.IsComplexType && !metadata.IsCollectionType)
                     {
                         property.BindingInfo.BinderModelName = string.Empty;
                     }
@@ -278,9 +278,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private bool IsComplexTypeParameter(ParameterModel parameter)
         {
             // No need for information from attributes on the parameter. Just use its type.
-            return _modelMetadataProvider
-                .GetMetadataForType(parameter.ParameterInfo.ParameterType)
-                .IsComplexType;
+            var metadata = _modelMetadataProvider
+                .GetMetadataForType(parameter.ParameterInfo.ParameterType);
+            return metadata.IsComplexType && !metadata.IsCollectionType;
         }
     }
 }
