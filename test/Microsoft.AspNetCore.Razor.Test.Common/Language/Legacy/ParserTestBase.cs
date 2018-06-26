@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: UseBaselineTests);
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 

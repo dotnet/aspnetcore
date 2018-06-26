@@ -1,0 +1,7 @@
+Markup block - Gen<None> - 7 - (0:0,0)
+    Tag block - Gen<None> - 7 - (0:0,0)
+        Transition span - Gen<None> - [<text/>] - SpanEditHandler;Accepts:None - (0:0,0) - Symbols:4
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[text];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];
