@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// Sending any message resets the timer to the start of the interval.
         /// </remarks>
         public TimeSpan KeepAliveInterval { get; set; } = DefaultKeepAliveInterval;
-        
+
         /// <summary>
         /// Gets or sets the timeout for the initial handshake.
         /// </summary>
@@ -556,6 +555,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState)
         {
+            Log.ResettingKeepAliveTimer(_logger);
+            ResetTimeout();
+
             InvocationRequest irq;
             switch (message)
             {
@@ -601,7 +603,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                 case PingMessage _:
                     Log.ReceivedPing(_logger);
-                    // Nothing to do on receipt of a ping.
+                    // timeout is reset above, on receiving any message
                     break;
                 default:
                     throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
@@ -777,9 +779,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         }
                         else if (!buffer.IsEmpty)
                         {
-                            Log.ResettingKeepAliveTimer(_logger);
-                            ResetTimeout();
-
                             Log.ProcessingMessage(_logger, buffer.Length);
 
                             var close = false;

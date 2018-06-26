@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -489,7 +488,7 @@ namespace Microsoft.AspNetCore.SignalR
                 Volatile.Write(ref _lastReceivedTimeStamp, DateTime.UtcNow.Ticks);
             }
         }
-        
+
         private static void AbortConnection(object state)
         {
             var connection = (HubConnectionContext)state;
