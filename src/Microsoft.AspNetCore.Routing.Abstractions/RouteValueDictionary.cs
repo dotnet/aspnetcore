@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Routing.Abstractions;
 using Microsoft.Extensions.Internal;
 
@@ -16,14 +17,19 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public class RouteValueDictionary : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {
-        internal Storage _storage;
+        // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
+        private const int DefaultCapacity = 4;
+
+        internal KeyValuePair<string, object>[] _arrayStorage;
+        internal PropertyStorage _propertyStorage;
+        private int _count;
 
         /// <summary>
         /// Creates an empty <see cref="RouteValueDictionary"/>.
         /// </summary>
         public RouteValueDictionary()
         {
-            _storage = EmptyStorage.Instance;
+            _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
         }
 
         /// <summary>
@@ -40,63 +46,45 @@ namespace Microsoft.AspNetCore.Routing
         /// Only public instance non-index properties are considered.
         /// </remarks>
         public RouteValueDictionary(object values)
+            : this()
         {
-            var dictionary = values as RouteValueDictionary;
-            if (dictionary != null)
+            if (values is RouteValueDictionary dictionary)
             {
-                var listStorage = dictionary._storage as ListStorage;
-                if (listStorage != null)
-                {
-                    _storage = new ListStorage(listStorage);
-                    return;
-                }
-
-                var propertyStorage = dictionary._storage as PropertyStorage;
-                if (propertyStorage != null)
+                if (dictionary._propertyStorage != null)
                 {
                     // PropertyStorage is immutable so we can just copy it.
-                    _storage = dictionary._storage;
+                    _propertyStorage = dictionary._propertyStorage;
+                    _count = dictionary._count;
                     return;
                 }
 
-                // If we get here, it's an EmptyStorage.
-                _storage = EmptyStorage.Instance;
+                var other = dictionary._arrayStorage;
+                var storage = new KeyValuePair<string, object>[other.Length];
+                if (dictionary._count != 0)
+                {
+                    Array.Copy(other, 0, storage, 0, dictionary._count);
+                }
+
+                _arrayStorage = storage;
+                _count = dictionary._count;
                 return;
             }
 
-            var keyValueEnumerable = values as IEnumerable<KeyValuePair<string, object>>;
-            if (keyValueEnumerable != null)
+            if (values is IEnumerable<KeyValuePair<string, object>> keyValueEnumerable)
             {
-                var listStorage = new ListStorage();
-                _storage = listStorage;
                 foreach (var kvp in keyValueEnumerable)
                 {
-                    if (listStorage.ContainsKey(kvp.Key))
-                    {
-                        var message = Resources.FormatRouteValueDictionary_DuplicateKey(kvp.Key, nameof(RouteValueDictionary));
-                        throw new ArgumentException(message, nameof(values));
-                    }
-
-                    listStorage.Add(kvp);
+                    Add(kvp.Key, kvp.Value);
                 }
 
                 return;
             }
 
-            var stringValueEnumerable = values as IEnumerable<KeyValuePair<string, string>>;
-            if (stringValueEnumerable != null)
+            if (values is IEnumerable<KeyValuePair<string, string>> stringValueEnumerable)
             {
-                var listStorage = new ListStorage();
-                _storage = listStorage;
                 foreach (var kvp in stringValueEnumerable)
                 {
-                    if (listStorage.ContainsKey(kvp.Key))
-                    {
-                        var message = Resources.FormatRouteValueDictionary_DuplicateKey(kvp.Key, nameof(RouteValueDictionary));
-                        throw new ArgumentException(message, nameof(values));
-                    }
-
-                    listStorage.Add(new KeyValuePair<string, object>(kvp.Key, kvp.Value));
+                    Add(kvp.Key, kvp.Value);
                 }
 
                 return;
@@ -104,11 +92,11 @@ namespace Microsoft.AspNetCore.Routing
 
             if (values != null)
             {
-                _storage = new PropertyStorage(values);
+                var storage = new PropertyStorage(values);
+                _propertyStorage = storage;
+                _count = storage.Properties.Length;
                 return;
             }
-
-            _storage = EmptyStorage.Instance;
         }
 
         /// <inheritdoc />
@@ -133,10 +121,21 @@ namespace Microsoft.AspNetCore.Routing
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                if (!_storage.TrySetValue(key, value))
+                // We're calling this here for the side-effect of converting from properties
+                // to array. We need to create the array even if we just set an existing value since
+                // property storage is immutable. 
+                EnsureCapacity(_count);
+
+                var index = FindInArray(key);
+                if (index < 0)
                 {
-                    Upgrade();
-                    _storage.TrySetValue(key, value);
+                    EnsureCapacity(_count + 1);
+                    _arrayStorage[_count++] = new KeyValuePair<string, object>(key, value);
+                }
+                else
+                {
+                    
+                    _arrayStorage[index] = new KeyValuePair<string, object>(key, value);
                 }
             }
         }
@@ -150,7 +149,7 @@ namespace Microsoft.AspNetCore.Routing
         public IEqualityComparer<string> Comparer => StringComparer.OrdinalIgnoreCase;
 
         /// <inheritdoc />
-        public int Count => _storage.Count;
+        public int Count => _count;
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.IsReadOnly => false;
@@ -160,13 +159,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             get
             {
-                Upgrade();
+                EnsureCapacity(_count);
 
-                var list = (ListStorage)_storage;
-                var keys = new string[list.Count];
+                var array = _arrayStorage;
+                var keys = new string[_count];
                 for (var i = 0; i < keys.Length; i++)
                 {
-                    keys[i] = list[i].Key;
+                    keys[i] = array[i].Key;
                 }
 
                 return keys;
@@ -186,13 +185,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             get
             {
-                Upgrade();
+                EnsureCapacity(_count);
 
-                var list = (ListStorage)_storage;
-                var values = new object[list.Count];
+                var array = _arrayStorage;
+                var values = new object[_count];
                 for (var i = 0; i < values.Length; i++)
                 {
-                    values[i] = list[i].Value;
+                    values[i] = array[i].Value;
                 }
 
                 return values;
@@ -221,55 +220,43 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Upgrade();
+            EnsureCapacity(_count + 1);
 
-            var list = (ListStorage)_storage;
-            for (var i = 0; i < list.Count; i++)
+            var index = FindInArray(key);
+            if (index >= 0)
             {
-                if (string.Equals(list[i].Key, key, StringComparison.OrdinalIgnoreCase))
-                {
-                    var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
-                    throw new ArgumentException(message, nameof(key));
-                }
+                var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
+                throw new ArgumentException(message, nameof(key));
             }
 
-            list.Add(new KeyValuePair<string, object>(key, value));
+            _arrayStorage[_count] = new KeyValuePair<string, object>(key, value);
+            _count++;
         }
 
         /// <inheritdoc />
         public void Clear()
         {
-            if (_storage.Count == 0)
+            if (_count == 0)
             {
                 return;
             }
 
-            Upgrade();
+            if (_propertyStorage != null)
+            {
+                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+                _propertyStorage = null;
+                _count = 0;
+                return;
+            }
 
-            var list = (ListStorage)_storage;
-            list.Clear();
+            Array.Clear(_arrayStorage, 0, _count);
+            _count = 0;
         }
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
         {
-            if (_storage.Count == 0)
-            {
-                return false;
-            }
-
-            Upgrade();
-
-            var list = (ListStorage)_storage;
-            for (var i = 0; i < list.Count; i++)
-            {
-                if (string.Equals(list[i].Key, item.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    return EqualityComparer<object>.Default.Equals(list[i].Value, item.Value);
-                }
-            }
-
-            return false;
+            return TryGetValue(item.Key, out var value) && EqualityComparer<object>.Default.Equals(value, item.Value);
         }
 
         /// <inheritdoc />
@@ -280,7 +267,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _storage.ContainsKey(key);
+            return TryGetValue(key, out var _);
         }
 
         /// <inheritdoc />
@@ -298,15 +285,15 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
-            if (_storage.Count == 0)
+            if (Count == 0)
             {
                 return;
             }
 
-            Upgrade();
+            EnsureCapacity(Count);
 
-            var list = (ListStorage)_storage;
-            list.CopyTo(array, arrayIndex);
+            var storage = _arrayStorage;
+            Array.Copy(storage, 0, array, arrayIndex, _count);
         }
 
         /// <inheritdoc />
@@ -330,22 +317,21 @@ namespace Microsoft.AspNetCore.Routing
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
         {
-            if (_storage.Count == 0)
+            if (Count == 0)
             {
                 return false;
             }
 
-            Upgrade();
+            EnsureCapacity(Count);
 
-            var list = (ListStorage)_storage;
-            for (var i = 0; i < list.Count; i++)
+            var index = FindInArray(item.Key);
+                var array = _arrayStorage;
+            if (index >= 0 && EqualityComparer<object>.Default.Equals(array[index].Value, item.Value))
             {
-                if (string.Equals(list[i].Key, item.Key, StringComparison.OrdinalIgnoreCase) &&
-                    EqualityComparer<object>.Default.Equals(list[i].Value, item.Value))
-                {
-                    list.RemoveAt(i);
-                    return true;
-                }
+                Array.Copy(array, index + 1, array, index, _count - index);
+                _count--;
+                array[_count] = default;
+                return true;
             }
 
             return false;
@@ -359,21 +345,22 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (_storage.Count == 0)
+            if (Count == 0)
             {
                 return false;
             }
 
-            Upgrade();
+            EnsureCapacity(Count);
 
-            var list = (ListStorage)_storage;
-            for (var i = 0; i < list.Count; i++)
+            var index = FindInArray(key);
+            if (index >= 0)
             {
-                if (string.Equals(list[i].Key, key, StringComparison.OrdinalIgnoreCase))
-                {
-                    list.RemoveAt(i);
-                    return true;
-                }
+                _count--;
+                var array = _arrayStorage;
+                Array.Copy(array, index + 1, array, index, _count - index);
+                array[_count] = default;
+
+                return true;
             }
 
             return false;
@@ -387,17 +374,95 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _storage.TryGetValue(key, out value);
+            if (_propertyStorage != null)
+            {
+                var storage = _propertyStorage;
+                for (var i = 0; i < storage.Properties.Length; i++)
+                {
+                    if (string.Equals(storage.Properties[i].Name, key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        value = storage.Properties[i].GetValue(storage.Value);
+                        return true;
+                    }
+                }
+
+                value = default;
+                return false;
+            }
+
+            var array = _arrayStorage;
+            for (var i = 0; i < _count; i++)
+            {
+                if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = array[i].Value;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
         }
 
-        private void Upgrade()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EnsureCapacity(int capacity)
         {
-            _storage.Upgrade(ref _storage);
+            if (_propertyStorage != null || _arrayStorage.Length < capacity)
+            {
+                EnsureCapacitySlow(capacity);
+            }
+        }
+
+        private void EnsureCapacitySlow(int capacity)
+        {
+            if (_propertyStorage != null)
+            {
+                var storage = _propertyStorage;
+                capacity = Math.Max(storage.Properties.Length, capacity);
+                var array = new KeyValuePair<string, object>[capacity];
+
+                for (var i = 0; i < storage.Properties.Length; i++)
+                {
+                    var property = storage.Properties[i];
+                    array[i] = new KeyValuePair<string, object>(property.Name, property.GetValue(storage.Value));
+                }
+                
+                _arrayStorage = array;
+                _propertyStorage = null;
+                return;
+            }
+
+            if (_arrayStorage.Length < capacity)
+            {
+                capacity = _arrayStorage.Length == 0 ? DefaultCapacity : _arrayStorage.Length * 2;
+                var array = new KeyValuePair<string, object>[capacity];
+                if (_count > 0)
+                {
+                    Array.Copy(_arrayStorage, 0, array, 0, _count);
+                }
+
+                _arrayStorage = array;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int FindInArray(string key)
+        {
+            var array = _arrayStorage;
+            for (var i = 0; i < _count; i++)
+            {
+                if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public struct Enumerator : IEnumerator<KeyValuePair<string, object>>
         {
-            private readonly Storage _storage;
+            private RouteValueDictionary _dictionary;
             private int _index;
 
             public Enumerator(RouteValueDictionary dictionary)
@@ -407,9 +472,9 @@ namespace Microsoft.AspNetCore.Routing
                     throw new ArgumentNullException();
                 }
 
-                _storage = dictionary._storage;
+                _dictionary = dictionary;
 
-                Current = default(KeyValuePair<string, object>);
+                Current = default;
                 _index = -1;
             }
 
@@ -423,296 +488,50 @@ namespace Microsoft.AspNetCore.Routing
 
             public bool MoveNext()
             {
-                if (++_index < _storage.Count)
+                if (++_index < _dictionary.Count)
                 {
-                    Current = _storage[_index];
+                    if (_dictionary._propertyStorage != null)
+                    {
+                        var storage = _dictionary._propertyStorage;
+                        var property = storage.Properties[_index];
+                        Current = new KeyValuePair<string, object>(property.Name, property.GetValue(storage.Value));
+                        return true;
+                    }
+
+                    Current = _dictionary._arrayStorage[_index];
                     return true;
                 }
 
-                Current = default(KeyValuePair<string, object>);
+                Current = default;
                 return false;
             }
 
             public void Reset()
             {
-                Current = default(KeyValuePair<string, object>);
+                Current = default;
                 _index = -1;
             }
         }
 
-        // Storage and its subclasses are internal for testing.
-        internal abstract class Storage
-        {
-            public abstract int Count { get; }
-
-            public abstract KeyValuePair<string, object> this[int index] { get; set; }
-
-            public abstract void Upgrade(ref Storage storage);
-
-            public abstract bool TryGetValue(string key, out object value);
-
-            public abstract bool ContainsKey(string key);
-
-            public abstract bool TrySetValue(string key, object value);
-        }
-
-        internal class ListStorage : Storage
-        {
-            private KeyValuePair<string, object>[] _items;
-            private int _count;
-
-            private static readonly KeyValuePair<string, object>[] _emptyArray = new KeyValuePair<string, object>[0];
-
-            public ListStorage()
-            {
-                _items = _emptyArray;
-            }
-
-            public ListStorage(int capacity)
-            {
-                if (capacity == 0)
-                {
-                    _items = _emptyArray;
-                }
-                else
-                {
-                    _items = new KeyValuePair<string, object>[capacity];
-                }
-            }
-
-            public ListStorage(ListStorage other)
-            {
-                if (other.Count == 0)
-                {
-                    _items = _emptyArray;
-                }
-                else
-                {
-                    _items = new KeyValuePair<string, object>[other.Count];
-                    for (var i = 0; i < other.Count; i++)
-                    {
-                        this.Add(other[i]);
-                    }
-                }
-            }
-
-            public int Capacity => _items.Length;
-
-            public override int Count => _count;
-
-            public override KeyValuePair<string, object> this[int index]
-            {
-                get
-                {
-                    if (index < 0 || index >= _count)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(index));
-                    }
-
-                    return _items[index];
-                }
-                set
-                {
-                    if (index < 0 || index >= _count)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(index));
-                    }
-
-                    _items[index] = value;
-                }
-            }
-
-            public void Add(KeyValuePair<string, object> item)
-            {
-                if (_count == _items.Length)
-                {
-                    EnsureCapacity(_count + 1);
-                }
-
-                _items[_count++] = item;
-            }
-
-            public void RemoveAt(int index)
-            {
-                _count--;
-
-                for (var i = index; i < _count; i++)
-                {
-                    _items[i] = _items[i + 1];
-                }
-
-                _items[_count] = default(KeyValuePair<string, object>);
-            }
-
-            public void Clear()
-            {
-                for (var i = 0; i < _count; i++)
-                {
-                    _items[i] = default(KeyValuePair<string, object>);
-                }
-
-                _count = 0;
-            }
-
-            public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
-            {
-                for (var i = 0; i < _count; i++)
-                {
-                    array[arrayIndex++] = _items[i];
-                }
-            }
-
-            public override bool ContainsKey(string key)
-            {
-                for (var i = 0; i < Count; i++)
-                {
-                    var kvp = _items[i];
-                    if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            public override bool TrySetValue(string key, object value)
-            {
-                for (var i = 0; i < Count; i++)
-                {
-                    var kvp = _items[i];
-                    if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _items[i] = new KeyValuePair<string, object>(key, value);
-                        return true;
-                    }
-                }
-
-                Add(new KeyValuePair<string, object>(key, value));
-                return true;
-            }
-
-            public override bool TryGetValue(string key, out object value)
-            {
-                for (var i = 0; i < Count; i++)
-                {
-                    var kvp = _items[i];
-                    if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        value = kvp.Value;
-                        return true;
-                    }
-                }
-
-                value = null;
-                return false;
-            }
-
-            public override void Upgrade(ref Storage storage)
-            {
-                // Do nothing.
-            }
-
-            private void EnsureCapacity(int min)
-            {
-                var newLength = _items.Length == 0 ? 4 : _items.Length * 2;
-                var newItems = new KeyValuePair<string, object>[newLength];
-                for (var i = 0; i < _count; i++)
-                {
-                    newItems[i] = _items[i];
-                }
-
-                _items = newItems;
-            }
-        }
-
-        internal class PropertyStorage : Storage
+        internal class PropertyStorage
         {
             private static readonly PropertyCache _propertyCache = new PropertyCache();
 
-            internal readonly object _value;
-            internal readonly PropertyHelper[] _properties;
+            public readonly object Value;
+            public readonly PropertyHelper[] Properties;
 
             public PropertyStorage(object value)
             {
                 Debug.Assert(value != null);
-                _value = value;
+                Value = value;
 
                 // Cache the properties so we can know if we've already validated them for duplicates.
-                var type = _value.GetType();
-                if (!_propertyCache.TryGetValue(type, out _properties))
+                var type = Value.GetType();
+                if (!_propertyCache.TryGetValue(type, out Properties))
                 {
-                    _properties = PropertyHelper.GetVisibleProperties(type);
-                    ValidatePropertyNames(type, _properties);
-                    _propertyCache.TryAdd(type, _properties);
-                }
-            }
-
-            public PropertyStorage(PropertyStorage propertyStorage)
-            {
-                _value = propertyStorage._value;
-                _properties = propertyStorage._properties;
-            }
-
-            public override int Count => _properties.Length;
-
-            public override KeyValuePair<string, object> this[int index]
-            {
-                get
-                {
-                    var property = _properties[index];
-                    return new KeyValuePair<string, object>(property.Name, property.GetValue(_value));
-                }
-                set
-                {
-                    // PropertyStorage never sets a value.
-                    throw new NotImplementedException();
-                }
-            }
-
-            public override bool TryGetValue(string key, out object value)
-            {
-                for (var i = 0; i < _properties.Length; i++)
-                {
-                    var property = _properties[i];
-                    if (string.Equals(key, property.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        value = property.GetValue(_value);
-                        return true;
-                    }
-                }
-
-                value = null;
-                return false;
-            }
-
-            public override bool ContainsKey(string key)
-            {
-                for (var i = 0; i < _properties.Length; i++)
-                {
-                    var property = _properties[i];
-                    if (string.Equals(key, property.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            public override bool TrySetValue(string key, object value)
-            {
-                // PropertyStorage never sets a value.
-                return false;
-            }
-
-            public override void Upgrade(ref Storage storage)
-            {
-                storage = new ListStorage(Count);
-                for (var i = 0; i < _properties.Length; i++)
-                {
-                    var property = _properties[i];
-                    storage.TrySetValue(property.Name, property.GetValue(_value));
+                    Properties = PropertyHelper.GetVisibleProperties(type);
+                    ValidatePropertyNames(type, Properties);
+                    _propertyCache.TryAdd(type, Properties);
                 }
             }
 
@@ -723,8 +542,7 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     var property = properties[i];
 
-                    PropertyHelper duplicate;
-                    if (names.TryGetValue(property.Name, out duplicate))
+                    if (names.TryGetValue(property.Name, out var duplicate))
                     {
                         var message = Resources.FormatRouteValueDictionary_DuplicatePropertyName(
                             type.FullName,
@@ -736,50 +554,6 @@ namespace Microsoft.AspNetCore.Routing
 
                     names.Add(property.Name, property);
                 }
-            }
-        }
-
-        internal class EmptyStorage : Storage
-        {
-            public static readonly EmptyStorage Instance = new EmptyStorage();
-
-            private EmptyStorage()
-            {
-            }
-
-            public override int Count => 0;
-
-            public override KeyValuePair<string, object> this[int index]
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public override bool ContainsKey(string key)
-            {
-                return false;
-            }
-
-            public override bool TryGetValue(string key, out object value)
-            {
-                value = null;
-                return false;
-            }
-
-            public override bool TrySetValue(string key, object value)
-            {
-                return false;
-            }
-
-            public override void Upgrade(ref Storage storage)
-            {
-                storage = new ListStorage();
             }
         }
 

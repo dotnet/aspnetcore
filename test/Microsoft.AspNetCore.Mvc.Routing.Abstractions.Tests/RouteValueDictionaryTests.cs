@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+            Assert.Empty(dict._arrayStorage);
+            Assert.Null(dict._propertyStorage);
         }
 
         [Fact]
@@ -32,11 +33,12 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+            Assert.Empty(dict._arrayStorage);
+            Assert.Null(dict._propertyStorage);
         }
 
         [Fact]
-        public void CreateFromRouteValueDictionary_WithListStorage_CopiesStorage()
+        public void CreateFromRouteValueDictionary_WithArrayStorage_CopiesStorage()
         {
             // Arrange
             var other = new RouteValueDictionary()
@@ -50,8 +52,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.Equal(other, dict);
 
-            var storage = Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
-            var otherStorage = Assert.IsType<RouteValueDictionary.ListStorage>(other._storage);
+            var storage = Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+            var otherStorage = Assert.IsType<KeyValuePair<string, object>[]>(other._arrayStorage);
             Assert.NotSame(otherStorage, storage);
         }
 
@@ -67,25 +69,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.Equal(other, dict);
 
-            var storage = Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
-            var otherStorage = Assert.IsType<RouteValueDictionary.PropertyStorage>(other._storage);
-            Assert.Same(otherStorage, storage);
-        }
-
-        [Fact]
-        public void CreateFromRouteValueDictionary_WithEmptyStorage_SharedInstance()
-        {
-            // Arrange
-            var other = new RouteValueDictionary();
-
-            // Act
-            var dict = new RouteValueDictionary(other);
-
-            // Assert
-            Assert.Equal(other, dict);
-
-            var storage = Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
-            var otherStorage = Assert.IsType<RouteValueDictionary.EmptyStorage>(other._storage);
+            var storage = dict._propertyStorage;
+            var otherStorage = other._propertyStorage;
             Assert.Same(otherStorage, storage);
         }
 
@@ -135,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(values);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp =>
@@ -157,7 +142,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(values);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("First Name", kvp.Key); Assert.Equal("James", kvp.Value); },
@@ -178,7 +163,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
                 () => new RouteValueDictionary(values),
-                "values",
+                "key",
                 $"An element with the key 'Name' already exists in the {nameof(RouteValueDictionary)}.");
         }
 
@@ -195,7 +180,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
                 () => new RouteValueDictionary(values),
-                "values",
+                "key",
                 $"An element with the key 'Name' already exists in the {nameof(RouteValueDictionary)}.");
         }
 
@@ -209,7 +194,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("awesome", kvp.Key); Assert.Equal(123, kvp.Value); },
@@ -226,7 +211,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp =>
@@ -252,7 +237,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp =>
@@ -273,7 +258,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Empty(dict);
         }
 
@@ -287,7 +272,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Empty(dict);
         }
 
@@ -301,7 +286,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp =>
@@ -328,7 +313,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("DerivedProperty", kvp.Key); Assert.Equal(5, kvp.Value); });
@@ -344,7 +329,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
             Assert.Empty(dict);
         }
 
@@ -406,7 +391,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Null(value);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
@@ -420,7 +404,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Null(value);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -434,7 +418,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -448,11 +432,11 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
-        public void IndexGet_ListStorage_NoMatch_ReturnsNull()
+        public void IndexGet_ArrayStorage_NoMatch_ReturnsNull()
         {
             // Arrange
             var dict = new RouteValueDictionary()
@@ -465,7 +449,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Null(value);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -482,7 +466,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -499,7 +483,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -513,7 +497,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -530,7 +514,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -544,7 +528,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -558,7 +542,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Collection(dict, kvp => { Assert.Equal("kEy", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -578,7 +562,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -595,7 +579,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -612,7 +596,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -626,7 +610,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(0, count);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
@@ -640,7 +623,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(1, count);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -657,7 +640,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(1, count);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -671,7 +654,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(keys);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -685,7 +668,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(new[] { "key" }, keys);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -702,7 +685,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(new[] { "key" }, keys);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -716,7 +699,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(values);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -730,7 +713,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(new object[] { "value" }, values);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -747,7 +730,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(new object[] { "value" }, values);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -761,7 +744,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -778,7 +761,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -798,7 +781,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -819,7 +802,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -840,7 +823,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -860,7 +843,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
                 kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -874,7 +857,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
@@ -888,7 +870,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -902,7 +884,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.Null(dict._propertyStorage);
         }
 
         [Fact]
@@ -919,7 +901,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -938,7 +920,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.True(result);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -957,7 +939,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.True(result);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -976,7 +958,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.False(result);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         // Value comparisons use the default equality comparer.
@@ -996,7 +978,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.False(result);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1010,7 +992,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.False(result);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
@@ -1024,7 +1005,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.False(result);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -1038,7 +1019,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.True(result);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -1052,7 +1033,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.True(result);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -1069,7 +1050,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.False(result);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1086,7 +1067,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.True(result);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1103,7 +1084,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.True(result);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1128,7 +1109,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                     new KeyValuePair<string, object>("key", "value")
                 },
                 array);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1148,7 +1129,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1168,7 +1149,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1188,7 +1169,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         // Value comparisons use the default equality comparer.
@@ -1209,7 +1190,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1223,7 +1204,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.False(result);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
@@ -1238,7 +1218,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -1253,7 +1233,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1268,7 +1248,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1283,7 +1263,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1301,7 +1281,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1319,7 +1299,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1337,7 +1317,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Empty(dict);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1353,7 +1333,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Null(value);
-            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
@@ -1369,7 +1348,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Null(value);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -1385,7 +1364,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -1401,7 +1380,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.NotNull(dict._propertyStorage);
         }
 
         [Fact]
@@ -1420,7 +1399,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.Null(value);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1439,7 +1418,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1458,7 +1437,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.Equal("value", value);
-            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
         [Fact]
@@ -1471,8 +1450,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
             dict.Add("key", "value");
 
             // Assert 1
-            var storage = Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
-            Assert.Equal(4, storage.Capacity);
+            var storage = Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+            Assert.Equal(4, storage.Length);
 
             // Act 2
             dict.Add("key2", "value2");
@@ -1481,7 +1460,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
             dict.Add("key5", "value5");
 
             // Assert 2
-            Assert.Equal(8, storage.Capacity);
+            storage = Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+            Assert.Equal(8, storage.Length);
         }
 
         [Fact]
@@ -1494,20 +1474,19 @@ namespace Microsoft.AspNetCore.Routing.Tests
             dict.Add("key3", "value3");
 
             // Assert 1
-            var storage = Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
-            Assert.Equal(3, storage.Count);
+            var storage = Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+            Assert.Equal(3, dict.Count);
 
             // Act
             dict.Remove("key2");
 
             // Assert 2
-            Assert.Equal(2, storage.Count);
+            storage = Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+            Assert.Equal(2, dict.Count);
             Assert.Equal("key", storage[0].Key);
             Assert.Equal("value", storage[0].Value);
             Assert.Equal("key3", storage[1].Key);
             Assert.Equal("value3", storage[1].Value);
-
-            Assert.Throws<ArgumentOutOfRangeException>(() => storage[2]);
         }
 
         private class RegularType
