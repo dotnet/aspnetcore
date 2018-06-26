@@ -8,8 +8,9 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 1. Install prerequisites
    1. Visual Studio 2017
       1. Workload: `Desktop development with C++`
-         1. Additional Component: `Windows 8.1 SDK and UCRT SDK`
-         2. Additional Component: `Windows 10 SDK (10.0.15063.0) for Desktop C++ [x86 and x64]`
+         1. Run `run.ps1 install vs` or install the following components
+            1. Additional Component: `Windows 8.1 SDK and UCRT SDK`
+            2. Additional Component: `Windows 10 SDK (10.0.15063.0) for Desktop C++ [x86 and x64]`
       2. Workload: `ASP.NET and web development`
 2. Clone with submodules
    1. `git clone --recurse-submodules IISIntegration`
