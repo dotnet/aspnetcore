@@ -1,14 +1,15 @@
-﻿using System;
-using Microsoft.AspNetCore.Blazor.Browser.Interop;
+using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace BlazorLibrary_CSharp
 {
     public class ExampleJsInterop
     {
-        public static string Prompt(string message)
+        public static Task<string> Prompt(string message)
         {
-            return RegisteredFunction.Invoke<string>(
-                "BlazorLibrary-CSharp.ExampleJsInterop.Prompt",
+            // Implemented in exampleJsInterop.js
+            return JSRuntime.Current.InvokeAsync<string>(
+                "exampleJsFunctions.showPrompt",
                 message);
         }
     }
