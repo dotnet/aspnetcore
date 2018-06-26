@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -620,6 +621,75 @@ Environment.NewLine + "int b";
         }
 
         [Fact]
+        public void PreservesBindingSourceInference_ForFromQueryParameterOnCollectionType()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromQueryOnCollectionType);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Null(bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_ForFromQueryOnArrayType()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromQueryOnArrayType);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Null(bindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void PreservesBindingSourceInference_FromQueryOnArrayTypeWithCustomName()
+        {
+            // Arrange
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var actionName = nameof(ParameterBindingController.FromQueryOnArrayTypeWithCustomName);
+            var context = GetContext(typeof(ParameterBindingController), modelMetadataProvider);
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controller.Actions, a => a.ActionName == actionName);
+            var parameter = Assert.Single(action.Parameters);
+
+            var bindingInfo = parameter.BindingInfo;
+            Assert.NotNull(bindingInfo);
+            Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
+            Assert.Equal("ids", bindingInfo.BinderModelName);
+        }
+
+        [Fact]
         public void PreservesBindingSourceInference_ForFromRouteParameter_WithDefaultName()
         {
             // Arrange
@@ -792,6 +862,22 @@ Environment.NewLine + "int b";
             // Assert
             var property = Assert.Single(controller.ControllerProperties);
             Assert.Equal(string.Empty, property.BindingInfo.BinderModelName);
+        }
+
+        [Fact]
+        public void InferBoundPropertyModelPrefixes_SetsModelPrefix_ForCollectionTypeFromValueProvider()
+        {
+            // Arrange
+            var controller = GetControllerModel(typeof(ControllerWithBoundCollectionProperty));
+
+            var provider = GetProvider();
+
+            // Act
+            provider.InferBoundPropertyModelPrefixes(controller);
+
+            // Assert
+            var property = Assert.Single(controller.ControllerProperties);
+            Assert.Null(property.BindingInfo.BinderModelName);
         }
 
         [Fact]
@@ -1008,7 +1094,7 @@ Environment.NewLine + "int b";
 
             [HttpGet("parameter-with-model-binder-attribute")]
             public IActionResult ModelBinderAttribute([ModelBinder(Name = "top")] int value) => null;
-            
+
             [HttpGet("parameter-with-fromquery")]
             public IActionResult FromQuery([FromQuery] int value) => null;
 
@@ -1020,6 +1106,15 @@ Environment.NewLine + "int b";
 
             [HttpGet("parameter-with-fromquery-on-complextype-and-customname")]
             public IActionResult FromQueryOnComplexTypeWithCustomName([FromQuery(Name = "gps")] GpsCoordinates gpsCoordinates) => null;
+
+            [HttpGet("parameter-with-fromquery-on-collection-type")]
+            public IActionResult FromQueryOnCollectionType([FromQuery] ICollection<int> value) => null;
+
+            [HttpGet("parameter-with-fromquery-on-array-type")]
+            public IActionResult FromQueryOnArrayType([FromQuery] int[] value) => null;
+
+            [HttpGet("parameter-with-fromquery-on-array-type-customname")]
+            public IActionResult FromQueryOnArrayTypeWithCustomName([FromQuery(Name = "ids")] int[] value) => null;
 
             [HttpGet("parameter-with-fromroute")]
             public IActionResult FromRoute([FromRoute] int value) => null;
@@ -1116,6 +1211,15 @@ Environment.NewLine + "int b";
             public TestModel TestProperty { get; set; }
 
             public IActionResult SomeAction([FromQuery] TestModel test) => null;
+        }
+
+        [ApiController]
+        private class ControllerWithBoundCollectionProperty
+        {
+            [FromQuery]
+            public List<int> TestProperty { get; set; }
+
+            public IActionResult SomeAction([FromQuery] List<int> test) => null;
         }
 
         private class Car { }
