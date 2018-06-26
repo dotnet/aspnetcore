@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Testing;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -736,6 +737,65 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             {
                 Assert.Contains(item, content);
             }
+        }
+
+        [Fact]
+        public async Task PolymorphicPropertiesOnPageModelsAreBound()
+        {
+            // Arrange
+            var name = "TestName";
+            var age = 23;
+            var expected = $"Name = {name}, Age = {age}";
+            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PolymorphicBinding")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    { "Name", name },
+                    { "Age", age.ToString() },
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task PolymorphicPropertiesOnPageModelsAreValidated()
+        {
+            // Arrange
+            var name = "TestName";
+            var age = 123;
+            var expected = $"Name = {name}, Age = {age}";
+            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PolymorphicBinding")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    { "Name", name },
+                    { "Age", age.ToString() },
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var result = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Collection(
+               result.Properties(),
+               p =>
+               {
+                   Assert.Equal("Age", p.Name);
+                   var value = Assert.IsType<JArray>(p.Value);
+                   Assert.Equal("The field Age must be between 0 and 99.", value.First.ToString());
+               });
         }
 
         [Fact]

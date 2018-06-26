@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -242,6 +241,55 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.IsType<ClassValidator>(Assert.Single(attributes.TypeAttributes));
         }
 
+        [Fact]
+        public void GetAttributesForParameter_WithModelType_IncludesTypeAttributes()
+        {
+            // Arrange
+            var parameters = typeof(MethodWithParamAttributesType)
+                .GetMethod(nameof(MethodWithParamAttributesType.Method))
+                .GetParameters();
+
+            // Act
+            var attributes = ModelAttributes.GetAttributesForParameter(parameters[2], typeof(DerivedModelWithAttributes));
+
+            // Assert
+            Assert.Collection(
+                attributes.Attributes,
+                attribute => Assert.IsType<BindRequiredAttribute>(attribute),
+                attribute => Assert.IsType<ModelBinderAttribute>(attribute),
+                attribute => Assert.IsType<ClassValidator>(attribute));
+            Assert.IsType<BindRequiredAttribute>(Assert.Single(attributes.ParameterAttributes));
+            Assert.Null(attributes.PropertyAttributes);
+            Assert.Collection(
+                attributes.TypeAttributes,
+                attribute => Assert.IsType<ModelBinderAttribute>(attribute),
+                attribute => Assert.IsType<ClassValidator>(attribute));
+        }
+
+        [Fact]
+        public void GetAttributesForProperty_WithModelType_IncludesTypeAttributes()
+        {
+            // Arrange
+            var property = typeof(MergedAttributes)
+                .GetProperty(nameof(MergedAttributes.BaseModel));
+
+            // Act
+            var attributes = ModelAttributes.GetAttributesForProperty(typeof(MergedAttributes), property, typeof(DerivedModelWithAttributes));
+
+            // Assert
+            Assert.Collection(
+                attributes.Attributes,
+                attribute => Assert.IsType<BindRequiredAttribute>(attribute),
+                attribute => Assert.IsType<ModelBinderAttribute>(attribute),
+                attribute => Assert.IsType<ClassValidator>(attribute));
+            Assert.IsType<BindRequiredAttribute>(Assert.Single(attributes.PropertyAttributes));
+            Assert.Null(attributes.ParameterAttributes);
+            Assert.Collection(
+                attributes.TypeAttributes,
+                attribute => Assert.IsType<ModelBinderAttribute>(attribute),
+                attribute => Assert.IsType<ClassValidator>(attribute));
+        }
+
         [ClassValidator]
         private class BaseModel
         {
@@ -270,6 +318,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             [Range(10,100)]
             public override int VirtualProperty { get; set; }
 
+        }
+
+        [ModelBinder(Name = "Custom")]
+        private class DerivedModelWithAttributes : BaseModel
+        {
         }
 
         [ModelMetadataType(typeof(BaseModel))]
@@ -313,6 +366,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             [Required]
             public PropertyType Property { get; set; }
+
+            [BindRequired]
+            public BaseModel BaseModel { get; set; }
         }
 
         private class MergedAttributesMetadata

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
@@ -97,14 +98,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             return cacheEntry.Details.Properties;
         }
 
+        /// <inheritdoc />
         public override ModelMetadata GetMetadataForParameter(ParameterInfo parameter)
+            => GetMetadataForParameter(parameter, parameter?.ParameterType);
+
+        /// <inheritdoc />
+        public override ModelMetadata GetMetadataForParameter(ParameterInfo parameter, Type modelType)
         {
             if (parameter == null)
             {
                 throw new ArgumentNullException(nameof(parameter));
             }
 
-            var cacheEntry = GetCacheEntry(parameter);
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            var cacheEntry = GetCacheEntry(parameter, modelType);
 
             return cacheEntry.Metadata;
         }
@@ -118,6 +129,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             var cacheEntry = GetCacheEntry(modelType);
+
+            return cacheEntry.Metadata;
+        }
+
+        /// <inheritdoc />
+        public override ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
+        {
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            var cacheEntry = GetCacheEntry(propertyInfo, modelType);
 
             return cacheEntry.Metadata;
         }
@@ -151,10 +180,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             return cacheEntry;
         }
 
-        private ModelMetadataCacheEntry GetCacheEntry(ParameterInfo parameter)
+        private ModelMetadataCacheEntry GetCacheEntry(ParameterInfo parameter, Type modelType)
         {
             return _typeCache.GetOrAdd(
-                ModelMetadataIdentity.ForParameter(parameter),
+                ModelMetadataIdentity.ForParameter(parameter, modelType),
+                _cacheEntryFactory);
+        }
+
+        private ModelMetadataCacheEntry GetCacheEntry(PropertyInfo property, Type modelType)
+        {
+            return _typeCache.GetOrAdd(
+                ModelMetadataIdentity.ForProperty(modelType, property.Name, property.DeclaringType),
                 _cacheEntryFactory);
         }
 
@@ -165,6 +201,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             {
                 details = CreateParameterDetails(key);
             }
+            else if (key.MetadataKind == ModelMetadataKind.Property)
+            {
+                details = CreateSinglePropertyDetails(key);
+            }
             else
             {
                 details = CreateTypeDetails(key);
@@ -172,6 +212,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             var metadata = CreateModelMetadata(details);
             return new ModelMetadataCacheEntry(metadata, details);
+        }
+
+        private DefaultMetadataDetails CreateSinglePropertyDetails(ModelMetadataIdentity propertyKey)
+        {
+            var propertyHelpers = PropertyHelper.GetVisibleProperties(propertyKey.ContainerType);
+            for (var i = 0; i < propertyHelpers.Length; i++)
+            {
+                var propertyHelper = propertyHelpers[i];
+                if (propertyHelper.Name == propertyKey.Name)
+                {
+                    return CreateSinglePropertyDetails(propertyKey, propertyHelper);
+                }
+            }
+
+            Debug.Fail($"Unable to find property '{propertyKey.Name}' on type '{propertyKey.ContainerType}.");
+            return null;
         }
 
         private ModelMetadataCacheEntry GetMetadataCacheEntryForObjectType()
@@ -217,33 +273,46 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             for (var i = 0; i < propertyHelpers.Length; i++)
             {
                 var propertyHelper = propertyHelpers[i];
+
                 var propertyKey = ModelMetadataIdentity.ForProperty(
                     propertyHelper.Property.PropertyType,
                     propertyHelper.Name,
                     key.ModelType);
 
-                var attributes = ModelAttributes.GetAttributesForProperty(
-                    key.ModelType,
-                    propertyHelper.Property);
-
-                var propertyEntry = new DefaultMetadataDetails(propertyKey, attributes);
-                if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPublic == true)
-                {
-                    var getter = PropertyHelper.MakeNullSafeFastPropertyGetter(propertyHelper.Property);
-                    propertyEntry.PropertyGetter = getter;
-                }
-
-                if (propertyHelper.Property.CanWrite &&
-                    propertyHelper.Property.SetMethod?.IsPublic == true &&
-                    !key.ModelType.GetTypeInfo().IsValueType)
-                {
-                    propertyEntry.PropertySetter = propertyHelper.ValueSetter;
-                }
-
+                var propertyEntry = CreateSinglePropertyDetails(propertyKey, propertyHelper);
                 propertyEntries.Add(propertyEntry);
             }
 
             return propertyEntries.ToArray();
+        }
+
+        private DefaultMetadataDetails CreateSinglePropertyDetails(
+            ModelMetadataIdentity propertyKey,
+            PropertyHelper propertyHelper)
+        {
+            Debug.Assert(propertyKey.MetadataKind == ModelMetadataKind.Property);
+            var containerType = propertyKey.ContainerType;
+
+            var attributes = ModelAttributes.GetAttributesForProperty(
+                containerType,
+                propertyHelper.Property,
+                propertyKey.ModelType);
+
+            var propertyEntry = new DefaultMetadataDetails(propertyKey, attributes);
+            if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPublic == true)
+            {
+                var getter = PropertyHelper.MakeNullSafeFastPropertyGetter(propertyHelper.Property);
+                propertyEntry.PropertyGetter = getter;
+            }
+
+            if (propertyHelper.Property.CanWrite &&
+                propertyHelper.Property.SetMethod?.IsPublic == true &&
+                !containerType.IsValueType)
+            {
+                propertyEntry.PropertySetter = propertyHelper.ValueSetter;
+            }
+
+            return propertyEntry;
         }
 
         /// <summary>
@@ -269,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         {
             return new DefaultMetadataDetails(
                 key,
-                ModelAttributes.GetAttributesForParameter(key.ParameterInfo));
+                ModelAttributes.GetAttributesForParameter(key.ParameterInfo, key.ModelType));
         }
 
         private class TypeCache : ConcurrentDictionary<ModelMetadataIdentity, ModelMetadataCacheEntry>
