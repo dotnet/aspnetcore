@@ -99,7 +99,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.JSInterop", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.JSInterop.Test", "test\Microsoft.JSInterop.Test\Microsoft.JSInterop.Test.csproj", "{BA1CE1FD-89D8-423F-A21B-6B212674EB39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.WebAssembly.Interop", "src\mono\Mono.WebAssembly.Interop\Mono.WebAssembly.Interop.csproj", "{C56873E6-8F49-476E-AF51-B5D187832CF5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.WebAssembly.Interop", "src\Mono.WebAssembly.Interop\Mono.WebAssembly.Interop.csproj", "{C56873E6-8F49-476E-AF51-B5D187832CF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

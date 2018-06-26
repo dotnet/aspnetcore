@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <!-- Share the InternalCalls.cs source here so we get access to the same interop externs -->
-    <Compile Include="..\..\src\mono\Mono.WebAssembly.Interop\InternalCalls.cs" />
+    <Compile Include="..\..\src\Mono.WebAssembly.Interop\InternalCalls.cs" />
   </ItemGroup>
 
 </Project>
