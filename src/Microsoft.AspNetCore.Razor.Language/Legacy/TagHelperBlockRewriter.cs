@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
                 else
                 {
-                    // Error occured while parsing the attribute. Don't try parsing the rest to avoid misleading errors.
+                    // Error occurred while parsing the attribute. Don't try parsing the rest to avoid misleading errors.
                     break;
                 }
             }
