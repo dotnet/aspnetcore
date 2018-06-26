@@ -55,7 +55,6 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 
     if (*ppApplicationInfo == NULL)
     {
-
         pApplicationInfo = new APPLICATION_INFO();
         if (pApplicationInfo == NULL)
         {

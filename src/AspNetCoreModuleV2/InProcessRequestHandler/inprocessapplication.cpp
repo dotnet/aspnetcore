@@ -13,39 +13,30 @@
 #include "exceptions.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
-hostfxr_main_fn IN_PROCESS_APPLICATION::s_fMainCallback = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer *pHttpServer,
-    REQUESTHANDLER_CONFIG *pConfig) :
+    std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig) :
     m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_fBlockCallbacksIntoManaged(FALSE),
     m_fInitialized(FALSE),
     m_fShutdownCalledFromNative(FALSE),
     m_fShutdownCalledFromManaged(FALSE),
-    m_srwLock()
+    InProcessApplicationBase(pHttpServer),
+    m_pConfig(std::move(pConfig))
 {
     // is it guaranteed that we have already checked app offline at this point?
     // If so, I don't think there is much to do here.
     DBG_ASSERT(pHttpServer != NULL);
     DBG_ASSERT(pConfig != NULL);
 
-    InitializeSRWLock(&m_srwLock);
-    m_pConfig = pConfig;
 
     m_status = APPLICATION_STATUS::STARTING;
 }
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 {
-
-    if (m_pConfig != NULL)
-    {
-        delete m_pConfig;
-        m_pConfig = NULL;
-    }
-
     m_hThread = NULL;
     s_Application = NULL;
 }
@@ -129,7 +120,6 @@ Finished:
     }
 }
 
-
 VOID
 IN_PROCESS_APPLICATION::ShutDownInternal()
 {
@@ -203,54 +193,6 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
     CloseHandle(m_hThread);
     m_hThread = NULL;
     s_Application = NULL;
-}
-
-__override
-VOID
-IN_PROCESS_APPLICATION::Recycle(
-    VOID
-)
-{
-    // We need to guarantee that recycle is only called once, as calling pHttpServer->RecycleProcess
-    // multiple times can lead to AVs.
-    if (m_fRecycleCalled)
-    {
-        return;
-    }
-
-    {
-        SRWExclusiveLock lock(m_srwLock);
-
-        if (m_fRecycleCalled)
-        {
-            return;
-        }
-
-        m_fRecycleCalled = true;
-    }
-
-    if (!m_pHttpServer->IsCommandLineLaunch())
-    {
-        // IIS scenario.
-        // We don't actually handle any shutdown logic here.
-        // Instead, we notify IIS that the process needs to be recycled, which will call
-        // ApplicationManager->Shutdown(). This will call shutdown on the application.
-        m_pHttpServer->RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
-    }
-    else
-    {
-        // IISExpress scenario
-        // Try to graceful shutdown the managed application
-        // and call exit to terminate current process
-        ShutDown();
-
-        // If we set a static callback, we don't want to kill the current process as
-        // that will kill the test process and means we are running in hostable webcore mode.
-        if (s_fMainCallback == NULL)
-        {
-            exit(0);
-        }
-    }
 }
 
 REQUEST_NOTIFICATION_STATUS
@@ -712,7 +654,7 @@ IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hos
 REQUESTHANDLER_CONFIG*
 IN_PROCESS_APPLICATION::QueryConfig() const
 {
-    return m_pConfig;
+    return m_pConfig.get();
 }
 
 HRESULT

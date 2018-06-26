@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentParameters = new DeploymentParameters(variant)
             {
                 ApplicationPath = Helpers.GetInProcessTestSitesPath(),
-                PublishApplicationBeforeDeployment = true,
+                PublishApplicationBeforeDeployment = true
             };
 
             var deploymentResult = await DeployAsync(deploymentParameters);

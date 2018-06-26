@@ -147,8 +147,8 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
         m_pApplicationInfo->ExtractApplication(&pApplication);
 
-        // make sure application is in running state
-        // cannot recreate the application as we cannot reload clr for inprocess
+        // make sure application is in running state	
+        // cannot recreate the application as we cannot reload clr for inprocess	
         if (pApplication != NULL &&
             pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
             pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
@@ -156,7 +156,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
             goto Finished;
         }
-
         // Create RequestHandler and process the request
         hr = pApplication->CreateHandler(pHttpContext,
                     &m_pHandler);
@@ -167,7 +166,6 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         }
 
         retVal = m_pHandler->OnExecuteRequestHandler();
-
     }
     catch (...)
     {

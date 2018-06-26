@@ -3,7 +3,7 @@
 
 #include "SRWSharedLock.h"
 
-SRWSharedLock::  SRWSharedLock(const SRWLOCK& lock)
+SRWSharedLock::SRWSharedLock(const SRWLOCK& lock)
     : m_lock(lock)
 {
     AcquireSRWLockShared(const_cast<SRWLOCK*>(&m_lock));

@@ -53,9 +53,8 @@ enum APP_HOSTING_MODEL
 class REQUESTHANDLER_CONFIG
 {
 public:
-
     virtual
-        ~REQUESTHANDLER_CONFIG();
+    ~REQUESTHANDLER_CONFIG();
 
     static
     HRESULT

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using IISIntegration.FunctionalTests.Utilities;
 using Xunit;
-using System.Net;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStdoutWithRandomNumber(string path)
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite");
-            deploymentParameters.PublishApplicationBeforeDeployment = true;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
             var randomNumberString = new Random(Guid.NewGuid().GetHashCode()).Next(10000000).ToString();
             deploymentParameters.EnvironmentVariables["ASPNETCORE_INPROCESS_RANDOM_VALUE"] = randomNumberString;
@@ -42,8 +41,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStdoutWithLargeWrites(string path)
         {
             var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite");
-            deploymentParameters.PublishApplicationBeforeDeployment = true;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_INPROCESS_STARTUP_VALUE"] = path;
+
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var response = await deploymentResult.RetryingHttpClient.GetAsync(path);
@@ -53,6 +52,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 4096)));
+        }
+
+        [Fact]
+        public async Task Gets500_30_ErrorPage()
+        {
+            var deploymentParameters = Helpers.GetBaseDeploymentParameters("StartupExceptionWebsite");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Contains("500.30 - ANCM In-Process Start Failure", responseText);
         }
     }
 }

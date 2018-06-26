@@ -4,22 +4,21 @@
 #pragma once
 
 #include "precomp.hxx"
-#include "application.h"
+#include "InProcessApplicationBase.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
 
-typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]); // TODO these may need to be BSTRs
 
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_MANAGED_CONTEXT_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
 
-class IN_PROCESS_APPLICATION : public APPLICATION
+class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
 public:
     IN_PROCESS_APPLICATION(
         IHttpServer* pHttpServer,
-        REQUESTHANDLER_CONFIG *pConfig);
+        std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig);
 
     ~IN_PROCESS_APPLICATION();
 
@@ -34,12 +33,6 @@ public:
         _In_ PFN_MANAGED_CONTEXT_HANDLER managed_context_callback,
         _In_ VOID* pvRequstHandlerContext,
         _In_ VOID* pvShutdownHandlerContext
-    );
-
-    __override
-    VOID
-    Recycle(
-        VOID
     );
 
     __override
@@ -163,7 +156,6 @@ private:
     BOOL                            m_fRecycleCalled;
     BOOL                            m_fInitialized;
 
-    SRWLOCK                         m_srwLock;
 
     // Thread for capturing startup stderr logs when logging is disabled
     HANDLE                          m_hErrThread;
@@ -172,11 +164,9 @@ private:
     static IN_PROCESS_APPLICATION*  s_Application;
 
     IOutputManager*                 m_pLoggerProvider;
-    REQUESTHANDLER_CONFIG*          m_pConfig;
+    std::unique_ptr<REQUESTHANDLER_CONFIG>          m_pConfig;
 
-    // Allows to override call to hostfxr_main with custome callback
-    // used in testing
-    static hostfxr_main_fn          s_fMainCallback;
+
 
     static
     VOID

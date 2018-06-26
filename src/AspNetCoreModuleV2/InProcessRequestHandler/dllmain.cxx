@@ -8,9 +8,12 @@
 #include <VersionHelpers.h>
 
 #include "inprocessapplication.h"
+#include "StartupExceptionApplication.h"
+#include "inprocesshandler.h"
 #include "requesthandler_config.h"
 #include "debugutil.h"
 #include "resources.h"
+#include "exceptions.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -90,46 +93,30 @@ CreateApplication(
     _Out_ IAPPLICATION      **ppApplication
 )
 {
-    HRESULT                 hr = S_OK;
-    IN_PROCESS_APPLICATION *pApplication = NULL;
-    REQUESTHANDLER_CONFIG  *pConfig = NULL;
-
-    // Initialze some global variables here
     InitializeGlobalConfiguration(pServer);
 
     try
     {
-        hr = REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig);
-        if (FAILED(hr))
+        REQUESTHANDLER_CONFIG  *pConfig = NULL;
+        RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
+
+        auto config = std::unique_ptr<REQUESTHANDLER_CONFIG>(pConfig);
+
+        BOOL disableStartupPage = pConfig->QueryDisableStartUpErrorPage();
+
+        auto pApplication = std::make_unique<IN_PROCESS_APPLICATION>(pServer, std::move(config));
+        
+        if (FAILED(pApplication->LoadManagedApplication()))
         {
-            goto Finished;
+            // Set the currently running application to a fake application that returns startup exceptions.
+            *ppApplication = new StartupExceptionApplication(pServer, disableStartupPage);
         }
-
-        pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig);
-
-        pConfig = NULL;
-
-        *ppApplication = pApplication;
-    }
-    catch (std::bad_alloc&)
-    {
-        hr = E_OUTOFMEMORY;
-    }
-
-Finished:
-    if (FAILED(hr))
-    {
-        if (pApplication != NULL)
+        else
         {
-            delete pApplication;
-            pApplication = NULL;
-        }
-        if (pConfig != NULL)
-        {
-            delete pConfig;
-            pConfig = NULL;
+            *ppApplication = pApplication.release();
         }
     }
+    CATCH_RETURN();
 
-    return hr;
+    return S_OK;
 }

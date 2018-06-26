@@ -212,14 +212,20 @@
   <ItemGroup>
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="inprocessapplication.h" />
+    <ClInclude Include="InProcessApplicationBase.h" />
     <ClInclude Include="inprocesshandler.h" />
     <ClInclude Include="precomp.hxx" />
+    <ClInclude Include="StartupExceptionApplication.h" />
+    <ClInclude Include="StartupExceptionHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cxx" />
     <ClCompile Include="inprocessapplication.cpp" />
+    <ClCompile Include="InProcessApplicationBase.cpp" />
     <ClCompile Include="inprocesshandler.cpp" />
     <ClCompile Include="managedexports.cxx" />
+    <ClCompile Include="StartupExceptionApplication.cpp" />
+    <ClCompile Include="StartupExceptionHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
