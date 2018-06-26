@@ -8,8 +8,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class WebSocketTransport implements ITransport {
-    private static final String RECORD_SEPARATOR = "\u001e";
+public class WebSocketTransport implements Transport {
     private WebSocketClient _webSocket;
     private OnReceiveCallBack onReceiveCallBack;
     private URI _url;
@@ -23,13 +22,11 @@ public class WebSocketTransport implements ITransport {
     @Override
     public void start() throws InterruptedException {
         _webSocket.connectBlocking();
-        _webSocket.send(createHandshakeMessage() + RECORD_SEPARATOR);
+        _webSocket.send((new DefaultJsonProtocolHandShakeMessage()).createHandshakeMessage());
     }
 
     @Override
-    public void send(InvocationMessage invocationMessage) {
-        Gson gson = new Gson();
-        String message = gson.toJson(invocationMessage) + RECORD_SEPARATOR;
+    public void send(String message) {
         _webSocket.send(message);
     }
 
@@ -41,11 +38,6 @@ public class WebSocketTransport implements ITransport {
     @Override
     public void onReceive(String message) {
         this.onReceiveCallBack.invoke(message);
-    }
-
-    private String createHandshakeMessage() {
-        Gson gson = new Gson();
-        return gson.toJson(new DefaultJsonProtocolHandShakeMessage());
     }
 
     @Override
