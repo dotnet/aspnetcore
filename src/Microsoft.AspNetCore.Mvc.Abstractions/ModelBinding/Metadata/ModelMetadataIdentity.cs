@@ -66,17 +66,37 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             };
         }
 
+        /// <summary>
+        /// Creates a <see cref="ModelMetadataIdentity"/> for the provided parameter.
+        /// </summary>
+        /// <param name="parameter">The <see cref="ParameterInfo" />.</param>
+        /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
         public static ModelMetadataIdentity ForParameter(ParameterInfo parameter)
+            => ForParameter(parameter, parameter?.ParameterType);
+
+        /// <summary>
+        /// Creates a <see cref="ModelMetadataIdentity"/> for the provided parameter with the specified
+        /// model type.
+        /// </summary>
+        /// <param name="parameter">The <see cref="ParameterInfo" />.</param>
+        /// <param name="modelType">The model type.</param>
+        /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
+        public static ModelMetadataIdentity ForParameter(ParameterInfo parameter, Type modelType)
         {
             if (parameter == null)
             {
                 throw new ArgumentNullException(nameof(parameter));
             }
 
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             return new ModelMetadataIdentity()
             {
                 Name = parameter.Name,
-                ModelType = parameter.ParameterType,
+                ModelType = modelType,
                 ParameterInfo = parameter,
             };
         }

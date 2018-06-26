@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -263,6 +264,173 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Same(metadata1, metadata2);
         }
 
+        [Fact]
+        public void GetMetadataForParameter_WithModelType_ReturnsCombinedModelMetadata()
+        {
+            // Arrange
+            var parameter = GetType()
+                .GetMethod(nameof(GetMetadataForParameterTestMethod), BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetParameters()[0];
+            var provider = CreateProvider();
+
+            // Act
+            var metadata = provider.GetMetadataForParameter(parameter, typeof(DerivedModelType));
+
+            // Assert
+            Assert.Equal(ModelMetadataKind.Parameter, metadata.MetadataKind);
+            Assert.Equal(typeof(DerivedModelType), metadata.ModelType);
+
+            var defaultModelMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
+
+            Assert.Collection(
+                defaultModelMetadata.Attributes.Attributes,
+                a => Assert.Equal("OnParameter", Assert.IsType<ModelAttribute>(a).Value),
+                a => Assert.Equal("OnDerivedType", Assert.IsType<ModelAttribute>(a).Value),
+                a => Assert.Equal("OnType", Assert.IsType<ModelAttribute>(a).Value));
+
+            Assert.Collection(
+                metadata.Properties.OrderBy(p => p.Name),
+                p =>
+                {
+                    Assert.Equal(nameof(DerivedModelType.DerivedProperty), p.Name);
+
+                    var defaultPropertyMetadata = Assert.IsType<DefaultModelMetadata>(p);
+                    Assert.Collection(
+                        defaultPropertyMetadata.Attributes.Attributes.OfType<ModelAttribute>(),
+                        a => Assert.Equal("OnDerivedProperty", Assert.IsType<ModelAttribute>(a).Value));
+                },
+                p =>
+                {
+                    Assert.Equal(nameof(DerivedModelType.Property1), p.Name);
+
+                    var defaultPropertyMetadata = Assert.IsType<DefaultModelMetadata>(p);
+                    Assert.Collection(
+                        defaultPropertyMetadata.Attributes.Attributes.OfType<ModelAttribute>(),
+                        a => Assert.Equal("OnProperty", Assert.IsType<ModelAttribute>(a).Value),
+                        a => Assert.Equal("OnPropertyType", Assert.IsType<ModelAttribute>(a).Value));
+                },
+                p =>
+                {
+                    Assert.Equal(nameof(DerivedModelType.Property2), p.Name);
+                });
+        }
+
+        [Fact]
+        public void GetMetadataForParameter_WithModelType_CachesResults()
+        {
+            // Arrange
+            var parameter = GetType()
+                .GetMethod(nameof(GetMetadataForParameterTestMethod), BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetParameters()[0];
+            var provider = CreateProvider();
+
+            // Act
+            var metadata1 = provider.GetMetadataForParameter(parameter, typeof(DerivedModelType));
+            var metadata2 = provider.GetMetadataForParameter(parameter, typeof(DerivedModelType));
+
+            // Assert
+            Assert.Same(metadata1, metadata2);
+        }
+
+        [Fact]
+        public void GetMetadataForParameter_WithModelType_VariesByModelType()
+        {
+            // Arrange
+            var parameter = GetType()
+                .GetMethod(nameof(GetMetadataForParameterTestMethod), BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetParameters()[0];
+            var provider = CreateProvider();
+
+            // Act
+            var metadata1 = provider.GetMetadataForParameter(parameter, typeof(DerivedModelType));
+            var metadata2 = provider.GetMetadataForParameter(parameter, typeof(object));
+
+            // Assert
+            Assert.NotSame(metadata1, metadata2);
+        }
+
+        [Fact]
+        public void GetMetadataForProperty_WithModelType_ReturnsCombinedModelMetadata()
+        {
+            // Arrange
+            var property = typeof(TestContainer)
+                .GetProperty(nameof(TestContainer.ModelProperty));
+            var provider = CreateProvider();
+
+            // Act
+            var metadata = provider.GetMetadataForProperty(property, typeof(DerivedModelType));
+
+            // Assert
+            Assert.Equal(ModelMetadataKind.Property, metadata.MetadataKind);
+            Assert.Equal(typeof(DerivedModelType), metadata.ModelType);
+
+            var defaultModelMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
+
+            Assert.Collection(
+                defaultModelMetadata.Attributes.Attributes,
+                a => Assert.Equal("OnProperty", Assert.IsType<ModelAttribute>(a).Value),
+                a => Assert.Equal("OnDerivedType", Assert.IsType<ModelAttribute>(a).Value),
+                a => Assert.Equal("OnType", Assert.IsType<ModelAttribute>(a).Value));
+
+            Assert.Collection(
+                metadata.Properties.OrderBy(p => p.Name),
+                p =>
+                {
+                    Assert.Equal(nameof(DerivedModelType.DerivedProperty), p.Name);
+
+                    var defaultPropertyMetadata = Assert.IsType<DefaultModelMetadata>(p);
+                    Assert.Collection(
+                        defaultPropertyMetadata.Attributes.Attributes.OfType<ModelAttribute>(),
+                        a => Assert.Equal("OnDerivedProperty", Assert.IsType<ModelAttribute>(a).Value));
+                },
+                p =>
+                {
+                    Assert.Equal(nameof(DerivedModelType.Property1), p.Name);
+
+                    var defaultPropertyMetadata = Assert.IsType<DefaultModelMetadata>(p);
+                    Assert.Collection(
+                        defaultPropertyMetadata.Attributes.Attributes.OfType<ModelAttribute>(),
+                        a => Assert.Equal("OnProperty", Assert.IsType<ModelAttribute>(a).Value),
+                        a => Assert.Equal("OnPropertyType", Assert.IsType<ModelAttribute>(a).Value));
+                },
+                p =>
+                {
+                    Assert.Equal(nameof(DerivedModelType.Property2), p.Name);
+                });
+        }
+
+        [Fact]
+        public void GetMetadataForProperty_WithModelType_CachesResults()
+        {
+            // Arrange
+            var property = typeof(TestContainer)
+                .GetProperty(nameof(TestContainer.ModelProperty));
+            var provider = CreateProvider();
+
+            // Act
+            var metadata1 = provider.GetMetadataForProperty(property, typeof(DerivedModelType));
+            var metadata2 = provider.GetMetadataForProperty(property, typeof(DerivedModelType));
+
+            // Assert
+            Assert.Same(metadata1, metadata2);
+        }
+
+        [Fact]
+        public void GetMetadataForProperty_WithModelType_VariesByModelType()
+        {
+            // Arrange
+            var property = typeof(TestContainer)
+                .GetProperty(nameof(TestContainer.ModelProperty));
+            var provider = CreateProvider();
+
+            // Act
+            var metadata1 = provider.GetMetadataForProperty(property, typeof(DerivedModelType));
+            var metadata2 = provider.GetMetadataForProperty(property, typeof(object));
+
+            // Assert
+            Assert.NotSame(metadata1, metadata2);
+        }
+
         private static DefaultModelMetadataProvider CreateProvider()
         {
             return new DefaultModelMetadataProvider(
@@ -320,6 +488,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private class DerivedModelWithHiding : BaseModelWithHiding
         {
             public new string Property { get; set; }
+        }
+
+        [Model("OnDerivedType")]
+        private class DerivedModelType : ModelType
+        {
+            [Model("OnDerivedProperty")]
+            public string DerivedProperty { get; set; }
+        }
+
+        private class TestContainer
+        {
+            [Model("OnProperty")]
+            public ModelType ModelProperty { get; set; }
         }
     }
 }

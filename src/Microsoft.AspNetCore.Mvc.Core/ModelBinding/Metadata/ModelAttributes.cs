@@ -135,9 +135,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </returns>
         public static ModelAttributes GetAttributesForProperty(Type type, PropertyInfo property)
         {
-            if (type == null)
+            return GetAttributesForProperty(type, property, property.PropertyType);
+        }
+
+        /// <summary>
+        /// Gets the attributes for the given <paramref name="property"/> with the specified <paramref name="modelType"/>.
+        /// </summary>
+        /// <param name="containerType">The <see cref="Type"/> in which caller found <paramref name="property"/>.
+        /// </param>
+        /// <param name="property">A <see cref="PropertyInfo"/> for which attributes need to be resolved.
+        /// </param>
+        /// <param name="modelType">The model type</param>
+        /// <returns>
+        /// A <see cref="ModelAttributes"/> instance with the attributes of the property and its <see cref="Type"/>.
+        /// </returns>
+        public static ModelAttributes GetAttributesForProperty(Type containerType, PropertyInfo property, Type modelType)
+        {
+            if (containerType == null)
             {
-                throw new ArgumentNullException(nameof(type));
+                throw new ArgumentNullException(nameof(containerType));
             }
 
             if (property == null)
@@ -146,9 +162,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var propertyAttributes = property.GetCustomAttributes();
-            var typeAttributes = property.PropertyType.GetTypeInfo().GetCustomAttributes();
+            var typeAttributes = modelType.GetCustomAttributes();
 
-            var metadataType = GetMetadataType(type);
+            var metadataType = GetMetadataType(containerType);
             if (metadataType != null)
             {
                 var metadataProperty = metadataType.GetRuntimeProperty(property.Name);
@@ -174,12 +190,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var attributes = type.GetTypeInfo().GetCustomAttributes();
+            var attributes = type.GetCustomAttributes();
 
             var metadataType = GetMetadataType(type);
             if (metadataType != null)
             {
-                attributes = attributes.Concat(metadataType.GetTypeInfo().GetCustomAttributes());
+                attributes = attributes.Concat(metadataType.GetCustomAttributes());
             }
 
             return new ModelAttributes(attributes, propertyAttributes: null, parameterAttributes: null);
@@ -205,9 +221,40 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new ModelAttributes(typeAttributes, propertyAttributes: null, parameterAttributes);
         }
 
+        /// <summary>
+        /// Gets the attributes for the given <paramref name="parameterInfo"/> with the specified <paramref name="modelType"/>.
+        /// </summary>
+        /// <param name="parameterInfo">
+        /// The <see cref="ParameterInfo"/> for which attributes need to be resolved.
+        /// </param>
+        /// <param name="modelType">The model type.</param>
+        /// <returns>
+        /// A <see cref="ModelAttributes"/> instance with the attributes of the parameter and its <see cref="Type"/>.
+        /// </returns>
+        public static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo, Type modelType)
+        {
+            if (parameterInfo == null)
+            {
+                throw new ArgumentNullException(nameof(parameterInfo));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            // Prior versions called IModelMetadataProvider.GetMetadataForType(...) and therefore
+            // GetAttributesForType(...) for parameters. Maintain that set of attributes (including those from an
+            // ModelMetadataTypeAttribute reference) for back-compatibility.
+            var typeAttributes = GetAttributesForType(modelType).TypeAttributes;
+            var parameterAttributes = parameterInfo.GetCustomAttributes();
+
+            return new ModelAttributes(typeAttributes, propertyAttributes: null, parameterAttributes);
+        }
+
         private static Type GetMetadataType(Type type)
         {
-            return type.GetTypeInfo().GetCustomAttribute<ModelMetadataTypeAttribute>()?.MetadataType;
+            return type.GetCustomAttribute<ModelMetadataTypeAttribute>()?.MetadataType;
         }
     }
 }
