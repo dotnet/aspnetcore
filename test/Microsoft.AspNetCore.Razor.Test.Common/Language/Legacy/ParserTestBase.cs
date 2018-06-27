@@ -96,6 +96,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal void AssertSyntaxTreeNodeMatchesBaseline(RazorSyntaxTree syntaxTree)
         {
+            AssertSyntaxTreeNodeMatchesBaseline(syntaxTree.Root, syntaxTree.Diagnostics.ToArray());
+        }
+
+        internal void AssertSyntaxTreeNodeMatchesBaseline(Block root, params RazorDiagnostic[] diagnostics)
+        {
             if (FileName == null)
             {
                 var message = $"{nameof(AssertSyntaxTreeNodeMatchesBaseline)} should only be called from a parser test ({nameof(FileName)} is null).";
@@ -105,8 +110,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var baselineFileName = Path.ChangeExtension(FileName, ".syntaxtree.txt");
             var baselineDiagnosticsFileName = Path.ChangeExtension(FileName, ".diagnostics.txt");
 
-            var root = syntaxTree.Root;
-            var diagnostics = syntaxTree.Diagnostics;
             if (GenerateBaselines)
             {
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFileName);
@@ -157,6 +160,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static string NormalizeNewLines(string content)
         {
             return Regex.Replace(content, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
+        }
+
+        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree)
+        {
+            SyntaxTreeVerifier.Verify(syntaxTree);
+            AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
+        }
+
+        internal virtual void BaselineTest(Block root)
+        {
+            SyntaxTreeVerifier.Verify(root);
+            AssertSyntaxTreeNodeMatchesBaseline(root);
         }
 
         internal RazorSyntaxTree ParseBlock(string document, bool designTime)
@@ -307,6 +322,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(document, null, designTime, expectedErrors);
         }
 
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document)
+        {
+            ParseBlockTest(version, document, expectedRoot: null);
+        }
+
         internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, Block expectedRoot)
         {
             ParseBlockTest(version, document, expectedRoot, false, null);
@@ -358,8 +378,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (UseBaselineTests && !IsTheory)
             {
-                SyntaxTreeVerifier.Verify(result);
-                AssertSyntaxTreeNodeMatchesBaseline(result);
+                BaselineTest(result);
                 return;
             }
 
@@ -416,7 +435,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (UseBaselineTests && !IsTheory)
             {
-                AssertSyntaxTreeNodeMatchesBaseline(result);
+                BaselineTest(result);
                 return;
             }
 
@@ -487,8 +506,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (UseBaselineTests && !IsTheory)
             {
-                SyntaxTreeVerifier.Verify(result);
-                AssertSyntaxTreeNodeMatchesBaseline(result);
+                BaselineTest(result);
                 return;
             }
 

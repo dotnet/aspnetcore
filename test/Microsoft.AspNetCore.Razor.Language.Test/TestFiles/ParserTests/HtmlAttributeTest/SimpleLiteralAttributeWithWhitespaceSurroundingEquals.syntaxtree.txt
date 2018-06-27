@@ -1,0 +1,23 @@
+Markup block - Gen<None> - 24 - (0:0,0)
+    Tag block - Gen<None> - 24 - (0:0,0)
+        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[a];
+        Markup block - Gen<Attr:href, href LF= 	LF'@(2:0,2),'@(20:2,4)> - 19 - (2:0,2)
+            Markup span - Gen<None> - [ href LF= 	LF'] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:8
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[href];
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.NewLine;[LF];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.WhiteSpace;[ 	];
+                HtmlSymbolType.NewLine;[LF];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(17:2,1)> - [Foo] - SpanEditHandler;Accepts:Any - (17:2,1) - Symbols:1
+                HtmlSymbolType.Text;[Foo];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (20:2,4) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (21:2,5) - Symbols:3
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];

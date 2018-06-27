@@ -1,0 +1,32 @@
+Markup block - Gen<None> - 45 - (0:0,0)
+    Tag block - Gen<None> - 45 - (0:0,0)
+        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[a];
+        Markup block - Gen<Attr:*something, LF  *something='@(2:0,2),'@(22:1,17)> - 21 - (2:0,2)
+            Markup span - Gen<None> - [ LF  *something='] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:6
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.NewLine;[LF];
+                HtmlSymbolType.WhiteSpace;[  ];
+                HtmlSymbolType.Text;[*something];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(19:1,14)> - [Foo] - SpanEditHandler;Accepts:Any - (19:1,14) - Symbols:1
+                HtmlSymbolType.Text;[Foo];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (22:1,17) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup block - Gen<Attr:*something,	LF*something='@(23:1,18),'@(41:2,15)> - 19 - (23:1,18)
+            Markup span - Gen<None> - [	LF*something='] - SpanEditHandler;Accepts:Any - (23:1,18) - Symbols:5
+                HtmlSymbolType.WhiteSpace;[	];
+                HtmlSymbolType.NewLine;[LF];
+                HtmlSymbolType.Text;[*something];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(38:2,12)> - [Bar] - SpanEditHandler;Accepts:Any - (38:2,12) - Symbols:1
+                HtmlSymbolType.Text;[Bar];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (41:2,15) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (42:2,16) - Symbols:3
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];

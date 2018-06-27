@@ -1,0 +1,25 @@
+Markup block - Gen<None> - 24 - (0:0,0)
+    Tag block - Gen<None> - 24 - (0:0,0)
+        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[a];
+        Markup block - Gen<Attr:href, href='@(2:0,2),'@(20:0,20)> - 19 - (2:0,2)
+            Markup span - Gen<None> - [ href='] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:4
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[href];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(9:0,9)> - [Foo] - SpanEditHandler;Accepts:Any - (9:0,9) - Symbols:1
+                HtmlSymbolType.Text;[Foo];
+            Markup span - Gen<LitAttr: @(12:0,12)> - [ Bar] - SpanEditHandler;Accepts:Any - (12:0,12) - Symbols:2
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[Bar];
+            Markup span - Gen<LitAttr: @(16:0,16)> - [ Baz] - SpanEditHandler;Accepts:Any - (16:0,16) - Symbols:2
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[Baz];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (20:0,20) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (21:0,21) - Symbols:3
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];

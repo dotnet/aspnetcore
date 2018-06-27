@@ -1,0 +1,32 @@
+Markup block - Gen<None> - 39 - (0:0,0)
+    Tag block - Gen<None> - 39 - (0:0,0)
+        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[a];
+        Markup block - Gen<Attr:(click), LF  (click)='@(2:0,2),'@(19:1,14)> - 18 - (2:0,2)
+            Markup span - Gen<None> - [ LF  (click)='] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:6
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.NewLine;[LF];
+                HtmlSymbolType.WhiteSpace;[  ];
+                HtmlSymbolType.Text;[(click)];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(16:1,11)> - [Foo] - SpanEditHandler;Accepts:Any - (16:1,11) - Symbols:1
+                HtmlSymbolType.Text;[Foo];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (19:1,14) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup block - Gen<Attr:(click),	LF(click)='@(20:1,15),'@(35:2,12)> - 16 - (20:1,15)
+            Markup span - Gen<None> - [	LF(click)='] - SpanEditHandler;Accepts:Any - (20:1,15) - Symbols:5
+                HtmlSymbolType.WhiteSpace;[	];
+                HtmlSymbolType.NewLine;[LF];
+                HtmlSymbolType.Text;[(click)];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(32:2,9)> - [Bar] - SpanEditHandler;Accepts:Any - (32:2,9) - Symbols:1
+                HtmlSymbolType.Text;[Bar];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (35:2,12) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (36:2,13) - Symbols:3
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];

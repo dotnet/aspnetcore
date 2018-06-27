@@ -1,0 +1,19 @@
+Markup block - Gen<None> - 22 - (0:0,0)
+    Tag block - Gen<None> - 22 - (0:0,0)
+        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[a];
+        Markup block - Gen<Attr:*something, *something='@(2:0,2),'@(18:0,18)> - 17 - (2:0,2)
+            Markup span - Gen<None> - [ *something='] - SpanEditHandler;Accepts:Any - (2:0,2) - Symbols:4
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[*something];
+                HtmlSymbolType.Equals;[=];
+                HtmlSymbolType.SingleQuote;['];
+            Markup span - Gen<LitAttr:@(15:0,15)> - [Foo] - SpanEditHandler;Accepts:Any - (15:0,15) - Symbols:1
+                HtmlSymbolType.Text;[Foo];
+            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (18:0,18) - Symbols:1
+                HtmlSymbolType.SingleQuote;['];
+        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (19:0,19) - Symbols:3
+            HtmlSymbolType.WhiteSpace;[ ];
+            HtmlSymbolType.ForwardSlash;[/];
+            HtmlSymbolType.CloseAngle;[>];
