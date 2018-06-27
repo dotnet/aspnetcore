@@ -1,0 +1,12 @@
+Markup block - Gen<None> - 12 - (0:0,0)
+    Tag block - Gen<None> - 12 - (0:0,0)
+        Markup span - Gen<Markup> - [<foo] - SpanEditHandler;Accepts:Any - (0:0,0) - Symbols:2
+            HtmlSymbolType.OpenAngle;[<];
+            HtmlSymbolType.Text;[foo];
+        Markup block - Gen<Attr:bar, bar=@(4:0,4),@(12:0,12)> - 8 - (4:0,4)
+            Markup span - Gen<None> - [ bar=] - SpanEditHandler;Accepts:Any - (4:0,4) - Symbols:3
+                HtmlSymbolType.WhiteSpace;[ ];
+                HtmlSymbolType.Text;[bar];
+                HtmlSymbolType.Equals;[=];
+            Markup span - Gen<LitAttr:@(9:0,9)> - [baz] - SpanEditHandler;Accepts:Any - (9:0,9) - Symbols:1
+                HtmlSymbolType.Text;[baz];
