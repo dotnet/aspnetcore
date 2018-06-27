@@ -8,68 +8,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpExplicitExpressionTest : CsHtmlCodeParserTestBase
     {
+        public CSharpExplicitExpressionTest()
+        {
+            UseBaselineTests = true;
+        }
+
         [Fact]
         public void ParseBlockShouldOutputZeroLengthCodeSpanIfExplicitExpressionIsEmpty()
         {
-            ParseBlockTest("@()",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp().AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@()");
         }
 
         [Fact]
         public void ParseBlockShouldOutputZeroLengthCodeSpanIfEOFOccursAfterStartOfExplicitExpression()
         {
-            ParseBlockTest("@(",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.EmptyCSharp().AsExpression()
-                               ),
-                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
-                               Resources.BlockName_ExplicitExpression,
-                               ")",
-                               "("));
+            ParseBlockTest("@(");
         }
 
         [Fact]
         public void ParseBlockShouldAcceptEscapedQuoteInNonVerbatimStrings()
         {
-            ParseBlockTest("@(\"\\\"\")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("\"\\\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@(\"\\\"\")");
         }
 
         [Fact]
         public void ParseBlockShouldAcceptEscapedQuoteInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"\")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("@\"\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@(@\"\"\"\")");
         }
 
         [Fact]
         public void ParseBlockShouldAcceptMultipleRepeatedEscapedQuoteInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"\"\"\")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("@\"\"\"\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@(@\"\"\"\"\"\")");
         }
 
         [Fact]
@@ -79,61 +50,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                          + @"Foo" + Environment.NewLine
                          + @"Bar" + Environment.NewLine
                          + @"Baz" + Environment.NewLine
-                         + @""")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code($"@\"{Environment.NewLine}Foo{Environment.NewLine}Bar{Environment.NewLine}Baz{Environment.NewLine}\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+                         + @""")");
         }
 
         [Fact]
         public void ParseBlockShouldAcceptMultipleEscapedQuotesInNonVerbatimStrings()
         {
-            ParseBlockTest("@(\"\\\"hello, world\\\"\")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("\"\\\"hello, world\\\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@(\"\\\"hello, world\\\"\")");
         }
 
         [Fact]
         public void ParseBlockShouldAcceptMultipleEscapedQuotesInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"hello, world\"\"\")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("@\"\"\"hello, world\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@(@\"\"\"hello, world\"\"\")");
         }
 
         [Fact]
         public void ParseBlockShouldAcceptConsecutiveEscapedQuotesInNonVerbatimStrings()
         {
-            ParseBlockTest("@(\"\\\"\\\"\")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("\"\\\"\\\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@(\"\\\"\\\"\")");
         }
 
         [Fact]
         public void ParseBlockShouldAcceptConsecutiveEscapedQuotesInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"\"\"\")",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code("@\"\"\"\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
-                               ));
+            ParseBlockTest("@(@\"\"\"\"\"\")");
         }
     }
 }
